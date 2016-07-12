@@ -27,7 +27,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         private readonly RelationalTypeMapping _bit = new RelationalTypeMapping("bit", typeof(bool));
         private readonly MySqlMaxLengthMapping _char = new MySqlMaxLengthMapping("char", typeof(char), DbType.AnsiStringFixedLength);
         private readonly RelationalTypeMapping _datetime = new RelationalTypeMapping("datetime", typeof(DateTime), DbType.DateTime);
-        private readonly RelationalTypeMapping _datetimeoffset = new RelationalTypeMapping("varchar(200)", typeof(DateTimeOffset), DbType.DateTimeOffset);
+        private readonly RelationalTypeMapping _datetimeoffset = new RelationalTypeMapping("varchar(255)", typeof(DateTimeOffset), DbType.DateTimeOffset);
         private readonly RelationalTypeMapping _decimal = new RelationalTypeMapping("decimal(18, 2)", typeof(decimal));
         private readonly RelationalTypeMapping _double = new RelationalTypeMapping("double", typeof(double));
         private readonly RelationalTypeMapping _float = new RelationalTypeMapping("float", typeof(float));
@@ -42,9 +42,9 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         private readonly RelationalTypeMapping _varcharmax = new MySqlMaxLengthMapping("longtext", typeof(string), DbType.AnsiString);
 
         private readonly MySqlMaxLengthMapping _varchar = new MySqlMaxLengthMapping("varchar", typeof(string), DbType.AnsiString);
-        private readonly MySqlMaxLengthMapping _varchar450 = new MySqlMaxLengthMapping("varchar(450)", typeof(string), DbType.AnsiString);
+        private readonly MySqlMaxLengthMapping _varchar255 = new MySqlMaxLengthMapping("varchar(255)", typeof(string), DbType.AnsiString);
         private readonly RelationalTypeMapping _varbinary = new RelationalTypeMapping("varbinary", typeof(byte[]), DbType.Binary);
-        private readonly MySqlMaxLengthMapping _varbinary450 = new MySqlMaxLengthMapping("varbinary(450)", typeof(byte[]), DbType.Binary);
+        private readonly MySqlMaxLengthMapping _varbinary255 = new MySqlMaxLengthMapping("varbinary(255)", typeof(byte[]), DbType.Binary);
         private readonly RelationalTypeMapping _varbinarymax = new RelationalTypeMapping("longblob", typeof(byte[]), DbType.Binary);
 
 
@@ -125,7 +125,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     8000,
                     _varbinarymax,
                     _varbinarymax,
-                    _varbinary450,
+                    _varbinary255,
                     _rowversion, size => new MySqlMaxLengthMapping(
                         "varbinary(" + size + ")",
                         typeof(byte[]),
@@ -137,10 +137,10 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
             StringMapper
                 = new StringRelationalTypeMapper(
-                    4000,
+                    767,
                     _varcharmax,
                     _varcharmax,
-                    _varchar450,
+                    _varchar255,
                     size => new MySqlMaxLengthMapping(
                         "varchar(" + size + ")",
                         typeof(string),
@@ -149,10 +149,10 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                         size: size,
                         hasNonDefaultUnicode: true,
                         hasNonDefaultSize: true),
-                    4000,
+                    767,
                     _varcharmax,
                     _varcharmax,
-                    _varchar450,
+                    _varchar255,
                     size => new MySqlMaxLengthMapping(
                         "varchar(" + size + ")",
                         typeof(string),
