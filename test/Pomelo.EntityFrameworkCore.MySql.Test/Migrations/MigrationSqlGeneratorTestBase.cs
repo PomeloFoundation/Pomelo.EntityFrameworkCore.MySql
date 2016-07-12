@@ -72,7 +72,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Test.Migrations
                 {
                     Table = "People",
                     Name = "Alias",
-                    ClrType = typeof(string)
+                    ClrType = typeof(string),
+                    ColumnType = "text",
+                    IsNullable = false,
                 });
         }
 
@@ -178,7 +180,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Test.Migrations
                 {
                     Table = "People",
                     Name = "LuckyNumber",
-                    ClrType = typeof(int)
+                    ClrType = typeof(int),
+                    ColumnType = "int",
                 });
         }
 
@@ -263,52 +266,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Test.Migrations
                 });
         }
 
-        [Fact]
-        public virtual void CreateSequenceOperation_with_minValue_and_maxValue()
-        {
-            Generate(
-                new CreateSequenceOperation
-                {
-                    Name = "DefaultSequence",
-                    Schema = "dbo",
-                    StartValue = 3,
-                    IncrementBy = 1,
-                    MinValue = 2,
-                    MaxValue = 816,
-                    ClrType = typeof(long),
-                    IsCyclic = true
-                });
-        }
 
-        [Fact]
-        public virtual void CreateSequenceOperation_with_minValue_and_maxValue_not_long()
-        {
-            Generate(
-                new CreateSequenceOperation
-                {
-                    Name = "DefaultSequence",
-                    Schema = "dbo",
-                    StartValue = 3,
-                    IncrementBy = 1,
-                    MinValue = 2,
-                    MaxValue = 816,
-                    ClrType = typeof(int),
-                    IsCyclic = true
-                });
-        }
 
-        [Fact]
-        public virtual void CreateSequenceOperation_without_minValue_and_maxValue()
-        {
-            Generate(
-                new CreateSequenceOperation
-                {
-                    Name = "DefaultSequence",
-                    ClrType = typeof(long),
-                    StartValue = 3,
-                    IncrementBy = 1
-                });
-        }
 
         [Fact]
         public virtual void CreateTableOperation()
@@ -325,6 +284,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Test.Migrations
                             Name = "Id",
                             Table = "People",
                             ClrType = typeof(int),
+                            ColumnType = "int",
                             IsNullable = false
                         },
                         new AddColumnOperation
@@ -332,6 +292,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Test.Migrations
                             Name = "EmployerId",
                             Table = "People",
                             ClrType = typeof(int),
+                            ColumnType = "int",
                             IsNullable = true
                         },
                         new AddColumnOperation

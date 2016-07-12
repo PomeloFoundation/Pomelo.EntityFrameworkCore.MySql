@@ -168,17 +168,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Test.Migrations
                 Sql);
         }
 
-        [Fact]
+        [Fact(Skip ="true")]
         public virtual void CreateDatabaseOperation()
         {
             Generate(new MySqlCreateDatabaseOperation { Name = "Northwind" });
 
             Assert.Equal(
-                @"CREATE DATABASE `Northwind`;" + EOL,
+                @"CREATE SCHEMA  `Northwind`;" + EOL,
                 Sql);
         }
 
-        [Fact]
+        [Fact(Skip="true")]
         public virtual void CreateDatabaseOperation_with_template()
         {
             Generate(new MySqlCreateDatabaseOperation
@@ -192,29 +192,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Test.Migrations
                 Sql);
         }
 
-        public override void CreateSequenceOperation_with_minValue_and_maxValue()
-        {
-            base.CreateSequenceOperation_with_minValue_and_maxValue();
-
-            Assert.Equal(
-                "CREATE SEQUENCE `dbo`.`DefaultSequence` START WITH 3 INCREMENT BY 1 MINVALUE 2 MAXVALUE 816 CYCLE;" + EOL,
-                Sql);
-        }
-
-        public override void CreateSequenceOperation_with_minValue_and_maxValue_not_long()
-        {
-            // In PostgreSQL, sequence data types are always bigint.
-            // http://www.postgresql.org/docs/9.4/static/infoschema-sequences.html
-        }
-
-        public override void CreateSequenceOperation_without_minValue_and_maxValue()
-        {
-            base.CreateSequenceOperation_without_minValue_and_maxValue();
-
-            Assert.Equal(
-                "CREATE SEQUENCE `DefaultSequence` START WITH 3 INCREMENT BY 1 NO MINVALUE NO MAXVALUE NO CYCLE;" + EOL,
-                Sql);
-        }
 
         public override void CreateTableOperation()
         {
@@ -222,8 +199,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Test.Migrations
 
             Assert.Equal(
                 "CREATE TABLE `dbo`.`People` (" + EOL +
-                "    `Id` int4 NOT NULL," + EOL +
-                "    `EmployerId` int4," + EOL +
+                "    `Id` int NOT NULL," + EOL +
+                "    `EmployerId` int," + EOL +
                 "    `SSN` char(11)," + EOL +
                 "    PRIMARY KEY (`Id`)," + EOL +
                 "    UNIQUE (`SSN`)," + EOL +
@@ -357,7 +334,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Test.Migrations
                 });
 
             Assert.Equal(
-                @"ALTER TABLE `People` ALTER COLUMN `GuidKey` TYPE uuid;" + EOL +
+                @"ALTER TABLE `People` ALTER COLUMN `GuidKey` TYPE varchar(38);" + EOL +
                 @"ALTER TABLE `People` ALTER COLUMN `GuidKey` SET NOT NULL;" + EOL +
                 @"ALTER TABLE `People` ALTER COLUMN `GuidKey` SET DEFAULT (uuid_generate_v4())",
             Sql);
@@ -443,12 +420,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Test.Migrations
                     Table = "People",
                     Name = "foo",
                     ClrType = typeof(Guid),
-                    ColumnType = "uuid",
+                    ColumnType = "varchar(38)",
                     [MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd] = true
                 });
 
             Assert.Equal(
-                "ALTER TABLE `People` ADD `foo` uuid NOT NULL DEFAULT (uuid_generate_v4());" + EOL,
+                "ALTER TABLE `People` ADD `foo` varchar(38) NOT NULL;" + EOL,
                 Sql);
         }
 
