@@ -27,6 +27,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         private readonly RelationalTypeMapping _bit = new RelationalTypeMapping("bit", typeof(bool));
         private readonly MySqlMaxLengthMapping _char = new MySqlMaxLengthMapping("char", typeof(char), DbType.AnsiStringFixedLength);
         private readonly RelationalTypeMapping _datetime = new RelationalTypeMapping("datetime", typeof(DateTime), DbType.DateTime);
+        private readonly RelationalTypeMapping _datetimeoffset = new RelationalTypeMapping("varchar(200)", typeof(DateTimeOffset), DbType.DateTimeOffset);
         private readonly RelationalTypeMapping _decimal = new RelationalTypeMapping("decimal(18, 2)", typeof(decimal));
         private readonly RelationalTypeMapping _double = new RelationalTypeMapping("double", typeof(double));
         private readonly RelationalTypeMapping _float = new RelationalTypeMapping("float", typeof(float));
@@ -74,6 +75,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     { "character", _char },
                     { "date", _datetime },
                     { "datetime", _datetime },
+                    { "timestamp", _datetimeoffset },
                     { "dec", _decimal },
                     { "decimal", _decimal },
                     { "double", _double },
@@ -102,6 +104,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     { typeof(int), _int },
                     { typeof(long), _bigint },
                     { typeof(DateTime), _datetime },
+                    { typeof(DateTimeOffset), _datetimeoffset },
                     { typeof(Guid), _uniqueidentifier },
                     { typeof(bool), _bit },
                     { typeof(byte), _tinyint },
