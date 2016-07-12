@@ -56,7 +56,7 @@ namespace MySqlTest
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder
                 .UseInternalServiceProvider(_serviceProvider)
-                .UseMySql(@"Server=localhost;database=ef;uid=root;pwd=19931101;");
+                .UseMySql(@"Server=localhost;database=ef;uid=root;pwd=yourpwd;");
     }
 
     public class Program
