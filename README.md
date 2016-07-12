@@ -1,38 +1,101 @@
-# Pomelo.Data.MySql
+# Pomelo.EntityFrameworkCore.MySql
 
-[![Build status](https://ci.appveyor.com/api/projects/status/r4cpdgpfwn2bh56n/branch/master?svg=true)](https://ci.appveyor.com/project/Kagamine/pomelo-data-mysql/branch/master)  [![Build status](https://travis-ci.org/PomeloFoundation/Pomelo.Data.MySql.svg)](https://travis-ci.org/PomeloFoundation/Pomelo.Data.MySql)
+[![Build status](https://ci.appveyor.com/api/projects/status/oq7gncblploukq6j/branch/master?svg=true)](https://ci.appveyor.com/project/Kagamine/pomelo-entityframeworkcore-mysql/branch/master)  [![Build status](https://travis-ci.org/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql.svg)](https://travis-ci.org/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql)
 
-Contains MySQL implementations of the System.Data.Common(Both .NET Core and .NET Framework) interfaces.
+Pomelo.EntityFrameworkCore.MySql is an Entity Framework Core provider built on top of [Pomelo.Data.MySql](https://github.com/PomeloFoundation/Pomelo.Data.MySql). It makes you are able to use the Entity Framework Core ORM with MySQL.
 
 You can access this library by using MyGet Feed: `https://www.myget.org/F/pomelo/api/v2/`
 
 ## Getting Started
 
-After adding myget feed, you can put `Pomelo.Data.MySql` into your `project.json`, and the version should be `1.0.0`.
-
-`MySqlConnection`, `MySqlCommand` and etc are included in the namespace `Pomelo.Data.MySql`. The following console application sample will show you how to use this library to write a record into MySQL database.
+You are able to use MySQL in Entity Framework Core now, We have implemented MySQL Entity Framework Core interfaces. By using a few of lines to makes your project invoke Entity Framework Core with MySQL database. There is a console application sample for accessing MySQL database by using Entity Framework:
 
 ```C#
-using Pomelo.Data.MySql;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 
-namespace MySqlAdoSample
+namespace MySqlTest
 {
+    public class User
+    {
+        public Guid Id { get; set; }
+
+        [MaxLength(64)]
+        public string Name { get; set; }
+    }
+    
+    public class Blog
+    {
+        public Guid Id { get; set; }
+
+        public string Title { get; set; }
+
+        [ForeignKey("User")]
+        public Guid UserId { get; set; }
+
+        public virtual User User { get; set; }
+    }
+
+    public class MyContext : DbContext
+    {
+        private static readonly IServiceProvider _serviceProvider
+            = new ServiceCollection()
+                .AddEntityFrameworkMySql()
+                .BuildServiceProvider();
+
+        public DbSet<Blog> Blogs { get; set; }
+
+        public DbSet<User> Users { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+            => optionsBuilder
+                .UseInternalServiceProvider(_serviceProvider)
+                .UseMySql(@"Server=localhost;database=ef;uid=root;pwd=19931101;");
+    }
+
     public class Program
     {
-        public static void Main(string[] args)
+        public static void Main()
         {
-            using (var conn = new MySqlConnection("server=localhost;database=adosample;uid=root;pwd=yourpwd"))
+            using (var context = new MyContext())
             {
-                conn.Open();
-                using (var cmd = new MySqlCommand("INSERT INTO `test` (`content`) VALUES ('Hello MySQL')", conn))
+                // Create database
+                context.Database.EnsureCreated();
+
+                // Init sample data
+                var user = new User { Name = "Yuuko" };
+                context.Add(user);
+                var blog = new Blog { Title = "Blog Title", UserId = user.Id };
+                context.Add(blog);
+                context.SaveChanges();
+
+                // Detect changes test
+                blog.Title = "Changed Title";
+                context.SaveChanges();
+
+                // Output data
+                var ret = context.Blogs.ToList();
+                foreach (var x in ret)
                 {
-                    cmd.ExecuteNonQuery();
+                    Console.WriteLine($"{ x.Id } { x.Title }");
+                    x.Title = "Hello MySql";
                 }
+                context.SaveChanges();
             }
+
+            Console.Read();
         }
     }
 }
 ```
+
+Besides, by viewing the following full project which is a single-user blog system and based on this library(MySQL for Entity Framework Core) to explorer more features: [View on GitHub](https://github.com/kagamine/yuukoblog-netcore-mysql).
 
 ## Contribute
 
