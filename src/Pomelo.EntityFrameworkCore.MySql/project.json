@@ -1,0 +1,52 @@
+﻿{
+  "version": "1.0.0",
+
+  "buildOptions": {
+    "allowUnsafe": true
+  },
+
+  "dependencies": {
+    "Microsoft.EntityFrameworkCore.Relational": "1.0.0",
+    "Pomelo.Data.MySql": "1.0.0"
+  },
+
+  "frameworks": {
+    "net451": {
+      "dependencies": {
+      },
+      "frameworkAssemblies": {
+        "System.Collections": {
+          "version": "4.0.0.0",
+          "type": "build"
+        },
+        "System.Reflection": {
+          "version": "4.0.0.0",
+          "type": "build"
+        },
+        "System.Diagnostics.Contracts": {
+          "version": "4.0.0.0",
+          "type": "build"
+        },
+        "System.Linq.Expressions": {
+          "version": "4.0.0.0",
+          "type": "build"
+        },
+        "System.Runtime": {
+          "version": "4.0.10.0",
+          "type": "build"
+        }
+      }
+    },
+    "netstandard1.6": {
+      "dependencies": {
+        "NETStandard.Library": "1.6.0",
+        "System.Threading.Thread": "4.0.0"
+      },
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ]
+    }
+  }
+}
