@@ -103,4 +103,4 @@ One of the easiest ways to contribute is to participate in discussions and discu
 
 ## License
 
-[MIT](https://github.com/CodeCombLLC/ADO.NET-MySQL/blob/master/LICENSE)
+[MIT](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/blob/master/LICENSE)
