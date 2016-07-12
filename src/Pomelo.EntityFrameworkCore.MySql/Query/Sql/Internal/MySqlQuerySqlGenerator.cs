@@ -121,7 +121,8 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
 
             Visit(regexMatchExpression.Match);
             Sql.Append(" ~ ");
-            
+
+            // PG regexps are singleline by default
             if (options == RegexOptions.Singleline)
             {
                 Visit(regexMatchExpression.Pattern);

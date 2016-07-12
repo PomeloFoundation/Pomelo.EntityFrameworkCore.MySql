@@ -17,6 +17,5 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
         public const string ValueGenerationStrategy = "ValueGenerationStrategy";
         public const string MySqlExtensionPrefix = "MySqlExtension:";
         public const string DatabaseTemplate = "DatabaseTemplate";
-        public const string AutoIncrement = "AUTO_INCREMENT";
     }
 }

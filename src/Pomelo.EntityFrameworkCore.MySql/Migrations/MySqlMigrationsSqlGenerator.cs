@@ -33,7 +33,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(builder, nameof(builder));
 
             var createDatabaseOperation = operation as MySqlCreateDatabaseOperation;
-            if (createDatabaseOperation!= null)
+            if (createDatabaseOperation != null)
             {
                 Generate(createDatabaseOperation, model, builder);
                 builder.EndCommand();
@@ -108,7 +108,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             else if (isSerial)
             {
                 builder.Append(" SET DEFAULT ");
-                
+
                 switch (type)
                 {
                     case "smallint":
@@ -298,11 +298,9 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 type = TypeMapper.FindMapping(property).StoreType;
             }
 
-            // TODO: Maybe implement computed columns via functions?
-            // http://stackoverflow.com/questions/11165450/store-common-query-as-column/11166268#11166268
-
-            var valueGeneration = (MySqlValueGenerationStrategy?)annotatable[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGenerationStrategy];
-            if (valueGeneration != null && valueGeneration == MySqlValueGenerationStrategy.AutoIncrement || name.ToLower() == "id")
+            var valueGeneration = annotatable[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd];
+            var generatedOnAdd = valueGeneration != null && (bool)valueGeneration;
+            if (generatedOnAdd)
             {
                 switch (type)
                 {
