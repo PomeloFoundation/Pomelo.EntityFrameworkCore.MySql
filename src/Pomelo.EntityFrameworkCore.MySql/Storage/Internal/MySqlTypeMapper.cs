@@ -34,7 +34,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         private readonly RelationalTypeMapping _int = new RelationalTypeMapping("int", typeof(int), DbType.Int32);
         private readonly RelationalTypeMapping _smallint = new RelationalTypeMapping("smallint", typeof(short), DbType.Int16);
         private readonly RelationalTypeMapping _tinyint = new RelationalTypeMapping("tinyint unsigned", typeof(byte), DbType.Byte);
-
+        private readonly RelationalTypeMapping _json = new RelationalTypeMapping("json", typeof(JsonObject<>), DbType.String);
 
         private readonly RelationalTypeMapping _rowversion = new RelationalTypeMapping("TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", typeof(byte[]), DbType.Binary);
         private readonly MySqlMaxLengthMapping _nchar = new MySqlMaxLengthMapping("nchar", typeof(string), DbType.StringFixedLength);
@@ -75,7 +75,6 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     { "character", _char },
                     { "date", _datetime },
                     { "datetime", _datetime },
-                    { "timestamp", _datetimeoffset },
                     { "dec", _decimal },
                     { "decimal", _decimal },
                     { "double", _double },
@@ -95,7 +94,8 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     { "uniqueidentifier", _uniqueidentifier },
                     { "varbinary", _varbinary },
                     { "varchar", _varchar },
-                    { "varchar(8000)", _varcharmax }
+                    { "varchar(8000)", _varcharmax },
+                    { "json", _json }
                 };
 
             _simpleMappings
@@ -117,7 +117,8 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     { typeof(short), _smallint },
                     { typeof(float), _float },
                     { typeof(decimal), _decimal },
-                    { typeof(TimeSpan), _time }
+                    { typeof(TimeSpan), _time },
+                    { typeof(JsonObject<>), _json }
                 };
 
             ByteArrayMapper
@@ -182,6 +183,9 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         public override RelationalTypeMapping FindMapping(Type clrType)
         {
             Check.NotNull(clrType, nameof(clrType));
+            
+            if (clrType.Name == typeof(JsonObject<>).Name)
+                return _json;
 
             return clrType == typeof(string)
                 ? _varcharmax
