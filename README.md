@@ -14,32 +14,35 @@ You are able to use MySQL in Entity Framework Core now, We have implemented MySQ
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 
 namespace MySqlTest
 {
     public class User
     {
-        public Guid Id { get; set; }
+        public int UserId { get; set; }
 
         [MaxLength(64)]
         public string Name { get; set; }
     }
-    
+
     public class Blog
     {
         public Guid Id { get; set; }
 
+        [MaxLength(32)]
         public string Title { get; set; }
 
         [ForeignKey("User")]
-        public Guid UserId { get; set; }
+        public int UserId { get; set; }
 
         public virtual User User { get; set; }
+
+        public string Content { get; set; }
+
+        public JsonObject<List<string>> Tags { get; set; } // Json storage (MySQL 5.7 only)
     }
 
     public class MyContext : DbContext
@@ -50,7 +53,7 @@ namespace MySqlTest
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder
-                .UseMySql(@"Server=localhost;database=ef;uid=root;pwd=yourpwd;");
+                .UseMySql(@"Server=localhost;database=ef;uid=root;pwd=19931101;");
     }
 
     public class Program
@@ -65,24 +68,43 @@ namespace MySqlTest
                 // Init sample data
                 var user = new User { Name = "Yuuko" };
                 context.Add(user);
-                var blog = new Blog { Title = "Blog Title", UserId = user.Id };
-                context.Add(blog);
+                var blog1 = new Blog {
+                    Title = "Title #1",
+                    UserId = user.UserId,
+                    Tags = new List<string>() { "ASP.NET Core", "MySQL", "Pomelo" }
+                };
+                context.Add(blog1);
+                var blog2 = new Blog
+                {
+                    Title = "Title #2",
+                    UserId = user.UserId,
+                    Tags = new List<string>() { "ASP.NET Core", "MySQL" }
+                };
+                context.Add(blog2);
                 context.SaveChanges();
 
                 // Detect changes test
-                blog.Title = "Changed Title";
+                blog1.Tags.Object.Clear();
+                context.SaveChanges();
+
+                blog1.Tags.Object.Add("Pomelo");
+                context.ChangeTracker.DetectChanges();
+                var detect = context.ChangeTracker.Entries();
                 context.SaveChanges();
 
                 // Output data
-                var ret = context.Blogs.ToList();
+                var ret = context.Blogs
+                    .Where(x => x.Tags.Object.Contains("Pomelo"))
+                    .ToList();
                 foreach (var x in ret)
                 {
                     Console.WriteLine($"{ x.Id } { x.Title }");
-                    x.Title = "Hello MySql";
+                    Console.Write("[Tags]: ");
+                    foreach(var y in x.Tags.Object)
+                        Console.Write(y + " ");
+                    Console.WriteLine();
                 }
-                context.SaveChanges();
             }
-
             Console.Read();
         }
     }
