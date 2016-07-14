@@ -44,18 +44,12 @@ namespace MySqlTest
 
     public class MyContext : DbContext
     {
-        private static readonly IServiceProvider _serviceProvider
-            = new ServiceCollection()
-                .AddEntityFrameworkMySql()
-                .BuildServiceProvider();
-
         public DbSet<Blog> Blogs { get; set; }
 
         public DbSet<User> Users { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder
-                .UseInternalServiceProvider(_serviceProvider)
                 .UseMySql(@"Server=localhost;database=ef;uid=root;pwd=yourpwd;");
     }
 
