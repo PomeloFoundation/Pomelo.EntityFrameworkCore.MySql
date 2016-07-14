@@ -97,6 +97,10 @@ namespace MySqlTest
 
 Besides, by viewing the following full project which is a single-user blog system and based on this library(MySQL for Entity Framework Core) to explorer more features: [View on GitHub](https://github.com/kagamine/yuukoblog-netcore-mysql).
 
+## Special supported features
+
+- [MySQL 5.7 JSON field type](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/14)
+
 ## Contribute
 
 One of the easiest ways to contribute is to participate in discussions and discuss issues. You can also contribute by submitting pull requests with code changes.
