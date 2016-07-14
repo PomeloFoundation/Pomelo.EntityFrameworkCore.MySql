@@ -83,13 +83,12 @@ namespace MySqlTest
                 context.Add(blog2);
                 context.SaveChanges();
 
-                // Detect changes test
+                // Changing and save json object #1
                 blog1.Tags.Object.Clear();
                 context.SaveChanges();
 
+                // Changing and save json object #2
                 blog1.Tags.Object.Add("Pomelo");
-                context.ChangeTracker.DetectChanges();
-                var detect = context.ChangeTracker.Entries();
                 context.SaveChanges();
 
                 // Output data
