@@ -11,13 +11,12 @@ using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Tests
 {
- 
+
     public class MysqlRelationalConnectionTest
     {
-         [Fact]
-        public void Creates_Npgsql_Server_connection_string()
+        [Fact]
+        public void Creates_Mysql_Server_connection_string()
         {
-            
             using (var connection = new MySqlRelationalConnection(CreateOptions(), new Logger<MySqlConnection>(new LoggerFactory())))
             {
                 Assert.IsType<MySqlConnection>(connection.DbConnection);
