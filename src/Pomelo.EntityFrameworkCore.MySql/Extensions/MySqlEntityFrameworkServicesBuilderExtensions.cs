@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Internal;
 using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal;
@@ -56,6 +57,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AddScoped<MySqlMigrationsSqlGenerationHelper>()
                 .AddScoped<MySqlModificationCommandBatchFactory>()
                 .AddQuery());
+
+            services
+                .AddScoped<IChangeDetector, MySqlChangeDetector>()
+                .AddScoped<IPropertyListener, IChangeDetector>(p => p.GetService<IChangeDetector>());
 
             return services;
         }
