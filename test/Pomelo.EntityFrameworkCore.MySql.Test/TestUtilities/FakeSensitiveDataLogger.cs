@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Test.TestUtilities
+namespace Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities
 {
     public class FakeSensitiveDataLogger<T> : ISensitiveDataLogger<T>
 
