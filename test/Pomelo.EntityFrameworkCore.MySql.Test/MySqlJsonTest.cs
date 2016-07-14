@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Test
+namespace Pomelo.EntityFrameworkCore.MySql.Tests
 {
     public class MySqlJsonTest
     {
