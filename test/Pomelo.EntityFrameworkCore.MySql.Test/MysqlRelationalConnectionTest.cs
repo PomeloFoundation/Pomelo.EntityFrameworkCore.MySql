@@ -24,7 +24,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Test
             }
         }
 
-        //[Fact]
+        [Fact]
         public void Can_create_master_connection_string()
         {
             using (var connection = new MySqlRelationalConnection(CreateOptions(), new Logger<MySqlConnection>(new LoggerFactory())))
