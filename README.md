@@ -14,49 +14,46 @@ You are able to use MySQL in Entity Framework Core now, We have implemented MySQ
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 
 namespace MySqlTest
 {
     public class User
     {
-        public Guid Id { get; set; }
+        public int UserId { get; set; }
 
         [MaxLength(64)]
         public string Name { get; set; }
     }
-    
+
     public class Blog
     {
         public Guid Id { get; set; }
 
+        [MaxLength(32)]
         public string Title { get; set; }
 
         [ForeignKey("User")]
-        public Guid UserId { get; set; }
+        public int UserId { get; set; }
 
         public virtual User User { get; set; }
+
+        public string Content { get; set; }
+
+        public JsonObject<List<string>> Tags { get; set; } // Json storage (MySQL 5.7 only)
     }
 
     public class MyContext : DbContext
     {
-        private static readonly IServiceProvider _serviceProvider
-            = new ServiceCollection()
-                .AddEntityFrameworkMySql()
-                .BuildServiceProvider();
-
         public DbSet<Blog> Blogs { get; set; }
 
         public DbSet<User> Users { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder
-                .UseInternalServiceProvider(_serviceProvider)
-                .UseMySql(@"Server=localhost;database=ef;uid=root;pwd=yourpwd;");
+                .UseMySql(@"Server=localhost;database=ef;uid=root;pwd=19931101;");
     }
 
     public class Program
@@ -71,24 +68,42 @@ namespace MySqlTest
                 // Init sample data
                 var user = new User { Name = "Yuuko" };
                 context.Add(user);
-                var blog = new Blog { Title = "Blog Title", UserId = user.Id };
-                context.Add(blog);
+                var blog1 = new Blog {
+                    Title = "Title #1",
+                    UserId = user.UserId,
+                    Tags = new List<string>() { "ASP.NET Core", "MySQL", "Pomelo" }
+                };
+                context.Add(blog1);
+                var blog2 = new Blog
+                {
+                    Title = "Title #2",
+                    UserId = user.UserId,
+                    Tags = new List<string>() { "ASP.NET Core", "MySQL" }
+                };
+                context.Add(blog2);
                 context.SaveChanges();
 
-                // Detect changes test
-                blog.Title = "Changed Title";
+                // Changing and save json object #1
+                blog1.Tags.Object.Clear();
+                context.SaveChanges();
+
+                // Changing and save json object #2
+                blog1.Tags.Object.Add("Pomelo");
                 context.SaveChanges();
 
                 // Output data
-                var ret = context.Blogs.ToList();
+                var ret = context.Blogs
+                    .Where(x => x.Tags.Object.Contains("Pomelo"))
+                    .ToList();
                 foreach (var x in ret)
                 {
                     Console.WriteLine($"{ x.Id } { x.Title }");
-                    x.Title = "Hello MySql";
+                    Console.Write("[Tags]: ");
+                    foreach(var y in x.Tags.Object)
+                        Console.Write(y + " ");
+                    Console.WriteLine();
                 }
-                context.SaveChanges();
             }
-
             Console.Read();
         }
     }
@@ -96,6 +111,10 @@ namespace MySqlTest
 ```
 
 Besides, by viewing the following full project which is a single-user blog system and based on this library(MySQL for Entity Framework Core) to explorer more features: [View on GitHub](https://github.com/kagamine/yuukoblog-netcore-mysql).
+
+## Special supported features
+
+- [MySQL 5.7 JSON field type](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/14)
 
 ## Contribute
 
