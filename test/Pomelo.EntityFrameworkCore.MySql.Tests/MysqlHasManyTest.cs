@@ -42,12 +42,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests
         public DbSet<User> Users { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder
-                .UseMySql(@"Server=localhost;database=blogs;uid=root;pwd=123456;");
+        {
+            optionsBuilder
+                  .UseMySql(@"Server=localhost;database=blogs;uid=root;pwd=123456;");
+        }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+            builder.Entity<User>(e =>
+            {
+                e.HasMany(x => x.Blogs);
+            });
+        }
     }
 
 
-    public class MultipleActiveResultSetTest
+    public class MysqlHasManyTest
     {
         [Fact]
         public void InitData()
@@ -76,7 +87,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests
         }
 
         [Fact]
-        public void MultipleActiveResultSetDataTest()
+        public void IncludeTest()
         {
             using (BlogContext db = new BlogContext())
             {
@@ -87,7 +98,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests
         }
 
         [Fact]
-        public void MultipleActiveResultSetDataTest2()
+        public void HasManyTest()
         {
             using (BlogContext db = new BlogContext())
             {
@@ -96,5 +107,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests
                 Assert.Equal(user.Blogs.Count, 4);
             }
         }
+
+
     }
 }
