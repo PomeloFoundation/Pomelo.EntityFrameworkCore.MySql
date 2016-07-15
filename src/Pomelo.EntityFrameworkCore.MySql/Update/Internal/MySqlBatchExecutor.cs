@@ -41,8 +41,15 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
                     // Fixed Issue #1: DataReader conflicted when added multiple entities
                     try
                     {
-                        (connection.DbConnection as MySqlConnection).Reader.Dispose();
-                        (connection.DbConnection as MySqlConnection).Reader = null;
+                        lock (this)
+                        {
+                            var reader = (connection.DbConnection as MySqlConnection).Reader.LastOrDefault();
+                            if (reader != null)
+                            {
+                                reader.Dispose();
+                                (connection.DbConnection as MySqlConnection).Reader.Remove(reader);
+                            }
+                        }
                     }
                     catch
                     {
@@ -86,8 +93,15 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
                     // Fixed Issue #1: DataReader conflicted when added multiple entities
                     try
                     {
-                        (connection.DbConnection as MySqlConnection).Reader.Dispose();
-                        (connection.DbConnection as MySqlConnection).Reader = null;
+                        lock(this)
+                        {
+                            var reader = (connection.DbConnection as MySqlConnection).Reader.LastOrDefault();
+                            if (reader != null)
+                            {
+                                reader.Dispose();
+                                (connection.DbConnection as MySqlConnection).Reader.Remove(reader);
+                            }
+                        }
                     }
                     catch
                     {
