@@ -6,12 +6,23 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Tests
+namespace Pomelo.EntityFrameworkCore.MySql.Tests.Json
 {
     public class MySqlJsonTest
     {
 
-        public class Blog
+        public MySqlJsonTest()
+        {
+            using (MyContext db = new MyContext())
+            {
+                db.Database.EnsureDeleted();
+
+                db.Database.EnsureCreated();
+            }
+        }
+
+
+        public class Article
         {
             public int Id { get; set; }
 
@@ -33,11 +44,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests
 
         public class MyContext : DbContext
         {
-            public DbSet<Blog> Blogs { get; set; }
+            public DbSet<Article> Articles { get; set; }
 
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
                 => optionsBuilder
-                    .UseMySql(@"Server=localhost;database=test;uid=root;pwd=123456;");
+                    .UseMySql(@"Server=localhost;database=jsontest;uid=root;pwd=Password12!;");
         }
 
 
@@ -46,7 +57,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests
         {
             using (var context = new MyContext())
             {
-                Blog blog = new Blog();
+                Article blog = new Article();
 
                 blog.Title = "mysqltest";
                 blog.Desc = @"{'name':'Amy','mail':'amy @gmail.com'}";
@@ -57,10 +68,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests
 
                 blog.Authors = new string[] { "bob", "sunnmy" };
 
-                context.Blogs.Add(blog);
+                context.Articles.Add(blog);
                 context.SaveChanges();
 
-                Blog blog1 = context.Blogs.AsNoTracking().Where(x => x.Title == "mysqltest").FirstOrDefault();
+                Article blog1 = context.Articles.AsNoTracking().Where(x => x.Title == "mysqltest").FirstOrDefault();
 
                 Assert.Equal(blog1.Desc.Json, blog.Desc.Json);
                 Assert.Equal(blog1.Tags.Json, blog.Tags.Json);
@@ -73,13 +84,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests
         [Fact]
         public void DeleteTest()
         {
+
             using (var context = new MyContext())
             {
-                Blog blog = context.Blogs.Where(x => x.Title == "mysqltest").FirstOrDefault();
+                Article blog = new Article();
+
+                blog.Title = "mysqltest";
+                blog.Desc = @"{'name':'Amy','mail':'amy @gmail.com'}";
+                List<Tag> tags = new List<Tag>();
+                tags.Add(new Tag { Remark = "net", Title = "dev" });
+                tags.Add(new Tag { Remark = "core", Title = "rel" });
+                blog.Tags = tags;
+
+                blog.Authors = new string[] { "bob", "sunnmy" };
+
+                context.Articles.Add(blog);
+                context.SaveChanges();
+            }
+
+            using (var context = new MyContext())
+            {
+                Article blog = context.Articles.Where(x => x.Title == "mysqltest").FirstOrDefault();
 
                 blog.Tags.Object.Clear();
                 context.SaveChanges();
- 
+
                 Assert.Equal(blog.Tags.Object.Count, 0);
             }
         }

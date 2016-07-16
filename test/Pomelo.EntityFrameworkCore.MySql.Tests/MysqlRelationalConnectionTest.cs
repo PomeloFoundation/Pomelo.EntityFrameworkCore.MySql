@@ -30,7 +30,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests
             {
                 using (var master = connection.CreateMasterConnection())
                 {
-                    Assert.Equal(@"server=localhost;port=3306;Database=mysql;user id=root;password=root", master.ConnectionString);
+                    Assert.Equal(@"server=localhost;port=3306;Database=mysql;user id=root;password=Password12!", master.ConnectionString);
                 }
             }
         }
@@ -38,7 +38,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests
         public static IDbContextOptions CreateOptions()
         {
             var optionsBuilder = new DbContextOptionsBuilder();
-            optionsBuilder.UseMySql(@"Server=localhost;Port=3306;Database=ef;Uid=root;Password=root");
+            optionsBuilder.UseMySql(@"Server=localhost;Port=3306;Database=blogs;Uid=root;Password=Password12!");
 
             return optionsBuilder.Options;
         }
