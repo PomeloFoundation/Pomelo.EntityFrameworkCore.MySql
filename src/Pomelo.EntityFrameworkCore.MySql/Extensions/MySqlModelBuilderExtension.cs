@@ -20,10 +20,6 @@ namespace Pomelo.EntityFrameworkCore.Extensions
 
             var property = modelBuilder.Model;
 
-            /*property.MySql().ValueGenerationStrategy = SqlServerValueGenerationStrategy.IdentityColumn;
-            property.SqlServer().HiLoSequenceName = null;
-            property.SqlServer().HiLoSequenceSchema = null;*/
-
             return modelBuilder;
         }
     }
