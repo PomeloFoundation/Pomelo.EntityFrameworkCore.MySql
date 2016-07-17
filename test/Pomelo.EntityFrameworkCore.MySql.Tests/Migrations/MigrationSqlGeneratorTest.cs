@@ -312,7 +312,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
         }
 
         [Fact]
-        public void CreatePostgresExtension()
+        public void CreateMySqlDatabase()
         {
             Generate(new MySqlCreateDatabaseOperation
             {
@@ -320,7 +320,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
             });
 
             Assert.Equal(
-                @"CREATE EXTENSION `hstore`;" + EOL,
+                @"CREATE SCHEMA `hstore`;" + EOL,
                 Sql);
         }
 
