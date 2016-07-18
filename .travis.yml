@@ -26,3 +26,5 @@ before_script:
   - chmod ugo+x build.sh
 script:
   - ./build.sh --quiet verify
+services:
+  - mysql
