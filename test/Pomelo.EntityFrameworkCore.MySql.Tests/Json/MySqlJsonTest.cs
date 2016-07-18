@@ -48,7 +48,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Json
 
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
                 => optionsBuilder
-                    .UseMySql(@"Server=localhost;database=jsontest;uid=root;pwd=Password12!;");
+                    .UseMySql(@"Server=127.0.0.1;database=jsontest;uid=root;pwd=Password12!;");
         }
 
 

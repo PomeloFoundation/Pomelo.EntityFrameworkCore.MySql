@@ -44,7 +44,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.EagerLoad
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder
-                  .UseMySql(@"Server=localhost;database=hasmanytest;uid=root;pwd=Password12!;");
+                  .UseMySql(@"Server=127.0.0.1;database=hasmanytest;uid=root;pwd=Password12!;");
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
