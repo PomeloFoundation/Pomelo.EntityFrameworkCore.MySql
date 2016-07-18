@@ -73,9 +73,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Json
 
                 Article blog1 = context.Articles.AsNoTracking().Where(x => x.Title == "mysqltest").FirstOrDefault();
 
-                Assert.Equal(blog1.Desc.Json, blog.Desc.Json);
-                Assert.Equal(blog1.Tags.Json, blog.Tags.Json);
-                Assert.Equal(blog1.Authors.Json, blog.Authors.Json);
+                Assert.Equal(blog1.Desc, blog.Desc);
+                Assert.Equal(blog1.Tags, blog.Tags);
+                Assert.Equal(blog1.Authors, blog.Authors);
 
             }
         }
