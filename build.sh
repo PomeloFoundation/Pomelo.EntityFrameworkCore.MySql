@@ -44,5 +44,3 @@ if test ! -d $buildFolder; then
 fi
 
 $buildFile -r $repoFolder "$@"
-
-mysqladmin -u root -p password 123456
