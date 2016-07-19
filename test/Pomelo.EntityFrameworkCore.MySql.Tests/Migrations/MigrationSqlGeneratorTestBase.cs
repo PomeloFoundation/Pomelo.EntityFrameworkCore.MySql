@@ -3,9 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Specification.Tests;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
@@ -201,32 +199,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
         }
 
         [Fact]
-        public virtual void AlterSequenceOperation_with_minValue_and_maxValue()
-        {
-            Generate(
-                new AlterSequenceOperation
-                {
-                    Name = "DefaultSequence",
-                    Schema = "dbo",
-                    IncrementBy = 1,
-                    MinValue = 2,
-                    MaxValue = 816,
-                    IsCyclic = true
-                });
-        }
-
-        [Fact]
-        public virtual void AlterSequenceOperation_without_minValue_and_maxValue()
-        {
-            Generate(
-                new AlterSequenceOperation
-                {
-                    Name = "DefaultSequence",
-                    IncrementBy = 1
-                });
-        }
-
-        [Fact]
         public virtual void RenameTableOperation_within_schema()
         {
             Generate(
@@ -265,9 +237,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                     IsUnique = false
                 });
         }
-
-
-
 
         [Fact]
         public virtual void CreateTableOperation()
@@ -372,17 +341,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                     Table = "People",
                     Schema = "dbo",
                     Name = "PK_People"
-                });
-        }
-
-        [Fact]
-        public virtual void DropSequenceOperation()
-        {
-            Generate(
-                new DropSequenceOperation
-                {
-                    Name = "DefaultSequence",
-                    Schema = "dbo"
                 });
         }
 

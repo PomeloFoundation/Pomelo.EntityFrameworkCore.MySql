@@ -132,24 +132,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                 Sql);
         }
 
-        public override void AlterSequenceOperation_with_minValue_and_maxValue()
-        {
-            base.AlterSequenceOperation_with_minValue_and_maxValue();
-
-            Assert.Equal(
-                "ALTER SEQUENCE `dbo`.`DefaultSequence` INCREMENT BY 1 MINVALUE 2 MAXVALUE 816 CYCLE;" + EOL,
-                Sql);
-        }
-
-        public override void AlterSequenceOperation_without_minValue_and_maxValue()
-        {
-            base.AlterSequenceOperation_without_minValue_and_maxValue();
-
-            Assert.Equal(
-                "ALTER SEQUENCE `DefaultSequence` INCREMENT BY 1 NO MINVALUE NO MAXVALUE NO CYCLE;" + EOL,
-                Sql);
-        }
-
         public override void CreateIndexOperation_unique()
         {
             base.CreateIndexOperation_unique();
@@ -236,15 +218,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                 Sql);
         }
 
-        public override void DropSequenceOperation()
-        {
-            base.DropSequenceOperation();
-
-            Assert.Equal(
-                "DROP SEQUENCE `dbo`.`DefaultSequence`;" + EOL,
-                Sql);
-        }
-
         public override void DropTableOperation()
         {
             base.DropTableOperation();
@@ -297,29 +270,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
         }
 
         [Fact]
-        public void AlterColumnOperation_dbgenerated_int()
-        {
-            Generate(
-                new AlterColumnOperation
-                {
-                    Table = "People",
-                    Name = "IntKey",
-                    ClrType = typeof(int),
-                    ColumnType = "int",
-                    IsNullable = false,
-                    [MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd] = true
-                });
-
-            Assert.Equal(
-                @"CREATE SEQUENCE `People_IntKey_seq` START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE NO CYCLE;" + EOL +
-                @"ALTER TABLE `People` ALTER COLUMN `IntKey` TYPE int;" + EOL +
-                @"ALTER TABLE `People` ALTER COLUMN `IntKey` SET NOT NULL;" + EOL +
-                @"ALTER TABLE `People` ALTER COLUMN `IntKey` SET DEFAULT (nextval(`People_IntKey_seq`));" + EOL +
-                @"ALTER SEQUENCE `People_IntKey_seq` OWNED BY `People`.`IntKey`",
-            Sql);
-        }
-
-        [Fact]
         public void AlterColumnOperation_dbgenerated_uuid()
         {
             Generate(
@@ -362,7 +312,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
         }
 
         [Fact]
-        public void CreatePostgresExtension()
+        public void CreateMySqlDatabase()
         {
             Generate(new MySqlCreateDatabaseOperation
             {
@@ -370,7 +320,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
             });
 
             Assert.Equal(
-                @"CREATE EXTENSION `hstore`;" + EOL,
+                @"CREATE SCHEMA `hstore`;" + EOL,
                 Sql);
         }
 
