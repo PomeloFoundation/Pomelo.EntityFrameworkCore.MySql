@@ -14,8 +14,6 @@ mono:
   - 4.0.5
 os:
   - linux
-  - osx
-osx_image: xcode7.1
 branches:
   only:
     - master
@@ -23,6 +21,8 @@ branches:
     - dev
     - /^(.*\/)?ci-.*$/
 before_script:
+  - chmod ugo+x mysql.sh
   - chmod ugo+x build.sh
 script:
+  - ./mysql.sh --quiet verify
   - ./build.sh --quiet verify
