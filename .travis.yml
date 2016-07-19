@@ -10,7 +10,6 @@ addons:
     - libssl-dev
     - libunwind8
     - zlib1g
-    - mysql-server-5.7
 mono:
   - 4.0.5
 os:
