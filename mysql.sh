@@ -15,3 +15,4 @@ sudo apt-get -y update
 sudo apt-get -y install mysql-server-5.7
 
 mysqladmin -u root -p password Password12!
+
