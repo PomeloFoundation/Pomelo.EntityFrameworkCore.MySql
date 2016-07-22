@@ -9,7 +9,7 @@ Pomelo.EntityFrameworkCore.MySql is an Entity Framework Core provider built on t
 
 You are able to use MySQL in Entity Framework Core now, We have implemented MySQL Entity Framework Core interfaces. By using a few of lines to makes your project invoke Entity Framework Core with MySQL database. There is a console application sample for accessing MySQL database by using Entity Framework:
 
-project.json
+① Put `Pomelo.EntityFrameworkCore.MySql` into your `project.json`
 ```json
 {
   "version": "1.0.0-*",
@@ -38,7 +38,7 @@ project.json
 }
 ```
 
-Program.cs
+② Implement some models, DbContext in `Program.cs`, to override the OnConfiguring of DbContext to use mysql database. Besides, you can define a JsonObject<T> field if you are using MySQL Server 5.7. Finally to make some tests in your main method.
 ```C#
 using System;
 using System.Collections.Generic;
