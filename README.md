@@ -143,6 +143,7 @@ Besides, by viewing the following full project which is a single-user blog syste
 
 ## Special supported features
 
+- [MyCat cluster supported](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/27)
 - [MySQL 5.7 JSON field type](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/14)
 
 ## Contribute
