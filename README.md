@@ -26,7 +26,7 @@ You are able to use MySQL in Entity Framework Core now, We have implemented MySQ
       "type": "platform",
       "version": "1.0.0"
     },
-    "Pomelo.EntityFrameworkCore.MySql": "1.0.0-prerelease-20160722",
+    "Pomelo.EntityFrameworkCore.MySql": "1.0.0-prerelease-20160726",
     "Microsoft.EntityFrameworkCore.Tools": "1.0.0-preview2-final"
   },
 
