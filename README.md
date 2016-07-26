@@ -38,7 +38,8 @@ You are able to use MySQL in Entity Framework Core now, We have implemented MySQ
 }
 ```
 
-② Implement some models, DbContext in `Program.cs`, to override the OnConfiguring of DbContext to use mysql database. Besides, you can define a JsonObject<T> field if you are using MySQL Server 5.7. Finally to make some tests in your main method.
+② Implement some models, DbContext in `Program.cs`. Then overriding the OnConfiguring of DbContext to use MySQL database. Besides, you can define a JsonObject<T> field if you are using MySQL Server 5.7. Finally to invoking MySQL with EF Core in your Main() method.
+
 ```C#
 using System;
 using System.Collections.Generic;
@@ -139,7 +140,7 @@ namespace MySqlTest
 }
 ```
 
-Besides, by viewing the following full project which is a single-user blog system and based on this library(MySQL for Entity Framework Core) to explorer more features: [View on GitHub](https://github.com/kagamine/yuukoblog-netcore-mysql).
+By viewing the following full project which is a single-user blog system and based on this library(MySQL for Entity Framework Core) to explorer more features: [View on GitHub](https://github.com/kagamine/yuukoblog-netcore-mysql).
 
 ## Special supported features
 
