@@ -453,6 +453,8 @@ END;");
 
                 builder.Append($"CALL POMELO_AFTER_ADD_PRIMARY_KEY('{ operation.Table }', '{ operation.Columns.First() }');");
                 builder.AppendLine();
+                builder.Append($"DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;");
+                builder.AppendLine();
             }
 
             EndStatement(builder);
@@ -503,6 +505,8 @@ END;");
             builder.AppendLine();
 
             builder.Append($"CALL POMELO_BEFORE_DROP_PRIMARY_KEY('{ operation.Table }');");
+            builder.AppendLine();
+            builder.Append($"DROP PROCEDURE IF EXISTS POMELO_BEFORE_DROP_PRIMARY_KEY;");
             builder.AppendLine();
 
             builder
