@@ -23,6 +23,12 @@ namespace Microsoft.EntityFrameworkCore
             Check.NotNull(optionsBuilder, nameof(optionsBuilder));
             Check.NotEmpty(connectionString, nameof(connectionString));
 
+            var csb = new MySqlConnectionStringBuilder(connectionString)
+            {
+                AllowUserVariables = true
+            };
+            connectionString = csb.ConnectionString;
+
             var extension = GetOrCreateExtension(optionsBuilder);
             extension.ConnectionString = connectionString;
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
@@ -40,6 +46,12 @@ namespace Microsoft.EntityFrameworkCore
             Check.NotNull(optionsBuilder, nameof(optionsBuilder));
             Check.NotNull(connection, nameof(connection));
 
+            var csb = new MySqlConnectionStringBuilder(connection.ConnectionString)
+            {
+                AllowUserVariables = true
+            };
+
+            connection.ConnectionString = csb.ConnectionString;
             var extension = GetOrCreateExtension(optionsBuilder);
             extension.Connection = connection;
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
