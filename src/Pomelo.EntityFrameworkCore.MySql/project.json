@@ -5,9 +5,20 @@
     "allowUnsafe": true
   },
 
+  "packOptions": {
+    "authors": [ "Amamiya Yuuko" ],
+    "description": "MySQL provider for Entity Framework Core",
+    "iconUrl": "http://www.1234.sh/assets/Shared/pomelofoundation.png",
+    "licenseUrl": "https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/blob/master/LICENSE",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/pomelofoundation/pomelo.entityframeworkcore.mysql"
+    }
+  },
+
   "dependencies": {
     "Microsoft.EntityFrameworkCore.Relational": "1.0.0",
-    "Pomelo.Data.MySql": "1.0.0"
+    "Pomelo.Data.MySql": "1.0.0-*"
   },
 
   "frameworks": {
