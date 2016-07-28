@@ -252,7 +252,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
             base.AlterColumnOperation();
 
             Assert.Equal(
-                @"ALTER TABLE `dbo`.`People` MODIFY COLUMN `LuckyNumber` TYPE int;" + EOL +
+                @"ALTER TABLE `dbo`.`People` MODIFY COLUMN `LuckyNumber` int;" + EOL +
                 @"ALTER TABLE `dbo`.`People` MODIFY COLUMN `LuckyNumber` SET NOT NULL;" + EOL +
                 @"ALTER TABLE `dbo`.`People` MODIFY COLUMN `LuckyNumber` SET DEFAULT 7",
             Sql);
@@ -263,7 +263,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
             base.AlterColumnOperation_without_column_type();
 
             Assert.Equal(
-                @"ALTER TABLE `People` MODIFY COLUMN `LuckyNumber` TYPE int4;" + EOL +
+                @"ALTER TABLE `People` MODIFY COLUMN `LuckyNumber` int4;" + EOL +
                 @"ALTER TABLE `People` MODIFY COLUMN `LuckyNumber` SET NOT NULL;" + EOL +
                 @"ALTER TABLE `People` MODIFY COLUMN `LuckyNumber` DROP DEFAULT",
             Sql);
@@ -284,7 +284,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                 });
 
             Assert.Equal(
-                @"ALTER TABLE `People` MODIFY COLUMN `GuidKey` TYPE char(38) NOT NULL;" + EOL +
+                @"ALTER TABLE `People` MODIFY COLUMN `GuidKey` char(38) NOT NULL;" + EOL +
                 @"ALTER TABLE `People` MODIFY COLUMN `GuidKey` SET NOT NULL;" + EOL +
                 @"ALTER TABLE `People` MODIFY COLUMN `GuidKey` SET DEFAULT (uuid_generate_v4())",
             Sql);
