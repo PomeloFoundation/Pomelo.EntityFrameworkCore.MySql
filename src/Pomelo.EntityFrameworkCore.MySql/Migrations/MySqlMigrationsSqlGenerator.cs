@@ -63,11 +63,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
         {
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
-
-            // TODO: There is probably duplication here with other methods. See ColumnDefinition.
-
-            //TODO: this should provide feature parity with the EF6 provider, check if there's anything missing for EF7
-
+            
             var type = operation.ColumnType;
             if (operation.ColumnType == null)
             {
@@ -136,6 +132,9 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             {
                 builder.Append(" DROP DEFAULT ");
             }
+            
+            builder.AppendLine(SqlGenerationHelper.StatementTerminator);
+            EndStatement(builder);
         }
 
         protected override void Generate(CreateSequenceOperation operation, IModel model, MigrationCommandListBuilder builder)
