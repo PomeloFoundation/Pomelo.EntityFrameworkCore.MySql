@@ -144,6 +144,29 @@ namespace MySqlTest
 
 By viewing the following full project which is a single-user blog system and based on this library(MySQL for Entity Framework Core) to explorer more features: [View on GitHub](https://github.com/kagamine/yuukoblog-netcore-mysql).
 
+## Schedule and Roadmap
+
+Milestone | Release week
+----------|-------------
+1.0.0     | Aug 5th 2016
+1.0.1     | Sep 2016
+
+### 1.0.0 Feature complete
+
+Support all Entity Framework Core operations, basic json field support.
+
+### 1.0.1 Full json field support
+
+Support translate JsonObject<T> linq queries to native sql.
+ 
+``` c#
+DB.Blogs.Where(x => x.Tags.Contains("MySQL")).ToList();
+```
+Translate to:
+```sql
+SELECT * FROM `Blogs` WHERE JSON_CONTAINS(`Tags`, '"MySQL"');
+```
+
 ## Special supported features
 
 - [MyCat cluster supported](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/27)
