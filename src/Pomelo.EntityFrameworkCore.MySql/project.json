@@ -49,16 +49,10 @@
         }
       }
     },
-    "netstandard1.6": {
+    "netstandard1.3": {
       "dependencies": {
-        "NETStandard.Library": "1.6.0",
         "System.Threading.Thread": "4.0.0"
       },
-      "imports": [
-        "dotnet5.6",
-        "dnxcore50",
-        "portable-net45+win8"
-      ]
     }
   }
 }
