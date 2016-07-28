@@ -205,7 +205,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
             base.DropForeignKeyOperation();
 
             Assert.Equal(
-                "ALTER TABLE `dbo`.`People` DROP CONSTRAINT `FK_People_Companies`;" + EOL,
+                "ALTER TABLE `dbo`.`People` DROP FOREIGN KEY `FK_People_Companies`;" + EOL,
                 Sql);
         }
 

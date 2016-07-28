@@ -30,7 +30,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests
             {
                 using (var master = connection.CreateMasterConnection())
                 {
-                    Assert.Equal(@"server=localhost;port=3306;database=mysql;user id=root;password=Password12!;pooling=False", master.ConnectionString);
+                    Assert.Equal(@"server=localhost;port=3306;database=mysql;user id=root;password=Password12!;allowuservariables=True;pooling=False", master.ConnectionString);
                 }
             }
         }
