@@ -149,8 +149,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                 "CREATE INDEX `IX_People_Name` ON `People` (`Name`);" + EOL,
                 Sql);
         }
-
-        [Fact(Skip ="true")]
+        
         public virtual void CreateDatabaseOperation()
         {
             Generate(new MySqlCreateDatabaseOperation { Name = "Northwind" });
