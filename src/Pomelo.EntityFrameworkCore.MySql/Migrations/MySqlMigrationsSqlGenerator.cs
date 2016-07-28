@@ -511,7 +511,8 @@ END;");
             builder
                 .Append("ALTER TABLE ")
                 .Append(SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
-                .Append(" DROP PRIMARY KEY");
+                .Append(" DROP PRIMARY KEY;")
+                .AppendLine();
 
             EndStatement(builder);
         }
