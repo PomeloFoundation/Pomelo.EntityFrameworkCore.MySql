@@ -14,7 +14,6 @@ mono:
   - 4.0.5
 os:
   - linux
-  - osx
 osx_image: xcode7.1
 branches:
   only:
