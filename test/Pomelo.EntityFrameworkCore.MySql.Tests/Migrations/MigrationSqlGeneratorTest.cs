@@ -196,7 +196,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
             base.DropColumnOperation();
 
             Assert.Equal(
-                "ALTER TABLE `dbo`.`People` DROP COLUMN `LuckyNumber`;" + EOL,
+                "ALTER TABLE `dbo`.`People` DROP COLUMN `LuckyNumber`;",
                 Sql);
         }
 
@@ -250,22 +250,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
         public override void AlterColumnOperation()
         {
             base.AlterColumnOperation();
-
             Assert.Equal(
-                @"ALTER TABLE `dbo`.`People` MODIFY COLUMN `LuckyNumber` int;" + EOL +
-                @"ALTER TABLE `dbo`.`People` MODIFY COLUMN `LuckyNumber` SET NOT NULL;" + EOL +
-                @"ALTER TABLE `dbo`.`People` MODIFY COLUMN `LuckyNumber` SET DEFAULT 7",
-            Sql);
+                @"ALTER TABLE `dbo`.`People` MODIFY COLUMN `LuckyNumber` int NOT NULL;" + EOL +
+                @"ALTER TABLE `dbo`.`People` ALTER COLUMN `LuckyNumber` SET DEFAULT 7" + EOL,
+            Sql, false, true, true);
         }
 
         public override void AlterColumnOperation_without_column_type()
         {
             base.AlterColumnOperation_without_column_type();
-
             Assert.Equal(
-                @"ALTER TABLE `People` MODIFY COLUMN `LuckyNumber` int4;" + EOL +
-                @"ALTER TABLE `People` MODIFY COLUMN `LuckyNumber` SET NOT NULL;" + EOL +
-                @"ALTER TABLE `People` MODIFY COLUMN `LuckyNumber` DROP DEFAULT",
+                @"ALTER TABLE `People` MODIFY COLUMN `LuckyNumber` int NOT NULL;" + EOL +
+                @"ALTER TABLE `People` ALTER COLUMN `LuckyNumber` DROP DEFAULT;",
             Sql);
         }
 
@@ -285,9 +281,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
 
             Assert.Equal(
                 @"ALTER TABLE `People` MODIFY COLUMN `GuidKey` char(38) NOT NULL;" + EOL +
-                @"ALTER TABLE `People` MODIFY COLUMN `GuidKey` SET NOT NULL;" + EOL +
-                @"ALTER TABLE `People` MODIFY COLUMN `GuidKey` SET DEFAULT (uuid_generate_v4())",
-            Sql);
+                @"ALTER TABLE `People` ALTER COLUMN `GuidKey` DROP DEFAULT;",
+            Sql, false , true, true);
         }
 
         #endregion
@@ -320,7 +315,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
             });
 
             Assert.Equal(
-                @"CREATE SCHEMA `hstore`;" + EOL,
+                @"CREATE SCHEMA `hstore`" + EOL,
                 Sql);
         }
 

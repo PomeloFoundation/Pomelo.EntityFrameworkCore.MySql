@@ -57,6 +57,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             var identifier = SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema);
             var alterBase = $"ALTER TABLE {identifier} DROP COLUMN {SqlGenerationHelper.DelimitIdentifier(operation.Name)}";
             builder.Append(alterBase).Append(SqlGenerationHelper.StatementTerminator);
+            EndStatement(builder);
         }
 
         protected override void Generate(AlterColumnOperation operation, IModel model, MigrationCommandListBuilder builder)
@@ -130,10 +131,9 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             }
             else
             {
-                builder.Append(" DROP DEFAULT ");
+                builder.Append(" DROP DEFAULT;");
             }
             
-            builder.AppendLine(SqlGenerationHelper.StatementTerminator);
             EndStatement(builder);
         }
 
