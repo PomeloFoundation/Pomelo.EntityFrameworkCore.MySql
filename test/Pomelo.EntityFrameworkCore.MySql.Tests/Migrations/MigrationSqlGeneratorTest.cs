@@ -252,9 +252,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
             base.AlterColumnOperation();
 
             Assert.Equal(
-                @"ALTER TABLE `dbo`.`People` ALTER COLUMN `LuckyNumber` TYPE int;" + EOL +
-                @"ALTER TABLE `dbo`.`People` ALTER COLUMN `LuckyNumber` SET NOT NULL;" + EOL +
-                @"ALTER TABLE `dbo`.`People` ALTER COLUMN `LuckyNumber` SET DEFAULT 7",
+                @"ALTER TABLE `dbo`.`People` MODIFY COLUMN `LuckyNumber` TYPE int;" + EOL +
+                @"ALTER TABLE `dbo`.`People` MODIFY COLUMN `LuckyNumber` SET NOT NULL;" + EOL +
+                @"ALTER TABLE `dbo`.`People` MODIFY COLUMN `LuckyNumber` SET DEFAULT 7",
             Sql);
         }
 
