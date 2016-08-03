@@ -35,7 +35,7 @@ If the result is not `utf8`, you should modify your `my.ini` or `my.cnf`.
       "type": "platform",
       "version": "1.0.0"
     },
-    "Pomelo.EntityFrameworkCore.MySql": "1.0.0-prerelease-20160802",
+    "Pomelo.EntityFrameworkCore.MySql": "1.0.0-prerelease-20160803",
     "Microsoft.EntityFrameworkCore.Tools": "1.0.0-preview2-final"
   },
 
