@@ -314,15 +314,17 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(clrType, nameof(clrType));
             Check.NotNull(builder, nameof(builder));
 
+            bool IsPrimaryKey = false;
             if (type == null)
             {
                 var property = FindProperty(model, schema, table, name);
                 type = TypeMapper.FindMapping(property).StoreType;
+                IsPrimaryKey = property.IsPrimaryKey();
             }
 
             var valueGeneration = annotatable[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd];
             var generatedOnAdd = valueGeneration != null && (bool)valueGeneration;
-            if (generatedOnAdd)
+            if (generatedOnAdd && IsPrimaryKey)
             {
                 switch (type)
                 {
@@ -338,26 +340,31 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     case "int2":
                         type = "short AUTO_INCREMENT";
                         break;
-                    case "varchar": // Allow string identifier
-                        break;
-                    case "char(38)": // GUID identifier
-                        break;
-                    default:
-                        if (type.IndexOf("varchar") >= 0)
-                            break;
-                        throw new InvalidOperationException($"Column {name} of type {type} can't be Identity");
                 }
             }
 
-            if (defaultValue != null)
+            builder
+                .Append(SqlGenerationHelper.DelimitIdentifier(name))
+                .Append(" ")
+                .Append(type ?? GetColumnType(schema, table, name, clrType, unicode, maxLength, rowVersion, model));
+
+            if (!nullable)
             {
-                if (type == "longtext")
-                {
-                    defaultValue = null;
-                }
+                builder.Append(" NOT NULL");
             }
 
-            base.ColumnDefinition(schema, table, name, clrType, type, unicode, maxLength, rowVersion, nullable, defaultValue, defaultValueSql, computedColumnSql, annotatable, model, builder);
+            if (defaultValueSql != null)
+            {
+                builder
+                    .Append(" DEFAULT ")
+                    .Append(defaultValueSql);
+            }
+            else if (defaultValue != null)
+            {
+                builder
+                    .Append(" DEFAULT ")
+                    .Append(SqlGenerationHelper.GenerateLiteral(defaultValue));
+            }
         }
 
         protected override void DefaultValue(object defaultValue, string defaultValueSql, MigrationCommandListBuilder builder)
