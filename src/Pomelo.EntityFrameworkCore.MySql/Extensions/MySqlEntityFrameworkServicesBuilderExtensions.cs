@@ -50,6 +50,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AddScoped<TableNameFromDbSetConvention>()
                 .AddScoped<IMySqlUpdateSqlGenerator, MySqlUpdateSqlGenerator>()
                 .AddScoped<MySqlModificationCommandBatchFactory>()
+                .AddScoped<MySqlValueGeneratorSelector>()
                 .AddScoped<MySqlDatabaseProviderServices>()
                 .AddScoped<MySqlRelationalConnection>()
                 .AddScoped<MySqlDatabaseCreator>()

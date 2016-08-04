@@ -52,5 +52,6 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         public override IMemberTranslator CompositeMemberTranslator => GetService<MySqlCompositeMemberTranslator>();
         public override IQueryCompilationContextFactory QueryCompilationContextFactory => GetService<MySqlQueryCompilationContextFactory>();
         public override IQuerySqlGeneratorFactory QuerySqlGeneratorFactory => GetService<MySqlQuerySqlGenerationHelperFactory>();
+        public override IValueGeneratorSelector ValueGeneratorSelector => GetService<MySqlValueGeneratorSelector>();
     }
 }

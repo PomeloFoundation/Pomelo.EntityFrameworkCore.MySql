@@ -64,7 +64,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
         {
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
-            
+
             var type = operation.ColumnType;
             if (operation.ColumnType == null)
             {
@@ -133,7 +133,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             {
                 builder.Append(" DROP DEFAULT;");
             }
-            
+
             EndStatement(builder);
         }
 
@@ -314,17 +314,15 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(clrType, nameof(clrType));
             Check.NotNull(builder, nameof(builder));
 
-            bool IsPrimaryKey = false;
             if (type == null)
             {
                 var property = FindProperty(model, schema, table, name);
                 type = TypeMapper.FindMapping(property).StoreType;
-                IsPrimaryKey = property.IsPrimaryKey();
             }
 
-            var valueGeneration = annotatable[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd];
-            var generatedOnAdd = valueGeneration != null && (bool)valueGeneration;
-            if (generatedOnAdd && IsPrimaryKey)
+            var generatedOnAddAnnotation = annotatable[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd];
+            var generatedOnAdd = generatedOnAddAnnotation != null && (bool)generatedOnAddAnnotation;
+            if (generatedOnAdd && string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
             {
                 switch (type)
                 {
