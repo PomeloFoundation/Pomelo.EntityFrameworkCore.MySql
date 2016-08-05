@@ -122,7 +122,6 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     case "char(38)":
                     case "uuid":
                     case "uniqueidentifier":
-                        builder.Append("UUID()");
                         break;
                     default:
                         throw new NotImplementedException($"Not supporting creating IsIdentity for {type}");
