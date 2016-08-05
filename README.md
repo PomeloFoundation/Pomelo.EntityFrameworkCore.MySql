@@ -12,7 +12,7 @@ Pomelo.EntityFrameworkCore.MySql is an Entity Framework Core provider built on t
 You are able to use MySQL in Entity Framework Core now, We have implemented MySQL Entity Framework Core interfaces. By using a few of lines to makes your project invoke Entity Framework Core with MySQL database. There is a console application sample for accessing MySQL database by using Entity Framework:
 
 ① Ensure `utf8` is your MySQL database default charset.
-```
+```sql
 show variables like 'character_set_database';
 ```
 
