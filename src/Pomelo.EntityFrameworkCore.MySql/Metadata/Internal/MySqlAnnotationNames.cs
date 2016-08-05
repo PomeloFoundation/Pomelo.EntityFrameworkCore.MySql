@@ -9,6 +9,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
         public const string Prefix = "MySql:";
         public const string Serial = "Serial";
         public const string ValueGeneratedOnAdd = "ValueGeneratedOnAdd";
+        public const string ValueGeneratedOnAddOrUpdate = "ValueGeneratedOnAddOrUpdate";
         public const string DefaultSequenceName = "DefaultSequenceName";
         public const string DefaultSequenceSchema = "DefaultSequenceSchema";
         public const string SequenceName = "SequenceName";

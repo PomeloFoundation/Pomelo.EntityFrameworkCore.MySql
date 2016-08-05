@@ -73,7 +73,7 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
                 }
                 else if (readOperations.Length > 0)
                 {
-                    AppendOutputClause(commandStringBuilder, name, schema, readOperations, operations);
+                    AppendInsertOutputClause(commandStringBuilder, name, schema, readOperations, operations);
                     resultSetCreated = true;
                 }
             }
@@ -102,24 +102,55 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
             var readOperations = operations.Where(o => o.IsRead).ToArray();
 
             AppendUpdateCommandHeader(commandStringBuilder, name, schema, writeOperations);
-            /*if (readOperations.Length > 0)
-            {
-                AppendOutputClause(commandStringBuilder, readOperations);
-            }*/
+
             AppendWhereClause(commandStringBuilder, conditionOperations);
             commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
 
-            if (readOperations.Length == 0)
-            {
-                return AppendSelectAffectedCountCommand(commandStringBuilder, name, schema, commandPosition);
-            }
+            commandStringBuilder
+                .Append("SELECT ");
+
+            AppendUpdateOutputClause(commandStringBuilder, schema, name, readOperations, operations);
+
             return ResultSetMapping.LastInResultSet;
         }
 
+        private void AppendUpdateOutputClause(StringBuilder commandStringBuilder, string schema, string name, IReadOnlyList<ColumnModification> readOperations, IReadOnlyList<ColumnModification> allOperations)
+        {
+            if (readOperations.Count() > 0)
+            {
+                foreach (var x in readOperations)
+                {
+                    commandStringBuilder.Append($"{ SqlGenerationHelper.DelimitIdentifier(x.ColumnName) }, ");
+                }
+
+                commandStringBuilder.Append("ROW_COUNT()");
+
+                commandStringBuilder
+                    .Append($" FROM { SqlGenerationHelper.DelimitIdentifier(name) }")
+                    .Append(" WHERE ");
+
+                var predicates = new List<string>();
+                foreach (var x in allOperations.Where(y => y.IsKey))
+                {
+                    predicates.Add($"{SqlGenerationHelper.DelimitIdentifier(x.ColumnName)} = @{ x.ParameterName }");
+                }
+
+                commandStringBuilder
+                    .Append(string.Join(" AND ", predicates));
+            }
+            else
+            {
+                commandStringBuilder
+                    .Append("ROW_COUNT()");
+            }
+
+            commandStringBuilder
+                    .Append(SqlGenerationHelper.StatementTerminator);
+        }
 
 
         // ReSharper disable once ParameterTypeCanBeEnumerable.Local
-        private void AppendOutputClause(
+        private void AppendInsertOutputClause(
             StringBuilder commandStringBuilder,
             string name,
             string schema,

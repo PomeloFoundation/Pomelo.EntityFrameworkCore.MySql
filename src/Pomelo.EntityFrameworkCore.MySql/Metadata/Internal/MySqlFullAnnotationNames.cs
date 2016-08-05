@@ -17,6 +17,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
             MySqlExtensionPrefix = prefix + MySqlAnnotationNames.MySqlExtensionPrefix;
             DatabaseTemplate = prefix + MySqlAnnotationNames.DatabaseTemplate;
             ValueGeneratedOnAdd = prefix + MySqlAnnotationNames.ValueGeneratedOnAdd;
+            ValueGeneratedOnAddOrUpdate = prefix + MySqlAnnotationNames.ValueGeneratedOnAddOrUpdate;
         }
 
         public new static MySqlFullAnnotationNames Instance { get; } = new MySqlFullAnnotationNames(MySqlAnnotationNames.Prefix);
@@ -30,5 +31,6 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
         public readonly string MySqlExtensionPrefix;
         public readonly string DatabaseTemplate;
         public readonly string ValueGeneratedOnAdd;
+        public readonly string ValueGeneratedOnAddOrUpdate;
     }
 }

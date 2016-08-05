@@ -322,6 +322,8 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             var generatedOnAddAnnotation = annotatable[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd];
             var generatedOnAdd = generatedOnAddAnnotation != null && (bool)generatedOnAddAnnotation;
+            var generatedOnAddOrUpdateAnnotation = annotatable[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAddOrUpdate];
+            var generatedOnAddOrUpdate = generatedOnAddOrUpdateAnnotation != null && (bool)generatedOnAddOrUpdateAnnotation;
             if (generatedOnAdd && string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
             {
                 switch (type)
@@ -337,6 +339,26 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     case "smallint":
                     case "int2":
                         type = "short AUTO_INCREMENT";
+                        break;
+                    case "datetime":
+                    case "timestamp":
+                        defaultValueSql = "CURRENT_TIMESTAMP";
+                        break;
+
+                }
+            }
+
+            string onUpdateSql = null;
+
+            if (generatedOnAddOrUpdate)
+            {
+                switch (type)
+                {
+                    case "datetime":
+                    case "timestamp":
+                        if (string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
+                            defaultValueSql = "CURRENT_TIMESTAMP";
+                        onUpdateSql = "CURRENT_TIMESTAMP";
                         break;
                 }
             }
@@ -362,6 +384,12 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 builder
                     .Append(" DEFAULT ")
                     .Append(SqlGenerationHelper.GenerateLiteral(defaultValue));
+            }
+            if (onUpdateSql != null)
+            {
+                builder
+                    .Append(" ON UPDATE ")
+                    .Append(onUpdateSql);
             }
         }
 

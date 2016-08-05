@@ -19,6 +19,8 @@ namespace Microsoft.EntityFrameworkCore.Migrations.Internal
             // So we add a custom annotation here to pass the information.
             if (property.ValueGenerated == ValueGenerated.OnAdd)
                 yield return new Annotation(MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd, true);
+            else if (property.ValueGenerated == ValueGenerated.OnAddOrUpdate)
+                yield return new Annotation(MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAddOrUpdate, true);
         }
 
         public override IEnumerable<IAnnotation> For(IIndex index)
