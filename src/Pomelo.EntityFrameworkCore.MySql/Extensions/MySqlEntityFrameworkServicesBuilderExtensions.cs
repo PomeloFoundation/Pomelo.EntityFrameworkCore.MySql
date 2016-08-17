@@ -61,7 +61,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services
                 .AddScoped<IChangeDetector, MySqlChangeDetector>()
-                .AddScoped<IPropertyListener, IChangeDetector>(p => p.GetService<IChangeDetector>());
+                .AddScoped<IPropertyListener, IChangeDetector>(p => p.GetService<IChangeDetector>())
+                .AddScoped<MySqlMigrationsModelDiffer>()
+                .AddScoped<IMigrationsModelDiffer, MySqlMigrationsModelDiffer>();
 
             return services;
         }
