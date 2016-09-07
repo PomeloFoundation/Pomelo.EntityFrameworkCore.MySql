@@ -4,9 +4,8 @@
 using System.Data.Common;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.Logging;
-using Pomelo.Data.MySql;
+using MySql.Data.MySqlClient;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Storage.Internal
@@ -39,7 +38,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             };
             
             var optionsBuilder = new DbContextOptionsBuilder();
-            optionsBuilder.UseMySql(csb.GetConnectionString(true));
+            optionsBuilder.UseMySql(csb.ConnectionString);
             return new MySqlRelationalConnection(optionsBuilder.Options, Logger);
         }
     }

@@ -10,8 +10,9 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Utilities;
-using Pomelo.Data.MySql;
+using MySql.Data.MySqlClient;
 
+// ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Storage.Internal
 {
     /// <summary>
@@ -218,7 +219,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             }
         }
 
-        private IReadOnlyList<MigrationCommand> CreateDropCommands()
+        private IEnumerable<MigrationCommand> CreateDropCommands()
         {
             var operations = new MigrationOperation[]
             {
@@ -232,10 +233,10 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         }
 
         // Clear connection pools in case there are active connections that are pooled
-        private static void ClearAllPools() => MySqlConnection.ClearAllPools();
+        private static void ClearAllPools() => MySqlHelper.ClearConnectionPools();
 
         // Clear connection pool for the database connection since after the 'create database' call, a previously
         // invalid connection may now be valid.
-        private void ClearPool() => MySqlConnection.ClearPool((MySqlConnection)_connection.DbConnection);
+        private void ClearPool() => _connection?.Close();
     }
 }

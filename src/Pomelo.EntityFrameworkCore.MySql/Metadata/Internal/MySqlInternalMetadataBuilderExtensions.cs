@@ -3,6 +3,7 @@
 
 using JetBrains.Annotations;
 
+// ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Metadata.Internal
 {
     public static class MySqlInternalMetadataBuilderExtensions

@@ -7,10 +7,9 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
-using Pomelo.Data.MySql;
+using MySql.Data.MySqlClient;
 
 // ReSharper disable once CheckNamespace
-
 namespace Microsoft.EntityFrameworkCore
 {
     public static class MySqlDbContextOptionsExtensions
@@ -18,7 +17,7 @@ namespace Microsoft.EntityFrameworkCore
         public static DbContextOptionsBuilder UseMySql(
             [NotNull] this DbContextOptionsBuilder optionsBuilder,
             [NotNull] string connectionString,
-            [CanBeNull] Action<MySqlDbContextOptionsBuilder> MySqlOptionsAction = null)
+            [CanBeNull] Action<MySqlDbContextOptionsBuilder> mySqlOptionsAction = null)
         {
             Check.NotNull(optionsBuilder, nameof(optionsBuilder));
             Check.NotEmpty(connectionString, nameof(connectionString));
@@ -33,7 +32,7 @@ namespace Microsoft.EntityFrameworkCore
             extension.ConnectionString = connectionString;
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
 
-            MySqlOptionsAction?.Invoke(new MySqlDbContextOptionsBuilder(optionsBuilder));
+            mySqlOptionsAction?.Invoke(new MySqlDbContextOptionsBuilder(optionsBuilder));
 
             return optionsBuilder;
         }
@@ -41,7 +40,7 @@ namespace Microsoft.EntityFrameworkCore
         public static DbContextOptionsBuilder UseMySql(
             [NotNull] this DbContextOptionsBuilder optionsBuilder,
             [NotNull] DbConnection connection,
-            [CanBeNull] Action<MySqlDbContextOptionsBuilder> MySqlOptionsAction = null)
+            [CanBeNull] Action<MySqlDbContextOptionsBuilder> mySqlOptionsAction = null)
         {
             Check.NotNull(optionsBuilder, nameof(optionsBuilder));
             Check.NotNull(connection, nameof(connection));
@@ -56,7 +55,7 @@ namespace Microsoft.EntityFrameworkCore
             extension.Connection = connection;
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
 
-            MySqlOptionsAction?.Invoke(new MySqlDbContextOptionsBuilder(optionsBuilder));
+            mySqlOptionsAction?.Invoke(new MySqlDbContextOptionsBuilder(optionsBuilder));
 
             return optionsBuilder;
         }
@@ -64,20 +63,20 @@ namespace Microsoft.EntityFrameworkCore
         public static DbContextOptionsBuilder<TContext> UseMySql<TContext>(
             [NotNull] this DbContextOptionsBuilder<TContext> optionsBuilder,
             [NotNull] string connectionString,
-            [CanBeNull] Action<MySqlDbContextOptionsBuilder> MySqlOptionsAction = null)
+            [CanBeNull] Action<MySqlDbContextOptionsBuilder> mySqlOptionsAction = null)
             where TContext : DbContext
         {
             return (DbContextOptionsBuilder<TContext>)UseMySql(
-                (DbContextOptionsBuilder)optionsBuilder, new MySqlConnection(connectionString), MySqlOptionsAction);
+                (DbContextOptionsBuilder)optionsBuilder, new MySqlConnection(connectionString), mySqlOptionsAction);
         }
 
         public static DbContextOptionsBuilder<TContext> UseMySql<TContext>(
             [NotNull] this DbContextOptionsBuilder<TContext> optionsBuilder,
             [NotNull] DbConnection connection,
-            [CanBeNull] Action<MySqlDbContextOptionsBuilder> MySqlOptionsAction = null)
+            [CanBeNull] Action<MySqlDbContextOptionsBuilder> mySqlOptionsAction = null)
             where TContext : DbContext
             => (DbContextOptionsBuilder<TContext>)UseMySql(
-                (DbContextOptionsBuilder)optionsBuilder, connection, MySqlOptionsAction);
+                (DbContextOptionsBuilder)optionsBuilder, connection, mySqlOptionsAction);
 
         private static MySqlOptionsExtension GetOrCreateExtension(DbContextOptionsBuilder optionsBuilder)
         {

@@ -4,6 +4,7 @@
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
+// ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Metadata
 {
     public class MySqlIndexAnnotations : RelationalIndexAnnotations, IMySqlIndexAnnotations

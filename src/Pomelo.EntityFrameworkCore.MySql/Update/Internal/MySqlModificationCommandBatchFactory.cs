@@ -8,31 +8,32 @@ using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
 
+// ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Update.Internal
 {
     public class MySqlModificationCommandBatchFactory : IModificationCommandBatchFactory
     {
         private readonly IRelationalCommandBuilderFactory _commandBuilderFactory;
-        private readonly ISqlGenerationHelper _SqlGenerationHelper;
+        private readonly ISqlGenerationHelper _sqlGenerationHelper;
         private readonly IMySqlUpdateSqlGenerator _updateSqlGenerator;
         private readonly IRelationalValueBufferFactoryFactory _valueBufferFactoryFactory;
         private readonly IDbContextOptions _options;
 
         public MySqlModificationCommandBatchFactory(
             [NotNull] IRelationalCommandBuilderFactory commandBuilderFactory,
-            [NotNull] ISqlGenerationHelper SqlGenerationHelper,
+            [NotNull] ISqlGenerationHelper sqlGenerationHelper,
             [NotNull] IMySqlUpdateSqlGenerator updateSqlGenerator,
             [NotNull] IRelationalValueBufferFactoryFactory valueBufferFactoryFactory,
             [NotNull] IDbContextOptions options)
         {
             Check.NotNull(commandBuilderFactory, nameof(commandBuilderFactory));
-            Check.NotNull(SqlGenerationHelper, nameof(SqlGenerationHelper));
+            Check.NotNull(sqlGenerationHelper, nameof(sqlGenerationHelper));
             Check.NotNull(updateSqlGenerator, nameof(updateSqlGenerator));
             Check.NotNull(valueBufferFactoryFactory, nameof(valueBufferFactoryFactory));
             Check.NotNull(options, nameof(options));
 
             _commandBuilderFactory = commandBuilderFactory;
-            _SqlGenerationHelper = SqlGenerationHelper;
+            _sqlGenerationHelper = sqlGenerationHelper;
             _updateSqlGenerator = updateSqlGenerator;
             _valueBufferFactoryFactory = valueBufferFactoryFactory;
             _options = options;
@@ -44,7 +45,7 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
 
             return new MySqlModificationCommandBatch(
                 _commandBuilderFactory,
-                _SqlGenerationHelper,
+                _sqlGenerationHelper,
                 _updateSqlGenerator,
                 _valueBufferFactoryFactory,
                 optionsExtension?.MaxBatchSize);

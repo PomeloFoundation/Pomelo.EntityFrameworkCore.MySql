@@ -2,11 +2,7 @@
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.Extensions.Logging;
-using Pomelo.Data.MySql;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using MySql.Data.MySqlClient;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Tests
@@ -30,7 +26,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests
             {
                 using (var master = connection.CreateMasterConnection())
                 {
-                    Assert.Equal(@"server=localhost;port=3306;database=mysql;user id=root;password=Password12!;allowuservariables=True;pooling=False", master.ConnectionString);
+                    Assert.Equal(@"Server=localhost;Port=3306;Database=mysql;User Id=root;Password=Password12!;AllowUserVariables=True;Pooling=False", master.ConnectionString);
                 }
             }
         }
