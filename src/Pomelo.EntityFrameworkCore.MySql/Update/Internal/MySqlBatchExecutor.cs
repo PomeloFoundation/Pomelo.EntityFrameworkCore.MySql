@@ -58,7 +58,7 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
       CancellationToken cancellationToken = default(CancellationToken))
     {
       var rowsAffected = 0;
-      await connection.OpenAsync(cancellationToken);
+      await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
       IDbContextTransaction startedTransaction = null;
       try
       {
@@ -69,7 +69,7 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
 
         foreach (var commandbatch in commandBatches)
         {
-          await commandbatch.ExecuteAsync(connection, cancellationToken);
+          await commandbatch.ExecuteAsync(connection, cancellationToken).ConfigureAwait(false);
           rowsAffected += commandbatch.ModificationCommands.Count;
         }
 

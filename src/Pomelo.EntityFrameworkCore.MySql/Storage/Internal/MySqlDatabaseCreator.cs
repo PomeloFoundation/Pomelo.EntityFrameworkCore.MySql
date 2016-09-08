@@ -72,12 +72,13 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             using (var masterConnection = _connection.CreateMasterConnection())
             {
                 await MigrationCommandExecutor
-                    .ExecuteNonQueryAsync(CreateCreateOperations(), masterConnection, cancellationToken);
+                    .ExecuteNonQueryAsync(CreateCreateOperations(), masterConnection, cancellationToken)
+                    .ConfigureAwait(false);
 
                 ClearPool();
             }
 
-            await ExistsAsync(retryOnNotExists: true, cancellationToken: cancellationToken);
+            await ExistsAsync(retryOnNotExists: true, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -92,7 +93,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         protected override async Task<bool> HasTablesAsync(CancellationToken cancellationToken = default(CancellationToken))
-            => (long)await CreateHasTablesCommand().ExecuteScalarAsync(_connection, cancellationToken: cancellationToken) != 0;
+            => (long)await CreateHasTablesCommand().ExecuteScalarAsync(_connection, cancellationToken: cancellationToken).ConfigureAwait(false) != 0;
 
         private IRelationalCommand CreateHasTablesCommand()
             => _rawSqlCommandBuilder
@@ -154,7 +155,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             {
                 try
                 {
-                    await _connection.OpenAsync(cancellationToken);
+                    await _connection.OpenAsync(cancellationToken).ConfigureAwait(false);
                     _connection.Close();
                     return true;
                 }
@@ -215,7 +216,8 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             using (var masterConnection = _connection.CreateMasterConnection())
             {
                 await MigrationCommandExecutor
-                    .ExecuteNonQueryAsync(CreateDropCommands(), masterConnection, cancellationToken);
+                    .ExecuteNonQueryAsync(CreateDropCommands(), masterConnection, cancellationToken)
+                    .ConfigureAwait(false);
             }
         }
 
@@ -233,10 +235,10 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         }
 
         // Clear connection pools in case there are active connections that are pooled
-        private static void ClearAllPools() => MySqlHelper.ClearConnectionPools();
+        private static void ClearAllPools() => MySqlConnection.ClearAllPools();
 
         // Clear connection pool for the database connection since after the 'create database' call, a previously
         // invalid connection may now be valid.
-        private void ClearPool() => _connection?.Close();
+        private void ClearPool() => MySqlConnection.ClearPool(_connection.DbConnection as MySqlConnection);
     }
 }

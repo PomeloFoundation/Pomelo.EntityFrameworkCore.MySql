@@ -45,12 +45,12 @@ namespace System.Linq
 
                 public async Task<bool> MoveNext(CancellationToken cancellationToken)
                 {
-                    if (!await _enumerator.MoveNext(cancellationToken))
+                    if (!await _enumerator.MoveNext(cancellationToken).ConfigureAwait(false))
                     {
                         return false;
                     }
 
-                    Current = await _selector(_enumerator.Current, cancellationToken);
+                    Current = await _selector(_enumerator.Current, cancellationToken).ConfigureAwait(false);
 
                     return true;
                 }

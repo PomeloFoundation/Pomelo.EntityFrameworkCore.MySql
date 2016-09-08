@@ -206,7 +206,7 @@ namespace System
 
     public override int GetHashCode()
     {
-      return Json.GetHashCode();
+      return Json?.GetHashCode() ?? 0;
     }
   }
 }
