@@ -2,6 +2,7 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System.Data.Common;
+using System.Threading;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Logging;
@@ -25,6 +26,9 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             : base(options, logger)
         {
         }
+
+        public readonly SemaphoreSlim Lock = new SemaphoreSlim(1);
+        public MySqlDataReader ActiveReader;
 
         // TODO: Consider using DbProviderFactory to create connection instance
         // Issue #774

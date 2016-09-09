@@ -126,7 +126,14 @@ namespace System
     private Type GetInternalObjectType()
     {
       return _internalType;
+    }
 
+    public static implicit operator JsonObject<T>(byte[] serialized)
+    {
+        return new JsonObject<T>
+        {
+            Json = Text.Encoding.UTF8.GetString(serialized)
+        };
     }
 
     public static implicit operator JsonObject<T>(string json)

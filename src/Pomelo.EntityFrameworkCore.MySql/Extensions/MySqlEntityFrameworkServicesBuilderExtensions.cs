@@ -31,7 +31,8 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             Check.NotNull(services, nameof(services));
 
-            services.AddRelational();
+            services.AddRelational()
+                .AddScoped<IRelationalCommandBuilderFactory, MySqlCommandBuilderFactory>();
 
             services.TryAddEnumerable(ServiceDescriptor
                 .Singleton<IDatabaseProvider, DatabaseProvider<MySqlDatabaseProviderServices, MySqlOptionsExtension>>());
