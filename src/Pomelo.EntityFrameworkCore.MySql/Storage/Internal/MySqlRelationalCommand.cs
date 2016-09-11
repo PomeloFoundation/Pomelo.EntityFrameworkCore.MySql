@@ -43,19 +43,13 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             cancellationToken.ThrowIfCancellationRequested();
             var mySqlConnection = connection as MySqlRelationalConnection;
             var locked = false;
-            object result;
+            object result = null;
             try
             {
                 if (mySqlConnection != null)
                 {
                     await mySqlConnection.Lock.WaitAsync(cancellationToken).ConfigureAwait(false);
                     locked = true;
-                }
-                if (executeMethod == nameof(ExecuteReader) && mySqlConnection != null)
-                {
-                    await mySqlConnection.ActiveReader.WaitDoneReadingAsync(cancellationToken).ConfigureAwait(false);
-                    mySqlConnection.ActiveReader.Dispose();
-                    mySqlConnection.ActiveReader = null;
                 }
                 result = await base.ExecuteAsync(
                     connection,
@@ -65,16 +59,21 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     closeConnection,
                     cancellationToken)
                     .ConfigureAwait(false);
-                if (executeMethod == nameof(ExecuteReader) && mySqlConnection != null)
-                {
-                    mySqlConnection.ActiveReader = ((RelationalDataReader) result).DbDataReader as MySqlDataReader;
-                }
             }
             finally
             {
                 if (locked)
                 {
-                    mySqlConnection.Lock.Release();
+                    if (executeMethod == nameof(ExecuteReader) && result != null)
+                    {
+                        // if calling 'ExecuteReader', transfer ownership of the Semaphore to it until it is disposed
+                        result = new SynchronizedMySqlDataReader((MySqlDataReader) result, mySqlConnection.Lock);
+                    }
+                    else
+                    {
+                        // if calling any other method, the command has finished executing and the lock can be released immediately
+                        mySqlConnection.Lock.Release();
+                    }
                 }
             }
             return result;

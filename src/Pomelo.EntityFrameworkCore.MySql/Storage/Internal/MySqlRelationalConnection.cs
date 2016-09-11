@@ -28,7 +28,6 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         }
 
         public readonly SemaphoreSlim Lock = new SemaphoreSlim(1);
-        public MySqlDataReader ActiveReader;
 
         // TODO: Consider using DbProviderFactory to create connection instance
         // Issue #774
