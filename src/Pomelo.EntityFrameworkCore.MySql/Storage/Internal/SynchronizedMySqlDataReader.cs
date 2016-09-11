@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Data.Common;
 using System.IO;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
@@ -12,7 +13,9 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
     /// <summary>
     /// <see cref="SynchronizedMySqlDataReader"/> wraps <see cref="MySqlDataReader" /> and holds a semaphore
     /// until it is disposed, at which point it is released. This prevents <see cref="MySqlRelationalCommand.ExecuteAsync"/>
-    /// from being entered while there is an active data reader.
+    /// from being entered while there is an active data reader. It also enhances <see cref="GetFieldValue{T}"/> to
+    /// use reflection to cast from <c>byte[]</c> if the regular method fails; this allows JSON objects to be
+    /// deserialized.
     /// </summary>
     public sealed class SynchronizedMySqlDataReader : DbDataReader
     {
@@ -56,8 +59,6 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         public override bool Read() => GetReader().Read();
         public override int Depth => GetReader().Depth;
         public override IEnumerator GetEnumerator() => GetReader().GetEnumerator();
-        public override T GetFieldValue<T>(int ordinal) => GetReader().GetFieldValue<T>(ordinal);
-        public override Task<T> GetFieldValueAsync<T>(int ordinal, CancellationToken cancellationToken) => GetReader().GetFieldValueAsync<T>(ordinal, cancellationToken);
         public override Type GetProviderSpecificFieldType(int ordinal) => GetReader().GetProviderSpecificFieldType(ordinal);
         public override object GetProviderSpecificValue(int ordinal) => GetReader().GetProviderSpecificValue(ordinal);
         public override int GetProviderSpecificValues(object[] values) => GetReader().GetProviderSpecificValues(values);
@@ -67,6 +68,49 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         public override Task<bool> NextResultAsync(CancellationToken cancellationToken) => GetReader().NextResultAsync(cancellationToken);
         public override Task<bool> ReadAsync(CancellationToken cancellationToken) => GetReader().ReadAsync(cancellationToken);
         public override int VisibleFieldCount => GetReader().VisibleFieldCount;
+
+        public override T GetFieldValue<T>(int ordinal)
+        {
+            try
+            {
+                // try normal casting
+                return GetReader().GetFieldValue<T>(ordinal);
+            }
+            catch (InvalidCastException e)
+            {
+                return ConvertWithReflection<T>(ordinal, e);
+            }
+        }
+
+        public override async Task<T> GetFieldValueAsync<T>(int ordinal, CancellationToken cancellationToken)
+        {
+            try
+            {
+                // try normal casting
+                return await GetReader().GetFieldValueAsync<T>(ordinal, cancellationToken).ConfigureAwait(false);
+            }
+            catch (InvalidCastException e)
+            {
+                return ConvertWithReflection<T>(ordinal, e);
+            }
+        }
+
+        private T ConvertWithReflection<T>(int ordinal, InvalidCastException e)
+        {
+            try
+            {
+                // try casting using reflection; needed for json
+                var dataParam = Expression.Parameter(typeof(byte[]), "data");
+                var body = Expression.Block(Expression.Convert(dataParam, typeof(T)));
+                var run = Expression.Lambda(body, dataParam).Compile();
+                return (T) run.DynamicInvoke(GetValue(ordinal));
+            }
+            catch (Exception)
+            {
+                // throw original InvalidCastException
+                throw e;
+            }
+        }
 
         protected override void Dispose(bool disposing)
         {
