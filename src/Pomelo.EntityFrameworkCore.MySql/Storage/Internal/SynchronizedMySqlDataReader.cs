@@ -17,15 +17,15 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
     /// use reflection to cast from <c>byte[]</c> if the regular method fails; this allows JSON objects to be
     /// deserialized.
     /// </summary>
-    public sealed class SynchronizedMySqlDataReader : DbDataReader
+    public class SynchronizedMySqlDataReader : DbDataReader
     {
         private SemaphoreSlim _lock;
         private MySqlDataReader _reader;
 
-        internal SynchronizedMySqlDataReader(MySqlDataReader reader, SemaphoreSlim @lock)
+        internal SynchronizedMySqlDataReader(MySqlDataReader reader, SemaphoreSlim semaphore)
         {
             _reader = reader;
-            _lock = @lock;
+            _lock = semaphore;
         }
 
         public override bool GetBoolean(int ordinal) => GetReader().GetBoolean(ordinal);
@@ -55,8 +55,6 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         public override int RecordsAffected => GetReader().RecordsAffected;
         public override bool HasRows => GetReader().HasRows;
         public override bool IsClosed => _reader == null || _reader.IsClosed;
-        public override bool NextResult() => GetReader().NextResult();
-        public override bool Read() => GetReader().Read();
         public override int Depth => GetReader().Depth;
         public override IEnumerator GetEnumerator() => GetReader().GetEnumerator();
         public override Type GetProviderSpecificFieldType(int ordinal) => GetReader().GetProviderSpecificFieldType(ordinal);
@@ -65,9 +63,60 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         public override Stream GetStream(int ordinal) => GetReader().GetStream(ordinal);
         public override TextReader GetTextReader(int ordinal) => GetReader().GetTextReader(ordinal);
         public override Task<bool> IsDBNullAsync(int ordinal, CancellationToken cancellationToken) => GetReader().IsDBNullAsync(ordinal, cancellationToken);
-        public override Task<bool> NextResultAsync(CancellationToken cancellationToken) => GetReader().NextResultAsync(cancellationToken);
-        public override Task<bool> ReadAsync(CancellationToken cancellationToken) => GetReader().ReadAsync(cancellationToken);
         public override int VisibleFieldCount => GetReader().VisibleFieldCount;
+
+        private bool? _nextResult;
+        private bool PeekNextResult()
+        {
+            if (_nextResult == null)
+            {
+                _nextResult = GetReader().NextResult();
+            }
+            return _nextResult.Value;
+        }
+
+        private async Task<bool> PeekNextResultAsync(CancellationToken cancellationToken)
+        {
+            if (_nextResult == null)
+            {
+                _nextResult = await GetReader().NextResultAsync(cancellationToken).ConfigureAwait(false);
+            }
+            return _nextResult != null && _nextResult.Value;
+        }
+
+        public override bool NextResult()
+        {
+            var result = PeekNextResult();
+            _nextResult = null;
+            return result;
+        }
+
+        public override async Task<bool> NextResultAsync(CancellationToken cancellationToken)
+        {
+            var result = await PeekNextResultAsync(cancellationToken).ConfigureAwait(false);
+            _nextResult = null;
+            return result;
+        }
+
+        public override bool Read()
+        {
+            var result = GetReader().Read();
+            if (!result && !PeekNextResult())
+            {
+                CloseReader();
+            }
+            return result;
+        }
+
+        public override async Task<bool> ReadAsync(CancellationToken cancellationToken)
+        {
+            var result = await GetReader().ReadAsync(cancellationToken).ConfigureAwait(false);
+            if (!result && !await PeekNextResultAsync(cancellationToken).ConfigureAwait(false))
+            {
+                CloseReader();
+            }
+            return result;
+        }
 
         public override T GetFieldValue<T>(int ordinal)
         {
@@ -100,10 +149,10 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             try
             {
                 // try casting using reflection; needed for json
-                var dataParam = Expression.Parameter(typeof(byte[]), "data");
+                var dataParam = Expression.Parameter(typeof(string), "data");
                 var body = Expression.Block(Expression.Convert(dataParam, typeof(T)));
                 var run = Expression.Lambda(body, dataParam).Compile();
-                return (T) run.DynamicInvoke(GetValue(ordinal));
+                return (T) run.DynamicInvoke(GetReader().GetValue(ordinal));
             }
             catch (Exception)
             {
@@ -112,7 +161,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             }
         }
 
-        protected override void Dispose(bool disposing)
+        private void CloseReader()
         {
             try
             {
@@ -131,9 +180,13 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     _lock.Release();
                     _lock = null;
                 }
-
-                base.Dispose(disposing);
             }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            CloseReader();
+            base.Dispose(disposing);
         }
 
         private DbDataReader GetReader()

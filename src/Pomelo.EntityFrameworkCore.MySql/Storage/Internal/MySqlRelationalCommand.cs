@@ -1,9 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Data.Common;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.EntityFrameworkCore.Utilities;
 using MySql.Data.MySqlClient;
 
 // ReSharper disable once CheckNamespace
@@ -40,10 +44,21 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             bool closeConnection,
             CancellationToken cancellationToken = default(CancellationToken))
         {
+            // copied from base method
+            Check.NotNull(connection, nameof(connection));
+            Check.NotEmpty(executeMethod, nameof(executeMethod));
+            var dbCommand = CreateCommand(connection, parameterValues);
+            object result = null;
+            if (openConnection)
+            {
+                await connection.OpenAsync(cancellationToken);
+            }
+            // end copied from base method
+
             cancellationToken.ThrowIfCancellationRequested();
             var mySqlConnection = connection as MySqlRelationalConnection;
             var locked = false;
-            object result = null;
+
             try
             {
                 if (mySqlConnection != null)
@@ -51,32 +66,132 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     await mySqlConnection.Lock.WaitAsync(cancellationToken).ConfigureAwait(false);
                     locked = true;
                 }
-                result = await base.ExecuteAsync(
-                    connection,
-                    executeMethod,
-                    parameterValues,
-                    openConnection,
-                    closeConnection,
-                    cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            finally
-            {
-                if (locked)
+                // copied from base method
+                switch (executeMethod)
                 {
-                    if (executeMethod == nameof(ExecuteReader) && result != null)
+                    case nameof(ExecuteNonQuery):
                     {
-                        // if calling 'ExecuteReader', transfer ownership of the Semaphore to it until it is disposed
-                        result = new SynchronizedMySqlDataReader((MySqlDataReader) result, mySqlConnection.Lock);
+                        using (dbCommand)
+                        {
+                            result = await dbCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                        }
+
+                        break;
                     }
-                    else
+                    case nameof(ExecuteScalar):
                     {
-                        // if calling any other method, the command has finished executing and the lock can be released immediately
-                        mySqlConnection.Lock.Release();
+                        using (dbCommand)
+                        {
+                            result = await dbCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+                        }
+
+                        break;
+                    }
+                    case nameof(ExecuteReader):
+                    {
+                        try
+                        {
+                            // end copied from base method
+                            if (locked)
+                            {
+                                // if calling 'ExecuteReader', transfer ownership of the Semaphore to it until it is disposed
+                                result = new RelationalDataReader(
+                                    openConnection ? connection : null,
+                                    dbCommand,
+                                    new SynchronizedMySqlDataReader(
+                                        await dbCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false) as MySqlDataReader,
+                                        mySqlConnection.Lock));
+                            }
+                            // copied from base method
+                            else
+                            {
+                                result = new RelationalDataReader(
+                                    openConnection ? connection : null,
+                                    dbCommand,
+                                    await dbCommand.ExecuteReaderAsync(cancellationToken));
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            dbCommand.Dispose();
+                            throw;
+                        }
+                        break;
+                    }
+                    default:
+                    {
+                        throw new NotSupportedException();
                     }
                 }
             }
+            catch (Exception)
+            {
+                if (openConnection && !closeConnection)
+                {
+                    connection.Close();
+                }
+                throw;
+            }
+            finally
+            {
+                if (closeConnection)
+                {
+                    connection.Close();
+                }
+                // end copied from base method
+                if (locked && executeMethod != nameof(ExecuteReader))
+                {
+                    // if calling any other method, the command has finished executing and the lock can be released immediately
+                    mySqlConnection.Lock.Release();
+                }
+            }
             return result;
+        }
+
+        private DbCommand CreateCommand(
+            IRelationalConnection connection,
+            IReadOnlyDictionary<string, object> parameterValues)
+        {
+            var command = connection.DbConnection.CreateCommand();
+
+            command.CommandText = CommandText;
+
+            if (connection.CurrentTransaction != null)
+            {
+                command.Transaction = connection.CurrentTransaction.GetDbTransaction();
+            }
+
+            if (connection.CommandTimeout != null)
+            {
+                command.CommandTimeout = (int) connection.CommandTimeout;
+            }
+
+            if (Parameters.Count > 0)
+            {
+                if (parameterValues == null)
+                {
+                    throw new InvalidOperationException(
+                        RelationalStrings.MissingParameterValue(
+                            Parameters[0].InvariantName));
+                }
+
+                foreach (var parameter in Parameters)
+                {
+                    object parameterValue;
+
+                    if (parameterValues.TryGetValue(parameter.InvariantName, out parameterValue))
+                    {
+                        parameter.AddDbParameter(command, parameterValue);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException(
+                            RelationalStrings.MissingParameterValue(parameter.InvariantName));
+                    }
+                }
+            }
+
+            return command;
         }
 
     }
