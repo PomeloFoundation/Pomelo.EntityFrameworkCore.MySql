@@ -3,7 +3,6 @@
 
 using System;
 using System.Linq.Expressions;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query.Expressions;
 using Microsoft.EntityFrameworkCore.Query.Expressions.Internal;
 
@@ -12,7 +11,7 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
 {
     public class MySqlDateTimeNowTranslator : IMemberTranslator
     {
-        public virtual Expression Translate([NotNull] MemberExpression memberExpression)
+        public virtual Expression Translate(MemberExpression memberExpression)
         {
             if (memberExpression.Expression == null
                 && memberExpression.Member.DeclaringType == typeof(DateTime))

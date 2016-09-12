@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Remotion.Linq.Parsing.Structure.NodeTypeProviders;
 
+// ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Query.Internal
 {
     public class MySqlQueryCompilationContextFactory : RelationalQueryCompilationContextFactory

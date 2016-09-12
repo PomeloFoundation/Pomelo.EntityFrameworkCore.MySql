@@ -6,7 +6,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Query.Expressions;
 using Microsoft.EntityFrameworkCore.Query.Expressions.Internal;
 
 // ReSharper disable once CheckNamespace
@@ -14,10 +13,10 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
 {
     public class MySqlRegexIsMatchTranslator : IMethodCallTranslator
     {
-        static readonly MethodInfo IsMatch;
-        static readonly MethodInfo IsMatchWithRegexOptions;
+        private static readonly MethodInfo IsMatch;
+        private static readonly MethodInfo IsMatchWithRegexOptions;
 
-        const RegexOptions UnsupportedRegexOptions = RegexOptions.RightToLeft | RegexOptions.ECMAScript;
+        private const RegexOptions UnsupportedRegexOptions = RegexOptions.RightToLeft | RegexOptions.ECMAScript;
 
         static MySqlRegexIsMatchTranslator()
         {

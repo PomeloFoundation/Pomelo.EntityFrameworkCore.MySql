@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 
 // ReSharper disable once CheckNamespace
-
 namespace System
 {
     [DebuggerStepThrough]

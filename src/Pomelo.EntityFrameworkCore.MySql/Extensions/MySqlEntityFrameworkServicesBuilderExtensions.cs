@@ -23,7 +23,6 @@ using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 // ReSharper disable once CheckNamespace
-
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static class MySqlEntityFrameworkServicesBuilderExtensions
@@ -32,7 +31,8 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             Check.NotNull(services, nameof(services));
 
-            services.AddRelational();
+            services.AddRelational()
+                .AddScoped<IRelationalCommandBuilderFactory, MySqlCommandBuilderFactory>();
 
             services.TryAddEnumerable(ServiceDescriptor
                 .Singleton<IDatabaseProvider, DatabaseProvider<MySqlDatabaseProviderServices, MySqlOptionsExtension>>());

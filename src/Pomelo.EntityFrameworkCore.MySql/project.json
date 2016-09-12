@@ -20,7 +20,8 @@
 
   "dependencies": {
     "Microsoft.EntityFrameworkCore.Relational": "1.0.0",
-    "Pomelo.Data.MySql": "1.0.1-*"
+    "MySqlConnector": "0.1.0-*",
+    "Pomelo.JsonObject": "1.0.0-*"
   },
 
   "frameworks": {
@@ -45,7 +46,7 @@
           "type": "build"
         },
         "System.Runtime": {
-          "version": "4.0.10.0",
+          "version": "4.0.0.0",
           "type": "build"
         }
       }

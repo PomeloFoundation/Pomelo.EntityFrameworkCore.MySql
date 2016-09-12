@@ -2,11 +2,11 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System.Data.Common;
+using System.Threading;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.Logging;
-using Pomelo.Data.MySql;
+using MySql.Data.MySqlClient;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Storage.Internal
@@ -27,6 +27,8 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         {
         }
 
+        public readonly SemaphoreSlim Lock = new SemaphoreSlim(1);
+
         // TODO: Consider using DbProviderFactory to create connection instance
         // Issue #774
         protected override DbConnection CreateDbConnection() => new MySqlConnection(ConnectionString);
@@ -39,7 +41,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             };
             
             var optionsBuilder = new DbContextOptionsBuilder();
-            optionsBuilder.UseMySql(csb.GetConnectionString(true));
+            optionsBuilder.UseMySql(csb.ConnectionString);
             return new MySqlRelationalConnection(optionsBuilder.Options, Logger);
         }
     }

@@ -3,9 +3,7 @@
 
 using System;
 using System.Globalization;
-using System.Linq;
 using System.Text;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Utilities;
 
 // ReSharper disable once CheckNamespace

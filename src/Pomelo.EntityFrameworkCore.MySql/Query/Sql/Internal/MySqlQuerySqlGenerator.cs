@@ -2,14 +2,12 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query.Expressions;
 using Microsoft.EntityFrameworkCore.Query.Expressions.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
 
 // ReSharper disable once CheckNamespace
@@ -23,15 +21,15 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
 
         public MySqlQuerySqlGenerator(
             [NotNull] IRelationalCommandBuilderFactory commandBuilderFactory,
-            [NotNull] ISqlGenerationHelper SqlGenerationHelper,
+            [NotNull] ISqlGenerationHelper sqlGenerationHelper,
             [NotNull] IParameterNameGeneratorFactory parameterNameGeneratorFactory,
             [NotNull] IRelationalTypeMapper relationalTypeMapper,
             [NotNull] SelectExpression selectExpression)
-            : base(commandBuilderFactory, SqlGenerationHelper, parameterNameGeneratorFactory, relationalTypeMapper, selectExpression)
+            : base(commandBuilderFactory, sqlGenerationHelper, parameterNameGeneratorFactory, relationalTypeMapper, selectExpression)
         {
         }
 
-        protected override void GenerateTop([NotNull]SelectExpression selectExpression)
+        protected override void GenerateTop(SelectExpression selectExpression)
         {
            
         }
@@ -48,7 +46,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
         }
 
 
-        protected override void GenerateLimitOffset([NotNull] SelectExpression selectExpression)
+        protected override void GenerateLimitOffset(SelectExpression selectExpression)
         {
             Check.NotNull(selectExpression, nameof(selectExpression));
 

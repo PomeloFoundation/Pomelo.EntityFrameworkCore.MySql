@@ -12,9 +12,9 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
 {
     public class MySqlStringReplaceTranslator : IMethodCallTranslator
     {
-        private static readonly MethodInfo _methodInfo = typeof(string).GetTypeInfo().GetDeclaredMethods(nameof(string.Replace))
-            .Where(m => m.GetParameters()[0].ParameterType == typeof(string))
-            .Single();
+        private static readonly MethodInfo _methodInfo = typeof(string).GetTypeInfo()
+            .GetDeclaredMethods(nameof(string.Replace))
+            .Single(m => m.GetParameters()[0].ParameterType == typeof(string));
 
         public virtual Expression Translate([NotNull] MethodCallExpression methodCallExpression)
         {

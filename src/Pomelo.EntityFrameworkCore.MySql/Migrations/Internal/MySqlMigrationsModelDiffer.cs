@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
 
+// ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Migrations.Internal
 {
     public class MySqlMigrationsModelDiffer : MigrationsModelDiffer

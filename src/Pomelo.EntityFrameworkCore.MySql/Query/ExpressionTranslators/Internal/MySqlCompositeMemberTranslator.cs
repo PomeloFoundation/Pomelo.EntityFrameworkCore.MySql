@@ -10,13 +10,13 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
     {
         public MySqlCompositeMemberTranslator()
         {
-            var MySqlTranslators = new List<IMemberTranslator>
+            var mySqlTranslators = new List<IMemberTranslator>
             {
                 new MySqlStringLengthTranslator(),
                 new MySqlDateTimeNowTranslator()
             };
 
-            AddTranslators(MySqlTranslators);
+            AddTranslators(mySqlTranslators);
         }
     }
 }

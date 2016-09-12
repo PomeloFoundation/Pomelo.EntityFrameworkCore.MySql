@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using JetBrains.Annotations;
 
+// ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Update.Internal
 {
     public interface IMySqlUpdateSqlGenerator : IUpdateSqlGenerator

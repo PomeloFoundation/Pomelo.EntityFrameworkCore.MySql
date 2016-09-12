@@ -10,14 +10,14 @@ using Microsoft.Extensions.DependencyInjection;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Internal
 {
-    public class MySqlOptionsExtension : RelationalOptionsExtension
+    public sealed class MySqlOptionsExtension : RelationalOptionsExtension
     {
         public MySqlOptionsExtension()
         {
-            this.MaxBatchSize = 1;
+            MaxBatchSize = 1;
         }
 
-        public MySqlOptionsExtension([NotNull] MySqlOptionsExtension copyFrom)
+        public MySqlOptionsExtension([NotNull] RelationalOptionsExtension copyFrom)
             : base(copyFrom)
         {
         }

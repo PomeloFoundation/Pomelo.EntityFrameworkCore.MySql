@@ -9,12 +9,13 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
 
+// ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Update.Internal
 {
     public class MySqlUpdateSqlGenerator : UpdateSqlGenerator, IMySqlUpdateSqlGenerator
     {
-        public MySqlUpdateSqlGenerator([NotNull] ISqlGenerationHelper SqlGenerationHelper)
-            : base(SqlGenerationHelper)
+        public MySqlUpdateSqlGenerator([NotNull] ISqlGenerationHelper sqlGenerationHelper)
+            : base(sqlGenerationHelper)
         {
         }
 
@@ -116,7 +117,7 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
 
         private void AppendUpdateOutputClause(StringBuilder commandStringBuilder, string schema, string name, IReadOnlyList<ColumnModification> readOperations, IReadOnlyList<ColumnModification> allOperations)
         {
-            if (readOperations.Count() > 0)
+            if (readOperations.Any())
             {
                 foreach (var x in readOperations)
                 {
