@@ -6,7 +6,7 @@
   },
 
   "packOptions": {
-    "authors": [ "Amamiya Yuuko" ],
+    "authors": [ "AmamiyaYuuko", "caleblloyd", "bgrainger" ],
     "tags": [ "Entity Framework Core", "entity-framework-core", "MySQL", "EF", "ORM", "Data" ],
     "description": "MySQL provider for Entity Framework Core",
     "projectUrl": "https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql",
