@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7E8380DB-F015-407B-99C2-26404E551673}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6EC4A4AA-D865-4EF9-BD52-C2D0AA075CDF}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Pomelo.EntityFrameworkCore.MySql.Tests", "test\Pomelo.EntityFrameworkCore.MySql.Tests\Pomelo.EntityFrameworkCore.MySql.Tests.xproj", "{DE5212AE-4C17-4702-851D-0F1FC0D32E3C}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Pomelo.EntityFrameworkCore.MySql.Functional", "test\Pomelo.EntityFrameworkCore.MySql.Functional\Pomelo.EntityFrameworkCore.MySql.Functional.xproj", "{E7D9C7D9-1CDD-4745-975D-9752AE095418}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,6 +27,10 @@ Global
 		{DE5212AE-4C17-4702-851D-0F1FC0D32E3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DE5212AE-4C17-4702-851D-0F1FC0D32E3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DE5212AE-4C17-4702-851D-0F1FC0D32E3C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7D9C7D9-1CDD-4745-975D-9752AE095418}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7D9C7D9-1CDD-4745-975D-9752AE095418}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7D9C7D9-1CDD-4745-975D-9752AE095418}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7D9C7D9-1CDD-4745-975D-9752AE095418}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -32,5 +38,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{FC2779F0-2A2A-4BE2-B5A8-FDA31A4A404A} = {7E8380DB-F015-407B-99C2-26404E551673}
 		{DE5212AE-4C17-4702-851D-0F1FC0D32E3C} = {6EC4A4AA-D865-4EF9-BD52-C2D0AA075CDF}
+		{E7D9C7D9-1CDD-4745-975D-9752AE095418} = {6EC4A4AA-D865-4EF9-BD52-C2D0AA075CDF}
 	EndGlobalSection
 EndGlobal
