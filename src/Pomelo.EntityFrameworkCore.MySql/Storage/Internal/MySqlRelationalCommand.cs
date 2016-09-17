@@ -181,7 +181,11 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
                     if (parameterValues.TryGetValue(parameter.InvariantName, out parameterValue))
                     {
-                        parameter.AddDbParameter(command, parameterValue);
+                        if (parameterValue.GetType().FullName.StartsWith("System.JsonObject")){
+                            parameter.AddDbParameter(command, parameterValue.ToString());
+                        } else {
+                            parameter.AddDbParameter(command, parameterValue);
+                        }
                     }
                     else
                     {

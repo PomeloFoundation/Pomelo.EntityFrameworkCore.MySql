@@ -1,0 +1,5 @@
+﻿{
+  "Data": {
+    "ConnectionString": "server=127.0.0.1;user id=root;password=abc123;port=3306;database=pomelo_test;"
+  }
+}

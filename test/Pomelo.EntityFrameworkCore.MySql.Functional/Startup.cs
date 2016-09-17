@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Buffers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MySQL.Data.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Functional
 {
@@ -14,12 +14,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Functional
     {
         public Startup(IHostingEnvironment env)
         {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddEnvironmentVariables();
-            Configuration = builder.Build();
+            Configuration = AppConfig.Config;
         }
 
         public IConfigurationRoot Configuration { get; }
@@ -28,7 +23,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.Functional
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
-            services.AddMvc();
+            services.AddMvc(options =>
+            {
+                options.OutputFormatters.Clear();
+                options.OutputFormatters.Add(new JsonOutputFormatter(new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                }, ArrayPool<char>.Shared));
+            });
+            ConfigureEntityFramework(services);
+        }
+
+        public void ConfigureEntityFramework(IServiceCollection services)
+        {
+            if (AppConfig.EfProvider == "oracle")
+            {
+                // Oracle defines this with a case sensitive "MySQL"
+                System.Console.WriteLine("Using Oracle Provider");
+                services.AddEntityFrameworkMySQL();
+            }
+            else
+            {
+                // Pomelo defines this with a case sensitive "MySql" in Microsoft.Extensions.DependencyInjection
+                System.Console.WriteLine("Using Pomelo Provider");
+                services.AddEntityFrameworkMySql();
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
