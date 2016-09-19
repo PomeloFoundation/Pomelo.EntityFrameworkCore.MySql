@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MySQL.Data.EntityFrameworkCore.Extensions;
-using Pomelo.EntityFrameworkCore.MySql.Functional.Models;
+using Pomelo.EntityFrameworkCore.MySql.PerfTests.Models;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Functional
+namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 {
     public class AppDb : DbContext
     {

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Pomelo.EntityFrameworkCore.MySql.Functional.Models;
+using Pomelo.EntityFrameworkCore.MySql.PerfTests.Models;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Functional.Tests.Models
+namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 {
 
     [TestClass]

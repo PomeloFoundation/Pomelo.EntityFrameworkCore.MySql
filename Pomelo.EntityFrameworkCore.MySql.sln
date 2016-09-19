@@ -10,7 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6EC4A4AA-D
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Pomelo.EntityFrameworkCore.MySql.Tests", "test\Pomelo.EntityFrameworkCore.MySql.Tests\Pomelo.EntityFrameworkCore.MySql.Tests.xproj", "{DE5212AE-4C17-4702-851D-0F1FC0D32E3C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Pomelo.EntityFrameworkCore.MySql.Functional", "test\Pomelo.EntityFrameworkCore.MySql.Functional\Pomelo.EntityFrameworkCore.MySql.Functional.xproj", "{E7D9C7D9-1CDD-4745-975D-9752AE095418}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Pomelo.EntityFrameworkCore.MySql.PerfTests", "test\Pomelo.EntityFrameworkCore.MySql.PerfTests\Pomelo.EntityFrameworkCore.MySql.PerfTests.xproj", "{E7D9C7D9-1CDD-4745-975D-9752AE095418}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

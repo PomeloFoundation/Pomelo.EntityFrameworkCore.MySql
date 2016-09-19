@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using MySQL.Data.EntityFrameworkCore;
 using Newtonsoft.Json;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Functional
+namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 {
     public class Startup
     {

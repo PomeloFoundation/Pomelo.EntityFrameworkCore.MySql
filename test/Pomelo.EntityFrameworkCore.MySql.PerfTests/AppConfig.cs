@@ -2,7 +2,7 @@
 using System.IO;
 using Microsoft.Extensions.Configuration;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Functional
+namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 {
     public static class AppConfig
     {

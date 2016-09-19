@@ -2,30 +2,30 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql.Functional.Models;
+using Pomelo.EntityFrameworkCore.MySql.PerfTests.Models;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Functional.Controllers
+namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Controllers
 {
     [Route("api/[controller]")]
-    public class SyncController : Controller
+    public class AsyncController : Controller
     {
-        // GET api/sync
+        // GET api/async
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IActionResult> Get()
         {
             using (var db = new AppDb())
             {
-                return new ObjectResult(db.Blogs.Include(m => m.Posts).OrderByDescending(m => m.BlogId).Take(100).ToList());
+                return new ObjectResult(await db.Blogs.Include(m => m.Posts).OrderByDescending(m => m.BlogId).Take(10).ToListAsync());
             }
         }
 
-        // GET api/sync/5
+        // GET api/async/5
         [HttpGet("{id}")]
-        public IActionResult Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
             using (var db = new AppDb())
             {
-                var model = db.Blogs.Include(m => m.Posts).FirstOrDefault(m => m.BlogId == id);
+                var model = await db.Blogs.Include(m => m.Posts).FirstOrDefaultAsync(m => m.BlogId == id);
                 if (model != null)
                 {
                     return new ObjectResult(model);
@@ -34,47 +34,47 @@ namespace Pomelo.EntityFrameworkCore.MySql.Functional.Controllers
             }
         }
 
-        // POST api/sync
+        // POST api/async
         [HttpPost]
-        public IActionResult Post([FromBody] Blog body)
+        public async Task<IActionResult> Post([FromBody]Blog body)
         {
             using (var db = new AppDb())
             {
                 db.Blogs.Add(body);
-                db.SaveChangesAsync();
+                await db.SaveChangesAsync();
                 return new ObjectResult(body);
             }
         }
 
-        // PUT api/sync/5
+        // PUT api/async/5
         [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] Blog body)
+        public async Task<IActionResult> Put(int id, [FromBody] Blog body)
         {
             using (var db = new AppDb())
             {
-                var model = db.Blogs.Include(m => m.Posts).FirstOrDefault(m => m.BlogId == id);
+                var model = await db.Blogs.Include(m => m.Posts).FirstOrDefaultAsync(m => m.BlogId == id);
                 if (model != null)
                 {
                     model.Title = body.Title;
                     model.Posts = body.Posts;
-                    db.SaveChanges();
+                    await db.SaveChangesAsync();
                     return new ObjectResult(model);
                 }
                 return NotFound();
             }
         }
 
-        // DELETE api/sync/5
+        // DELETE api/async/5
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             using (var db = new AppDb())
             {
-                var model = db.Blogs.FirstOrDefault(m => m.BlogId == id);
+                var model = await db.Blogs.FirstOrDefaultAsync(m => m.BlogId == id);
                 if (model != null)
                 {
                     db.Blogs.Remove(model);
-                    db.SaveChanges();
+                    await db.SaveChangesAsync();
                     return Ok();
                 }
                 return NotFound();

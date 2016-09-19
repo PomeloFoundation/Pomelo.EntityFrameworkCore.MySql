@@ -7,7 +7,7 @@
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>e7d9c7d9-1cdd-4745-975d-9752ae095418</ProjectGuid>
-    <RootNamespace>Pomelo.EntityFrameworkCore.MySql.Functional</RootNamespace>
+    <RootNamespace>Pomelo.EntityFrameworkCore.MySql.PerfTests</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>

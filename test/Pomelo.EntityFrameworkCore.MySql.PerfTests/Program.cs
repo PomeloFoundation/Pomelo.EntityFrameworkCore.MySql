@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Functional
+namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 {
     public class Program
     {
