@@ -1,27 +1,26 @@
-language: csharp
 sudo: required
-dist: trusty
-addons:
-  apt:
-    packages:
-    - gettext
-    - libcurl4-openssl-dev
-    - libicu-dev
-    - libssl-dev
-    - libunwind8
-    - zlib1g
-mono:
-  - 4.0.5
-os:
-  - linux
-osx_image: xcode7.1
+
+services:
+  - docker
+
 branches:
   only:
     - master
     - release
     - dev
     - /^(.*\/)?ci-.*$/
-before_script:
-  - chmod ugo+x build.sh
+
+before_install:
+  - docker pull mysql:5.7
+  - docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -d mysql:5.7
+  - docker pull ubuntu:16.04
+  - docker run -v $(pwd):/dotnet/:rw -e 'CI=True' --name dotnet --link mysql:mysql -d ubuntu:16.04 sh -c 'while true; do sleep 0.1; done'
+  - docker exec -it dotnet sh -c 'apt-get update && apt-get install -y apt-transport-https mono-complete'
+  - docker exec -it dotnet sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ xenial main" > /etc/apt/sources.list.d/dotnetdev.list && apt-key adv --keyserver apt-mo.trafficmanager.net --recv-keys 417A0893 && apt-get update && apt-get install -y dotnet-dev-1.0.0-preview2-003131'
+
 script:
-  - ./build.sh --quiet verify
+  - docker exec -it dotnet sh -c 'cd /dotnet && dotnet restore'
+  - docker exec -it dotnet sh -c 'cd /dotnet/src/Pomelo.EntityFrameworkCore.MySql && dotnet build -c Release'
+  - docker exec -it dotnet sh -c 'cd /dotnet/test/Pomelo.EntityFrameworkCore.MySql.Tests && dotnet test -c Release'
+  - docker exec -it dotnet sh -c 'cd /dotnet/test/Pomelo.EntityFrameworkCore.MySql.PerfTests && sed -i "s/127.0.0.1/mysql/g" config.json.example && dotnet test -c Release;'
+

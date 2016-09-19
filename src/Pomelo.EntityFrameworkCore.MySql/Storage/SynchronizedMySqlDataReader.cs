@@ -66,6 +66,18 @@ namespace Microsoft.EntityFrameworkCore.Storage
         public override Task<bool> IsDBNullAsync(int ordinal, CancellationToken cancellationToken) => GetReader().IsDBNullAsync(ordinal, cancellationToken);
         public override int VisibleFieldCount => GetReader().VisibleFieldCount;
 
+#if NET45
+		public override DataTable GetSchemaTable()
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void Close()
+		{
+			CloseReader();
+		}
+#endif
+
         private bool? _nextResult;
         private bool PeekNextResult()
         {
