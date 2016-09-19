@@ -64,7 +64,7 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
       {
         if (connection.CurrentTransaction == null)
         {
-          startedTransaction = connection.BeginTransaction();
+          startedTransaction = await connection.BeginTransactionAsync().ConfigureAwait(false);
         }
 
         foreach (var commandbatch in commandBatches)
