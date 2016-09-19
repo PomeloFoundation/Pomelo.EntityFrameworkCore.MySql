@@ -23,7 +23,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Models
         public byte[]   TypeByteArray { get; set; }
 
         // json
-        public JsonObject<List<string>>               TypeJsonObj    { get; set; }
-        public JsonObject<Dictionary<string, string>> TypeJsonArray  { get; set; }
+        public JsonObject<List<string>>               TypeJsonArray    { get; set; }
+        public JsonObject<Dictionary<string, string>> TypeJsonObject   { get; set; }
     }
 }

@@ -1,15 +1,14 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Pomelo.EntityFrameworkCore.MySql.PerfTests.Models;
+using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 {
 
-    [TestClass]
     public class DataTypesTest
     {
-        [TestMethod]
+        [Fact]
         public void TestDataTypes()
         {
             using (var db = new AppDb()){
@@ -23,12 +22,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
                     TypeString     = "test",
                     TypeByte       = (byte) 'a',
                     TypeByteArray  = new byte[] { (byte) 'a', (byte) 'b' },
-                    TypeJsonObj    = new JsonObject<List<string>>(new List<string>{ "test" }),     
-                    TypeJsonArray  = new JsonObject<Dictionary<string, string>>(new Dictionary<string, string>(){{ "test", "test" }})
+                    TypeJsonArray  = new JsonObject<List<string>>(new List<string>{ "test" }),
+                    TypeJsonObject = new JsonObject<Dictionary<string, string>>(new Dictionary<string, string>(){{ "test", "test" }})
                 };
                 db.DataTypes.Add(dataTypes);
                 db.SaveChanges();
-                Assert.IsTrue(dataTypes.Id > 0);
+	            Assert.True(dataTypes.Id > 0);
             }
         }
     }
