@@ -51,7 +51,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             object result = null;
             if (openConnection)
             {
-                await connection.OpenAsync(cancellationToken);
+                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
             }
             // end copied from base method
 
@@ -108,7 +108,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                                 result = new RelationalDataReader(
                                     openConnection ? connection : null,
                                     dbCommand,
-                                    await dbCommand.ExecuteReaderAsync(cancellationToken));
+                                    await dbCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false));
                             }
                         }
                         catch (Exception)
@@ -181,7 +181,11 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
                     if (parameterValues.TryGetValue(parameter.InvariantName, out parameterValue))
                     {
-                        parameter.AddDbParameter(command, parameterValue);
+                        if (parameterValue.GetType().FullName.StartsWith("System.JsonObject")){
+                            parameter.AddDbParameter(command, parameterValue.ToString());
+                        } else {
+                            parameter.AddDbParameter(command, parameterValue);
+                        }
                     }
                     else
                     {

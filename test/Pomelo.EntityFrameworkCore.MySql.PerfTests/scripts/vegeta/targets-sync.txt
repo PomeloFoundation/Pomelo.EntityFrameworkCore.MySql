@@ -1,0 +1,15 @@
+POST http://localhost:5000/api/sync
+Content-Type: application/json
+@insert1.json
+
+GET http://localhost:5000/api/sync
+GET http://localhost:5000/api/sync
+GET http://localhost:5000/api/sync
+
+POST http://localhost:5000/api/sync
+Content-Type: application/json
+@insert2.json
+
+GET http://localhost:5000/api/sync
+GET http://localhost:5000/api/sync
+GET http://localhost:5000/api/sync
