@@ -51,7 +51,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             object result = null;
             if (openConnection)
             {
-                await connection.OpenAsync(cancellationToken);
+                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
             }
             // end copied from base method
 
@@ -108,7 +108,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                                 result = new RelationalDataReader(
                                     openConnection ? connection : null,
                                     dbCommand,
-                                    await dbCommand.ExecuteReaderAsync(cancellationToken));
+                                    await dbCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false));
                             }
                         }
                         catch (Exception)

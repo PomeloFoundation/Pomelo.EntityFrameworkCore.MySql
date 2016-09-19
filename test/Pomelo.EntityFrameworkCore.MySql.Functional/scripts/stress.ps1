@@ -15,10 +15,10 @@ Write-Host "Duration = $DURATION"
 Write-Host "Targets = $TARGETS"
 
 # warm up the JIT Compiler
-vegeta attack -targets="targets-async.txt" -rate=10 -duration=1s | Out-Null
+vegeta attack -targets="$TARGETS" -rate=10 -duration=1s | Out-Null
 # run the actual test
 # need to save to results.bin since piping will encode data
-vegeta attack -targets="targets-async.txt" -rate="$RATE" -duration="$DURATION" -output="result.bin"
+vegeta attack -targets="$TARGETS" -rate="$RATE" -duration="$DURATION" -output="result.bin"
 vegeta report -inputs="result.bin"
 rm "result.bin"
 
