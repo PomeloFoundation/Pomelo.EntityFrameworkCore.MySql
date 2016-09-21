@@ -57,7 +57,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
             foreach (var filePath in Directory.GetFiles(Path.Combine(Directory.GetCurrentDirectory(), "Migrations"))){
                 if (filePath.EndsWith(".cs")){
                     var data = File.ReadAllText(filePath);
-                    File.WriteAllText(filePath, "using System.Collections.Generic;" + Environment.NewLine + data);
+	                if (!data.Contains("using System.Collections.Generic;"))
+	                {
+		                File.WriteAllText(filePath, "using System.Collections.Generic;" + Environment.NewLine + data);
+	                }
                 }
             }
 

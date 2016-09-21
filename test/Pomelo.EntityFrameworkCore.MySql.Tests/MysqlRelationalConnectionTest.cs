@@ -13,7 +13,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests
         [Fact]
         public void Creates_Mysql_Server_connection_string()
         {
-            using (var connection = new MySqlRelationalConnection(CreateOptions(), new Logger<MySqlConnection>(new LoggerFactory())))
+            using (var connection = new MySqlRelationalConnection(CreateOptions()))
             {
                 Assert.IsType<MySqlConnection>(connection.DbConnection);
             }
@@ -22,7 +22,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests
         [Fact]
         public void Can_create_master_connection_string()
         {
-            using (var connection = new MySqlRelationalConnection(CreateOptions(), new Logger<MySqlConnection>(new LoggerFactory())))
+            using (var connection = new MySqlRelationalConnection(CreateOptions()))
             {
                 using (var master = connection.CreateMasterConnection())
                 {

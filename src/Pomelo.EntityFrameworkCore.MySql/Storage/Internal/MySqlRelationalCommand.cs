@@ -63,6 +63,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             {
                 if (mySqlConnection != null)
                 {
+	                await mySqlConnection.PoolingOpenAsync(cancellationToken).ConfigureAwait(false);
                     await mySqlConnection.Lock.WaitAsync(cancellationToken).ConfigureAwait(false);
                     locked = true;
                 }
@@ -100,7 +101,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                                     dbCommand,
                                     new SynchronizedMySqlDataReader(
                                         await dbCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false) as MySqlDataReader,
-                                        mySqlConnection.Lock));
+                                        mySqlConnection));
                             }
                             // copied from base method
                             else
@@ -143,6 +144,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                 {
                     // if calling any other method, the command has finished executing and the lock can be released immediately
                     mySqlConnection.Lock.Release();
+	                mySqlConnection.PoolingClose();
                 }
             }
             return result;
@@ -181,7 +183,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
                     if (parameterValues.TryGetValue(parameter.InvariantName, out parameterValue))
                     {
-                        if (parameterValue.GetType().FullName.StartsWith("System.JsonObject")){
+                        if (parameterValue != null && parameterValue.GetType().FullName.StartsWith("System.JsonObject")){
                             parameter.AddDbParameter(command, parameterValue.ToString());
                         } else {
                             parameter.AddDbParameter(command, parameterValue);

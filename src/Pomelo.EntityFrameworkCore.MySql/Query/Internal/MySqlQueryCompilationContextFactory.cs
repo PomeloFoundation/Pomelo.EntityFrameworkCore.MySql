@@ -39,7 +39,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
                     EntityQueryModelVisitorFactory,
                     RequiresMaterializationExpressionVisitorFactory,
                     new AsyncLinqOperatorProvider(),
-                    new AsyncQueryMethodProvider(),
+                    new MySqlAsyncQueryMethodProvider(),
                     ContextType,
                     TrackQueryResults)
                 : new MySqlQueryCompilationContext(
@@ -48,7 +48,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
                     EntityQueryModelVisitorFactory,
                     RequiresMaterializationExpressionVisitorFactory,
                     new LinqOperatorProvider(),
-                    new QueryMethodProvider(),
+                    new MySqlQueryMethodProvider(),
                     ContextType,
                     TrackQueryResults);
     }

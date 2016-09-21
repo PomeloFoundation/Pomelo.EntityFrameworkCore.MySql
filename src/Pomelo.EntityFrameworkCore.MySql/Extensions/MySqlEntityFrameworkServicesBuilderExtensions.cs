@@ -12,7 +12,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Internal;
-using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal;
 using Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal;
 using Microsoft.EntityFrameworkCore.Query.Internal;
@@ -33,9 +32,10 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             Check.NotNull(services, nameof(services));
 
-            services.AddRelational()
-                .AddScoped<IRelationalCommandBuilderFactory, MySqlCommandBuilderFactory>()
-                .AddScoped<IIncludeExpressionVisitorFactory, MySqlIncludeExpressionVisitorFactory>();
+	        services.AddRelational()
+		        .AddScoped<IRelationalCommandBuilderFactory, MySqlCommandBuilderFactory>()
+		        .AddScoped<IIncludeExpressionVisitorFactory, MySqlIncludeExpressionVisitorFactory>()
+		        .AddScoped<RelationalQueryContextFactory, MySqlQueryContextFactory>();
 
             services.TryAddEnumerable(ServiceDescriptor
                 .Singleton<IDatabaseProvider, DatabaseProvider<MySqlDatabaseProviderServices, MySqlOptionsExtension>>());

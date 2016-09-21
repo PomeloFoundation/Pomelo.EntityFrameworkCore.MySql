@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -164,6 +166,52 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
            secondCommand.ColumnModifications.Where(o => o.IsWrite).Select(o => o.ColumnName))
          && firstCommand.ColumnModifications.Where(o => o.IsRead).Select(o => o.ColumnName).SequenceEqual(
            secondCommand.ColumnModifications.Where(o => o.IsRead).Select(o => o.ColumnName));
+
+      public override void Execute(IRelationalConnection connection)
+      {
+          var storeCommand = CreateStoreCommand();
+          try
+          {
+              using (var relationalDataReader = storeCommand.RelationalCommand.ExecuteReader(connection, storeCommand.ParameterValues, false))
+              {
+                  Consume(relationalDataReader.DbDataReader);
+              }
+          }
+          catch (DbUpdateException)
+          {
+              throw;
+          }
+          catch (Exception ex)
+          {
+              throw new DbUpdateException(RelationalStrings.UpdateStoreException, ex);
+          }
+      }
+
+      public override async Task ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken = default(CancellationToken))
+      {
+          var storeCommand = CreateStoreCommand();
+          try
+          {
+              var dataReader = await storeCommand.RelationalCommand.ExecuteReaderAsync(connection, storeCommand.ParameterValues, false, cancellationToken).ConfigureAwait(false);
+              try
+              {
+                  await ConsumeAsync(dataReader.DbDataReader, cancellationToken).ConfigureAwait(false);
+              }
+              finally
+              {
+	                while (await dataReader.DbDataReader.NextResultAsync(cancellationToken).ConfigureAwait(false))
+                  dataReader.Dispose();
+              }
+          }
+          catch (DbUpdateException)
+          {
+              throw;
+          }
+          catch (Exception ex)
+          {
+              throw new DbUpdateException(RelationalStrings.UpdateStoreException, ex);
+          }
+      }
 
   }
 }
