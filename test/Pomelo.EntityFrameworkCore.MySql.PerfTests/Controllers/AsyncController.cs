@@ -15,7 +15,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Controllers
         {
             using (var db = new AppDb())
             {
-                return new ObjectResult(await db.Blogs.Include(m => m.Posts).OrderByDescending(m => m.BlogId).Take(10).ToListAsync());
+                return new ObjectResult(await db.Blogs.Include(m => m.Posts).OrderByDescending(m => m.Id).Take(10).ToListAsync());
             }
         }
 
@@ -25,7 +25,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Controllers
         {
             using (var db = new AppDb())
             {
-                var model = await db.Blogs.Include(m => m.Posts).FirstOrDefaultAsync(m => m.BlogId == id);
+                var model = await db.Blogs.Include(m => m.Posts).FirstOrDefaultAsync(m => m.Id == id);
                 if (model != null)
                 {
                     return new ObjectResult(model);
@@ -52,7 +52,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Controllers
         {
             using (var db = new AppDb())
             {
-                var model = await db.Blogs.Include(m => m.Posts).FirstOrDefaultAsync(m => m.BlogId == id);
+                var model = await db.Blogs.Include(m => m.Posts).FirstOrDefaultAsync(m => m.Id == id);
                 if (model != null)
                 {
                     model.Title = body.Title;
@@ -70,7 +70,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Controllers
         {
             using (var db = new AppDb())
             {
-                var model = await db.Blogs.FirstOrDefaultAsync(m => m.BlogId == id);
+                var model = await db.Blogs.FirstOrDefaultAsync(m => m.Id == id);
                 if (model != null)
                 {
                     db.Blogs.Remove(model);
