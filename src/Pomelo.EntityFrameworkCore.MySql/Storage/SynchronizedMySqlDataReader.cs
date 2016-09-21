@@ -83,7 +83,7 @@ namespace Microsoft.EntityFrameworkCore.Storage
         {
             if (_nextResult == null)
             {
-                _nextResult = GetReader().NextResult();
+                _nextResult = _reader != null && GetReader().NextResult();
             }
             return _nextResult.Value;
         }
@@ -92,7 +92,7 @@ namespace Microsoft.EntityFrameworkCore.Storage
         {
             if (_nextResult == null)
             {
-                _nextResult = await GetReader().NextResultAsync(cancellationToken).ConfigureAwait(false);
+                _nextResult = _reader != null && await GetReader().NextResultAsync(cancellationToken).ConfigureAwait(false);
             }
             return _nextResult != null && _nextResult.Value;
         }
@@ -113,8 +113,8 @@ namespace Microsoft.EntityFrameworkCore.Storage
 
         public override bool Read()
         {
-            var result = GetReader().Read();
-            if (!result && !PeekNextResult())
+            var result = _reader != null && GetReader().Read();
+            if (!result && _reader != null && !PeekNextResult())
             {
                 CloseReader();
             }
@@ -123,8 +123,8 @@ namespace Microsoft.EntityFrameworkCore.Storage
 
         public override async Task<bool> ReadAsync(CancellationToken cancellationToken)
         {
-            var result = await GetReader().ReadAsync(cancellationToken).ConfigureAwait(false);
-            if (!result && !await PeekNextResultAsync(cancellationToken).ConfigureAwait(false))
+            var result = _reader != null && await GetReader().ReadAsync(cancellationToken).ConfigureAwait(false);
+            if (!result && _reader != null && !await PeekNextResultAsync(cancellationToken).ConfigureAwait(false))
             {
                 CloseReader();
             }

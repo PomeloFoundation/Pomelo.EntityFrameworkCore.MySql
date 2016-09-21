@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.PerfTests.Models;
@@ -15,7 +14,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Controllers
         {
             using (var db = new AppDb())
             {
-                return new ObjectResult(db.Blogs.Include(m => m.Posts).OrderByDescending(m => m.BlogId).Take(100).ToList());
+                return new ObjectResult(db.Blogs.Include(m => m.Posts).OrderByDescending(m => m.Id).Take(100).ToList());
             }
         }
 
@@ -25,7 +24,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Controllers
         {
             using (var db = new AppDb())
             {
-                var model = db.Blogs.Include(m => m.Posts).FirstOrDefault(m => m.BlogId == id);
+                var model = db.Blogs.Include(m => m.Posts).FirstOrDefault(m => m.Id == id);
                 if (model != null)
                 {
                     return new ObjectResult(model);
@@ -52,7 +51,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Controllers
         {
             using (var db = new AppDb())
             {
-                var model = db.Blogs.Include(m => m.Posts).FirstOrDefault(m => m.BlogId == id);
+                var model = db.Blogs.Include(m => m.Posts).FirstOrDefault(m => m.Id == id);
                 if (model != null)
                 {
                     model.Title = body.Title;
@@ -70,7 +69,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Controllers
         {
             using (var db = new AppDb())
             {
-                var model = db.Blogs.FirstOrDefault(m => m.BlogId == id);
+                var model = db.Blogs.FirstOrDefault(m => m.Id == id);
                 if (model != null)
                 {
                     db.Blogs.Remove(model);
