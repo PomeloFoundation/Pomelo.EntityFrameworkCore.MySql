@@ -20,13 +20,16 @@ namespace Microsoft.EntityFrameworkCore.Storage
     /// </summary>
     public class SynchronizedMySqlDataReader : DbDataReader
     {
+        private readonly MySqlRelationalConnection _connection;
         private SemaphoreSlim _lock;
         private MySqlDataReader _reader;
+        private bool _disposed;
 
-        internal SynchronizedMySqlDataReader(MySqlDataReader reader, SemaphoreSlim semaphore)
+        internal SynchronizedMySqlDataReader(MySqlDataReader reader, MySqlRelationalConnection connection)
         {
             _reader = reader;
-            _lock = semaphore;
+            _connection = connection;
+            _lock = _connection.Lock;
         }
 
         public override bool GetBoolean(int ordinal) => GetReader().GetBoolean(ordinal);
@@ -100,6 +103,10 @@ namespace Microsoft.EntityFrameworkCore.Storage
         public override bool NextResult()
         {
             var result = PeekNextResult();
+	        if (!result)
+	        {
+		        CloseReader();
+	        }
             _nextResult = null;
             return result;
         }
@@ -107,7 +114,11 @@ namespace Microsoft.EntityFrameworkCore.Storage
         public override async Task<bool> NextResultAsync(CancellationToken cancellationToken)
         {
             var result = await PeekNextResultAsync(cancellationToken).ConfigureAwait(false);
-            _nextResult = null;
+	        if (!result)
+	        {
+		        CloseReader();
+	        }
+	        _nextResult = null;
             return result;
         }
 
@@ -116,7 +127,7 @@ namespace Microsoft.EntityFrameworkCore.Storage
             var result = GetReader().Read();
             if (!result && !PeekNextResult())
             {
-                CloseReader();
+	            CloseReader();
             }
             return result;
         }
@@ -192,14 +203,19 @@ namespace Microsoft.EntityFrameworkCore.Storage
                     // release the shared lock, so another statement can be executed
                     _lock.Release();
                     _lock = null;
+	                _connection.PoolingClose();
                 }
             }
         }
 
         protected override void Dispose(bool disposing)
         {
-            CloseReader();
-            base.Dispose(disposing);
+            if (disposing && !_disposed)
+            {
+                CloseReader();
+                base.Dispose(disposing);
+                _disposed = true;
+            }
         }
 
         private DbDataReader GetReader()
