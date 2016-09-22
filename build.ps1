@@ -34,7 +34,7 @@ $repoFolder = $PSScriptRoot
 $env:REPO_FOLDER = $repoFolder
 
 if ($env:BuildRunner -eq "MyGet"){
-    Remove-Item -Force -Recurse (Join-Path $PSScriptRoot "test" "Pomelo.EntityFrameworkCore.MySql.PerfTests")
+    Remove-Item -Force -Recurse (Join-Path $PSScriptRoot (Join-Path "test" "Pomelo.EntityFrameworkCore.MySql.PerfTests"))
 }
 
 $koreBuildZip="https://github.com/PomeloFoundation/KoreBuild/releases/download/1.0.0/KoreBuild-1.0.0.zip"
