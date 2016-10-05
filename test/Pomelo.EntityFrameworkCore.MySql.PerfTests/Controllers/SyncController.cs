@@ -40,7 +40,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Controllers
             using (var db = new AppDb())
             {
                 db.Blogs.Add(body);
-                db.SaveChangesAsync();
+                db.SaveChanges();
                 return new ObjectResult(body);
             }
         }
