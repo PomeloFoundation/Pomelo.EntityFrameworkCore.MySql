@@ -24,36 +24,49 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         {
         }
 
-        protected override object Execute(
-            [NotNull] IRelationalConnection connection,
-            [NotNull] string executeMethod,
-            [CanBeNull] IReadOnlyDictionary<string, object> parameterValues,
-            bool openConnection,
-            bool closeConnection)
-        {
-            return ExecuteAsync(connection, executeMethod, parameterValues, openConnection, closeConnection)
-                .GetAwaiter()
-                .GetResult();
-        }
+	    protected override object Execute(
+		    [NotNull] IRelationalConnection connection,
+		    [NotNull] string executeMethod,
+		    [CanBeNull] IReadOnlyDictionary<string, object> parameterValues,
+		    bool openConnection,
+		    bool closeConnection)
+	    {
+		    return ExecuteAsync(IOBehavior.Synchronous, connection, executeMethod, parameterValues, openConnection, closeConnection)
+			    .GetAwaiter()
+			    .GetResult();
+	    }
 
-        protected override async Task<object> ExecuteAsync(
-            [NotNull] IRelationalConnection connection,
-            [NotNull] string executeMethod,
-            [CanBeNull] IReadOnlyDictionary<string, object> parameterValues,
-            bool openConnection,
-            bool closeConnection,
-            CancellationToken cancellationToken = default(CancellationToken))
-        {
-            // copied from base method
+	    protected override async Task<object> ExecuteAsync(
+		    [NotNull] IRelationalConnection connection,
+		    [NotNull] string executeMethod,
+		    [CanBeNull] IReadOnlyDictionary<string, object> parameterValues,
+		    bool openConnection,
+		    bool closeConnection,
+		    CancellationToken cancellationToken = default(CancellationToken))
+	    {
+		    return await ExecuteAsync(IOBehavior.Asynchronous, connection, executeMethod, parameterValues, openConnection, closeConnection, cancellationToken).ConfigureAwait(false);
+	    }
+
+	    private async Task<object> ExecuteAsync(
+		    IOBehavior ioBehavior,
+		    [NotNull] IRelationalConnection connection,
+		    [NotNull] string executeMethod,
+		    [CanBeNull] IReadOnlyDictionary<string, object> parameterValues,
+		    bool openConnection,
+		    bool closeConnection,
+		    CancellationToken cancellationToken = default(CancellationToken))
+	    {
             Check.NotNull(connection, nameof(connection));
             Check.NotEmpty(executeMethod, nameof(executeMethod));
             var dbCommand = CreateCommand(connection, parameterValues);
-            object result = null;
+            object result;
             if (openConnection)
             {
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+	            if (ioBehavior == IOBehavior.Asynchronous)
+		            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+	            else
+		            connection.Open();
             }
-            // end copied from base method
 
             cancellationToken.ThrowIfCancellationRequested();
             var mySqlConnection = connection as MySqlRelationalConnection;
@@ -61,56 +74,55 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
             try
             {
-                if (mySqlConnection != null)
-                {
-	                await mySqlConnection.PoolingOpenAsync(cancellationToken).ConfigureAwait(false);
-                    await mySqlConnection.Lock.WaitAsync(cancellationToken).ConfigureAwait(false);
-                    locked = true;
-                }
-                // copied from base method
+	            if (ioBehavior == IOBehavior.Asynchronous)
+	            {
+		            // ReSharper disable once PossibleNullReferenceException
+		            await mySqlConnection.PoolingOpenAsync(cancellationToken).ConfigureAwait(false);
+		            await mySqlConnection.Lock.WaitAsync(cancellationToken).ConfigureAwait(false);
+	            }
+	            else
+	            {
+		            // ReSharper disable once PossibleNullReferenceException
+		            mySqlConnection.PoolingOpen();
+		            mySqlConnection.Lock.Wait(cancellationToken);
+	            }
+	            locked = true;
                 switch (executeMethod)
                 {
                     case nameof(ExecuteNonQuery):
                     {
                         using (dbCommand)
                         {
-                            result = await dbCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+	                        if (ioBehavior == IOBehavior.Asynchronous)
+		                        result = await dbCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+	                        else
+		                        result = dbCommand.ExecuteNonQuery();
                         }
-
                         break;
                     }
                     case nameof(ExecuteScalar):
                     {
                         using (dbCommand)
                         {
-                            result = await dbCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+	                        if (ioBehavior == IOBehavior.Asynchronous)
+		                        result = await dbCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+	                        else
+		                        result = dbCommand.ExecuteScalar();
                         }
-
                         break;
                     }
                     case nameof(ExecuteReader):
                     {
                         try
                         {
-                            // end copied from base method
-                            if (locked)
-                            {
-                                // if calling 'ExecuteReader', transfer ownership of the Semaphore to it until it is disposed
-                                result = new RelationalDataReader(
-                                    openConnection ? connection : null,
-                                    dbCommand,
-                                    new SynchronizedMySqlDataReader(
-                                        await dbCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false) as MySqlDataReader,
-                                        mySqlConnection));
-                            }
-                            // copied from base method
-                            else
-                            {
-                                result = new RelationalDataReader(
-                                    openConnection ? connection : null,
-                                    dbCommand,
-                                    await dbCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false));
-                            }
+	                        MySqlDataReader dataReader;
+	                        if (ioBehavior == IOBehavior.Asynchronous)
+		                        dataReader = await dbCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false) as MySqlDataReader;
+	                        else
+		                        dataReader = dbCommand.ExecuteReader() as MySqlDataReader;
+
+	                        result = new RelationalDataReader(openConnection ? connection : null, dbCommand,
+                                new SynchronizedMySqlDataReader(dataReader, mySqlConnection));
                         }
                         catch (Exception)
                         {
@@ -135,15 +147,15 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             }
             finally
             {
-                if (closeConnection)
+	            if (closeConnection)
                 {
                     connection.Close();
                 }
-                // end copied from base method
                 if (locked && executeMethod != nameof(ExecuteReader))
                 {
                     // if calling any other method, the command has finished executing and the lock can be released immediately
-                    mySqlConnection.Lock.Release();
+	                // ReSharper disable once PossibleNullReferenceException
+	                mySqlConnection.Lock.Release();
 	                mySqlConnection.PoolingClose();
                 }
             }
@@ -172,9 +184,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             {
                 if (parameterValues == null)
                 {
-                    throw new InvalidOperationException(
-                        RelationalStrings.MissingParameterValue(
-                            Parameters[0].InvariantName));
+                    throw new InvalidOperationException(RelationalStrings.MissingParameterValue(Parameters[0].InvariantName));
                 }
 
                 foreach (var parameter in Parameters)

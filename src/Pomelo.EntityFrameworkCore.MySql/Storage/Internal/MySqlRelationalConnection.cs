@@ -54,16 +54,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             }
         }
 
-        public DbConnection DbConnection {
-            get
-            {
-                if (_connection == null)
-                {
-                    _connection = new MySqlConnection(ConnectionString);
-                }
-                return _connection;
-            }
-        }
+        public DbConnection DbConnection => _connection ?? (_connection = new MySqlConnection(ConnectionString));
 
 	    private MySqlConnection MySqlDbConnection => DbConnection as MySqlConnection;
 
@@ -74,7 +65,6 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                 Database = "mysql",
                 Pooling = false
             };
-
             var optionsBuilder = new DbContextOptionsBuilder();
             optionsBuilder.UseMySql(csb.ConnectionString);
             return new MySqlRelationalConnection(optionsBuilder.Options);
@@ -134,13 +124,9 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
         private IDbContextTransaction BeginTransactionWithNoPreconditions(IsolationLevel isolationLevel)
         {
-            CurrentTransaction
-                = new MySqlRelationalTransaction(
-                    this,
-                    // ReSharper disable once AssignNullToNotNullAttribute
-                    MySqlDbConnection.BeginTransaction(isolationLevel) as MySqlTransaction, true);
-
-            return CurrentTransaction;
+	        // ReSharper disable once AssignNullToNotNullAttribute
+	        CurrentTransaction = new MySqlRelationalTransaction(this, MySqlDbConnection.BeginTransaction(isolationLevel) as MySqlTransaction, true);
+	        return CurrentTransaction;
         }
 
 	    private async Task<IDbContextTransaction> BeginTransactionWithNoPreconditionsAsync(
@@ -362,16 +348,16 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
         public IValueBufferCursor ActiveCursor { get; set; }
 
-        public virtual void Dispose()
-        {
-            CurrentTransaction?.Dispose();
-            if (_connectionOwned && _connection != null)
-            {
-                _connection.Dispose();
-                _connection = null;
-                _openedCount = 0;
-            }
-        }
+	    public virtual void Dispose()
+	    {
+		    CurrentTransaction?.Dispose();
+		    if (_connectionOwned && _connection != null)
+		    {
+			    _connection.Dispose();
+			    _connection = null;
+			    _openedCount = 0;
+		    }
+	    }
 
     }
 }
