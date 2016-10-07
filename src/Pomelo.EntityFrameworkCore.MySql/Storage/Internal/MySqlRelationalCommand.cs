@@ -193,11 +193,21 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
                     if (parameterValues.TryGetValue(parameter.InvariantName, out parameterValue))
                     {
-                        if (parameterValue != null && parameterValue.GetType().FullName.StartsWith("System.JsonObject")){
-                            parameter.AddDbParameter(command, parameterValue.ToString());
-                        } else {
-                            parameter.AddDbParameter(command, parameterValue);
-                        }
+	                    if (parameterValue != null)
+	                    {
+		                    if (parameterValue is char)
+			                    parameter.AddDbParameter(command, Convert.ToByte((char)parameterValue));
+		                    else if (parameterValue is DateTimeOffset)
+			                    parameter.AddDbParameter(command, ((DateTimeOffset) parameterValue).ToUnixTimeMilliseconds());
+		                    else if (parameterValue.GetType().FullName.StartsWith("System.JsonObject"))
+			                    parameter.AddDbParameter(command, parameterValue.ToString());
+		                    else
+			                    parameter.AddDbParameter(command, parameterValue);
+	                    }
+	                    else
+	                    {
+		                    parameter.AddDbParameter(command, parameterValue);
+	                    }
                     }
                     else
                     {

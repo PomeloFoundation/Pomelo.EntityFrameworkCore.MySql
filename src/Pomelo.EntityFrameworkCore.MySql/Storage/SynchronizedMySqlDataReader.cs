@@ -33,10 +33,10 @@ namespace Microsoft.EntityFrameworkCore.Storage
         }
 
         public override bool GetBoolean(int ordinal) => GetReader().GetBoolean(ordinal);
-        public override byte GetByte(int ordinal) => GetReader().GetByte(ordinal);
-        public override long GetBytes(int ordinal, long dataOffset, byte[] buffer, int bufferOffset, int length) => GetReader().GetBytes(ordinal, dataOffset, buffer, bufferOffset, length);
-        public override char GetChar(int ordinal) => GetReader().GetChar(ordinal);
-        public override long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length) => GetReader().GetChars(ordinal, dataOffset, buffer, bufferOffset, length);
+	    public override byte GetByte(int ordinal) => GetReader().GetByte(ordinal);
+	    public override long GetBytes(int ordinal, long dataOffset, byte[] buffer, int bufferOffset, int length) => GetReader().GetBytes(ordinal, dataOffset, buffer, bufferOffset, length);
+	    public override char GetChar(int ordinal) => Convert.ToChar(GetReader().GetByte(ordinal));
+	    public override long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length) => GetReader().GetChars(ordinal, dataOffset, buffer, bufferOffset, length);
         public override string GetDataTypeName(int ordinal) => GetReader().GetDataTypeName(ordinal);
         public override DateTime GetDateTime(int ordinal) => GetReader().GetDateTime(ordinal);
         public override decimal GetDecimal(int ordinal) => GetReader().GetDecimal(ordinal);
@@ -146,7 +146,11 @@ namespace Microsoft.EntityFrameworkCore.Storage
         {
             try
             {
-                // try normal casting
+	            // try normal casting
+	            if (typeof(T) == typeof(char))
+		            return (T) Convert.ChangeType(Convert.ToChar(GetReader().GetFieldValue<byte>(ordinal)), typeof(T));
+	            if (typeof(T) == typeof(DateTimeOffset))
+		            return (T) Convert.ChangeType(DateTimeOffset.FromUnixTimeMilliseconds(GetReader().GetFieldValue<long>(ordinal)), typeof(T));
                 return GetReader().GetFieldValue<T>(ordinal);
             }
             catch (InvalidCastException e)
@@ -159,7 +163,11 @@ namespace Microsoft.EntityFrameworkCore.Storage
         {
             try
             {
-                // try normal casting
+	            // try normal casting
+	            if (typeof(T) == typeof(char))
+		            return (T) Convert.ChangeType(Convert.ToChar(await GetReader().GetFieldValueAsync<byte>(ordinal, cancellationToken).ConfigureAwait(false)), typeof(T));
+	            if (typeof(T) == typeof(DateTimeOffset))
+		            return (T) Convert.ChangeType(DateTimeOffset.FromUnixTimeMilliseconds(await GetReader().GetFieldValueAsync<long>(ordinal, cancellationToken).ConfigureAwait(false)), typeof(T));
                 return await GetReader().GetFieldValueAsync<T>(ordinal, cancellationToken).ConfigureAwait(false);
             }
             catch (InvalidCastException e)

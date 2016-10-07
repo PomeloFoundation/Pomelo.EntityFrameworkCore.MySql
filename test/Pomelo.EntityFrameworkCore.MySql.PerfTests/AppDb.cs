@@ -15,7 +15,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 		public DbSet<CrmMenu> CrmMenus { get; set; }
 
 		// data types
-		public DbSet<DataTypes> DataTypes { get; set; }
+		public DbSet<DataTypesSimple> DataTypesSimple { get; set; }
+		public DbSet<DataTypesVariable> DataTypesVariable { get; set; }
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
