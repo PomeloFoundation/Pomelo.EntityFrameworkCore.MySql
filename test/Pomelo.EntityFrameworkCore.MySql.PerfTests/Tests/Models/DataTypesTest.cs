@@ -66,6 +66,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 	        const sbyte testSbyte = (sbyte) -128;
 	        const byte testByte = (byte) 255;
 	        const char testChar = 'a';
+	        const float testFloat = (float) 1.23456789e38;
+
 	        // by default, we use second granularity on dateTime
 	        var dateTime = new DateTime(2016, 10, 6, 13, 3, 7);
 	        // we only support up to millisecond granularity on dateTimeOffset
@@ -93,11 +95,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 		        // decimals
 		        TypeDecimal    = decimal.MaxValue,
 		        TypeDouble     = double.MaxValue,
-		        TypeFloat      = float.MaxValue,
+		        TypeFloat      = testFloat,
 		        // nullable decimals
 		        TypeDecimalN   = decimal.MaxValue,
 		        TypeDoubleN    = double.MaxValue,
-		        TypeFloatN     = float.MaxValue,
+		        TypeFloatN     = testFloat,
 
 		        // byte
 		        TypeSbyte      = testSbyte,
@@ -141,11 +143,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 		        // decimals
 		        Assert.Equal(decimal.MaxValue, valueDb.TypeDecimal);
 		        Assert.Equal(double.MaxValue, valueDb.TypeDouble);
-		        Assert.InRange(valueDb.TypeFloat, float.MaxValue * (1 - 7e-1), float.MaxValue); // floats have 7 digits of precision
+		        Assert.InRange(valueDb.TypeFloat, testFloat * (1 - 7e-1), testFloat * (1 + 7e-1)); // floats have 7 digits of precision
 		        // nullable decimals
 		        Assert.Equal(decimal.MaxValue, valueDb.TypeDecimalN);
 		        Assert.Equal(double.MaxValue, valueDb.TypeDoubleN);
-		        Assert.InRange(valueDb.TypeFloatN.GetValueOrDefault(), float.MaxValue * (1 - 7e-1), float.MaxValue); // floats have 7 digits of precision
+		        Assert.InRange(valueDb.TypeFloatN.GetValueOrDefault(), testFloat * (1 - 7e-1), testFloat * (1 + 7e-1)); // floats have 7 digits of precision
 
 		        // byte
 		        Assert.Equal(testSbyte, valueDb.TypeSbyte);
@@ -264,17 +266,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
             Func<DataTypesVariable> newValueMem = () => new DataTypesVariable{
                 // string not null
                 TypeString     = string10K,
-                TypeString255  = string10K, // should be truncated by DBMS
+                TypeString255  = string255, // should be truncated by DBMS
                 // string null
                 TypeStringN    = string10K,
-                TypeString255N = string10K, // should be truncated by DBMS
+                TypeString255N = string255, // should be truncated by DBMS
 
                 // binary not null
                 TypeByteArray     = byte10K,
-                TypeByteArray255  = byte10K, // should be truncated by DBMS
+                TypeByteArray255  = byte255, // should be truncated by DBMS
                 // binary null
                 TypeByteArrayN    = byte10K,
-                TypeByteArray255N = byte10K, // should be truncated by DBMS
+                TypeByteArray255N = byte255, // should be truncated by DBMS
 
                 // json not null
                 TypeJsonArray   = jsonArray,
