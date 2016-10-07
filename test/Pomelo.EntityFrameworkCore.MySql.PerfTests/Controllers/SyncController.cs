@@ -14,7 +14,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Controllers
         {
             using (var db = new AppDb())
             {
-                return new ObjectResult(db.Blogs.Include(m => m.Posts).OrderByDescending(m => m.Id).Take(100).ToList());
+                return new ObjectResult(db.Blogs.Include(m => m.Posts).OrderByDescending(m => m.Id).Take(10).ToList());
             }
         }
 
