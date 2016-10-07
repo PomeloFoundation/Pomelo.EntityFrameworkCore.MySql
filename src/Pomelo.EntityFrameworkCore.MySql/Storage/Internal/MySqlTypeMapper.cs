@@ -57,7 +57,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 	    private readonly RelationalTypeMapping _rowversion       = new RelationalTypeMapping("TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", typeof(byte[]), DbType.Binary);
 
 	    // guid
-	    private readonly RelationalTypeMapping _uniqueidentifier = new RelationalTypeMapping("char(38)", typeof(Guid));
+	    private readonly RelationalTypeMapping _uniqueidentifier = new RelationalTypeMapping("char(36)", typeof(Guid));
 
         readonly Dictionary<string, RelationalTypeMapping> _simpleNameMappings;
         readonly Dictionary<Type, RelationalTypeMapping> _simpleMappings;

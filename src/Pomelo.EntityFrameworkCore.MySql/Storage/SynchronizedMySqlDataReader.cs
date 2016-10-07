@@ -150,7 +150,11 @@ namespace Microsoft.EntityFrameworkCore.Storage
 	            if (typeof(T) == typeof(char))
 		            return (T) Convert.ChangeType(Convert.ToChar(GetReader().GetFieldValue<byte>(ordinal)), typeof(T));
 	            if (typeof(T) == typeof(DateTimeOffset))
+#if NET451
+		            return (T) Convert.ChangeType(Utilities.FromUnixTimeMilliseconds(GetReader().GetFieldValue<long>(ordinal)), typeof(T));
+#else
 		            return (T) Convert.ChangeType(DateTimeOffset.FromUnixTimeMilliseconds(GetReader().GetFieldValue<long>(ordinal)), typeof(T));
+#endif
                 return GetReader().GetFieldValue<T>(ordinal);
             }
             catch (InvalidCastException e)
@@ -167,8 +171,12 @@ namespace Microsoft.EntityFrameworkCore.Storage
 	            if (typeof(T) == typeof(char))
 		            return (T) Convert.ChangeType(Convert.ToChar(await GetReader().GetFieldValueAsync<byte>(ordinal, cancellationToken).ConfigureAwait(false)), typeof(T));
 	            if (typeof(T) == typeof(DateTimeOffset))
+#if NET451
+		            return (T) Convert.ChangeType(Utilities.FromUnixTimeMilliseconds(await GetReader().GetFieldValueAsync<long>(ordinal, cancellationToken).ConfigureAwait(false)), typeof(T));
+#else
 		            return (T) Convert.ChangeType(DateTimeOffset.FromUnixTimeMilliseconds(await GetReader().GetFieldValueAsync<long>(ordinal, cancellationToken).ConfigureAwait(false)), typeof(T));
-                return await GetReader().GetFieldValueAsync<T>(ordinal, cancellationToken).ConfigureAwait(false);
+#endif
+	            return await GetReader().GetFieldValueAsync<T>(ordinal, cancellationToken).ConfigureAwait(false);
             }
             catch (InvalidCastException e)
             {
