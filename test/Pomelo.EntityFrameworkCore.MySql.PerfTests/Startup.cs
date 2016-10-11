@@ -1,12 +1,14 @@
 ﻿using System.Buffers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MySQL.Data.EntityFrameworkCore;
 using Newtonsoft.Json;
+using Pomelo.EntityFrameworkCore.MySql.PerfTests.Models;
 
 namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 {
@@ -32,6 +34,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
                 }, ArrayPool<char>.Shared));
             });
             ConfigureEntityFramework(services);
+
+	        services.AddIdentity<AppIdentityUser, IdentityRole>()
+		        .AddEntityFrameworkStores<AppDb, string>()
+		        .AddDefaultTokenProviders();
         }
 
         public void ConfigureEntityFramework(IServiceCollection services)

@@ -1,10 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MySQL.Data.EntityFrameworkCore.Extensions;
 using Pomelo.EntityFrameworkCore.MySql.PerfTests.Models;
 
 namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 {
-	public class AppDb : DbContext
+	public class AppDb : IdentityDbContext<AppIdentityUser>
 	{
 		// blog
 		public DbSet<Blog> Blogs { get; set; }
@@ -34,6 +35,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
+			base.OnModelCreating(modelBuilder);
+			modelBuilder.Entity<AppIdentityUser>(entity => entity.Property(m => m.Id).HasMaxLength(127));
+			modelBuilder.Entity<IdentityRole>(entity => entity.Property(m => m.Id).HasMaxLength(127));
+			modelBuilder.Entity<IdentityUserLogin<string>>(entity => entity.Property(m => m.LoginProvider).HasMaxLength(127));
+			modelBuilder.Entity<IdentityUserLogin<string>>(entity => entity.Property(m => m.ProviderKey).HasMaxLength(127));
+			modelBuilder.Entity<IdentityUserRole<string>>(entity => entity.Property(m => m.UserId).HasMaxLength(127));
+			modelBuilder.Entity<IdentityUserRole<string>>(entity => entity.Property(m => m.RoleId).HasMaxLength(127));
+			modelBuilder.Entity<IdentityUserToken<string>>(entity => entity.Property(m => m.UserId).HasMaxLength(127));
+			modelBuilder.Entity<IdentityUserToken<string>>(entity => entity.Property(m => m.LoginProvider).HasMaxLength(127));
+			modelBuilder.Entity<IdentityUserToken<string>>(entity => entity.Property(m => m.Name).HasMaxLength(127));
 			CrmMeta.OnModelCreating(modelBuilder);
 		}
 
