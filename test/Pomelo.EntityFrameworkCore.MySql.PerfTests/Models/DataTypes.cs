@@ -44,9 +44,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Models
 		// DateTime
 		public DateTime        TypeDateTime { get; set; }
 		public DateTimeOffset  TypeDateTimeOffset  { get; set; }
+		public TimeSpan        TypeTimeSpan { get; set; }
 		// nullable DateTime
 		public DateTime?       TypeDateTimeN { get; set; }
 		public DateTimeOffset? TypeDateTimeOffsetN  { get; set; }
+		public TimeSpan?       TypeTimeSpanN { get; set; }
 
 		// guid
 		public Guid  TypeGuid { get; set; }

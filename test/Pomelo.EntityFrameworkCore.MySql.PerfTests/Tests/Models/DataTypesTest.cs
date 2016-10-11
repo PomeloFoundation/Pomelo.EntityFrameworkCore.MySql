@@ -53,9 +53,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 		        // DateTime
 		        Assert.Equal(default(DateTime), emptyDb.TypeDateTime);
 		        Assert.Equal(default(DateTimeOffset), emptyDb.TypeDateTimeOffset);
+		        Assert.Equal(default(TimeSpan), emptyDb.TypeTimeSpan);
 		        // nullable DateTime
 		        Assert.Equal(null, emptyDb.TypeDateTimeN);
 		        Assert.Equal(null, emptyDb.TypeDateTimeOffsetN);
+		        Assert.Equal(null, emptyDb.TypeTimeSpanN);
 
 		        // guid
 		        Assert.Equal(default(Guid), emptyDb.TypeGuid);
@@ -68,10 +70,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 	        const char testChar = 'a';
 	        const float testFloat = (float) 1.23456789e38;
 
-	        // by default, we use second granularity on dateTime
-	        var dateTime = new DateTime(2016, 10, 6, 13, 3, 7);
-	        // we only support up to millisecond granularity on dateTimeOffset
-	        var dateTimeOffset = new DateTime(2016, 10, 6) + TimeSpan.FromMilliseconds(123456789);
+	        var dateTime = new DateTime(2016, 10, 11, 1, 2, 3, 456);
+	        var dateTimeOffset = dateTime + TimeSpan.FromMilliseconds(123.456);
+	        var timeSpan = new TimeSpan(1, 2, 3, 4, 5);
 	        var guid = Guid.NewGuid();
 
 	        // test each data type with a valid value
@@ -113,9 +114,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 		        // DateTime
 		        TypeDateTime        = dateTime,
 		        TypeDateTimeOffset  = dateTimeOffset,
+		        TypeTimeSpan        = timeSpan,
 		        // nullable DateTime
 		        TypeDateTimeN       = dateTime,
 		        TypeDateTimeOffsetN = dateTimeOffset,
+		        TypeTimeSpanN       = timeSpan,
 
 		        // guid
 		        TypeGuid = guid,
@@ -161,9 +164,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 		        // DateTime
 		        Assert.Equal(dateTime, valueDb.TypeDateTime);
 		        Assert.Equal(dateTimeOffset, valueDb.TypeDateTimeOffset);
+		        Assert.Equal(timeSpan, valueDb.TypeTimeSpan);
 		        // nullable DateTime
 		        Assert.Equal(dateTime, valueDb.TypeDateTimeN);
 		        Assert.Equal(dateTimeOffset, valueDb.TypeDateTimeOffsetN);
+		        Assert.Equal(timeSpan, valueDb.TypeTimeSpanN);
 
 		        // guid
 		        Assert.Equal(guid, valueDb.TypeGuid);
