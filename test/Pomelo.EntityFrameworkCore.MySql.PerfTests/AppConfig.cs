@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using Microsoft.Extensions.Configuration;
 
 namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 {
     public static class AppConfig
     {
-
-        private static object InitLock = new object();
-        private static readonly string Ci = Environment.GetEnvironmentVariable("CI")?.ToLower();
+	    public static readonly bool AppVeyor = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("APPVEYOR"));
         public static readonly string EfProvider = Environment.GetEnvironmentVariable("EF_PROVIDER")?.ToLower();
 
-        private static IConfigurationRoot _config;
+	    private static readonly string Ci = Environment.GetEnvironmentVariable("CI")?.ToLower();
+	    private static object InitLock = new object();
+
+	    private static IConfigurationRoot _config;
         public static IConfigurationRoot Config
         {
             get
@@ -25,7 +25,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
                     {
                         if (_config == null)
                         {
-                            if (Ci != null && Ci == "true" && !System.IO.File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "config.json"))){
+                            if (Ci != null && Ci == "true" && !File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "config.json"))){
                                 InitCi();
                             }
                             var builder = new ConfigurationBuilder()
@@ -42,7 +42,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
         }
 
         private static void InitCi(){
-            System.IO.File.Copy(
+            File.Copy(
                 Path.Combine(Directory.GetCurrentDirectory(), "config.json.example"),
                 Path.Combine(Directory.GetCurrentDirectory(), "config.json"));
 
