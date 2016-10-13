@@ -19,6 +19,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 		public DbSet<DataTypesSimple> DataTypesSimple { get; set; }
 		public DbSet<DataTypesVariable> DataTypesVariable { get; set; }
 
+		// generated data types
+		public DbSet<GeneratedContact> GeneratedContacts { get; set; }
+
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
 			if (AppConfig.EfProvider == "oracle")
@@ -46,6 +49,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 			modelBuilder.Entity<IdentityUserToken<string>>(entity => entity.Property(m => m.LoginProvider).HasMaxLength(127));
 			modelBuilder.Entity<IdentityUserToken<string>>(entity => entity.Property(m => m.Name).HasMaxLength(127));
 			CrmMeta.OnModelCreating(modelBuilder);
+			GeneratedContactMeta.OnModelCreating(modelBuilder);
 		}
 
 	}
