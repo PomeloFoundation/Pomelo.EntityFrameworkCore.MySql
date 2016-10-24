@@ -9,16 +9,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
     {
 	    public static readonly bool AppVeyor = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("APPVEYOR"));
         public static readonly string EfProvider = Environment.GetEnvironmentVariable("EF_PROVIDER")?.ToLower();
-
 	    private static readonly string Ci = Environment.GetEnvironmentVariable("CI")?.ToLower();
-	    private static object InitLock = new object();
+	    private static readonly object InitLock = new object();
 
 	    private static IConfigurationRoot _config;
         public static IConfigurationRoot Config
         {
             get
             {
-                
                 if (_config == null)
                 {
                     lock(InitLock)
@@ -35,7 +33,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
                             _config = builder.Build();
                         }
                     }
-                    
                 }
                 return _config;
             }

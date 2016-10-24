@@ -9,6 +9,8 @@ using Microsoft.Extensions.Logging;
 using MySQL.Data.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Pomelo.EntityFrameworkCore.MySql.PerfTests.Models;
+using MySQL.Data.EntityFrameworkCore.Extensions;
+using Microsoft.EntityFrameworkCore;
 
 namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 {
@@ -47,12 +49,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
                 // Oracle defines this with a case sensitive "MySQL"
                 System.Console.WriteLine("Using Oracle Provider");
                 services.AddEntityFrameworkMySQL();
+
+	            // Oracle defines this with a case sensitive "MySQL" in MySQL.Data.EntityFrameworkCore.Extensions
+	            services.AddDbContext<AppDb>(
+		            options => options.UseMySQL(AppConfig.Config["Data:ConnectionString"]),
+		            ServiceLifetime.Scoped);
             }
             else
             {
                 // Pomelo defines this with a case sensitive "MySql" in Microsoft.Extensions.DependencyInjection
                 System.Console.WriteLine("Using Pomelo Provider");
                 services.AddEntityFrameworkMySql();
+	            
+	            // Pomelo defines this with a case sensitive "MySql" in Microsoft.EntityFrameworkCore
+	            services.AddDbContext<AppDb>(
+		            options => options.UseMySql(AppConfig.Config["Data:ConnectionString"]),
+		            ServiceLifetime.Scoped);
             }
         }
 
