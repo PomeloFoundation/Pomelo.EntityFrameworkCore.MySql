@@ -22,17 +22,32 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 		// generated data types
 		public DbSet<GeneratedContact> GeneratedContacts { get; set; }
 
+		private readonly bool _configured;
+
+		public AppDb()
+		{
+			_configured = false;
+		}
+
+		public AppDb(DbContextOptions options) : base(options)
+		{
+			_configured = true;
+		}
+
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
-			if (AppConfig.EfProvider == "oracle")
+			if (!_configured)
 			{
-				// Oracle defines this with a case sensitive "MySQL" in MySQL.Data.EntityFrameworkCore.Extensions
-				optionsBuilder.UseMySQL(AppConfig.Config["Data:ConnectionString"] + "ssl mode=none;");
-			}
-			else
-			{
-				// Pomelo defines this with a case sensitive "MySql" in Microsoft.EntityFrameworkCore
-				optionsBuilder.UseMySql(AppConfig.Config["Data:ConnectionString"]);
+				if (AppConfig.EfProvider == "oracle")
+				{
+					// Oracle defines this with a case sensitive "MySQL" in MySQL.Data.EntityFrameworkCore.Extensions
+					optionsBuilder.UseMySQL(AppConfig.Config["Data:ConnectionString"] + "ssl mode=none;");
+				}
+				else
+				{
+					// Pomelo defines this with a case sensitive "MySql" in Microsoft.EntityFrameworkCore
+					optionsBuilder.UseMySql(AppConfig.Config["Data:ConnectionString"]);
+				}
 			}
 		}
 
