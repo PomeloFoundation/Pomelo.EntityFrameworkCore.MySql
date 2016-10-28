@@ -17,7 +17,7 @@
       "version": "1.0.0-preview2-final",
       "type": "build"
     },
-    "MySql.Data.EntityFrameworkCore": "7.0.5-*",
+    "MySql.Data.EntityFrameworkCore": "7.0.6-*",
     "Pomelo.EntityFrameworkCore.MySql": {
       "target": "project"
     },
