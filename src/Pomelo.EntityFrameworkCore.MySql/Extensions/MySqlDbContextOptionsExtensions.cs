@@ -24,7 +24,8 @@ namespace Microsoft.EntityFrameworkCore
 
             var csb = new MySqlConnectionStringBuilder(connectionString)
             {
-                AllowUserVariables = true
+	            AllowUserVariables = true,
+	            UseAffectedRows = false
             };
             connectionString = csb.ConnectionString;
 
@@ -47,7 +48,8 @@ namespace Microsoft.EntityFrameworkCore
 
             var csb = new MySqlConnectionStringBuilder(connection.ConnectionString)
             {
-                AllowUserVariables = true
+	            AllowUserVariables = true,
+	            UseAffectedRows = false
             };
 
             connection.ConnectionString = csb.ConnectionString;
