@@ -25,28 +25,31 @@ Methods:
 
 `POST /api/async` and `POST /api/sync` create a new post.  The request body should be `Content-Type: application/json` in the form:
 
-	{
-		"Title": "Test Blog",
-		"Posts": [
-			{
-				"Title": "Post 1",
-				"Content": "A great blog post"
-			},
-			{
-				"Title": "Post 2",
-				"Content": "An even better blog post"
-			}
-		]
-	}
+```json
+{
+	"Title": "Test Blog",
+	"Posts": [
+		{
+			"Title": "Post 1",
+			"Content": "A great blog post"
+		},
+		{
+			"Title": "Post 2",
+			"Content": "An even better blog post"
+		}
+	]
+}
+```
 
 The `scripts` directory contains load testing scripts.  These scripts require that the  [Vegeta](https://github.com/tsenart/vegeta/releases) binary is installed and accessible in your PATH.  Here are examples of how to call the load testing scripts:
+```
+# by default, runs 50 async queries per second for 5 seconds
+./stress.sh     # bash for linux
+./stress.ps1    # powershell for windows
 
-    # by default, runs 50 async queries per second for 5 seconds
-    ./stress.sh     # bash for linux
-    ./stress.ps1    # powershell for windows
+# runs 100 async queries per second for 10 seconds on linux
+./stress.sh 100 10s async
 
-    # runs 100 async queries per second for 10 seconds on linux
-    ./stress.sh 100 10s async
-
-    # run 50 sync queries per second for 1 minute on windows
-    ./stress.ps1 50 1m sync
+# run 50 sync queries per second for 1 minute on windows
+./stress.ps1 50 1m sync
+```
