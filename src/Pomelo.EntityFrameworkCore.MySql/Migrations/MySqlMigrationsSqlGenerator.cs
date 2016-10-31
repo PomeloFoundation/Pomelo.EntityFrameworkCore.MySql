@@ -336,6 +336,9 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     case "int2":
                         type = "short AUTO_INCREMENT";
                         break;
+                    case "datetime(6)":
+                        defaultValueSql = "CURRENT_TIMESTAMP(6)";
+                        break;
                     case "datetime":
                     case "timestamp":
                         defaultValueSql = "CURRENT_TIMESTAMP";
@@ -350,6 +353,11 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             {
                 switch (type)
                 {
+                    case "datetime(6)":
+                        if (string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
+                            defaultValueSql = "CURRENT_TIMESTAMP(6)";
+                        onUpdateSql = "CURRENT_TIMESTAMP(6)";
+                        break;
                     case "datetime":
                     case "timestamp":
                         if (string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
