@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Specification.Tests;
 using System;
 using System.Linq;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
@@ -59,6 +60,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                     ColumnType = "date",
                     IsNullable = true,
                     ComputedColumnSql = "CURRENT_TIMESTAMP"
+                });
+        }
+
+        [Fact]
+        public virtual void AddDefaultDatetimeOperation_with_valueOnUpdate()
+        {
+            Generate(
+                new AddColumnOperation
+                {
+                    Table = "People",
+                    Name = "Birthday",
+                    ClrType = typeof(DateTime),
+                    ColumnType = "datetime(6)",
+                    IsNullable = true,
+                    DefaultValueSql = "CURRENT_TIMESTAMP(6)",
+                    [MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAddOrUpdate] = true
                 });
         }
 
