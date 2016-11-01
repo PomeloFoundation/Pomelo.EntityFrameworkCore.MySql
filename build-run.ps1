@@ -121,3 +121,16 @@ if ($env:BuildRunner -ne "MyGet"){
         exit $LASTEXITCODE;
     }
 }
+
+##########################
+# END REPOSITORY TESTS
+##########################
+
+# MyGet expects nuget packages to be build
+cd (Join-Path $repoFolder (Join-Path "src" "Pomelo.EntityFrameworkCore.MySql"))
+if ($env:BuildRunner -eq "MyGet"){
+    & dotnet pack -c Release
+    if ($LASTEXITCODE -ne 0){
+        exit $LASTEXITCODE;
+    }
+}
