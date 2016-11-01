@@ -3,7 +3,7 @@
 [![Travis build status](https://img.shields.io/travis/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql.svg?label=travis-ci&branch=master&style=flat-square)](https://travis-ci.org/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql)
 [![AppVeyor build status](https://img.shields.io/appveyor/ci/Kagamine/Pomelo-EntityFrameworkCore-MySql/master.svg?label=appveyor&style=flat-square)](https://ci.appveyor.com/project/Kagamine/pomelo-entityframeworkcore-mysql/branch/master) [![NuGet](https://img.shields.io/nuget/v/Pomelo.EntityFrameworkCore.MySql.svg?style=flat-square&label=nuget)](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/) [![MyGet](https://img.shields.io/myget/pomelo/vpre/Pomelo.EntityFrameworkCore.MySql.svg?style=flat-square&label=myget)](https://www.myget.org/Package/Details/pomelo?packageType=nuget&packageId=Pomelo.EntityFrameworkCore.MySql) [![Join the chat at https://gitter.im/PomeloFoundation/Home](https://badges.gitter.im/PomeloFoundation/Home.svg)](https://gitter.im/PomeloFoundation/Home?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Pomelo.EntityFrameworkCore.MySql is an Entity Framework Core provider built on top of [MySqlConnector](https://github.com/bgrainger/MySqlConnector). It makes you are able to use the Entity Framework Core ORM with MySQL. Besides, _async_ operations were supported well in this library.
+Pomelo.EntityFrameworkCore.MySql is an Entity Framework Core provider built on top of [MySqlConnector](https://github.com/mysql-net/MySqlConnector). It makes you are able to use the Entity Framework Core ORM with MySQL. Besides, _async_ operations were supported well in this library.
 
 ## Nightly Builds
 
@@ -47,7 +47,7 @@ If the result is not `utf8`, you should modify your `my.ini` or `my.cnf`.
       "type": "platform",
       "version": "1.0.0"
     },
-    "Pomelo.EntityFrameworkCore.MySql": "1.0.0",
+    "Pomelo.EntityFrameworkCore.MySql": "1.0.1",
     "Microsoft.EntityFrameworkCore.Tools": "1.0.0-preview2-final"
   },
 
@@ -168,23 +168,21 @@ By viewing the following full project which is a single-user blog system and bas
 Milestone | Release week
 ----------|-------------
 1.0.0     | Aug 5th 2016
-1.0.1     | Sep 2016
+1.0.1     | Oct 29th, 2016
+1.1.0     | TBD
 
 ### 1.0.0 Feature complete
 
 Support all Entity Framework Core operations, basic json field support.
 
-### 1.0.1 Full json field support
+### 1.0.1 Performance Release
 
-Support translate JsonObject<T> linq queries to native sql.
- 
-``` c#
-DB.Blogs.Where(x => x.Tags.Contains("MySQL")).ToList();
-```
-Translate to:
-```sql
-SELECT * FROM `Blogs` WHERE JSON_CONTAINS(`Tags`, '"MySQL"');
-```
+- Switch ADO.NET layer to [MySqlConnector](https://github.com/mysql-net/MySqlConnector)
+- Improve Performance
+
+### 1.1.0
+
+Upgrade to .NET Core 1.1 and EF 1.1.0, which supports Explicit Loading.
 
 ## Contribute
 
