@@ -50,5 +50,41 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 				testContact(genDb);
 			}
 		}
+
+		[Fact]
+		public async Task TestGeneratedTime()
+		{
+			var gt = new GeneratedTime {Name = "test"};
+
+			using (var db = new AppDb())
+			{
+				db.GeneratedTime.Add(gt);
+				await db.SaveChangesAsync();
+
+				Assert.Equal(gt.CreatedDateTime, gt.UpdatedDateTime);
+				Assert.Equal(gt.CreatedDateTime3, gt.UpdatedDateTime3);
+				Assert.Equal(gt.CreatedDateTime6, gt.UpdatedDateTime6);
+				Assert.Equal(gt.CreatedTimestamp, gt.UpdatedTimetamp);
+				Assert.Equal(gt.CreatedTimestamp3, gt.UpdatedTimetamp3);
+				Assert.Equal(gt.CreatedTimestamp6, gt.UpdatedTimetamp6);
+
+				Assert.InRange(gt.CreatedDateTime3 - gt.CreatedDateTime, TimeSpan.Zero, TimeSpan.FromMilliseconds(999));
+				Assert.InRange(gt.CreatedDateTime6 - gt.CreatedDateTime3, TimeSpan.Zero, TimeSpan.FromMilliseconds(0.999));
+
+				Assert.InRange(gt.CreatedTimestamp3 - gt.CreatedTimestamp, TimeSpan.Zero, TimeSpan.FromMilliseconds(999));
+				Assert.InRange(gt.CreatedTimestamp6 - gt.CreatedTimestamp3, TimeSpan.Zero, TimeSpan.FromMilliseconds(0.999));
+
+				await Task.Delay(TimeSpan.FromSeconds(1));
+				gt.Name = "test2";
+				await db.SaveChangesAsync();
+
+				Assert.NotEqual(gt.CreatedDateTime, gt.UpdatedDateTime);
+				Assert.NotEqual(gt.CreatedDateTime3, gt.UpdatedDateTime3);
+				Assert.NotEqual(gt.CreatedDateTime6, gt.UpdatedDateTime6);
+				Assert.NotEqual(gt.CreatedTimestamp, gt.UpdatedTimetamp);
+				Assert.NotEqual(gt.CreatedTimestamp3, gt.UpdatedTimetamp3);
+				Assert.NotEqual(gt.CreatedTimestamp6, gt.UpdatedTimetamp6);
+			}
+		}
 	}
 }

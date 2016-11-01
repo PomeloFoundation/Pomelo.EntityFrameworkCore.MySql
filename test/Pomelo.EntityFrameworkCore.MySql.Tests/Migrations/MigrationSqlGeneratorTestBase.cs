@@ -42,9 +42,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                     Table = "People",
                     Name = "Birthday",
                     ClrType = typeof(DateTime),
-                    ColumnType = "date",
+                    ColumnType = "datetime",
                     IsNullable = true,
-                    DefaultValueSql = "CURRENT_TIMESTAMP"
+	                [MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd] = true
                 });
         }
 
@@ -57,9 +57,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                     Table = "People",
                     Name = "Birthday",
                     ClrType = typeof(DateTime),
-                    ColumnType = "date",
+                    ColumnType = "datetime",
                     IsNullable = true,
-                    ComputedColumnSql = "CURRENT_TIMESTAMP"
+	                [MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAddOrUpdate] = true
                 });
         }
 
@@ -74,7 +74,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                     ClrType = typeof(DateTime),
                     ColumnType = "datetime(6)",
                     IsNullable = true,
-                    DefaultValueSql = "CURRENT_TIMESTAMP(6)",
                     [MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAddOrUpdate] = true
                 });
         }

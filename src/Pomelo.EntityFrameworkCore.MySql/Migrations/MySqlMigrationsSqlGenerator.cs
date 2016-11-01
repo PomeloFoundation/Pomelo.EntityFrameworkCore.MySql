@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -16,7 +17,9 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 {
     public class MySqlMigrationsSqlGenerationHelper : MigrationsSqlGenerator
     {
-        public MySqlMigrationsSqlGenerationHelper(
+	    private static readonly Regex TypeRe = new Regex(@"([a-z0-9]+)\s*?(?:\(\s*(\d+)?\s*\))?", RegexOptions.IgnoreCase);
+
+	    public MySqlMigrationsSqlGenerationHelper(
             [NotNull] IRelationalCommandBuilderFactory commandBuilderFactory,
             [NotNull] ISqlGenerationHelper SqlGenerationHelper,
             [NotNull] IRelationalTypeMapper typeMapper,
@@ -316,13 +319,23 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 type = TypeMapper.FindMapping(property).StoreType;
             }
 
-            var generatedOnAddAnnotation = annotatable[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd];
+	        var matchType = type;
+	        var matchLen = "";
+	        var match = TypeRe.Match(type);
+	        if (match.Success)
+	        {
+		        matchType = match.Groups[1].Value.ToLower();
+		        if (!string.IsNullOrWhiteSpace(match.Groups[2].Value))
+			        matchLen = match.Groups[2].Value;
+	        }
+
+	        var generatedOnAddAnnotation = annotatable[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd];
             var generatedOnAdd = generatedOnAddAnnotation != null && (bool)generatedOnAddAnnotation;
             var generatedOnAddOrUpdateAnnotation = annotatable[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAddOrUpdate];
             var generatedOnAddOrUpdate = generatedOnAddOrUpdateAnnotation != null && (bool)generatedOnAddOrUpdateAnnotation;
             if (generatedOnAdd && string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
             {
-                switch (type)
+                switch (matchType)
                 {
                     case "int":
                     case "int4":
@@ -336,12 +349,9 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     case "int2":
                         type = "short AUTO_INCREMENT";
                         break;
-                    case "datetime(6)":
-                        defaultValueSql = "CURRENT_TIMESTAMP(6)";
-                        break;
                     case "datetime":
                     case "timestamp":
-                        defaultValueSql = "CURRENT_TIMESTAMP";
+                        defaultValueSql = $"CURRENT_TIMESTAMP({matchLen})";
                         break;
 
                 }
@@ -351,19 +361,14 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             if (generatedOnAddOrUpdate)
             {
-                switch (type)
-                {
-                    case "datetime(6)":
-                        if (string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
-                            defaultValueSql = "CURRENT_TIMESTAMP(6)";
-                        onUpdateSql = "CURRENT_TIMESTAMP(6)";
-                        break;
+	            switch (matchType)
+	            {
                     case "datetime":
                     case "timestamp":
                         if (string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
-                            defaultValueSql = "CURRENT_TIMESTAMP";
-                        onUpdateSql = "CURRENT_TIMESTAMP";
-                        break;
+                            defaultValueSql = $"CURRENT_TIMESTAMP({matchLen})";
+			            onUpdateSql = $"CURRENT_TIMESTAMP({matchLen})";
+			            break;
                 }
             }
 
