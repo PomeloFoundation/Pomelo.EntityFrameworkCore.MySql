@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
 namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Models
@@ -55,6 +56,61 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Models
 		public JsonObject<List<string>> Names { get; set; }
 
 		public JsonObject<Dictionary<string, string>> ContactInfo { get; set; }
+	}
+
+	public class GeneratedTime
+	{
+		public int Id { get; set; }
+
+		public string Name { get; set; }
+
+		[Column(TypeName = "DATETIME")]
+		[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+		public DateTime CreatedDateTime { get; set; }
+
+		[Column(TypeName = "DATETIME")]
+		[DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+		public DateTime UpdatedDateTime { get; set; }
+
+		[Column(TypeName = "DATETIME(3)")]
+		[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+		public DateTime CreatedDateTime3 { get; set; }
+
+		[Column(TypeName = "DATETIME(3)")]
+		[DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+		public DateTime UpdatedDateTime3 { get; set; }
+
+		// DATETIME(6) is the default
+		[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+		public DateTime CreatedDateTime6 { get; set; }
+
+		// DATETIME(6) is the default
+		[DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+		public DateTime UpdatedDateTime6 { get; set; }
+
+		[Column(TypeName = "TIMESTAMP")]
+		[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+		public DateTime CreatedTimestamp { get; set; }
+
+		[Column(TypeName = "TIMESTAMP")]
+		[DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+		public DateTime UpdatedTimetamp { get; set; }
+
+		[Column(TypeName = "TIMESTAMP(3)")]
+		[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+		public DateTime CreatedTimestamp3 { get; set; }
+
+		[Column(TypeName = "TIMESTAMP(3)")]
+		[DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+		public DateTime UpdatedTimetamp3 { get; set; }
+
+		[Column(TypeName = "TIMESTAMP(6)")]
+		[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+		public DateTime CreatedTimestamp6 { get; set; }
+
+		[Column(TypeName = "TIMESTAMP(6)")]
+		[DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+		public DateTime UpdatedTimetamp6 { get; set; }
 	}
 
 }

@@ -21,6 +21,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 
 		// generated data types
 		public DbSet<GeneratedContact> GeneratedContacts { get; set; }
+		public DbSet<GeneratedTime> GeneratedTime { get; set; }
 
 		private readonly bool _configured;
 
