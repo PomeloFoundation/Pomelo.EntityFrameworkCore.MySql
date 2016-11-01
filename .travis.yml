@@ -15,12 +15,11 @@ before_install:
   - docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -d mysql:5.7
   - docker pull ubuntu:16.04
   - docker run -v $(pwd):/dotnet/:rw -e 'CI=True' --name dotnet --link mysql:mysql -d ubuntu:16.04 sh -c 'while true; do sleep 0.1; done'
-  - docker exec -it dotnet sh -c 'apt-get update && apt-get install -y apt-transport-https mono-complete'
-  - docker exec -it dotnet sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ xenial main" > /etc/apt/sources.list.d/dotnetdev.list && apt-key adv --keyserver apt-mo.trafficmanager.net --recv-keys 417A0893 && apt-get update && apt-get install -y dotnet-dev-1.0.0-preview2-003131'
+  - docker exec -it dotnet sh -c 'cp /dotnet/.travis.sources.list /etc/apt/sources.list && apt-get update && apt-get install -y apt-transport-https mono-complete'
+  - docker exec -it dotnet sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ xenial main" > /etc/apt/sources.list.d/dotnetdev.list && apt-key adv --keyserver apt-mo.trafficmanager.net --recv-keys 417A0893 && apt-get update && apt-get install -y dotnet-dev-1.0.0-preview2-003131 dotnet-dev-1.0.0-preview2.1-003155'
 
 script:
   - docker exec -it dotnet sh -c 'cd /dotnet && dotnet restore'
   - docker exec -it dotnet sh -c 'cd /dotnet/src/Pomelo.EntityFrameworkCore.MySql && dotnet build -c Release'
   - docker exec -it dotnet sh -c 'cd /dotnet/test/Pomelo.EntityFrameworkCore.MySql.Tests && dotnet test -c Release'
   - docker exec -it dotnet sh -c 'cd /dotnet/test/Pomelo.EntityFrameworkCore.MySql.PerfTests && sed -i "s/127.0.0.1/mysql/g" config.json.example && dotnet test -c Release;'
-

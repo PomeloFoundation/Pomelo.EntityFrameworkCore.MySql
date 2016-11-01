@@ -23,29 +23,32 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
     {
         private readonly MySqlRelationalConnection _connection;
         private readonly IMigrationsSqlGenerator _migrationsSqlGenerator;
-        private readonly IRawSqlCommandBuilder _rawSqlCommandBuilder;
+	    private readonly IRawSqlCommandBuilder _rawSqlCommandBuilder;
 
-        /// <summary>
+
+	    /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public MySqlDatabaseCreator(
-            [NotNull] MySqlRelationalConnection connection,
-            [NotNull] IMigrationsModelDiffer modelDiffer,
-            [NotNull] IMigrationsSqlGenerator migrationsSqlGenerator,
-            [NotNull] IMigrationCommandExecutor migrationCommandExecutor,
-            [NotNull] IModel model,
-            [NotNull] IRawSqlCommandBuilder rawSqlCommandBuilder)
-            : base(model, connection, modelDiffer, migrationsSqlGenerator, migrationCommandExecutor)
+	    public MySqlDatabaseCreator(
+	        [NotNull] MySqlRelationalConnection connection,
+	        [NotNull] IMigrationsModelDiffer modelDiffer,
+	        [NotNull] IMigrationsSqlGenerator migrationsSqlGenerator,
+	        [NotNull] IMigrationCommandExecutor migrationCommandExecutor,
+	        [NotNull] IModel model,
+	        [NotNull] IRawSqlCommandBuilder rawSqlCommandBuilder,
+	        [NotNull] IExecutionStrategyFactory executionStrategyFactory)
+	        : base(model, connection, modelDiffer, migrationsSqlGenerator, migrationCommandExecutor, executionStrategyFactory)
         {
-            Check.NotNull(rawSqlCommandBuilder, nameof(rawSqlCommandBuilder));
+	        Check.NotNull(rawSqlCommandBuilder, nameof(rawSqlCommandBuilder));
+	        
+	        _connection = connection;
+		    _migrationsSqlGenerator = migrationsSqlGenerator;
+	        _rawSqlCommandBuilder = rawSqlCommandBuilder;
 
-            _connection = connection;
-            _migrationsSqlGenerator = migrationsSqlGenerator;
-            _rawSqlCommandBuilder = rawSqlCommandBuilder;
         }
 
-        /// <summary>
+	    /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>

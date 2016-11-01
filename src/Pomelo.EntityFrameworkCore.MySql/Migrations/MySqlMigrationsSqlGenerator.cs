@@ -645,7 +645,7 @@ END;");
             }
         }
 
-        string ColumnList(string[] columns) => string.Join(", ", columns.Select(SqlGenerationHelper.DelimitIdentifier));
+	    protected override string ColumnList(string[] columns) => string.Join(", ", columns.Select(SqlGenerationHelper.DelimitIdentifier));
     }
 
     public static class StringExtensions

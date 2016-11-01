@@ -3,21 +3,22 @@
   "testRunner": "xunit",
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
-    "Microsoft.EntityFrameworkCore": "1.0.1",
-    "Microsoft.EntityFrameworkCore.Relational": "1.0.1",
-    "Microsoft.EntityFrameworkCore.Relational.Specification.Tests": "1.0.1",
-    "Microsoft.Extensions.Logging": "1.0.0",
+    "Microsoft.DotNet.InternalAbstractions": "1.0.0",
+    "Microsoft.EntityFrameworkCore": "1.1.0-preview1-final",
+    "Microsoft.EntityFrameworkCore.Relational": "1.1.0-preview1-final",
+    "Microsoft.EntityFrameworkCore.Relational.Specification.Tests": "1.1.0-preview1-final",
+    "Microsoft.Extensions.Logging": "1.1.0-preview1-final",
     "Pomelo.EntityFrameworkCore.MySql": {
       "target": "project"
     },
-    "xunit": "2.2.0-beta2-build3300"
+    "xunit": "2.2.0-beta3-build3402"
   },
   "frameworks": {
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
           "type": "platform",
-          "version": "1.0.0"
+          "version": "1.1.0-preview1-*"
         }
       }
     }
