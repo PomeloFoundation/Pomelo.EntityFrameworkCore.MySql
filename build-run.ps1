@@ -75,19 +75,17 @@ if (!$dotnetLocalInstallFolder)
     $dotnetLocalInstallFolder = "$env:LOCALAPPDATA\Microsoft\dotnet\"
 }
 
+# Sometimes, MyGet re-uses a build server, clean SDK before attempting to install
+if ($env:BuildRunner -eq "MyGet"){
+    Remove-Item -Force -Recurse $dotnetLocalInstallFolder
+}
+
 & "$buildFolder\dotnet\dotnet-install.ps1" -Channel $dotnetChannel -Version $dotnetVersion -Architecture x64
 # Avoid redownloading the CLI if it's already installed.
 $sharedRuntimePath = [IO.Path]::Combine($dotnetLocalInstallFolder, 'shared', 'Microsoft.NETCore.App', $dotnetSharedRuntimeVersion)
 if (!(Test-Path $sharedRuntimePath))
 {
     & "$buildFolder\dotnet\dotnet-install.ps1" -Channel $dotnetSharedRuntimeChannel -SharedRuntime -Version $dotnetSharedRuntimeVersion -Architecture x64
-}
-
-# Sometimes, MyGet re-uses a build server and doesn't add dotnet to the path again
-if ($env:BuildRunner -eq "MyGet"){
-    $BinPath = (Join-Path $home "Local\Microsoft\dotnet\");
-    echo "MyGet: Adding to current process PATH: `"$BinPath`". Note: This change will not be visible if PowerShell was run as a child process."
-    $env:path = "$BinPath;" + $env:path
 }
 
 ##########################
