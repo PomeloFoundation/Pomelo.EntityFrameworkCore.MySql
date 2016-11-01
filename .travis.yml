@@ -8,6 +8,7 @@ branches:
     - master
     - release
     - dev
+    - /^.*-wip$/
     - /^(.*\/)?ci-.*$/
 
 before_install:
