@@ -33,18 +33,13 @@ cd $PSScriptRoot
 $repoFolder = $PSScriptRoot
 $env:REPO_FOLDER = $repoFolder
 
-if ($env:BuildRunner -eq "MyGet"){
-    Remove-Item -Force -Recurse (Join-Path $PSScriptRoot (Join-Path "test" "Pomelo.EntityFrameworkCore.MySql.PerfTests"))
-}
-
-$koreBuildZip="https://github.com/PomeloFoundation/KoreBuild/releases/download/1.0.0/KoreBuild-1.0.0.zip"
+$koreBuildZip="https://github.com/aspnet/KoreBuild/archive/dev.zip"
 if ($env:KOREBUILD_ZIP)
 {
     $koreBuildZip=$env:KOREBUILD_ZIP
 }
 
 $buildFolder = ".build"
-$buildFile="$buildFolder\KoreBuild.ps1"
 
 if (!(Test-Path $buildFolder)) {
     Write-Host "Downloading KoreBuild from $koreBuildZip"    
@@ -68,4 +63,56 @@ if (!(Test-Path $buildFolder)) {
     }
 }
 
-&"$buildFile" $args
+$dotnetVersionFile = $buildFolder + "\cli.version.win"
+$dotnetChannel = "preview"
+$dotnetVersion = Get-Content $dotnetVersionFile
+$dotnetSharedRuntimeVersion = "1.0.0"
+$dotnetSharedRuntimeChannel = "preview"
+
+$dotnetLocalInstallFolder = $env:DOTNET_INSTALL_DIR
+if (!$dotnetLocalInstallFolder)
+{
+    $dotnetLocalInstallFolder = "$env:LOCALAPPDATA\Microsoft\dotnet\"
+}
+
+& "$buildFolder\dotnet\dotnet-install.ps1" -Channel $dotnetChannel -Version $dotnetVersion -Architecture x64
+# Avoid redownloading the CLI if it's already installed.
+$sharedRuntimePath = [IO.Path]::Combine($dotnetLocalInstallFolder, 'shared', 'Microsoft.NETCore.App', $dotnetSharedRuntimeVersion)
+if (!(Test-Path $sharedRuntimePath))
+{
+    & "$buildFolder\dotnet\dotnet-install.ps1" -Channel $dotnetSharedRuntimeChannel -SharedRuntime -Version $dotnetSharedRuntimeVersion -Architecture x64
+}
+
+##########################
+# BEGIN REPOSITORY TESTS
+##########################
+
+# restore
+cd "$repoFolder"
+& dotnet restore
+if ($LASTEXITCODE -ne 0){
+    exit $LASTEXITCODE;
+}
+
+# build .NET 451 to verify no build errors
+cd (Join-Path $repoFolder (Join-Path "src" "Pomelo.EntityFrameworkCore.MySql"))
+& dotnet build -c Release
+if ($LASTEXITCODE -ne 0){
+    exit $LASTEXITCODE;
+}
+
+# run unit tests
+cd (Join-Path $repoFolder (Join-Path "test" "Pomelo.EntityFrameworkCore.MySql.Tests"))
+& dotnet test -c Release
+if ($LASTEXITCODE -ne 0){
+    exit $LASTEXITCODE;
+}
+
+# run functional tests if not on MyGet
+if ($env:BuildRunner -ne "MyGet"){
+    cd (Join-Path $repoFolder (Join-Path "test" "Pomelo.EntityFrameworkCore.MySql.PerfTests"))
+    & dotnet test -c Release
+    if ($LASTEXITCODE -ne 0){
+        exit $LASTEXITCODE;
+    }
+}

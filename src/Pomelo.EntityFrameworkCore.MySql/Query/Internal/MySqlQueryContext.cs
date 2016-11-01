@@ -18,9 +18,10 @@ namespace Microsoft.EntityFrameworkCore.Query
 		public MySqlQueryContext(
 			[NotNull] Func<IQueryBuffer> queryBufferFactory,
 			[NotNull] IRelationalConnection connection,
-			[NotNull] IStateManager stateManager,
-			[NotNull] IConcurrencyDetector concurrencyDetector)
-			: base(queryBufferFactory, connection, stateManager, concurrencyDetector)
+			[NotNull] LazyRef<IStateManager> stateManager,
+			[NotNull] IConcurrencyDetector concurrencyDetector,
+			[NotNull] IExecutionStrategyFactory executionStrategyFactory)
+			: base(queryBufferFactory, connection, stateManager, concurrencyDetector, executionStrategyFactory)
 		{
 		}
 	}

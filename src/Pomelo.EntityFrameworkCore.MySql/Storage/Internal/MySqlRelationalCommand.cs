@@ -25,26 +25,24 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         }
 
 	    protected override object Execute(
-		    [NotNull] IRelationalConnection connection,
-		    [NotNull] string executeMethod,
-		    [CanBeNull] IReadOnlyDictionary<string, object> parameterValues,
-		    bool openConnection,
-		    bool closeConnection)
+		    IRelationalConnection connection,
+		    string executeMethod,
+		    IReadOnlyDictionary<string, object> parameterValues,
+		    bool closeConnection = true)
 	    {
-		    return ExecuteAsync(IOBehavior.Synchronous, connection, executeMethod, parameterValues, openConnection, closeConnection)
+		    return ExecuteAsync(IOBehavior.Synchronous, connection, executeMethod, parameterValues, closeConnection)
 			    .GetAwaiter()
 			    .GetResult();
 	    }
 
 	    protected override async Task<object> ExecuteAsync(
-		    [NotNull] IRelationalConnection connection,
-		    [NotNull] string executeMethod,
-		    [CanBeNull] IReadOnlyDictionary<string, object> parameterValues,
-		    bool openConnection,
-		    bool closeConnection,
+		    IRelationalConnection connection,
+		    string executeMethod,
+		    IReadOnlyDictionary<string, object> parameterValues,
+		    bool closeConnection = true,
 		    CancellationToken cancellationToken = default(CancellationToken))
 	    {
-		    return await ExecuteAsync(IOBehavior.Asynchronous, connection, executeMethod, parameterValues, openConnection, closeConnection, cancellationToken).ConfigureAwait(false);
+		    return await ExecuteAsync(IOBehavior.Asynchronous, connection, executeMethod, parameterValues, closeConnection, cancellationToken).ConfigureAwait(false);
 	    }
 
 	    private async Task<object> ExecuteAsync(
@@ -52,7 +50,6 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 		    [NotNull] IRelationalConnection connection,
 		    [NotNull] string executeMethod,
 		    [CanBeNull] IReadOnlyDictionary<string, object> parameterValues,
-		    bool openConnection,
 		    bool closeConnection,
 		    CancellationToken cancellationToken = default(CancellationToken))
 	    {
@@ -60,13 +57,6 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             Check.NotEmpty(executeMethod, nameof(executeMethod));
             var dbCommand = CreateCommand(connection, parameterValues);
             object result;
-            if (openConnection)
-            {
-	            if (ioBehavior == IOBehavior.Asynchronous)
-		            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
-	            else
-		            connection.Open();
-            }
 
             cancellationToken.ThrowIfCancellationRequested();
             var mySqlConnection = connection as MySqlRelationalConnection;
@@ -121,8 +111,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 	                        else
 		                        dataReader = dbCommand.ExecuteReader() as MySqlDataReader;
 
-	                        result = new RelationalDataReader(openConnection ? connection : null, dbCommand,
-                                new SynchronizedMySqlDataReader(dataReader, mySqlConnection));
+	                        result = new RelationalDataReader(connection, dbCommand, new SynchronizedMySqlDataReader(dataReader, mySqlConnection));
                         }
                         catch (Exception)
                         {
@@ -137,20 +126,8 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     }
                 }
             }
-            catch (Exception)
-            {
-                if (openConnection && !closeConnection)
-                {
-                    connection.Close();
-                }
-                throw;
-            }
             finally
             {
-	            if (closeConnection)
-                {
-                    connection.Close();
-                }
                 if (locked && executeMethod != nameof(ExecuteReader))
                 {
                     // if calling any other method, the command has finished executing and the lock can be released immediately
@@ -158,6 +135,11 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 	                mySqlConnection.Lock.Release();
 	                mySqlConnection.PoolingClose();
                 }
+	            // ReSharper disable once PossibleNullReferenceException
+	            if (!mySqlConnection.Pooling && closeConnection)
+	            {
+		            connection.Close();
+	            }
             }
             return result;
         }

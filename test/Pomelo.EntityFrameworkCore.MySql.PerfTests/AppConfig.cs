@@ -23,11 +23,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
                     {
                         if (_config == null)
                         {
-                            if (Ci != null && Ci == "true" && !File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "config.json"))){
-                                InitCi();
+                            var pwd = new DirectoryInfo(Directory.GetCurrentDirectory());
+                            var basePath = pwd.FullName;
+                            if (pwd.Name.StartsWith("netcoreapp"))
+                                basePath = pwd.Parent.Parent.Parent.FullName;
+
+                            if (Ci != null && Ci == "true" && !File.Exists(Path.Combine(basePath, "config.json"))){
+                                InitCi(basePath);
                             }
+                            
                             var builder = new ConfigurationBuilder()
-                                .SetBasePath(Directory.GetCurrentDirectory())
+                                .SetBasePath(basePath)
                                 .AddJsonFile("appsettings.json")
                                 .AddJsonFile("config.json");
                             _config = builder.Build();
@@ -38,20 +44,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
             }
         }
 
-        private static void InitCi(){
+        private static void InitCi(string basePath){
             File.Copy(
-                Path.Combine(Directory.GetCurrentDirectory(), "config.json.example"),
-                Path.Combine(Directory.GetCurrentDirectory(), "config.json"));
+                Path.Combine(basePath, "config.json.example"),
+                Path.Combine(basePath, "config.json"));
 
             var processInfo = new ProcessStartInfo{
                 FileName = "dotnet",
-                Arguments = "ef -c \"Ef\" migrations add initial",
-                WorkingDirectory = Directory.GetCurrentDirectory()
+                Arguments = "ef -e \"Ef\" migrations add initial",
+                WorkingDirectory = basePath
             };
             var process = Process.Start(processInfo);
             process.WaitForExit();
 
-            foreach (var filePath in Directory.GetFiles(Path.Combine(Directory.GetCurrentDirectory(), "Migrations"))){
+            foreach (var filePath in Directory.GetFiles(Path.Combine(basePath, "Migrations"))){
                 if (filePath.EndsWith(".cs")){
                     var data = File.ReadAllText(filePath);
 	                if (!data.Contains("using System.Collections.Generic;"))
@@ -63,8 +69,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 
             processInfo = new ProcessStartInfo{
                 FileName = "dotnet",
-                Arguments = "ef -c \"Ef\" database update",
-                WorkingDirectory = Directory.GetCurrentDirectory()
+                Arguments = "ef -e \"Ef\" database update",
+                WorkingDirectory = basePath
             };
             process = Process.Start(processInfo);
             process.WaitForExit();

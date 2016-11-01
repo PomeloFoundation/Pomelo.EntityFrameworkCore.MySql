@@ -242,9 +242,11 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 	    // Optomizations have been added to return connections to the pool faster
 	    // Prefer PoolingOpen/Close functions when Connection Pooling is enabled
 
+	    public bool Pooling => ConnectionStringBuilder.Pooling;
+
 	    public void PoolingOpen()
 	    {
-		    if (ConnectionStringBuilder.Pooling)
+		    if (Pooling)
 		    {
 			    DoOpen();
 		    }
@@ -252,7 +254,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
 	    public async Task PoolingOpenAsync(CancellationToken cancellationToken = default(CancellationToken))
 	    {
-		    if (ConnectionStringBuilder.Pooling)
+		    if (Pooling)
 		    {
 			    await DoOpenAsync(cancellationToken).ConfigureAwait(false);
 		    }
@@ -260,7 +262,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
 	    public void PoolingClose()
 	    {
-		    if (ConnectionStringBuilder.Pooling)
+		    if (Pooling)
 		    {
 			    DoClose();
 		    }
@@ -271,7 +273,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
 	    public void Open()
         {
-	        if (!ConnectionStringBuilder.Pooling)
+	        if (!Pooling)
 	        {
 		        DoOpen();
 	        }
@@ -296,7 +298,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
         public async Task OpenAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-	        if (!ConnectionStringBuilder.Pooling)
+	        if (!Pooling)
 	        {
 		        await DoOpenAsync(cancellationToken).ConfigureAwait(false);
 	        }
@@ -321,7 +323,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
         public void Close()
         {
-	        if (!ConnectionStringBuilder.Pooling)
+	        if (!Pooling)
 	        {
 		        DoClose();
 	        }

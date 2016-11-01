@@ -172,7 +172,7 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
           var storeCommand = CreateStoreCommand();
           try
           {
-              using (var relationalDataReader = storeCommand.RelationalCommand.ExecuteReader(connection, storeCommand.ParameterValues, false))
+              using (var relationalDataReader = storeCommand.RelationalCommand.ExecuteReader(connection, storeCommand.ParameterValues))
               {
                   Consume(relationalDataReader.DbDataReader);
               }
@@ -192,7 +192,7 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
           var storeCommand = CreateStoreCommand();
           try
           {
-              var dataReader = await storeCommand.RelationalCommand.ExecuteReaderAsync(connection, storeCommand.ParameterValues, false, cancellationToken).ConfigureAwait(false);
+              var dataReader = await storeCommand.RelationalCommand.ExecuteReaderAsync(connection, storeCommand.ParameterValues, cancellationToken).ConfigureAwait(false);
               try
               {
                   await ConsumeAsync(dataReader.DbDataReader, cancellationToken).ConfigureAwait(false);

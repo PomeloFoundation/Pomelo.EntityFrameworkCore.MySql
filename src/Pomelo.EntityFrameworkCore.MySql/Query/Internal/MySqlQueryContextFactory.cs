@@ -11,16 +11,17 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
 		private readonly IRelationalConnection _connection;
 
 		public MySqlQueryContextFactory(
-			[NotNull] IStateManager stateManager,
+			[NotNull] ICurrentDbContext currentContext,
 			[NotNull] IConcurrencyDetector concurrencyDetector,
 			[NotNull] IRelationalConnection connection,
-			[NotNull] IChangeDetector changeDetector)
-			: base(stateManager, concurrencyDetector, connection, changeDetector)
+			[NotNull] IExecutionStrategyFactory executionStrategyFactory)
+			: base(currentContext, concurrencyDetector, connection, executionStrategyFactory)
 		{
 			_connection = connection;
 		}
 
 		public override QueryContext Create()
-			=> new MySqlQueryContext(CreateQueryBuffer, _connection, StateManager, ConcurrencyDetector);
+			=> new MySqlQueryContext(CreateQueryBuffer, _connection, StateManager, ConcurrencyDetector, ExecutionStrategyFactory);
+
 	}
 }
