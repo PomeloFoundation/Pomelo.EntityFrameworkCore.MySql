@@ -86,7 +86,7 @@ if (!(Test-Path $sharedRuntimePath))
 # Sometimes, MyGet re-uses a build server and doesn't add dotnet to the path again
 if ($env:BuildRunner -eq "MyGet"){
     $BinPath = (Join-Path $home "Local\Microsoft\dotnet\");
-    Say "MyGet: Adding to current process PATH: `"$BinPath`". Note: This change will not be visible if PowerShell was run as a child process."
+    echo "MyGet: Adding to current process PATH: `"$BinPath`". Note: This change will not be visible if PowerShell was run as a child process."
     $env:path = "$BinPath;" + $env:path
 }
 
