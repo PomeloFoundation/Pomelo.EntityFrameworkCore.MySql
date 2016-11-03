@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Pomelo.EntityFrameworkCore.MySql.PerfTests.Models;
 using Xunit;
 
@@ -58,7 +58,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 	public class CrmTest : IClassFixture<CrmFixture>
 	{
 		[Fact]
-		public async Task TestCrmSuperUser()
+		public async Task TestCrmSuperUserEagerLoading()
 		{
 			using (var db = new AppDb())
 			{
@@ -77,6 +77,39 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 				Assert.NotNull(superUser.AdminMenus[0].Menu);
 				Assert.Equal(4, superUser.AdminRoles.Count);
 				Assert.NotNull(superUser.AdminRoles[0].Role);
+			}
+		}
+
+		[Fact]
+		public async Task TestCrmSuperUserExplicitLoading()
+		{
+			using (var db = new AppDb())
+			{
+				// load just the superUser
+				var superUser = await db.CrmAdmins.OrderByDescending(m => m.Id).FirstOrDefaultAsync();
+
+				// explicit load AdminMenus
+				await db.Entry(superUser).Collection(m => m.AdminMenus).LoadAsync();
+				// explicit load each Menu
+				var tasks = new List<Task>();
+				foreach (var adminMenu in superUser.AdminMenus)
+					tasks.Add(db.Entry(adminMenu).Reference(m => m.Menu).LoadAsync());
+				await Task.WhenAll(tasks);
+
+				// explicit load AdminRoles, eagerly loading Roles at the same time
+				await db.Entry(superUser).Collection(m => m.AdminRoles).Query().Include(m => m.Role).ToListAsync();
+
+				Assert.NotNull(superUser);
+				Assert.Equal("test", superUser.Username);
+				Assert.Equal("test", superUser.Password);
+				Assert.Equal(5, superUser.AdminMenus.Count);
+				Assert.NotNull(superUser.AdminMenus[0].Menu);
+				Assert.Equal(4, superUser.AdminRoles.Count);
+				Assert.NotNull(superUser.AdminRoles[0].Role);
+
+				// queries can do more than just load!  here's an example to get counts without loading entities
+				Assert.Equal(5, await db.Entry(superUser).Collection(m => m.AdminMenus).Query().CountAsync());
+				Assert.Equal(4, await db.Entry(superUser).Collection(m => m.AdminRoles).Query().CountAsync());
 			}
 		}
 	}
