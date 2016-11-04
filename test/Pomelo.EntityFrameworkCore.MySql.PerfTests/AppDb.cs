@@ -23,6 +23,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 		public DbSet<GeneratedContact> GeneratedContacts { get; set; }
 		public DbSet<GeneratedTime> GeneratedTime { get; set; }
 
+		// people
+		public DbSet<Person> People { get; set; }
+		public DbSet<PersonTeacher> PeopleTeachers { get; set; }
+		public DbSet<PersonKid> PeopleKids { get; set; }
+		public DbSet<PersonParent> PeopleParents { get; set; }
+		public DbSet<PersonFamily> PeopleFamilies { get; set; }
+
 		private readonly bool _configured;
 
 		public AppDb()
@@ -80,6 +87,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 			// Add our models fluent APIs
 			CrmMeta.OnModelCreating(modelBuilder);
 			GeneratedContactMeta.OnModelCreating(modelBuilder);
+			PeopleMeta.OnModelCreating(modelBuilder);
 
 			if (AppConfig.EfProvider == "oracle")
 			{

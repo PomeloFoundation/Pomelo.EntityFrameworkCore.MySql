@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Pomelo.EntityFrameworkCore.MySql.PerfTests.Models;
 using Xunit;
 
@@ -90,11 +89,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 
 				// explicit load AdminMenus
 				await db.Entry(superUser).Collection(m => m.AdminMenus).LoadAsync();
+
 				// explicit load each Menu
-				var tasks = new List<Task>();
+// this code is creating a race condition and hanging somewhere
+// probably an upstream bug in EntityFramework, possibly in MySqlConnector
+// needs further investigation.  this is a poor way to use Explicit Loading anyways though
+//				var tasks = new List<Task>();
+//				foreach (var adminMenu in superUser.AdminMenus)
+//					tasks.Add(db.Entry(adminMenu).Reference(m => m.Menu).LoadAsync());
+//				await Task.WhenAll(tasks);
 				foreach (var adminMenu in superUser.AdminMenus)
-					tasks.Add(db.Entry(adminMenu).Reference(m => m.Menu).LoadAsync());
-				await Task.WhenAll(tasks);
+					await db.Entry(adminMenu).Reference(m => m.Menu).LoadAsync();
 
 				// explicit load AdminRoles, eagerly loading Roles at the same time
 				await db.Entry(superUser).Collection(m => m.AdminRoles).Query().Include(m => m.Role).ToListAsync();
