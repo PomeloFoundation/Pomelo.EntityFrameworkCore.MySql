@@ -23,7 +23,7 @@ To add a `NuGet.config` file in your solution root, then you can use the unstabl
 
 You are able to use MySQL in Entity Framework Core now, We have implemented MySQL Entity Framework Core interfaces. By using a few of lines to makes your project invoke Entity Framework Core with MySQL database. There is a console application sample for accessing MySQL database by using Entity Framework:
 
-① We recommand you to set `utf8` as your MySQL database default charset. By using the following statement will check your DB carset.
+① We recommand you to set `utf8` as your MySQL database default charset. By using the following statement will check your DB charset.
 ```sql
 show variables like 'character_set_database';
 ```
