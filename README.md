@@ -23,17 +23,15 @@ To add a `NuGet.config` file in your solution root, then you can use the unstabl
 
 You are able to use MySQL in Entity Framework Core now, We have implemented MySQL Entity Framework Core interfaces. By using a few of lines to makes your project invoke Entity Framework Core with MySQL database. There is a console application sample for accessing MySQL database by using Entity Framework:
 
-① Ensure `utf8` is your MySQL database default charset.
+① We recommand you to set `utf8` as your MySQL database default charset. By using the following statement will check your DB carset.
 ```sql
 show variables like 'character_set_database';
 ```
 
-If the result is not `utf8`, you should modify your `my.ini` or `my.cnf`.
-
 ② Put `Pomelo.EntityFrameworkCore.MySql` into your `project.json`
 ```json
 {
-  "version": "1.0.0-*",
+  "version": "1.1.0-*",
   "buildOptions": {
     "emitEntryPoint": true
   },
@@ -45,10 +43,10 @@ If the result is not `utf8`, you should modify your `my.ini` or `my.cnf`.
   "dependencies": {
     "Microsoft.NETCore.App": {
       "type": "platform",
-      "version": "1.0.0"
+      "version": "1.1.0-*"
     },
-    "Pomelo.EntityFrameworkCore.MySql": "1.0.1",
-    "Microsoft.EntityFrameworkCore.Tools": "1.0.0-preview2-final"
+    "Pomelo.EntityFrameworkCore.MySql": "1.1.0-*",
+    "Microsoft.EntityFrameworkCore.Tools": "1.0.0-preview3-final"
   },
 
   "frameworks": {
