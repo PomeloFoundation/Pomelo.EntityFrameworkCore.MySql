@@ -37,7 +37,7 @@ show variables like 'character_set_database';
   },
 
   "tools": {
-    "Microsoft.EntityFrameworkCore.Tools": "1.0.0-preview2-final"
+    "Microsoft.EntityFrameworkCore.Tools": "1.0.0-preview3-final"
   },
 
   "dependencies": {
