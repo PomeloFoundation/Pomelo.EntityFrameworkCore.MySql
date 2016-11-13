@@ -2,7 +2,11 @@
   "version": "1.1.0-*",
 
   "buildOptions": {
-    "allowUnsafe": true
+    "allowUnsafe": true,
+    "keyFile": "../../tools/Key.snk",
+    "compile": {
+      "include": "../Shared/*.cs"
+    }
   },
 
   "packOptions": {

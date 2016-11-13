@@ -1,0 +1,198 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="CannotInterpretComputedValue" xml:space="preserve">
+    <value>For column {columnId} unable to interpret computed value {computedValue}. Will not generate code setting a computed value for the property {propertyName} on entity type {entityTypeName}.</value>
+  </data>
+  <data name="CannotInterpretDefaultValue" xml:space="preserve">
+    <value>For column {columnId} unable to interpret default value {defaultValue}. Will not generate code setting a default value for the property {propertyName} on entity type {entityTypeName}.</value>
+  </data>
+  <data name="ColumnNameEmptyOnForeignKey" xml:space="preserve">
+    <value>Found a column on foreign key [{schemaName}].[{tableName}].[{fkName}] with an empty or null name. Not including column in foreign key</value>
+  </data>
+  <data name="ColumnNameEmptyOnIndex" xml:space="preserve">
+    <value>Found a column on index [{schemaName}].[{tableName}].[{indexName}] with an empty or null name. Not including column in index.</value>
+  </data>
+  <data name="ColumnNameEmptyOnTable" xml:space="preserve">
+    <value>Found a column on table [{schemaName}].[{tableName}] with an empty or null name. Skipping column.</value>
+  </data>
+  <data name="ColumnNotInSelectionSet" xml:space="preserve">
+    <value>Column {columnName} belongs to table [{schema}].[{tableName}] which is not included in the selection set. Skipping.</value>
+  </data>
+  <data name="DataTypeDoesNotAllowSqlServerIdentityStrategy" xml:space="preserve">
+    <value>For column {columnId}. This column is set up as an Identity column, but the SQL Server data type is {sqlServerDataType}. This will be mapped to CLR type byte which does not allow the SqlServerValueGenerationStrategy.IdentityColumn setting. Generating a matching Property but ignoring the Identity setting.</value>
+  </data>
+  <data name="ForeignKeyColumnNotInSelectionSet" xml:space="preserve">
+    <value>Foreign key column {columnName} belongs to foreign key {fkName} on table [{schema}].[{tableName}] which is not included in the selection set. Skipping.</value>
+  </data>
+  <data name="ForeignKeyNameEmpty" xml:space="preserve">
+    <value>Found a foreign key on table [{schemaName}].[{tableName}] with an empty or null name. Skipping foreign key.</value>
+  </data>
+  <data name="FoundColumn" xml:space="preserve">
+    <value>Found column with schema: {schema}, table: {tableName}, column name: {columnName}, data type: {dataType}, ordinal: {ordinal}, nullable: {isNullable}, primary key ordinal: {primaryKeyOrdinal}, default value: {defaultValue}, computed value: {computedValue}, precision: {precision}, scale: {scale}, maximum length: {maxLength}, identity: {isIdentity}, computed: {isComputed}.</value>
+  </data>
+  <data name="FoundDefaultSchema" xml:space="preserve">
+    <value>Found default schema {defaultSchema}.</value>
+  </data>
+  <data name="FoundForeignKeyColumn" xml:space="preserve">
+    <value>Found foreign key column with schema: {schema}, table: {tableName}, foreign key name: {fkName}, principal table schema: {principalTableSchema}, principal table: {principalTableName}, column name: {columnName}, principal column name: {principalColumnName}, update action: {updateAction}, delete action: {deleteAction}, ordinal: {ordinal}.</value>
+  </data>
+  <data name="FoundIndexColumn" xml:space="preserve">
+    <value>Found index column with schema: {schema}, table: {tableName}, index name: {indexName}, unique: {isUnique}, type description: {typeDesc}, column name: {columnName}, ordinal: {ordinal}.</value>
+  </data>
+  <data name="FoundSequence" xml:space="preserve">
+    <value>Found sequence with schema: {schema}, name: {name}, data type: {dataType}, cyclic: {isCyclic}, increment: {increment}, start: {start}, minimum: {min}, maximum: {max}.</value>
+  </data>
+  <data name="FoundTable" xml:space="preserve">
+    <value>Found table with schema: {schema}, name: {name}.</value>
+  </data>
+  <data name="FoundTypeAlias" xml:space="preserve">
+    <value>Found type alias {alias} which maps to underlying data type {dataType}.</value>
+  </data>
+  <data name="IndexColumnNotInSelectionSet" xml:space="preserve">
+    <value>Index column {columnName} belongs to index {indexName} on table [{schema}].[{tableName}] which is not included in the selection set. Skipping.</value>
+  </data>
+  <data name="IndexNameEmpty" xml:space="preserve">
+    <value>Found an index on table [{schemaName}].[{tableName}] with an empty or null name. Skipping index.</value>
+  </data>
+  <data name="PrincipalTableNotInSelectionSet" xml:space="preserve">
+    <value>For foreign key {fkName} on table [{schema}].[{tableName}], unable to model the end of the foreign key on principal table [{principalTableSchema}].[{principalTableName}]. This is usually because the principal table was not included in the selection set.</value>
+  </data>
+  <data name="SequenceNameEmpty" xml:space="preserve">
+    <value>Found a sequence in schema [{schemaName}] with an empty or null name. Skipping sequence.</value>
+  </data>
+  <data name="TableNotInSelectionSet" xml:space="preserve">
+    <value>Table [{schema}].[{tableName}] is not included in the selection set. Skipping.</value>
+  </data>
+  <data name="UnableToConvertDefaultValue" xml:space="preserve">
+    <value>For column {columnId} unable to convert default value {defaultValue} into type {propertyType}. Will not generate code setting a default value for the property {propertyName} on entity type {entityTypeName}.</value>
+  </data>
+  <data name="UnableToFindColumnForForeignKey" xml:space="preserve">
+    <value>Foreign Key {fkName} contains a column named {columnName} which cannot be found on table [{schemaName}].[{tableName}]. Not including column in foreign key.</value>
+  </data>
+  <data name="UnableToFindColumnForIndex" xml:space="preserve">
+    <value>Index {indexName} contains a column named {columnName} which cannot be found on table [{schemaName}].[{tableName}]. Not including column in index.</value>
+  </data>
+  <data name="UnableToFindTableForColumn" xml:space="preserve">
+    <value>For column {columnName}. Unable to find parent table [{schemaName}].[{tablename}]. Skipping column.</value>
+  </data>
+  <data name="UnableToFindTableForIndex" xml:space="preserve">
+    <value>For index {indexName}. Unable to find parent table [{schemaName}].[{tableName}]. Skipping index.</value>
+  </data>
+</root>

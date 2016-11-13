@@ -1,0 +1,30 @@
+{
+  "version": "1.0.1",
+  "description": "Design-time Entity Framework Core Functionality for MySQL.",
+  "packOptions": {
+    "tags": [
+      "Entity Framework Core",
+      "entity-framework-core",
+      "EF",
+      "Data",
+      "O/RM",
+      "MySQL"
+    ]
+  },
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "xmlDoc": true,
+    "keyFile": "../../tools/Key.snk",
+    "compile": {
+      "include": "../Shared/*.cs"
+    }
+  },
+  "dependencies": {
+    "Pomelo.EntityFrameworkCore.MySql": "1.0.1-*",
+    "Microsoft.EntityFrameworkCore.Relational.Design": "1.0.1"
+  },
+  "frameworks": {
+    "net451": {},
+    "netstandard1.3": {}
+  }
+}
