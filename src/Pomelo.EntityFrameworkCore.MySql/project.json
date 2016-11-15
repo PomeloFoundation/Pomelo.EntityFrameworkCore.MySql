@@ -20,7 +20,7 @@
 
   "dependencies": {
     "Microsoft.EntityFrameworkCore.Relational": "1.1.0-preview1-final",
-    "MySqlConnector": "0.6.*",
+    "MySqlConnector": "0.7.*",
     "Pomelo.JsonObject": "1.1.0-*"
   },
 
