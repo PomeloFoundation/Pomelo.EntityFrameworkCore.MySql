@@ -19,7 +19,7 @@
   },
 
   "dependencies": {
-    "Microsoft.EntityFrameworkCore.Relational": "1.1.0-preview1-final",
+    "Microsoft.EntityFrameworkCore.Relational": "1.1.0",
     "MySqlConnector": "0.7.*",
     "Pomelo.JsonObject": "1.1.0-*"
   },
@@ -53,7 +53,7 @@
     },
     "netstandard1.3": {
       "dependencies": {
-        "System.Threading.Thread": "4.0.0"
+        "System.Threading.Thread": "4.3.0"
       }
     }
   }

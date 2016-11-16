@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7E8380DB-F015-407B-99C2-26404E551673}"
 EndProject
@@ -11,6 +11,22 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Pomelo.EntityFrameworkCore.MySql.Tests", "test\Pomelo.EntityFrameworkCore.MySql.Tests\Pomelo.EntityFrameworkCore.MySql.Tests.xproj", "{DE5212AE-4C17-4702-851D-0F1FC0D32E3C}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Pomelo.EntityFrameworkCore.MySql.PerfTests", "test\Pomelo.EntityFrameworkCore.MySql.PerfTests\Pomelo.EntityFrameworkCore.MySql.PerfTests.xproj", "{E7D9C7D9-1CDD-4745-975D-9752AE095418}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F0BD39F9-2120-45AD-9FA0-9B080E38DAE5}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitignore = .gitignore
+		.travis.sources.list = .travis.sources.list
+		.travis.yml = .travis.yml
+		appveyor.yml = appveyor.yml
+		build-run.ps1 = build-run.ps1
+		build.cmd = build.cmd
+		build.sh = build.sh
+		global.json = global.json
+		LICENSE = LICENSE
+		NuGet.config = NuGet.config
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
