@@ -63,9 +63,8 @@ if (!(Test-Path $buildFolder)) {
     }
 }
 
-$dotnetVersionFile = $buildFolder + "\cli.version.win"
+$dotnetVersionFile = $buildFolder
 $dotnetChannel = "preview"
-$dotnetVersion = Get-Content $dotnetVersionFile
 $dotnetSharedRuntimeVersion = "1.0.0"
 $dotnetSharedRuntimeChannel = "preview"
 
