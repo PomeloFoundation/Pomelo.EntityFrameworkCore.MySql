@@ -63,7 +63,7 @@ if (!(Test-Path $buildFolder)) {
     }
 }
 
-$dotnetVersionFile = $buildFolder
+$dotnetVersion = "1.0.0-preview2-1-003177"
 $dotnetChannel = "preview"
 $dotnetSharedRuntimeVersion = "1.0.0"
 $dotnetSharedRuntimeChannel = "preview"
