@@ -37,7 +37,7 @@ show variables like 'character_set_database';
   },
 
   "tools": {
-    "Microsoft.EntityFrameworkCore.Tools": "1.0.0-preview3-final"
+    "Microsoft.EntityFrameworkCore.Tools": "1.1.0-preview4-final"
   },
 
   "dependencies": {
@@ -46,7 +46,7 @@ show variables like 'character_set_database';
       "version": "1.1.0-*"
     },
     "Pomelo.EntityFrameworkCore.MySql": "1.1.0-*",
-    "Microsoft.EntityFrameworkCore.Tools": "1.0.0-preview3-final"
+    "Microsoft.EntityFrameworkCore.Tools": "1.1.0-preview4-final"
   },
 
   "frameworks": {
