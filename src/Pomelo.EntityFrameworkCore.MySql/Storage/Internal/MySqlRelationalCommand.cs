@@ -61,8 +61,9 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             cancellationToken.ThrowIfCancellationRequested();
             var mySqlConnection = connection as MySqlRelationalConnection;
             var locked = false;
+		    var startTimestamp = Stopwatch.GetTimestamp();
 
-            try
+		    try
             {
 	            if (ioBehavior == IOBehavior.Asynchronous)
 	            {
@@ -128,7 +129,9 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             }
             finally
             {
-                if (locked && executeMethod != nameof(ExecuteReader))
+	            var currentTimestamp = Stopwatch.GetTimestamp();
+	            Logger.LogCommandExecuted(dbCommand, startTimestamp, currentTimestamp);
+	            if (locked && executeMethod != nameof(ExecuteReader))
                 {
                     // if calling any other method, the command has finished executing and the lock can be released immediately
 	                // ReSharper disable once PossibleNullReferenceException
