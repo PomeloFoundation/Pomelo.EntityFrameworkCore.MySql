@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 
 // ReSharper disable once CheckNamespace
@@ -24,15 +25,19 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         private int _openedCount;
         private bool _openedInternally;
         private int? _commandTimeout;
+	    private readonly ILogger<MySqlRelationalConnection> _logger;
 
-        public readonly SemaphoreSlim Lock = new SemaphoreSlim(1);
+	    public readonly SemaphoreSlim Lock = new SemaphoreSlim(1);
         private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(1);
 
-        public MySqlRelationalConnection([NotNull] IDbContextOptions options)
+        public MySqlRelationalConnection([NotNull] IDbContextOptions options, [NotNull] ILogger<MySqlRelationalConnection> logger)
         {
-            Check.NotNull(options, nameof(options));
+	        Check.NotNull(options, nameof(options));
+	        Check.NotNull(logger, nameof(logger));
 
-            var relationalOptions = RelationalOptionsExtension.Extract(options);
+	        _logger = logger;
+
+	        var relationalOptions = RelationalOptionsExtension.Extract(options);
             _commandTimeout = relationalOptions.CommandTimeout;
             if (relationalOptions.Connection != null)
             {
@@ -54,7 +59,9 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             }
         }
 
-        public DbConnection DbConnection => _connection ?? (_connection = new MySqlConnection(ConnectionString));
+	    protected virtual ILogger Logger => _logger;
+
+	    public DbConnection DbConnection => _connection ?? (_connection = new MySqlConnection(ConnectionString));
 
 	    private MySqlConnection MySqlDbConnection => DbConnection as MySqlConnection;
 
@@ -67,7 +74,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             };
             var optionsBuilder = new DbContextOptionsBuilder();
             optionsBuilder.UseMySql(csb.ConnectionString);
-            return new MySqlRelationalConnection(optionsBuilder.Options);
+            return new MySqlRelationalConnection(optionsBuilder.Options, _logger);
         }
 
 	    private MySqlConnectionStringBuilder _connectionStringBuilder;
@@ -124,8 +131,14 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
         private IDbContextTransaction BeginTransactionWithNoPreconditions(IsolationLevel isolationLevel)
         {
+	        Check.NotNull(_logger, nameof(_logger));
+	        _logger.LogDebug(
+		        RelationalEventId.BeginningTransaction,
+		        isolationLevel,
+		        il => RelationalStrings.RelationalLoggerBeginningTransaction(il.ToString("G")));
+
 	        // ReSharper disable once AssignNullToNotNullAttribute
-	        CurrentTransaction = new MySqlRelationalTransaction(this, MySqlDbConnection.BeginTransaction(isolationLevel) as MySqlTransaction, true);
+	        CurrentTransaction = new MySqlRelationalTransaction(this, MySqlDbConnection.BeginTransaction(isolationLevel) as MySqlTransaction, _logger, true);
 	        return CurrentTransaction;
         }
 
@@ -134,7 +147,13 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 		    CancellationToken cancellationToken = default(CancellationToken)
 	    )
 	    {
-		    CurrentTransaction = new MySqlRelationalTransaction(this, await MySqlDbConnection.BeginTransactionAsync(isolationLevel, cancellationToken).ConfigureAwait(false), true);
+		    Check.NotNull(_logger, nameof(_logger));
+		    _logger.LogDebug(
+			    RelationalEventId.BeginningTransaction,
+			    isolationLevel,
+			    il => RelationalStrings.RelationalLoggerBeginningTransaction(il.ToString("G")));
+
+		    CurrentTransaction = new MySqlRelationalTransaction(this, await MySqlDbConnection.BeginTransactionAsync(isolationLevel, cancellationToken).ConfigureAwait(false), _logger, true);
 		    return CurrentTransaction;
 	    }
 
@@ -160,7 +179,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     throw new InvalidOperationException(RelationalStrings.TransactionAlreadyStarted);
                 }
                 DoOpen();
-                CurrentTransaction = new MySqlRelationalTransaction(this, mySqlTransaction, false);
+                CurrentTransaction = new MySqlRelationalTransaction(this, mySqlTransaction, _logger, false);
             }
             return CurrentTransaction;
         }
@@ -192,6 +211,18 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 		    {
 			    if (_openedCount == 0 && DbConnection.State != ConnectionState.Open)
 			    {
+				    _logger.LogDebug(
+					    RelationalEventId.OpeningConnection,
+					    new
+					    {
+						    _connection.Database,
+						    _connection.DataSource
+					    },
+					    state =>
+						    RelationalStrings.RelationalLoggerOpeningConnection(
+							    state.Database,
+							    state.DataSource));
+
 				    DbConnection.Open();
 				    _openedInternally = true;
 			    }
@@ -211,6 +242,18 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 		    {
 			    if (_openedCount == 0 && DbConnection.State != ConnectionState.Open)
 			    {
+				    _logger.LogDebug(
+					    RelationalEventId.OpeningConnection,
+					    new
+					    {
+						    _connection.Database,
+						    _connection.DataSource
+					    },
+					    state =>
+						    RelationalStrings.RelationalLoggerOpeningConnection(
+							    state.Database,
+							    state.DataSource));
+
 				    await DbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
 				    _openedInternally = true;
 			    }
@@ -229,6 +272,18 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 		    {
 			    if (_openedCount > 0 && --_openedCount == 0 && _openedInternally)
 			    {
+				    _logger.LogDebug(
+					    RelationalEventId.ClosingConnection,
+					    new
+					    {
+						    _connection.Database,
+						    _connection.DataSource
+					    },
+					    state =>
+						    RelationalStrings.RelationalLoggerClosingConnection(
+							    state.Database,
+							    state.DataSource));
+
 				    DbConnection.Close();
 				    _openedInternally = false;
 			    }
