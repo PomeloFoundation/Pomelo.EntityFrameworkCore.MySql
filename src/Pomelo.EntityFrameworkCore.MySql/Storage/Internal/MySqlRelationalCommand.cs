@@ -61,6 +61,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             cancellationToken.ThrowIfCancellationRequested();
             var mySqlConnection = connection as MySqlRelationalConnection;
             var locked = false;
+		    var isReader = false;
 		    var startTimestamp = Stopwatch.GetTimestamp();
 
 		    try
@@ -82,44 +83,30 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                 {
                     case nameof(ExecuteNonQuery):
                     {
-                        using (dbCommand)
-                        {
-	                        if (ioBehavior == IOBehavior.Asynchronous)
-		                        result = await dbCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-	                        else
-		                        result = dbCommand.ExecuteNonQuery();
-                        }
-                        break;
+						if (ioBehavior == IOBehavior.Asynchronous)
+							result = await dbCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+						else
+							result = dbCommand.ExecuteNonQuery();
+	                    break;
                     }
                     case nameof(ExecuteScalar):
                     {
-                        using (dbCommand)
-                        {
-	                        if (ioBehavior == IOBehavior.Asynchronous)
-		                        result = await dbCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
-	                        else
-		                        result = dbCommand.ExecuteScalar();
-                        }
-                        break;
+						if (ioBehavior == IOBehavior.Asynchronous)
+							result = await dbCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+						else
+							result = dbCommand.ExecuteScalar();
+	                    break;
                     }
                     case nameof(ExecuteReader):
                     {
-                        try
-                        {
-	                        MySqlDataReader dataReader;
-	                        if (ioBehavior == IOBehavior.Asynchronous)
-		                        dataReader = await dbCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false) as MySqlDataReader;
-	                        else
-		                        dataReader = dbCommand.ExecuteReader() as MySqlDataReader;
-
-	                        result = new RelationalDataReader(connection, dbCommand, new SynchronizedMySqlDataReader(dataReader, mySqlConnection));
-                        }
-                        catch (Exception)
-                        {
-                            dbCommand.Dispose();
-                            throw;
-                        }
-                        break;
+						MySqlDataReader dataReader;
+						if (ioBehavior == IOBehavior.Asynchronous)
+							dataReader = await dbCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false) as MySqlDataReader;
+						else
+							dataReader = dbCommand.ExecuteReader() as MySqlDataReader;
+						result = new RelationalDataReader(connection, dbCommand, new SynchronizedMySqlDataReader(dataReader, mySqlConnection));
+	                    isReader = true;
+	                    break;
                     }
                     default:
                     {
@@ -131,13 +118,16 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             {
 	            var currentTimestamp = Stopwatch.GetTimestamp();
 	            Logger.LogCommandExecuted(dbCommand, startTimestamp, currentTimestamp);
-	            if (locked && executeMethod != nameof(ExecuteReader))
-                {
-                    // if calling any other method, the command has finished executing and the lock can be released immediately
-	                // ReSharper disable once PossibleNullReferenceException
-	                mySqlConnection.Lock.Release();
-	                mySqlConnection.PoolingClose();
-                }
+	            if (!isReader)
+	            {
+					// NonQuery, Scalar, and Exceptions can be disposed, and should release locks
+		            dbCommand.Dispose();
+		            if (locked)
+		            {
+			            mySqlConnection.Lock.Release();
+			            mySqlConnection.PoolingClose();
+		            }
+	            }
 	            // ReSharper disable once PossibleNullReferenceException
 	            if (!mySqlConnection.Pooling && closeConnection)
 	            {
