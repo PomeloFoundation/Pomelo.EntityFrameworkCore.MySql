@@ -2,6 +2,7 @@
   "version": "1.1.0-*",
   "packOptions": {
     "authors": [ "Amamiya Yuuko" ],
+    "tags": [ "Entity Framework Core", "entity-framework-core", "MySQL", "EF", "ORM", "Data" ],
     "description": "Design-time Entity Framework Core Functionality for MySQL",
     "projectUrl": "https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql",
     "iconUrl": "http://www.1234.sh/assets/Shared/pomelofoundation.png",
