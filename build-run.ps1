@@ -133,3 +133,12 @@ if ($env:BuildRunner -eq "MyGet"){
         exit $LASTEXITCODE;
     }
 }
+
+# MyGet expects nuget packages to be build
+cd (Join-Path $repoFolder (Join-Path "src" "Pomelo.EntityFrameworkCore.MySql.Design"))
+if ($env:BuildRunner -eq "MyGet"){
+    & dotnet pack -c Release
+    if ($LASTEXITCODE -ne 0){
+        exit $LASTEXITCODE;
+    }
+}
