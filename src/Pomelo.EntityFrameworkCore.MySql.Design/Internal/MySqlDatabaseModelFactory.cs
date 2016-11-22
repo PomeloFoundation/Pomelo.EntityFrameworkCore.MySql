@@ -18,7 +18,6 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
         DatabaseModel _databaseModel;
         Dictionary<string, TableModel> _tables;
         Dictionary<string, ColumnModel> _tableColumns;
-        string _database = null;
 
         static string TableKey(TableModel table) => TableKey(table.Name, table.SchemaName);
         static string TableKey(string name, string schema) => $"`{name}`";
@@ -72,8 +71,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
 
                 _databaseModel.DatabaseName = _connection.Database;
                 _databaseModel.DefaultSchemaName = null;
-
-                GetDatabase();
+                
                 GetTables();
                 GetColumns();
                 GetIndexes();
@@ -86,17 +84,6 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                 {
                     _connection.Close();
                 }
-            }
-        }
-
-        const string GetDatabaseQuery = @"SELECT DATABASE()";
-        void GetDatabase()
-        {
-            using (var command = new MySqlCommand(GetTablesQuery, _connection))
-            using (var reader = command.ExecuteReader())
-            {
-                reader.Read();
-                _database = reader.GetString(0);
             }
         }
 
@@ -178,28 +165,28 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
     WHERE `CONSTRAINT_SCHEMA` = '{0}' 
         AND `TABLE_SCHEMA` = '{0}' 
         AND `TABLE_NAME` = '{1}' 
-        AND 'CONSTRAINT_NAME' <> 'PRIMARY'";
+        AND `CONSTRAINT_NAME` <> 'PRIMARY'";
 
         void GetConstraints()
         {
             foreach(var x in _tables)
             {
-                using (var command = new MySqlCommand(string.Format(GetConstraintsQuery, _database, x.Key.Replace("`","")), _connection))
+                using (var command = new MySqlCommand(string.Format(GetConstraintsQuery, _connection.Database, x.Key.Replace("`","")), _connection))
                 using (var reader = command.ExecuteReader())
                 while (reader.Read())
-                {
+                    {
                         var fkInfo = new ForeignKeyModel
                         {
                             Name = reader.GetString(2),
                             OnDelete = ReferentialAction.Cascade,
                             Table = x.Value,
-                            PrincipalTable = _tables[reader.GetString(10)]
+                            PrincipalTable = _tables[$"`{ reader.GetString(10) }`"]
                         };
                         fkInfo.Columns.Add(new ForeignKeyColumnModel
                         {
                             Column = x.Value.Columns.Single(y => y.Name == reader.GetString(6)),
                             Ordinal = reader.GetInt32(7),
-                            PrincipalColumn = _tables[reader.GetString(10)].Columns.Single(y => y.Name == reader.GetString(11))
+                            PrincipalColumn = _tables[$"`{ reader.GetString(10) }`"].Columns.Single(y => y.Name == reader.GetString(11))
                         });
                         x.Value.ForeignKeys.Add(fkInfo);
                 }
