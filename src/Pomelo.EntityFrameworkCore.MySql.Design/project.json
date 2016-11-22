@@ -3,11 +3,12 @@
   "packOptions": {
     "authors": [ "Amamiya Yuuko" ],
     "description": "Design-time Entity Framework Core Functionality for MySQL",
-    "iconUrl": "http://www.npgsql.org/img/postgresql.gif",
-    "licenseUrl": "https://raw.githubusercontent.com/npgsql/Pomelo.EntityFrameworkCore.MySql/dev/LICENSE.txt",
+    "projectUrl": "https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql",
+    "iconUrl": "http://www.1234.sh/assets/Shared/pomelofoundation.png",
+    "licenseUrl": "https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/blob/master/LICENSE",
     "repository": {
       "type": "git",
-      "url": "git://github.com/npgsql/npgsql"
+      "url": "git://github.com/pomelofoundation/pomelo.entityframeworkcore.mysql"
     }
   },
   "dependencies" : {

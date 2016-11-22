@@ -140,6 +140,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                         Name = reader.GetString(0),
                         DataType = reader.GetString(1),
                         IsNullable = reader.GetString(2) == "YES",
+                        DefaultValue = reader[4].ToString() == "" ? null : reader[4].ToString()
                     };
                     x.Value.Columns.Add(column);
                 }
