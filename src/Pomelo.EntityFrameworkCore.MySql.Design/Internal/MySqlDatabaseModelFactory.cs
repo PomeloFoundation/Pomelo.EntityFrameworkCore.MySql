@@ -124,7 +124,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
             }
         }
 
-        const string GetColumnsQuery = @"SHOW COLUMNS FROM `{0}`";
+        const string GetColumnsQuery = @"SHOW COLUMNS FROM {0}";
 
         void GetColumns()
         {
@@ -147,7 +147,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
             }
         }
 
-        const string GetIndexesQuery = @"SHOW INDEX FROM `{0}` WHERE `KEY_NAME` <> 'PRIMARY'";
+        const string GetIndexesQuery = @"SHOW INDEX FROM {0} WHERE `KEY_NAME` <> 'PRIMARY'";
 
         /// <remarks>
         /// Primary keys are handled as in <see cref="GetConstraints"/>, not here
@@ -182,7 +182,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
         {
             foreach(var x in _tables)
             {
-                using (var command = new MySqlCommand(string.Format(GetConstraintsQuery, _database, x.Key), _connection))
+                using (var command = new MySqlCommand(string.Format(GetConstraintsQuery, _database, x.Key.Replace("`","")), _connection))
                 using (var reader = command.ExecuteReader())
                 while (reader.Read())
                 {

@@ -10,6 +10,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
     {
         public virtual IServiceCollection ConfigureDesignTimeServices(/* [NotNull] */ IServiceCollection serviceCollection)
             => serviceCollection
+                .AddSingleton<IScaffoldingModelFactory, RelationalScaffoldingModelFactory>()
                 .AddSingleton<IRelationalAnnotationProvider, MySqlAnnotationProvider>()
                 .AddSingleton<IRelationalTypeMapper, MySqlTypeMapper>()
                 .AddSingleton<IDatabaseModelFactory, MySqlDatabaseModelFactory>();
