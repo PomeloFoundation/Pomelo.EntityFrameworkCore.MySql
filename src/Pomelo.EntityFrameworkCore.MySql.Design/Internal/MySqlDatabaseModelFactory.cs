@@ -137,10 +137,9 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                     var column = new ColumnModel
                     {
                         Table = x.Value,
-                        Name = reader[0].ToString(),
-                        DataType = reader[1].ToString(),
-                        IsNullable = reader[2].ToString() == "YES",
-                        DefaultValue = reader[4].ToString()
+                        Name = reader.GetString(0),
+                        DataType = reader.GetString(1),
+                        IsNullable = reader.GetString(2) == "YES",
                     };
                     x.Value.Columns.Add(column);
                 }
