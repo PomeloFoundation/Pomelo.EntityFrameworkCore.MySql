@@ -114,7 +114,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                         SchemaName = null,
                         Name = reader.GetString(0)
                     };
-
+                    
                     if (_tableSelectionSet.Allows(table.SchemaName, table.Name))
                     {
                         _databaseModel.Tables.Add(table);
@@ -137,10 +137,11 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                     var column = new ColumnModel
                     {
                         Table = x.Value,
+                        PrimaryKeyOrdinal = reader[3].ToString() == "PRI" ? (int?)1 : null,
                         Name = reader.GetString(0),
                         DataType = reader.GetString(1),
                         IsNullable = reader.GetString(2) == "YES",
-                        DefaultValue = reader[4].ToString() == "" ? null : reader[4].ToString()
+                        DefaultValue = reader[4].ToString() == "" ? null : reader[4].ToString(),
                     };
                     x.Value.Columns.Add(column);
                 }
@@ -164,8 +165,9 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                     {
                         Table = x.Value,
                         Name = reader.GetString(2),
-                        IsUnique = reader.GetBoolean(1)
+                        IsUnique = reader.GetBoolean(1),
                     };
+                    index.IndexColumns.Add(new IndexColumnModel { Column = x.Value.Columns.Single(y => y.Name == reader.GetString(2)), Index = index });
 
                     x.Value.Indexes.Add(index);
                 }
