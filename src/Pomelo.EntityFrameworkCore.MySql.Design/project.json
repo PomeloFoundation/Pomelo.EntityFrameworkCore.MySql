@@ -1,0 +1,32 @@
+﻿{
+  "version": "1.1.0-*",
+  "packOptions": {
+    "authors": [ "Amamiya Yuuko" ],
+    "description": "Design-time Entity Framework Core Functionality for MySQL",
+    "iconUrl": "http://www.npgsql.org/img/postgresql.gif",
+    "licenseUrl": "https://raw.githubusercontent.com/npgsql/Pomelo.EntityFrameworkCore.MySql/dev/LICENSE.txt",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/npgsql/npgsql"
+    }
+  },
+  "dependencies" : {
+    "Microsoft.EntityFrameworkCore": "1.1.0",
+    "Microsoft.EntityFrameworkCore.Relational": "1.1.0",
+    "Microsoft.EntityFrameworkCore.Relational.Design": "1.1.0",
+    "Microsoft.Extensions.DependencyInjection": "1.1.0",
+    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0",
+    "Pomelo.EntityFrameworkCore.MySql": "1.1.0-*",
+    "MySqlConnector": "0.7.0"
+  },
+  "frameworks": {
+    "net451": {},
+    "netstandard13": {
+      "imports": [
+        "portable-net452+win81"
+      ],
+      "dependencies": {
+      }
+    }
+  }
+}
