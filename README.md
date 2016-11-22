@@ -180,7 +180,20 @@ Support all Entity Framework Core operations, basic json field support.
 
 ### 1.1.0
 
-Upgrade to .NET Core 1.1 and EF 1.1.0, which supports Explicit Loading.
+Upgrade to .NET Core 1.1 and EF 1.1.0, which supports Explicit Loading. Implement Design-time layer for supporting scaffolding.
+
+① Add Design-time layer and EF Core tools to your project (>= 1.1.0-rtm-10003):
+
+```json
+"Pomelo.EntityFrameworkCore.MySql": "1.1.0-rtm-10003",
+"Pomelo.EntityFrameworkCore.MySql.Design": "1.1.0-rtm-10003",
+"Microsoft.EntityFrameworkCore.Tools": "1.1.0-preview4-final"
+```
+
+② Using the tool to execute scaffolding commands
+```
+dotnet ef dbcontext scaffold "Server=localhost;User Id=root;Password=123456;Database=eftests" "Pomelo.EntityFrameworkCore.MySql"
+```
 
 ## Contribute
 
