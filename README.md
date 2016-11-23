@@ -195,8 +195,8 @@ Upgrade to .NET Core 1.1 and EF 1.1.0, which supports Explicit Loading. Implemen
 }
 ```
 
-```
-tools: {
+```json
+"tools": {
   ...
   "Microsoft.EntityFrameworkCore.Tools.DotNet": "1.1.0-preview4-final"
 }
