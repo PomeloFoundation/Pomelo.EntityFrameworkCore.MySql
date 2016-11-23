@@ -152,7 +152,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                     {
                         Table = x.Value,
                         Name = reader.GetString(2),
-                        IsUnique = reader.GetBoolean(1),
+                        IsUnique = !reader.GetBoolean(1),
                     };
                     index.IndexColumns.Add(new IndexColumnModel { Column = x.Value.Columns.Single(y => y.Name == reader.GetString(2)), Index = index });
 

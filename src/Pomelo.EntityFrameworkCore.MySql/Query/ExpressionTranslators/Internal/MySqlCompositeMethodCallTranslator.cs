@@ -22,6 +22,9 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
             new MySqlStringToLowerTranslator(),
             new MySqlStringToUpperTranslator(),
             new MySqlRegexIsMatchTranslator(),
+            new MySqlContainsOptimizedTranslator(),
+            new MySqlStartsWithOptimizedTranslator(),
+            new MySqlEndsWithOptimizedTranslator()
         };
 
         public MySqlCompositeMethodCallTranslator([NotNull] ILogger<MySqlCompositeMethodCallTranslator> logger)
