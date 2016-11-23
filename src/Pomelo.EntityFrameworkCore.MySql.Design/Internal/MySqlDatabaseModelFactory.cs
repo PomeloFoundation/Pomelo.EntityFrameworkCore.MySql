@@ -161,11 +161,18 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
             }
         }
 
-        const string GetConstraintsQuery = @"SELECT * FROM `INFORMATION_SCHEMA`.`KEY_COLUMN_USAGE` 
-    WHERE `CONSTRAINT_SCHEMA` = '{0}' 
-        AND `TABLE_SCHEMA` = '{0}' 
-        AND `TABLE_NAME` = '{1}' 
-        AND `CONSTRAINT_NAME` <> 'PRIMARY'";
+        const string GetConstraintsQuery = @"SELECT `CONSTRAINT_SCHEMA`, 
+	`CONSTRAINT_NAME`, 
+	`TABLE_NAME`, 
+	`COLUMN_NAME`, 
+	`REFERENCED_TABLE_NAME`, 
+	`REFERENCED_COLUMN_NAME`, 
+	(SELECT `DELETE_RULE` FROM `INFORMATION_SCHEMA`.`REFERENTIAL_CONSTRAINTS` WHERE `REFERENTIAL_CONSTRAINTS`.`CONSTRAINT_NAME` = `KEY_COLUMN_USAGE`.`CONSTRAINT_NAME`) AS `DELETE_RULE`
+FROM `INFORMATION_SCHEMA`.`KEY_COLUMN_USAGE` 
+WHERE `CONSTRAINT_SCHEMA` = '{0}' 
+		AND `TABLE_SCHEMA` = '{0}' 
+		AND `TABLE_NAME` = '{1}' 
+		AND `CONSTRAINT_NAME` <> 'PRIMARY'";
 
         void GetConstraints()
         {
@@ -177,19 +184,38 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                     {
                         var fkInfo = new ForeignKeyModel
                         {
-                            Name = reader.GetString(2),
-                            OnDelete = ReferentialAction.Cascade,
+                            Name = reader.GetString(1),
+                            OnDelete = ConvertToReferentialAction(reader.GetString(6)),
                             Table = x.Value,
-                            PrincipalTable = _tables[$"`{ reader.GetString(10) }`"]
+                            PrincipalTable = _tables[$"`{ reader.GetString(4) }`"]
                         };
                         fkInfo.Columns.Add(new ForeignKeyColumnModel
                         {
-                            Column = x.Value.Columns.Single(y => y.Name == reader.GetString(6)),
-                            Ordinal = reader.GetInt32(7),
-                            PrincipalColumn = _tables[$"`{ reader.GetString(10) }`"].Columns.Single(y => y.Name == reader.GetString(11))
+                            Column = x.Value.Columns.Single(y => y.Name == reader.GetString(3)),
+                            PrincipalColumn = _tables[$"`{ reader.GetString(4) }`"].Columns.Single(y => y.Name == reader.GetString(5))
                         });
                         x.Value.ForeignKeys.Add(fkInfo);
                 }
+            }
+        }
+        private static ReferentialAction? ConvertToReferentialAction(string onDeleteAction)
+        {
+            switch (onDeleteAction.ToUpperInvariant())
+            {
+                case "RESTRICT":
+                    return ReferentialAction.Restrict;
+
+                case "CASCADE":
+                    return ReferentialAction.Cascade;
+
+                case "SET NULL":
+                    return ReferentialAction.SetNull;
+
+                case "NO ACTION":
+                    return ReferentialAction.NoAction;
+
+                default:
+                    return null;
             }
         }
     }

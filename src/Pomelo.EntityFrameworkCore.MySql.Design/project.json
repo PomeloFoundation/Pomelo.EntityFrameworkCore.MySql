@@ -13,11 +13,8 @@
     }
   },
   "dependencies" : {
-    "Microsoft.EntityFrameworkCore": "1.1.0",
-    "Microsoft.EntityFrameworkCore.Relational": "1.1.0",
     "Microsoft.EntityFrameworkCore.Relational.Design": "1.1.0",
     "Microsoft.Extensions.DependencyInjection": "1.1.0",
-    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0",
     "Pomelo.EntityFrameworkCore.MySql": "1.1.0-*",
     "MySqlConnector": "0.7.*"
   },
