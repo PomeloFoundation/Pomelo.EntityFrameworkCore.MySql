@@ -13,8 +13,7 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
             var mySqlTranslators = new List<IMemberTranslator>
             {
                 new MySqlStringLengthTranslator(),
-                new MySqlDateTimeNowTranslator(),
-                new MySqlNewGuidTranslator();
+                new MySqlDateTimeNowTranslator()
             };
 
             AddTranslators(mySqlTranslators);
