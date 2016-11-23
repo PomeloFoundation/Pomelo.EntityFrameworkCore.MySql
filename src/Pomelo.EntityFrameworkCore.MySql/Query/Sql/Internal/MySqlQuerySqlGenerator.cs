@@ -22,7 +22,6 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
         protected override string TypedTrueLiteral => "TRUE";
         protected override string TypedFalseLiteral => "FALSE";
 
-        private IRelationalCommandBuilder _relationalCommandBuilder;
         private static FieldInfo _relationalCommandBuilderFieldInfo = typeof(DefaultQuerySqlGenerator).GetTypeInfo().DeclaredFields.Single(x => x.Name == "_relationalCommandBuilder");
 
         public MySqlQuerySqlGenerator(
@@ -33,7 +32,6 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
             [NotNull] SelectExpression selectExpression)
             : base(commandBuilderFactory, sqlGenerationHelper, parameterNameGeneratorFactory, relationalTypeMapper, selectExpression)
         {
-            _relationalCommandBuilder = (IRelationalCommandBuilder)_relationalCommandBuilderFieldInfo.GetValue(this);
         }
 
         protected override void GenerateTop(SelectExpression selectExpression)
@@ -47,6 +45,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
             if (!SqlFuncAInB.Contains(sqlFunctionExpression.FunctionName))
                 return base.VisitSqlFunction(sqlFunctionExpression);
 
+            var  _relationalCommandBuilder = (IRelationalCommandBuilder)_relationalCommandBuilderFieldInfo.GetValue(this);
             _relationalCommandBuilder.Append(sqlFunctionExpression.FunctionName);
             _relationalCommandBuilder.Append("(");
 
@@ -73,6 +72,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
             {
                 if (i > 0)
                 {
+                    var _relationalCommandBuilder = (IRelationalCommandBuilder)_relationalCommandBuilderFieldInfo.GetValue(this);
                     joinAction(_relationalCommandBuilder);
                 }
 
