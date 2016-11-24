@@ -154,7 +154,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                         Name = reader.GetString(2),
                         IsUnique = !reader.GetBoolean(1),
                     };
-                    index.IndexColumns.Add(new IndexColumnModel { Column = x.Value.Columns.Single(y => y.Name == reader.GetString(2)), Index = index });
+                    index.IndexColumns.Add(new IndexColumnModel { Column = x.Value.Columns.Single(y => y.Name == reader.GetString(4)), Index = index });
 
                     x.Value.Indexes.Add(index);
                 }
