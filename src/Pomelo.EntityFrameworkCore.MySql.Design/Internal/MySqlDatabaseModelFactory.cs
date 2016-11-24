@@ -148,15 +148,19 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                 using (var reader = command.ExecuteReader())
                 while (reader.Read())
                 {
-                    var index = new IndexModel
+                    try
                     {
-                        Table = x.Value,
-                        Name = reader.GetString(2),
-                        IsUnique = !reader.GetBoolean(1),
-                    };
-                    index.IndexColumns.Add(new IndexColumnModel { Column = x.Value.Columns.Single(y => y.Name == reader.GetString(4)), Index = index });
+                        var index = new IndexModel
+                        {
+                            Table = x.Value,
+                            Name = reader.GetString(2),
+                            IsUnique = !reader.GetBoolean(1),
+                        };
+                        index.IndexColumns.Add(new IndexColumnModel { Column = x.Value.Columns.Single(y => y.Name == reader.GetString(4)), Index = index });
 
-                    x.Value.Indexes.Add(index);
+                        x.Value.Indexes.Add(index);
+                    }
+                    catch { }
                 }
             }
         }
