@@ -2,8 +2,11 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
+using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query.Expressions;
 using Microsoft.EntityFrameworkCore.Query.Expressions.Internal;
@@ -19,6 +22,8 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
         protected override string TypedTrueLiteral => "TRUE";
         protected override string TypedFalseLiteral => "FALSE";
 
+        private static FieldInfo _relationalCommandBuilderFieldInfo = typeof(DefaultQuerySqlGenerator).GetTypeInfo().DeclaredFields.Single(x => x.Name == "_relationalCommandBuilder");
+
         public MySqlQuerySqlGenerator(
             [NotNull] IRelationalCommandBuilderFactory commandBuilderFactory,
             [NotNull] ISqlGenerationHelper sqlGenerationHelper,
@@ -31,7 +36,48 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
 
         protected override void GenerateTop(SelectExpression selectExpression)
         {
-           
+        }
+
+        private static string[] SqlFuncAInB = new[] { "POSITION" };
+
+        public override Expression VisitSqlFunction(SqlFunctionExpression sqlFunctionExpression)
+        {
+            if (!SqlFuncAInB.Contains(sqlFunctionExpression.FunctionName))
+                return base.VisitSqlFunction(sqlFunctionExpression);
+
+            var  _relationalCommandBuilder = (IRelationalCommandBuilder)_relationalCommandBuilderFieldInfo.GetValue(this);
+            _relationalCommandBuilder.Append(sqlFunctionExpression.FunctionName);
+            _relationalCommandBuilder.Append("(");
+
+            VisitAInB(sqlFunctionExpression.Arguments.ToList());
+
+            _relationalCommandBuilder.Append(")");
+
+            return sqlFunctionExpression;
+        }
+
+        private void VisitAInB(
+            IReadOnlyList<Expression> expressions, Action<IRelationalCommandBuilder> joinAction = null)
+            => VisitAInB(expressions, e => Visit(e), joinAction);
+
+        private void VisitAInB<T>(
+            IReadOnlyList<T> items, Action<T> itemAction, Action<IRelationalCommandBuilder> joinAction = null)
+        {
+            if (items.Count != 2)
+                throw new ArgumentException("Argument count must be 2.");
+
+            joinAction = joinAction ?? (isb => isb.Append(" IN "));
+
+            for (var i = 0; i < items.Count; i++)
+            {
+                if (i > 0)
+                {
+                    var _relationalCommandBuilder = (IRelationalCommandBuilder)_relationalCommandBuilderFieldInfo.GetValue(this);
+                    joinAction(_relationalCommandBuilder);
+                }
+
+                itemAction(items[i]);
+            }
         }
 
         public override Expression VisitTable(TableExpression tableExpression)

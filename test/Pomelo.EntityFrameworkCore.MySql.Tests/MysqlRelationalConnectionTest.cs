@@ -10,26 +10,26 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests
 
     public class MysqlRelationalConnectionTest
     {
-        [Fact]
-        public void Creates_Mysql_Server_connection_string()
-        {
-            using (var connection = new MySqlRelationalConnection(CreateOptions()))
-            {
-                Assert.IsType<MySqlConnection>(connection.DbConnection);
-            }
-        }
+        //[Fact]
+        //public void Creates_Mysql_Server_connection_string()
+        //{
+        //    using (var connection = new MySqlRelationalConnection(CreateOptions()))
+        //    {
+        //        Assert.IsType<MySqlConnection>(connection.DbConnection);
+        //    }
+        //}
 
-        [Fact]
-        public void Can_create_master_connection_string()
-        {
-            using (var connection = new MySqlRelationalConnection(CreateOptions()))
-            {
-                using (var master = connection.CreateMasterConnection())
-                {
-                    Assert.Equal(@"Server=localhost;Port=3306;Database=mysql;User Id=root;Password=Password12!;AllowUserVariables=True;Use Affected Rows=False;Pooling=False", master.ConnectionString);
-                }
-            }
-        }
+        //[Fact]
+        //public void Can_create_master_connection_string()
+        //{
+        //    using (var connection = new MySqlRelationalConnection(CreateOptions()))
+        //    {
+        //        using (var master = connection.CreateMasterConnection())
+        //        {
+        //            Assert.Equal(@"Server=localhost;Port=3306;Database=mysql;User Id=root;Password=Password12!;AllowUserVariables=True;Use Affected Rows=False;Pooling=False", master.ConnectionString);
+        //        }
+        //    }
+        //}
 
         public static IDbContextOptions CreateOptions()
         {

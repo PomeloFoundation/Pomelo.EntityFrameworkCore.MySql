@@ -33,7 +33,7 @@ cd $PSScriptRoot
 $repoFolder = $PSScriptRoot
 $env:REPO_FOLDER = $repoFolder
 
-$koreBuildZip="https://github.com/aspnet/KoreBuild/archive/rel/1.1.0-preview1.zip"
+$koreBuildZip="https://github.com/aspnet/KoreBuild/archive/rel/1.1.0.zip"
 if ($env:KOREBUILD_ZIP)
 {
     $koreBuildZip=$env:KOREBUILD_ZIP
@@ -63,9 +63,8 @@ if (!(Test-Path $buildFolder)) {
     }
 }
 
-$dotnetVersionFile = $buildFolder + "\cli.version.win"
+$dotnetVersion = "1.0.0-preview2-1-003177"
 $dotnetChannel = "preview"
-$dotnetVersion = Get-Content $dotnetVersionFile
 $dotnetSharedRuntimeVersion = "1.0.0"
 $dotnetSharedRuntimeChannel = "preview"
 
@@ -128,6 +127,15 @@ if ($env:BuildRunner -ne "MyGet"){
 
 # MyGet expects nuget packages to be build
 cd (Join-Path $repoFolder (Join-Path "src" "Pomelo.EntityFrameworkCore.MySql"))
+if ($env:BuildRunner -eq "MyGet"){
+    & dotnet pack -c Release
+    if ($LASTEXITCODE -ne 0){
+        exit $LASTEXITCODE;
+    }
+}
+
+# MyGet expects nuget packages to be build
+cd (Join-Path $repoFolder (Join-Path "src" "Pomelo.EntityFrameworkCore.MySql.Design"))
 if ($env:BuildRunner -eq "MyGet"){
     & dotnet pack -c Release
     if ($LASTEXITCODE -ne 0){

@@ -37,7 +37,7 @@ show variables like 'character_set_database';
   },
 
   "tools": {
-    "Microsoft.EntityFrameworkCore.Tools": "1.0.0-preview3-final"
+    "Microsoft.EntityFrameworkCore.Tools": "1.1.0-preview4-final"
   },
 
   "dependencies": {
@@ -46,7 +46,7 @@ show variables like 'character_set_database';
       "version": "1.1.0-*"
     },
     "Pomelo.EntityFrameworkCore.MySql": "1.1.0-*",
-    "Microsoft.EntityFrameworkCore.Tools": "1.0.0-preview3-final"
+    "Microsoft.EntityFrameworkCore.Tools": "1.1.0-preview4-final"
   },
 
   "frameworks": {
@@ -167,7 +167,7 @@ Milestone | Release week
 ----------|-------------
 1.0.0     | Aug 5th 2016
 1.0.1     | Oct 29th, 2016
-1.1.0     | TBD
+1.1.0     | Nov 25th, 2016
 
 ### 1.0.0 Feature complete
 
@@ -180,7 +180,32 @@ Support all Entity Framework Core operations, basic json field support.
 
 ### 1.1.0
 
-Upgrade to .NET Core 1.1 and EF 1.1.0, which supports Explicit Loading.
+Upgrade to .NET Core 1.1 and EF 1.1.0, which supports Explicit Loading. Implement Design-time layer for supporting scaffolding.
+
+#### Scaffolding Tutorial
+
+① Add Design-time layer and EF Core tools to your project (>= 1.1.0-rtm-10004):
+
+```json
+"dependencies": {
+  ...
+  "Pomelo.EntityFrameworkCore.MySql": "1.1.0-rtm-10004",
+  "Pomelo.EntityFrameworkCore.MySql.Design": "1.1.0-rtm-10004",
+  "Microsoft.EntityFrameworkCore.Tools": "1.1.0-preview4-final"
+}
+```
+
+```json
+"tools": {
+  ...
+  "Microsoft.EntityFrameworkCore.Tools.DotNet": "1.1.0-preview4-final"
+}
+```
+
+② Using the tool to execute scaffolding commands
+```
+dotnet ef dbcontext scaffold "Server=localhost;User Id=root;Password=123456;Database=eftests" "Pomelo.EntityFrameworkCore.MySql"
+```
 
 ## Contribute
 

@@ -13,7 +13,6 @@ using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Internal;
 using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal;
-using Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.EntityFrameworkCore.Query.Sql.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -34,7 +33,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
 	        services.AddRelational()
 		        .AddScoped<IRelationalCommandBuilderFactory, MySqlCommandBuilderFactory>()
-		        .AddScoped<IIncludeExpressionVisitorFactory, MySqlIncludeExpressionVisitorFactory>()
 		        .AddScoped<RelationalQueryContextFactory, MySqlQueryContextFactory>();
 
             services.TryAddEnumerable(ServiceDescriptor
