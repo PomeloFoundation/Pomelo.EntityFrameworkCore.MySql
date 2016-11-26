@@ -22,7 +22,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 	    private readonly RelationalTypeMapping _utinyint         = new RelationalTypeMapping("tinyint unsigned", typeof(byte), DbType.Byte);
 	    private readonly RelationalTypeMapping _smallint         = new RelationalTypeMapping("smallint", typeof(short), DbType.Int16);
 	    private readonly RelationalTypeMapping _usmallint        = new RelationalTypeMapping("smallint unsigned", typeof(ushort), DbType.UInt16);
-	    private readonly RelationalTypeMapping _int              = new RelationalTypeMapping("int", typeof(int), DbType.Int32);
+        private readonly RelationalTypeMapping _int              = new RelationalTypeMapping("int", typeof(int), DbType.Int32);
 	    private readonly RelationalTypeMapping _uint             = new RelationalTypeMapping("int unsigned", typeof(int), DbType.UInt32);
 	    private readonly RelationalTypeMapping _bigint           = new RelationalTypeMapping("bigint", typeof(long), DbType.Int64);
 	    private readonly RelationalTypeMapping _ubigint          = new RelationalTypeMapping("bigint unsigned", typeof(ulong), DbType.UInt64);
@@ -30,7 +30,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 	    // decimals
 	    private readonly RelationalTypeMapping _decimal          = new RelationalTypeMapping("decimal(65, 30)", typeof(decimal), DbType.Decimal);
 	    private readonly RelationalTypeMapping _double           = new RelationalTypeMapping("double", typeof(double), DbType.Double);
-	    private readonly RelationalTypeMapping _float            = new RelationalTypeMapping("float", typeof(float));
+        private readonly RelationalTypeMapping _float            = new RelationalTypeMapping("float", typeof(float));
 
 	    // binary
 	    private readonly MySqlMaxLengthMapping _char             = new MySqlMaxLengthMapping("char", typeof(char), DbType.AnsiStringFixedLength);
@@ -82,12 +82,14 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 	                { "dec", _decimal },
                     { "decimal", _decimal },
                     { "double", _double },
+                    { "double unsigned", _decimal },
                     { "float", _float },
                     { "image", _varbinary },
                     { "int", _int },
                     { "longblob", _varbinarymax },
-                    { "longtext", _varbinarymax },
+                    { "longtext", _varcharmax },
                     { "mediumblob", _varbinarymax },
+                    { "mediumint", _int },
                     { "mediumtext", _varcharmax },
                     { "money", _decimal },
                     { "nchar", _nchar },
@@ -98,6 +100,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     { "smallmoney", _decimal },
                     { "text", _varchar },
                     { "time", _time },
+                    { "timestamp", _datetime },
                     { "tinyint", _tinyint },
                     { "uniqueidentifier", _uniqueidentifier },
                     { "varbinary", _varbinary },

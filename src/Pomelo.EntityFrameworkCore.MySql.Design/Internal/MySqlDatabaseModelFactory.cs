@@ -27,7 +27,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
         public MySqlDatabaseModelFactory(/* [NotNull] */ ILoggerFactory loggerFactory)
         {
             // Check.NotNull(loggerFactory, nameof(loggerFactory));
-
+            loggerFactory.AddConsole();
             Logger = loggerFactory.CreateCommandsLogger();
         }
 
@@ -71,7 +71,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
 
                 _databaseModel.DatabaseName = _connection.Database;
                 _databaseModel.DefaultSchemaName = null;
-                
+
                 GetTables();
                 GetColumns();
                 GetIndexes();
@@ -101,7 +101,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                         SchemaName = null,
                         Name = reader.GetString(0)
                     };
-                    
+
                     if (_tableSelectionSet.Allows(table.SchemaName, table.Name))
                     {
                         _databaseModel.Tables.Add(table);
@@ -135,7 +135,14 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
             }
         }
 
-        const string GetIndexesQuery = @"SHOW INDEX FROM {0} WHERE `KEY_NAME` <> 'PRIMARY'";
+        const string GetIndexesQuery = @"SELECT `INDEX_NAME`, 
+    `NON_UNIQUE`, 
+    GROUP_CONCAT(`COLUMN_NAME` SEPARATOR ',') AS COLUMNS
+    FROM `INFORMATION_SCHEMA`.`STATISTICS`
+    WHERE `TABLE_SCHEMA` = '{0}'
+    AND `TABLE_NAME` = '{1}'
+    AND `INDEX_NAME` <> 'PRIMARY'
+    ORDER BY `SEQ_IN_INDEX`;";
 
         /// <remarks>
         /// Primary keys are handled as in <see cref="GetConstraints"/>, not here
@@ -144,7 +151,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
         {
             foreach(var x in _tables)
             {
-                using (var command = new MySqlCommand(string.Format(GetIndexesQuery, x.Key), _connection))
+                using (var command = new MySqlCommand(string.Format(GetIndexesQuery, _connection.Database, x.Key.Replace("`", "")), _connection))
                 using (var reader = command.ExecuteReader())
                 while (reader.Read())
                 {
@@ -153,10 +160,14 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                         var index = new IndexModel
                         {
                             Table = x.Value,
-                            Name = reader.GetString(2),
+                            Name = reader.GetString(0),
                             IsUnique = !reader.GetBoolean(1),
                         };
-                        index.IndexColumns.Add(new IndexColumnModel { Column = x.Value.Columns.Single(y => y.Name == reader.GetString(4)), Index = index });
+
+                        foreach (var column in reader.GetString(2).Split(','))
+                        {
+                            index.IndexColumns.Add(new IndexColumnModel { Column = x.Value.Columns.Single(y => y.Name == column), Index = index });
+                        }
 
                         x.Value.Indexes.Add(index);
                     }
@@ -176,7 +187,7 @@ FROM `INFORMATION_SCHEMA`.`KEY_COLUMN_USAGE`
 WHERE `CONSTRAINT_SCHEMA` = '{0}' 
 		AND `TABLE_SCHEMA` = '{0}' 
 		AND `TABLE_NAME` = '{1}' 
-		AND `CONSTRAINT_TYPE` = 'FOREIGN KEY'
+		AND `CONSTRAINT_NAME` <> 'PRIMARY'
         AND `REFERENCED_TABLE_NAME` IS NOT NULL";
 
         void GetConstraints()
