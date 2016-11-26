@@ -142,6 +142,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
     WHERE `TABLE_SCHEMA` = '{0}'
     AND `TABLE_NAME` = '{1}'
     AND `INDEX_NAME` <> 'PRIMARY'
+    AND `NON_UNIQUE` = 0
     ORDER BY `SEQ_IN_INDEX`;";
 
         /// <remarks>
