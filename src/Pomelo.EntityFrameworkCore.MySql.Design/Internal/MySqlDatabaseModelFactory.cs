@@ -137,13 +137,12 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
 
         const string GetIndexesQuery = @"SELECT `INDEX_NAME`, 
     `NON_UNIQUE`, 
-    GROUP_CONCAT(`COLUMN_NAME` SEPARATOR ',') AS COLUMNS
+    GROUP_CONCAT(`COLUMN_NAME` ORDER BY `SEQ_IN_INDEX` SEPARATOR ',') AS COLUMNS
     FROM `INFORMATION_SCHEMA`.`STATISTICS`
     WHERE `TABLE_SCHEMA` = '{0}'
     AND `TABLE_NAME` = '{1}'
     AND `INDEX_NAME` <> 'PRIMARY'
-    AND `NON_UNIQUE` = 0
-    ORDER BY `SEQ_IN_INDEX`;";
+    GROUP BY `INDEX_NAME`, `NON_UNIQUE`;";
 
         /// <remarks>
         /// Primary keys are handled as in <see cref="GetConstraints"/>, not here
