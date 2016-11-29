@@ -87,7 +87,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
             }
         }
 
-        const string GetTablesQuery = @"SHOW TABLES";
+        const string GetTablesQuery = @"SHOW FULL TABLES WHERE Table_type = 'BASE TABLE'";
 
         void GetTables()
         {
@@ -198,20 +198,27 @@ WHERE `CONSTRAINT_SCHEMA` = '{0}'
                 using (var reader = command.ExecuteReader())
                 while (reader.Read())
                     {
-                        var fkInfo = new ForeignKeyModel
+                        if (_tables.ContainsKey($"`{ reader.GetString(4) }`"))
                         {
-                            Name = reader.GetString(1),
-                            OnDelete = ConvertToReferentialAction(reader.GetString(6)),
-                            Table = x.Value,
-                            PrincipalTable = _tables[$"`{ reader.GetString(4) }`"]
-                        };
-                        fkInfo.Columns.Add(new ForeignKeyColumnModel
+                            var fkInfo = new ForeignKeyModel
+                            {
+                                Name = reader.GetString(1),
+                                OnDelete = ConvertToReferentialAction(reader.GetString(6)),
+                                Table = x.Value,
+                                PrincipalTable = _tables[$"`{ reader.GetString(4) }`"]
+                            };
+                            fkInfo.Columns.Add(new ForeignKeyColumnModel
+                            {
+                                Column = x.Value.Columns.Single(y => y.Name == reader.GetString(3)),
+                                PrincipalColumn = _tables[$"`{ reader.GetString(4) }`"].Columns.Single(y => y.Name == reader.GetString(5))
+                            });
+                            x.Value.ForeignKeys.Add(fkInfo);
+                        }
+                        else
                         {
-                            Column = x.Value.Columns.Single(y => y.Name == reader.GetString(3)),
-                            PrincipalColumn = _tables[$"`{ reader.GetString(4) }`"].Columns.Single(y => y.Name == reader.GetString(5))
-                        });
-                        x.Value.ForeignKeys.Add(fkInfo);
-                }
+                            Logger.LogWarning($"Referenced table `{ reader.GetString(4) }` not in dictionary");
+                        }
+                    }
             }
         }
         private static ReferentialAction? ConvertToReferentialAction(string onDeleteAction)
