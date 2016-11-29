@@ -87,7 +87,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
             }
         }
 
-        const string GetTablesQuery = @"SHOW FULL TABLES WHERE Table_type = 'BASE TABLE'";
+        const string GetTablesQuery = @"SHOW FULL TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
 
         void GetTables()
         {
@@ -216,7 +216,7 @@ WHERE `CONSTRAINT_SCHEMA` = '{0}'
                         }
                         else
                         {
-                            Logger.LogWarning($"Referenced table `{ reader.GetString(4) }` not in dictionary");
+                            Logger.LogWarning($"Referenced table `{ reader.GetString(4) }` is not in dictionary");
                         }
                     }
             }
