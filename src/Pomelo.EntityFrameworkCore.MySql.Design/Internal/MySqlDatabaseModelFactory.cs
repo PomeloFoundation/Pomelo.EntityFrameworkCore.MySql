@@ -216,7 +216,7 @@ WHERE `CONSTRAINT_SCHEMA` = '{0}'
                         }
                         else
                         {
-                            Logger.LogWarning($"Referenced table `{ reader.GetString(4) }` is not in dictionary");
+                            Logger.LogWarning($"Referenced table `{ reader.GetString(4) }` is not in dictionary.");
                         }
                     }
             }
