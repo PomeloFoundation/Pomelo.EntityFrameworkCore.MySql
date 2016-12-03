@@ -16,9 +16,10 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
     {
 	    // boolean
 	    private readonly RelationalTypeMapping _bit              = new RelationalTypeMapping("bit", typeof(bool), DbType.Boolean);
+        private readonly RelationalTypeMapping _tinyint1         = new RelationalTypeMapping("tinyint(1)", typeof(bool), DbType.Boolean);
 
-	    // integers
-	    private readonly RelationalTypeMapping _tinyint          = new RelationalTypeMapping("tinyint", typeof(sbyte), DbType.SByte);
+        // integers
+        private readonly RelationalTypeMapping _tinyint          = new RelationalTypeMapping("tinyint", typeof(sbyte), DbType.SByte);
 	    private readonly RelationalTypeMapping _utinyint         = new RelationalTypeMapping("tinyint unsigned", typeof(byte), DbType.Byte);
 	    private readonly RelationalTypeMapping _smallint         = new RelationalTypeMapping("smallint", typeof(short), DbType.Int16);
 	    private readonly RelationalTypeMapping _usmallint        = new RelationalTypeMapping("smallint unsigned", typeof(ushort), DbType.UInt16);
@@ -102,6 +103,8 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     { "time", _time },
                     { "timestamp", _datetime },
                     { "tinyint", _tinyint },
+                    { "tinyint(1)", _tinyint1 },
+                    { "tinyint unsigned", _utinyint },
                     { "uniqueidentifier", _uniqueidentifier },
                     { "varbinary", _varbinary },
                     { "varchar", _varchar },
