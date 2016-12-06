@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
 using System.Data;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -40,7 +39,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
 	    // string
 	    private readonly MySqlMaxLengthMapping _varchar          = new MySqlMaxLengthMapping("varchar", typeof(string), DbType.AnsiString);
-	    private readonly MySqlMaxLengthMapping _varchar255       = new MySqlMaxLengthMapping("varchar(255)", typeof(string), DbType.AnsiString);
+	    private readonly MySqlMaxLengthMapping _varchar127       = new MySqlMaxLengthMapping("varchar(127)", typeof(string), DbType.AnsiString);
 	    private readonly MySqlMaxLengthMapping _nchar            = new MySqlMaxLengthMapping("varchar", typeof(string), DbType.StringFixedLength);
 	    private readonly MySqlMaxLengthMapping _nvarchar         = new MySqlMaxLengthMapping("varchar", typeof(string));
 	    private readonly RelationalTypeMapping _varcharmax       = new MySqlMaxLengthMapping("longtext", typeof(string), DbType.AnsiString);
@@ -164,8 +163,8 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                 = new StringRelationalTypeMapper(
                     8000,
                     _varcharmax,
-                    _varchar255,
-                    _varchar255,
+                    _varchar127,
+                    _varchar127,
                     size => new MySqlMaxLengthMapping(
                         "varchar(" + size + ")",
                         typeof(string),
@@ -176,8 +175,8 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                         hasNonDefaultSize: true),
                     8000,
                     _varcharmax,
-                    _varchar255,
-                    _varchar255,
+                    _varchar127,
+                    _varchar127,
                     size => new MySqlMaxLengthMapping(
                         "varchar(" + size + ")",
                         typeof(string),
