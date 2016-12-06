@@ -135,8 +135,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                         return false;
                     }
 
-                    if (DateTime.UtcNow > giveUp
-                        || !RetryOnExistsFailure(e, ref retryCount))
+                    if (DateTime.UtcNow > giveUp || !RetryOnExistsFailure(e, retryCount).GetAwaiter().GetResult())
                     {
                         throw;
                     }
@@ -164,13 +163,12 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                 }
                 catch (MySqlException e)
                 {
-                    if (!retryOnNotExists
-                        && IsDoesNotExist(e))
+                    if (!retryOnNotExists && IsDoesNotExist(e))
                     {
                         return false;
                     }
 
-                    if (!RetryOnExistsFailure(e, ref retryCount))
+                    if (!await RetryOnExistsFailure(e, retryCount).ConfigureAwait(false))
                     {
                         throw;
                     }
@@ -182,12 +180,12 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         private static bool IsDoesNotExist(MySqlException exception) => exception.Number == 1049;
 
         // See Issue #985
-        private bool RetryOnExistsFailure(MySqlException exception, ref int retryCount)
+        private async Task<bool> RetryOnExistsFailure(MySqlException exception, int retryCount)
         {
             if (exception.Number == 1049 && ++retryCount < 30)
             {
                 ClearPool();
-                Thread.Sleep(100);
+                await Task.Delay(100).ConfigureAwait(false);
                 return true;
             }
             return false;
