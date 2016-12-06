@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Models
 {
 	public class DataTypesSimple
 	{
 		public int Id { get; set; }
+
+		// bool
+		public bool    TypeBool { get; set; }
+		// nullable bool
+		public bool?   TypeBoolN { get; set; }
 
 		// integers
 		public short   TypeShort { get; set; }

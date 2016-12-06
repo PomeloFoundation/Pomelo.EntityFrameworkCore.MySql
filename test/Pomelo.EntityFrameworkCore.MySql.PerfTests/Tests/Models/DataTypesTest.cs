@@ -17,6 +17,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
         {
 	        Action<DataTypesSimple> testEmpty = emptyDb =>
 	        {
+		        // bool
+		        Assert.Equal(default(bool), emptyDb.TypeBool);
+		        // nullable bool
+		        Assert.Equal(null, emptyDb.TypeBoolN);
+
 		        // integers
 		        Assert.Equal(default(short), emptyDb.TypeShort);
 		        Assert.Equal(default(ushort), emptyDb.TypeUshort);
@@ -78,6 +83,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 	        // test each data type with a valid value
 	        // ReSharper disable once ObjectCreationAsStatement
 	        Func<DataTypesSimple> newValueMem = () => new DataTypesSimple{
+		        // bool
+		        TypeBool      = true,
+		        // nullable bool
+		        TypeBoolN     = true,
+
 		        // integers
 		        TypeShort      = short.MinValue,
 		        TypeUshort     = ushort.MaxValue,
@@ -128,6 +138,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 
 	        Action<DataTypesSimple> testValue = valueDb =>
 	        {
+		        // bool
+		        Assert.Equal(true, valueDb.TypeBool);
+		        // nullable bool
+		        Assert.Equal(true, valueDb.TypeBoolN);
+
 		        // integers
 		        Assert.Equal(short.MinValue, valueDb.TypeShort);
 		        Assert.Equal(ushort.MaxValue, valueDb.TypeUshort);
