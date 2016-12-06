@@ -10,6 +10,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Models
 		{
 			modelBuilder.Entity<PersonKid>(entity =>
 			{
+				// index the Discriminator to prevent full table scan
+				entity.Property("Discriminator")
+					.HasMaxLength(63);
+				entity.HasIndex("Discriminator");
+
 				entity.HasOne(m => m.Teacher)
 					.WithMany(m => m.Students)
 					.HasForeignKey(m => m.TeacherId)
