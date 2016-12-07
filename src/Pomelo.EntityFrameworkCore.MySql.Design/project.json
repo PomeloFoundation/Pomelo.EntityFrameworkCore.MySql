@@ -1,5 +1,5 @@
 ﻿{
-  "version": "1.1.0-*",
+  "version": "1.1.1-*",
   "packOptions": {
     "authors": [ "Amamiya Yuuko" ],
     "tags": [ "Entity Framework Core", "entity-framework-core", "MySQL", "EF", "ORM", "Data" ],
@@ -16,8 +16,8 @@
     "Microsoft.EntityFrameworkCore.Relational.Design": "1.1.0",
     "Microsoft.Extensions.DependencyInjection": "1.1.0",
     "Microsoft.Extensions.Logging.Console": "1.1.0",
-    "Pomelo.EntityFrameworkCore.MySql": "1.1.0-*",
-    "MySqlConnector": "0.7.*"
+    "Pomelo.EntityFrameworkCore.MySql": "1.1.1-*",
+    "MySqlConnector": "0.8.*"
   },
   "frameworks": {
     "net451": {},
