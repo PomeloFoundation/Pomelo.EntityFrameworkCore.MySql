@@ -1,5 +1,5 @@
 ﻿{
-  "version": "1.1.0-*",
+  "version": "1.1.1-*",
 
   "buildOptions": {
     "allowUnsafe": true
@@ -20,8 +20,8 @@
 
   "dependencies": {
     "Microsoft.EntityFrameworkCore.Relational": "1.1.0",
-    "MySqlConnector": "0.7.*",
-    "Pomelo.JsonObject": "1.1.0-*"
+    "MySqlConnector": "0.8.*",
+    "Pomelo.JsonObject": "1.1.0"
   },
 
   "frameworks": {
