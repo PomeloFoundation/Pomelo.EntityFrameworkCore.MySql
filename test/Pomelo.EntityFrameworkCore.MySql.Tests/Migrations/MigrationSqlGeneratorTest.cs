@@ -68,7 +68,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
             base.AddDefaultDatetimeOperation_with_valueOnUpdate();
 
             Assert.Equal(
-                "ALTER TABLE `People` ADD `Birthday` datetime(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6);" + EOL,
+                "ALTER TABLE `People` ADD `Birthday` datetime DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6);" + EOL,
                 Sql);
         }
 
