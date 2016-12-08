@@ -189,8 +189,8 @@ Upgrade to .NET Core 1.1 and EF 1.1.0, which supports Explicit Loading. Implemen
 ```json
 "dependencies": {
   ...
-  "Pomelo.EntityFrameworkCore.MySql": "1.1.0-rtm-10004",
-  "Pomelo.EntityFrameworkCore.MySql.Design": "1.1.0-rtm-10004",
+  "Pomelo.EntityFrameworkCore.MySql": "1.1.0",
+  "Pomelo.EntityFrameworkCore.MySql.Design": "1.1.0",
   "Microsoft.EntityFrameworkCore.Tools": "1.1.0-preview4-final"
 }
 ```
