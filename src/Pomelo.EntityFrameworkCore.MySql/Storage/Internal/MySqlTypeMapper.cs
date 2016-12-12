@@ -69,6 +69,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     { "bigint", _bigint },
                     //{ "binary varying", _varbinary },
                     { "binary", _varbinary },
+                    { "blob", _varbinary },
                     { "bit", _bit },
                     { "char varying", _varchar },
                     { "char varying(8000)", _varcharmax },
