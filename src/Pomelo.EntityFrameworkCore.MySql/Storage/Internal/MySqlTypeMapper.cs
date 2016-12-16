@@ -32,7 +32,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         private readonly RelationalTypeMapping _float            = new RelationalTypeMapping("float", typeof(float));
 
 	    // binary
-	    private readonly MySqlMaxLengthMapping _char             = new MySqlMaxLengthMapping("char", typeof(char), DbType.AnsiStringFixedLength);
+	    private readonly MySqlMaxLengthMapping _char             = new MySqlMaxLengthMapping("char", typeof(string), DbType.AnsiStringFixedLength);
 	    private readonly RelationalTypeMapping _varbinary        = new RelationalTypeMapping("varbinary", typeof(byte[]), DbType.Binary);
 	    private readonly MySqlMaxLengthMapping _varbinary767     = new MySqlMaxLengthMapping("varbinary(767)", typeof(byte[]), DbType.Binary);
 	    private readonly RelationalTypeMapping _varbinarymax     = new RelationalTypeMapping("longblob", typeof(byte[]), DbType.Binary);
