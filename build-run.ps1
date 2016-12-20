@@ -115,6 +115,13 @@ if ($LASTEXITCODE -ne 0){
 # run functional tests if not on MyGet
 if ($env:BuildRunner -ne "MyGet"){
     cd (Join-Path $repoFolder (Join-Path "test" "Pomelo.EntityFrameworkCore.MySql.PerfTests"))
+    echo "Testing with EF_BATCH_SIZE=1"
+    & dotnet test -c Release
+    if ($LASTEXITCODE -ne 0){
+        exit $LASTEXITCODE;
+    }
+    echo "Testing with EF_BATCH_SIZE=10"
+    $env:EF_BATCH_SIZE = 10
     & dotnet test -c Release
     if ($LASTEXITCODE -ne 0){
         exit $LASTEXITCODE;
