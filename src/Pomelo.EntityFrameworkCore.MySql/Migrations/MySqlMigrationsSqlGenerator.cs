@@ -232,11 +232,12 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(builder, nameof(builder));
 
             builder
-                .AppendLine($"CREATE OR REPLACE FUNCTION mysql_ef_ensure_schema() RETURNS VOID")
+                .AppendLine($"DROP PROCEDURE IF EXISTS mysql_ef_ensure_schema;")
+                .AppendLine($"CREATE PROCEDURE mysql_ef_ensure_schema()")
                 .AppendLine($"BEGIN")
-                .AppendLine($"    IF NOT EXISTS(SELECT 1 FROM `information_schema`.`SCHEMATA` where  `SCHEMA_NAME` = '{ operation.Name }')")
+                .AppendLine($"    IF NOT EXISTS (SELECT 1 FROM `INFORMATION_SCHEMA`.`SCHEMATA` WHERE `SCHEMA_NAME` = '{ operation.Name }')")
                 .AppendLine($"    THEN")
-                .AppendLine($"        CREATE SCHEMA { operation.Name };")
+                .AppendLine($"        CREATE SCHEMA `{ operation.Name }`;")
                 .AppendLine($"    END IF;")
                 .AppendLine($"END")
                 .AppendLine(SqlGenerationHelper.BatchTerminator);
