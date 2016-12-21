@@ -206,6 +206,18 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
             return atTimeZoneExpression;
         }
 
-        
+        public Expression VisitDateAdd([NotNull] DateAddExpression dateAddExpression)
+        {
+            Check.NotNull(dateAddExpression, nameof(dateAddExpression));
+
+            Sql.Append("DATE_ADD(");
+            Visit(dateAddExpression.Arguments.First());
+
+            Sql.Append(", INTERVAL ");
+            Visit(dateAddExpression.Arguments.Last());
+            Sql.Append($" {dateAddExpression.DatePart})");
+
+            return dateAddExpression;
+        }
     }
 }
