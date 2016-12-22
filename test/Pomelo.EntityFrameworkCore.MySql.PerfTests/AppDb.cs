@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using System;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MySQL.Data.EntityFrameworkCore.Extensions;
 using Pomelo.EntityFrameworkCore.MySql.PerfTests.Models;
 
@@ -54,7 +56,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 				else
 				{
 					// Pomelo defines this with a case sensitive "MySql" in Microsoft.EntityFrameworkCore
-					optionsBuilder.UseMySql(AppConfig.Config["Data:ConnectionString"]);
+					optionsBuilder.UseMySql(AppConfig.Config["Data:ConnectionString"], options => options.MaxBatchSize(AppConfig.EfBatchSize));
+					optionsBuilder.UseLoggerFactory(new LoggerFactory().AddConsole(AppConfig.Config.GetSection("Logging")));
 				}
 			}
 		}

@@ -23,4 +23,5 @@ script:
   - docker exec -it dotnet sh -c 'cd /dotnet && dotnet restore'
   - docker exec -it dotnet sh -c 'cd /dotnet/src/Pomelo.EntityFrameworkCore.MySql && dotnet build -c Release'
   - docker exec -it dotnet sh -c 'cd /dotnet/test/Pomelo.EntityFrameworkCore.MySql.Tests && dotnet test -c Release'
-  - docker exec -it dotnet sh -c 'cd /dotnet/test/Pomelo.EntityFrameworkCore.MySql.PerfTests && sed -i "s/127.0.0.1/mysql/g" config.json.example && dotnet test -c Release;'
+  - echo "Testing with EF_BATCH_SIZE=1" && docker exec -it dotnet sh -c 'cd /dotnet/test/Pomelo.EntityFrameworkCore.MySql.PerfTests && sed -i "s/127.0.0.1/mysql/g" config.json.example && dotnet test -c Release;'
+  - echo "Testing with EF_BATCH_SIZE=10" && docker exec -it dotnet sh -c 'cd /dotnet/test/Pomelo.EntityFrameworkCore.MySql.PerfTests && export EF_BATCH_SIZE=10 && dotnet test -c Release;'

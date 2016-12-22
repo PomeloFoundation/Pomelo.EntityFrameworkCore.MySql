@@ -161,18 +161,16 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
             if (allOperations.Count > 0 && allOperations[0] == operations[0])
             {
                 commandStringBuilder
-                    .AppendLine()
                     .Append("SELECT LAST_INSERT_ID()");
 
                 if (operations.Count > 1)
                     for (var i = 1; i < operations.Count; i++)
                         commandStringBuilder.Append($", (SELECT { SqlGenerationHelper.DelimitIdentifier(operations[i].ColumnName) } FROM { SqlGenerationHelper.DelimitIdentifier(name) } WHERE { SqlGenerationHelper.DelimitIdentifier(operations.First().ColumnName) } = LAST_INSERT_ID())");
-                commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator);
+                commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
             }
             else if (operations.Count > 0)
             {
                 commandStringBuilder
-                    .AppendLine()
                     .Append("SELECT ");
 
                 bool isFirst = true;
@@ -198,7 +196,8 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
 
                 commandStringBuilder
                     .Append(string.Join(" AND ", predicates))
-                    .Append(SqlGenerationHelper.StatementTerminator);
+                    .Append(SqlGenerationHelper.StatementTerminator).AppendLine();
+
             }
         }
 
@@ -208,7 +207,7 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
         
             Check.NotNull(commandStringBuilder, nameof(commandStringBuilder))
                 .Append("SELECT ROW_COUNT()")
-                .Append(SqlGenerationHelper.BatchTerminator).AppendLine();
+                .Append(SqlGenerationHelper.StatementTerminator).AppendLine();
 
             return ResultSetMapping.LastInResultSet;
         }

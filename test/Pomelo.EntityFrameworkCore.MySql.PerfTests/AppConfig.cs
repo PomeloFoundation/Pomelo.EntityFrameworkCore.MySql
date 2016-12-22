@@ -9,6 +9,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
     {
 	    public static readonly bool AppVeyor = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("APPVEYOR"));
         public static readonly string EfProvider = Environment.GetEnvironmentVariable("EF_PROVIDER")?.ToLower();
+	    public static readonly int EfBatchSize = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("EF_BATCH_SIZE"))
+		    ? Convert.ToInt32(Environment.GetEnvironmentVariable("EF_BATCH_SIZE")) : 1;
 	    private static readonly string Ci = Environment.GetEnvironmentVariable("CI")?.ToLower();
 	    private static readonly object InitLock = new object();
 
