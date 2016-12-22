@@ -214,10 +214,23 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
             Visit(dateAddExpression.Arguments.First());
 
             Sql.Append(", INTERVAL ");
+
             Visit(dateAddExpression.Arguments.Last());
             Sql.Append($" {dateAddExpression.DatePart})");
 
             return dateAddExpression;
+        }
+
+        public Expression VisitDatePart([NotNull] DatePartExpression datePartExpression)
+        {
+            Check.NotNull(datePartExpression, nameof(datePartExpression));
+
+            Sql.Append($"EXTRACT({datePartExpression.DatePart} FROM ");
+
+            Visit(datePartExpression.Argument);
+            Sql.Append(")");
+
+            return datePartExpression;
         }
     }
 }

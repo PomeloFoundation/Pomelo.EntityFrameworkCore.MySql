@@ -11,18 +11,15 @@ using Microsoft.EntityFrameworkCore.Query.Expressions.Internal;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
 {
-    public class MySqlDateAddTranslator : IMethodCallTranslator
+    public class MySqlDatePartTranslator : IMemberTranslator
     {
-        public virtual Expression Translate([NotNull] MethodCallExpression methodCallExpression)
+        public virtual Expression Translate([NotNull] MemberExpression memberExpression)
         {
             string datePart;
-            if (methodCallExpression.Method.DeclaringType == typeof(DateTime)
-                && (datePart = GetDatePart(methodCallExpression.Method.Name)) != null)
+            if (memberExpression.Expression.Type == typeof(DateTime)
+                && (datePart = GetDatePart(memberExpression.Member.Name)) != null)
             {
-                return new DateAddExpression(datePart, methodCallExpression.Type, new[] {
-                        methodCallExpression.Object,
-                        methodCallExpression.Arguments.First()
-                });
+                return new DatePartExpression(datePart, memberExpression.Type, memberExpression.Expression);
             }
             return null;
         }
@@ -31,17 +28,17 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
         {
             switch (memberName)
             {
-                case nameof(DateTime.AddYears):
+                case nameof(DateTime.Year):
                     return "YEAR";
-                case nameof(DateTime.AddMonths):
+                case nameof(DateTime.Month):
                     return "MONTH";
-                case nameof(DateTime.AddDays):
+                case nameof(DateTime.Day):
                     return "DAY";
-                case nameof(DateTime.AddHours):
+                case nameof(DateTime.Hour):
                     return "HOUR";
-                case nameof(DateTime.AddMinutes):
+                case nameof(DateTime.Minute):
                     return "MINUTE";
-                case nameof(DateTime.AddSeconds):
+                case nameof(DateTime.Second):
                     return "SECOND";
                 default:
                     return null;
