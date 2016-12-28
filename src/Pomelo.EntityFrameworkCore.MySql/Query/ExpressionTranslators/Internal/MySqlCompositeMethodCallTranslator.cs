@@ -24,7 +24,8 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
             new MySqlRegexIsMatchTranslator(),
             new MySqlContainsOptimizedTranslator(),
             new MySqlStartsWithOptimizedTranslator(),
-            new MySqlEndsWithOptimizedTranslator()
+            new MySqlEndsWithOptimizedTranslator(),
+            new MySqlDateAddTranslator()
         };
 
         public MySqlCompositeMethodCallTranslator([NotNull] ILogger<MySqlCompositeMethodCallTranslator> logger)
