@@ -17,7 +17,7 @@
     "Microsoft.Extensions.DependencyInjection": "1.1.0",
     "Microsoft.Extensions.Logging.Console": "1.1.0",
     "Pomelo.EntityFrameworkCore.MySql": "1.1.1-*",
-    "MySqlConnector": "0.9.*"
+    "MySqlConnector": "0.10.*"
   },
   "frameworks": {
     "net451": {},
