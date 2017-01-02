@@ -45,9 +45,9 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 	    private readonly RelationalTypeMapping _varcharmax       = new MySqlMaxLengthMapping("longtext", typeof(string), DbType.AnsiString);
 
 	    // DateTime
-	    private readonly RelationalTypeMapping _datetime         = new RelationalTypeMapping("datetime(6)", typeof(DateTime), DbType.DateTime);
-	    private readonly RelationalTypeMapping _datetimeoffset   = new RelationalTypeMapping("datetime(6)", typeof(DateTimeOffset), DbType.DateTime);
-	    private readonly RelationalTypeMapping _time             = new RelationalTypeMapping("time(6)", typeof(TimeSpan), DbType.Time);
+	    private readonly RelationalTypeMapping _datetime         = new RelationalTypeMapping("datetime", typeof(DateTime), DbType.DateTime);
+	    private readonly RelationalTypeMapping _datetimeoffset   = new RelationalTypeMapping("datetime", typeof(DateTimeOffset), DbType.DateTime);
+	    private readonly RelationalTypeMapping _time             = new RelationalTypeMapping("time", typeof(TimeSpan), DbType.Time);
 
 	    // json
 	    private readonly RelationalTypeMapping _json             = new RelationalTypeMapping("json", typeof(JsonObject<>), DbType.String);

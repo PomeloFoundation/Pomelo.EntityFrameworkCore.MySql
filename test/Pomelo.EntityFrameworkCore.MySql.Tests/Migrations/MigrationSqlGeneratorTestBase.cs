@@ -72,7 +72,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                     Table = "People",
                     Name = "Birthday",
                     ClrType = typeof(DateTime),
-                    ColumnType = "datetime(6)",
+                    ColumnType = "datetime",
                     IsNullable = true,
                     [MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAddOrUpdate] = true
                 });
