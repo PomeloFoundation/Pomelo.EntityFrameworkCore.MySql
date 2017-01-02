@@ -1,5 +1,4 @@
-﻿using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,11 +7,12 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
 {
     public class MySqlDesignTimeServices
     {
-        public virtual IServiceCollection ConfigureDesignTimeServices(/* [NotNull] */ IServiceCollection serviceCollection)
+        public virtual IServiceCollection ConfigureDesignTimeServices(IServiceCollection serviceCollection)
             => serviceCollection
                 .AddSingleton<IScaffoldingModelFactory, MySqlScaffoldingModelFactory>()
                 .AddSingleton<IRelationalAnnotationProvider, MySqlAnnotationProvider>()
-                .AddSingleton<IRelationalTypeMapper, MySqlDesignTimeTypeMapper>()
-                .AddSingleton<IDatabaseModelFactory, MySqlDatabaseModelFactory>();
+                .AddSingleton<IDatabaseModelFactory, MySqlDatabaseModelFactory>()
+                .AddSingleton<MySqlTypeMapper>()
+                .AddScoped<IRelationalTypeMapper, MySqlDesignTimeScopedTypeMapper>();
     }
 }

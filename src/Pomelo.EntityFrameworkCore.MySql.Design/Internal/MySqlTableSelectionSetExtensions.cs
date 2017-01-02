@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using JetBrains.Annotations;
 
 namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
 {

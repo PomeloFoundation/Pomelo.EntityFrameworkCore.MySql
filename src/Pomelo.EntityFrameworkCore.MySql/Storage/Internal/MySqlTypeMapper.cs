@@ -4,9 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Text.RegularExpressions;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Internal;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Utilities;
 
@@ -15,11 +14,10 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 {
     public class MySqlTypeMapper : RelationalTypeMapper
     {
-        private IDbContextOptions _dbContextOptions;
+        private static readonly Regex TypeRe = new Regex(@"([a-z0-9]+)\s*?(?:\(\s*(\d+)?\s*\))?\s*(unsigned)?", RegexOptions.IgnoreCase);
 
         // boolean
         private readonly RelationalTypeMapping _bit              = new RelationalTypeMapping("bit", typeof(bool), DbType.Boolean);
-        private readonly RelationalTypeMapping _tinyintboolean = new RelationalTypeMapping("tinyint", typeof(bool), DbType.Boolean);
 
         // integers
         private readonly RelationalTypeMapping _tinyint          = new RelationalTypeMapping("tinyint", typeof(sbyte), DbType.SByte);
@@ -37,87 +35,84 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         private readonly RelationalTypeMapping _float            = new RelationalTypeMapping("float", typeof(float));
 
 	    // binary
-	    private readonly MySqlMaxLengthMapping _char             = new MySqlMaxLengthMapping("char", typeof(string), DbType.AnsiStringFixedLength);
-	    private readonly RelationalTypeMapping _varbinary        = new RelationalTypeMapping("varbinary", typeof(byte[]), DbType.Binary);
+	    private readonly RelationalTypeMapping _binary           = new RelationalTypeMapping("binary", typeof(byte[]), DbType.Binary);
+        private readonly RelationalTypeMapping _varbinary        = new RelationalTypeMapping("varbinary", typeof(byte[]), DbType.Binary);
 	    private readonly MySqlMaxLengthMapping _varbinary767     = new MySqlMaxLengthMapping("varbinary(767)", typeof(byte[]), DbType.Binary);
 	    private readonly RelationalTypeMapping _varbinarymax     = new RelationalTypeMapping("longblob", typeof(byte[]), DbType.Binary);
 
 	    // string
-	    private readonly MySqlMaxLengthMapping _varchar          = new MySqlMaxLengthMapping("varchar", typeof(string), DbType.AnsiString);
+        private readonly MySqlMaxLengthMapping _char             = new MySqlMaxLengthMapping("char", typeof(string), DbType.AnsiStringFixedLength);
+        private readonly MySqlMaxLengthMapping _varchar          = new MySqlMaxLengthMapping("varchar", typeof(string), DbType.AnsiString);
 	    private readonly MySqlMaxLengthMapping _varchar127       = new MySqlMaxLengthMapping("varchar(127)", typeof(string), DbType.AnsiString);
-	    private readonly MySqlMaxLengthMapping _nchar            = new MySqlMaxLengthMapping("varchar", typeof(string), DbType.StringFixedLength);
-	    private readonly MySqlMaxLengthMapping _nvarchar         = new MySqlMaxLengthMapping("varchar", typeof(string));
 	    private readonly RelationalTypeMapping _varcharmax       = new MySqlMaxLengthMapping("longtext", typeof(string), DbType.AnsiString);
 
 	    // DateTime
-	    private readonly RelationalTypeMapping _datetime         = new RelationalTypeMapping("datetime", typeof(DateTime), DbType.DateTime);
-	    private readonly RelationalTypeMapping _datetimeoffset   = new RelationalTypeMapping("datetime", typeof(DateTimeOffset), DbType.DateTime);
-	    private readonly RelationalTypeMapping _time             = new RelationalTypeMapping("time", typeof(TimeSpan), DbType.Time);
-        private readonly RelationalTypeMapping _datetime6        = new RelationalTypeMapping("datetime(6)", typeof(DateTime), DbType.DateTime);
-        private readonly RelationalTypeMapping _datetimeoffset6  = new RelationalTypeMapping("datetime(6)", typeof(DateTimeOffset), DbType.DateTime);
+        private readonly RelationalTypeMapping _dateTime6        = new RelationalTypeMapping("datetime(6)", typeof(DateTime), DbType.DateTime);
+        private readonly RelationalTypeMapping _dateTimeOffset6  = new RelationalTypeMapping("datetime(6)", typeof(DateTimeOffset), DbType.DateTime);
         private readonly RelationalTypeMapping _time6            = new RelationalTypeMapping("time(6)", typeof(TimeSpan), DbType.Time);
 
         // json
         private readonly RelationalTypeMapping _json             = new RelationalTypeMapping("json", typeof(JsonObject<>), DbType.String);
 
 	    // row version
-	    private readonly RelationalTypeMapping _rowversion       = new RelationalTypeMapping("TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", typeof(byte[]), DbType.Binary);
+        private readonly RelationalTypeMapping _rowversion       = new RelationalTypeMapping("TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", typeof(byte[]), DbType.Binary);
 
-	    // guid
+        // guid
 	    private readonly RelationalTypeMapping _uniqueidentifier = new RelationalTypeMapping("char(36)", typeof(Guid));
 
         readonly Dictionary<string, RelationalTypeMapping> _simpleNameMappings;
         readonly Dictionary<Type, RelationalTypeMapping> _simpleMappings;
 
-        public MySqlTypeMapper(IDbContextOptions dbContextOptions)
+        public MySqlTypeMapper()
         {
-            _dbContextOptions = dbContextOptions;
-            var extension = _dbContextOptions.FindExtension<MySqlOptionsExtension>();
-
             _simpleNameMappings
                 = new Dictionary<string, RelationalTypeMapping>(StringComparer.OrdinalIgnoreCase)
                 {
-                    { "bigint", _bigint },
-                    //{ "binary varying", _varbinary },
-                    { "binary", _varbinary },
-                    { "blob", _varbinary },
+                    // boolean
                     { "bit", _bit },
-                    { "char varying", _varchar },
-                    { "char varying(8000)", _varcharmax },
-                    { "char", _char },
-                    { "character varying", _varchar },
-                    { "character varying(8000)", _varcharmax },
-                    { "character", _char },
-                    { "date", extension.UseDateTime6 ? _datetime6 : _datetime },
-                    { "datetime", extension.UseDateTime6 ? _datetime6 : _datetime },
-	                { "dec", _decimal },
+
+                    // integers
+                    { "tinyint", _tinyint },
+                    { "tinyint unsigned", _utinyint },
+                    { "smallint", _smallint },
+                    { "smallint unsigned", _usmallint },
+                    { "mediumint", _int },
+                    { "mediumint unsigned", _uint },
+                    { "int", _int },
+                    { "int unsigned", _uint },
+                    { "bigint", _bigint },
+                    { "bigint unsigned", _ubigint },
+
+                    // decimals
                     { "decimal", _decimal },
                     { "double", _double },
-                    { "double unsigned", _decimal },
                     { "float", _float },
-                    { "image", _varbinary },
-                    { "int", _int },
-                    { "longblob", _varbinarymax },
-                    { "longtext", _varcharmax },
-                    { "mediumblob", _varbinarymax },
-                    { "mediumint", _int },
-                    { "mediumtext", _varcharmax },
-                    { "money", _decimal },
-                    { "nchar", _nchar },
-                    { "ntext", _nvarchar },
-                    { "numeric", _decimal },
-                    { "nvarchar", _nvarchar },
-                    { "smallint", _smallint },
-                    { "smallmoney", _decimal },
-                    { "text", _varchar },
-                    { "time", extension.UseDateTime6 ? _time6 : _time },
-                    { "timestamp", _datetime },
-                    { "tinyint", extension.TreatTinyAsBoolean ? _tinyintboolean : _tinyint },
-                    { "uniqueidentifier", _uniqueidentifier },
+
+                    // binary
+                    { "binary", _binary },
                     { "varbinary", _varbinary },
+                    { "tinyblob", _varbinarymax },
+                    { "blob", _varbinarymax },
+                    { "mediumblob", _varbinarymax },
+                    { "longblob", _varbinarymax },
+
+                    // string
+                    { "char", _char },
                     { "varchar", _varchar },
-                    { "varchar(8000)", _varcharmax },
-                    { "json", _json }
+                    { "tinytext", _varcharmax },
+                    { "text", _varcharmax },
+                    { "mediumtext", _varcharmax },
+                    { "longtext", _varcharmax },
+
+                    // DateTime
+                    { "datetime", _dateTime6 },
+                    { "time", _time6 },
+
+                    // json
+                    { "json", _json },
+
+                    // guid
+                    { "char(36)", _uniqueidentifier }
                 };
 
             _simpleMappings
@@ -145,9 +140,9 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 	                { typeof(char), _utinyint },
 
 	                // DateTime
-	                { typeof(DateTime), extension.UseDateTime6 ? _datetime6 : _datetime },
-	                { typeof(DateTimeOffset), extension.UseDateTime6 ? _datetimeoffset6 : _datetimeoffset },
-	                { typeof(TimeSpan), extension.UseDateTime6 ? _time6 : _time },
+	                { typeof(DateTime), _dateTime6 },
+	                { typeof(DateTimeOffset), _dateTimeOffset6 },
+	                { typeof(TimeSpan), _time6 },
 
 	                // json
 	                { typeof(JsonObject<>), _json },
@@ -214,6 +209,40 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         public override IStringRelationalTypeMapper StringMapper { get; }
 
         protected override string GetColumnType(IProperty property) => property.MySql().ColumnType;
+
+        protected override RelationalTypeMapping CreateMappingFromStoreType([NotNull] string storeType)
+        {
+            Check.NotNull(storeType, nameof(storeType));
+            storeType = storeType.Trim().ToLower();
+
+            var matchType = storeType;
+            var matchLen = 0;
+            var matchUnsigned = false;
+            var match = TypeRe.Match(storeType);
+            if (match.Success)
+            {
+                matchType = match.Groups[1].Value.ToLower();
+                if (!string.IsNullOrWhiteSpace(match.Groups[2].Value))
+                    int.TryParse(match.Groups[2].Value, out matchLen);
+                if (!string.IsNullOrWhiteSpace(match.Groups[3].Value))
+                    matchUnsigned = true;
+            }
+
+            var exactMatch = matchType + (matchLen > 0 ? $"({matchLen})" : "") + (matchUnsigned ? " unsigned" : "");
+            RelationalTypeMapping mapping;
+            if (GetStoreTypeMappings().TryGetValue(exactMatch, out mapping))
+                return mapping;
+
+            var noLengthMatch = matchType + (matchUnsigned ? " unsigned" : "");
+            if (!GetStoreTypeMappings().TryGetValue(noLengthMatch, out mapping))
+                return null;
+
+            if (mapping.ClrType == typeof(string) || mapping.ClrType == typeof(byte[]))
+            {
+                return mapping.CreateCopy(exactMatch, matchLen);
+            }
+            return mapping.CreateCopy(exactMatch, mapping.Size);
+        }
 
         public override RelationalTypeMapping FindMapping(Type clrType)
         {

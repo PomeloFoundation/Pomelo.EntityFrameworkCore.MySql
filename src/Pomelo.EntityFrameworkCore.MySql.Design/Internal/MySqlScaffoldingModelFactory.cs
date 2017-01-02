@@ -1,20 +1,13 @@
-﻿using System;
-using System.Diagnostics;
-using System.Linq;
-using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
+﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
-using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.Logging;
-using MySql.Data.MySqlClient;
 
 namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
 {
     public class MySqlScaffoldingModelFactory : RelationalScaffoldingModelFactory
     {
+        private readonly MySqlDesignTimeScopedTypeMapper _typeMapper;
+
         public MySqlScaffoldingModelFactory(
             ILoggerFactory loggerFactory,
             IRelationalTypeMapper typeMapper,
@@ -22,12 +15,12 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
             CandidateNamingService candidateNamingService)
             : base(loggerFactory, typeMapper, databaseModelFactory, candidateNamingService)
         {
+            _typeMapper = typeMapper as MySqlDesignTimeScopedTypeMapper;
         }
 
         public override IModel Create(string connectionString, TableSelectionSet tableSelectionSet)
         {
-            var csb = new MySqlConnectionStringBuilder(connectionString);
-            (TypeMapper as MySqlDesignTimeTypeMapper).TreatTinyAsBoolean(csb.TreatTinyAsBoolean);
+            _typeMapper.ConnectionString = connectionString;
             var model = base.Create(connectionString, tableSelectionSet);
             model.Scaffolding().UseProviderMethodName = nameof(MySqlDbContextOptionsExtensions.UseMySql);
             return model;

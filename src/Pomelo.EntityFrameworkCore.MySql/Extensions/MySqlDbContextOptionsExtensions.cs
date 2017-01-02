@@ -30,8 +30,6 @@ namespace Microsoft.EntityFrameworkCore
             connectionString = csb.ConnectionString;
             var extension = GetOrCreateExtension(optionsBuilder);
             extension.ConnectionString = connectionString;
-            extension.UseDateTime6 = IsAbleToUseDateTime6(connectionString);
-            extension.TreatTinyAsBoolean = csb.TreatTinyAsBoolean;
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
 
             mySqlOptionsAction?.Invoke(new MySqlDbContextOptionsBuilder(optionsBuilder));
@@ -56,8 +54,7 @@ namespace Microsoft.EntityFrameworkCore
             connection.ConnectionString = csb.ConnectionString;
             var extension = GetOrCreateExtension(optionsBuilder);
             extension.Connection = connection;
-            extension.UseDateTime6 = IsAbleToUseDateTime6(csb.ConnectionString);
-            extension.TreatTinyAsBoolean = csb.TreatTinyAsBoolean;
+            extension.ConnectionString = csb.ConnectionString;
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
 
             mySqlOptionsAction?.Invoke(new MySqlDbContextOptionsBuilder(optionsBuilder));
@@ -89,26 +86,6 @@ namespace Microsoft.EntityFrameworkCore
             return existing != null
                 ? new MySqlOptionsExtension(existing)
                 : new MySqlOptionsExtension();
-        }
-
-        private static bool IsAbleToUseDateTime6(string connectionStr)
-        {
-            var csb = new MySqlConnectionStringBuilder(connectionStr);
-            csb.Database = null;
-            using (var conn = new MySqlConnection(csb.ConnectionString))
-            {
-                conn.Open();
-                var versionSplited = conn.ServerVersion.Split('.');
-                var number = Convert.ToDouble(versionSplited[0] + "." + versionSplited[1]);
-                if (number >= 5.6)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
         }
     }
 }

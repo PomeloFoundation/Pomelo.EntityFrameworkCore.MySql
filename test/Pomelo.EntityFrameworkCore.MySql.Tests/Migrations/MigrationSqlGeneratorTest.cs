@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities;
 using Xunit;
-using Moq;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
 {
@@ -20,10 +16,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
         {
             get
             {
-                var dbopt = new Mock<IDbContextOptions>();
-                dbopt.Setup(x => x.FindExtension<MySqlOptionsExtension>())
-                    .Returns(new MySqlOptionsExtension());
-                var typeMapper = new MySqlTypeMapper(dbopt.Object);
+                var typeMapper = new MySqlTypeMapper();
 
                 return new MySqlMigrationsSqlGenerationHelper(
                     new RelationalCommandBuilderFactory(

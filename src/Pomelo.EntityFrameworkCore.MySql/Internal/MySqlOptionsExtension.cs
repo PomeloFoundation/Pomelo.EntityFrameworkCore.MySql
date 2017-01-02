@@ -22,10 +22,6 @@ namespace Microsoft.EntityFrameworkCore.Internal
         {
         }
 
-        public bool UseDateTime6 = false;
-
-        public bool TreatTinyAsBoolean = false;
-
         public override void ApplyServices(IServiceCollection services)
                   => Check.NotNull(services, nameof(services)).AddEntityFrameworkMySql();
     }

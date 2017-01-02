@@ -15,11 +15,11 @@
         "xunit": "2.2.0-beta4-*"
     },
   "frameworks": {
-    "netcoreapp1.0": {
+    "netcoreapp1.1": {
         "dependencies": {
             "Microsoft.NETCore.App": {
                 "type": "platform",
-                "version": "1.0.0"
+                "version": "1.1.0"
             }
         },
         "imports": [ "dnxcore50" ]
