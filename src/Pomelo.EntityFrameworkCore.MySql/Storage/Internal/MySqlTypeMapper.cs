@@ -9,8 +9,6 @@ using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Utilities;
-using Microsoft.Extensions.DependencyInjection;
-using MySql.Data.MySqlClient;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Storage.Internal
@@ -70,11 +68,6 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
         readonly Dictionary<string, RelationalTypeMapping> _simpleNameMappings;
         readonly Dictionary<Type, RelationalTypeMapping> _simpleMappings;
-        
-        public MySqlTypeMapper()
-        {
-
-        }
 
         public MySqlTypeMapper(IDbContextOptions dbContextOptions)
         {

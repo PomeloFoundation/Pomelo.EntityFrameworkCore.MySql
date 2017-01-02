@@ -4,13 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Internal;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Utilities;
-using Microsoft.Extensions.DependencyInjection;
-using MySql.Data.MySqlClient;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Storage.Internal
