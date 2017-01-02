@@ -123,7 +123,7 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
       var grouping = UpdateSqlGenerator.AppendBulkInsertOperation(stringBuilder, _bulkInsertCommands, lastIndex);
       for (var i = lastIndex - _bulkInsertCommands.Count; i < lastIndex; i++)
       {
-        CommandResultSet[i] = grouping;
+        CommandResultSet[i] = ResultSetMapping.NoResultSet;
       }
 
       if (grouping != ResultSetMapping.NoResultSet)
@@ -134,38 +134,29 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
       return stringBuilder.ToString();
     }
 
-    protected override void UpdateCachedCommandText(int commandPosition)
-    {
-      var newModificationCommand = ModificationCommands[commandPosition];
+	  protected override void UpdateCachedCommandText(int commandPosition)
+	  {
+		  var newModificationCommand = ModificationCommands[commandPosition];
 
-      if (newModificationCommand.EntityState == EntityState.Added)
-      {
-        if ((_bulkInsertCommands.Count > 0)
-            && !CanBeInsertedInSameStatement(_bulkInsertCommands[0], newModificationCommand))
-        {
-          CachedCommandText.Append(GetBulkInsertCommandText(commandPosition));
-          _bulkInsertCommands.Clear();
-        }
-        _bulkInsertCommands.Add(newModificationCommand);
+		  if (newModificationCommand.EntityState == EntityState.Added)
+		  {
+			  if (_bulkInsertCommands.Count > 0)
+			  {
+				  CachedCommandText.Append(GetBulkInsertCommandText(commandPosition));
+				  _bulkInsertCommands.Clear();
+			  }
+			  _bulkInsertCommands.Add(newModificationCommand);
 
-        LastCachedCommandIndex = commandPosition;
-      }
-      else
-      {
-        CachedCommandText.Append(GetBulkInsertCommandText(commandPosition));
-        _bulkInsertCommands.Clear();
+			  LastCachedCommandIndex = commandPosition;
+		  }
+		  else
+		  {
+			  CachedCommandText.Append(GetBulkInsertCommandText(commandPosition));
+			  _bulkInsertCommands.Clear();
 
-        base.UpdateCachedCommandText(commandPosition);
-      }
-    }
-
-    private static bool CanBeInsertedInSameStatement(ModificationCommand firstCommand, ModificationCommand secondCommand)
-      => string.Equals(firstCommand.TableName, secondCommand.TableName, StringComparison.Ordinal)
-         && string.Equals(firstCommand.Schema, secondCommand.Schema, StringComparison.Ordinal)
-         && firstCommand.ColumnModifications.Where(o => o.IsWrite).Select(o => o.ColumnName).SequenceEqual(
-           secondCommand.ColumnModifications.Where(o => o.IsWrite).Select(o => o.ColumnName))
-         && firstCommand.ColumnModifications.Where(o => o.IsRead).Select(o => o.ColumnName).SequenceEqual(
-           secondCommand.ColumnModifications.Where(o => o.IsRead).Select(o => o.ColumnName));
+			  base.UpdateCachedCommandText(commandPosition);
+		  }
+	  }
 
       public override void Execute(IRelationalConnection connection)
       {
