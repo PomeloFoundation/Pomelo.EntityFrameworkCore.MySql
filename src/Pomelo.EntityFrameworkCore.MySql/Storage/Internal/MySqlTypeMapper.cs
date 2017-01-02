@@ -7,18 +7,23 @@ using System.Data;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Microsoft.Extensions.DependencyInjection;
+using MySql.Data.MySqlClient;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Storage.Internal
 {
     public class MySqlTypeMapper : RelationalTypeMapper
     {
-	    // boolean
-	    private readonly RelationalTypeMapping _bit              = new RelationalTypeMapping("bit", typeof(bool), DbType.Boolean);
+        private readonly IServiceProvider services;
+
+        // boolean
+        private readonly RelationalTypeMapping _bit              = new RelationalTypeMapping("bit", typeof(bool), DbType.Boolean);
 
 	    // integers
 	    private readonly RelationalTypeMapping _tinyint          = new RelationalTypeMapping("tinyint", typeof(sbyte), DbType.SByte);
-	    private readonly RelationalTypeMapping _utinyint         = new RelationalTypeMapping("tinyint unsigned", typeof(byte), DbType.Byte);
+        private readonly RelationalTypeMapping _tinyintboolean   = new RelationalTypeMapping("tinyint", typeof(sbyte), DbType.Boolean);
+        private readonly RelationalTypeMapping _utinyint         = new RelationalTypeMapping("tinyint unsigned", typeof(byte), DbType.Byte);
 	    private readonly RelationalTypeMapping _smallint         = new RelationalTypeMapping("smallint", typeof(short), DbType.Int16);
 	    private readonly RelationalTypeMapping _usmallint        = new RelationalTypeMapping("smallint unsigned", typeof(ushort), DbType.UInt16);
         private readonly RelationalTypeMapping _int              = new RelationalTypeMapping("int", typeof(int), DbType.Int32);
@@ -45,12 +50,15 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 	    private readonly RelationalTypeMapping _varcharmax       = new MySqlMaxLengthMapping("longtext", typeof(string), DbType.AnsiString);
 
 	    // DateTime
-	    private readonly RelationalTypeMapping _datetime         = new RelationalTypeMapping("datetime(6)", typeof(DateTime), DbType.DateTime);
-	    private readonly RelationalTypeMapping _datetimeoffset   = new RelationalTypeMapping("datetime(6)", typeof(DateTimeOffset), DbType.DateTime);
-	    private readonly RelationalTypeMapping _time             = new RelationalTypeMapping("time(6)", typeof(TimeSpan), DbType.Time);
+	    private readonly RelationalTypeMapping _datetime         = new RelationalTypeMapping("datetime", typeof(DateTime), DbType.DateTime);
+	    private readonly RelationalTypeMapping _datetimeoffset   = new RelationalTypeMapping("datetime", typeof(DateTimeOffset), DbType.DateTime);
+	    private readonly RelationalTypeMapping _time             = new RelationalTypeMapping("time", typeof(TimeSpan), DbType.Time);
+        private readonly RelationalTypeMapping _datetime6        = new RelationalTypeMapping("datetime(6)", typeof(DateTime), DbType.DateTime);
+        private readonly RelationalTypeMapping _datetimeoffse6t  = new RelationalTypeMapping("datetime(6)", typeof(DateTimeOffset), DbType.DateTime);
+        private readonly RelationalTypeMapping _time6            = new RelationalTypeMapping("time(6)", typeof(TimeSpan), DbType.Time);
 
-	    // json
-	    private readonly RelationalTypeMapping _json             = new RelationalTypeMapping("json", typeof(JsonObject<>), DbType.String);
+        // json
+        private readonly RelationalTypeMapping _json             = new RelationalTypeMapping("json", typeof(JsonObject<>), DbType.String);
 
 	    // row version
 	    private readonly RelationalTypeMapping _rowversion       = new RelationalTypeMapping("TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", typeof(byte[]), DbType.Binary);
@@ -60,9 +68,27 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
         readonly Dictionary<string, RelationalTypeMapping> _simpleNameMappings;
         readonly Dictionary<Type, RelationalTypeMapping> _simpleMappings;
-
-        public MySqlTypeMapper()
+        
+        public MySqlTypeMapper(IServiceProvider services)
         {
+            this.services = services;
+            var relationalConn = services.GetService<MySqlRelationalConnection>();
+            var TreatTinyIntAsBoolean = true;
+            var UseDateTime6 = false;
+            if (relationalConn != null)
+            {
+                var csb = new MySqlConnectionStringBuilder(relationalConn.DbConnection.ConnectionString);
+                TreatTinyIntAsBoolean = csb.TreatTinyAsBoolean;
+                relationalConn.DbConnection.Open();
+                using (var cmd = new MySqlCommand("SELECT VERSION();", relationalConn.DbConnection as MySqlConnection))
+                {
+                    var version = cmd.ExecuteScalar().ToString().Split('.');
+                    var number = Convert.ToDouble(version[0] + "." + version[1]);
+                    if (number >= 5.6)
+                        UseDateTime6 = true;
+                }
+            }
+
             _simpleNameMappings
                 = new Dictionary<string, RelationalTypeMapping>(StringComparer.OrdinalIgnoreCase)
                 {
@@ -77,8 +103,8 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     { "character varying", _varchar },
                     { "character varying(8000)", _varcharmax },
                     { "character", _char },
-                    { "date", _datetime },
-                    { "datetime", _datetime },
+                    { "date", UseDateTime6 ? _datetime6 : _datetime },
+                    { "datetime", UseDateTime6 ? _datetime6 : _datetime },
 	                { "dec", _decimal },
                     { "decimal", _decimal },
                     { "double", _double },
@@ -99,9 +125,9 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     { "smallint", _smallint },
                     { "smallmoney", _decimal },
                     { "text", _varchar },
-                    { "time", _time },
+                    { "time", UseDateTime6 ? _time6 : _time },
                     { "timestamp", _datetime },
-                    { "tinyint", _tinyint },
+                    { "tinyint", TreatTinyIntAsBoolean ? _tinyintboolean : _tinyint },
                     { "uniqueidentifier", _uniqueidentifier },
                     { "varbinary", _varbinary },
                     { "varchar", _varchar },
