@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.Logging;
+using MySql.Data.MySqlClient;
 
 namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
 {
@@ -25,6 +26,8 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
 
         public override IModel Create(string connectionString, TableSelectionSet tableSelectionSet)
         {
+            var csb = new MySqlConnectionStringBuilder(connectionString);
+            (TypeMapper as MySqlDesignTimeTypeMapper).TreatTinyAsBoolean(csb.TreatTinyAsBoolean);
             var model = base.Create(connectionString, tableSelectionSet);
             model.Scaffolding().UseProviderMethodName = nameof(MySqlDbContextOptionsExtensions.UseMySql);
             return model;

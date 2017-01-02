@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.Linq;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 
@@ -27,7 +28,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
         public MySqlDatabaseModelFactory(/* [NotNull] */ ILoggerFactory loggerFactory)
         {
             // Check.NotNull(loggerFactory, nameof(loggerFactory));
-            //loggerFactory.AddConsole();
+            loggerFactory.AddConsole();
             Logger = loggerFactory.CreateCommandsLogger();
         }
 

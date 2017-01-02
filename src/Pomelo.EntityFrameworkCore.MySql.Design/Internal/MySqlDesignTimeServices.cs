@@ -12,7 +12,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
             => serviceCollection
                 .AddSingleton<IScaffoldingModelFactory, MySqlScaffoldingModelFactory>()
                 .AddSingleton<IRelationalAnnotationProvider, MySqlAnnotationProvider>()
-                .AddSingleton<IRelationalTypeMapper, MySqlTypeMapper>()
+                .AddSingleton<IRelationalTypeMapper, MySqlDesignTimeTypeMapper>()
                 .AddSingleton<IDatabaseModelFactory, MySqlDatabaseModelFactory>();
     }
 }

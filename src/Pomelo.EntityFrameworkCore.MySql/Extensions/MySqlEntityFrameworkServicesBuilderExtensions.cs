@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAdd(new ServiceCollection()
                 .AddSingleton<MySqlValueGeneratorCache>()
-                .AddSingleton<MySqlTypeMapper>()
+                .AddScoped<MySqlTypeMapper>()
                 .AddSingleton<MySqlSqlGenerationHelper>()
                 .AddSingleton<MySqlModelSource>()
                 .AddSingleton<MySqlAnnotationProvider>()
