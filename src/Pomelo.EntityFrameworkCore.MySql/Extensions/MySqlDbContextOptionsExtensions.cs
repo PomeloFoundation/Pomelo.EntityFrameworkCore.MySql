@@ -28,7 +28,6 @@ namespace Microsoft.EntityFrameworkCore
 	            UseAffectedRows = false
             };
             connectionString = csb.ConnectionString;
-
             var extension = GetOrCreateExtension(optionsBuilder);
             extension.ConnectionString = connectionString;
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
@@ -55,6 +54,7 @@ namespace Microsoft.EntityFrameworkCore
             connection.ConnectionString = csb.ConnectionString;
             var extension = GetOrCreateExtension(optionsBuilder);
             extension.Connection = connection;
+            extension.ConnectionString = csb.ConnectionString;
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
 
             mySqlOptionsAction?.Invoke(new MySqlDbContextOptionsBuilder(optionsBuilder));

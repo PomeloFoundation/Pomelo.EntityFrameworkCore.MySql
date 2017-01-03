@@ -27,7 +27,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
         public MySqlDatabaseModelFactory(/* [NotNull] */ ILoggerFactory loggerFactory)
         {
             // Check.NotNull(loggerFactory, nameof(loggerFactory));
-            //loggerFactory.AddConsole();
+            loggerFactory.AddConsole();
             Logger = loggerFactory.CreateCommandsLogger();
         }
 

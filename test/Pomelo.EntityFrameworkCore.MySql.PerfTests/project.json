@@ -22,6 +22,9 @@
     "Pomelo.EntityFrameworkCore.MySql": {
       "target": "project"
     },
+    "Pomelo.EntityFrameworkCore.MySql.Design": {
+      "target": "project"
+    },
     "xunit": "2.2.0-beta4-*"
   },
 
@@ -42,7 +45,7 @@
   },
 
   "frameworks": {
-    "netcoreapp1.0": {
+    "netcoreapp1.1": {
       "dependencies": {
         "Microsoft.NETCore.App": {
           "type": "platform",

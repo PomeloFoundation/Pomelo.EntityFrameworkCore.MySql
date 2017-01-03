@@ -43,7 +43,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         public override IModelSource ModelSource => GetService<MySqlModelSource>();
         public override IUpdateSqlGenerator UpdateSqlGenerator => GetService<MySqlUpdateSqlGenerator>();
         public override IValueGeneratorCache ValueGeneratorCache => GetService<MySqlValueGeneratorCache>();
-        public override IRelationalTypeMapper TypeMapper => GetService<MySqlTypeMapper>();
+        public override IRelationalTypeMapper TypeMapper => GetService<MySqlScopedTypeMapper>();
         public override IConventionSetBuilder ConventionSetBuilder => GetService<MySqlConventionSetBuilder>();
         public override IModificationCommandBatchFactory ModificationCommandBatchFactory => GetService<MySqlModificationCommandBatchFactory>();
         public override IRelationalValueBufferFactoryFactory ValueBufferFactoryFactory => GetService<TypedRelationalValueBufferFactoryFactory>();
