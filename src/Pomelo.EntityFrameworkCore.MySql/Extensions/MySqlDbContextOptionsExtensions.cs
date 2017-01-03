@@ -45,13 +45,19 @@ namespace Microsoft.EntityFrameworkCore
             Check.NotNull(optionsBuilder, nameof(optionsBuilder));
             Check.NotNull(connection, nameof(connection));
 
-            var csb = new MySqlConnectionStringBuilder(connection.ConnectionString)
+            var csb = new MySqlConnectionStringBuilder(connection.ConnectionString);
+            if (csb.AllowUserVariables != true || csb.UseAffectedRows != false)
             {
-	            AllowUserVariables = true,
-	            UseAffectedRows = false
+                csb.AllowUserVariables = true;
+                csb.UseAffectedRows = false;
+                var connState = connection.State;
+                if (connection.State != System.Data.ConnectionState.Closed)
+                    connection.Close();
+                connection.ConnectionString = csb.ConnectionString;
+                if (connState != System.Data.ConnectionState.Closed)
+                    connection.Open();
             };
-
-            connection.ConnectionString = csb.ConnectionString;
+            
             var extension = GetOrCreateExtension(optionsBuilder);
             extension.Connection = connection;
             extension.ConnectionString = csb.ConnectionString;
