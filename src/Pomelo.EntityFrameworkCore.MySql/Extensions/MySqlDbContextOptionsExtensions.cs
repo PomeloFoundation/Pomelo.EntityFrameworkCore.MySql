@@ -46,19 +46,20 @@ namespace Microsoft.EntityFrameworkCore
             Check.NotNull(connection, nameof(connection));
 
             var csb = new MySqlConnectionStringBuilder(connection.ConnectionString);
-            if (csb.AllowUserVariables != true || csb.UseAffectedRows != false)
-            {
-                if (connection.State == System.Data.ConnectionState.Closed)
+	        if (csb.AllowUserVariables != true || csb.UseAffectedRows != false)
+	        {
+	            try
+	            {
+		            csb.AllowUserVariables = true;
+		            csb.UseAffectedRows = false;
+		            connection.ConnectionString = csb.ConnectionString;
+	            }
+	            catch (MySqlException e)
                 {
-                    csb.AllowUserVariables = true;
-                    csb.UseAffectedRows = false;
-                    connection.ConnectionString = csb.ConnectionString;
+                    throw new InvalidOperationException("The MySql Connection string used with Pomelo.EntityFrameworkCore.MySql " +
+                    	"must contain \"UseAffectedRows=false\" and \"AllowUserVariables=true\"", e);
                 }
-                else
-                {
-                    throw new InvalidOperationException("The connection string in Pomelo.EntityFrameworkCore.MySql must contains \"UseAffectedRows=false\" and \"AllowUserVariables=true\"");
-                }
-            };
+            }
             
             var extension = GetOrCreateExtension(optionsBuilder);
             extension.Connection = connection;
