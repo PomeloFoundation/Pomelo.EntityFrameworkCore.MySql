@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
 
 // ReSharper disable once CheckNamespace
@@ -18,6 +19,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
     public class MySqlMigrationsSqlGenerationHelper : MigrationsSqlGenerator
     {
 	    private static readonly Regex TypeRe = new Regex(@"([a-z0-9]+)\s*?(?:\(\s*(\d+)?\s*\))?", RegexOptions.IgnoreCase);
+	    private readonly MySqlScopedTypeMapper _mySqlTypeMapper;
 
 	    public MySqlMigrationsSqlGenerationHelper(
             [NotNull] IRelationalCommandBuilderFactory commandBuilderFactory,
@@ -26,6 +28,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             [NotNull] IRelationalAnnotationProvider annotations)
             : base(commandBuilderFactory, SqlGenerationHelper, typeMapper, annotations)
         {
+	        _mySqlTypeMapper = typeMapper as MySqlScopedTypeMapper;
         }
 
         protected override void Generate([NotNull] MigrationOperation operation, [CanBeNull] IModel model, [NotNull] MigrationCommandListBuilder builder)
@@ -351,10 +354,13 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                         type = "short AUTO_INCREMENT";
                         break;
                     case "datetime":
+                        if (_mySqlTypeMapper != null &&!_mySqlTypeMapper.ConnectionSettings.SupportsDateTime6)
+                            throw new InvalidOperationException($"Error in {table}.{name}: DATETIME does not support values generated " +
+                                "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");
+                        goto case "timestamp";
                     case "timestamp":
                         defaultValueSql = $"CURRENT_TIMESTAMP({matchLen})";
                         break;
-
                 }
             }
 
@@ -364,8 +370,12 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             {
 	            switch (matchType)
 	            {
-                    case "datetime":
-                    case "timestamp":
+	                case "datetime":
+	                    if (_mySqlTypeMapper != null && !_mySqlTypeMapper.ConnectionSettings.SupportsDateTime6)
+	                        throw new InvalidOperationException($"Error in {table}.{name}: DATETIME does not support values generated " +
+                                "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");
+	                    goto case "timestamp";
+	                case "timestamp":
                         if (string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
                             defaultValueSql = $"CURRENT_TIMESTAMP({matchLen})";
 			            onUpdateSql = $"CURRENT_TIMESTAMP({matchLen})";
