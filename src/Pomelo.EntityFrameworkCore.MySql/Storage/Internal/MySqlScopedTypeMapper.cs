@@ -79,7 +79,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             set { _connectionString = value; }
         }
 
-        protected MySqlConnectionSettings ConnectionSettings => _connectionSettings ??
+        public MySqlConnectionSettings ConnectionSettings => _connectionSettings ??
             (_connectionSettings = MySqlConnectionSettings.GetSettings(ConnectionString));
 
         protected virtual RelationalTypeMapping MaybeConvertMapping(RelationalTypeMapping mapping)
