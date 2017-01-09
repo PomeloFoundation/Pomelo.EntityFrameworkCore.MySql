@@ -63,7 +63,6 @@ namespace Microsoft.EntityFrameworkCore
             
             var extension = GetOrCreateExtension(optionsBuilder);
             extension.Connection = connection;
-            extension.ConnectionString = csb.ConnectionString;
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
 
             mySqlOptionsAction?.Invoke(new MySqlDbContextOptionsBuilder(optionsBuilder));
