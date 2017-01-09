@@ -18,7 +18,6 @@
       "type": "build"
     },
     "Microsoft.EntityFrameworkCore.Tools": "1.1.0-preview4-final",
-    "MySql.Data.EntityFrameworkCore": "7.0.6-*",
     "Pomelo.EntityFrameworkCore.MySql": {
       "target": "project"
     },

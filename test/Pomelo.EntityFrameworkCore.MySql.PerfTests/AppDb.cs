@@ -1,8 +1,7 @@
-﻿using System;
+﻿using System.Data.Common;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using MySQL.Data.EntityFrameworkCore.Extensions;
 using Pomelo.EntityFrameworkCore.MySql.PerfTests.Models;
 
 namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
@@ -33,6 +32,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 		public DbSet<PersonFamily> PeopleFamilies { get; set; }
 
 		private readonly bool _configured;
+	    private readonly DbConnection _connection;
 
 		public AppDb()
 		{
@@ -44,22 +44,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 			_configured = true;
 		}
 
+	    public AppDb(DbConnection connection)
+	    {
+	        _configured = false;
+	        _connection = connection;
+	    }
+
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
-			if (!_configured)
-			{
-				if (AppConfig.EfProvider == "oracle")
-				{
-					// Oracle defines this with a case sensitive "MySQL" in MySQL.Data.EntityFrameworkCore.Extensions
-					optionsBuilder.UseMySQL(AppConfig.Config["Data:ConnectionString"] + "ssl mode=none;");
-				}
-				else
-				{
-					// Pomelo defines this with a case sensitive "MySql" in Microsoft.EntityFrameworkCore
-					optionsBuilder.UseMySql(AppConfig.Config["Data:ConnectionString"], options => options.MaxBatchSize(AppConfig.EfBatchSize));
-					optionsBuilder.UseLoggerFactory(new LoggerFactory().AddConsole(AppConfig.Config.GetSection("Logging")));
-				}
-			}
+		    if (_configured)
+		        return;
+
+		    if (_connection != null)
+                optionsBuilder.UseMySql(_connection, options => options.MaxBatchSize(AppConfig.EfBatchSize));
+		    else
+		        optionsBuilder.UseMySql(AppConfig.Config["Data:ConnectionString"], options => options.MaxBatchSize(AppConfig.EfBatchSize));
+
+		    optionsBuilder.UseLoggerFactory(new LoggerFactory().AddConsole(AppConfig.Config.GetSection("Logging")));
 		}
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -70,24 +71,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 			CrmMeta.OnModelCreating(modelBuilder);
 			GeneratedContactMeta.OnModelCreating(modelBuilder);
 			PeopleMeta.OnModelCreating(modelBuilder);
-
-			if (AppConfig.EfProvider == "oracle")
-			{
-				// Oracle's driver does not support JsonObject
-				modelBuilder.Entity<DataTypesVariable>(entity =>
-				{
-					entity.Ignore(m => m.TypeJsonArray);
-					entity.Ignore(m => m.TypeJsonArrayN);
-					entity.Ignore(m => m.TypeJsonObject);
-					entity.Ignore(m => m.TypeJsonObjectN);
-				});
-				modelBuilder.Entity<GeneratedContact>(entity =>
-				{
-					entity.Ignore(m => m.Names);
-					entity.Ignore(m => m.ContactInfo);
-				});
-			}
 		}
-
 	}
 }

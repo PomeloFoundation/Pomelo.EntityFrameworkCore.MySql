@@ -20,7 +20,6 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         private static readonly RelationalTypeMapping OldGuid          = new RelationalTypeMapping("binary(16)", typeof(Guid));
 
         private MySqlConnectionSettings _connectionSettings;
-        private string _connectionString;
         private readonly IDbContextOptions _options;
         private readonly MySqlTypeMapper _typeMapper;
 
@@ -52,35 +51,27 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             return mapping == null ? null : MaybeConvertMapping(mapping);
         }
 
-        public string ConnectionString
+        public string ConnectionString { get; set; }
+
+        public MySqlConnectionSettings ConnectionSettings
         {
             get
             {
-                if (!string.IsNullOrWhiteSpace(_connectionString))
-                    return _connectionString;
+                if (_connectionSettings != null)
+                    return _connectionSettings;
 
-                if (_options == null)
-                    throw new InvalidOperationException(RelationalStrings.NoConnectionOrConnectionString);
+                if (ConnectionString != null)
+                    return _connectionSettings = MySqlConnectionSettings.GetSettings(ConnectionString);
 
                 var relationalOptions = RelationalOptionsExtension.Extract(_options);
-
+                if (relationalOptions.ConnectionString != null)
+                    return _connectionSettings = MySqlConnectionSettings.GetSettings(relationalOptions.ConnectionString);
                 if (relationalOptions.Connection != null)
-                {
-                    if (!string.IsNullOrWhiteSpace(relationalOptions.ConnectionString))
-                        throw new InvalidOperationException(RelationalStrings.ConnectionAndConnectionString);
-                    return relationalOptions.Connection.ConnectionString;
-                }
-
-                if (!string.IsNullOrWhiteSpace(relationalOptions.ConnectionString))
-                    return relationalOptions.ConnectionString;
+                    return _connectionSettings = MySqlConnectionSettings.GetSettings(relationalOptions.Connection);
 
                 throw new InvalidOperationException(RelationalStrings.NoConnectionOrConnectionString);
             }
-            set { _connectionString = value; }
         }
-
-        public MySqlConnectionSettings ConnectionSettings => _connectionSettings ??
-            (_connectionSettings = MySqlConnectionSettings.GetSettings(ConnectionString));
 
         protected virtual RelationalTypeMapping MaybeConvertMapping(RelationalTypeMapping mapping)
         {
