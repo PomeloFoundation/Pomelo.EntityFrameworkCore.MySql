@@ -102,7 +102,7 @@ namespace MySqlTest
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder
-                .UseMySql(@"Server=localhost;database=ef;uid=root;pwd=19931101;");
+                .UseMySql(@"Server=localhost;database=ef;uid=root;pwd=123456;");
     }
 
     public class Program
