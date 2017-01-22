@@ -66,7 +66,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations.Internal
             }
         }
 
-        protected override bool InterpretExistsResult(object value) => value != DBNull.Value;
+        protected override bool InterpretExistsResult(object value) => value != null;
 
         public override string GetCreateIfNotExistsScript()
         {
