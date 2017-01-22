@@ -46,7 +46,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
             services.AddEntityFrameworkMySql();
 
             services.AddDbContext<AppDb>(
-                options => options.UseMySql(AppConfig.Config["Data:ConnectionString"]),
+                options => options.UseMySql(AppConfig.Config["Data:ConnectionString"],
+                    mysqlOptions => mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize)),
                 ServiceLifetime.Scoped);
         }
 
