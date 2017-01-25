@@ -2,6 +2,7 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Data;
 using System.Linq;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
@@ -20,15 +21,18 @@ namespace Microsoft.EntityFrameworkCore.Migrations
     {
 	    private static readonly Regex TypeRe = new Regex(@"([a-z0-9]+)\s*?(?:\(\s*(\d+)?\s*\))?", RegexOptions.IgnoreCase);
 	    private readonly MySqlScopedTypeMapper _mySqlTypeMapper;
+        private readonly IRelationalConnection _relationalConnection;
 
 	    public MySqlMigrationsSqlGenerationHelper(
             [NotNull] IRelationalCommandBuilderFactory commandBuilderFactory,
             [NotNull] ISqlGenerationHelper SqlGenerationHelper,
             [NotNull] IRelationalTypeMapper typeMapper,
-            [NotNull] IRelationalAnnotationProvider annotations)
+            [NotNull] IRelationalAnnotationProvider annotations,
+	        [NotNull] IRelationalConnection relationalConnection)
             : base(commandBuilderFactory, SqlGenerationHelper, typeMapper, annotations)
         {
 	        _mySqlTypeMapper = typeMapper as MySqlScopedTypeMapper;
+            _relationalConnection = relationalConnection;
         }
 
         protected override void Generate([NotNull] MigrationOperation operation, [CanBeNull] IModel model, [NotNull] MigrationCommandListBuilder builder)
@@ -292,8 +296,45 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
-            var property = FindProperty(model, model.MySql().DefaultSchema, operation.Table, operation.NewName);
-            var type = TypeMapper.FindMapping(property).StoreType;
+            string createTableSyntax = null;
+
+            var connection = _relationalConnection.DbConnection;
+            var opened = false;
+            if (connection.State == ConnectionState.Closed)
+            {
+                connection.Open();
+                opened = true;
+            }
+            try
+            {
+                using (var cmd = _relationalConnection.DbConnection.CreateCommand())
+                {
+                    var schemaText = string.IsNullOrWhiteSpace(operation.Schema) ? "" : $"`{operation.Schema}`.";
+                    cmd.CommandText = $"SHOW CREATE TABLE {schemaText}`{operation.Table}`";
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                            createTableSyntax = reader.GetFieldValue<string>(1);
+                    }
+                }
+            }
+            finally
+            {
+                if (opened)
+                    connection.Close();
+            }
+
+            if (createTableSyntax == null)
+                throw new InvalidOperationException($"Could not find SHOW CREATE TABLE syntax for table: '{operation.Table}'");
+
+            var columnDefinitionRe = new Regex($"^\\s*`?{operation.Name}`?\\s(.*)?$", RegexOptions.Multiline);
+            var match = columnDefinitionRe.Match(createTableSyntax);
+
+            string columnDefinition;
+            if (match.Success)
+                columnDefinition = match.Groups[1].Value.TrimEnd(',');
+            else
+                throw new InvalidOperationException($"Could not find column definition for table: '{operation.Table}' column: {operation.Name}");
 
             builder.Append("ALTER TABLE ")
                 .Append(SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
@@ -302,10 +343,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 .Append(" ")
                 .Append(SqlGenerationHelper.DelimitIdentifier(operation.NewName))
                 .Append(" ")
-                .Append(type);
-
-            if (!property.IsNullable)
-                builder.Append(" NOT NULL");
+                .Append(columnDefinition);
 
             EndStatement(builder);
         }

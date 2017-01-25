@@ -57,11 +57,17 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     connection.Open();
                     opened = true;
                 }
-                var version = ServerVersion.ParseVersion(connection.ServerVersion);
-                var connectionSettings = new MySqlConnectionSettings(settingsCsb, version);
-                if (opened)
-                    connection.Close();
-                return connectionSettings;
+                try
+                {
+                    var version = ServerVersion.ParseVersion(connection.ServerVersion);
+                    var connectionSettings = new MySqlConnectionSettings(settingsCsb, version);
+                    return connectionSettings;
+                }
+                finally
+                {
+                    if (opened)
+                        connection.Close();
+                }
             });
         }
 

@@ -25,7 +25,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                         typeMapper),
                     new MySqlSqlGenerationHelper(),
                     typeMapper,
-                    new MySqlAnnotationProvider());
+                    new MySqlAnnotationProvider(),
+                    new FakeRelationalConnection());
             }
         }
 
