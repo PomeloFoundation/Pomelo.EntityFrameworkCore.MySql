@@ -55,7 +55,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         protected override void GenerateLiteralValue(StringBuilder builder, byte[] value)
         {
             Check.NotNull(value, nameof(value));
-            builder.Append("0x");
+            builder.Append("X''");
             foreach (var @byte in value)
             {
                 builder.Append(@byte.ToString("X2", CultureInfo.InvariantCulture));
