@@ -183,15 +183,9 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
           var storeCommand = CreateStoreCommand();
           try
           {
-              var dataReader = await storeCommand.RelationalCommand.ExecuteReaderAsync(connection, storeCommand.ParameterValues, cancellationToken).ConfigureAwait(false);
-              try
+              using (var relationalDataReader = await storeCommand.RelationalCommand.ExecuteReaderAsync(connection, storeCommand.ParameterValues, cancellationToken).ConfigureAwait(false))
               {
-                  await ConsumeAsync(dataReader.DbDataReader, cancellationToken).ConfigureAwait(false);
-              }
-              finally
-              {
-	                while (await dataReader.DbDataReader.NextResultAsync(cancellationToken).ConfigureAwait(false))
-                  dataReader.Dispose();
+                  await ConsumeAsync(relationalDataReader.DbDataReader, cancellationToken).ConfigureAwait(false);
               }
           }
           catch (DbUpdateException)
