@@ -57,7 +57,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations.Internal
                 
                 builder
                     .Append("TABLE_SCHEMA='")
-                    .Append(SqlGenerationHelper.EscapeLiteral(_connection.DbConnection.Database))
+                    .Append(SqlGenerationHelper.EscapeLiteral(TableSchema ?? _connection.DbConnection.Database))
                     .Append("' AND TABLE_NAME='")
                     .Append(SqlGenerationHelper.EscapeLiteral(TableName))
                     .Append("';");

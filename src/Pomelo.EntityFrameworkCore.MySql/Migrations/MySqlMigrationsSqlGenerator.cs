@@ -1,4 +1,4 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -156,7 +156,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             if (operation.NewName != null)
             {
                 builder.Append("ALTER TABLE ")
-                    .Append(SqlGenerationHelper.DelimitIdentifier(operation.Table))
+                    .Append(SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
                     .Append(" RENAME INDEX ")
                     .Append(SqlGenerationHelper.DelimitIdentifier(operation.Name))
                     .Append(" TO ")
@@ -309,8 +309,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             {
                 using (var cmd = _relationalConnection.DbConnection.CreateCommand())
                 {
-                    var schemaText = string.IsNullOrWhiteSpace(operation.Schema) ? "" : $"`{operation.Schema}`.";
-                    cmd.CommandText = $"SHOW CREATE TABLE {schemaText}`{operation.Table}`";
+                    cmd.CommandText = $"SHOW CREATE TABLE {SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}";
                     using (var reader = cmd.ExecuteReader())
                     {
                         if (reader.Read())
@@ -325,7 +324,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             }
 
             if (createTableSyntax == null)
-                throw new InvalidOperationException($"Could not find SHOW CREATE TABLE syntax for table: '{operation.Table}'");
+                throw new InvalidOperationException($"Could not find SHOW CREATE TABLE syntax for table: '{SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}'");
 
             var columnDefinitionRe = new Regex($"^\\s*`?{operation.Name}`?\\s(.*)?$", RegexOptions.Multiline);
             var match = columnDefinitionRe.Match(createTableSyntax);
@@ -334,7 +333,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             if (match.Success)
                 columnDefinition = match.Groups[1].Value.TrimEnd(',');
             else
-                throw new InvalidOperationException($"Could not find column definition for table: '{operation.Table}' column: {operation.Name}");
+                throw new InvalidOperationException($"Could not find column definition for table: '{SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}' column: {operation.Name}");
 
             builder.Append("ALTER TABLE ")
                 .Append(SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
@@ -500,7 +499,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             if (operation.Columns.Count() == 1)
             {
                 builder.Append(@"DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;
-CREATE PROCEDURE POMELO_AFTER_ADD_PRIMARY_KEY(IN `TABLE_NAME_ARGUMENT` VARCHAR(255), IN `COLUMN_NAME_ARGUMENT` VARCHAR(255))
+CREATE PROCEDURE POMELO_AFTER_ADD_PRIMARY_KEY(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255), IN `COLUMN_NAME_ARGUMENT` VARCHAR(255))
 BEGIN
 	DECLARE HAS_AUTO_INCREMENT_ID INT(11);
 	DECLARE PRIMARY_KEY_COLUMN_NAME VARCHAR(255);
@@ -510,7 +509,7 @@ BEGIN
 	SELECT COUNT(*) 
 		INTO HAS_AUTO_INCREMENT_ID 
 		FROM `information_schema`.`COLUMNS`
-		WHERE `TABLE_SCHEMA` = (SELECT SCHEMA())
+		WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
 			AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
 			AND `COLUMN_NAME` = COLUMN_NAME_ARGUMENT
 			AND `COLUMN_TYPE` LIKE '%int%'
@@ -519,7 +518,7 @@ BEGIN
 		SELECT `COLUMN_TYPE`
 			INTO PRIMARY_KEY_TYPE
 			FROM `information_schema`.`COLUMNS`
-			WHERE `TABLE_SCHEMA` = (SELECT SCHEMA())
+			WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
 				AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
 				AND `COLUMN_NAME` = COLUMN_NAME_ARGUMENT
 				AND `COLUMN_TYPE` LIKE '%int%'
@@ -527,12 +526,12 @@ BEGIN
 		SELECT `COLUMN_NAME`
 			INTO PRIMARY_KEY_COLUMN_NAME
 			FROM `information_schema`.`COLUMNS`
-			WHERE `TABLE_SCHEMA` = (SELECT SCHEMA())
+			WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
 				AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
 				AND `COLUMN_NAME` = COLUMN_NAME_ARGUMENT
 				AND `COLUMN_TYPE` LIKE '%int%'
 				AND `COLUMN_KEY` = 'PRI';
-		SET SQL_EXP = CONCAT('ALTER TABLE `', (SELECT SCHEMA()), '`.`', TABLE_NAME_ARGUMENT, '` MODIFY COLUMN `', PRIMARY_KEY_COLUMN_NAME, '` ', PRIMARY_KEY_TYPE, ' NOT NULL AUTO_INCREMENT;');
+		SET SQL_EXP = CONCAT('ALTER TABLE `', (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA())), '`.`', TABLE_NAME_ARGUMENT, '` MODIFY COLUMN `', PRIMARY_KEY_COLUMN_NAME, '` ', PRIMARY_KEY_TYPE, ' NOT NULL AUTO_INCREMENT;');
 		SET @SQL_EXP = SQL_EXP;
 		PREPARE SQL_EXP_EXECUTE FROM @SQL_EXP;
 		EXECUTE SQL_EXP_EXECUTE;
@@ -541,7 +540,14 @@ BEGIN
 END;");
                 builder.AppendLine();
 
-                builder.Append($"CALL POMELO_AFTER_ADD_PRIMARY_KEY('{ operation.Table }', '{ operation.Columns.First() }');");
+                if (operation.Schema == null)
+                {
+                    builder.Append($"CALL POMELO_AFTER_ADD_PRIMARY_KEY(NULL, '{ operation.Table }', '{ operation.Columns.First() }');");
+                }
+                else
+                {
+                    builder.Append($"CALL POMELO_AFTER_ADD_PRIMARY_KEY('{ operation.Schema }', '{ operation.Table }', '{ operation.Columns.First() }');");
+                }
                 builder.AppendLine();
                 builder.Append($"DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;");
                 builder.AppendLine();
@@ -555,7 +561,7 @@ END;");
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
             builder.Append(@"DROP PROCEDURE IF EXISTS POMELO_BEFORE_DROP_PRIMARY_KEY;
-CREATE PROCEDURE POMELO_BEFORE_DROP_PRIMARY_KEY(IN `TABLE_NAME_ARGUMENT` VARCHAR(255))
+CREATE PROCEDURE POMELO_BEFORE_DROP_PRIMARY_KEY(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255))
 BEGIN
 	DECLARE HAS_AUTO_INCREMENT_ID TINYINT(1);
 	DECLARE PRIMARY_KEY_COLUMN_NAME VARCHAR(255);
@@ -565,7 +571,7 @@ BEGIN
 	SELECT COUNT(*) 
 		INTO HAS_AUTO_INCREMENT_ID 
 		FROM `information_schema`.`COLUMNS`
-		WHERE `TABLE_SCHEMA` = (SELECT SCHEMA())
+		WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
 			AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
 			AND `Extra` = 'auto_increment'
 			AND `COLUMN_KEY` = 'PRI'
@@ -574,18 +580,18 @@ BEGIN
 		SELECT `COLUMN_TYPE`
 			INTO PRIMARY_KEY_TYPE
 			FROM `information_schema`.`COLUMNS`
-			WHERE `TABLE_SCHEMA` = (SELECT SCHEMA())
+			WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
 				AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
 				AND `COLUMN_KEY` = 'PRI'
 			LIMIT 1;
 		SELECT `COLUMN_NAME`
 			INTO PRIMARY_KEY_COLUMN_NAME
 			FROM `information_schema`.`COLUMNS`
-			WHERE `TABLE_SCHEMA` = (SELECT SCHEMA())
+			WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
 				AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
 				AND `COLUMN_KEY` = 'PRI'
 			LIMIT 1;
-		SET SQL_EXP = CONCAT('ALTER TABLE `', (SELECT SCHEMA()), '`.`', TABLE_NAME_ARGUMENT, '` MODIFY COLUMN `', PRIMARY_KEY_COLUMN_NAME, '` ', PRIMARY_KEY_TYPE, ' NOT NULL;');
+		SET SQL_EXP = CONCAT('ALTER TABLE `', (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA())), '`.`', TABLE_NAME_ARGUMENT, '` MODIFY COLUMN `', PRIMARY_KEY_COLUMN_NAME, '` ', PRIMARY_KEY_TYPE, ' NOT NULL;');
 		SET @SQL_EXP = SQL_EXP;
 		PREPARE SQL_EXP_EXECUTE FROM @SQL_EXP;
 		EXECUTE SQL_EXP_EXECUTE;
@@ -594,7 +600,14 @@ BEGIN
 END;");
             builder.AppendLine();
 
-            builder.Append($"CALL POMELO_BEFORE_DROP_PRIMARY_KEY('{ operation.Table }');");
+            if (String.IsNullOrWhiteSpace(operation.Schema))
+            {
+                builder.Append($"CALL POMELO_BEFORE_DROP_PRIMARY_KEY(NULL, '{ operation.Table }');");
+            }
+            else
+            {
+                builder.Append($"CALL POMELO_BEFORE_DROP_PRIMARY_KEY('{ operation.Schema }', '{ operation.Table }');");
+            }
             builder.AppendLine();
             builder.Append($"DROP PROCEDURE IF EXISTS POMELO_BEFORE_DROP_PRIMARY_KEY;");
             builder.AppendLine();
