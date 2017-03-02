@@ -242,6 +242,18 @@ END;" + EOL +
                 Sql);
         }
 
+        public override void CreateTableUlongAi()
+        {
+            base.CreateTableUlongAi();
+
+            Assert.Equal(
+                "CREATE TABLE `dbo`.`TestUlongAutoIncrement` (" + EOL +
+                "    `Id` bigint unsigned NOT NULL AUTO_INCREMENT," + EOL +
+                "    PRIMARY KEY (`Id`)" + EOL +
+                ");" + EOL,
+                Sql);
+        }
+
         public override void DropColumnOperation()
         {
             base.DropColumnOperation();
@@ -424,7 +436,7 @@ END;" + EOL +
             });
 
             Assert.Equal(
-                "ALTER TABLE `People` ADD `foo` int AUTO_INCREMENT NOT NULL;" + EOL,
+                "ALTER TABLE `People` ADD `foo` int NOT NULL AUTO_INCREMENT;" + EOL,
                 Sql);
         }
 
