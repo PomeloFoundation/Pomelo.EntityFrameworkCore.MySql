@@ -371,6 +371,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 			        matchLen = match.Groups[2].Value;
 	        }
 
+            var autoIncrement = false;
 	        var generatedOnAddAnnotation = annotatable[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd];
             var generatedOnAdd = generatedOnAddAnnotation != null && (bool)generatedOnAddAnnotation;
             var generatedOnAddOrUpdateAnnotation = annotatable[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAddOrUpdate];
@@ -379,21 +380,17 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             {
                 switch (matchType)
                 {
-                    case "int":
-                    case "int4":
-                        type = "int AUTO_INCREMENT";
-                        break;
-                    case "bigint":
-                    case "int8":
-                        type = "bigint AUTO_INCREMENT";
-                        break;
+                    case "tinyint":
                     case "smallint":
-                    case "int2":
-                        type = "short AUTO_INCREMENT";
+                    case "mediumint":
+                    case "int":
+                    case "bigint":
+                        autoIncrement = true;
                         break;
                     case "datetime":
-                        if (_mySqlTypeMapper != null &&!_mySqlTypeMapper.ConnectionSettings.SupportsDateTime6)
-                            throw new InvalidOperationException($"Error in {table}.{name}: DATETIME does not support values generated " +
+                        if (_mySqlTypeMapper != null && !_mySqlTypeMapper.ConnectionSettings.SupportsDateTime6)
+                            throw new InvalidOperationException(
+                                $"Error in {table}.{name}: DATETIME does not support values generated " +
                                 "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");
                         goto case "timestamp";
                     case "timestamp":
@@ -431,24 +428,32 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 builder.Append(" NOT NULL");
             }
 
-            if (defaultValueSql != null)
+            if (autoIncrement)
             {
-                builder
-                    .Append(" DEFAULT ")
-                    .Append(defaultValueSql);
+                builder.Append(" AUTO_INCREMENT");
             }
-            else if (defaultValue != null)
+            else
             {
-                builder
-                    .Append(" DEFAULT ")
-                    .Append(SqlGenerationHelper.GenerateLiteral(defaultValue));
+                if (defaultValueSql != null)
+                {
+                    builder
+                        .Append(" DEFAULT ")
+                        .Append(defaultValueSql);
+                }
+                else if (defaultValue != null)
+                {
+                    builder
+                        .Append(" DEFAULT ")
+                        .Append(SqlGenerationHelper.GenerateLiteral(defaultValue));
+                }
+                if (onUpdateSql != null)
+                {
+                    builder
+                        .Append(" ON UPDATE ")
+                        .Append(onUpdateSql);
+                }
             }
-            if (onUpdateSql != null)
-            {
-                builder
-                    .Append(" ON UPDATE ")
-                    .Append(onUpdateSql);
-            }
+
         }
 
         protected override void DefaultValue(object defaultValue, string defaultValueSql, MigrationCommandListBuilder builder)
