@@ -52,7 +52,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 
             var processInfo = new ProcessStartInfo{
                 FileName = "dotnet",
-                Arguments = "ef -e \"Ef\" migrations add initial",
+                Arguments = "ef migrations add initial",
                 WorkingDirectory = basePath
             };
             var process = Process.Start(processInfo);
@@ -70,7 +70,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 
             processInfo = new ProcessStartInfo{
                 FileName = "dotnet",
-                Arguments = "ef -e \"Ef\" database update",
+                Arguments = "ef database update",
                 WorkingDirectory = basePath
             };
             process = Process.Start(processInfo);

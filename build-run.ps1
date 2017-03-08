@@ -33,7 +33,7 @@ cd $PSScriptRoot
 $repoFolder = $PSScriptRoot
 $env:REPO_FOLDER = $repoFolder
 
-$koreBuildZip="https://github.com/aspnet/KoreBuild/archive/rel/1.1.0.zip"
+$koreBuildZip="https://github.com/aspnet/KoreBuild/archive/rel/1.0.0-msbuild-rtm.zip"
 if ($env:KOREBUILD_ZIP)
 {
     $koreBuildZip=$env:KOREBUILD_ZIP
@@ -63,10 +63,10 @@ if (!(Test-Path $buildFolder)) {
     }
 }
 
-$dotnetVersion = "1.0.0-preview2-1-003177"
-$dotnetChannel = "preview"
-$dotnetSharedRuntimeVersion = "1.0.0"
-$dotnetSharedRuntimeChannel = "preview"
+$dotnetVersion = "1.0.0"
+$dotnetChannel = "rel-1.0.0"
+$dotnetSharedRuntimeVersion = "1.1.1"
+$dotnetSharedRuntimeChannel = "rel-1.0.0"
 
 $dotnetLocalInstallFolder = $env:DOTNET_INSTALL_DIR
 if (!$dotnetLocalInstallFolder)
