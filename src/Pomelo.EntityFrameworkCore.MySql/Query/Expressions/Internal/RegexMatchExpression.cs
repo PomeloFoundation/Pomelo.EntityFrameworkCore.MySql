@@ -13,19 +13,17 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions.Internal
 {
     public class RegexMatchExpression : Expression
     {
-        public RegexMatchExpression([NotNull] Expression match, [NotNull] Expression pattern, RegexOptions options)
+        public RegexMatchExpression([NotNull] Expression match, [NotNull] Expression pattern)
         {
             Check.NotNull(match, nameof(match));
             Check.NotNull(pattern, nameof(pattern));
 
             Match = match;
             Pattern = pattern;
-            Options = options;
         }
 
         public Expression Match { get; }
         public Expression Pattern { get; }
-        public RegexOptions Options { get; }
 
         public override ExpressionType NodeType => ExpressionType.Extension;
 
@@ -49,10 +47,10 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions.Internal
 
             return newMatchExpression != Match
                    || newPatternExpression != Pattern
-                ? new RegexMatchExpression(newMatchExpression, newPatternExpression, Options)
+                ? new RegexMatchExpression(newMatchExpression, newPatternExpression)
                 : this;
         }
 
-        public override string ToString() => $"{Match} ~ {Pattern}";
+        public override string ToString() => $"{Match} RLIKE {Pattern}";
     }
 }
