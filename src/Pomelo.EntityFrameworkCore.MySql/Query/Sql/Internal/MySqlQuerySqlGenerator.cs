@@ -161,38 +161,11 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
         public Expression VisitRegexMatch([NotNull] RegexMatchExpression regexMatchExpression)
         {
             Check.NotNull(regexMatchExpression, nameof(regexMatchExpression));
-            var options = regexMatchExpression.Options;
 
             Visit(regexMatchExpression.Match);
-            Sql.Append(" ~ ");
-
-            // PG regexps are singleline by default
-            if (options == RegexOptions.Singleline)
-            {
-                Visit(regexMatchExpression.Pattern);
-                return regexMatchExpression;
-            }
-
-            Sql.Append("('(?");
-            if (options.HasFlag(RegexOptions.IgnoreCase)) {
-                Sql.Append('i');
-            }
-
-            if (options.HasFlag(RegexOptions.Multiline)) {
-                Sql.Append('n');
-            }
-            else if (!options.HasFlag(RegexOptions.Singleline)) {
-                Sql.Append('p');
-            }
-
-            if (options.HasFlag(RegexOptions.IgnorePatternWhitespace))
-            {
-                Sql.Append('x');
-            }
-
-            Sql.Append(")' || ");
+            Sql.Append(" RLIKE ");
             Visit(regexMatchExpression.Pattern);
-            Sql.Append(')');
+
             return regexMatchExpression;
         }
 
