@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Diagnostics;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -176,6 +177,8 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 			                    parameter.AddDbParameter(command, ((DateTimeOffset) parameterValue).UtcDateTime);
 		                    else if (parameterValue.GetType().FullName.StartsWith("System.JsonObject"))
 			                    parameter.AddDbParameter(command, parameterValue.ToString());
+							else if (parameterValue.GetType().GetTypeInfo().IsEnum)
+                                parameter.AddDbParameter(command, Convert.ChangeType(parameterValue, Enum.GetUnderlyingType(parameterValue.GetType())));
 		                    else
 			                    parameter.AddDbParameter(command, parameterValue);
 	                    }
