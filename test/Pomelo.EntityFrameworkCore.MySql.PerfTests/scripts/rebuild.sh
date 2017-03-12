@@ -2,10 +2,12 @@
 cd $(dirname $0)
 cd ../
 
+set -e
 rm -f Migrations/*.cs
 dotnet ef database drop -f
 dotnet ef migrations add initial
 
+set +e
 # add using System.Collections.Generic to the migration files
 find ./Migrations -name "*.cs" -type f | while read -r file; do
     grep -q "using System.Collections.Generic;" $file
@@ -14,4 +16,5 @@ find ./Migrations -name "*.cs" -type f | while read -r file; do
     fi
 done
 
+set -e
 dotnet ef database update
