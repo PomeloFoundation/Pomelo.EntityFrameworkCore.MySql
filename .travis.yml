@@ -18,5 +18,8 @@ before_install:
 script:
   - docker exec -it dotnet sh -c 'cd /dotnet && dotnet restore'
   - docker exec -it dotnet sh -c 'cd /dotnet/test/Pomelo.EntityFrameworkCore.MySql.Tests && dotnet test -c Release'
-  - echo "Testing with EF_BATCH_SIZE=1" && docker exec -it dotnet sh -c 'cd /dotnet/test/Pomelo.EntityFrameworkCore.MySql.PerfTests && sed -i "s/127.0.0.1/mysql/g" config.json.example && dotnet test -c Release;'
-  - echo "Testing with EF_BATCH_SIZE=10" && docker exec -it dotnet sh -c 'cd /dotnet/test/Pomelo.EntityFrameworkCore.MySql.PerfTests && export EF_BATCH_SIZE=10 && dotnet test -c Release;'
+  - echo "Building migrations" && docker exec -it dotnet sh -c 'cd /dotnet/test/Pomelo.EntityFrameworkCore.MySql.PerfTests && cp config.json.example config.json && sed -i "s/127.0.0.1/mysql/g" config.json && ./scripts/rebuild.sh'
+  - echo "Test applying migrations" && docker exec -it dotnet sh -c 'cd /dotnet/test/Pomelo.EntityFrameworkCore.MySql.PerfTests && dotnet run -c Release testMigrate'
+  - echo "Test scaffolding" && docker exec -it dotnet sh -c 'cd /dotnet/test/Pomelo.EntityFrameworkCore.MySql.PerfTests && ./scripts/scaffold.sh; rc=$?; rm -rf Scaffold; exit $rc'
+  - echo "Test with EF_BATCH_SIZE=1" && docker exec -it dotnet sh -c 'cd /dotnet/test/Pomelo.EntityFrameworkCore.MySql.PerfTests && dotnet test -c Release'
+  - echo "Test with EF_BATCH_SIZE=10" && docker exec -it dotnet sh -c 'cd /dotnet/test/Pomelo.EntityFrameworkCore.MySql.PerfTests && export EF_BATCH_SIZE=10 && dotnet test -c Release'
