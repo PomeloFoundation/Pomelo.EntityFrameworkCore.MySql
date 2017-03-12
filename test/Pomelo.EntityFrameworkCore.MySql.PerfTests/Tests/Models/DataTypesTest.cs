@@ -64,6 +64,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 		        Assert.Equal(null, emptyDb.TypeDateTimeOffsetN);
 		        Assert.Equal(null, emptyDb.TypeTimeSpanN);
 
+				// Enum
+                Assert.Equal(default(TestEnum), emptyDb.TypeEnum);
+                Assert.Equal(default(TestEnumByte), emptyDb.TypeEnumByte);
+                // nullableEnum
+                Assert.Equal(null, emptyDb.TypeEnumN);
+                Assert.Equal(null, emptyDb.TypeEnumByteN);
+
 		        // guid
 		        Assert.Equal(default(Guid), emptyDb.TypeGuid);
 		        // nullable guid
@@ -78,6 +85,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 	        var dateTime = new DateTime(2016, 10, 11, 1, 2, 3, 456);
 	        var dateTimeOffset = dateTime + TimeSpan.FromMilliseconds(123.456);
 	        var timeSpan = new TimeSpan(1, 2, 3, 4, 5);
+			var testEnum = TestEnum.TestOne;
+			var testEnumByte = TestEnumByte.TestOne;
 	        var guid = Guid.NewGuid();
 
 	        // test each data type with a valid value
@@ -129,6 +138,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 		        TypeDateTimeN       = dateTime,
 		        TypeDateTimeOffsetN = dateTimeOffset,
 		        TypeTimeSpanN       = timeSpan,
+
+				// Enum
+                TypeEnum   = testEnum,
+                TypeEnumByte  = testEnumByte,
+                // nullable Enum
+                TypeEnumN  = testEnum,
+                TypeEnumByteN = testEnumByte,
 
 		        // guid
 		        TypeGuid = guid,
@@ -184,6 +200,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 		        Assert.Equal(dateTime, valueDb.TypeDateTimeN);
 		        Assert.Equal(dateTimeOffset, valueDb.TypeDateTimeOffsetN);
 		        Assert.Equal(timeSpan, valueDb.TypeTimeSpanN);
+
+				// Enum
+                Assert.Equal(testEnum, valueDb.TypeEnum);
+                Assert.Equal(testEnumByte, valueDb.TypeEnumByte);
+                // nullable Enum
+                Assert.Equal(testEnum, valueDb.TypeEnumN);
+                Assert.Equal(testEnumByte, valueDb.TypeEnumByteN);
 
 		        // guid
 		        Assert.Equal(guid, valueDb.TypeGuid);
