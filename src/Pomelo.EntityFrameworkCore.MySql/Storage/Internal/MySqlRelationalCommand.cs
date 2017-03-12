@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
 using MySql.Data.MySqlClient;
+using System.Reflection;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Storage.Internal
@@ -176,6 +177,8 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 			                    parameter.AddDbParameter(command, ((DateTimeOffset) parameterValue).UtcDateTime);
 		                    else if (parameterValue.GetType().FullName.StartsWith("System.JsonObject"))
 			                    parameter.AddDbParameter(command, parameterValue.ToString());
+                            else if (parameterValue.GetType().GetTypeInfo().IsEnum)
+                                parameter.AddDbParameter(command, Convert.ChangeType(parameterValue, Enum.GetUnderlyingType(parameterValue.GetType())));
 		                    else
 			                    parameter.AddDbParameter(command, parameterValue);
 	                    }
