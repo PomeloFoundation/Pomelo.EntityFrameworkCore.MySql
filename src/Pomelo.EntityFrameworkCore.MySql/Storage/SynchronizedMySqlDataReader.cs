@@ -149,26 +149,7 @@ namespace Microsoft.EntityFrameworkCore.Storage
 	            // try normal casting
 	            if (typeof(T) == typeof(char))
 		            return (T) Convert.ChangeType(Convert.ToChar(GetReader().GetFieldValue<byte>(ordinal)), typeof(T));
-	            if (typeof(T) == typeof(DateTimeOffset))
-		            return (T) Convert.ChangeType(new DateTimeOffset(DateTime.SpecifyKind(GetReader().GetFieldValue<DateTime>(ordinal), DateTimeKind.Utc)), typeof(T));
                 return GetReader().GetFieldValue<T>(ordinal);
-            }
-            catch (InvalidCastException e)
-            {
-                return ConvertWithReflection<T>(ordinal, e);
-            }
-        }
-
-        public override async Task<T> GetFieldValueAsync<T>(int ordinal, CancellationToken cancellationToken)
-        {
-            try
-            {
-	            // try normal casting
-	            if (typeof(T) == typeof(char))
-		            return (T) Convert.ChangeType(Convert.ToChar(await GetReader().GetFieldValueAsync<byte>(ordinal, cancellationToken).ConfigureAwait(false)), typeof(T));
-	            if (typeof(T) == typeof(DateTimeOffset))
-		            return (T) Convert.ChangeType(new DateTimeOffset(DateTime.SpecifyKind(await GetReader().GetFieldValueAsync<DateTime>(ordinal, cancellationToken).ConfigureAwait(false), DateTimeKind.Utc)), typeof(T));
-	            return await GetReader().GetFieldValueAsync<T>(ordinal, cancellationToken).ConfigureAwait(false);
             }
             catch (InvalidCastException e)
             {
