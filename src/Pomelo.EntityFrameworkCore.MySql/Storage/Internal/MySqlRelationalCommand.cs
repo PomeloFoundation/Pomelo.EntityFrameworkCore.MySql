@@ -173,8 +173,6 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 	                    {
 		                    if (parameterValue is char)
 			                    parameter.AddDbParameter(command, Convert.ToByte((char)parameterValue));
-		                    else if (parameterValue is DateTimeOffset)
-			                    parameter.AddDbParameter(command, ((DateTimeOffset) parameterValue).UtcDateTime);
 		                    else if (parameterValue.GetType().FullName.StartsWith("System.JsonObject"))
 			                    parameter.AddDbParameter(command, parameterValue.ToString());
 							else if (parameterValue.GetType().GetTypeInfo().IsEnum)

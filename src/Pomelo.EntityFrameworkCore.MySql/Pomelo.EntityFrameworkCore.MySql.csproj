@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="1.1.1" />
-    <PackageReference Include="MySqlConnector" Version="0.13.*" />
+    <PackageReference Include="MySqlConnector" Version="0.14.*" />
     <PackageReference Include="Pomelo.JsonObject" Version="1.1.1" />
   </ItemGroup>
 
