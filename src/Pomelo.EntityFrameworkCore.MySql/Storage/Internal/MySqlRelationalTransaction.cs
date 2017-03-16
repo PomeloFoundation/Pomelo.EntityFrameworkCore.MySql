@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
+using System.Data;
 
 namespace Microsoft.EntityFrameworkCore.Storage.Internal
 {
@@ -87,7 +88,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             if (!_disposed)
             {
                 _disposed = true;
-                if (_transactionOwned)
+                if (_transactionOwned && _dbTransaction.Connection.State == ConnectionState.Closed)
                 {
                     _dbTransaction.Dispose();
                 }

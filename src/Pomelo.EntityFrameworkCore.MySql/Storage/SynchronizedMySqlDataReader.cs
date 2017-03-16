@@ -33,8 +33,14 @@ namespace Microsoft.EntityFrameworkCore.Storage
         }
 
         public override bool GetBoolean(int ordinal) => GetReader().GetBoolean(ordinal);
-	    public override byte GetByte(int ordinal) => GetReader().GetByte(ordinal);
-	    public override long GetBytes(int ordinal, long dataOffset, byte[] buffer, int bufferOffset, int length) => GetReader().GetBytes(ordinal, dataOffset, buffer, bufferOffset, length);
+        public override byte GetByte(int ordinal)
+        {
+            if (GetReader().GetValue(ordinal) is bool)
+                return Convert.ToByte(GetReader().GetBoolean(ordinal)); // see TreatTinyAsBoolean setting
+            else
+                return GetReader().GetByte(ordinal);
+        }
+        public override long GetBytes(int ordinal, long dataOffset, byte[] buffer, int bufferOffset, int length) => GetReader().GetBytes(ordinal, dataOffset, buffer, bufferOffset, length);
 	    public override char GetChar(int ordinal) => Convert.ToChar(GetReader().GetByte(ordinal));
 	    public override long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length) => GetReader().GetChars(ordinal, dataOffset, buffer, bufferOffset, length);
         public override string GetDataTypeName(int ordinal) => GetReader().GetDataTypeName(ordinal);
