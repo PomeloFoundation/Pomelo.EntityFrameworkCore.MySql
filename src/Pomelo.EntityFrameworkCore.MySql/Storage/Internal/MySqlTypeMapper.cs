@@ -1,4 +1,4 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -47,8 +47,8 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 	    private readonly RelationalTypeMapping _varcharmax       = new MySqlMaxLengthMapping("longtext", typeof(string), DbType.AnsiString);
 
 	    // DateTime
-        private readonly RelationalTypeMapping _dateTime6        = new RelationalTypeMapping("datetime(6)", typeof(DateTime), DbType.DateTime);
-        private readonly RelationalTypeMapping _dateTimeOffset6  = new RelationalTypeMapping("datetime(6)", typeof(DateTimeOffset), DbType.DateTime);
+        private readonly RelationalTypeMapping _dateTime6        = new RelationalTypeMapping("datetime", typeof(DateTime), DbType.DateTime);
+        private readonly RelationalTypeMapping _dateTimeOffset6  = new RelationalTypeMapping("datetime", typeof(DateTimeOffset), DbType.DateTime);
         private readonly RelationalTypeMapping _time6            = new RelationalTypeMapping("time(6)", typeof(TimeSpan), DbType.Time);
 
         // json
