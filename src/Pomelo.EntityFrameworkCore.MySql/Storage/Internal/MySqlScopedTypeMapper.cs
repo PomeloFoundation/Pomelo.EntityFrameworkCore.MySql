@@ -87,9 +87,9 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             // SupportsDateTime6
             if (!ConnectionSettings.SupportsDateTime6)
             {
-                if (mapping.StoreType == "datetime(6)" && mapping.ClrType == typeof(DateTime))
+                if (mapping.StoreType == "datetime" && mapping.ClrType == typeof(DateTime))
                     return DateTime;
-                if (mapping.StoreType == "datetime(6)" && mapping.ClrType == typeof(DateTimeOffset))
+                if (mapping.StoreType == "datetime" && mapping.ClrType == typeof(DateTimeOffset))
                     return DateTimeOffset;
                 if (mapping.StoreType == "time(6)")
                     return Time;

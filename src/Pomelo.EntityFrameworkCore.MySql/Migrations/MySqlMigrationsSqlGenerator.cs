@@ -1,4 +1,4 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -94,7 +94,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 .Append(operation.IsNullable ? " NULL" : " NOT NULL")
                 .AppendLine(SqlGenerationHelper.StatementTerminator);
 
-            alterBase = $"ALTER TABLE {identifier} ALTER COLUMN {SqlGenerationHelper.DelimitIdentifier(operation.Name)}";
+            alterBase = $"ALTER TABLE {identifier} MODIFY COLUMN {SqlGenerationHelper.DelimitIdentifier(operation.Name)}";
 
             builder.Append(alterBase);
 
@@ -394,7 +394,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                                 "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");
                         goto case "timestamp";
                     case "timestamp":
-                        defaultValueSql = $"CURRENT_TIMESTAMP({matchLen})";
+                        defaultValueSql = $"CURRENT_TIMESTAMP";
                         break;
                 }
             }
@@ -412,8 +412,8 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 	                    goto case "timestamp";
 	                case "timestamp":
                         if (string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
-                            defaultValueSql = $"CURRENT_TIMESTAMP({matchLen})";
-			            onUpdateSql = $"CURRENT_TIMESTAMP({matchLen})";
+                            defaultValueSql = $"CURRENT_TIMESTAMP";
+			            onUpdateSql = $"CURRENT_TIMESTAMP";
 			            break;
                 }
             }
