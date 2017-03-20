@@ -94,50 +94,70 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 .Append(operation.IsNullable ? " NULL" : " NOT NULL")
                 .AppendLine(SqlGenerationHelper.StatementTerminator);
 
-            alterBase = $"ALTER TABLE {identifier} ALTER COLUMN {SqlGenerationHelper.DelimitIdentifier(operation.Name)}";
-
-            builder.Append(alterBase);
-
-            if (operation.DefaultValue != null)
+            switch (type)
             {
-                builder.Append(" SET DEFAULT ")
-                    .Append(SqlGenerationHelper.GenerateLiteral((dynamic)operation.DefaultValue))
-                    .AppendLine(SqlGenerationHelper.BatchTerminator);
-            }
-            else if (!string.IsNullOrWhiteSpace(operation.DefaultValueSql))
-            {
-                builder.Append(" SET DEFAULT ")
-                    .Append(operation.DefaultValueSql)
-                    .AppendLine(SqlGenerationHelper.BatchTerminator);
-            }
-            else if (isSerial)
-            {
-                builder.Append(" SET DEFAULT ");
+                case "tinyblob":
+                case "blob":
+                case "mediumblob":
+                case "longblob":
+                case "tinytext":
+                case "text":
+                case "mediumtext":
+                case "longtext":
+                case "geometry":
+                case "json":
+                    if (operation.DefaultValue != null || !string.IsNullOrWhiteSpace(operation.DefaultValueSql) || isSerial)
+                    {
+                        throw new NotSupportedException($"{type} column can't have a default value");
+                    }
+                    break;
+                default:
+                    alterBase = $"ALTER TABLE {identifier} ALTER COLUMN {SqlGenerationHelper.DelimitIdentifier(operation.Name)}";
 
-                switch (type)
-                {
-                    case "smallint":
-                    case "int":
-                    case "bigint":
-                    case "real":
-                    case "double precision":
-                    case "numeric":
-                        //TODO: need function CREATE SEQUENCE IF NOT EXISTS and set to it...
-                        //Until this is resolved changing IsIdentity from false to true
-                        //on types int2, int4 and int8 won't switch to type serial2, serial4 and serial8
-                        throw new NotImplementedException("Not supporting creating sequence for integer types");
-                    case "char(38)":
-                    case "uuid":
-                    case "uniqueidentifier":
-                        break;
-                    default:
-                        throw new NotImplementedException($"Not supporting creating IsIdentity for {type}");
+                    builder.Append(alterBase);
 
-                }
-            }
-            else
-            {
-                builder.Append(" DROP DEFAULT;");
+                    if (operation.DefaultValue != null)
+                    {
+                        builder.Append(" SET DEFAULT ")
+                            .Append(SqlGenerationHelper.GenerateLiteral((dynamic)operation.DefaultValue))
+                            .AppendLine(SqlGenerationHelper.BatchTerminator);
+                    }
+                    else if (!string.IsNullOrWhiteSpace(operation.DefaultValueSql))
+                    {
+                        builder.Append(" SET DEFAULT ")
+                            .Append(operation.DefaultValueSql)
+                            .AppendLine(SqlGenerationHelper.BatchTerminator);
+                    }
+                    else if (isSerial)
+                    {
+                        builder.Append(" SET DEFAULT ");
+
+                        switch (type)
+                        {
+                            case "smallint":
+                            case "int":
+                            case "bigint":
+                            case "real":
+                            case "double precision":
+                            case "numeric":
+                                //TODO: need function CREATE SEQUENCE IF NOT EXISTS and set to it...
+                                //Until this is resolved changing IsIdentity from false to true
+                                //on types int2, int4 and int8 won't switch to type serial2, serial4 and serial8
+                                throw new NotImplementedException("Not supporting creating sequence for integer types");
+                            case "char(38)":
+                            case "uuid":
+                            case "uniqueidentifier":
+                                break;
+                            default:
+                                throw new NotImplementedException($"Not supporting creating IsIdentity for {type}");
+
+                        }
+                    }
+                    else
+                    {
+                        builder.Append(" DROP DEFAULT;");
+                    }
+                    break;
             }
 
             EndStatement(builder);
