@@ -77,10 +77,8 @@ namespace Microsoft.EntityFrameworkCore
             [NotNull] string connectionString,
             [CanBeNull] Action<MySqlDbContextOptionsBuilder> mySqlOptionsAction = null)
             where TContext : DbContext
-        {
-            return (DbContextOptionsBuilder<TContext>)UseMySql(
-                (DbContextOptionsBuilder)optionsBuilder, new MySqlConnection(connectionString), mySqlOptionsAction);
-        }
+            => (DbContextOptionsBuilder<TContext>)UseMySql(
+                (DbContextOptionsBuilder)optionsBuilder, connectionString, mySqlOptionsAction);
 
         public static DbContextOptionsBuilder<TContext> UseMySql<TContext>(
             [NotNull] this DbContextOptionsBuilder<TContext> optionsBuilder,
