@@ -100,11 +100,21 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 case "blob":
                 case "mediumblob":
                 case "longblob":
+
                 case "tinytext":
                 case "text":
                 case "mediumtext":
                 case "longtext":
+
                 case "geometry":
+                case "point":
+                case "linestring":
+                case "polygon":
+                case "multipoint":
+                case "multilinestring":
+                case "multipolygon":
+                case "geometrycollection":
+
                 case "json":
                     if (operation.DefaultValue != null || !string.IsNullOrWhiteSpace(operation.DefaultValueSql) || isSerial)
                     {
