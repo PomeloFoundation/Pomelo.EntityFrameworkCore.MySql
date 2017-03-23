@@ -5,31 +5,23 @@ using System.IO;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
-using MySql.Data.MySqlClient;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Storage
+namespace Microsoft.EntityFrameworkCore.Storage.Internal
 {
     /// <summary>
-    /// <see cref="SynchronizedMySqlDataReader"/> wraps <see cref="MySqlDataReader" /> and holds a semaphore
-    /// until it is disposed, at which point it is released. This prevents <see cref="MySqlRelationalCommand.ExecuteAsync"/>
-    /// from being entered while there is an active data reader. It also enhances <see cref="GetFieldValue{T}"/> to
-    /// use reflection to cast from <c>byte[]</c> if the regular method fails; this allows JSON objects to be
-    /// deserialized.
+    /// <see cref="WrappedMySqlDataReader"/> wraps <see cref="DbDataReader" /> and enhances <see cref="GetFieldValue{T}"/> to
+    /// use reflection to cast from <c>byte[]</c> if the regular method fails; this allows JSON objects to be deserialized.
     /// </summary>
-    public class SynchronizedMySqlDataReader : DbDataReader
+    public class WrappedMySqlDataReader : DbDataReader
     {
-        private readonly MySqlRelationalConnection _connection;
-        private SemaphoreSlim _lock;
-        private MySqlDataReader _reader;
+
+        private DbDataReader _reader;
         private bool _disposed;
 
-        internal SynchronizedMySqlDataReader(MySqlDataReader reader, MySqlRelationalConnection connection)
+        internal WrappedMySqlDataReader(DbDataReader reader)
         {
             _reader = reader;
-            _connection = connection;
-            _lock = _connection.Lock;
         }
 
         public override bool GetBoolean(int ordinal) => GetReader().GetBoolean(ordinal);
@@ -68,6 +60,10 @@ namespace Microsoft.EntityFrameworkCore.Storage
         public override TextReader GetTextReader(int ordinal) => GetReader().GetTextReader(ordinal);
         public override Task<bool> IsDBNullAsync(int ordinal, CancellationToken cancellationToken) => GetReader().IsDBNullAsync(ordinal, cancellationToken);
         public override int VisibleFieldCount => GetReader().VisibleFieldCount;
+        public override bool NextResult() => GetReader().NextResult();
+        public override Task<bool> NextResultAsync(CancellationToken cancellationToken) => GetReader().NextResultAsync(cancellationToken);
+        public override bool Read() => GetReader().Read();
+        public override Task<bool> ReadAsync(CancellationToken cancellationToken) => GetReader().ReadAsync(cancellationToken);
 
 #if NET45
 		public override DataTable GetSchemaTable()
@@ -80,67 +76,6 @@ namespace Microsoft.EntityFrameworkCore.Storage
 			CloseReader();
 		}
 #endif
-
-        private bool? _nextResult;
-        private bool PeekNextResult()
-        {
-            if (_nextResult == null)
-            {
-                _nextResult = _reader != null && GetReader().NextResult();
-            }
-            return _nextResult.Value;
-        }
-
-        private async Task<bool> PeekNextResultAsync(CancellationToken cancellationToken)
-        {
-            if (_nextResult == null)
-            {
-                _nextResult = _reader != null && await GetReader().NextResultAsync(cancellationToken).ConfigureAwait(false);
-            }
-            return _nextResult != null && _nextResult.Value;
-        }
-
-        public override bool NextResult()
-        {
-            var result = PeekNextResult();
-	        if (!result)
-	        {
-		        CloseReader();
-	        }
-            _nextResult = null;
-            return result;
-        }
-
-        public override async Task<bool> NextResultAsync(CancellationToken cancellationToken)
-        {
-            var result = await PeekNextResultAsync(cancellationToken).ConfigureAwait(false);
-	        if (!result)
-	        {
-		        CloseReader();
-	        }
-	        _nextResult = null;
-            return result;
-        }
-
-        public override bool Read()
-        {
-            var result = _reader != null && GetReader().Read();
-            if (!result && _reader != null && !PeekNextResult())
-            {
-	            CloseReader();
-            }
-            return result;
-        }
-
-        public override async Task<bool> ReadAsync(CancellationToken cancellationToken)
-        {
-            var result = _reader != null && await GetReader().ReadAsync(cancellationToken).ConfigureAwait(false);
-            if (!result && _reader != null && !await PeekNextResultAsync(cancellationToken).ConfigureAwait(false))
-            {
-                CloseReader();
-            }
-            return result;
-        }
 
         public override T GetFieldValue<T>(int ordinal)
         {
@@ -176,24 +111,11 @@ namespace Microsoft.EntityFrameworkCore.Storage
 
         private void CloseReader()
         {
-            try
+            if (_reader != null)
             {
-                if (_reader != null)
-                {
-                    // dispose the underlying MySQL data reader
-                    _reader.Dispose();
-                    _reader = null;
-                }
-            }
-            finally
-            {
-                if (_lock != null)
-                {
-                    // release the shared lock, so another statement can be executed
-                    _lock.Release();
-                    _lock = null;
-	                _connection.PoolingClose();
-                }
+                // dispose the underlying MySQL data reader
+                _reader.Dispose();
+                _reader = null;
             }
         }
 
@@ -210,7 +132,7 @@ namespace Microsoft.EntityFrameworkCore.Storage
         private DbDataReader GetReader()
         {
             if (_reader == null)
-                throw new ObjectDisposedException(nameof(SynchronizedMySqlDataReader));
+                throw new ObjectDisposedException(nameof(WrappedMySqlDataReader));
             return _reader;
         }
     }

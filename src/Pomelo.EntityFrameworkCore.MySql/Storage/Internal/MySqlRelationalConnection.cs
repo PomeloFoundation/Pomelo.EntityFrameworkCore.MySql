@@ -27,7 +27,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         private int? _commandTimeout;
 	    private readonly ILogger<MySqlRelationalConnection> _logger;
 
-	    public readonly SemaphoreSlim Lock = new SemaphoreSlim(1);
+	    internal readonly SemaphoreSlim CommandLock = new SemaphoreSlim(1);
         private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(1);
 
         public MySqlRelationalConnection([NotNull] IDbContextOptions options, [NotNull] ILogger<MySqlRelationalConnection> logger)
@@ -297,9 +297,9 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 	    // Optomizations have been added to return connections to the pool faster
 	    // Prefer PoolingOpen/Close functions when Connection Pooling is enabled
 
-	    public bool Pooling => ConnectionStringBuilder.Pooling;
+	    internal bool Pooling => ConnectionStringBuilder.Pooling;
 
-	    public void PoolingOpen()
+	    internal void PoolingOpen()
 	    {
 		    if (Pooling)
 		    {
@@ -307,7 +307,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 		    }
 	    }
 
-	    public async Task PoolingOpenAsync(CancellationToken cancellationToken = default(CancellationToken))
+	    internal async Task PoolingOpenAsync(CancellationToken cancellationToken = default(CancellationToken))
 	    {
 		    if (Pooling)
 		    {
@@ -315,7 +315,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 		    }
 	    }
 
-	    public void PoolingClose()
+	    internal void PoolingClose()
 	    {
 		    if (Pooling)
 		    {

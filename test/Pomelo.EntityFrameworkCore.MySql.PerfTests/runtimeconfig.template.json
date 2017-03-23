@@ -1,6 +1,0 @@
-{
-  "configProperties": {
-    "System.GC.Concurrent": true,
-    "System.Threading.ThreadPool.MinThreads": 192
-  }
-}
