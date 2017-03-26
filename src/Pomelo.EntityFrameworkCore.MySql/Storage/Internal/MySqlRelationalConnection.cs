@@ -113,7 +113,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             {
                 throw new InvalidOperationException(RelationalStrings.TransactionAlreadyStarted);
             }
-            DoOpen();
+            Open();
             return BeginTransactionWithNoPreconditions(isolationLevel);
         }
 
@@ -125,7 +125,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             {
                 throw new InvalidOperationException(RelationalStrings.TransactionAlreadyStarted);
             }
-            await DoOpenAsync(cancellationToken).ConfigureAwait(false);
+            await OpenAsync(cancellationToken).ConfigureAwait(false);
             return await BeginTransactionWithNoPreconditionsAsync(isolationLevel, cancellationToken).ConfigureAwait(false);
         }
 
@@ -164,7 +164,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 			    if (CurrentTransaction != null)
 			    {
 				    CurrentTransaction = null;
-				    DoClose();
+				    Close();
 			    }
 		    }
             else
@@ -178,7 +178,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                 {
                     throw new InvalidOperationException(RelationalStrings.TransactionAlreadyStarted);
                 }
-                DoOpen();
+                Open();
                 CurrentTransaction = new MySqlRelationalTransaction(this, mySqlTransaction, _logger, false);
             }
             return CurrentTransaction;
@@ -203,10 +203,10 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
             CurrentTransaction.Rollback();
         }
-
-	    protected void DoOpen()
-	    {
-		    _connectionLock.Wait();
+	    
+		public void Open()
+        {
+	        _connectionLock.Wait();
 		    try
 		    {
 			    if (_openedCount == 0 && DbConnection.State != ConnectionState.Open)
@@ -232,11 +232,11 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 		    {
 			    _connectionLock.Release();
 		    }
-	    }
+        }
 
-	    protected async Task DoOpenAsync(CancellationToken cancellationToken = default(CancellationToken))
-	    {
-		    cancellationToken.ThrowIfCancellationRequested();
+        public async Task OpenAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+	        cancellationToken.ThrowIfCancellationRequested();
 		    await _connectionLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 		    try
 		    {
@@ -263,11 +263,11 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 		    {
 			    _connectionLock.Release();
 		    }
-	    }
+        }
 
-	    protected void DoClose()
-	    {
-		    _connectionLock.Wait();
+        public void Close()
+        {
+	        _connectionLock.Wait();
 		    try
 		    {
 			    if (_openedCount > 0 && --_openedCount == 0 && _openedInternally)
@@ -292,113 +292,6 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 		    {
 			    _connectionLock.Release();
 		    }
-	    }
-
-	    // Optomizations have been added to return connections to the pool faster
-	    // Prefer PoolingOpen/Close functions when Connection Pooling is enabled
-
-	    internal bool Pooling => ConnectionStringBuilder.Pooling;
-
-	    internal void PoolingOpen()
-	    {
-		    if (Pooling)
-		    {
-			    DoOpen();
-		    }
-	    }
-
-	    internal async Task PoolingOpenAsync(CancellationToken cancellationToken = default(CancellationToken))
-	    {
-		    if (Pooling)
-		    {
-			    await DoOpenAsync(cancellationToken).ConfigureAwait(false);
-		    }
-	    }
-
-	    internal void PoolingClose()
-	    {
-		    if (Pooling)
-		    {
-			    DoClose();
-		    }
-	    }
-
-	    // Use normal Open/Close functions when Connection Pooling is disabled
-	    // These calls are used by Microsoft.EntityFrameworkCore
-
-	    public void Open()
-        {
-	        if (!Pooling)
-	        {
-		        DoOpen();
-	        }
-	        else
-	        {
-		        // extarnal libraries can still try to open.  execute it but don't count it
-		        _connectionLock.Wait();
-		        try
-		        {
-			        if (DbConnection.State != ConnectionState.Open)
-			        {
-				        DbConnection.Open();
-				        _openedInternally = true;
-			        }
-		        }
-		        finally
-		        {
-			        _connectionLock.Release();
-		        }
-	        }
-        }
-
-        public async Task OpenAsync(CancellationToken cancellationToken = default(CancellationToken))
-        {
-	        if (!Pooling)
-	        {
-		        await DoOpenAsync(cancellationToken).ConfigureAwait(false);
-	        }
-	        else
-	        {
-		        // extarnal libraries can still try to open.  execute it but don't count it
-		        await _connectionLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-		        try
-		        {
-			        if (DbConnection.State != ConnectionState.Open)
-			        {
-				        await DbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
-				        _openedInternally = true;
-			        }
-		        }
-		        finally
-		        {
-			        _connectionLock.Release();
-		        }
-	        }
-        }
-
-        public void Close()
-        {
-	        if (!Pooling)
-	        {
-		        DoClose();
-	        }
-	        else
-	        {
-		        // extarnal libraries can still try to close.  close it if we manage it and count == 0
-		        _connectionLock.Wait();
-		        try
-		        {
-			        if (_openedCount == 0 && _openedInternally)
-			        {
-				        DbConnection.Close();
-				        _openedInternally = false;
-			        }
-		        }
-		        finally
-		        {
-			        _connectionLock.Release();
-		        }
-	        }
         }
 
         public bool IsMultipleActiveResultSetsEnabled => false;

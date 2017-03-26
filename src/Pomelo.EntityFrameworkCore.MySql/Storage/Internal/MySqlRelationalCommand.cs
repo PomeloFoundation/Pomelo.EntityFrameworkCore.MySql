@@ -61,6 +61,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 			{
 				cancellationToken.ThrowIfCancellationRequested();
 				var mySqlConnection = connection as MySqlRelationalConnection;
+				object result;
 				var opened = false;
 				var locked = false;
 				var startTimestamp = Stopwatch.GetTimestamp();
@@ -69,10 +70,10 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 				{
 					if (ioBehavior == IOBehavior.Asynchronous)
 						// ReSharper disable once PossibleNullReferenceException
-						await mySqlConnection.PoolingOpenAsync(cancellationToken).ConfigureAwait(false);
+						await mySqlConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
 					else
 						// ReSharper disable once PossibleNullReferenceException
-						mySqlConnection.PoolingOpen();
+						mySqlConnection.Open();
 					opened = true;
 
 					if (ioBehavior == IOBehavior.Asynchronous)
@@ -85,40 +86,49 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 					{
 						case nameof(ExecuteNonQuery):
 						{
-							return ioBehavior == IOBehavior.Asynchronous ?
+							result = ioBehavior == IOBehavior.Asynchronous ?
 								await dbCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false) :
 								dbCommand.ExecuteNonQuery();
+							break;
 						}
 						case nameof(ExecuteScalar):
 						{
-							return ioBehavior == IOBehavior.Asynchronous ?
+							result = ioBehavior == IOBehavior.Asynchronous ?
 								await dbCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) :
 								dbCommand.ExecuteScalar();
+							break;
 						}
 						case nameof(ExecuteReader):
 						{
 							var dataReader = ioBehavior == IOBehavior.Asynchronous ?
 								await dbCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false) :
 								dbCommand.ExecuteReader();
-							return new RelationalDataReader(connection, dbCommand, new WrappedMySqlDataReader(dataReader));
+							result = new RelationalDataReader(connection, dbCommand, new WrappedMySqlDataReader(dataReader));
+							break;
 						}
 						default:
 						{
 							throw new NotSupportedException();
 						}
 					}
+					var currentTimestamp = Stopwatch.GetTimestamp();
+					Logger.LogCommandExecuted(dbCommand, startTimestamp, currentTimestamp);
+					if (closeConnection)
+						connection.Close();
+					return result;
 				}
-				finally
+				catch (Exception)
 				{
 					var currentTimestamp = Stopwatch.GetTimestamp();
 					Logger.LogCommandExecuted(dbCommand, startTimestamp, currentTimestamp);
 					if (opened)
-						mySqlConnection.PoolingClose();
+						connection.Close();
+					throw;
+				}
+				finally
+				{
 					if (locked)
 						mySqlConnection.CommandLock.Release();
-					// ReSharper disable once PossibleNullReferenceException
-					if (!mySqlConnection.Pooling && closeConnection)
-						connection.Close();
 				}
 			}
         }
