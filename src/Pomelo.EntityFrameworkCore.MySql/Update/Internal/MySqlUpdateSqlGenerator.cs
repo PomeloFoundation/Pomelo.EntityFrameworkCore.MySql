@@ -165,7 +165,7 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
 
                 if (operations.Count > 1)
                     for (var i = 1; i < operations.Count; i++)
-                        commandStringBuilder.Append($", (SELECT { SqlGenerationHelper.DelimitIdentifier(operations[i].ColumnName) } FROM { SqlGenerationHelper.DelimitIdentifier(name) } WHERE { SqlGenerationHelper.DelimitIdentifier(operations.First().ColumnName) } = LAST_INSERT_ID())");
+                        commandStringBuilder.Append($", (SELECT { SqlGenerationHelper.DelimitIdentifier(operations[i].ColumnName) } FROM { SqlGenerationHelper.DelimitIdentifier(name, schema) } WHERE { SqlGenerationHelper.DelimitIdentifier(operations.First().ColumnName) } = LAST_INSERT_ID())");
                 commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
             }
             else if (operations.Count > 0)
@@ -185,7 +185,7 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
                 }
 
                 commandStringBuilder
-                    .Append($" FROM { SqlGenerationHelper.DelimitIdentifier(name) }")
+                    .Append($" FROM { SqlGenerationHelper.DelimitIdentifier(name, schema) }")
                     .Append(" WHERE ");
 
                 var predicates = new List<string>();

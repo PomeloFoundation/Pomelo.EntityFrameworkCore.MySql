@@ -211,7 +211,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 .Append("ALTER TABLE")
                 .Append(SqlGenerationHelper.DelimitIdentifier(operation.Name, operation.Schema))
                 .Append(" RENAME ")
-                .Append(SqlGenerationHelper.DelimitIdentifier(operation.NewName));
+                .Append(SqlGenerationHelper.DelimitIdentifier(operation.NewName, operation.NewSchema));
 
             EndStatement(builder);
         }
@@ -674,7 +674,7 @@ END;");
                 .Append(type)
                 .Append(SqlGenerationHelper.DelimitIdentifier(name, schema))
                 .Append(" RENAME TO ")
-                .Append(SqlGenerationHelper.DelimitIdentifier(newName));
+                .Append(SqlGenerationHelper.DelimitIdentifier(newName, schema));
         }
 
         public virtual void Transfer(
