@@ -84,7 +84,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
         {
             Check.NotNull(tableExpression, nameof(tableExpression));
 
-            Sql.Append(SqlGenerator.DelimitIdentifier(tableExpression.Table))
+            Sql.Append(SqlGenerator.DelimitIdentifier(tableExpression.Table, tableExpression.Schema))
                 .Append(" AS ")
                 .Append(SqlGenerator.DelimitIdentifier(tableExpression.Alias));
 
