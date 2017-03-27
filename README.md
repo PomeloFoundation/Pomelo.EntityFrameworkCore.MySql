@@ -3,7 +3,7 @@
 [![Travis build status](https://img.shields.io/travis/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql.svg?label=travis-ci&branch=master&style=flat-square)](https://travis-ci.org/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql)
 [![AppVeyor build status](https://img.shields.io/appveyor/ci/Kagamine/Pomelo-EntityFrameworkCore-MySql/master.svg?label=appveyor&style=flat-square)](https://ci.appveyor.com/project/Kagamine/pomelo-entityframeworkcore-mysql/branch/master) [![NuGet](https://img.shields.io/nuget/v/Pomelo.EntityFrameworkCore.MySql.svg?style=flat-square&label=nuget)](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/) [![MyGet](https://img.shields.io/myget/pomelo/vpre/Pomelo.EntityFrameworkCore.MySql.svg?style=flat-square&label=myget)](https://www.myget.org/Package/Details/pomelo?packageType=nuget&packageId=Pomelo.EntityFrameworkCore.MySql) [![Join the chat at https://gitter.im/PomeloFoundation/Home](https://badges.gitter.im/PomeloFoundation/Home.svg)](https://gitter.im/PomeloFoundation/Home?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Pomelo.EntityFrameworkCore.MySql is an Entity Framework Core provider built on top of [MySqlConnector](https://github.com/mysql-net/MySqlConnector). It makes you are able to use the Entity Framework Core ORM with MySQL. Besides, _async_ operations were supported well in this library.
+Pomelo.EntityFrameworkCore.MySql is an Entity Framework Core provider built on top of [MySqlConnector](https://github.com/mysql-net/MySqlConnector). It enables use the Entity Framework Core ORM with MySQL.  Async functions in this library properly implement Async I/O at the lowest level, unlike providers based on Oracle's MySql.Data library which uses Sync I/O at the lowest level.
 
 ## Nightly Builds
 
@@ -21,40 +21,33 @@ To add a `NuGet.config` file in your solution root, then you can use the unstabl
 
 ## Getting Started
 
-You are able to use MySQL in Entity Framework Core now, We have implemented MySQL Entity Framework Core interfaces. By using a few of lines to makes your project invoke Entity Framework Core with MySQL database. There is a console application sample for accessing MySQL database by using Entity Framework:
+Here is a console application sample for accessing a MySQL database using Entity Framework:
 
-① We recommand you to set `utf8` as your MySQL database default charset. By using the following statement will check your DB charset.
+① We recommand you to set `utf8` as your MySQL database default charset. The following statement will check your DB charset.
 ```sql
 show variables like 'character_set_database';
 ```
 
-② Put `Pomelo.EntityFrameworkCore.MySql` into your `project.json`
-```json
-{
-  "version": "1.1.0-*",
-  "buildOptions": {
-    "emitEntryPoint": true
-  },
+② Put `Pomelo.EntityFrameworkCore.MySql` into your project's `.csproj` file
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
 
-  "tools": {
-    "Microsoft.EntityFrameworkCore.Tools": "1.1.0-preview4-final"
-  },
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp1.1.1</TargetFramework>
+  </PropertyGroup>
 
-  "dependencies": {
-    "Microsoft.NETCore.App": {
-      "type": "platform",
-      "version": "1.1.0-*"
-    },
-    "Pomelo.EntityFrameworkCore.MySql": "1.1.0-*",
-    "Microsoft.EntityFrameworkCore.Tools": "1.1.0-preview4-final"
-  },
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="1.1.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="1.1.0" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="1.1.1-*" />
+  </ItemGroup>
 
-  "frameworks": {
-    "netcoreapp1.0": {
-      "imports": "dnxcore50"
-    }
-  }
-}
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="1.0.0" />
+  </ItemGroup>
+  
+</Project>
 ```
 
 ③ Implement some models, DbContext in `Program.cs`. Then overriding the OnConfiguring of DbContext to use MySQL database. Besides, you can define a JsonObject<T> field if you are using MySQL Server 5.7. Finally to invoking MySQL with EF Core in your Main() method.
@@ -186,20 +179,21 @@ Upgrade to .NET Core 1.1 and EF 1.1.0, which supports Explicit Loading. Implemen
 
 ① Add Design-time layer and EF Core tools to your project (>= 1.1.0-rtm-10004):
 
-```json
-"dependencies": {
-  ...
-  "Pomelo.EntityFrameworkCore.MySql": "1.1.0",
-  "Pomelo.EntityFrameworkCore.MySql.Design": "1.1.0",
-  "Microsoft.EntityFrameworkCore.Tools": "1.1.0-preview4-final"
-}
-```
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
 
-```json
-"tools": {
-  ...
-  "Microsoft.EntityFrameworkCore.Tools.DotNet": "1.1.0-preview4-final"
-}
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="1.1.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="1.1.0" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="1.1.1-*" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql.Design" Version="1.1.1-*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="1.0.0" />
+  </ItemGroup>
+  
+</Project>
 ```
 
 ② Using the tool to execute scaffolding commands

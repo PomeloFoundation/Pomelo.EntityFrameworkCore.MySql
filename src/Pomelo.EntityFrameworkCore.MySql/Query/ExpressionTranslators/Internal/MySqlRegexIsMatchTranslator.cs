@@ -14,9 +14,6 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
     public class MySqlRegexIsMatchTranslator : IMethodCallTranslator
     {
         private static readonly MethodInfo IsMatch;
-        private static readonly MethodInfo IsMatchWithRegexOptions;
-
-        private const RegexOptions UnsupportedRegexOptions = RegexOptions.RightToLeft | RegexOptions.ECMAScript;
 
         static MySqlRegexIsMatchTranslator()
         {
@@ -24,46 +21,15 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
                 m.GetParameters().Count() == 2 &&
                 m.GetParameters().All(p => p.ParameterType == typeof(string))
             );
-            IsMatchWithRegexOptions = typeof(Regex).GetTypeInfo().GetDeclaredMethods("IsMatch").Single(m =>
-               m.GetParameters().Count() == 3 &&
-               m.GetParameters().Take(2).All(p => p.ParameterType == typeof(string)) &&
-               m.GetParameters()[2].ParameterType == typeof(RegexOptions)
-            );
         }
 
         public Expression Translate([NotNull] MethodCallExpression methodCallExpression)
         {
-            // Regex.IsMatch(string, string)
             if (methodCallExpression.Method == IsMatch)
             {
                 return new RegexMatchExpression(
                     methodCallExpression.Arguments[0],
-                    methodCallExpression.Arguments[1],
-                    RegexOptions.None
-                );
-            }
-
-            // Regex.IsMatch(string, string, RegexOptions)
-            if (methodCallExpression.Method == IsMatchWithRegexOptions)
-            {
-                var constantExpr = methodCallExpression.Arguments[2] as ConstantExpression;
-
-                if (constantExpr == null)
-                {
-                    return null;
-                }
-
-                var options = (RegexOptions) constantExpr.Value;
-
-                if ((options & UnsupportedRegexOptions) != 0)
-                {
-                    return null;
-                }
-
-                return new RegexMatchExpression(
-                    methodCallExpression.Arguments[0],
-                    methodCallExpression.Arguments[1],
-                    options
+                    methodCallExpression.Arguments[1]
                 );
             }
 

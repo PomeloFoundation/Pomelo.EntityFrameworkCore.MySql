@@ -55,6 +55,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Models
 		public DateTimeOffset? TypeDateTimeOffsetN  { get; set; }
 		public TimeSpan?       TypeTimeSpanN { get; set; }
 
+		// Enum
+		public TestEnum TypeEnum           { get; set; }
+		public TestEnumByte TypeEnumByte   { get; set; }
+		// nullable Enum
+		public TestEnum? TypeEnumN         { get; set; }
+		public TestEnumByte? TypeEnumByteN { get; set; }
+
 		// guid
 		public Guid  TypeGuid { get; set; }
 		// nullable guid
@@ -94,6 +101,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Models
 
 		public byte[] TypeByteArrayN    { get; set; }
 
+
 		// json not null
 		[Required]
 		public JsonObject<List<string>>               TypeJsonArray   { get; set; }
@@ -105,6 +113,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Models
 		public JsonObject<List<string>>               TypeJsonArrayN  { get; set; }
 
 		public JsonObject<Dictionary<string, string>> TypeJsonObjectN { get; set; }
+	}
+
+	public enum TestEnum{
+		TestDefault=0,
+		TestOne=1
+	}
+
+	public enum TestEnumByte : byte{
+		TestDefault=0,
+		TestOne=1
 	}
 
 }

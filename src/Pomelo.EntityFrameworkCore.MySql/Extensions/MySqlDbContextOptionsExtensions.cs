@@ -25,6 +25,7 @@ namespace Microsoft.EntityFrameworkCore
             var csb = new MySqlConnectionStringBuilder(connectionString)
             {
 	            AllowUserVariables = true,
+                BufferResultSets = true,
 	            UseAffectedRows = false
             };
             connectionString = csb.ConnectionString;
@@ -46,18 +47,19 @@ namespace Microsoft.EntityFrameworkCore
             Check.NotNull(connection, nameof(connection));
 
             var csb = new MySqlConnectionStringBuilder(connection.ConnectionString);
-	        if (csb.AllowUserVariables != true || csb.UseAffectedRows != false)
+	        if (csb.AllowUserVariables != true || csb.BufferResultSets != true || csb.UseAffectedRows != false)
 	        {
 	            try
 	            {
 		            csb.AllowUserVariables = true;
+                    csb.BufferResultSets = true;
 		            csb.UseAffectedRows = false;
 		            connection.ConnectionString = csb.ConnectionString;
 	            }
 	            catch (MySqlException e)
                 {
                     throw new InvalidOperationException("The MySql Connection string used with Pomelo.EntityFrameworkCore.MySql " +
-                    	"must contain \"UseAffectedRows=false\" and \"AllowUserVariables=true\"", e);
+                    	"must contain \"AllowUserVariables=true;BufferResultSets=true;UseAffectedRows=false\"", e);
                 }
             }
             
@@ -75,10 +77,8 @@ namespace Microsoft.EntityFrameworkCore
             [NotNull] string connectionString,
             [CanBeNull] Action<MySqlDbContextOptionsBuilder> mySqlOptionsAction = null)
             where TContext : DbContext
-        {
-            return (DbContextOptionsBuilder<TContext>)UseMySql(
-                (DbContextOptionsBuilder)optionsBuilder, new MySqlConnection(connectionString), mySqlOptionsAction);
-        }
+            => (DbContextOptionsBuilder<TContext>)UseMySql(
+                (DbContextOptionsBuilder)optionsBuilder, connectionString, mySqlOptionsAction);
 
         public static DbContextOptionsBuilder<TContext> UseMySql<TContext>(
             [NotNull] this DbContextOptionsBuilder<TContext> optionsBuilder,

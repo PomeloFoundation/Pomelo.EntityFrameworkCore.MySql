@@ -1,5 +1,5 @@
 ﻿// ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Storage
+namespace Microsoft.EntityFrameworkCore.Storage.Internal
 {
 	/// <summary>
 	/// Specifies whether to perform synchronous or asynchronous I/O.

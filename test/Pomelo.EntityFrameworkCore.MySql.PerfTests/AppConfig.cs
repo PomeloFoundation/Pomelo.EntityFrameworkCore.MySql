@@ -28,10 +28,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
                             var basePath = pwd.FullName;
                             if (pwd.Name.StartsWith("netcoreapp"))
                                 basePath = pwd.Parent.Parent.Parent.FullName;
-
-                            if (Ci != null && Ci == "true" && !File.Exists(Path.Combine(basePath, "config.json"))){
-                                InitCi(basePath);
-                            }
                             
                             var builder = new ConfigurationBuilder()
                                 .SetBasePath(basePath)
@@ -43,38 +39,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
                 }
                 return _config;
             }
-        }
-
-        private static void InitCi(string basePath){
-            File.Copy(
-                Path.Combine(basePath, "config.json.example"),
-                Path.Combine(basePath, "config.json"));
-
-            var processInfo = new ProcessStartInfo{
-                FileName = "dotnet",
-                Arguments = "ef -e \"Ef\" migrations add initial",
-                WorkingDirectory = basePath
-            };
-            var process = Process.Start(processInfo);
-            process.WaitForExit();
-
-            foreach (var filePath in Directory.GetFiles(Path.Combine(basePath, "Migrations"))){
-                if (filePath.EndsWith(".cs")){
-                    var data = File.ReadAllText(filePath);
-	                if (!data.Contains("using System.Collections.Generic;"))
-	                {
-		                File.WriteAllText(filePath, "using System.Collections.Generic;" + Environment.NewLine + data);
-	                }
-                }
-            }
-
-            processInfo = new ProcessStartInfo{
-                FileName = "dotnet",
-                Arguments = "ef -e \"Ef\" database update",
-                WorkingDirectory = basePath
-            };
-            process = Process.Start(processInfo);
-            process.WaitForExit();
         }
         
     }

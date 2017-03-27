@@ -33,7 +33,7 @@ cd $PSScriptRoot
 $repoFolder = $PSScriptRoot
 $env:REPO_FOLDER = $repoFolder
 
-$koreBuildZip="https://github.com/aspnet/KoreBuild/archive/rel/1.1.0.zip"
+$koreBuildZip="https://github.com/aspnet/KoreBuild/archive/rel/1.0.0-msbuild-rtm.zip"
 if ($env:KOREBUILD_ZIP)
 {
     $koreBuildZip=$env:KOREBUILD_ZIP
@@ -63,10 +63,10 @@ if (!(Test-Path $buildFolder)) {
     }
 }
 
-$dotnetVersion = "1.0.0-preview2-1-003177"
-$dotnetChannel = "preview"
-$dotnetSharedRuntimeVersion = "1.0.0"
-$dotnetSharedRuntimeChannel = "preview"
+$dotnetVersion = "1.0.0"
+$dotnetChannel = "rel-1.0.0"
+$dotnetSharedRuntimeVersion = "1.1.1"
+$dotnetSharedRuntimeChannel = "rel-1.0.0"
 
 $dotnetLocalInstallFolder = $env:DOTNET_INSTALL_DIR
 if (!$dotnetLocalInstallFolder)
@@ -93,21 +93,21 @@ if (!(Test-Path $sharedRuntimePath))
 
 # restore
 cd "$repoFolder"
-& dotnet restore
+dotnet restore
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
 
 # build .NET 451 to verify no build errors
 cd (Join-Path $repoFolder (Join-Path "src" "Pomelo.EntityFrameworkCore.MySql"))
-& dotnet build -c Release
+dotnet build -c Release
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
 
 # run unit tests
 cd (Join-Path $repoFolder (Join-Path "test" "Pomelo.EntityFrameworkCore.MySql.Tests"))
-& dotnet test -c Release
+dotnet test -c Release
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
@@ -115,14 +115,26 @@ if ($LASTEXITCODE -ne 0){
 # run functional tests if not on MyGet
 if ($env:BuildRunner -ne "MyGet"){
     cd (Join-Path $repoFolder (Join-Path "test" "Pomelo.EntityFrameworkCore.MySql.PerfTests"))
-    echo "Testing with EF_BATCH_SIZE=1"
-    & dotnet test -c Release
+    cp config.json.example config.json
+
+    echo "Building Migrations"
+    scripts\rebuild.ps1
+
+    echo "Test applying migrations"
+    dotnet run -c Release testMigrate
     if ($LASTEXITCODE -ne 0){
         exit $LASTEXITCODE;
     }
-    echo "Testing with EF_BATCH_SIZE=10"
+
+    echo "Test with EF_BATCH_SIZE=1"
+    dotnet test -c Release
+    if ($LASTEXITCODE -ne 0){
+        exit $LASTEXITCODE;
+    }
+    
+    echo "Test with EF_BATCH_SIZE=10"
     $env:EF_BATCH_SIZE = 10
-    & dotnet test -c Release
+    dotnet test -c Release
     if ($LASTEXITCODE -ne 0){
         exit $LASTEXITCODE;
     }
@@ -135,7 +147,7 @@ if ($env:BuildRunner -ne "MyGet"){
 # MyGet expects nuget packages to be build
 cd (Join-Path $repoFolder (Join-Path "src" "Pomelo.EntityFrameworkCore.MySql"))
 if ($env:BuildRunner -eq "MyGet"){
-    & dotnet pack -c Release
+    dotnet pack -c Release
     if ($LASTEXITCODE -ne 0){
         exit $LASTEXITCODE;
     }
@@ -144,7 +156,7 @@ if ($env:BuildRunner -eq "MyGet"){
 # MyGet expects nuget packages to be build
 cd (Join-Path $repoFolder (Join-Path "src" "Pomelo.EntityFrameworkCore.MySql.Design"))
 if ($env:BuildRunner -eq "MyGet"){
-    & dotnet pack -c Release
+    dotnet pack -c Release
     if ($LASTEXITCODE -ne 0){
         exit $LASTEXITCODE;
     }

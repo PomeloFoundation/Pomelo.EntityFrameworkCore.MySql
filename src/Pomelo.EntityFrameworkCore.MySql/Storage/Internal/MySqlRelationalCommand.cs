@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Diagnostics;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -55,86 +56,81 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 	    {
             Check.NotNull(connection, nameof(connection));
             Check.NotEmpty(executeMethod, nameof(executeMethod));
-            var dbCommand = CreateCommand(connection, parameterValues);
-            object result;
 
-            cancellationToken.ThrowIfCancellationRequested();
-            var mySqlConnection = connection as MySqlRelationalConnection;
-            var locked = false;
-		    var isReader = false;
-		    var startTimestamp = Stopwatch.GetTimestamp();
+            using (var dbCommand = CreateCommand(connection, parameterValues))
+			{
+				cancellationToken.ThrowIfCancellationRequested();
+				var mySqlConnection = connection as MySqlRelationalConnection;
+				object result;
+				var opened = false;
+				var locked = false;
+				var startTimestamp = Stopwatch.GetTimestamp();
 
-		    try
-            {
-	            if (ioBehavior == IOBehavior.Asynchronous)
-	            {
-		            // ReSharper disable once PossibleNullReferenceException
-		            await mySqlConnection.PoolingOpenAsync(cancellationToken).ConfigureAwait(false);
-		            await mySqlConnection.Lock.WaitAsync(cancellationToken).ConfigureAwait(false);
-	            }
-	            else
-	            {
-		            // ReSharper disable once PossibleNullReferenceException
-		            mySqlConnection.PoolingOpen();
-		            mySqlConnection.Lock.Wait(cancellationToken);
-	            }
-	            locked = true;
-                switch (executeMethod)
-                {
-                    case nameof(ExecuteNonQuery):
-                    {
-						if (ioBehavior == IOBehavior.Asynchronous)
-							result = await dbCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-						else
-							result = dbCommand.ExecuteNonQuery();
-	                    break;
-                    }
-                    case nameof(ExecuteScalar):
-                    {
-						if (ioBehavior == IOBehavior.Asynchronous)
-							result = await dbCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
-						else
-							result = dbCommand.ExecuteScalar();
-	                    break;
-                    }
-                    case nameof(ExecuteReader):
-                    {
-						MySqlDataReader dataReader;
-						if (ioBehavior == IOBehavior.Asynchronous)
-							dataReader = await dbCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false) as MySqlDataReader;
-						else
-							dataReader = dbCommand.ExecuteReader() as MySqlDataReader;
-						result = new RelationalDataReader(connection, dbCommand, new SynchronizedMySqlDataReader(dataReader, mySqlConnection));
-	                    isReader = true;
-	                    break;
-                    }
-                    default:
-                    {
-                        throw new NotSupportedException();
-                    }
-                }
-            }
-            finally
-            {
-	            var currentTimestamp = Stopwatch.GetTimestamp();
-	            Logger.LogCommandExecuted(dbCommand, startTimestamp, currentTimestamp);
-	            if (!isReader)
-	            {
-					// NonQuery, Scalar, and Exceptions can be disposed, and should release locks
-		            dbCommand.Dispose();
-		            if (locked)
-		            {
-			            mySqlConnection.Lock.Release();
-			            mySqlConnection.PoolingClose();
-		            }
-	            }
-	            // ReSharper disable once PossibleNullReferenceException
-	            if (!mySqlConnection.Pooling && closeConnection)
-	            {
-		            connection.Close();
-	            }
-            }
-            return result;
+				try
+				{
+					if (ioBehavior == IOBehavior.Asynchronous)
+						// ReSharper disable once PossibleNullReferenceException
+						await mySqlConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
+					else
+						// ReSharper disable once PossibleNullReferenceException
+						mySqlConnection.Open();
+					opened = true;
+
+					if (ioBehavior == IOBehavior.Asynchronous)
+						await mySqlConnection.CommandLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+					else
+						mySqlConnection.CommandLock.Wait(cancellationToken);
+					locked = true;
+
+					switch (executeMethod)
+					{
+						case nameof(ExecuteNonQuery):
+						{
+							result = ioBehavior == IOBehavior.Asynchronous ?
+								await dbCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false) :
+								dbCommand.ExecuteNonQuery();
+							break;
+						}
+						case nameof(ExecuteScalar):
+						{
+							result = ioBehavior == IOBehavior.Asynchronous ?
+								await dbCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) :
+								dbCommand.ExecuteScalar();
+							break;
+						}
+						case nameof(ExecuteReader):
+						{
+							var dataReader = ioBehavior == IOBehavior.Asynchronous ?
+								await dbCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false) :
+								dbCommand.ExecuteReader();
+							result = new RelationalDataReader(connection, dbCommand, new WrappedMySqlDataReader(dataReader));
+							break;
+						}
+						default:
+						{
+							throw new NotSupportedException();
+						}
+					}
+					var currentTimestamp = Stopwatch.GetTimestamp();
+					Logger.LogCommandExecuted(dbCommand, startTimestamp, currentTimestamp);
+					if (closeConnection)
+						connection.Close();
+					return result;
+				}
+				catch (Exception)
+				{
+					var currentTimestamp = Stopwatch.GetTimestamp();
+					Logger.LogCommandExecuted(dbCommand, startTimestamp, currentTimestamp);
+					if (opened)
+						connection.Close();
+					throw;
+				}
+				finally
+				{
+					if (locked)
+						mySqlConnection.CommandLock.Release();
+				}
+			}
         }
 
         private DbCommand CreateCommand(
@@ -172,10 +168,10 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 	                    {
 		                    if (parameterValue is char)
 			                    parameter.AddDbParameter(command, Convert.ToByte((char)parameterValue));
-		                    else if (parameterValue is DateTimeOffset)
-			                    parameter.AddDbParameter(command, ((DateTimeOffset) parameterValue).UtcDateTime);
 		                    else if (parameterValue.GetType().FullName.StartsWith("System.JsonObject"))
 			                    parameter.AddDbParameter(command, parameterValue.ToString());
+							else if (parameterValue.GetType().GetTypeInfo().IsEnum)
+                                parameter.AddDbParameter(command, Convert.ChangeType(parameterValue, Enum.GetUnderlyingType(parameterValue.GetType())));
 		                    else
 			                    parameter.AddDbParameter(command, parameterValue);
 	                    }

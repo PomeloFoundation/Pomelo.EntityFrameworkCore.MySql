@@ -313,6 +313,33 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
         }
 
         [Fact]
+        public virtual void CreateTableUlongAi()
+        {
+            Generate(
+                new CreateTableOperation
+                {
+                    Name = "TestUlongAutoIncrement",
+                    Schema = "dbo",
+                    Columns =
+                    {
+                        new AddColumnOperation
+                        {
+                            Name = "Id",
+                            Table = "TestUlongAutoIncrement",
+                            ClrType = typeof(ulong),
+                            ColumnType = "bigint unsigned",
+                            IsNullable = false,
+                            [MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd] = true
+                        }
+                    },
+                    PrimaryKey = new AddPrimaryKeyOperation
+                    {
+                        Columns = new[] { "Id" }
+                    }
+                });
+        }
+
+        [Fact]
         public virtual void DropColumnOperation()
         {
             Generate(

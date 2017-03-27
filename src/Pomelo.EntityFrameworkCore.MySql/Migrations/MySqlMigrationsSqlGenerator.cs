@@ -94,50 +94,80 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 .Append(operation.IsNullable ? " NULL" : " NOT NULL")
                 .AppendLine(SqlGenerationHelper.StatementTerminator);
 
-            alterBase = $"ALTER TABLE {identifier} ALTER COLUMN {SqlGenerationHelper.DelimitIdentifier(operation.Name)}";
-
-            builder.Append(alterBase);
-
-            if (operation.DefaultValue != null)
+            switch (type)
             {
-                builder.Append(" SET DEFAULT ")
-                    .Append(SqlGenerationHelper.GenerateLiteral((dynamic)operation.DefaultValue))
-                    .AppendLine(SqlGenerationHelper.BatchTerminator);
-            }
-            else if (!string.IsNullOrWhiteSpace(operation.DefaultValueSql))
-            {
-                builder.Append(" SET DEFAULT ")
-                    .Append(operation.DefaultValueSql)
-                    .AppendLine(SqlGenerationHelper.BatchTerminator);
-            }
-            else if (isSerial)
-            {
-                builder.Append(" SET DEFAULT ");
+                case "tinyblob":
+                case "blob":
+                case "mediumblob":
+                case "longblob":
 
-                switch (type)
-                {
-                    case "smallint":
-                    case "int":
-                    case "bigint":
-                    case "real":
-                    case "double precision":
-                    case "numeric":
-                        //TODO: need function CREATE SEQUENCE IF NOT EXISTS and set to it...
-                        //Until this is resolved changing IsIdentity from false to true
-                        //on types int2, int4 and int8 won't switch to type serial2, serial4 and serial8
-                        throw new NotImplementedException("Not supporting creating sequence for integer types");
-                    case "char(38)":
-                    case "uuid":
-                    case "uniqueidentifier":
-                        break;
-                    default:
-                        throw new NotImplementedException($"Not supporting creating IsIdentity for {type}");
+                case "tinytext":
+                case "text":
+                case "mediumtext":
+                case "longtext":
 
-                }
-            }
-            else
-            {
-                builder.Append(" DROP DEFAULT;");
+                case "geometry":
+                case "point":
+                case "linestring":
+                case "polygon":
+                case "multipoint":
+                case "multilinestring":
+                case "multipolygon":
+                case "geometrycollection":
+
+                case "json":
+                    if (operation.DefaultValue != null || !string.IsNullOrWhiteSpace(operation.DefaultValueSql) || isSerial)
+                    {
+                        throw new NotSupportedException($"{type} column can't have a default value");
+                    }
+                    break;
+                default:
+                    alterBase = $"ALTER TABLE {identifier} ALTER COLUMN {SqlGenerationHelper.DelimitIdentifier(operation.Name)}";
+
+                    builder.Append(alterBase);
+
+                    if (operation.DefaultValue != null)
+                    {
+                        builder.Append(" SET DEFAULT ")
+                            .Append(SqlGenerationHelper.GenerateLiteral((dynamic)operation.DefaultValue))
+                            .AppendLine(SqlGenerationHelper.BatchTerminator);
+                    }
+                    else if (!string.IsNullOrWhiteSpace(operation.DefaultValueSql))
+                    {
+                        builder.Append(" SET DEFAULT ")
+                            .Append(operation.DefaultValueSql)
+                            .AppendLine(SqlGenerationHelper.BatchTerminator);
+                    }
+                    else if (isSerial)
+                    {
+                        builder.Append(" SET DEFAULT ");
+
+                        switch (type)
+                        {
+                            case "smallint":
+                            case "int":
+                            case "bigint":
+                            case "real":
+                            case "double precision":
+                            case "numeric":
+                                //TODO: need function CREATE SEQUENCE IF NOT EXISTS and set to it...
+                                //Until this is resolved changing IsIdentity from false to true
+                                //on types int2, int4 and int8 won't switch to type serial2, serial4 and serial8
+                                throw new NotImplementedException("Not supporting creating sequence for integer types");
+                            case "char(38)":
+                            case "uuid":
+                            case "uniqueidentifier":
+                                break;
+                            default:
+                                throw new NotImplementedException($"Not supporting creating IsIdentity for {type}");
+
+                        }
+                    }
+                    else
+                    {
+                        builder.Append(" DROP DEFAULT;");
+                    }
+                    break;
             }
 
             EndStatement(builder);
@@ -370,6 +400,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 			        matchLen = match.Groups[2].Value;
 	        }
 
+            var autoIncrement = false;
 	        var generatedOnAddAnnotation = annotatable[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd];
             var generatedOnAdd = generatedOnAddAnnotation != null && (bool)generatedOnAddAnnotation;
             var generatedOnAddOrUpdateAnnotation = annotatable[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAddOrUpdate];
@@ -378,21 +409,17 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             {
                 switch (matchType)
                 {
-                    case "int":
-                    case "int4":
-                        type = "int AUTO_INCREMENT";
-                        break;
-                    case "bigint":
-                    case "int8":
-                        type = "bigint AUTO_INCREMENT";
-                        break;
+                    case "tinyint":
                     case "smallint":
-                    case "int2":
-                        type = "short AUTO_INCREMENT";
+                    case "mediumint":
+                    case "int":
+                    case "bigint":
+                        autoIncrement = true;
                         break;
                     case "datetime":
-                        if (_mySqlTypeMapper != null &&!_mySqlTypeMapper.ConnectionSettings.SupportsDateTime6)
-                            throw new InvalidOperationException($"Error in {table}.{name}: DATETIME does not support values generated " +
+                        if (_mySqlTypeMapper != null && !_mySqlTypeMapper.ConnectionSettings.SupportsDateTime6)
+                            throw new InvalidOperationException(
+                                $"Error in {table}.{name}: DATETIME does not support values generated " +
                                 "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");
                         goto case "timestamp";
                     case "timestamp":
@@ -430,24 +457,32 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 builder.Append(" NOT NULL");
             }
 
-            if (defaultValueSql != null)
+            if (autoIncrement)
             {
-                builder
-                    .Append(" DEFAULT ")
-                    .Append(defaultValueSql);
+                builder.Append(" AUTO_INCREMENT");
             }
-            else if (defaultValue != null)
+            else
             {
-                builder
-                    .Append(" DEFAULT ")
-                    .Append(SqlGenerationHelper.GenerateLiteral(defaultValue));
+                if (defaultValueSql != null)
+                {
+                    builder
+                        .Append(" DEFAULT ")
+                        .Append(defaultValueSql);
+                }
+                else if (defaultValue != null)
+                {
+                    builder
+                        .Append(" DEFAULT ")
+                        .Append(SqlGenerationHelper.GenerateLiteral(defaultValue));
+                }
+                if (onUpdateSql != null)
+                {
+                    builder
+                        .Append(" ON UPDATE ")
+                        .Append(onUpdateSql);
+                }
             }
-            if (onUpdateSql != null)
-            {
-                builder
-                    .Append(" ON UPDATE ")
-                    .Append(onUpdateSql);
-            }
+
         }
 
         protected override void DefaultValue(object defaultValue, string defaultValueSql, MigrationCommandListBuilder builder)

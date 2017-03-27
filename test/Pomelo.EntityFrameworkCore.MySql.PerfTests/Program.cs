@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using System;
+using Microsoft.AspNetCore.Hosting;
+using Pomelo.EntityFrameworkCore.MySql.PerfTests.Commands;
 
 namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 {
@@ -6,12 +8,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
     {
         public static void Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseStartup<Startup>()
-                .Build();
-
-            host.Run();
+            if (args.Length == 0)
+            {
+	            var host = new WebHostBuilder()
+                    .UseUrls("http://*:5000")
+                    .UseKestrel()
+                    .UseStartup<Startup>()
+                    .Build();
+                host.Run();
+            }
+            else
+            {
+                Environment.Exit(CommandRunner.Run(args));
+            }
         }
     }
 }

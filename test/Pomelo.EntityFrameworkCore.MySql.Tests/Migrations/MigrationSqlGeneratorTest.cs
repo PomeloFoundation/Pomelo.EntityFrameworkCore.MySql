@@ -243,6 +243,18 @@ END;" + EOL +
                 Sql);
         }
 
+        public override void CreateTableUlongAi()
+        {
+            base.CreateTableUlongAi();
+
+            Assert.Equal(
+                "CREATE TABLE `dbo`.`TestUlongAutoIncrement` (" + EOL +
+                "    `Id` bigint unsigned NOT NULL AUTO_INCREMENT," + EOL +
+                "    PRIMARY KEY (`Id`)" + EOL +
+                ");" + EOL,
+                Sql);
+        }
+
         public override void DropColumnOperation()
         {
             base.DropColumnOperation();
@@ -377,6 +389,44 @@ END;" + EOL +
             Sql, false , true, true);
         }
 
+        [Theory]
+        [InlineData("tinyblob")]
+        [InlineData("blob")]
+        [InlineData("mediumblob")]
+        [InlineData("longblob")]
+
+        [InlineData("tinytext")]
+        [InlineData("text")]
+        [InlineData("mediumtext")]
+        [InlineData("longtext")]
+
+        [InlineData("geometry")]
+        [InlineData("point")]
+        [InlineData("linestring")]
+        [InlineData("polygon")]
+        [InlineData("multipoint")]
+        [InlineData("multilinestring")]
+        [InlineData("multipolygon")]
+        [InlineData("geometrycollection")]
+
+        [InlineData("json")]
+        public void AlterColumnOperation_with_no_default_value_column_types(string type)
+        {
+            Generate(
+                new AlterColumnOperation
+                {
+                    Table = "People",
+                    Name = "Blob",
+                    ClrType = typeof(string),
+                    ColumnType = type,
+                    IsNullable = true,
+                });
+
+            Assert.Equal(
+                $"ALTER TABLE `People` MODIFY COLUMN `Blob` {type} NULL;" + EOL,
+                Sql);
+        }
+
         #endregion
 
         #region Npgsql-specific
@@ -425,7 +475,7 @@ END;" + EOL +
             });
 
             Assert.Equal(
-                "ALTER TABLE `People` ADD `foo` int AUTO_INCREMENT NOT NULL;" + EOL,
+                "ALTER TABLE `People` ADD `foo` int NOT NULL AUTO_INCREMENT;" + EOL,
                 Sql);
         }
 
