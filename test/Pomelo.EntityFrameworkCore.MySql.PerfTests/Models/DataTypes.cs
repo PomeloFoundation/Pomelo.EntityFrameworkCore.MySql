@@ -113,6 +113,25 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Models
 		public JsonObject<List<string>>               TypeJsonArrayN  { get; set; }
 
 		public JsonObject<Dictionary<string, string>> TypeJsonObjectN { get; set; }
+
+
+	    // static method to create a new empty object
+	    public static readonly byte[] EmptyByteArray = new byte[0];
+	    public static readonly JsonObject<List<string>> EmptyJsonArray = new JsonObject<List<string>>(new List<string>());
+	    public static readonly JsonObject<Dictionary<string, string>> EmptyJsonObject = new JsonObject<Dictionary<string, string>>(new Dictionary<string, string>());
+
+	    public static DataTypesVariable CreateEmpty()
+	    {
+	        return new DataTypesVariable
+	        {
+	            TypeString = "",
+	            TypeString255 = "",
+	            TypeByteArray    = EmptyByteArray,
+	            TypeByteArray255 = EmptyByteArray,
+	            TypeJsonArray    = EmptyJsonArray,
+	            TypeJsonObject   = EmptyJsonObject,
+	        };
+	    }
 	}
 
 	public enum TestEnum{

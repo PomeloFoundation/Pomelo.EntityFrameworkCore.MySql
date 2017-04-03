@@ -175,7 +175,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
 
             //Visit(atTimeZoneExpression.TimestampExpression);
 
-            Sql.Append("UTC_DATE()");
+            Sql.Append("UTC_TIMESTAMP()");
             return atTimeZoneExpression;
         }
 
