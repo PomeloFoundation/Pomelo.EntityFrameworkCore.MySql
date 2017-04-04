@@ -33,10 +33,23 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
                     rowsAffected += commandbatch.ModificationCommands.Count;
                 }
                 startedTransaction?.Commit();
+                startedTransaction?.Dispose();
+            }
+            catch
+            {
+                try
+                {
+                    startedTransaction?.Rollback();
+                    startedTransaction?.Dispose();
+                }
+                catch
+                {
+                    // if the connection was lost, rollback command will fail.  prefer to throw original exception in that case
+                }
+                throw;
             }
             finally
             {
-                startedTransaction?.Dispose();
                 connection.Close();
             }
 
@@ -69,10 +82,23 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
                 {
                   await startedTransaction.CommitAsync(cancellationToken).ConfigureAwait(false);
                 }
+                startedTransaction?.Dispose();
+            }
+            catch
+            {
+                try
+                {
+                    startedTransaction?.Rollback();
+                    startedTransaction?.Dispose();
+                }
+                catch
+                {
+                    // if the connection was lost, rollback command will fail.  prefer to throw original exception in that case
+                }
+                throw;
             }
             finally
             {
-                startedTransaction?.Dispose();
                 connection.Close();
             }
 
