@@ -100,6 +100,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 			CrmMeta.OnModelCreating(modelBuilder);
 			GeneratedContactMeta.OnModelCreating(modelBuilder);
 			PeopleMeta.OnModelCreating(modelBuilder);
+
+		    if (AppConfig.EfSchema != null)
+		    {
+                // Generates all models in a different schema
+		        modelBuilder.HasDefaultSchema(AppConfig.EfSchema);
+		    }
+
 		}
 	}
 }

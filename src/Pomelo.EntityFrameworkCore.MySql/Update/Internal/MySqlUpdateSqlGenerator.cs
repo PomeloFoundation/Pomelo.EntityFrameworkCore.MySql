@@ -127,7 +127,7 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
                 commandStringBuilder.Append("ROW_COUNT()");
 
                 commandStringBuilder
-                    .Append($" FROM { SqlGenerationHelper.DelimitIdentifier(name) }")
+                    .Append($" FROM { SqlGenerationHelper.DelimitIdentifier(name, schema) }")
                     .Append(" WHERE ");
 
                 var predicates = new List<string>();

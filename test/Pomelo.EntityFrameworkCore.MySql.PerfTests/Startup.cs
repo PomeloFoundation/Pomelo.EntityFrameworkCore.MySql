@@ -1,4 +1,5 @@
-﻿using System.Buffers;
+﻿using System;
+using System.Buffers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -42,9 +43,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 
         public void ConfigureEntityFramework(IServiceCollection services)
         {
-            System.Console.WriteLine("Using Pomelo Provider");
+            Console.WriteLine($"Using Batch Size: {AppConfig.EfBatchSize}");
+            if (AppConfig.EfSchema != null)
+                Console.WriteLine($"Using Schema: {AppConfig.EfSchema}");
             services.AddEntityFrameworkMySql();
-
             services.AddDbContext<AppDb>(
                 options => options.UseMySql(AppConfig.Config["Data:ConnectionString"],
                     mysqlOptions => mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize)),
