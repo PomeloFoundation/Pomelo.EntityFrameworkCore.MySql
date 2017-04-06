@@ -155,7 +155,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                 = new ByteArrayRelationalTypeMapper(
                     8000,
                     _varbinarymax,
-                    _varbinary767,
+                    _varbinarymax,
                     _varbinary767,
                     _rowversion, size => new MySqlMaxLengthMapping(
                         "varbinary(" + size + ")",
@@ -170,7 +170,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                 = new StringRelationalTypeMapper(
                     8000,
                     _varcharmax,
-                    _varchar127,
+                    _varcharmax,
                     _varchar127,
                     size => new MySqlMaxLengthMapping(
                         "varchar(" + size + ")",
@@ -182,7 +182,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                         hasNonDefaultSize: true),
                     8000,
                     _varcharmax,
-                    _varchar127,
+                    _varcharmax,
                     _varchar127,
                     size => new MySqlMaxLengthMapping(
                         "varchar(" + size + ")",
