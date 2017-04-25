@@ -24,7 +24,7 @@ namespace Microsoft.EntityFrameworkCore.ValueGeneration.Internal
                 ? property.ValueGenerated == ValueGenerated.Never
                   || property.MySql().DefaultValueSql != null
                     ? (ValueGenerator)new TemporaryGuidValueGenerator()
-                    : new SequentialGuidValueGenerator()
+                    : new MySqlSequentialGuidValueGenerator()
                 : base.Create(property, entityType);
             return ret;
         }
