@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using MySql.Data.MySqlClient;
 using Pomelo.EntityFrameworkCore.MySql.PerfTests.Models;
 using Xunit;
 
@@ -19,14 +21,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 			const string zip = "99999";
 			var addressFormatted = string.Join(", ", address, city, state, zip);
 
-			Action<GeneratedContact> testContact = contact =>
+		    using (var db = new AppDb())
 			{
-				Assert.Equal(email, contact.Email);
-				Assert.Equal(addressFormatted, contact.Address);
-			};
+			    void TestContact(GeneratedContact contact)
+			    {
+			        var csb = new MySqlConnectionStringBuilder(db.Database.GetDbConnection().ConnectionString);
+			        var guidHexStr = csb.OldGuids
+			            ? BitConverter.ToString(contact.Id.ToByteArray().Take(8).ToArray()).Replace("-", "")
+			            : contact.Id.ToString().Replace("-", "").Substring(0, 16);
+			        var guidTicks = Convert.ToInt64("0x" + guidHexStr, 16);
+			        var guidDateTime = new DateTime(guidTicks);
 
-			using (var db = new AppDb())
-			{
+			        Assert.InRange(guidDateTime - DateTime.UtcNow, TimeSpan.FromSeconds(-5), TimeSpan.FromSeconds(5));
+			        Assert.Equal(email, contact.Email);
+			        Assert.Equal(addressFormatted, contact.Address);
+			    }
+
 				var gen = new GeneratedContact
 				{
 					Names = new JsonObject<List<string>>(new List<string> {"Bob", "Bobby"}),
@@ -43,11 +53,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 				// test the entity after saving to the db
 				db.GeneratedContacts.Add(gen);
 				await db.SaveChangesAsync();
-				testContact(gen);
+				TestContact(gen);
 
 				// test the entity after fresh retreival from the database
 				var genDb = await db.GeneratedContacts.FirstOrDefaultAsync(m => m.Id == gen.Id);
-				testContact(genDb);
+				TestContact(genDb);
 			}
 		}
 

@@ -45,7 +45,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Models
 
 	public class GeneratedContact
 	{
-		public int Id { get; set; }
+	    public Guid Id { get; set; }
 
 		public string Name { get; set; }
 
