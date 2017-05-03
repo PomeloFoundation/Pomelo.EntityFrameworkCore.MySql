@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -326,6 +326,42 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
                 }).FirstOrDefaultAsync(m => m.Id == _variable.Id);
 
             Assert.Equal("ENTITYFRAMEWORK", result.Upper);
+        }
+
+        [Fact]
+        public async Task MySqlMathAcosTranslator()
+        {
+            var result = await _db.DataTypesSimple.Select(m =>
+                new {
+                    Id = m.Id,
+                    Acos = Math.Acos(m.TypeDouble),
+                }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
+
+            Assert.Equal(Math.Acos(_simple.TypeDouble), result.Acos);
+        }
+
+        [Fact]
+        public async Task MySqlMathCosTranslator()
+        {
+            var result = await _db.DataTypesSimple.Select(m =>
+                new {
+                    Id = m.Id,
+                    Cos = Math.Cos(m.TypeDouble),
+                }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
+
+            Assert.Equal(Math.Cos(_simple.TypeDouble), result.Cos);
+        }
+
+        [Fact]
+        public async Task MySqlMathSinTranslator()
+        {
+            var result = await _db.DataTypesSimple.Select(m =>
+                new {
+                    Id = m.Id,
+                    Sin = Math.Sin(m.TypeDouble),
+                }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
+
+            Assert.Equal(Math.Sin(_simple.TypeDouble), result.Sin);
         }
 
     }

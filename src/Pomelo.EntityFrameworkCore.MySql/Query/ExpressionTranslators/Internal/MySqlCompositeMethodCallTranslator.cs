@@ -25,7 +25,10 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
             new MySqlContainsOptimizedTranslator(),
             new MySqlStartsWithOptimizedTranslator(),
             new MySqlEndsWithOptimizedTranslator(),
-            new MySqlDateAddTranslator()
+            new MySqlDateAddTranslator(),
+            new MySqlMathAcosTranslator(),
+            new MySqlMathCosTranslator(),
+            new MySqlMathSinTranslator()
         };
 
         public MySqlCompositeMethodCallTranslator([NotNull] ILogger<MySqlCompositeMethodCallTranslator> logger)
