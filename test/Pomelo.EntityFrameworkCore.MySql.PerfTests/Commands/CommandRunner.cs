@@ -9,6 +9,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Commands{
             Console.Error.WriteLine(@"dotnet run
     connectionString   print connection string
     testMigrate        test dbContext.Database functions: ensureCreate, ensureDelete, migrate
+    testPerformance [iteratoins] [concurrency] [operations]
     -h, --help         show this message
             ");
         }
@@ -27,6 +28,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Commands{
 		            case "testMigrate":
 						TestMigrateCommand.Run();
 			            break;
+	                case "testPerformance":
+	                    if (args.Length != 4)
+	                        goto default;
+	                    TestPerformanceCommand.Run(int.Parse(args[1]), int.Parse(args[2]), int.Parse(args[3]));
+	                    break;
 		            case "-h":
 		            case "--help":
 			            Help();

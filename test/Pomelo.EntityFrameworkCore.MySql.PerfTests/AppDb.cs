@@ -3,6 +3,11 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pomelo.EntityFrameworkCore.MySql.PerfTests.Models;
+#if ORACLE
+using MySQL.Data.EntityFrameworkCore.Extensions;
+#elif SAPIENT
+using MySQL.Data.Entity.Extensions;
+#endif
 
 namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 {
@@ -11,6 +16,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 		// blog
 		public DbSet<Blog> Blogs { get; set; }
 
+#if POMELO
 		// crm
 		public DbSet<CrmAdmin> CrmAdmins { get; set; }
 		public DbSet<CrmRole> CrmRoles { get; set; }
@@ -30,6 +36,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 		public DbSet<PersonKid> PeopleKids { get; set; }
 		public DbSet<PersonParent> PeopleParents { get; set; }
 		public DbSet<PersonFamily> PeopleFamilies { get; set; }
+#endif
 
 		private readonly bool _configured;
 	    private readonly DbConnection _connection;
@@ -55,10 +62,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 		    if (_configured)
 		        return;
 
+#if POMELO
 		    if (_connection != null)
                 optionsBuilder.UseMySql(_connection, options => options.MaxBatchSize(AppConfig.EfBatchSize));
 		    else
 		        optionsBuilder.UseMySql(AppConfig.Config["Data:ConnectionString"], options => options.MaxBatchSize(AppConfig.EfBatchSize));
+#else
+            if (_connection != null)
+                optionsBuilder.UseMySQL(_connection, options => options.MaxBatchSize(AppConfig.EfBatchSize));
+		    else
+		        optionsBuilder.UseMySQL(AppConfig.Config["Data:ConnectionString"], options => options.MaxBatchSize(AppConfig.EfBatchSize));
+#endif
 
 		    optionsBuilder.UseLoggerFactory(new LoggerFactory().AddConsole(AppConfig.Config.GetSection("Logging")));
 		}
@@ -96,10 +110,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 
 			});
 
+#if POMELO
 			// Add our models fluent APIs
 			CrmMeta.OnModelCreating(modelBuilder);
 			GeneratedContactMeta.OnModelCreating(modelBuilder);
 			PeopleMeta.OnModelCreating(modelBuilder);
+#endif
 
 		    if (AppConfig.EfSchema != null)
 		    {
