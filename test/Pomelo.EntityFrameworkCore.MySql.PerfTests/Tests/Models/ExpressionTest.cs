@@ -16,6 +16,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 
         private readonly AppDb _db;
         private readonly DataTypesSimple _simple;
+        private readonly DataTypesSimple _simple2;
         private readonly DataTypesVariable _variable;
 
         public ExpressionTest()
@@ -30,6 +31,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
                 TypeDoubleN = -3.1415
             };
             _db.DataTypesSimple.Add(_simple);
+
+            // initialize simple data types
+            _simple2 = new DataTypesSimple
+            {
+                TypeDouble = 1,
+                TypeDoubleN = -1
+            };
+            _db.DataTypesSimple.Add(_simple2);
 
             // initialize variable data types
             _variable = DataTypesVariable.CreateEmpty();
@@ -334,10 +343,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
             var result = await _db.DataTypesSimple.Select(m =>
                 new {
                     Id = m.Id,
-                    Acos = Math.Acos(m.TypeDouble),
-                }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
+                    Acos = Math.Acos(m.TypeDoubleN.Value),
+                }).FirstOrDefaultAsync(m => m.Id == _simple2.Id);
 
-            Assert.Equal(Math.Acos(_simple.TypeDouble), result.Acos);
+            Assert.Equal(Math.Acos(_simple2.TypeDoubleN.Value), result.Acos);
         }
 
         [Fact]
@@ -347,9 +356,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
                 new {
                     Id = m.Id,
                     Cos = Math.Cos(m.TypeDouble),
-                }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
+                }).FirstOrDefaultAsync(m => m.Id == _simple2.Id);
 
-            Assert.Equal(Math.Cos(_simple.TypeDouble), result.Cos);
+            Assert.Equal(Math.Cos(_simple2.TypeDouble), result.Cos);
         }
 
         [Fact]
@@ -359,9 +368,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
                 new {
                     Id = m.Id,
                     Sin = Math.Sin(m.TypeDouble),
-                }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
+                }).FirstOrDefaultAsync(m => m.Id == _simple2.Id);
 
-            Assert.Equal(Math.Sin(_simple.TypeDouble), result.Sin);
+            Assert.Equal(Math.Sin(_simple2.TypeDouble), result.Sin);
         }
 
     }
