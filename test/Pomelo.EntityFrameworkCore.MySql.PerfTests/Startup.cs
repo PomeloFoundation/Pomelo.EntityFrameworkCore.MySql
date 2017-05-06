@@ -10,6 +10,12 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Pomelo.EntityFrameworkCore.MySql.PerfTests.Models;
 using Microsoft.EntityFrameworkCore;
+#if ORACLE
+using MySQL.Data.EntityFrameworkCore;
+using MySQL.Data.EntityFrameworkCore.Extensions;
+#elif SAPIENT
+using MySQL.Data.Entity.Extensions;
+#endif
 
 namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 {
@@ -46,11 +52,25 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
             Console.WriteLine($"Using Batch Size: {AppConfig.EfBatchSize}");
             if (AppConfig.EfSchema != null)
                 Console.WriteLine($"Using Schema: {AppConfig.EfSchema}");
+#if POMELO
             services.AddEntityFrameworkMySql();
             services.AddDbContext<AppDb>(
                 options => options.UseMySql(AppConfig.Config["Data:ConnectionString"],
                     mysqlOptions => mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize)),
                 ServiceLifetime.Scoped);
+#elif ORACLE
+            services.AddEntityFrameworkMySQL();
+            services.AddDbContext<AppDb>(
+                options => options.UseMySQL(AppConfig.Config["Data:ConnectionString"],
+                    mysqlOptions => mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize)),
+                ServiceLifetime.Scoped);
+#elif SAPIENT
+            services.AddMySQL();
+            services.AddDbContext<AppDb>(
+                options => options.UseMySQL(AppConfig.Config["Data:ConnectionString"],
+                    mysqlOptions => mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize)),
+                ServiceLifetime.Scoped);
+#endif
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
