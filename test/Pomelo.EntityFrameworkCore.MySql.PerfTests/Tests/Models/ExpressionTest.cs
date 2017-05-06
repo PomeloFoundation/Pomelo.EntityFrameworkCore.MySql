@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -16,6 +16,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 
         private readonly AppDb _db;
         private readonly DataTypesSimple _simple;
+        private readonly DataTypesSimple _simple2;
         private readonly DataTypesVariable _variable;
 
         public ExpressionTest()
@@ -30,6 +31,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
                 TypeDoubleN = -3.1415
             };
             _db.DataTypesSimple.Add(_simple);
+
+            // initialize simple data types
+            _simple2 = new DataTypesSimple
+            {
+                TypeDouble = 1,
+                TypeDoubleN = -1
+            };
+            _db.DataTypesSimple.Add(_simple2);
 
             // initialize variable data types
             _variable = DataTypesVariable.CreateEmpty();
@@ -326,6 +335,42 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
                 }).FirstOrDefaultAsync(m => m.Id == _variable.Id);
 
             Assert.Equal("ENTITYFRAMEWORK", result.Upper);
+        }
+
+        [Fact]
+        public async Task MySqlMathAcosTranslator()
+        {
+            var result = await _db.DataTypesSimple.Select(m =>
+                new {
+                    Id = m.Id,
+                    Acos = Math.Acos(m.TypeDoubleN.Value),
+                }).FirstOrDefaultAsync(m => m.Id == _simple2.Id);
+
+            Assert.Equal(Math.Acos(_simple2.TypeDoubleN.Value), result.Acos);
+        }
+
+        [Fact]
+        public async Task MySqlMathCosTranslator()
+        {
+            var result = await _db.DataTypesSimple.Select(m =>
+                new {
+                    Id = m.Id,
+                    Cos = Math.Cos(m.TypeDouble),
+                }).FirstOrDefaultAsync(m => m.Id == _simple2.Id);
+
+            Assert.Equal(Math.Cos(_simple2.TypeDouble), result.Cos);
+        }
+
+        [Fact]
+        public async Task MySqlMathSinTranslator()
+        {
+            var result = await _db.DataTypesSimple.Select(m =>
+                new {
+                    Id = m.Id,
+                    Sin = Math.Sin(m.TypeDouble),
+                }).FirstOrDefaultAsync(m => m.Id == _simple2.Id);
+
+            Assert.Equal(Math.Sin(_simple2.TypeDouble), result.Sin);
         }
 
     }
