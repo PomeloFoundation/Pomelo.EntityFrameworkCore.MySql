@@ -2,32 +2,42 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
-using System.Globalization;
+using System.Text.RegularExpressions;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Storage.Internal
 {
-    public static class ServerVersion
+    public class ServerVersion
     {
-        // Original File: https://github.com/mysql-net/MySqlConnector/blob/master/src/MySqlConnector/MySqlClient/ServerVersion.cs
-        public static Version ParseVersion(string versionString)
+        public static Regex ReVersion = new Regex(@"\d+\.\d+\.?(?:\d+)?");
+
+        public ServerVersion(string versionString)
         {
-            var last = 0;
-            var index = versionString.IndexOf('.', last);
-            var major = int.Parse(versionString.Substring(last, index - last), CultureInfo.InvariantCulture);
-            last = index + 1;
-
-            index = versionString.IndexOf('.', last);
-            var minor = int.Parse(versionString.Substring(last, index - last), CultureInfo.InvariantCulture);
-            last = index + 1;
-
-            do
+            Type = versionString.ToLower().Contains("mariadb") ? ServerType.MariaDb : ServerType.MySql;
+            var semanticVersion = ReVersion.Matches(versionString);
+            if (semanticVersion.Count > 0)
             {
-                index++;
-            } while (index < versionString.Length && versionString[index] >= '0' && versionString[index] <= '9');
-            var build = int.Parse(versionString.Substring(last, index - last), CultureInfo.InvariantCulture);
-
-            return new Version(major, minor, build);
+                if (Type == ServerType.MariaDb && semanticVersion.Count > 1)
+                    Version = Version.Parse(semanticVersion[1].Value);
+                else
+                    Version = Version.Parse(semanticVersion[0].Value);
+            }
+            else
+            {
+                throw new InvalidOperationException($"Unable to determine server version from version string '${versionString}'");
+            }
         }
+
+        public readonly ServerType Type;
+
+        public readonly Version Version;
+
+        public bool SupportsDateTime6 => Version >= new Version(5,6);
+    }
+
+    public enum ServerType
+    {
+        MySql,
+        MariaDb
     }
 }
