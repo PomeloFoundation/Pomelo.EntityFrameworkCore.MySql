@@ -417,7 +417,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                         autoIncrement = true;
                         break;
                     case "datetime":
-                        if (_mySqlTypeMapper != null && !_mySqlTypeMapper.ConnectionSettings.SupportsDateTime6)
+                        if (_mySqlTypeMapper != null && !_mySqlTypeMapper.ConnectionSettings.ServerVersion.SupportsDateTime6)
                             throw new InvalidOperationException(
                                 $"Error in {table}.{name}: DATETIME does not support values generated " +
                                 "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");
@@ -435,7 +435,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 	            switch (matchType)
 	            {
 	                case "datetime":
-	                    if (_mySqlTypeMapper != null && !_mySqlTypeMapper.ConnectionSettings.SupportsDateTime6)
+	                    if (_mySqlTypeMapper != null && !_mySqlTypeMapper.ConnectionSettings.ServerVersion.SupportsDateTime6)
 	                        throw new InvalidOperationException($"Error in {table}.{name}: DATETIME does not support values generated " +
                                 "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");
 	                    goto case "timestamp";

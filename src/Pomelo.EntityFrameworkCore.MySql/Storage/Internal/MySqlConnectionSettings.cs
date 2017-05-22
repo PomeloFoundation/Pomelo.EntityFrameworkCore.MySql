@@ -40,7 +40,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     schemalessConnection.Open();
                     serverVersion = schemalessConnection.ServerVersion;
                 }
-                var version = ServerVersion.ParseVersion(serverVersion);
+                var version = new ServerVersion(serverVersion);
                 return new MySqlConnectionSettings(settingsCsb, version);
             });
         }
@@ -59,7 +59,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                 }
                 try
                 {
-                    var version = ServerVersion.ParseVersion(connection.ServerVersion);
+                    var version = new ServerVersion(connection.ServerVersion);
                     var connectionSettings = new MySqlConnectionSettings(settingsCsb, version);
                     return connectionSettings;
                 }
@@ -71,18 +71,17 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             });
         }
 
-        private MySqlConnectionSettings(MySqlConnectionStringBuilder settingsCsb, Version version)
+        private MySqlConnectionSettings(MySqlConnectionStringBuilder settingsCsb, ServerVersion serverVersion)
         {
             // Settings from the connection string
             OldGuids = settingsCsb.OldGuids;
             TreatTinyAsBoolean = settingsCsb.TreatTinyAsBoolean;
-
-            // Settings from databse version
-            SupportsDateTime6 = version >= new Version(5,6);
+            ServerVersion = serverVersion;
         }
 
         public readonly bool OldGuids;
         public readonly bool TreatTinyAsBoolean;
-        public readonly bool SupportsDateTime6;
+        public readonly ServerVersion ServerVersion;
+
     }
 }
