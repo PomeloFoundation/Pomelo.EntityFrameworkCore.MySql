@@ -23,11 +23,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{212DAE3C-D991-4213-AC4B-E23E923F2DC7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pomelo.EntityFrameworkCore.MySql", "src\Pomelo.EntityFrameworkCore.MySql\Pomelo.EntityFrameworkCore.MySql.csproj", "{FC2779F0-2A2A-4BE2-B5A8-FDA31A4A404A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.MySql", "src\EFCore.MySql\EFCore.MySql.csproj", "{FC2779F0-2A2A-4BE2-B5A8-FDA31A4A404A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pomelo.EntityFrameworkCore.MySql.Tests", "test\Pomelo.EntityFrameworkCore.MySql.Tests\Pomelo.EntityFrameworkCore.MySql.Tests.csproj", "{DE5212AE-4C17-4702-851D-0F1FC0D32E3C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.MySql.Tests", "test\EFCore.MySql.Tests\EFCore.MySql.Tests.csproj", "{DE5212AE-4C17-4702-851D-0F1FC0D32E3C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pomelo.EntityFrameworkCore.MySql.PerfTests", "test\Pomelo.EntityFrameworkCore.MySql.PerfTests\Pomelo.EntityFrameworkCore.MySql.PerfTests.csproj", "{E7D9C7D9-1CDD-4745-975D-9752AE095418}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.MySql.PerfTests", "test\EFCore.MySql.FunctionalTests\EFCore.MySql.FunctionalTests.csproj", "{E7D9C7D9-1CDD-4745-975D-9752AE095418}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
