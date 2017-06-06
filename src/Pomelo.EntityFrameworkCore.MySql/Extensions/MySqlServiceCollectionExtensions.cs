@@ -78,18 +78,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AddScoped<MySqlCompositeMethodCallTranslator>()
                 .AddScoped<MySqlQuerySqlGenerationHelperFactory>();
         }
-
-        private static IRelationalDatabaseProviderServices GetProviderServices(IServiceProvider serviceProvider)
-        {
-            var providerServices = serviceProvider.GetRequiredService<IDbContextServices>().DatabaseProviderServices
-                as IRelationalDatabaseProviderServices;
-
-            if (providerServices == null)
-            {
-                throw new InvalidOperationException(RelationalStrings.RelationalNotInUse);
-            }
-
-            return providerServices;
-        }
+        
     }
 }

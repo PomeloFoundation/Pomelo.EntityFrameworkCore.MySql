@@ -21,7 +21,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
             ValueGeneratedOnAddOrUpdate = prefix + MySqlAnnotationNames.ValueGeneratedOnAddOrUpdate;
         }
 
-        public new static MySqlFullAnnotationNames Instance { get; } = new MySqlFullAnnotationNames(MySqlAnnotationNames.Prefix);
+        public static MySqlFullAnnotationNames Instance { get; } = new MySqlFullAnnotationNames(MySqlAnnotationNames.Prefix);
 
         public readonly string Serial;
         public readonly string DefaultSequenceName;

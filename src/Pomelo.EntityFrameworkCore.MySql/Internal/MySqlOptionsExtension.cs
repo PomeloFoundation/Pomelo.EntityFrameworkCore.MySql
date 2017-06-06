@@ -22,7 +22,7 @@ namespace Microsoft.EntityFrameworkCore.Internal
         {
         }
 
-        public override void ApplyServices(IServiceCollection services)
+        public override bool ApplyServices(IServiceCollection services)
                   => Check.NotNull(services, nameof(services)).AddEntityFrameworkMySql();
     }
 }

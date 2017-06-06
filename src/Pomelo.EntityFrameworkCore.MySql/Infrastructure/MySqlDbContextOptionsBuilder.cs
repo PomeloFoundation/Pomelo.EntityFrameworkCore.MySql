@@ -13,8 +13,5 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
             : base(optionsBuilder)
         {
         }
-
-        protected override MySqlOptionsExtension CloneExtension()
-            => new MySqlOptionsExtension(OptionsBuilder.Options.GetExtension<MySqlOptionsExtension>());
     }
 }
