@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp1.1.1</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssemblyName>Pomelo.EntityFrameworkCore.MySql.Tests</AssemblyName>
     <PackageId>Pomelo.EntityFrameworkCore.MySql.Tests</PackageId>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Pomelo.EntityFrameworkCore.MySql\Pomelo.EntityFrameworkCore.MySql.csproj" />
+    <ProjectReference Include="..\..\src\EFCore.MySql\EFCore.MySql.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,7 +24,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.0.0-preview2-*" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.0.0-preview2-*" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" Version="2.0.0-preview2-*" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="1.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.0-preview2-*" />
     <PackageReference Include="Moq" Version="4.7.1" />
   </ItemGroup>
 

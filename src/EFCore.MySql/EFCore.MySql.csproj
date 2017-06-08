@@ -1,8 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>1.1.1</VersionPrefix>
+    <VersionPrefix>2.0.0</VersionPrefix>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <NetStandardImplicitPackageVersion>2.0.0-preview2-*</NetStandardImplicitPackageVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>Pomelo.EntityFrameworkCore.MySql</AssemblyName>
     <PackageId>Pomelo.EntityFrameworkCore.MySql</PackageId>
@@ -18,7 +19,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.0.0-preview2-*" />
-    <PackageReference Include="MySqlConnector" Version="0.19.*" />
+    <PackageReference Include="MySqlConnector" Version="0.20.*" />
     <PackageReference Include="Pomelo.JsonObject" Version="1.1.1" />
   </ItemGroup>
 
