@@ -1,22 +1,30 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
-// Licensed under the MIT. See LICENSE in the project root for license information.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-// ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Metadata.Internal
 {
+    /// <summary>
+    ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+    ///     directly from your code. This API may change or be removed in future releases.
+    /// </summary>
     public static class MySqlAnnotationNames
     {
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public const string Prefix = "MySql:";
-        public const string Serial = "Serial";
-        public const string ValueGeneratedOnAdd = "ValueGeneratedOnAdd";
-        public const string ValueGeneratedOnAddOrUpdate = "ValueGeneratedOnAddOrUpdate";
-        public const string DefaultSequenceName = "DefaultSequenceName";
-        public const string DefaultSequenceSchema = "DefaultSequenceSchema";
-        public const string SequenceName = "SequenceName";
-        public const string SequenceSchema = "SequenceSchema";
-        public const string IndexMethod = "IndexMethod";
-        public const string ValueGenerationStrategy = "ValueGenerationStrategy";
-        public const string MySqlExtensionPrefix = "MySqlExtension:";
-        public const string DatabaseTemplate = "DatabaseTemplate";
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public const string Clustered = Prefix + "Clustered";
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public const string ValueGenerationStrategy = Prefix + "ValueGenerationStrategy";
     }
 }

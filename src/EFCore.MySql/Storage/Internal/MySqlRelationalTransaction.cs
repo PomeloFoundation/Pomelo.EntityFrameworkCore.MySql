@@ -4,104 +4,121 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
-using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 
 namespace Microsoft.EntityFrameworkCore.Storage.Internal
 {
-    public class MySqlRelationalTransaction : IDbContextTransaction, IInfrastructure<DbTransaction>
+    public class MySqlRelationalTransaction : RelationalTransaction
     {
         private readonly IRelationalConnection _relationalConnection;
-        private readonly MySqlTransaction _dbTransaction;
-	    private readonly ILogger _logger;
-	    private readonly bool _transactionOwned;
+        private readonly DbTransaction _dbTransaction;
+        private readonly IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> _logger;
+        private readonly bool _transactionOwned;
 
-        private bool _disposed;
+        private bool _connectionClosed;
 
         public MySqlRelationalTransaction(
             [NotNull] IRelationalConnection connection,
-            [NotNull] MySqlTransaction transaction,
-            [NotNull] ILogger logger,
+            [NotNull] DbTransaction transaction,
+            [NotNull] IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger,
             bool transactionOwned)
+            : base(connection, transaction, logger, transactionOwned)
         {
-            Check.NotNull(connection, nameof(connection));
-            Check.NotNull(transaction, nameof(transaction));
-	        Check.NotNull(logger, nameof(logger));
-
-	        if (connection.DbConnection != transaction.Connection)
+            if (connection.DbConnection != transaction.Connection)
             {
                 throw new InvalidOperationException(RelationalStrings.TransactionAssociatedWithDifferentConnection);
             }
 
             _relationalConnection = connection;
             _dbTransaction = transaction;
-	        _logger = logger;
-	        _transactionOwned = transactionOwned;
+            _logger = logger;
+            _transactionOwned = transactionOwned;
         }
 
-        public void Commit()
+        public virtual async Task CommitAsync(CancellationToken cancellationToken=default(CancellationToken))
         {
-	        _logger.LogDebug(
-		        RelationalEventId.CommittingTransaction,
-		        () => RelationalStrings.RelationalLoggerCommittingTransaction);
+            var startTime = DateTimeOffset.UtcNow;
+            var stopwatch = Stopwatch.StartNew();
 
-	        _dbTransaction.Commit();
-            ClearTransaction();
-        }
-
-	    public async Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken))
-	    {
-		    _logger.LogDebug(
-			    RelationalEventId.CommittingTransaction,
-			    () => RelationalStrings.RelationalLoggerCommittingTransaction);
-
-		    await _dbTransaction.CommitAsync(cancellationToken).ConfigureAwait(false);
-		    ClearTransaction();
-	    }
-
-        public void Rollback()
-        {
-	        _logger.LogDebug(
-		        RelationalEventId.RollingbackTransaction,
-		        () => RelationalStrings.RelationalLoggerRollingbackTransaction);
-
-	        _dbTransaction.Rollback();
-            ClearTransaction();
-        }
-
-	    public async Task RollbackAsync(CancellationToken cancellationToken = default(CancellationToken))
-	    {
-		    _logger.LogDebug(
-			    RelationalEventId.RollingbackTransaction,
-			    () => RelationalStrings.RelationalLoggerRollingbackTransaction);
-
-		    await _dbTransaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
-		    ClearTransaction();
-	    }
-
-	    public void Dispose()
-        {
-            if (!_disposed)
+            try
             {
-                _disposed = true;
-                if (_transactionOwned)
-                {
-                    _dbTransaction.Dispose();
-                }
-                ClearTransaction();
+                await (_dbTransaction as MySqlTransaction).CommitAsync(cancellationToken).ConfigureAwait(false);
+
+                _logger.TransactionCommitted(
+                    _relationalConnection,
+                    _dbTransaction,
+                    TransactionId,
+                    startTime,
+                    stopwatch.Elapsed);
             }
+            catch (Exception e)
+            {
+                _logger.TransactionError(
+                    _relationalConnection,
+                    _dbTransaction,
+                    TransactionId,
+                    "CommitAsync",
+                    e,
+                    startTime,
+                    stopwatch.Elapsed);
+                throw;
+            }
+
+            ClearTransaction();
+        }
+
+        /// <summary>
+        ///     Discards all changes made to the database in the current transaction.
+        /// </summary>
+        public virtual async Task RollbackAsync(CancellationToken cancellationToken=default(CancellationToken))
+        {
+            var startTime = DateTimeOffset.UtcNow;
+            var stopwatch = Stopwatch.StartNew();
+
+            try
+            {
+                await (_dbTransaction as MySqlTransaction).RollbackAsync(cancellationToken).ConfigureAwait(false);
+
+                _logger.TransactionRolledBack(
+                    _relationalConnection,
+                    _dbTransaction,
+                    TransactionId,
+                    startTime,
+                    stopwatch.Elapsed);
+            }
+            catch (Exception e)
+            {
+                _logger.TransactionError(
+                    _relationalConnection,
+                    _dbTransaction,
+                    TransactionId,
+                    "RollbackAsync",
+                    e,
+                    startTime,
+                    stopwatch.Elapsed);
+                throw;
+            }
+
+            ClearTransaction();
         }
 
         private void ClearTransaction()
         {
-            Debug.Assert((_relationalConnection.CurrentTransaction == null) ||
-                         (_relationalConnection.CurrentTransaction == this));
+            Debug.Assert(_relationalConnection.CurrentTransaction == null || _relationalConnection.CurrentTransaction == this);
+
             _relationalConnection.UseTransaction(null);
+
+            if (!_connectionClosed)
+            {
+                _connectionClosed = true;
+
+                _relationalConnection.Close();
+            }
         }
 
-        DbTransaction IInfrastructure<DbTransaction>.Instance => _dbTransaction;
     }
 }

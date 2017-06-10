@@ -18,19 +18,15 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
 {
     public class MySqlQuerySqlGenerator : DefaultQuerySqlGenerator
     {
-        protected override string ConcatOperator => "||";
         protected override string TypedTrueLiteral => "TRUE";
         protected override string TypedFalseLiteral => "FALSE";
 
         private static FieldInfo _relationalCommandBuilderFieldInfo = typeof(DefaultQuerySqlGenerator).GetTypeInfo().DeclaredFields.Single(x => x.Name == "_relationalCommandBuilder");
 
         public MySqlQuerySqlGenerator(
-            [NotNull] IRelationalCommandBuilderFactory commandBuilderFactory,
-            [NotNull] ISqlGenerationHelper sqlGenerationHelper,
-            [NotNull] IParameterNameGeneratorFactory parameterNameGeneratorFactory,
-            [NotNull] IRelationalTypeMapper relationalTypeMapper,
+            [NotNull] QuerySqlGeneratorDependencies dependencies,
             [NotNull] SelectExpression selectExpression)
-            : base(commandBuilderFactory, sqlGenerationHelper, parameterNameGeneratorFactory, relationalTypeMapper, selectExpression)
+            : base(dependencies, selectExpression)
         {
         }
 
@@ -44,6 +40,19 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
         {
             if (!SqlFuncAInB.Contains(sqlFunctionExpression.FunctionName))
                 return base.VisitSqlFunction(sqlFunctionExpression);
+
+            if (sqlFunctionExpression.FunctionName == "COUNT")
+            {
+                if (sqlFunctionExpression.Type == typeof(long))
+                {
+                    Sql.Append("COUNT(*)");
+                }
+                else if (sqlFunctionExpression.Type == typeof(int))
+                {
+                    Sql.Append("CAST(COUNT(*) AS UNSIGNED)");
+                }
+                else throw new NotSupportedException($"Count expression with type {sqlFunctionExpression.Type} not supported");
+            }
 
             var  _relationalCommandBuilder = (IRelationalCommandBuilder)_relationalCommandBuilderFieldInfo.GetValue(this);
             _relationalCommandBuilder.Append(sqlFunctionExpression.FunctionName);
@@ -113,29 +122,6 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
                 Sql.Append("OFFSET ");
                 Visit(selectExpression.Offset);
             }
-        }
-
-        public override Expression VisitCount(CountExpression countExpression)
-        {
-            Check.NotNull(countExpression, nameof(countExpression));
-
-            if (countExpression.Type == typeof(long))
-            {
-                Sql.Append("COUNT(*)");
-            }
-            else if (countExpression.Type == typeof(int))
-            {
-                Sql.Append("CAST(COUNT(*) AS UNSIGNED)");
-            }
-            else throw new NotSupportedException($"Count expression with type {countExpression.Type} not supported");
-
-            return countExpression;
-        }
-
-        public override Expression VisitSum(SumExpression sumExpression)
-        {
-            base.VisitSum(sumExpression);
-            return sumExpression;
         }
 
         protected override Expression VisitBinary(BinaryExpression binaryExpression)

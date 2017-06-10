@@ -1,41 +1,68 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
-// Licensed under the MIT. See LICENSE in the project root for license information.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using JetBrains.Annotations;
 
-// ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Metadata.Internal
 {
+    /// <summary>
+    ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+    ///     directly from your code. This API may change or be removed in future releases.
+    /// </summary>
     public static class MySqlInternalMetadataBuilderExtensions
     {
-        public static RelationalModelBuilderAnnotations MySql(
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public static MySqlModelBuilderAnnotations MySql(
             [NotNull] this InternalModelBuilder builder,
             ConfigurationSource configurationSource)
-            => new RelationalModelBuilderAnnotations(builder, configurationSource, MySqlFullAnnotationNames.Instance);
+            => new MySqlModelBuilderAnnotations(builder, configurationSource);
 
-        public static RelationalPropertyBuilderAnnotations MySql(
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public static MySqlPropertyBuilderAnnotations MySql(
             [NotNull] this InternalPropertyBuilder builder,
             ConfigurationSource configurationSource)
-            => new RelationalPropertyBuilderAnnotations(builder, configurationSource, MySqlFullAnnotationNames.Instance);
+            => new MySqlPropertyBuilderAnnotations(builder, configurationSource);
 
-        public static RelationalEntityTypeBuilderAnnotations MySql(
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public static MySqlEntityTypeBuilderAnnotations MySql(
             [NotNull] this InternalEntityTypeBuilder builder,
             ConfigurationSource configurationSource)
-            => new RelationalEntityTypeBuilderAnnotations(builder, configurationSource, MySqlFullAnnotationNames.Instance);
+            => new MySqlEntityTypeBuilderAnnotations(builder, configurationSource);
 
-        public static RelationalKeyBuilderAnnotations MySql(
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public static MySqlKeyBuilderAnnotations MySql(
             [NotNull] this InternalKeyBuilder builder,
             ConfigurationSource configurationSource)
-            => new RelationalKeyBuilderAnnotations(builder, configurationSource, MySqlFullAnnotationNames.Instance);
+            => new MySqlKeyBuilderAnnotations(builder, configurationSource);
 
-        public static RelationalIndexBuilderAnnotations MySql(
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public static MySqlIndexBuilderAnnotations MySql(
             [NotNull] this InternalIndexBuilder builder,
             ConfigurationSource configurationSource)
-            => new RelationalIndexBuilderAnnotations(builder, configurationSource, MySqlFullAnnotationNames.Instance);
+            => new MySqlIndexBuilderAnnotations(builder, configurationSource);
 
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public static RelationalForeignKeyBuilderAnnotations MySql(
             [NotNull] this InternalRelationshipBuilder builder,
             ConfigurationSource configurationSource)
-            => new RelationalForeignKeyBuilderAnnotations(builder, configurationSource, MySqlFullAnnotationNames.Instance);
+            => new RelationalForeignKeyBuilderAnnotations(builder, configurationSource);
     }
 }

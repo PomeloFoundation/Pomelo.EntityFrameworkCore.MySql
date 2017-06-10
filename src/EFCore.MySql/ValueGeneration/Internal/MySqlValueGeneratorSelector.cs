@@ -13,10 +13,9 @@ namespace Microsoft.EntityFrameworkCore.ValueGeneration.Internal
         private readonly MySqlScopedTypeMapper _mySqlTypeMapper;
 
         public MySqlValueGeneratorSelector(
-            [NotNull] IValueGeneratorCache cache,
-            [NotNull] IRelationalAnnotationProvider relationalExtensions,
+            [NotNull] ValueGeneratorSelectorDependencies dependencies,
             [NotNull] IRelationalTypeMapper typeMapper)
-            : base(cache, relationalExtensions)
+            : base(dependencies)
         {
             _mySqlTypeMapper = typeMapper as MySqlScopedTypeMapper;
         }

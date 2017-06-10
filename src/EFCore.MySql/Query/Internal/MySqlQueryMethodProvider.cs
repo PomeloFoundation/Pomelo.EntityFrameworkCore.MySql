@@ -78,13 +78,6 @@ namespace Microsoft.EntityFrameworkCore.Query
 				_baseQuery.Invoke(null, new object[] {queryContext, shaperCommandContext, queryIndex}));
 		}
 
-
-		public override MethodInfo IncludeMethod => _includeMethodInfo;
-
-		private static readonly MethodInfo _includeMethodInfo
-			= typeof(MySqlQueryMethodProvider).GetTypeInfo()
-				.GetDeclaredMethod(nameof(_Include));
-
 		private static IEnumerable<T> _Include<T>(
 			RelationalQueryContext queryContext,
 			IEnumerable<T> innerResults,

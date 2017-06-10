@@ -17,25 +17,10 @@ namespace Microsoft.EntityFrameworkCore.Migrations.Internal
     {
 
         private MySqlRelationalConnection _connection;
-
         public MySqlHistoryRepository(
-            [NotNull] IDatabaseCreator databaseCreator,
-            [NotNull] IRawSqlCommandBuilder sqlCommandBuilder,
-            [NotNull] MySqlRelationalConnection connection,
-            [NotNull] IDbContextOptions options,
-            [NotNull] IMigrationsModelDiffer modelDiffer,
-            [NotNull] MySqlMigrationsSqlGenerationHelper migrationsSqlGenerationHelper,
-            [NotNull] MySqlAnnotationProvider annotations,
-            [NotNull] ISqlGenerationHelper SqlGenerationHelper)
-            : base(
-                  databaseCreator,
-                  sqlCommandBuilder,
-                  connection,
-                  options,
-                  modelDiffer,
-                  migrationsSqlGenerationHelper,
-                  annotations,
-                  SqlGenerationHelper)
+            [NotNull] HistoryRepositoryDependencies dependencies,
+            [NotNull] MySqlRelationalConnection connection)
+            : base(dependencies)
         {
             _connection = connection;
         }

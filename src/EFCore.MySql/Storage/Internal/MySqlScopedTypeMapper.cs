@@ -14,10 +14,10 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 {
     public class MySqlScopedTypeMapper : IRelationalTypeMapper
     {
-        private static readonly RelationalTypeMapping DateTime         = new RelationalTypeMapping("datetime", typeof(DateTime), DbType.DateTime);
-        private static readonly RelationalTypeMapping DateTimeOffset   = new RelationalTypeMapping("datetime", typeof(DateTimeOffset), DbType.DateTime);
-        private static readonly RelationalTypeMapping Time             = new RelationalTypeMapping("time", typeof(TimeSpan), DbType.Time);
-        private static readonly RelationalTypeMapping OldGuid          = new RelationalTypeMapping("binary(16)", typeof(Guid));
+        private static readonly DateTimeTypeMapping DateTime             = new DateTimeTypeMapping("datetime", DbType.DateTime);
+        private static readonly DateTimeOffsetTypeMapping DateTimeOffset = new DateTimeOffsetTypeMapping("datetime", DbType.DateTime);
+        private static readonly TimeSpanTypeMapping Time                 = new TimeSpanTypeMapping("time", DbType.Time);
+        private static readonly GuidTypeMapping OldGuid                  = new GuidTypeMapping("binary(16)", DbType.Guid);
 
         private MySqlConnectionSettings _connectionSettings;
         private readonly IDbContextOptions _options;
@@ -102,5 +102,6 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
         public virtual IByteArrayRelationalTypeMapper ByteArrayMapper => _typeMapper.ByteArrayMapper;
         public virtual IStringRelationalTypeMapper StringMapper => _typeMapper.StringMapper;
+        public virtual bool IsTypeMapped(Type clrType) => _typeMapper.IsTypeMapped(clrType);
     }
 }

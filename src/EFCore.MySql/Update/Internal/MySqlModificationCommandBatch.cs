@@ -165,7 +165,7 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
           {
               using (var relationalDataReader = storeCommand.RelationalCommand.ExecuteReader(connection, storeCommand.ParameterValues))
               {
-                  Consume(relationalDataReader.DbDataReader);
+                  Consume(relationalDataReader);
               }
           }
           catch (DbUpdateException)
@@ -185,7 +185,7 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
           {
               using (var relationalDataReader = await storeCommand.RelationalCommand.ExecuteReaderAsync(connection, storeCommand.ParameterValues, cancellationToken).ConfigureAwait(false))
               {
-                  await ConsumeAsync(relationalDataReader.DbDataReader, cancellationToken).ConfigureAwait(false);
+                  await ConsumeAsync(relationalDataReader, cancellationToken).ConfigureAwait(false);
               }
           }
           catch (DbUpdateException)

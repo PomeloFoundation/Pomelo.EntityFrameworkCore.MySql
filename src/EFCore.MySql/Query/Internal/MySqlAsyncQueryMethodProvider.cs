@@ -77,13 +77,6 @@ namespace Microsoft.EntityFrameworkCore.Query
 				(IAsyncEnumerable<ValueBuffer>) _baseQuery.Invoke(null, new object[] {queryContext, shaperCommandContext, queryIndex}));
 		}
 
-
-		public override MethodInfo IncludeMethod => _includeMethodInfo;
-
-		private static readonly MethodInfo _includeMethodInfo
-			= typeof(MySqlAsyncQueryMethodProvider).GetTypeInfo()
-				.GetDeclaredMethod(nameof(_Include));
-
 		private static IAsyncEnumerable<T> _Include<T>(
 			RelationalQueryContext queryContext,
 			IAsyncEnumerable<T> innerResults,

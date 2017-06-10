@@ -35,14 +35,13 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
                         }),
                     patternExpression);
 
-                return new NotNullableExpression(
-                    patternConstantExpression != null
-                        ? (string)patternConstantExpression.Value == string.Empty
-                            ? (Expression)Expression.Constant(true)
-                            : endsWithExpression
-                        : Expression.OrElse(
-                            endsWithExpression,
-                            Expression.Equal(patternExpression, Expression.Constant(string.Empty))));
+                return patternConstantExpression != null
+                    ? (string)patternConstantExpression.Value == string.Empty
+                        ? (Expression)Expression.Constant(true)
+                        : endsWithExpression
+                    : Expression.OrElse(
+                        endsWithExpression,
+                        Expression.Equal(patternExpression, Expression.Constant(string.Empty)));
             }
 
             return null;

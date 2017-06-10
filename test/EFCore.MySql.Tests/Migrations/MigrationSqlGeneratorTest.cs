@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities;
+using Microsoft.EntityFrameworkCore.TestUtilities;
+using Microsoft.EntityFrameworkCore.TestUtilities.FakeProvider;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
@@ -16,18 +20,43 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
         {
             get
             {
-                var typeMapper = new MySqlTypeMapper();
+                // type mapper
+                var typeMapper = new MySqlTypeMapper(new RelationalTypeMapperDependencies());
 
-                return new MySqlMigrationsSqlGenerationHelper(
-                    new RelationalCommandBuilderFactory(
-                        new FakeSensitiveDataLogger<RelationalCommandBuilderFactory>(),
-                        new DiagnosticListener("Fake"),
-                        typeMapper),
-                    new MySqlSqlGenerationHelper(),
+                // migrationsSqlGeneratorDependencies
+                var commandBuilderFactory = new RelationalCommandBuilderFactory(
+                    new FakeDiagnosticsLogger<DbLoggerCategory.Database.Command>(),
+                    typeMapper);
+                var migrationsSqlGeneratorDependencies = new MigrationsSqlGeneratorDependencies(
+                    commandBuilderFactory,
+                    new MySqlSqlGenerationHelper(new RelationalSqlGenerationHelperDependencies()),
+                    typeMapper);
+
+                // relationalConnection
+                var optionsBuilder = new DbContextOptionsBuilder();
+                ((IDbContextOptionsBuilderInfrastructure)optionsBuilder)
+                    .AddOrUpdateExtension(new FakeRelationalOptionsExtension().WithConnectionString("test"));
+                var relationalConnection = new FakeRelationalConnection(optionsBuilder.Options);
+
+                return new MySqlMigrationsSqlGenerator(
+                    migrationsSqlGeneratorDependencies,
                     typeMapper,
-                    new MySqlAnnotationProvider(),
-                    new FakeRelationalConnection());
+                    relationalConnection);
             }
+        }
+
+        private static FakeRelationalConnection CreateConnection(IDbContextOptions options = null)
+            => new FakeRelationalConnection(options ?? CreateOptions());
+
+        private static IDbContextOptions CreateOptions(RelationalOptionsExtension optionsExtension = null)
+        {
+            var optionsBuilder = new DbContextOptionsBuilder();
+
+            ((IDbContextOptionsBuilderInfrastructure)optionsBuilder)
+                .AddOrUpdateExtension(optionsExtension
+                                      ?? new FakeRelationalOptionsExtension().WithConnectionString("test"));
+
+            return optionsBuilder.Options;
         }
 
         [Fact]
@@ -380,7 +409,7 @@ END;" + EOL +
                     ClrType = typeof(int),
                     ColumnType = "char(38)",
                     IsNullable = false,
-                    [MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd] = true
+                    //[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd] = true
                 });
 
             Assert.Equal(
@@ -440,7 +469,7 @@ END;" + EOL +
                 Table = "People",
                 Schema = "dbo",
                 Columns = new[] { "FirstName" },
-                [MySqlAnnotationNames.Prefix + MySqlAnnotationNames.IndexMethod] = "gin"
+                //[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.IndexMethod] = "gin"
             });
 
             Assert.Equal(
@@ -471,7 +500,7 @@ END;" + EOL +
                 ClrType = typeof(int),
                 ColumnType = "int",
                 IsNullable = false,
-                [MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd] = true
+                //[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd] = true
             });
 
             Assert.Equal(
@@ -508,7 +537,7 @@ END;" + EOL +
                     Name = "foo",
                     ClrType = typeof(Guid),
                     ColumnType = "varchar(38)",
-                    [MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd] = true
+                    //[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd] = true
                 });
 
             Assert.Equal(

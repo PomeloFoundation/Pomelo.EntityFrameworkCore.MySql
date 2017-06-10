@@ -19,22 +19,22 @@
     <PackageReference Include="xunit" Version="2.2.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
     <!--app packages-->
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.0-preview2-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="2.0.0-preview2-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.0.0-preview2-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="2.0.0-preview2-*" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.0.0-preview2-*" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.0.0-preview2-*" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.0-preview2-*" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="2.0.0-preview2-*" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.0-preview2-*" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.0.0-preview2-*" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.0.0-preview2-*" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.0-preview2-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.0-preview3-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="2.0.0-preview3-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.0.0-preview3-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="2.0.0-preview3-*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.0.0-preview3-*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.0.0-preview3-*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.0-preview3-*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="2.0.0-preview3-*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.0-preview3-*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.0.0-preview3-*" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.0.0-preview3-*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.0-preview3-*" />
   </ItemGroup>
 
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.0-preview2-*" />
+    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.0-preview3-*" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' != 'Oracle' AND '$(Configuration)' != 'Sapient' ">

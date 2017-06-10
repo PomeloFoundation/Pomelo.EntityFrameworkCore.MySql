@@ -2,11 +2,15 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
@@ -17,19 +21,17 @@ using Microsoft.EntityFrameworkCore.Utilities;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Migrations
 {
-    public class MySqlMigrationsSqlGenerationHelper : MigrationsSqlGenerator
+    public class MySqlMigrationsSqlGenerator : MigrationsSqlGenerator
     {
 	    private static readonly Regex TypeRe = new Regex(@"([a-z0-9]+)\s*?(?:\(\s*(\d+)?\s*\))?", RegexOptions.IgnoreCase);
 	    private readonly MySqlScopedTypeMapper _mySqlTypeMapper;
         private readonly IRelationalConnection _relationalConnection;
 
-	    public MySqlMigrationsSqlGenerationHelper(
-            [NotNull] IRelationalCommandBuilderFactory commandBuilderFactory,
-            [NotNull] ISqlGenerationHelper SqlGenerationHelper,
+	    public MySqlMigrationsSqlGenerator(
+            [NotNull] MigrationsSqlGeneratorDependencies dependencies,
             [NotNull] IRelationalTypeMapper typeMapper,
-            [NotNull] IRelationalAnnotationProvider annotations,
 	        [NotNull] IRelationalConnection relationalConnection)
-            : base(commandBuilderFactory, SqlGenerationHelper, typeMapper, annotations)
+            : base(dependencies)
         {
 	        _mySqlTypeMapper = typeMapper as MySqlScopedTypeMapper;
             _relationalConnection = relationalConnection;
@@ -61,9 +63,9 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
         protected override void Generate(DropColumnOperation operation, IModel model, MigrationCommandListBuilder builder)
         {
-            var identifier = SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema);
-            var alterBase = $"ALTER TABLE {identifier} DROP COLUMN {SqlGenerationHelper.DelimitIdentifier(operation.Name)}";
-            builder.Append(alterBase).Append(SqlGenerationHelper.StatementTerminator);
+            var identifier = Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema);
+            var alterBase = $"ALTER TABLE {identifier} DROP COLUMN {Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name)}";
+            builder.Append(alterBase).Append(Dependencies.SqlGenerationHelper.StatementTerminator);
             EndStatement(builder);
         }
 
@@ -77,22 +79,19 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             {
                 var property = FindProperty(model, operation.Schema, operation.Table, operation.Name);
                 type = property != null
-                    ? TypeMapper.GetMapping(property).StoreType
-                    : TypeMapper.GetMapping(operation.ClrType).StoreType;
+                    ? Dependencies.TypeMapper.GetMapping(property).StoreType
+                    : Dependencies.TypeMapper.GetMapping(operation.ClrType).StoreType;
             }
 
-            var serial = operation.FindAnnotation(MySqlAnnotationNames.Prefix + MySqlAnnotationNames.Serial);
-            var isSerial = serial != null && (bool)serial.Value;
-
-            var identifier = SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema);
-            var alterBase = $"ALTER TABLE {identifier} MODIFY COLUMN {SqlGenerationHelper.DelimitIdentifier(operation.Name)}";
+            var identifier = Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema);
+            var alterBase = $"ALTER TABLE {identifier} MODIFY COLUMN {Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name)}";
 
             // TYPE
             builder.Append(alterBase)
                 .Append(" ")
                 .Append(type)
                 .Append(operation.IsNullable ? " NULL" : " NOT NULL")
-                .AppendLine(SqlGenerationHelper.StatementTerminator);
+                .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
 
             switch (type)
             {
@@ -116,52 +115,28 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 case "geometrycollection":
 
                 case "json":
-                    if (operation.DefaultValue != null || !string.IsNullOrWhiteSpace(operation.DefaultValueSql) || isSerial)
+                    if (operation.DefaultValue != null || !string.IsNullOrWhiteSpace(operation.DefaultValueSql))
                     {
                         throw new NotSupportedException($"{type} column can't have a default value");
                     }
                     break;
                 default:
-                    alterBase = $"ALTER TABLE {identifier} ALTER COLUMN {SqlGenerationHelper.DelimitIdentifier(operation.Name)}";
+                    alterBase = $"ALTER TABLE {identifier} ALTER COLUMN {Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name)}";
 
                     builder.Append(alterBase);
 
                     if (operation.DefaultValue != null)
                     {
+                        var stringTypeMapping = Dependencies.TypeMapper.GetMapping(typeof(string));
                         builder.Append(" SET DEFAULT ")
-                            .Append(SqlGenerationHelper.GenerateLiteral((dynamic)operation.DefaultValue))
-                            .AppendLine(SqlGenerationHelper.BatchTerminator);
+                            .Append(stringTypeMapping.GenerateSqlLiteral(operation.DefaultValue))
+                            .AppendLine(Dependencies.SqlGenerationHelper.BatchTerminator);
                     }
                     else if (!string.IsNullOrWhiteSpace(operation.DefaultValueSql))
                     {
                         builder.Append(" SET DEFAULT ")
                             .Append(operation.DefaultValueSql)
-                            .AppendLine(SqlGenerationHelper.BatchTerminator);
-                    }
-                    else if (isSerial)
-                    {
-                        builder.Append(" SET DEFAULT ");
-
-                        switch (type)
-                        {
-                            case "smallint":
-                            case "int":
-                            case "bigint":
-                            case "real":
-                            case "double precision":
-                            case "numeric":
-                                //TODO: need function CREATE SEQUENCE IF NOT EXISTS and set to it...
-                                //Until this is resolved changing IsIdentity from false to true
-                                //on types int2, int4 and int8 won't switch to type serial2, serial4 and serial8
-                                throw new NotImplementedException("Not supporting creating sequence for integer types");
-                            case "char(38)":
-                            case "uuid":
-                            case "uniqueidentifier":
-                                break;
-                            default:
-                                throw new NotImplementedException($"Not supporting creating IsIdentity for {type}");
-
-                        }
+                            .AppendLine(Dependencies.SqlGenerationHelper.BatchTerminator);
                     }
                     else
                     {
@@ -186,11 +161,11 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             if (operation.NewName != null)
             {
                 builder.Append("ALTER TABLE ")
-                    .Append(SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
+                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
                     .Append(" RENAME INDEX ")
-                    .Append(SqlGenerationHelper.DelimitIdentifier(operation.Name))
+                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
                     .Append(" TO ")
-                    .Append(SqlGenerationHelper.DelimitIdentifier(operation.NewName))
+                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName))
                     .AppendLine(";");
 
                 EndStatement(builder);
@@ -209,16 +184,16 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             builder
                 .Append("ALTER TABLE")
-                .Append(SqlGenerationHelper.DelimitIdentifier(operation.Name, operation.Schema))
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name, operation.Schema))
                 .Append(" RENAME ")
-                .Append(SqlGenerationHelper.DelimitIdentifier(operation.NewName, operation.NewSchema));
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName, operation.NewSchema));
 
             EndStatement(builder);
         }
 
         protected override void Generate([NotNull] CreateIndexOperation operation, [CanBeNull] IModel model, [NotNull] MigrationCommandListBuilder builder, bool terminate)
         {
-            var method = (string)operation[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.IndexMethod];
+            var method = (string)operation[MySqlAnnotationNames.Prefix];
 
             builder.Append("CREATE ");
 
@@ -229,9 +204,9 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             builder
                 .Append("INDEX ")
-                .Append(SqlGenerationHelper.DelimitIdentifier(operation.Name.LimitLength(64)))
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name.LimitLength(64)))
                 .Append(" ON ")
-                .Append(SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema));
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema));
 
             if (method != null)
             {
@@ -247,7 +222,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             if (terminate)
             {
-                builder.AppendLine(SqlGenerationHelper.StatementTerminator);
+                builder.AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
                 EndStatement(builder);
             }
         }
@@ -277,7 +252,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 .AppendLine($"        CREATE SCHEMA `{ operation.Name }`;")
                 .AppendLine($"    END IF;")
                 .AppendLine($"END;")
-                .AppendLine(SqlGenerationHelper.BatchTerminator);
+                .AppendLine(Dependencies.SqlGenerationHelper.BatchTerminator);
         }
 
         public virtual void Generate(MySqlCreateDatabaseOperation operation, IModel model, MigrationCommandListBuilder builder)
@@ -287,8 +262,8 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             builder
                 .Append("CREATE SCHEMA ")
-                .Append(SqlGenerationHelper.DelimitIdentifier(operation.Name))
-                .AppendLine(SqlGenerationHelper.BatchTerminator);
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
+                .AppendLine(Dependencies.SqlGenerationHelper.BatchTerminator);
         }
 
         public virtual void Generate(MySqlDropDatabaseOperation operation, IModel model, MigrationCommandListBuilder builder)
@@ -296,7 +271,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
-            var dbName = SqlGenerationHelper.DelimitIdentifier(operation.Name);
+            var dbName = Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name);
 
             builder
                 .Append("DROP DATABASE ")
@@ -310,10 +285,10 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             builder
                 .Append("ALTER TABLE ")
-                .Append(SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
                 .Append(" DROP INDEX ")
-                .Append(SqlGenerationHelper.DelimitIdentifier(operation.Name))
-                .AppendLine(SqlGenerationHelper.StatementTerminator);
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
+                .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
 
             EndStatement(builder);
         }
@@ -339,7 +314,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             {
                 using (var cmd = _relationalConnection.DbConnection.CreateCommand())
                 {
-                    cmd.CommandText = $"SHOW CREATE TABLE {SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}";
+                    cmd.CommandText = $"SHOW CREATE TABLE {Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}";
                     using (var reader = cmd.ExecuteReader())
                     {
                         if (reader.Read())
@@ -354,7 +329,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             }
 
             if (createTableSyntax == null)
-                throw new InvalidOperationException($"Could not find SHOW CREATE TABLE syntax for table: '{SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}'");
+                throw new InvalidOperationException($"Could not find SHOW CREATE TABLE syntax for table: '{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}'");
 
             var columnDefinitionRe = new Regex($"^\\s*`?{operation.Name}`?\\s(.*)?$", RegexOptions.Multiline);
             var match = columnDefinitionRe.Match(createTableSyntax);
@@ -363,14 +338,14 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             if (match.Success)
                 columnDefinition = match.Groups[1].Value.TrimEnd(',');
             else
-                throw new InvalidOperationException($"Could not find column definition for table: '{SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}' column: {operation.Name}");
+                throw new InvalidOperationException($"Could not find column definition for table: '{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}' column: {operation.Name}");
 
             builder.Append("ALTER TABLE ")
-                .Append(SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
                 .Append(" CHANGE ")
-                .Append(SqlGenerationHelper.DelimitIdentifier(operation.Name))
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
                 .Append(" ")
-                .Append(SqlGenerationHelper.DelimitIdentifier(operation.NewName))
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName))
                 .Append(" ")
                 .Append(columnDefinition);
 
@@ -384,10 +359,10 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(clrType, nameof(clrType));
             Check.NotNull(builder, nameof(builder));
 
+            var property = FindProperty(model, schema, table, name);
             if (type == null)
             {
-                var property = FindProperty(model, schema, table, name);
-                type = TypeMapper.FindMapping(property).StoreType;
+                type = Dependencies.TypeMapper.FindMapping(property).StoreType;
             }
 
 	        var matchType = type;
@@ -401,11 +376,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 	        }
 
             var autoIncrement = false;
-	        var generatedOnAddAnnotation = annotatable[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd];
-            var generatedOnAdd = generatedOnAddAnnotation != null && (bool)generatedOnAddAnnotation;
-            var generatedOnAddOrUpdateAnnotation = annotatable[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAddOrUpdate];
-            var generatedOnAddOrUpdate = generatedOnAddOrUpdateAnnotation != null && (bool)generatedOnAddOrUpdateAnnotation;
-            if (generatedOnAdd && string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
+            if (property.ValueGenerated == ValueGenerated.OnAdd && string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
             {
                 switch (matchType)
                 {
@@ -430,7 +401,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             string onUpdateSql = null;
 
-            if (generatedOnAddOrUpdate)
+            if (property.ValueGenerated == ValueGenerated.OnAddOrUpdate)
             {
 	            switch (matchType)
 	            {
@@ -448,7 +419,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             }
 
             builder
-                .Append(SqlGenerationHelper.DelimitIdentifier(name))
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(name))
                 .Append(" ")
                 .Append(type ?? GetColumnType(schema, table, name, clrType, unicode, maxLength, rowVersion, model));
 
@@ -471,9 +442,10 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 }
                 else if (defaultValue != null)
                 {
+                    var stringTypeMapping = Dependencies.TypeMapper.GetMapping(typeof(string));
                     builder
                         .Append(" DEFAULT ")
-                        .Append(SqlGenerationHelper.GenerateLiteral(defaultValue));
+                        .Append(stringTypeMapping.GenerateSqlLiteral(defaultValue));
                 }
                 if (onUpdateSql != null)
                 {
@@ -497,9 +469,10 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             }
             else if (defaultValue != null)
             {
+                var stringTypeMapping = Dependencies.TypeMapper.GetMapping(typeof(string));
                 builder
                     .Append(" DEFAULT ")
-                    .Append(SqlGenerationHelper.GenerateLiteral(defaultValue));
+                    .Append(stringTypeMapping.GenerateSqlLiteral(defaultValue));
             }
         }
 
@@ -510,10 +483,10 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             builder
                 .Append("ALTER TABLE ")
-                .Append(SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
                 .Append(" DROP FOREIGN KEY ")
-                .Append(SqlGenerationHelper.DelimitIdentifier(operation.Name))
-                .AppendLine(SqlGenerationHelper.StatementTerminator);
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
+                .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
 
             EndStatement(builder);
         }
@@ -525,10 +498,10 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             builder
                 .Append("ALTER TABLE ")
-                .Append(SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
                 .Append(" ADD ");
             PrimaryKeyConstraint(operation, model, builder);
-            builder.AppendLine(SqlGenerationHelper.StatementTerminator);
+            builder.AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
 
             var annotations = model.GetAnnotations();
             if (operation.Columns.Count() == 1)
@@ -649,7 +622,7 @@ END;");
 
             builder
                 .Append("ALTER TABLE ")
-                .Append(SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
                 .Append(" DROP PRIMARY KEY;")
                 .AppendLine();
 
@@ -672,9 +645,9 @@ END;");
             builder
                 .Append("ALTER ")
                 .Append(type)
-                .Append(SqlGenerationHelper.DelimitIdentifier(name, schema))
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(name, schema))
                 .Append(" RENAME TO ")
-                .Append(SqlGenerationHelper.DelimitIdentifier(newName, schema));
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(newName, schema));
         }
 
         public virtual void Transfer(
@@ -693,9 +666,9 @@ END;");
                 .Append("ALTER ")
                 .Append(type)
                 .Append(" ")
-                .Append(SqlGenerationHelper.DelimitIdentifier(name, schema))
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(name, schema))
                 .Append(" SET SCHEMA ")
-                .Append(SqlGenerationHelper.DelimitIdentifier(newSchema));
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(newSchema));
         }
 
         protected override void ForeignKeyAction(ReferentialAction referentialAction, MigrationCommandListBuilder builder)
@@ -724,7 +697,7 @@ END;");
             {
                 builder
                     .Append("CONSTRAINT ")
-                    .Append(SqlGenerationHelper.DelimitIdentifier(operation.Name.Substring(0, Math.Min(operation.Name.Length, 64))))
+                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name.Substring(0, Math.Min(operation.Name.Length, 64))))
                     .Append(" ");
             }
 
@@ -732,7 +705,7 @@ END;");
                 .Append("FOREIGN KEY (")
                 .Append(ColumnList(operation.Columns))
                 .Append(") REFERENCES ")
-                .Append(SqlGenerationHelper.DelimitIdentifier(operation.PrincipalTable, operation.PrincipalSchema));
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.PrincipalTable, operation.PrincipalSchema));
 
             if (operation.PrincipalColumns != null)
             {
@@ -755,7 +728,7 @@ END;");
             }
         }
 
-	    protected override string ColumnList(string[] columns) => string.Join(", ", columns.Select(SqlGenerationHelper.DelimitIdentifier));
+	    protected override string ColumnList(string[] columns) => string.Join(", ", columns.Select(Dependencies.SqlGenerationHelper.DelimitIdentifier));
     }
 
     public static class StringExtensions

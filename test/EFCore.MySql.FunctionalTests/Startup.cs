@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Pomelo.EntityFrameworkCore.MySql.PerfTests.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 #if ORACLE
 using MySQL.Data.EntityFrameworkCore;
 using MySQL.Data.EntityFrameworkCore.Extensions;
@@ -43,7 +44,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
             ConfigureEntityFramework(services);
 
 	        services.AddIdentity<AppIdentityUser, IdentityRole>()
-		        .AddEntityFrameworkStores<AppDb, string>()
+		        .AddEntityFrameworkStoresV2<AppDb>()
 		        .AddDefaultTokenProviders();
         }
 

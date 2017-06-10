@@ -6,65 +6,62 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
-using MySql.Data.MySqlClient;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Storage.Internal
 {
     public class MySqlRelationalCommand : RelationalCommand
     {
-        public MySqlRelationalCommand(
-            [NotNull] ISensitiveDataLogger logger,
-            [NotNull] DiagnosticSource diagnosticSource,
+		public MySqlRelationalCommand(
+            [NotNull] IDiagnosticsLogger<DbLoggerCategory.Database.Command> logger,
             [NotNull] string commandText,
             [NotNull] IReadOnlyList<IRelationalParameter> parameters)
-            : base(logger, diagnosticSource, commandText, parameters)
+			: base(logger, commandText, parameters)
         {
         }
 
 	    protected override object Execute(
-		    IRelationalConnection connection,
-		    string executeMethod,
-		    IReadOnlyDictionary<string, object> parameterValues,
-		    bool closeConnection = true)
-	    {
+            [NotNull] IRelationalConnection connection,
+            DbCommandMethod executeMethod,
+            [CanBeNull] IReadOnlyDictionary<string, object> parameterValues,
+            bool closeConnection = true)
+        {
 		    return ExecuteAsync(IOBehavior.Synchronous, connection, executeMethod, parameterValues, closeConnection)
 			    .GetAwaiter()
 			    .GetResult();
 	    }
 
 	    protected override async Task<object> ExecuteAsync(
-		    IRelationalConnection connection,
-		    string executeMethod,
-		    IReadOnlyDictionary<string, object> parameterValues,
-		    bool closeConnection = true,
-		    CancellationToken cancellationToken = default(CancellationToken))
-	    {
+            [NotNull] IRelationalConnection connection,
+            DbCommandMethod executeMethod,
+            [CanBeNull] IReadOnlyDictionary<string, object> parameterValues,
+            bool closeConnection = true,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
 		    return await ExecuteAsync(IOBehavior.Asynchronous, connection, executeMethod, parameterValues, closeConnection, cancellationToken).ConfigureAwait(false);
 	    }
 
 	    private async Task<object> ExecuteAsync(
 		    IOBehavior ioBehavior,
 		    [NotNull] IRelationalConnection connection,
-		    [NotNull] string executeMethod,
-		    [CanBeNull] IReadOnlyDictionary<string, object> parameterValues,
-		    bool closeConnection,
-		    CancellationToken cancellationToken = default(CancellationToken))
+            DbCommandMethod executeMethod,
+            [CanBeNull] IReadOnlyDictionary<string, object> parameterValues,
+            bool closeConnection = true,
+            CancellationToken cancellationToken = default(CancellationToken))
 	    {
             Check.NotNull(connection, nameof(connection));
-            Check.NotEmpty(executeMethod, nameof(executeMethod));
 
             using (var dbCommand = CreateCommand(connection, parameterValues))
 			{
-				cancellationToken.ThrowIfCancellationRequested();
 				var mySqlConnection = connection as MySqlRelationalConnection;
 				object result;
 				var opened = false;
-				var locked = false;
-				var startTimestamp = Stopwatch.GetTimestamp();
+				var commandId = Guid.NewGuid();
+				var startTime = DateTimeOffset.UtcNow;
+            	var stopwatch = Stopwatch.StartNew();
 
 				try
 				{
@@ -76,34 +73,37 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 						mySqlConnection.Open();
 					opened = true;
 
-					if (ioBehavior == IOBehavior.Asynchronous)
-						await mySqlConnection.CommandLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-					else
-						mySqlConnection.CommandLock.Wait(cancellationToken);
-					locked = true;
-
 					switch (executeMethod)
 					{
-						case nameof(ExecuteNonQuery):
+						case DbCommandMethod.ExecuteNonQuery:
 						{
-							result = ioBehavior == IOBehavior.Asynchronous ?
-								await dbCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false) :
-								dbCommand.ExecuteNonQuery();
+							using (dbCommand)
+							{
+								result = ioBehavior == IOBehavior.Asynchronous ?
+									await dbCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false) :
+									dbCommand.ExecuteNonQuery();
+							}
 							break;
 						}
-						case nameof(ExecuteScalar):
+						case DbCommandMethod.ExecuteScalar:
 						{
-							result = ioBehavior == IOBehavior.Asynchronous ?
-								await dbCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) :
-								dbCommand.ExecuteScalar();
+							using (dbCommand)
+							{
+								result = ioBehavior == IOBehavior.Asynchronous ?
+									await dbCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) :
+									dbCommand.ExecuteScalar();
+							}
 							break;
 						}
-						case nameof(ExecuteReader):
+						case DbCommandMethod.ExecuteReader:
 						{
-							var dataReader = ioBehavior == IOBehavior.Asynchronous ?
-								await dbCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false) :
-								dbCommand.ExecuteReader();
-							result = new RelationalDataReader(connection, dbCommand, new WrappedMySqlDataReader(dataReader));
+							using (dbCommand)
+							{
+								var dataReader = ioBehavior == IOBehavior.Asynchronous ?
+									await dbCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false) :
+									dbCommand.ExecuteReader();
+								result = new RelationalDataReader(connection, dbCommand, new WrappedMySqlDataReader(dataReader), commandId, Logger);
+							}
 							break;
 						}
 						default:
@@ -112,24 +112,42 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 						}
 					}
 					var currentTimestamp = Stopwatch.GetTimestamp();
-					Logger.LogCommandExecuted(dbCommand, startTimestamp, currentTimestamp);
+					Logger.CommandExecuted(
+						dbCommand,
+						executeMethod,
+						commandId,
+						connection.ConnectionId,
+						result,
+						true,
+						startTime,
+						stopwatch.Elapsed);
+
 					if (closeConnection)
 						connection.Close();
-					return result;
 				}
-				catch (Exception)
+				catch (Exception exception)
 				{
-					var currentTimestamp = Stopwatch.GetTimestamp();
-					Logger.LogCommandExecuted(dbCommand, startTimestamp, currentTimestamp);
+					Logger.CommandError(
+						dbCommand,
+						executeMethod,
+						commandId,
+						connection.ConnectionId,
+						exception,
+						true,
+						startTime,
+						stopwatch.Elapsed);
+					
 					if (opened)
 						connection.Close();
+						
 					throw;
 				}
 				finally
 				{
-					if (locked)
-						mySqlConnection.CommandLock.Release();
+					dbCommand.Parameters.Clear();
 				}
+
+				return result;
 			}
         }
 

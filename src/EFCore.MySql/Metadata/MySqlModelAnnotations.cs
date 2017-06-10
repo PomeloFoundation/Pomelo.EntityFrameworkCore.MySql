@@ -1,47 +1,33 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
-// Licensed under the MIT. See LICENSE in the project root for license information.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-using System.Linq;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
 
-// ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Metadata
 {
     public class MySqlModelAnnotations : RelationalModelAnnotations, IMySqlModelAnnotations
     {
         public MySqlModelAnnotations([NotNull] IModel model)
-            : base(model, MySqlFullAnnotationNames.Instance)
+            : base(model)
         {
         }
 
-        public MySqlModelAnnotations([NotNull] RelationalAnnotations annotations)
-            : base(annotations, MySqlFullAnnotationNames.Instance)
+        protected MySqlModelAnnotations([NotNull] RelationalAnnotations annotations)
+            : base(annotations)
         {
         }
 
-        public virtual IMySqlExtension GetOrAddMySqlExtension([CanBeNull] string name, [CanBeNull] string schema = null)
-            => MySqlExtension.GetOrAddMySqlExtension((IMutableModel)Model,
-                MySqlFullAnnotationNames.Instance.MySqlExtensionPrefix,
-                name,
-                schema);
-
-        public virtual IReadOnlyList<IMySqlExtension> MySqlExtensions
-            => MySqlExtension.GetMySqlExtensions(Model, MySqlFullAnnotationNames.Instance.MySqlExtensionPrefix).ToList();
-
-        public virtual string DatabaseTemplate
+        public virtual MySqlValueGenerationStrategy? ValueGenerationStrategy
         {
-            get { return (string)Annotations.GetAnnotation(MySqlFullAnnotationNames.Instance.DatabaseTemplate, null); }
-            [param: CanBeNull]
-            set { SetDatabaseTemplate(value); }
+            get => (MySqlValueGenerationStrategy?)Annotations.GetAnnotation(
+                MySqlAnnotationNames.ValueGenerationStrategy);
+
+            set => SetValueGenerationStrategy(value);
         }
 
-        protected virtual bool SetDatabaseTemplate([CanBeNull] string value)
-            => Annotations.SetAnnotation(
-                MySqlFullAnnotationNames.Instance.DatabaseTemplate,
-                null,
-                Check.NullButNotEmpty(value, nameof(value)));
+        protected virtual bool SetValueGenerationStrategy(MySqlValueGenerationStrategy? value)
+            => Annotations.SetAnnotation(MySqlAnnotationNames.ValueGenerationStrategy, value);
     }
 }

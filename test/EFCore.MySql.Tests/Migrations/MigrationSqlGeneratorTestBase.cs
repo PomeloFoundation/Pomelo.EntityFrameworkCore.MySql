@@ -1,10 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
-using Microsoft.EntityFrameworkCore.Specification.Tests;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
 using System.Linq;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
@@ -44,7 +43,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                     ClrType = typeof(DateTime),
                     ColumnType = "datetime",
                     IsNullable = true,
-	                [MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd] = true
+	                //[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd] = true
                 });
         }
 
@@ -59,7 +58,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                     ClrType = typeof(DateTime),
                     ColumnType = "datetime",
                     IsNullable = true,
-	                [MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAddOrUpdate] = true
+	                //[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAddOrUpdate] = true
                 });
         }
 
@@ -74,7 +73,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                     ClrType = typeof(DateTime),
                     ColumnType = "datetime(6)",
                     IsNullable = true,
-                    [MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAddOrUpdate] = true
+                    //[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAddOrUpdate] = true
                 });
         }
 
@@ -329,7 +328,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                             ClrType = typeof(ulong),
                             ColumnType = "bigint unsigned",
                             IsNullable = false,
-                            [MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd] = true
+                            //[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd] = true
                         }
                     },
                     PrimaryKey = new AddPrimaryKeyOperation
@@ -423,7 +422,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
         protected virtual void Generate(params MigrationOperation[] operation)
             => Generate(_ => { }, operation);
 
-        protected virtual ModelBuilder CreateModelBuilder() => TestHelpers.Instance.CreateConventionBuilder();
+        protected virtual ModelBuilder CreateModelBuilder() => MySqlTestHelpers.Instance.CreateConventionBuilder();
 
         protected virtual void Generate(Action<ModelBuilder> buildAction, params MigrationOperation[] operation)
         {

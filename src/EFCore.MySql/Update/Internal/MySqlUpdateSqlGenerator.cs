@@ -14,8 +14,9 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
 {
     public class MySqlUpdateSqlGenerator : UpdateSqlGenerator, IMySqlUpdateSqlGenerator
     {
-        public MySqlUpdateSqlGenerator([NotNull] ISqlGenerationHelper sqlGenerationHelper)
-            : base(sqlGenerationHelper)
+        public MySqlUpdateSqlGenerator(
+            [NotNull] UpdateSqlGeneratorDependencies dependencies)
+            : base(dependencies)
         {
         }
 

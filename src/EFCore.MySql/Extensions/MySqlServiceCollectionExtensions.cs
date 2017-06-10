@@ -1,83 +1,61 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
-// Licensed under the MIT. See LICENSE in the project root for license information.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.Internal;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
-using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Internal;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators;
 using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal;
 using Microsoft.EntityFrameworkCore.Query.Internal;
+using Microsoft.EntityFrameworkCore.Query.Sql;
 using Microsoft.EntityFrameworkCore.Query.Sql.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
+using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.EntityFrameworkCore.Update.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Microsoft.EntityFrameworkCore.ValueGeneration;
 using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class MySqlEntityFrameworkServicesBuilderExtensions
+    public static class MySqlServiceCollectionExtensions
     {
-        public static IServiceCollection AddEntityFrameworkMySql([NotNull] this IServiceCollection services)
+        public static IServiceCollection AddEntityFrameworkMySql([NotNull] this IServiceCollection serviceCollection)
         {
-            Check.NotNull(services, nameof(services));
+            Check.NotNull(serviceCollection, nameof(serviceCollection));
 
-	        services.AddRelational()
-		        .AddScoped<IRelationalCommandBuilderFactory, MySqlCommandBuilderFactory>()
-		        .AddScoped<RelationalQueryContextFactory, MySqlQueryContextFactory>();
+            var builder = new EntityFrameworkRelationalServicesBuilder(serviceCollection)
+                .TryAdd<IDatabaseProvider, DatabaseProvider<MySqlOptionsExtension>>()
+                .TryAdd<IRelationalTypeMapper, MySqlTypeMapper>()
+                .TryAdd<ISqlGenerationHelper, MySqlSqlGenerationHelper>()
+                .TryAdd<IMigrationsAnnotationProvider, MySqlMigrationsAnnotationProvider>()
+                .TryAdd<IRelationalValueBufferFactoryFactory, UntypedRelationalValueBufferFactoryFactory>()
+                .TryAdd<IConventionSetBuilder, MySqlConventionSetBuilder>()
+                .TryAdd<IUpdateSqlGenerator>(p => p.GetService<IMySqlUpdateSqlGenerator>())
+                .TryAdd<IModificationCommandBatchFactory, MySqlModificationCommandBatchFactory>()
+                .TryAdd<IValueGeneratorSelector, MySqlValueGeneratorSelector>()
+                .TryAdd<IRelationalConnection>(p => p.GetService<IMySqlRelationalConnection>())
+                .TryAdd<IMigrationsSqlGenerator, MySqlMigrationsSqlGenerator>()
+                .TryAdd<IRelationalDatabaseCreator, MySqlDatabaseCreator>()
+                .TryAdd<IHistoryRepository, MySqlHistoryRepository>()
+                .TryAdd<IQueryCompilationContextFactory, MySqlQueryCompilationContextFactory>()
+                .TryAdd<IMemberTranslator, MySqlCompositeMemberTranslator>()
+                .TryAdd<IQuerySqlGeneratorFactory, MySqlQuerySqlGeneratorFactory>()
+                .TryAddProviderSpecificServices(b => b
+                    .TryAddScoped<IMySqlUpdateSqlGenerator, MySqlUpdateSqlGenerator>()
+                    .TryAddScoped<IMySqlRelationalConnection, MySqlRelationalConnection>());
 
-            services.TryAddEnumerable(ServiceDescriptor
-                .Singleton<IDatabaseProvider, DatabaseProvider<MySqlDatabaseProviderServices, MySqlOptionsExtension>>());
+            builder.TryAddCoreServices();
 
-            services.TryAdd(new ServiceCollection()
-                .AddSingleton<MySqlValueGeneratorCache>()
-                .AddSingleton<MySqlSqlGenerationHelper>()
-                .AddSingleton<MySqlTypeMapper>()
-                .AddScoped<MySqlScopedTypeMapper>()
-                .AddSingleton<MySqlModelSource>()
-                .AddSingleton<MySqlAnnotationProvider>()
-                .AddSingleton<MySqlMigrationsAnnotationProvider>()
-                .AddScoped<MySqlBatchExecutor>()
-                .AddScoped(p => GetProviderServices(p).BatchExecutor)
-                .AddScoped<MySqlConventionSetBuilder>()
-                .AddScoped<TableNameFromDbSetConvention>()
-                .AddScoped<IMySqlUpdateSqlGenerator, MySqlUpdateSqlGenerator>()
-                .AddScoped<MySqlModificationCommandBatchFactory>()
-                .AddScoped<MySqlValueGeneratorSelector>()
-                .AddScoped<MySqlDatabaseProviderServices>()
-                .AddScoped<MySqlRelationalConnection>()
-                .AddScoped<MySqlDatabaseCreator>()
-                .AddScoped<MySqlHistoryRepository>()
-                .AddScoped<MySqlMigrationsSqlGenerationHelper>()
-                .AddScoped<MySqlModificationCommandBatchFactory>()
-                .AddQuery());
-
-            services
-                .AddScoped<IChangeDetector, MySqlChangeDetector>()
-                .AddScoped<IPropertyListener, IChangeDetector>(p => p.GetService<IChangeDetector>())
-                .AddScoped<MySqlMigrationsModelDiffer>()
-                .AddScoped<IMigrationsModelDiffer, MySqlMigrationsModelDiffer>();
-
-            return services;
+            return serviceCollection;
         }
-
-        private static IServiceCollection AddQuery(this IServiceCollection serviceCollection)
-        {
-            return serviceCollection
-                .AddScoped<MySqlQueryCompilationContextFactory>()
-                .AddScoped<MySqlCompositeMemberTranslator>()
-                .AddScoped<MySqlCompositeMethodCallTranslator>()
-                .AddScoped<MySqlQuerySqlGenerationHelperFactory>();
-        }
-        
     }
 }

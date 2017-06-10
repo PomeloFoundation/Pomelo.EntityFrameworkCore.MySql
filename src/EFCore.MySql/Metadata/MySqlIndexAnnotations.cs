@@ -1,28 +1,31 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
-// Licensed under the MIT. See LICENSE in the project root for license information.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
-// ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Metadata
 {
     public class MySqlIndexAnnotations : RelationalIndexAnnotations, IMySqlIndexAnnotations
     {
         public MySqlIndexAnnotations([NotNull] IIndex index)
-            : base(index, MySqlFullAnnotationNames.Instance)
+            : base(index)
         {
         }
 
         protected MySqlIndexAnnotations([NotNull] RelationalAnnotations annotations)
-            : base(annotations, MySqlFullAnnotationNames.Instance)
+            : base(annotations)
         {
         }
 
-        public string Method
+        public virtual bool? IsClustered
         {
-            get { return (string)Annotations.GetAnnotation(MySqlFullAnnotationNames.Instance.IndexMethod, null); }
-            set { Annotations.SetAnnotation(MySqlFullAnnotationNames.Instance.IndexMethod, null, value); }
+            get { return (bool?)Annotations.GetAnnotation(MySqlAnnotationNames.Clustered); }
+            [param: CanBeNull] set { SetIsClustered(value); }
         }
+
+        protected virtual bool SetIsClustered(bool? value) => Annotations.SetAnnotation(
+            MySqlAnnotationNames.Clustered,
+            value);
     }
 }

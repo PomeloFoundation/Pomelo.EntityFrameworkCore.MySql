@@ -4,8 +4,9 @@
 using System;
 using System.Data.Common;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
 using MySql.Data.MySqlClient;
 
@@ -29,10 +30,9 @@ namespace Microsoft.EntityFrameworkCore
 	            UseAffectedRows = false
             };
             connectionString = csb.ConnectionString;
-            var extension = GetOrCreateExtension(optionsBuilder);
-            extension.ConnectionString = connectionString;
+            var extension = GetOrCreateExtension(optionsBuilder).WithConnectionString(connectionString);
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
-
+            ConfigureWarnings(optionsBuilder);
             mySqlOptionsAction?.Invoke(new MySqlDbContextOptionsBuilder(optionsBuilder));
 
             return optionsBuilder;
@@ -63,10 +63,9 @@ namespace Microsoft.EntityFrameworkCore
                 }
             }
             
-            var extension = GetOrCreateExtension(optionsBuilder);
-            extension.Connection = connection;
+            var extension = GetOrCreateExtension(optionsBuilder).WithConnection(connection);
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
-
+            ConfigureWarnings(optionsBuilder);
             mySqlOptionsAction?.Invoke(new MySqlDbContextOptionsBuilder(optionsBuilder));
 
             return optionsBuilder;
@@ -89,11 +88,20 @@ namespace Microsoft.EntityFrameworkCore
                 (DbContextOptionsBuilder)optionsBuilder, connection, mySqlOptionsAction);
 
         private static MySqlOptionsExtension GetOrCreateExtension(DbContextOptionsBuilder optionsBuilder)
+            => optionsBuilder.Options.FindExtension<MySqlOptionsExtension>()
+               ?? new MySqlOptionsExtension();
+
+        private static void ConfigureWarnings(DbContextOptionsBuilder optionsBuilder)
         {
-            var existing = optionsBuilder.Options.FindExtension<MySqlOptionsExtension>();
-            return existing != null
-                ? new MySqlOptionsExtension(existing)
-                : new MySqlOptionsExtension();
+            var coreOptionsExtension
+                = optionsBuilder.Options.FindExtension<CoreOptionsExtension>()
+                  ?? new CoreOptionsExtension();
+
+            coreOptionsExtension = coreOptionsExtension.WithWarningsConfiguration(
+                coreOptionsExtension.WarningsConfiguration.TryWithExplicit(
+                    RelationalEventId.AmbientTransactionWarning, WarningBehavior.Throw));
+
+            ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(coreOptionsExtension);
         }
     }
 }

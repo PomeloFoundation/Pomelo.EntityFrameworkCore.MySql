@@ -1,35 +1,76 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
-// Licensed under the MIT. See LICENSE in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
-// ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Migrations.Internal
 {
+    /// <summary>
+    ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+    ///     directly from your code. This API may change or be removed in future releases.
+    /// </summary>
     public class MySqlMigrationsAnnotationProvider : MigrationsAnnotationProvider
     {
-        public override IEnumerable<IAnnotation> For(IProperty property)
+        /// <summary>
+        ///     Initializes a new instance of this class.
+        /// </summary>
+        /// <param name="dependencies"> Parameter object containing dependencies for this service. </param>
+        public MySqlMigrationsAnnotationProvider([NotNull] MigrationsAnnotationProviderDependencies dependencies)
+            : base(dependencies)
         {
-            // The migrations SQL generator gets the property's DefaultValue and DefaultValueSql.
-            // However, there's no way there to detect properties that have ValueGenerated.OnAdd
-            // *without* defining a default value; these should translate to SERIAL columns.
-            // So we add a custom annotation here to pass the information.
-            if (property.ValueGenerated == ValueGenerated.OnAdd)
-                yield return new Annotation(MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd, true);
-            else if (property.ValueGenerated == ValueGenerated.OnAddOrUpdate)
-                yield return new Annotation(MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAddOrUpdate, true);
         }
 
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public override IEnumerable<IAnnotation> For(IModel model) => ForRemove(model);
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public override IEnumerable<IAnnotation> For(IEntityType entityType) => ForRemove(entityType);
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public override IEnumerable<IAnnotation> For(IIndex index)
         {
-            if (index.MySql().Method != null)
+            foreach (var annotation in ForRemove(index))
+            {
+                yield return annotation;
+            }
+        }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public override IEnumerable<IAnnotation> For(IForeignKey foreignKey) => ForRemove(foreignKey);
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public override IEnumerable<IAnnotation> For(IProperty property)
+        {
+            if (property.MySql().ValueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn)
             {
                 yield return new Annotation(
-                     MySqlAnnotationNames.Prefix + MySqlAnnotationNames.IndexMethod,
-                     index.MySql().Method);
+                    MySqlAnnotationNames.ValueGenerationStrategy,
+                    MySqlValueGenerationStrategy.IdentityColumn);
+            }
+
+            foreach (var annotation in ForRemove(property))
+            {
+                yield return annotation;
             }
         }
     }

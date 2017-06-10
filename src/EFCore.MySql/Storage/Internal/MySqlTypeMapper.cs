@@ -17,55 +17,57 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         private static readonly Regex TypeRe = new Regex(@"([a-z0-9]+)\s*?(?:\(\s*(\d+)?\s*\))?\s*(unsigned)?", RegexOptions.IgnoreCase);
 
         // boolean
-        private readonly RelationalTypeMapping _bit              = new RelationalTypeMapping("bit", typeof(bool), DbType.Boolean);
+        private readonly BoolTypeMapping _bit               = new BoolTypeMapping("bit", DbType.Boolean);
 
         // integers
-        private readonly RelationalTypeMapping _tinyint          = new RelationalTypeMapping("tinyint", typeof(sbyte), DbType.SByte);
-        private readonly RelationalTypeMapping _utinyint         = new RelationalTypeMapping("tinyint unsigned", typeof(byte), DbType.Byte);
-	    private readonly RelationalTypeMapping _smallint         = new RelationalTypeMapping("smallint", typeof(short), DbType.Int16);
-	    private readonly RelationalTypeMapping _usmallint        = new RelationalTypeMapping("smallint unsigned", typeof(ushort), DbType.UInt16);
-        private readonly RelationalTypeMapping _int              = new RelationalTypeMapping("int", typeof(int), DbType.Int32);
-	    private readonly RelationalTypeMapping _uint             = new RelationalTypeMapping("int unsigned", typeof(int), DbType.UInt32);
-	    private readonly RelationalTypeMapping _bigint           = new RelationalTypeMapping("bigint", typeof(long), DbType.Int64);
-	    private readonly RelationalTypeMapping _ubigint          = new RelationalTypeMapping("bigint unsigned", typeof(ulong), DbType.UInt64);
+        private readonly SByteTypeMapping _tinyint          = new SByteTypeMapping("tinyint", DbType.SByte);
+        private readonly ByteTypeMapping _utinyint          = new ByteTypeMapping("tinyint unsigned", DbType.Byte);
+	    private readonly ShortTypeMapping _smallint         = new ShortTypeMapping("smallint", DbType.Int16);
+	    private readonly UShortTypeMapping _usmallint       = new UShortTypeMapping("smallint unsigned", DbType.UInt16);
+        private readonly IntTypeMapping _int                = new IntTypeMapping("int", DbType.Int32);
+	    private readonly UIntTypeMapping _uint              = new UIntTypeMapping("int unsigned", DbType.UInt32);
+	    private readonly LongTypeMapping _bigint            = new LongTypeMapping("bigint", DbType.Int64);
+	    private readonly ULongTypeMapping _ubigint          = new ULongTypeMapping("bigint unsigned", DbType.UInt64);
 
 	    // decimals
-	    private readonly RelationalTypeMapping _decimal          = new RelationalTypeMapping("decimal(65, 30)", typeof(decimal), DbType.Decimal);
-	    private readonly RelationalTypeMapping _double           = new RelationalTypeMapping("double", typeof(double), DbType.Double);
-        private readonly RelationalTypeMapping _float            = new RelationalTypeMapping("float", typeof(float));
+	    private readonly DecimalTypeMapping _decimal        = new DecimalTypeMapping("decimal(65, 30)", DbType.Decimal);
+	    private readonly DoubleTypeMapping _double          = new DoubleTypeMapping("double", DbType.Double);
+        private readonly FloatTypeMapping _float            = new FloatTypeMapping("float");
 
 	    // binary
-	    private readonly RelationalTypeMapping _binary           = new RelationalTypeMapping("binary", typeof(byte[]), DbType.Binary);
-        private readonly RelationalTypeMapping _varbinary        = new RelationalTypeMapping("varbinary", typeof(byte[]), DbType.Binary);
-	    private readonly MySqlMaxLengthMapping _varbinary767     = new MySqlMaxLengthMapping("varbinary(767)", typeof(byte[]), DbType.Binary);
-	    private readonly RelationalTypeMapping _varbinarymax     = new RelationalTypeMapping("longblob", typeof(byte[]), DbType.Binary);
+	    private readonly RelationalTypeMapping _binary           = new MySqlByteArrayTypeMapping("binary", DbType.Binary);
+        private readonly RelationalTypeMapping _varbinary        = new MySqlByteArrayTypeMapping("varbinary", DbType.Binary);
+	    private readonly MySqlByteArrayTypeMapping _varbinary767 = new MySqlByteArrayTypeMapping("varbinary(767)", DbType.Binary, 767);
+	    private readonly RelationalTypeMapping _varbinarymax     = new MySqlByteArrayTypeMapping("longblob", DbType.Binary);
 
 	    // string
-        private readonly MySqlMaxLengthMapping _char             = new MySqlMaxLengthMapping("char", typeof(string), DbType.AnsiStringFixedLength);
-        private readonly MySqlMaxLengthMapping _varchar          = new MySqlMaxLengthMapping("varchar", typeof(string), DbType.AnsiString);
-	    private readonly MySqlMaxLengthMapping _varchar127       = new MySqlMaxLengthMapping("varchar(127)", typeof(string), DbType.AnsiString);
-	    private readonly RelationalTypeMapping _varcharmax       = new MySqlMaxLengthMapping("longtext", typeof(string), DbType.AnsiString);
+        private readonly MySqlStringTypeMapping _char            = new MySqlStringTypeMapping("char", DbType.AnsiStringFixedLength);
+        private readonly MySqlStringTypeMapping _varchar         = new MySqlStringTypeMapping("varchar", DbType.AnsiString);
+	    private readonly MySqlStringTypeMapping _varchar127      = new MySqlStringTypeMapping("varchar(127)", DbType.AnsiString, true, 127);
+	    private readonly MySqlStringTypeMapping _varcharmax      = new MySqlStringTypeMapping("longtext", DbType.AnsiString);
 
 	    // DateTime
-        private readonly RelationalTypeMapping _dateTime6        = new RelationalTypeMapping("datetime(6)", typeof(DateTime), DbType.DateTime);
-        private readonly RelationalTypeMapping _dateTimeOffset6  = new RelationalTypeMapping("datetime(6)", typeof(DateTimeOffset), DbType.DateTime);
-        private readonly RelationalTypeMapping _time6            = new RelationalTypeMapping("time(6)", typeof(TimeSpan), DbType.Time);
+        private readonly DateTimeTypeMapping _dateTime6              = new DateTimeTypeMapping("datetime(6)", DbType.DateTime);
+        private readonly DateTimeOffsetTypeMapping _dateTimeOffset6  = new DateTimeOffsetTypeMapping("datetime(6)", DbType.DateTime);
+        private readonly TimeSpanTypeMapping _time6                  = new TimeSpanTypeMapping("time(6)", DbType.Time);
 
         // json
-        private readonly RelationalTypeMapping _json             = new RelationalTypeMapping("json", typeof(JsonObject<>), DbType.String);
+        private readonly RelationalTypeMapping _json         = new RelationalTypeMapping("json", typeof(JsonObject<>), DbType.String, false, null);
 
 	    // row version
-        private readonly RelationalTypeMapping _rowversion       = new RelationalTypeMapping("TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", typeof(byte[]), DbType.Binary);
+        private readonly RelationalTypeMapping _rowversion   = new RelationalTypeMapping("TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", typeof(byte[]), DbType.Binary, false, null);
 
         // guid
-	    private readonly RelationalTypeMapping _uniqueidentifier = new RelationalTypeMapping("char(36)", typeof(Guid));
+	    private readonly GuidTypeMapping _uniqueidentifier   = new GuidTypeMapping("char(36)", DbType.Guid);
 
-        readonly Dictionary<string, RelationalTypeMapping> _simpleNameMappings;
-        readonly Dictionary<Type, RelationalTypeMapping> _simpleMappings;
+        readonly Dictionary<string, RelationalTypeMapping> _storeTypeMappings;
+        readonly Dictionary<Type, RelationalTypeMapping> _clrTypeMappings;
+        private readonly HashSet<string> _disallowedMappings;
 
-        public MySqlTypeMapper()
+        public MySqlTypeMapper([NotNull] RelationalTypeMapperDependencies dependencies)
+            : base(dependencies)
         {
-            _simpleNameMappings
+            _storeTypeMappings
                 = new Dictionary<string, RelationalTypeMapping>(StringComparer.OrdinalIgnoreCase)
                 {
                     // boolean
@@ -115,7 +117,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     { "char(36)", _uniqueidentifier }
                 };
 
-            _simpleMappings
+            _clrTypeMappings
                 = new Dictionary<Type, RelationalTypeMapping>
                 {
 	                // boolean
@@ -151,105 +153,101 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 	                { typeof(Guid), _uniqueidentifier }
                 };
 
+            _disallowedMappings
+                = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    "binary",
+                    "char",
+                    "varbinary",
+                    "varchar"
+                };
+
             ByteArrayMapper
                 = new ByteArrayRelationalTypeMapper(
                     8000,
                     _varbinarymax,
                     _varbinarymax,
                     _varbinary767,
-                    _rowversion, size => new MySqlMaxLengthMapping(
+                    _rowversion, size => new MySqlByteArrayTypeMapping(
                         "varbinary(" + size + ")",
-                        typeof(byte[]),
                         DbType.Binary,
-                        unicode: false,
-                        size: size,
-                        hasNonDefaultUnicode: false,
-                        hasNonDefaultSize: true));
+                        size));
 
             StringMapper
                 = new StringRelationalTypeMapper(
-                    8000,
-                    _varcharmax,
-                    _varcharmax,
-                    _varchar127,
-                    size => new MySqlMaxLengthMapping(
+                    maxBoundedAnsiLength: 8000,
+                    defaultAnsiMapping: _varcharmax,
+                    unboundedAnsiMapping: _varcharmax,
+                    keyAnsiMapping: _varchar127,
+                    createBoundedAnsiMapping: size => new MySqlStringTypeMapping(
                         "varchar(" + size + ")",
-                        typeof(string),
-                        dbType: DbType.AnsiString,
+                        DbType.AnsiString,
                         unicode: false,
-                        size: size,
-                        hasNonDefaultUnicode: true,
-                        hasNonDefaultSize: true),
-                    8000,
-                    _varcharmax,
-                    _varcharmax,
-                    _varchar127,
-                    size => new MySqlMaxLengthMapping(
+                        size: size),
+                    maxBoundedUnicodeLength: 8000,
+                    defaultUnicodeMapping: _varcharmax,
+                    unboundedUnicodeMapping: _varcharmax,
+                    keyUnicodeMapping: _varchar127,
+                    createBoundedUnicodeMapping: size => new MySqlStringTypeMapping(
                         "varchar(" + size + ")",
-                        typeof(string),
-                        dbType: null,
-                        unicode: true,
-                        size: size,
-                        hasNonDefaultUnicode: false,
-                        hasNonDefaultSize: true));
+                        DbType.AnsiString,
+                        unicode: false,
+                        size: size));
         }
 
-        protected override IReadOnlyDictionary<string, RelationalTypeMapping> GetStoreTypeMappings()
-        {
-            return _simpleNameMappings;
-        }
-
-        protected override IReadOnlyDictionary<Type, RelationalTypeMapping> GetClrTypeMappings()
-        {
-            return _simpleMappings;
-        }
-
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public override IByteArrayRelationalTypeMapper ByteArrayMapper { get; }
 
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public override IStringRelationalTypeMapper StringMapper { get; }
 
-        protected override string GetColumnType(IProperty property) => property.MySql().ColumnType;
-
-        protected override RelationalTypeMapping CreateMappingFromStoreType([NotNull] string storeType)
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public override void ValidateTypeName(string storeType)
         {
-            Check.NotNull(storeType, nameof(storeType));
-            storeType = storeType.Trim().ToLower();
-
-            var matchType = storeType;
-            var matchLen = 0;
-            var matchUnsigned = false;
-            var match = TypeRe.Match(storeType);
-            if (match.Success)
+            if (_disallowedMappings.Contains(storeType))
             {
-                matchType = match.Groups[1].Value.ToLower();
-                if (!string.IsNullOrWhiteSpace(match.Groups[2].Value))
-                    int.TryParse(match.Groups[2].Value, out matchLen);
-                if (!string.IsNullOrWhiteSpace(match.Groups[3].Value))
-                    matchUnsigned = true;
+                throw new ArgumentException("UnqualifiedDataType" + storeType);
             }
-
-            var exactMatch = matchType + (matchLen > 0 ? $"({matchLen})" : "") + (matchUnsigned ? " unsigned" : "");
-            RelationalTypeMapping mapping;
-            if (GetStoreTypeMappings().TryGetValue(exactMatch, out mapping))
-                return mapping;
-
-            var noLengthMatch = matchType + (matchUnsigned ? " unsigned" : "");
-            if (!GetStoreTypeMappings().TryGetValue(noLengthMatch, out mapping))
-                return null;
-
-            if (mapping.ClrType == typeof(string) || mapping.ClrType == typeof(byte[]))
-            {
-                return mapping.CreateCopy(exactMatch, matchLen);
-            }
-            return mapping.CreateCopy(exactMatch, mapping.Size);
         }
 
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        protected override string GetColumnType(IProperty property) => property.MySql().ColumnType;
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        protected override IReadOnlyDictionary<Type, RelationalTypeMapping> GetClrTypeMappings()
+            => _clrTypeMappings;
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        protected override IReadOnlyDictionary<string, RelationalTypeMapping> GetStoreTypeMappings()
+            => _storeTypeMappings;
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public override RelationalTypeMapping FindMapping(Type clrType)
         {
             Check.NotNull(clrType, nameof(clrType));
-            
-            if (clrType.Name == typeof(JsonObject<>).Name)
-                return _json;
+
+            clrType = clrType.UnwrapNullableType().UnwrapEnumType();
 
             return clrType == typeof(string)
                 ? _varcharmax
@@ -258,17 +256,12 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     : base.FindMapping(clrType));
         }
 
-        protected override RelationalTypeMapping FindCustomMapping([NotNull] IProperty property)
-        {
-            Check.NotNull(property, nameof(property));
-
-            var clrType = property.ClrType.UnwrapEnumType();
-
-            return clrType == typeof(string)
-                ? StringMapper.FindMapping(true, property.IsKey() || property.IsIndex(), property.GetMaxLength())
-                : clrType == typeof(byte[])
-                    ? ByteArrayMapper.FindMapping(false, property.IsKey() || property.IsIndex(), property.GetMaxLength())
-                    : null;
-        }
+        // Indexes in SQL Server have a max size of 900 bytes
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        protected override bool RequiresKeyMapping(IProperty property)
+            => base.RequiresKeyMapping(property) || property.IsIndex();
     }
 }

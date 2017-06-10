@@ -6,10 +6,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
-using Microsoft.EntityFrameworkCore.Utilities;
 using MySql.Data.MySqlClient;
 
 // ReSharper disable once CheckNamespace
@@ -21,8 +19,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
     /// </summary>
     public class MySqlDatabaseCreator : RelationalDatabaseCreator
     {
-        private readonly MySqlRelationalConnection _connection;
-        private readonly IMigrationsSqlGenerator _migrationsSqlGenerator;
+        private readonly IMySqlRelationalConnection _connection;
 	    private readonly IRawSqlCommandBuilder _rawSqlCommandBuilder;
 
 
@@ -31,72 +28,51 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
 	    public MySqlDatabaseCreator(
-	        [NotNull] MySqlRelationalConnection connection,
-	        [NotNull] IMigrationsModelDiffer modelDiffer,
-	        [NotNull] IMigrationsSqlGenerator migrationsSqlGenerator,
-	        [NotNull] IMigrationCommandExecutor migrationCommandExecutor,
-	        [NotNull] IModel model,
-	        [NotNull] IRawSqlCommandBuilder rawSqlCommandBuilder,
-	        [NotNull] IExecutionStrategyFactory executionStrategyFactory)
-	        : base(model, connection, modelDiffer, migrationsSqlGenerator, migrationCommandExecutor, executionStrategyFactory)
+            [NotNull] RelationalDatabaseCreatorDependencies dependencies,
+            [NotNull] IMySqlRelationalConnection connection,
+            [NotNull] IRawSqlCommandBuilder rawSqlCommandBuilder)
+            : base(dependencies)
         {
-	        Check.NotNull(rawSqlCommandBuilder, nameof(rawSqlCommandBuilder));
-	        
-	        _connection = connection;
-		    _migrationsSqlGenerator = migrationsSqlGenerator;
-	        _rawSqlCommandBuilder = rawSqlCommandBuilder;
-
+            _connection = connection;
+            _rawSqlCommandBuilder = rawSqlCommandBuilder;
         }
 
-	    /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public override void Create()
+        public virtual TimeSpan RetryDelay { get; set; } = TimeSpan.FromMilliseconds(500);
+
+        public virtual TimeSpan RetryTimeout { get; set; } = TimeSpan.FromMinutes(1);
+
+	    public override void Create()
         {
             using (var masterConnection = _connection.CreateMasterConnection())
             {
-                var cmd = CreateCreateOperations();
-                MigrationCommandExecutor
-                    .ExecuteNonQuery(cmd, masterConnection);
+                Dependencies.MigrationCommandExecutor
+                    .ExecuteNonQuery(CreateCreateOperations(), masterConnection);
 
                 ClearPool();
             }
 
-            Exists(retryOnNotExists: false);
+            Exists(retryOnNotExists: true);
         }
 
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public override async Task CreateAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             using (var masterConnection = _connection.CreateMasterConnection())
             {
-                await MigrationCommandExecutor
-                    .ExecuteNonQueryAsync(CreateCreateOperations(), masterConnection, cancellationToken)
-                    .ConfigureAwait(false);
+                await Dependencies.MigrationCommandExecutor
+                    .ExecuteNonQueryAsync(CreateCreateOperations(), masterConnection, cancellationToken);
 
                 ClearPool();
             }
 
-            await ExistsAsync(retryOnNotExists: true, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await ExistsAsync(retryOnNotExists: true, cancellationToken: cancellationToken);
         }
 
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         protected override bool HasTables()
-            => (long)CreateHasTablesCommand().ExecuteScalar(_connection) != 0;
+            => Dependencies.ExecutionStrategyFactory.Create().Execute(_connection, connection => (int)CreateHasTablesCommand().ExecuteScalar(connection) != 0);
 
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        protected override async Task<bool> HasTablesAsync(CancellationToken cancellationToken = default(CancellationToken))
-            => (long)await CreateHasTablesCommand().ExecuteScalarAsync(_connection, cancellationToken: cancellationToken).ConfigureAwait(false) != 0;
+        protected override Task<bool> HasTablesAsync(CancellationToken cancellationToken = default(CancellationToken))
+            => Dependencies.ExecutionStrategyFactory.Create().ExecuteAsync(_connection,
+                async (connection, ct) => (int)await CreateHasTablesCommand().ExecuteScalarAsync(connection, cancellationToken: ct) != 0, cancellationToken);
 
         private IRelationalCommand CreateHasTablesCommand()
             => _rawSqlCommandBuilder
@@ -106,86 +82,86 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     WHERE table_type = 'BASE TABLE' AND table_schema = '" + _connection.DbConnection.Database + "'");
 
         private IReadOnlyList<MigrationCommand> CreateCreateOperations()
-            => _migrationsSqlGenerator.Generate(new[] { new MySqlCreateDatabaseOperation { Name = _connection.DbConnection.Database } });
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
+        {
+            var builder = new MySqlConnectionStringBuilder(_connection.DbConnection.ConnectionString);
+            return Dependencies.MigrationsSqlGenerator.Generate((new[] { new MySqlCreateDatabaseOperation { Name = _connection.DbConnection.Database } }));
+        }
         public override bool Exists()
             => Exists(retryOnNotExists: false);
 
         private bool Exists(bool retryOnNotExists)
-        {
-            var retryCount = 0;
-            var giveUp = DateTime.UtcNow + TimeSpan.FromMinutes(1);
-            while (true)
-            {
-                try
+            => Dependencies.ExecutionStrategyFactory.Create().Execute(DateTime.UtcNow + RetryTimeout, giveUp =>
                 {
-                    _connection.Open();
-                    _connection.Close();
-                    return true;
-                }
-                catch (MySqlException e)
-                {
-                    if (!retryOnNotExists
-                        && IsDoesNotExist(e))
+                    while (true)
                     {
-                        return false;
-                    }
+                        try
+                        {
+                            _connection.Open();
+                            _connection.Close();
+                            return true;
+                        }
+                        catch (MySqlException e)
+                        {
+                            if (!retryOnNotExists
+                                && IsDoesNotExist(e))
+                            {
+                                return false;
+                            }
 
-                    if (DateTime.UtcNow > giveUp || !RetryOnExistsFailure(e, retryCount).GetAwaiter().GetResult())
-                    {
-                        throw;
-                    }
-                }
-            }
-        }
+                            if (DateTime.UtcNow > giveUp
+                                || !RetryOnExistsFailure(e))
+                            {
+                                throw;
+                            }
 
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
+                            Thread.Sleep(RetryDelay);
+                        }
+                    }
+                });
+
         public override Task<bool> ExistsAsync(CancellationToken cancellationToken = default(CancellationToken))
             => ExistsAsync(retryOnNotExists: false, cancellationToken: cancellationToken);
 
-        private async Task<bool> ExistsAsync(bool retryOnNotExists, CancellationToken cancellationToken)
-        {
-            var retryCount = 0;
-            while (true)
-            {
-                try
+        private Task<bool> ExistsAsync(bool retryOnNotExists, CancellationToken cancellationToken)
+            => Dependencies.ExecutionStrategyFactory.Create().ExecuteAsync(DateTime.UtcNow + RetryTimeout, async (giveUp, ct) =>
                 {
-                    await _connection.OpenAsync(cancellationToken).ConfigureAwait(false);
-                    _connection.Close();
-                    return true;
-                }
-                catch (MySqlException e)
-                {
-                    if (!retryOnNotExists && IsDoesNotExist(e))
+                    while (true)
                     {
-                        return false;
-                    }
+                        try
+                        {
+                            await _connection.OpenAsync(ct);
 
-                    if (!await RetryOnExistsFailure(e, retryCount).ConfigureAwait(false))
-                    {
-                        throw;
+                            _connection.Close();
+                            return true;
+                        }
+                        catch (MySqlException e)
+                        {
+                            if (!retryOnNotExists
+                                && IsDoesNotExist(e))
+                            {
+                                return false;
+                            }
+
+                            if (DateTime.UtcNow > giveUp
+                                || !RetryOnExistsFailure(e))
+                            {
+                                throw;
+                            }
+
+                            await Task.Delay(RetryDelay, ct);
+                        }
                     }
-                }
-            }
-        }
+                }, cancellationToken);
 
         // Login failed is thrown when database does not exist (See Issue #776)
         private static bool IsDoesNotExist(MySqlException exception) => exception.Number == 1049;
 
         // See Issue #985
-        private async Task<bool> RetryOnExistsFailure(MySqlException exception, int retryCount)
+        private bool RetryOnExistsFailure(MySqlException exception)
         {
-            if (exception.Number == 1049 && ++retryCount < 30)
+            if (exception.Number == 1049)
             {
                 ClearPool();
-                await Task.Delay(100).ConfigureAwait(false);
                 return true;
             }
             return false;
@@ -201,7 +177,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
             using (var masterConnection = _connection.CreateMasterConnection())
             {
-                MigrationCommandExecutor
+                Dependencies.MigrationCommandExecutor
                     .ExecuteNonQuery(CreateDropCommands(), masterConnection);
             }
         }
@@ -216,13 +192,12 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
             using (var masterConnection = _connection.CreateMasterConnection())
             {
-                await MigrationCommandExecutor
-                    .ExecuteNonQueryAsync(CreateDropCommands(), masterConnection, cancellationToken)
-                    .ConfigureAwait(false);
+                await Dependencies.MigrationCommandExecutor
+                    .ExecuteNonQueryAsync(CreateDropCommands(), masterConnection, cancellationToken);
             }
         }
 
-        private IEnumerable<MigrationCommand> CreateDropCommands()
+        private IReadOnlyList<MigrationCommand> CreateDropCommands()
         {
             var operations = new MigrationOperation[]
             {
@@ -231,7 +206,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                 new MySqlDropDatabaseOperation { Name = _connection.DbConnection.Database }
             };
 
-            var masterCommands = _migrationsSqlGenerator.Generate(operations);
+            var masterCommands = Dependencies.MigrationsSqlGenerator.Generate(operations);
             return masterCommands;
         }
 

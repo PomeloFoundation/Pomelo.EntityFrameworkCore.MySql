@@ -16,12 +16,11 @@ namespace Microsoft.EntityFrameworkCore.Query
 		public bool HasInclude = false;
 
 		public MySqlQueryContext(
+			[NotNull] QueryContextDependencies dependencies,
 			[NotNull] Func<IQueryBuffer> queryBufferFactory,
 			[NotNull] IRelationalConnection connection,
-			[NotNull] LazyRef<IStateManager> stateManager,
-			[NotNull] IConcurrencyDetector concurrencyDetector,
 			[NotNull] IExecutionStrategyFactory executionStrategyFactory)
-			: base(queryBufferFactory, connection, stateManager, concurrencyDetector, executionStrategyFactory)
+			: base(dependencies, queryBufferFactory, connection, executionStrategyFactory)
 		{
 		}
 	}

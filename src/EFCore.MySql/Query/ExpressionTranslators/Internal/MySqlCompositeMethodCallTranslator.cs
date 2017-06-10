@@ -31,8 +31,9 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
             new MySqlMathSinTranslator()
         };
 
-        public MySqlCompositeMethodCallTranslator([NotNull] ILogger<MySqlCompositeMethodCallTranslator> logger)
-            : base(logger)
+        public MySqlCompositeMethodCallTranslator(
+            [NotNull] RelationalCompositeMethodCallTranslatorDependencies dependencies)
+            : base(dependencies)
         {
             // ReSharper disable once DoNotCallOverridableMethodsInConstructor
             AddTranslators(_methodCallTranslators);

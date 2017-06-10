@@ -9,30 +9,16 @@ using Microsoft.EntityFrameworkCore.Utilities;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
 {
-    public class MySqlQuerySqlGenerationHelperFactory : QuerySqlGeneratorFactoryBase
+    public class MySqlQuerySqlGeneratorFactory : QuerySqlGeneratorFactoryBase
     {
-        
-        public MySqlQuerySqlGenerationHelperFactory(
-            [NotNull] IRelationalCommandBuilderFactory commandBuilderFactory,
-            [NotNull] ISqlGenerationHelper sqlGenerationHelper,
-            [NotNull] IParameterNameGeneratorFactory parameterNameGeneratorFactory,
-            [NotNull] IRelationalTypeMapper relationalTypeMapper)
-            : base(Check.NotNull(commandBuilderFactory, nameof(commandBuilderFactory)),
-                Check.NotNull(sqlGenerationHelper, nameof(sqlGenerationHelper)),
-                Check.NotNull(parameterNameGeneratorFactory, nameof(parameterNameGeneratorFactory)),
-                Check.NotNull(relationalTypeMapper, nameof(relationalTypeMapper)))
-
+        public MySqlQuerySqlGeneratorFactory([NotNull] QuerySqlGeneratorDependencies dependencies)
+            : base(dependencies)
         {
-           
         }
 
         public override IQuerySqlGenerator CreateDefault(SelectExpression selectExpression)
             => new MySqlQuerySqlGenerator(
-                CommandBuilderFactory,
-                SqlGenerationHelper,
-                ParameterNameGeneratorFactory,
-                RelationalTypeMapper,
+                Dependencies,
                 Check.NotNull(selectExpression, nameof(selectExpression)));
-        
     }
 }
