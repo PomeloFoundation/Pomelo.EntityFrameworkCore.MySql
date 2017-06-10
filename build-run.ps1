@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 
-function DownloadWithRetry([string] $url, [string] $downloadLocation, [int] $retries) 
+function DownloadWithRetry([string] $url, [string] $downloadLocation, [int] $retries)
 {
     while($true)
     {
@@ -19,7 +19,7 @@ function DownloadWithRetry([string] $url, [string] $downloadLocation, [int] $ret
                 Start-Sleep -Seconds 10
 
             }
-            else 
+            else
             {
                 $exception = $_.Exception
                 throw $exception
@@ -28,12 +28,10 @@ function DownloadWithRetry([string] $url, [string] $downloadLocation, [int] $ret
     }
 }
 
-cd $PSScriptRoot
-
-$repoFolder = $PSScriptRoot
+$repoFolder = Join-Path $PSScriptRoot ..
 $env:REPO_FOLDER = $repoFolder
 
-$koreBuildZip="https://github.com/aspnet/KoreBuild/archive/rel/1.0.0-msbuild-rtm.zip"
+$koreBuildZip="https://github.com/aspnet/KoreBuild/archive/rel/2.0.0-preview1.zip"
 if ($env:KOREBUILD_ZIP)
 {
     $koreBuildZip=$env:KOREBUILD_ZIP
@@ -42,18 +40,18 @@ if ($env:KOREBUILD_ZIP)
 $buildFolder = ".build"
 
 if (!(Test-Path $buildFolder)) {
-    Write-Host "Downloading KoreBuild from $koreBuildZip"    
-    
+    Write-Host "Downloading KoreBuild from $koreBuildZip"
+
     $tempFolder=$env:TEMP + "\KoreBuild-" + [guid]::NewGuid()
     New-Item -Path "$tempFolder" -Type directory | Out-Null
 
     $localZipFile="$tempFolder\korebuild.zip"
-    
+
     DownloadWithRetry -url $koreBuildZip -downloadLocation $localZipFile -retries 6
 
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     [System.IO.Compression.ZipFile]::ExtractToDirectory($localZipFile, $tempFolder)
-    
+
     New-Item -Path "$buildFolder" -Type directory | Out-Null
     copy-item "$tempFolder\**\build\*" $buildFolder -Recurse
 
@@ -63,10 +61,9 @@ if (!(Test-Path $buildFolder)) {
     }
 }
 
-$dotnetVersion = "1.0.0"
-$dotnetChannel = "rel-1.0.0"
-$dotnetSharedRuntimeVersion = "1.1.1"
-$dotnetSharedRuntimeChannel = "rel-1.0.0"
+$dotnetArch = 'x64'
+$dotnetChannel = "preview"
+$dotnetVersion = "2.0.0-preview1-005957"
 
 $dotnetLocalInstallFolder = $env:DOTNET_INSTALL_DIR
 if (!$dotnetLocalInstallFolder)
@@ -74,18 +71,29 @@ if (!$dotnetLocalInstallFolder)
     $dotnetLocalInstallFolder = "$env:LOCALAPPDATA\Microsoft\dotnet\"
 }
 
+function InstallSharedRuntime([string] $version, [string] $channel)
+{
+    $sharedRuntimePath = [IO.Path]::Combine($dotnetLocalInstallFolder, 'shared', 'Microsoft.NETCore.App', $version)
+    # Avoid redownloading the CLI if it's already installed.
+    if (!(Test-Path $sharedRuntimePath))
+    {
+        & "$buildFolder\dotnet\dotnet-install.ps1" -Channel $channel `
+            -SharedRuntime `
+            -Version $version `
+            -Architecture $dotnetArch `
+            -InstallDir $dotnetLocalInstallFolder
+    }
+}
+
 # Sometimes, MyGet re-uses a build server, clean SDK before attempting to install
 if ($env:BuildRunner -eq "MyGet"){
     Remove-Item -Force -Recurse $dotnetLocalInstallFolder
 }
 
-& "$buildFolder\dotnet\dotnet-install.ps1" -Channel $dotnetChannel -Version $dotnetVersion -Architecture x64
-# Avoid redownloading the CLI if it's already installed.
-$sharedRuntimePath = [IO.Path]::Combine($dotnetLocalInstallFolder, 'shared', 'Microsoft.NETCore.App', $dotnetSharedRuntimeVersion)
-if (!(Test-Path $sharedRuntimePath))
-{
-    & "$buildFolder\dotnet\dotnet-install.ps1" -Channel $dotnetSharedRuntimeChannel -SharedRuntime -Version $dotnetSharedRuntimeVersion -Architecture x64
-}
+& "$buildFolder\dotnet\dotnet-install.ps1" -Channel $dotnetChannel -Version $dotnetVersion -Architecture $dotnetArch
+InstallSharedRuntime -version "1.1.2" -channel "release/1.1.0"
+
+dotnet --info
 
 ##########################
 # BEGIN REPOSITORY TESTS
