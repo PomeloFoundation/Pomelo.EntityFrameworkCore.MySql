@@ -106,15 +106,15 @@ if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
 
-# build .NET 451 to verify no build errors
-cd (Join-Path $repoFolder (Join-Path "src" "Pomelo.EntityFrameworkCore.MySql"))
+# build to verify no build errors
+cd (Join-Path $repoFolder (Join-Path "src" "EFCore.MySql"))
 dotnet build -c Release
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
 
 # run unit tests
-cd (Join-Path $repoFolder (Join-Path "test" "Pomelo.EntityFrameworkCore.MySql.Tests"))
+cd (Join-Path $repoFolder (Join-Path "test" "EFCore.MySql.Tests"))
 dotnet test -c Release
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
@@ -122,7 +122,7 @@ if ($LASTEXITCODE -ne 0){
 
 # run functional tests if not on MyGet
 if ($env:BuildRunner -ne "MyGet"){
-    cd (Join-Path $repoFolder (Join-Path "test" "Pomelo.EntityFrameworkCore.MySql.PerfTests"))
+    cd (Join-Path $repoFolder (Join-Path "test" "EFCore.MySql.PerfTests"))
     cp config.json.example config.json
 
     echo "Building Migrations"
@@ -153,16 +153,7 @@ if ($env:BuildRunner -ne "MyGet"){
 ##########################
 
 # MyGet expects nuget packages to be build
-cd (Join-Path $repoFolder (Join-Path "src" "Pomelo.EntityFrameworkCore.MySql"))
-if ($env:BuildRunner -eq "MyGet"){
-    dotnet pack -c Release
-    if ($LASTEXITCODE -ne 0){
-        exit $LASTEXITCODE;
-    }
-}
-
-# MyGet expects nuget packages to be build
-cd (Join-Path $repoFolder (Join-Path "src" "Pomelo.EntityFrameworkCore.MySql.Design"))
+cd (Join-Path $repoFolder (Join-Path "src" "EFCore.MySql"))
 if ($env:BuildRunner -eq "MyGet"){
     dotnet pack -c Release
     if ($LASTEXITCODE -ne 0){
