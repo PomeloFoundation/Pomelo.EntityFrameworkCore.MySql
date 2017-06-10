@@ -25,3 +25,6 @@ script:
   - echo "Test with EF_BATCH_SIZE=10" && docker exec -it dotnet sh -c 'cd /dotnet/test/EFCore.MySql.PerfTests && export EF_BATCH_SIZE=10 && dotnet test -c Release'
   - echo "Building migrations with EF_DATABASE=pomelo_test2" && docker exec -it mysql sh -c 'mysql -uroot -pPassword12! -e "CREATE SCHEMA IF NOT EXISTS pomelo_test2;"' && docker exec -it dotnet sh -c 'cd /dotnet/test/EFCore.MySql.PerfTests && export EF_SCHEMA=pomelo_test2 && ./scripts/rebuild.sh'
   - echo "Test with EF_SCHEMA=pomelo_test2" && docker exec -it dotnet sh -c 'cd /dotnet/test/EFCore.MySql.PerfTests && export EF_SCHEMA=pomelo_test2 && dotnet test -c Release'
+
+notifications:
+  email: false

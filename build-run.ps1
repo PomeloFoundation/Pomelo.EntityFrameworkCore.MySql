@@ -28,7 +28,7 @@ function DownloadWithRetry([string] $url, [string] $downloadLocation, [int] $ret
     }
 }
 
-$repoFolder = Join-Path $PSScriptRoot ..
+$repoFolder = $PSScriptRoot
 $env:REPO_FOLDER = $repoFolder
 
 $koreBuildZip="https://github.com/aspnet/KoreBuild/archive/rel/2.0.0-preview1.zip"
