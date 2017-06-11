@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Utilities;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Storage.Internal
 {
-    public class MySqlTypeMapper : RelationalTypeMapper
+    public class MySqlTypeMapper : RelationalTypeMapper, IMySqlTypeMapper
     {
         private static readonly Regex TypeRe = new Regex(@"([a-z0-9]+)\s*?(?:\(\s*(\d+)?\s*\))?\s*(unsigned)?", RegexOptions.IgnoreCase);
 
@@ -248,6 +248,9 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             Check.NotNull(clrType, nameof(clrType));
 
             clrType = clrType.UnwrapNullableType().UnwrapEnumType();
+
+            if (clrType.Name == typeof(JsonObject<>).Name)
+                return _json;
 
             return clrType == typeof(string)
                 ? _varcharmax

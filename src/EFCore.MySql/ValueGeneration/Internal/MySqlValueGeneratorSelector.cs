@@ -1,8 +1,8 @@
 ﻿using System;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
 
 // ReSharper disable once CheckNamespace
@@ -10,14 +10,14 @@ namespace Microsoft.EntityFrameworkCore.ValueGeneration.Internal
 {
     public class MySqlValueGeneratorSelector : RelationalValueGeneratorSelector
     {
-        private readonly MySqlScopedTypeMapper _mySqlTypeMapper;
+        private readonly IMySqlOptions _options;
 
         public MySqlValueGeneratorSelector(
             [NotNull] ValueGeneratorSelectorDependencies dependencies,
-            [NotNull] IRelationalTypeMapper typeMapper)
+            [NotNull] IMySqlOptions options)
             : base(dependencies)
         {
-            _mySqlTypeMapper = typeMapper as MySqlScopedTypeMapper;
+            _options = options;
         }
 
         public override ValueGenerator Create(IProperty property, IEntityType entityType)
@@ -29,7 +29,7 @@ namespace Microsoft.EntityFrameworkCore.ValueGeneration.Internal
                 ? property.ValueGenerated == ValueGenerated.Never
                   || property.MySql().DefaultValueSql != null
                     ? (ValueGenerator)new TemporaryGuidValueGenerator()
-                    : new MySqlSequentialGuidValueGenerator(_mySqlTypeMapper)
+                    : new MySqlSequentialGuidValueGenerator(_options)
                 : base.Create(property, entityType);
             return ret;
         }

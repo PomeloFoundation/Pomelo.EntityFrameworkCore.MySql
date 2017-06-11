@@ -5,6 +5,7 @@ using System;
 using System.Data;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Utilities;
@@ -12,25 +13,24 @@ using Microsoft.EntityFrameworkCore.Utilities;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Storage.Internal
 {
-    public class MySqlScopedTypeMapper : IRelationalTypeMapper
+    public class MySqlScopedTypeMapper : IMySqlScopedTypeMapper
     {
         private static readonly DateTimeTypeMapping DateTime             = new DateTimeTypeMapping("datetime", DbType.DateTime);
         private static readonly DateTimeOffsetTypeMapping DateTimeOffset = new DateTimeOffsetTypeMapping("datetime", DbType.DateTime);
         private static readonly TimeSpanTypeMapping Time                 = new TimeSpanTypeMapping("time", DbType.Time);
         private static readonly GuidTypeMapping OldGuid                  = new GuidTypeMapping("binary(16)", DbType.Guid);
 
-        private MySqlConnectionSettings _connectionSettings;
-        private readonly IDbContextOptions _options;
-        private readonly MySqlTypeMapper _typeMapper;
+        private readonly IMySqlOptions _options;
+        private readonly IMySqlTypeMapper _typeMapper;
 
         public MySqlScopedTypeMapper(
-            [NotNull] MySqlTypeMapper typeMapper,
-            [CanBeNull] IDbContextOptions options)
+            [NotNull] IMySqlOptions options,
+            [NotNull] IMySqlTypeMapper typeMapper)
         {
+            Check.NotNull(options, nameof(options));
             Check.NotNull(typeMapper, nameof(typeMapper));
-
-            _typeMapper = typeMapper;
             _options = options;
+            _typeMapper = typeMapper;
         }
 
         public virtual RelationalTypeMapping FindMapping(IProperty property)
@@ -51,32 +51,10 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             return mapping == null ? null : MaybeConvertMapping(mapping);
         }
 
-        public string ConnectionString { get; set; }
-
-        public MySqlConnectionSettings ConnectionSettings
-        {
-            get
-            {
-                if (_connectionSettings != null)
-                    return _connectionSettings;
-
-                if (ConnectionString != null)
-                    return _connectionSettings = MySqlConnectionSettings.GetSettings(ConnectionString);
-
-                var relationalOptions = RelationalOptionsExtension.Extract(_options);
-                if (relationalOptions.ConnectionString != null)
-                    return _connectionSettings = MySqlConnectionSettings.GetSettings(relationalOptions.ConnectionString);
-                if (relationalOptions.Connection != null)
-                    return _connectionSettings = MySqlConnectionSettings.GetSettings(relationalOptions.Connection);
-
-                throw new InvalidOperationException(RelationalStrings.NoConnectionOrConnectionString);
-            }
-        }
-
         protected virtual RelationalTypeMapping MaybeConvertMapping(RelationalTypeMapping mapping)
         {
             // OldGuids
-            if (ConnectionSettings.OldGuids)
+            if (_options.ConnectionSettings.OldGuids)
             {
                 if (mapping.StoreType == "binary(16)" && mapping.ClrType == typeof(byte[]))
                     return OldGuid;
@@ -85,7 +63,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             }
 
             // SupportsDateTime6
-            if (!ConnectionSettings.ServerVersion.SupportsDateTime6)
+            if (!_options.ConnectionSettings.ServerVersion.SupportsDateTime6)
             {
                 if (mapping.StoreType == "datetime(6)" && mapping.ClrType == typeof(DateTime))
                     return DateTime;

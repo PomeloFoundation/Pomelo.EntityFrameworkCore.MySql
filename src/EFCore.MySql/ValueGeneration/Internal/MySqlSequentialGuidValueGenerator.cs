@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
+using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.ValueGeneration.Internal
@@ -9,11 +9,11 @@ namespace Microsoft.EntityFrameworkCore.ValueGeneration.Internal
     public class MySqlSequentialGuidValueGenerator  : ValueGenerator<Guid>
     {
 
-        private readonly MySqlScopedTypeMapper _mySqlTypeMapper;
+        private readonly IMySqlOptions _options;
 
-        public MySqlSequentialGuidValueGenerator(MySqlScopedTypeMapper mySqlTypeMapper)
+        public MySqlSequentialGuidValueGenerator(IMySqlOptions options)
         {
-            _mySqlTypeMapper = mySqlTypeMapper;
+            _options = options;
         }
 
         private static readonly RandomNumberGenerator Rng = RandomNumberGenerator.Create();
@@ -32,7 +32,7 @@ namespace Microsoft.EntityFrameworkCore.ValueGeneration.Internal
             Rng.GetBytes(randomBytes);
             var ticks = (ulong) DateTime.UtcNow.Ticks;
 
-            if (_mySqlTypeMapper.ConnectionSettings.OldGuids)
+            if (_options.ConnectionSettings.OldGuids)
             {
                 var guidBytes = new byte[16];
                 var tickBytes = BitConverter.GetBytes(ticks);

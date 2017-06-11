@@ -29,6 +29,7 @@ namespace Microsoft.EntityFrameworkCore
                 BufferResultSets = true,
 	            UseAffectedRows = false
             };
+            
             connectionString = csb.ConnectionString;
             var extension = GetOrCreateExtension(optionsBuilder).WithConnectionString(connectionString);
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
