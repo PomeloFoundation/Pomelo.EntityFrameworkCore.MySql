@@ -16,13 +16,10 @@ namespace Microsoft.EntityFrameworkCore.Migrations.Internal
     public class MySqlHistoryRepository : HistoryRepository
     {
 
-        private MySqlRelationalConnection _connection;
         public MySqlHistoryRepository(
-            [NotNull] HistoryRepositoryDependencies dependencies,
-            [NotNull] MySqlRelationalConnection connection)
+            [NotNull] HistoryRepositoryDependencies dependencies)
             : base(dependencies)
         {
-            _connection = connection;
         }
 
         protected override void ConfigureTable([NotNull] EntityTypeBuilder<HistoryRow> history)
@@ -42,7 +39,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations.Internal
                 
                 builder
                     .Append("TABLE_SCHEMA='")
-                    .Append(SqlGenerationHelper.EscapeLiteral(TableSchema ?? _connection.DbConnection.Database))
+                    .Append(SqlGenerationHelper.EscapeLiteral(TableSchema ?? Dependencies.Connection.DbConnection.Database))
                     .Append("' AND TABLE_NAME='")
                     .Append(SqlGenerationHelper.EscapeLiteral(TableName))
                     .Append("';");
