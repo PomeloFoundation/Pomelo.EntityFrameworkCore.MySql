@@ -62,7 +62,7 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
             CancellationToken cancellationToken = default(CancellationToken))
         {
             var rowsAffected = 0;
-            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            await connection.OpenAsync(false, cancellationToken).ConfigureAwait(false);
             MySqlRelationalTransaction startedTransaction = null;
             try
             {

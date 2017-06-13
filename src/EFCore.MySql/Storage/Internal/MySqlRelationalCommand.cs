@@ -67,7 +67,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 				{
 					if (ioBehavior == IOBehavior.Asynchronous)
 						// ReSharper disable once PossibleNullReferenceException
-						await mySqlConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
+						await mySqlConnection.OpenAsync(false, cancellationToken).ConfigureAwait(false);
 					else
 						// ReSharper disable once PossibleNullReferenceException
 						mySqlConnection.Open();
