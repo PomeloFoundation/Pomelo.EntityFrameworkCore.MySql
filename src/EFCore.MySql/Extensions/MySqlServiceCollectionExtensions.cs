@@ -48,6 +48,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<IHistoryRepository, MySqlHistoryRepository>()
                 .TryAdd<IQueryCompilationContextFactory, MySqlQueryCompilationContextFactory>()
                 .TryAdd<IMemberTranslator, MySqlCompositeMemberTranslator>()
+                .TryAdd<ICompositeMethodCallTranslator, MySqlCompositeMethodCallTranslator>()
                 .TryAdd<IQuerySqlGeneratorFactory, MySqlQuerySqlGeneratorFactory>()
                 .TryAdd<ISingletonOptions, IMySqlOptions>(p => p.GetService<IMySqlOptions>())
                 .TryAddProviderSpecificServices(b => b

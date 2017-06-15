@@ -20,6 +20,7 @@ namespace Microsoft.EntityFrameworkCore
             [NotNull] string connectionString,
             [CanBeNull] Action<MySqlDbContextOptionsBuilder> mySqlOptionsAction = null)
         {
+            Console.WriteLine("UseMySql called");
             Check.NotNull(optionsBuilder, nameof(optionsBuilder));
             Check.NotEmpty(connectionString, nameof(connectionString));
 
@@ -44,6 +45,7 @@ namespace Microsoft.EntityFrameworkCore
             [NotNull] DbConnection connection,
             [CanBeNull] Action<MySqlDbContextOptionsBuilder> mySqlOptionsAction = null)
         {
+            Console.WriteLine("UseMySql called");
             Check.NotNull(optionsBuilder, nameof(optionsBuilder));
             Check.NotNull(connection, nameof(connection));
 

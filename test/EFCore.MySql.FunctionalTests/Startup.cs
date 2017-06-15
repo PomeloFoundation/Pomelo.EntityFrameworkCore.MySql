@@ -54,19 +54,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
             if (AppConfig.EfSchema != null)
                 Console.WriteLine($"Using Schema: {AppConfig.EfSchema}");
 #if POMELO
-            services.AddEntityFrameworkMySql();
             services.AddDbContext<AppDb>(
                 options => options.UseMySql(AppConfig.Config["Data:ConnectionString"],
                     mysqlOptions => mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize)),
                 ServiceLifetime.Scoped);
 #elif ORACLE
-            services.AddEntityFrameworkMySQL();
             services.AddDbContext<AppDb>(
                 options => options.UseMySQL(AppConfig.Config["Data:ConnectionString"],
                     mysqlOptions => mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize)),
                 ServiceLifetime.Scoped);
 #elif SAPIENT
-            services.AddMySQL();
             services.AddDbContext<AppDb>(
                 options => options.UseMySQL(AppConfig.Config["Data:ConnectionString"],
                     mysqlOptions => mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize)),

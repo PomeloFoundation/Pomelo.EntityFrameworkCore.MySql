@@ -1,7 +1,10 @@
-﻿using System.Data.Common;
+﻿using System;
+using System.Data.Common;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Pomelo.EntityFrameworkCore.MySql.PerfTests.Models;
 #if ORACLE
@@ -12,7 +15,7 @@ using MySQL.Data.Entity.Extensions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 {
-	public class AppDb : IdentityDbContext<AppIdentityUser>
+	public class AppDb : IdentityDbContext<AppIdentityUser>//, IDesignTimeDbContextFactory<AppDb>
 	{
 		// blog
 		public DbSet<Blog> Blogs { get; set; }
@@ -44,11 +47,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 
 		public AppDb()
 		{
+			Console.WriteLine("constructor parameterless called");
 			_configured = false;
 		}
 
 		public AppDb(DbContextOptions options) : base(options)
 		{
+			Console.WriteLine("constructor options called");
 			_configured = true;
 		}
 
@@ -57,6 +62,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 	        _configured = false;
 	        _connection = connection;
 	    }
+
+		// AppDb IDesignTimeDbContextFactory<AppDb>.CreateDbContext(string[] args)
+		// {
+		// 	var optionsBuilder = new DbContextOptionsBuilder<AppDb>()
+		// 		.UseMySql(AppConfig.Config["Data:ConnectionString"]);
+		// 	new MySqlDbContextOptionsBuilder(optionsBuilder).MaxBatchSize(AppConfig.EfBatchSize);
+		// 	return new AppDb(optionsBuilder.Options);
+		// }
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
@@ -67,7 +80,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 		    if (_connection != null)
                 optionsBuilder.UseMySql(_connection, options => options.MaxBatchSize(AppConfig.EfBatchSize));
 		    else
-		        optionsBuilder.UseMySql(AppConfig.Config["Data:ConnectionString"], options => options.MaxBatchSize(AppConfig.EfBatchSize));
+				optionsBuilder.UseMySql(AppConfig.Config["Data:ConnectionString"], options => options.MaxBatchSize(AppConfig.EfBatchSize));
 #else
             if (_connection != null)
                 optionsBuilder.UseMySQL(_connection, options => options.MaxBatchSize(AppConfig.EfBatchSize));

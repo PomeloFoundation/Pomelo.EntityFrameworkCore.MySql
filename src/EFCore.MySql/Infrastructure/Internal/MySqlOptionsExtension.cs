@@ -26,6 +26,7 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure.Internal
 
         public override bool ApplyServices(IServiceCollection services)
         {
+            Console.WriteLine("ApplyServices called");
             Check.NotNull(services, nameof(services));
             services.AddEntityFrameworkMySql();
             return true;
