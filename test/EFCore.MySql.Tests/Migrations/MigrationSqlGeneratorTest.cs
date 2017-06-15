@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.EntityFrameworkCore.TestUtilities.FakeProvider;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
 {
@@ -40,7 +41,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
 
                 return new MySqlMigrationsSqlGenerator(
                     migrationsSqlGeneratorDependencies,
-                    typeMapper,
+                    new MySqlOptions(),
                     relationalConnection);
             }
         }

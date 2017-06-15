@@ -44,7 +44,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
             ConfigureEntityFramework(services);
 
 	        services.AddIdentity<AppIdentityUser, IdentityRole>()
-		        .AddEntityFrameworkStoresV2<AppDb>()
+		        .AddEntityFrameworkStores<AppDb>()
 		        .AddDefaultTokenProviders();
         }
 
