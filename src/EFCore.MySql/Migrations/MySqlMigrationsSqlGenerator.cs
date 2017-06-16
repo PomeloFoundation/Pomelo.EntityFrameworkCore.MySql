@@ -390,15 +390,10 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                         autoIncrement = true;
                         break;
                     case "datetime":
-                        try {
-                            if (_options.ConnectionSettings.ServerVersion.SupportsDateTime6)
-                                throw new InvalidOperationException(
-                                    $"Error in {table}.{name}: DATETIME does not support values generated " +
-                                    "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");
-                        }
-                        catch {
-                            defaultValueSql = "";
-                        }
+                        if (_options.ConnectionSettings.ServerVersion.SupportsDateTime6)
+                            throw new InvalidOperationException(
+                            $"Error in {table}.{name}: DATETIME does not support values generated " +
+                            "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");
                         goto case "timestamp";
                     case "timestamp":
                         defaultValueSql = $"CURRENT_TIMESTAMP({matchLen})";
