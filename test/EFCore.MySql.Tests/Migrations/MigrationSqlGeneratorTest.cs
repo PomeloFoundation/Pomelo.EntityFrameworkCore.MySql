@@ -375,7 +375,7 @@ END;" + EOL +
             base.SqlOperation();
 
             Assert.Equal(
-                "-- I <3 DDL;" + EOL,
+                "-- I <3 DDL" + EOL,
                 Sql);
         }
 
@@ -501,7 +501,7 @@ END;" + EOL +
                 ClrType = typeof(int),
                 ColumnType = "int",
                 IsNullable = false,
-                //[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd] = true
+                [MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGenerationStrategy] = true
             });
 
             Assert.Equal(
