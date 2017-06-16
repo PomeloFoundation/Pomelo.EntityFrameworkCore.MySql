@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -80,8 +80,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                 Sql);
         }
 
-	    [Fact]
-	    public override void AddColumnOperation_with_computed_column_SQL()
+        [Fact(Skip = "ON UPDATE NOT SUPPORTED")]
+        public override void AddColumnOperation_with_computed_column_SQL()
 	    {
 		    base.AddColumnOperation_with_computed_column_SQL();
 
@@ -90,7 +90,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
 			    Sql);
 	    }
 
-	    [Fact]
+        [Fact(Skip = "ON UPDATE NOT SUPPORTED")]
         public override void AddDefaultDatetimeOperation_with_valueOnUpdate()
         {
             base.AddDefaultDatetimeOperation_with_valueOnUpdate();
@@ -375,7 +375,7 @@ END;" + EOL +
             base.SqlOperation();
 
             Assert.Equal(
-                "-- I <3 DDL;" + EOL,
+                "-- I <3 DDL" + EOL,
                 Sql);
         }
 
@@ -501,7 +501,7 @@ END;" + EOL +
                 ClrType = typeof(int),
                 ColumnType = "int",
                 IsNullable = false,
-                //[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd] = true
+                [MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGenerationStrategy] = true
             });
 
             Assert.Equal(

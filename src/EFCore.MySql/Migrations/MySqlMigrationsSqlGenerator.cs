@@ -1,4 +1,4 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -130,7 +130,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     {
                         var stringTypeMapping = Dependencies.TypeMapper.GetMapping(typeof(string));
                         builder.Append(" SET DEFAULT ")
-                            .Append(stringTypeMapping.GenerateSqlLiteral(operation.DefaultValue))
+                            .Append(stringTypeMapping.GenerateSqlLiteral(operation.DefaultValue.ToString()))
                             .AppendLine(Dependencies.SqlGenerationHelper.BatchTerminator);
                     }
                     else if (!string.IsNullOrWhiteSpace(operation.DefaultValueSql))
@@ -377,7 +377,8 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 	        }
 
             var autoIncrement = false;
-            if (property.ValueGenerated == ValueGenerated.OnAdd && string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
+            var annotations = model.GetAnnotations();
+            if (annotations.Any(a => a.Name == "MySql:ValueGenerationStrategy") && string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
             {
                 switch (matchType)
                 {
@@ -391,8 +392,8 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     case "datetime":
                         if (_options.ConnectionSettings.ServerVersion.SupportsDateTime6)
                             throw new InvalidOperationException(
-                                $"Error in {table}.{name}: DATETIME does not support values generated " +
-                                "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");
+                            $"Error in {table}.{name}: DATETIME does not support values generated " +
+                            "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");
                         goto case "timestamp";
                     case "timestamp":
                         defaultValueSql = $"CURRENT_TIMESTAMP({matchLen})";
@@ -402,22 +403,22 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             string onUpdateSql = null;
 
-            if (property.ValueGenerated == ValueGenerated.OnAddOrUpdate)
-            {
-	            switch (matchType)
-	            {
-	                case "datetime":
-	                    if (_options.ConnectionSettings.ServerVersion.SupportsDateTime6)
-	                        throw new InvalidOperationException($"Error in {table}.{name}: DATETIME does not support values generated " +
-                                "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");
-	                    goto case "timestamp";
-	                case "timestamp":
-                        if (string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
-                            defaultValueSql = $"CURRENT_TIMESTAMP({matchLen})";
-			            onUpdateSql = $"CURRENT_TIMESTAMP({matchLen})";
-			            break;
-                }
-            }
+            //if (property.ValueGenerated == ValueGenerated.OnAddOrUpdate)
+            //{
+	           // switch (matchType)
+	           // {
+	           //     case "datetime":
+	           //         if (_options.ConnectionSettings.ServerVersion.SupportsDateTime6)
+	           //             throw new InvalidOperationException($"Error in {table}.{name}: DATETIME does not support values generated " +
+            //                    "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");
+	           //         goto case "timestamp";
+	           //     case "timestamp":
+            //            if (string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
+            //                defaultValueSql = $"CURRENT_TIMESTAMP({matchLen})";
+			         //   onUpdateSql = $"CURRENT_TIMESTAMP({matchLen})";
+			         //   break;
+            //    }
+            //}
 
             builder
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(name))
