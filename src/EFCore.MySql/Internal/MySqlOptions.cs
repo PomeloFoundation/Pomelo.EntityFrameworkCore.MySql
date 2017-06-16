@@ -10,21 +10,32 @@ namespace Microsoft.EntityFrameworkCore.Internal
 {
     public class MySqlOptions : IMySqlOptions
     {
+
+        private MySqlOptionsExtension _relationalOptions;
+
+        private readonly Lazy<MySqlConnectionSettings> _lazyConnectionSettings;
+        
+        public MySqlOptions()
+        {
+            _lazyConnectionSettings = new Lazy<MySqlConnectionSettings>(() => {
+                if (_relationalOptions.Connection != null)
+                    return MySqlConnectionSettings.GetSettings(_relationalOptions.Connection);
+                return MySqlConnectionSettings.GetSettings(_relationalOptions.ConnectionString);
+            });
+        }
+
         public virtual void Initialize(IDbContextOptions options)
         {
-            var relationalOptions = options.FindExtension<MySqlOptionsExtension>() ?? new MySqlOptionsExtension();
-            if (relationalOptions.ConnectionString != null)
-                ConnectionSettings = MySqlConnectionSettings.GetSettings(relationalOptions.ConnectionString);
-            else if (relationalOptions.Connection != null)
-                ConnectionSettings = MySqlConnectionSettings.GetSettings(relationalOptions.Connection);
+            _relationalOptions = options.FindExtension<MySqlOptionsExtension>() ?? new MySqlOptionsExtension();
+            
         }
 
         public virtual void Validate(IDbContextOptions options)
         {
-            if (ConnectionSettings == null)
+            if (_relationalOptions.ConnectionString == null && _relationalOptions.Connection == null)
                 throw new InvalidOperationException(RelationalStrings.NoConnectionOrConnectionString);
         }
 
-        public virtual MySqlConnectionSettings ConnectionSettings { get; private set; }
+        public virtual MySqlConnectionSettings ConnectionSettings => _lazyConnectionSettings.Value;
     }
 }
