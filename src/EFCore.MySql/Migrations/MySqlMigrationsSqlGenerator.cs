@@ -378,7 +378,6 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             var autoIncrement = false;
             var annotations = model.GetAnnotations();
-            var x = annotations.First().Value.GetType();
             if (annotations.Any(a => a.Name == "ValueGenerationStrategy" && (MySqlValueGenerationStrategy)a.Value == MySqlValueGenerationStrategy.IdentityColumn) && string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
             {
                 switch (matchType)
