@@ -47,13 +47,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
 
 		public AppDb()
 		{
-			Console.WriteLine("constructor parameterless called");
 			_configured = false;
 		}
 
 		public AppDb(DbContextOptions options) : base(options)
 		{
-			Console.WriteLine("constructor options called");
 			_configured = true;
 		}
 
