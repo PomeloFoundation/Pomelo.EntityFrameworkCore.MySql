@@ -34,7 +34,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var builder = new EntityFrameworkRelationalServicesBuilder(serviceCollection)
                 .TryAdd<IDatabaseProvider, DatabaseProvider<MySqlOptionsExtension>>()
-                .TryAdd<IRelationalTypeMapper>(p => p.GetService<IMySqlScopedTypeMapper>())
+                .TryAdd<IRelationalTypeMapper, MySqlSmartTypeMapper>()
                 .TryAdd<ISqlGenerationHelper, MySqlSqlGenerationHelper>()
                 .TryAdd<IMigrationsAnnotationProvider, MySqlMigrationsAnnotationProvider>()
                 .TryAdd<IRelationalValueBufferFactoryFactory, UntypedRelationalValueBufferFactoryFactory>()
@@ -53,8 +53,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<ISingletonOptions, IMySqlOptions>(p => p.GetService<IMySqlOptions>())
                 .TryAddProviderSpecificServices(b => b
                     .TryAddSingleton<IMySqlOptions, MySqlOptions>()
-                    .TryAddSingleton<IMySqlTypeMapper, MySqlTypeMapper>()
-                    .TryAddScoped<IMySqlScopedTypeMapper, MySqlScopedTypeMapper>()
                     .TryAddScoped<IMySqlUpdateSqlGenerator, MySqlUpdateSqlGenerator>()
                     .TryAddScoped<IMySqlRelationalConnection, MySqlRelationalConnection>());
 

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Utilities;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Storage.Internal
 {
-    public class MySqlTypeMapper : RelationalTypeMapper, IMySqlTypeMapper
+    public class MySqlTypeMapper : RelationalTypeMapper
     {
         private static readonly Regex TypeRe = new Regex(@"([a-z0-9]+)\s*?(?:\(\s*(\d+)?\s*\))?\s*(unsigned)?", RegexOptions.IgnoreCase);
 

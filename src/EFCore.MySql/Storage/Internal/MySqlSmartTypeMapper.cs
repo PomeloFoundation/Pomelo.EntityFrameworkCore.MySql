@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore.Utilities;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Storage.Internal
 {
-    public class MySqlScopedTypeMapper : IMySqlScopedTypeMapper
+    public class MySqlSmartTypeMapper : MySqlTypeMapper
     {
         private static readonly DateTimeTypeMapping DateTime             = new DateTimeTypeMapping("datetime", DbType.DateTime);
         private static readonly DateTimeOffsetTypeMapping DateTimeOffset = new DateTimeOffsetTypeMapping("datetime", DbType.DateTime);
@@ -21,33 +21,31 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         private static readonly GuidTypeMapping OldGuid                  = new GuidTypeMapping("binary(16)", DbType.Guid);
 
         private readonly IMySqlOptions _options;
-        private readonly IMySqlTypeMapper _typeMapper;
 
-        public MySqlScopedTypeMapper(
-            [NotNull] IMySqlOptions options,
-            [NotNull] IMySqlTypeMapper typeMapper)
+        public MySqlSmartTypeMapper(
+            [NotNull] RelationalTypeMapperDependencies dependencies,
+            [NotNull] IMySqlOptions options)
+            : base(dependencies)
         {
             Check.NotNull(options, nameof(options));
-            Check.NotNull(typeMapper, nameof(typeMapper));
             _options = options;
-            _typeMapper = typeMapper;
         }
 
-        public virtual RelationalTypeMapping FindMapping(IProperty property)
+        public override RelationalTypeMapping FindMapping(IProperty property)
         {
-            var mapping = _typeMapper.FindMapping(property);
+            var mapping = base.FindMapping(property);
             return mapping == null ? null : MaybeConvertMapping(mapping);
         }
 
-        public virtual RelationalTypeMapping FindMapping(Type clrType)
+        public override RelationalTypeMapping FindMapping(Type clrType)
         {
-            var mapping = _typeMapper.FindMapping(clrType);
+            var mapping = base.FindMapping(clrType);
             return mapping == null ? null : MaybeConvertMapping(mapping);
         }
 
-        public virtual RelationalTypeMapping FindMapping(string storeType)
+        public override RelationalTypeMapping FindMapping(string storeType)
         {
-            var mapping = _typeMapper.FindMapping(storeType);
+            var mapping = base.FindMapping(storeType);
             return mapping == null ? null : MaybeConvertMapping(mapping);
         }
 
@@ -75,11 +73,6 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
             return mapping;
         }
-
-        public virtual void ValidateTypeName(string storeType) => _typeMapper.ValidateTypeName(storeType);
-
-        public virtual IByteArrayRelationalTypeMapper ByteArrayMapper => _typeMapper.ByteArrayMapper;
-        public virtual IStringRelationalTypeMapper StringMapper => _typeMapper.StringMapper;
-        public virtual bool IsTypeMapped(Type clrType) => _typeMapper.IsTypeMapped(clrType);
+        
     }
 }
