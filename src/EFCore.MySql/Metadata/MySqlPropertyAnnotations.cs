@@ -29,8 +29,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata
 
         public virtual MySqlValueGenerationStrategy? GetMySqlValueGenerationStrategy(bool fallbackToModel)
         {
-            var value = (MySqlValueGenerationStrategy?)Annotations.GetAnnotation(
-                MySqlAnnotationNames.ValueGenerationStrategy);
+            var value = (MySqlValueGenerationStrategy?)Annotations.Metadata[MySqlAnnotationNames.ValueGenerationStrategy];
 
             if (value != null)
             {

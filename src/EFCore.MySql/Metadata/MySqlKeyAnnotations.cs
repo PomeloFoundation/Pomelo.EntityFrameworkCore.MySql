@@ -20,7 +20,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata
 
         public virtual bool? IsClustered
         {
-            get { return (bool?)Annotations.GetAnnotation(MySqlAnnotationNames.Clustered); }
+            get { return (bool?)Annotations.Metadata[MySqlAnnotationNames.Clustered]; }
             [param: CanBeNull] set { SetIsClustered(value); }
         }
 

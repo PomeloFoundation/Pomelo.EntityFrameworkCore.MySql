@@ -21,8 +21,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata
 
         public virtual MySqlValueGenerationStrategy? ValueGenerationStrategy
         {
-            get => (MySqlValueGenerationStrategy?)Annotations.GetAnnotation(
-                MySqlAnnotationNames.ValueGenerationStrategy);
+            get => (MySqlValueGenerationStrategy?)Annotations.Metadata[MySqlAnnotationNames.ValueGenerationStrategy];
 
             set => SetValueGenerationStrategy(value);
         }
