@@ -96,23 +96,17 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     {
                         try
                         {
-                            _connection.Open();
-                            _connection.Close();
+                            _connection.DbConnection.Open();
+                            _connection.DbConnection.Close();
                             return true;
                         }
                         catch (MySqlException e)
                         {
-                            if (!retryOnNotExists
-                                && IsDoesNotExist(e))
-                            {
+                            if (!retryOnNotExists && IsDoesNotExist(e))
                                 return false;
-                            }
 
-                            if (DateTime.UtcNow > giveUp
-                                || !RetryOnExistsFailure(e))
-                            {
+                            if (DateTime.UtcNow > giveUp || !RetryOnExistsFailure(e))
                                 throw;
-                            }
 
                             Thread.Sleep(RetryDelay);
                         }
@@ -129,24 +123,17 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     {
                         try
                         {
-                            await _connection.OpenAsync(true, ct).ConfigureAwait(false);
-
-                            _connection.Close();
+                            await _connection.DbConnection.OpenAsync(ct).ConfigureAwait(false);
+                            _connection.DbConnection.Close();
                             return true;
                         }
                         catch (MySqlException e)
                         {
-                            if (!retryOnNotExists
-                                && IsDoesNotExist(e))
-                            {
+                            if (!retryOnNotExists && IsDoesNotExist(e))
                                 return false;
-                            }
 
-                            if (DateTime.UtcNow > giveUp
-                                || !RetryOnExistsFailure(e))
-                            {
+                            if (DateTime.UtcNow > giveUp || !RetryOnExistsFailure(e))
                                 throw;
-                            }
 
                             await Task.Delay(RetryDelay, ct);
                         }

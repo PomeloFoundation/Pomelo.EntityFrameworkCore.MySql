@@ -23,12 +23,14 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         {
             var csb = new MySqlConnectionStringBuilder(ConnectionString)
             {
-                Database = "mysql",
+                Database = "",
                 Pooling = false
             };
+
             var contextOptions = new DbContextOptionsBuilder()
                 .UseMySql(csb.ConnectionString)
                 .Options;
+                
             return new MySqlRelationalConnection(Dependencies.With(contextOptions));
         }
 

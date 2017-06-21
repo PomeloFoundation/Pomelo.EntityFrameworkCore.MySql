@@ -26,16 +26,13 @@ namespace Microsoft.EntityFrameworkCore.Migrations
     {
 	    private static readonly Regex TypeRe = new Regex(@"([a-z0-9]+)\s*?(?:\(\s*(\d+)?\s*\))?", RegexOptions.IgnoreCase);
 	    private readonly IMySqlOptions _options;
-        private readonly IRelationalConnection _relationalConnection;
 
 	    public MySqlMigrationsSqlGenerator(
             [NotNull] MigrationsSqlGeneratorDependencies dependencies,
-            [NotNull] IMySqlOptions options,
-	        [NotNull] IRelationalConnection relationalConnection)
+            [NotNull] IMySqlOptions options)
             : base(dependencies)
         {
 	        _options = options;
-            _relationalConnection = relationalConnection;
         }
 
         protected override void Generate([NotNull] MigrationOperation operation, [CanBeNull] IModel model, [NotNull] MigrationCommandListBuilder builder)
@@ -294,64 +291,64 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             EndStatement(builder);
         }
 
-        protected override void Generate(
-            [NotNull] RenameColumnOperation operation,
-            [CanBeNull] IModel model,
-            [NotNull] MigrationCommandListBuilder builder)
-        {
-            Check.NotNull(operation, nameof(operation));
-            Check.NotNull(builder, nameof(builder));
+        // protected override void Generate(
+        //     [NotNull] RenameColumnOperation operation,
+        //     [CanBeNull] IModel model,
+        //     [NotNull] MigrationCommandListBuilder builder)
+        // {
+        //     Check.NotNull(operation, nameof(operation));
+        //     Check.NotNull(builder, nameof(builder));
 
-            string createTableSyntax = null;
+        //     string createTableSyntax = null;
 
-            var connection = _relationalConnection.DbConnection;
-            var opened = false;
-            if (connection.State == ConnectionState.Closed)
-            {
-                connection.Open();
-                opened = true;
-            }
-            try
-            {
-                using (var cmd = _relationalConnection.DbConnection.CreateCommand())
-                {
-                    cmd.CommandText = $"SHOW CREATE TABLE {Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}";
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                            createTableSyntax = reader.GetFieldValue<string>(1);
-                    }
-                }
-            }
-            finally
-            {
-                if (opened)
-                    connection.Close();
-            }
+        //     var connection = _relationalConnection.DbConnection;
+        //     var opened = false;
+        //     if (connection.State == ConnectionState.Closed)
+        //     {
+        //         connection.Open();
+        //         opened = true;
+        //     }
+        //     try
+        //     {
+        //         using (var cmd = _relationalConnection.DbConnection.CreateCommand())
+        //         {
+        //             cmd.CommandText = $"SHOW CREATE TABLE {Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}";
+        //             using (var reader = cmd.ExecuteReader())
+        //             {
+        //                 if (reader.Read())
+        //                     createTableSyntax = reader.GetFieldValue<string>(1);
+        //             }
+        //         }
+        //     }
+        //     finally
+        //     {
+        //         if (opened)
+        //             connection.Close();
+        //     }
 
-            if (createTableSyntax == null)
-                throw new InvalidOperationException($"Could not find SHOW CREATE TABLE syntax for table: '{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}'");
+        //     if (createTableSyntax == null)
+        //         throw new InvalidOperationException($"Could not find SHOW CREATE TABLE syntax for table: '{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}'");
 
-            var columnDefinitionRe = new Regex($"^\\s*`?{operation.Name}`?\\s(.*)?$", RegexOptions.Multiline);
-            var match = columnDefinitionRe.Match(createTableSyntax);
+        //     var columnDefinitionRe = new Regex($"^\\s*`?{operation.Name}`?\\s(.*)?$", RegexOptions.Multiline);
+        //     var match = columnDefinitionRe.Match(createTableSyntax);
 
-            string columnDefinition;
-            if (match.Success)
-                columnDefinition = match.Groups[1].Value.TrimEnd(',');
-            else
-                throw new InvalidOperationException($"Could not find column definition for table: '{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}' column: {operation.Name}");
+        //     string columnDefinition;
+        //     if (match.Success)
+        //         columnDefinition = match.Groups[1].Value.TrimEnd(',');
+        //     else
+        //         throw new InvalidOperationException($"Could not find column definition for table: '{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}' column: {operation.Name}");
 
-            builder.Append("ALTER TABLE ")
-                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
-                .Append(" CHANGE ")
-                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
-                .Append(" ")
-                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName))
-                .Append(" ")
-                .Append(columnDefinition);
+        //     builder.Append("ALTER TABLE ")
+        //         .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
+        //         .Append(" CHANGE ")
+        //         .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
+        //         .Append(" ")
+        //         .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName))
+        //         .Append(" ")
+        //         .Append(columnDefinition);
 
-            EndStatement(builder);
-        }
+        //     EndStatement(builder);
+        // }
 
         protected override void ColumnDefinition([CanBeNull] string schema, [NotNull] string table, [NotNull] string name, [NotNull] Type clrType, [CanBeNull] string type, [CanBeNull] bool? unicode, [CanBeNull] int? maxLength, bool rowVersion, bool nullable, [CanBeNull] object defaultValue, [CanBeNull] string defaultValueSql, [CanBeNull] string computedColumnSql, [NotNull] IAnnotatable annotatable, [CanBeNull] IModel model, [NotNull] MigrationCommandListBuilder builder)
         {
