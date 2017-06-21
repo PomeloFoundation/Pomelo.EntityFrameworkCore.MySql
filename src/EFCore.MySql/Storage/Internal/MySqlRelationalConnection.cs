@@ -46,9 +46,9 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                 throw new InvalidOperationException(RelationalStrings.TransactionAlreadyStarted);
             }
 
-            await OpenAsync(cancellationToken: cancellationToken);
+            await OpenAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            return await BeginTransactionWithNoPreconditionsAsync(isolationLevel, cancellationToken);
+            return await BeginTransactionWithNoPreconditionsAsync(isolationLevel, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task<IDbContextTransaction> BeginTransactionWithNoPreconditionsAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken=default(CancellationToken))

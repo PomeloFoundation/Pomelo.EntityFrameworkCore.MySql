@@ -58,13 +58,12 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         {
             using (var masterConnection = _connection.CreateMasterConnection())
             {
-                await Dependencies.MigrationCommandExecutor
-                    .ExecuteNonQueryAsync(CreateCreateOperations(), masterConnection, cancellationToken);
+                await Dependencies.MigrationCommandExecutor.ExecuteNonQueryAsync(CreateCreateOperations(), masterConnection, cancellationToken).ConfigureAwait(false);
 
                 ClearPool();
             }
 
-            await ExistsAsync(retryOnNotExists: true, cancellationToken: cancellationToken);
+            await ExistsAsync(retryOnNotExists: true, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         protected override bool HasTables()
@@ -72,7 +71,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
         protected override Task<bool> HasTablesAsync(CancellationToken cancellationToken = default(CancellationToken))
             => Dependencies.ExecutionStrategyFactory.Create().ExecuteAsync(_connection,
-                async (connection, ct) => (int)await CreateHasTablesCommand().ExecuteScalarAsync(connection, cancellationToken: ct) != 0, cancellationToken);
+                async (connection, ct) => (int)await CreateHasTablesCommand().ExecuteScalarAsync(connection, cancellationToken: ct).ConfigureAwait(false) != 0, cancellationToken);
 
         private IRelationalCommand CreateHasTablesCommand()
             => _rawSqlCommandBuilder
@@ -135,7 +134,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                             if (DateTime.UtcNow > giveUp || !RetryOnExistsFailure(e))
                                 throw;
 
-                            await Task.Delay(RetryDelay, ct);
+                            await Task.Delay(RetryDelay, ct).ConfigureAwait(false);
                         }
                     }
                 }, cancellationToken);
@@ -179,8 +178,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
             using (var masterConnection = _connection.CreateMasterConnection())
             {
-                await Dependencies.MigrationCommandExecutor
-                    .ExecuteNonQueryAsync(CreateDropCommands(), masterConnection, cancellationToken);
+                await Dependencies.MigrationCommandExecutor.ExecuteNonQueryAsync(CreateDropCommands(), masterConnection, cancellationToken).ConfigureAwait(false);
             }
         }
 
