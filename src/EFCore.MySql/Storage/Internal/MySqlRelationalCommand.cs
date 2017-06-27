@@ -77,33 +77,24 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 					{
 						case DbCommandMethod.ExecuteNonQuery:
 						{
-							using (dbCommand)
-							{
-								result = ioBehavior == IOBehavior.Asynchronous ?
-									await dbCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false) :
-									dbCommand.ExecuteNonQuery();
-							}
+							result = ioBehavior == IOBehavior.Asynchronous ?
+								await dbCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false) :
+								dbCommand.ExecuteNonQuery();
 							break;
 						}
 						case DbCommandMethod.ExecuteScalar:
 						{
-							using (dbCommand)
-							{
-								result = ioBehavior == IOBehavior.Asynchronous ?
-									await dbCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) :
-									dbCommand.ExecuteScalar();
-							}
+							result = ioBehavior == IOBehavior.Asynchronous ?
+								await dbCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) :
+								dbCommand.ExecuteScalar();
 							break;
 						}
 						case DbCommandMethod.ExecuteReader:
 						{
-							using (dbCommand)
-							{
-								var dataReader = ioBehavior == IOBehavior.Asynchronous ?
-									await dbCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false) :
-									dbCommand.ExecuteReader();
-								result = new RelationalDataReader(connection, dbCommand, new WrappedMySqlDataReader(dataReader), commandId, Logger);
-							}
+							var dataReader = ioBehavior == IOBehavior.Asynchronous ?
+								await dbCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false) :
+								dbCommand.ExecuteReader();
+							result = new RelationalDataReader(connection, dbCommand, new WrappedMySqlDataReader(dataReader), commandId, Logger);
 							break;
 						}
 						default:
@@ -111,14 +102,14 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 							throw new NotSupportedException();
 						}
 					}
-					var currentTimestamp = Stopwatch.GetTimestamp();
+					
 					Logger.CommandExecuted(
 						dbCommand,
 						executeMethod,
 						commandId,
 						connection.ConnectionId,
 						result,
-						true,
+						ioBehavior == IOBehavior.Asynchronous,
 						startTime,
 						stopwatch.Elapsed);
 
@@ -133,7 +124,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 						commandId,
 						connection.ConnectionId,
 						exception,
-						true,
+						ioBehavior == IOBehavior.Asynchronous,
 						startTime,
 						stopwatch.Elapsed);
 					
