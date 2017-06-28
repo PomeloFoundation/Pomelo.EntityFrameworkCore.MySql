@@ -158,45 +158,5 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
 		  }
 	  }
 
-      public override void Execute(IRelationalConnection connection)
-      {
-          var storeCommand = CreateStoreCommand();
-          try
-          {
-              using (var relationalDataReader = storeCommand.RelationalCommand.ExecuteReader(connection, storeCommand.ParameterValues))
-              {
-                  Consume(relationalDataReader);
-              }
-          }
-          catch (DbUpdateException)
-          {
-              throw;
-          }
-          catch (Exception ex)
-          {
-              throw new DbUpdateException(RelationalStrings.UpdateStoreException, ex);
-          }
-      }
-
-      public override async Task ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken = default(CancellationToken))
-      {
-          var storeCommand = CreateStoreCommand();
-          try
-          {
-              using (var relationalDataReader = await storeCommand.RelationalCommand.ExecuteReaderAsync(connection, storeCommand.ParameterValues, cancellationToken).ConfigureAwait(false))
-              {
-                  await ConsumeAsync(relationalDataReader, cancellationToken).ConfigureAwait(false);
-              }
-          }
-          catch (DbUpdateException)
-          {
-              throw;
-          }
-          catch (Exception ex)
-          {
-              throw new DbUpdateException(RelationalStrings.UpdateStoreException, ex);
-          }
-      }
-
   }
 }

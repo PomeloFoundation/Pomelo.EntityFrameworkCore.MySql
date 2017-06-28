@@ -161,12 +161,7 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
         {
             if (allOperations.Count > 0 && allOperations[0] == operations[0])
             {
-                commandStringBuilder
-                    .Append("SELECT LAST_INSERT_ID()");
-
-                if (operations.Count > 1)
-                    for (var i = 1; i < operations.Count; i++)
-                        commandStringBuilder.Append($", (SELECT { SqlGenerationHelper.DelimitIdentifier(operations[i].ColumnName) } FROM { SqlGenerationHelper.DelimitIdentifier(name, schema) } WHERE { SqlGenerationHelper.DelimitIdentifier(operations.First().ColumnName) } = LAST_INSERT_ID())");
+                commandStringBuilder.Append($"SELECT { string.Join(", ", operations.Select(o => SqlGenerationHelper.DelimitIdentifier(o.ColumnName))) } FROM { SqlGenerationHelper.DelimitIdentifier(name, schema) } WHERE { SqlGenerationHelper.DelimitIdentifier(operations.First().ColumnName) } = LAST_INSERT_ID()");
                 commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
             }
             else if (operations.Count > 0)

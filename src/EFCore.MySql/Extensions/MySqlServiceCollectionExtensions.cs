@@ -45,6 +45,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<IRelationalConnection>(p => p.GetService<IMySqlRelationalConnection>())
                 .TryAdd<IRelationalCommandBuilderFactory, MySqlCommandBuilderFactory>()
                 .TryAdd<IMigrationsSqlGenerator, MySqlMigrationsSqlGenerator>()
+                .TryAdd<IBatchExecutor, MySqlBatchExecutor>()
                 .TryAdd<IRelationalDatabaseCreator, MySqlDatabaseCreator>()
                 .TryAdd<IHistoryRepository, MySqlHistoryRepository>()
                 .TryAdd<IQueryCompilationContextFactory, MySqlQueryCompilationContextFactory>()
