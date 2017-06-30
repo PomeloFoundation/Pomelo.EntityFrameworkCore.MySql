@@ -33,16 +33,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                     new MySqlSqlGenerationHelper(new RelationalSqlGenerationHelperDependencies()),
                     typeMapper);
 
-                // relationalConnection
-                var optionsBuilder = new DbContextOptionsBuilder();
-                ((IDbContextOptionsBuilderInfrastructure)optionsBuilder)
-                    .AddOrUpdateExtension(new FakeRelationalOptionsExtension().WithConnectionString("test"));
-                var relationalConnection = new FakeRelationalConnection(optionsBuilder.Options);
-
                 return new MySqlMigrationsSqlGenerator(
                     migrationsSqlGeneratorDependencies,
-                    new MySqlOptions(),
-                    relationalConnection);
+                    new MySqlOptions());
             }
         }
 

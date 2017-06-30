@@ -43,6 +43,7 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities.FakeProvider
                 .TryAdd<IMigrationsSqlGenerator, TestRelationalMigrationSqlGenerator>()
                 .TryAdd<IConventionSetBuilder, TestRelationalConventionSetBuilder>()
                 .TryAdd<IMemberTranslator, TestRelationalCompositeMemberTranslator>()
+                .TryAdd<ICompositeMethodCallTranslator, TestRelationalCompositeMethodCallTranslator>()
                 .TryAdd<IQuerySqlGeneratorFactory, TestQuerySqlGeneratorFactory>()
                 .TryAdd<IRelationalConnection, FakeRelationalConnection>()
                 .TryAdd<IHistoryRepository>(_ => null)
