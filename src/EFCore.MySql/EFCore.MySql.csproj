@@ -7,7 +7,7 @@
     <AssemblyName>Pomelo.EntityFrameworkCore.MySql</AssemblyName>
     <PackageId>Pomelo.EntityFrameworkCore.MySql</PackageId>
     <PackageTags>Entity Framework Core;entity-framework-core;MySQL;EF;ORM;Data</PackageTags>
-    <PackageIconUrl>http://www.1234.sh/assets/Shared/pomelofoundation.png</PackageIconUrl>
+    <PackageIconUrl>https://avatars2.githubusercontent.com/u/19828814?v=3</PackageIconUrl>
     <PackageProjectUrl>https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
@@ -17,8 +17,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.0.0-preview2-final" />
-    <!--<ProjectReference Include="../../../EntityFramework/src/EFCore.Relational/EFCore.Relational.csproj" />-->
-    <PackageReference Include="MySqlConnector" Version="0.21.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.0.0-preview2-final" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.0-preview2-final" />
+    <PackageReference Include="MySqlConnector" Version="0.22.*" />
     <PackageReference Include="Pomelo.JsonObject" Version="1.1.1" />
   </ItemGroup>
 </Project>
