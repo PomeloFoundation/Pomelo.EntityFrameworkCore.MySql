@@ -73,7 +73,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                 Sql);
         }
 
-        [Fact(Skip = "ON UPDATE NOT SUPPORTED")]
+        [Fact]
         public override void AddColumnOperation_with_computed_column_SQL()
 	    {
 		    base.AddColumnOperation_with_computed_column_SQL();
@@ -403,7 +403,7 @@ END;" + EOL +
                     ClrType = typeof(int),
                     ColumnType = "char(38)",
                     IsNullable = false,
-                    //[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd] = true
+                    [MySqlAnnotationNames.ValueGenerationStrategy] = MySqlValueGenerationStrategy.IdentityColumn
                 });
 
             Assert.Equal(
@@ -454,7 +454,7 @@ END;" + EOL +
 
         #region Npgsql-specific
 
-        [Fact]
+        [Fact(Skip = "TODO")]
         public void CreateIndexOperation_method()
         {
             Generate(new CreateIndexOperation
@@ -494,7 +494,7 @@ END;" + EOL +
                 ClrType = typeof(int),
                 ColumnType = "int",
                 IsNullable = false,
-                [MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGenerationStrategy] = true
+                [MySqlAnnotationNames.ValueGenerationStrategy] = MySqlValueGenerationStrategy.IdentityColumn
             });
 
             Assert.Equal(
@@ -531,7 +531,7 @@ END;" + EOL +
                     Name = "foo",
                     ClrType = typeof(Guid),
                     ColumnType = "varchar(38)",
-                    //[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd] = true
+                    [MySqlAnnotationNames.ValueGenerationStrategy] = MySqlValueGenerationStrategy.IdentityColumn
                 });
 
             Assert.Equal(

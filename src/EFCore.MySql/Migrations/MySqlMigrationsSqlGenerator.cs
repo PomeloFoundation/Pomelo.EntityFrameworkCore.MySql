@@ -368,7 +368,8 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 	        }
 
             var autoIncrement = false;
-            var valueGenerationStrategy = annotatable[MySqlAnnotationNames.ValueGenerationStrategy] as MySqlValueGenerationStrategy?;
+            var x = annotatable[MySqlAnnotationNames.ValueGenerationStrategy];// as MySqlValueGenerationStrategy?;
+            var valueGenerationStrategy = x as MySqlValueGenerationStrategy?;
             if ((valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn) && string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
             {
                 switch (matchType)

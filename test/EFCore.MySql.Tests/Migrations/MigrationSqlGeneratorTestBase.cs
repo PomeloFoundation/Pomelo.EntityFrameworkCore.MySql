@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
 using System.Linq;
@@ -43,7 +44,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                     ClrType = typeof(DateTime),
                     ColumnType = "datetime",
                     IsNullable = true,
-	                //[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd] = true
+                    [MySqlAnnotationNames.ValueGenerationStrategy] = MySqlValueGenerationStrategy.IdentityColumn
                 });
         }
 
@@ -58,7 +59,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                     ClrType = typeof(DateTime),
                     ColumnType = "datetime",
                     IsNullable = true,
-	                //[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAddOrUpdate] = true
+                    [MySqlAnnotationNames.ValueGenerationStrategy] = MySqlValueGenerationStrategy.ComputedColumn
                 });
         }
 
@@ -73,7 +74,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                     ClrType = typeof(DateTime),
                     ColumnType = "datetime(6)",
                     IsNullable = true,
-                    //[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAddOrUpdate] = true
+                    [MySqlAnnotationNames.ValueGenerationStrategy] = MySqlValueGenerationStrategy.ComputedColumn
                 });
         }
 
@@ -328,7 +329,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                             ClrType = typeof(ulong),
                             ColumnType = "bigint unsigned",
                             IsNullable = false,
-                            //[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd] = true
+                            [MySqlAnnotationNames.ValueGenerationStrategy] = MySqlValueGenerationStrategy.IdentityColumn
                         }
                     },
                     PrimaryKey = new AddPrimaryKeyOperation
