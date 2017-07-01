@@ -29,6 +29,13 @@ namespace Microsoft.EntityFrameworkCore.Metadata
 
         public virtual MySqlValueGenerationStrategy? GetMySqlValueGenerationStrategy(bool fallbackToModel)
         {
+            if (GetDefaultValue(false) != null
+                || GetDefaultValueSql(false) != null
+                || GetComputedColumnSql(false) != null)
+            {
+                return null;
+            }
+
             var value = (MySqlValueGenerationStrategy?)Annotations.Metadata[MySqlAnnotationNames.ValueGenerationStrategy];
 
             if (value != null)
@@ -52,6 +59,12 @@ namespace Microsoft.EntityFrameworkCore.Metadata
                 && IsCompatibleIdentityColumn(Property.ClrType))
             {
                 return MySqlValueGenerationStrategy.IdentityColumn;
+            }
+
+            if (modelStrategy == MySqlValueGenerationStrategy.ComputedColumn
+                && IsCompatibleIdentityColumn(Property.ClrType))
+            {
+                return MySqlValueGenerationStrategy.ComputedColumn;
             }
 
             return null;
@@ -230,7 +243,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata
         }
 
         private static bool IsCompatibleIdentityColumn(Type type)
-            => type.IsInteger() || type == typeof(decimal);
+            => type.IsInteger() || type == typeof(DateTime);
 
     }
 }

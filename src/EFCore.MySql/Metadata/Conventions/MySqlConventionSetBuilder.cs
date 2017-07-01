@@ -29,27 +29,9 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
 
             var valueGenerationStrategyConvention = new MySqlValueGenerationStrategyConvention();
             conventionSet.ModelInitializedConventions.Add(valueGenerationStrategyConvention);
-
-            ValueGeneratorConvention valueGeneratorConvention = new MySqlValueGeneratorConvention();
-            ReplaceConvention(conventionSet.BaseEntityTypeChangedConventions, valueGeneratorConvention);
-
-            ReplaceConvention(conventionSet.PrimaryKeyChangedConventions, valueGeneratorConvention);
-
-            ReplaceConvention(conventionSet.ForeignKeyAddedConventions, valueGeneratorConvention);
-
-            ReplaceConvention(conventionSet.ForeignKeyRemovedConventions, valueGeneratorConvention);
-
-            var sqlServerIndexConvention = new MySqlIndexConvention(_sqlGenerationHelper);
-            conventionSet.IndexAddedConventions.Add(sqlServerIndexConvention);
-
-            conventionSet.IndexUniquenessChangedConventions.Add(sqlServerIndexConvention);
-
-            conventionSet.IndexAnnotationChangedConventions.Add(sqlServerIndexConvention);
-
-            conventionSet.PropertyNullabilityChangedConventions.Add(sqlServerIndexConvention);
-
-            conventionSet.PropertyAnnotationChangedConventions.Add(sqlServerIndexConvention);
-            conventionSet.PropertyAnnotationChangedConventions.Add((MySqlValueGeneratorConvention)valueGeneratorConvention);
+            
+            ReplaceConvention(conventionSet.PropertyAddedConventions, (DatabaseGeneratedAttributeConvention)valueGenerationStrategyConvention);
+            ReplaceConvention(conventionSet.PropertyFieldChangedConventions, (DatabaseGeneratedAttributeConvention)valueGenerationStrategyConvention);
 
             return conventionSet;
         }
