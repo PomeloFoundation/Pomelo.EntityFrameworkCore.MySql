@@ -7,7 +7,7 @@
     <AssemblyName>Pomelo.EntityFrameworkCore.MySql</AssemblyName>
     <PackageId>Pomelo.EntityFrameworkCore.MySql</PackageId>
     <PackageTags>Entity Framework Core;entity-framework-core;MySQL;EF;ORM;Data</PackageTags>
-    <PackageIconUrl>http://www.1234.sh/assets/Shared/pomelofoundation.png</PackageIconUrl>
+    <PackageIconUrl>https://avatars2.githubusercontent.com/u/19828814?v=3</PackageIconUrl>
     <PackageProjectUrl>https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
