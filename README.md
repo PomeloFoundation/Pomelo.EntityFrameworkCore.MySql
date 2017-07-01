@@ -158,7 +158,8 @@ By viewing the following full project which is a single-user blog system and bas
 Milestone | Release week
 ----------|-------------
 2.0.0-preview2-unstable | July 1st 2017
-2.0.0-preview2-final     | July 4th 2017
+2.0.0-preview2-stable     | July 4th 2017
+2.0.0-preview2-final     | July 2017
 2.0.0-rtm     | TBD
 
 ### 2.0.0-preview2-unstable
