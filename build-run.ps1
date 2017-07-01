@@ -122,7 +122,7 @@ if ($LASTEXITCODE -ne 0){
 
 # run functional tests if not on MyGet
 if ($env:BuildRunner -ne "MyGet"){
-    cd (Join-Path $repoFolder (Join-Path "test" "EFCore.MySql.PerfTests"))
+    cd (Join-Path $repoFolder (Join-Path "test" "EFCore.MySql.FunctionalTests"))
     cp config.json.example config.json
 
     echo "Building Migrations"
