@@ -37,7 +37,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<IRelationalTypeMapper, MySqlSmartTypeMapper>()
                 .TryAdd<ISqlGenerationHelper, MySqlSqlGenerationHelper>()
                 .TryAdd<IMigrationsAnnotationProvider, MySqlMigrationsAnnotationProvider>()
-                .TryAdd<IRelationalValueBufferFactoryFactory, UntypedRelationalValueBufferFactoryFactory>()
                 .TryAdd<IConventionSetBuilder, MySqlConventionSetBuilder>()
                 .TryAdd<IUpdateSqlGenerator>(p => p.GetService<IMySqlUpdateSqlGenerator>())
                 .TryAdd<IModificationCommandBatchFactory, MySqlModificationCommandBatchFactory>()
