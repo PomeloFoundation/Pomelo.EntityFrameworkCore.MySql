@@ -350,22 +350,31 @@ namespace Microsoft.EntityFrameworkCore.Migrations
         //     EndStatement(builder);
         // }
 
-        protected override void ColumnDefinition([CanBeNull] string schema, [NotNull] string table, [NotNull] string name, [NotNull] Type clrType, [CanBeNull] string type, [CanBeNull] bool? unicode, [CanBeNull] int? maxLength, bool rowVersion, bool nullable, [CanBeNull] object defaultValue, [CanBeNull] string defaultValueSql, [CanBeNull] string computedColumnSql, [NotNull] IAnnotatable annotatable, [CanBeNull] IModel model, [NotNull] MigrationCommandListBuilder builder)
+        protected override void ColumnDefinition(
+            [CanBeNull] string schema, 
+            [NotNull] string table, 
+            [NotNull] string name, 
+            [NotNull] Type clrType, 
+            [CanBeNull] string type, 
+            [CanBeNull] bool? unicode, 
+            [CanBeNull] int? maxLength, 
+            bool rowVersion, 
+            bool nullable, 
+            [CanBeNull] object defaultValue, 
+            [CanBeNull] string defaultValueSql, 
+            [CanBeNull] string computedColumnSql, 
+            [NotNull] IAnnotatable annotatable, 
+            [CanBeNull] IModel model, 
+            [NotNull] MigrationCommandListBuilder builder)
         {
             Check.NotEmpty(name, nameof(name));
             Check.NotNull(annotatable, nameof(annotatable));
             Check.NotNull(clrType, nameof(clrType));
             Check.NotNull(builder, nameof(builder));
 
-            var property = FindProperty(model, schema, table, name);
-            if (type == null)
-            {
-                type = Dependencies.TypeMapper.FindMapping(property).StoreType;
-            }
-
 	        var matchType = type;
 	        var matchLen = "";
-	        var match = TypeRe.Match(type);
+	        var match = TypeRe.Match(type ?? "-");
 	        if (match.Success)
 	        {
 		        matchType = match.Groups[1].Value.ToLower();
@@ -375,7 +384,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             var autoIncrement = false;
             var valueGenerationStrategy = annotatable[MySqlAnnotationNames.ValueGenerationStrategy] as MySqlValueGenerationStrategy?;
-            if ((valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn || property.ValueGenerated == ValueGenerated.OnAdd) && string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
+           if ((valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn) && string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
             {
                 switch (matchType)
                 {
@@ -399,7 +408,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             }
             
             string onUpdateSql = null;
-            if (property.ValueGenerated == ValueGenerated.OnAddOrUpdate)
+            if (valueGenerationStrategy == MySqlValueGenerationStrategy.ComputedColumn)
             {
 	           switch (matchType)
 	           {

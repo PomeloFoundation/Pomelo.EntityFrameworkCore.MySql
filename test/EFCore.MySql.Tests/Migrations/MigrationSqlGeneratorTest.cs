@@ -69,27 +69,27 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
             base.AddColumnOperation_with_defaultValueSql();
 
             Assert.Equal(
-                "ALTER TABLE `People` ADD `Birthday` datetime DEFAULT CURRENT_TIMESTAMP();" + EOL,
+                "ALTER TABLE `People` ADD `Birthday` timestamp DEFAULT CURRENT_TIMESTAMP();" + EOL,
                 Sql);
         }
 
-        [Fact(Skip = "ON UPDATE NOT SUPPORTED")]
+        [Fact]
         public override void AddColumnOperation_with_computed_column_SQL()
 	    {
 		    base.AddColumnOperation_with_computed_column_SQL();
 
 		    Assert.Equal(
-			    "ALTER TABLE `People` ADD `Birthday` datetime DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP();" + EOL,
+			    "ALTER TABLE `People` ADD `Birthday` timestamp DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP();" + EOL,
 			    Sql);
 	    }
 
-        [Fact(Skip = "ON UPDATE NOT SUPPORTED")]
+        [Fact]
         public override void AddDefaultDatetimeOperation_with_valueOnUpdate()
         {
             base.AddDefaultDatetimeOperation_with_valueOnUpdate();
 
             Assert.Equal(
-                "ALTER TABLE `People` ADD `Birthday` datetime(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6);" + EOL,
+                "ALTER TABLE `People` ADD `Birthday` timestamp(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6);" + EOL,
                 Sql);
         }
 
@@ -236,20 +236,6 @@ END;" + EOL +
                 Sql);
         }
 
-        [Fact(Skip="true")]
-        public virtual void CreateDatabaseOperation_with_template()
-        {
-            Generate(new MySqlCreateDatabaseOperation
-            {
-                Name = "Northwind",
-                Template = "MyTemplate"
-            });
-
-            Assert.Equal(
-                @"CREATE DATABASE `Northwind` TEMPLATE `MyTemplate`;" + EOL,
-                Sql);
-        }
-
         public override void CreateTableOperation()
         {
             base.CreateTableOperation();
@@ -379,7 +365,7 @@ END;" + EOL +
             base.AlterColumnOperation();
             Assert.Equal(
                 @"ALTER TABLE `dbo`.`People` MODIFY COLUMN `LuckyNumber` int NOT NULL;" + EOL +
-                @"ALTER TABLE `dbo`.`People` ALTER COLUMN `LuckyNumber` SET DEFAULT 7" + EOL,
+                @"ALTER TABLE `dbo`.`People` ALTER COLUMN `LuckyNumber` SET DEFAULT '7'" + EOL,
             Sql, false, true, true);
         }
 
@@ -403,7 +389,7 @@ END;" + EOL +
                     ClrType = typeof(int),
                     ColumnType = "char(38)",
                     IsNullable = false,
-                    //[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd] = true
+                    [MySqlAnnotationNames.ValueGenerationStrategy] = MySqlValueGenerationStrategy.IdentityColumn
                 });
 
             Assert.Equal(
@@ -454,7 +440,7 @@ END;" + EOL +
 
         #region Npgsql-specific
 
-        [Fact]
+        [Fact(Skip = "true")]
         public void CreateIndexOperation_method()
         {
             Generate(new CreateIndexOperation
@@ -494,7 +480,7 @@ END;" + EOL +
                 ClrType = typeof(int),
                 ColumnType = "int",
                 IsNullable = false,
-                [MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGenerationStrategy] = true
+                [MySqlAnnotationNames.ValueGenerationStrategy] = MySqlValueGenerationStrategy.IdentityColumn
             });
 
             Assert.Equal(
@@ -531,7 +517,7 @@ END;" + EOL +
                     Name = "foo",
                     ClrType = typeof(Guid),
                     ColumnType = "varchar(38)",
-                    //[MySqlAnnotationNames.Prefix + MySqlAnnotationNames.ValueGeneratedOnAdd] = true
+                    [MySqlAnnotationNames.ValueGenerationStrategy] = MySqlValueGenerationStrategy.IdentityColumn
                 });
 
             Assert.Equal(
