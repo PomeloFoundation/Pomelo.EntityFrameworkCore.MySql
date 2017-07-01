@@ -34,17 +34,16 @@ show variables like 'character_set_database';
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp1.1.1</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="1.1.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="1.1.0" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="1.1.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.0-preview2-*" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.0.0-preview2-*" />
   </ItemGroup>
 
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="1.0.0" />
+    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.0-preview2-*" />
   </ItemGroup>
   
 </Project>
@@ -158,45 +157,17 @@ By viewing the following full project which is a single-user blog system and bas
 
 Milestone | Release week
 ----------|-------------
-1.0.0     | Aug 5th 2016
-1.0.1     | Oct 29th, 2016
-1.1.0     | Nov 25th, 2016
+2.0.0-preview2-unstable | July 1st 2017
+2.0.0-preview2-final     | July 4th 2017
+2.0.0-rtm     | TBD
 
-### 1.0.0 Feature complete
+### 2.0.0-preview2-unstable
 
-Support all Entity Framework Core operations, basic json field support.
-
-### 1.0.1 Performance Release
-
-- Switch ADO.NET layer to [MySqlConnector](https://github.com/mysql-net/MySqlConnector)
-- Improve Performance
-
-### 1.1.0
-
-Upgrade to .NET Core 1.1 and EF 1.1.0, which supports Explicit Loading. Implement Design-time layer for supporting scaffolding.
+Compatible with Entity Framework Core 2.0.0-preview2-final.
 
 #### Scaffolding Tutorial
 
-① Add Design-time layer and EF Core tools to your project (>= 1.1.0-rtm-10004):
-
-```xml
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="1.1.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="1.1.0" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="1.1.2" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql.Design" Version="1.1.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="1.0.0" />
-  </ItemGroup>
-  
-</Project>
-```
-
-② Using the tool to execute scaffolding commands
+Using the tool to execute scaffolding commands
 ```
 dotnet ef dbcontext scaffold "Server=localhost;User Id=root;Password=123456;Database=eftests" "Pomelo.EntityFrameworkCore.MySql"
 ```
