@@ -83,7 +83,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
 			    Sql);
 	    }
 
-        [Fact(Skip = "ON UPDATE NOT SUPPORTED")]
+        [Fact]
         public override void AddDefaultDatetimeOperation_with_valueOnUpdate()
         {
             base.AddDefaultDatetimeOperation_with_valueOnUpdate();
@@ -236,20 +236,6 @@ END;" + EOL +
                 Sql);
         }
 
-        [Fact(Skip="true")]
-        public virtual void CreateDatabaseOperation_with_template()
-        {
-            Generate(new MySqlCreateDatabaseOperation
-            {
-                Name = "Northwind",
-                Template = "MyTemplate"
-            });
-
-            Assert.Equal(
-                @"CREATE DATABASE `Northwind` TEMPLATE `MyTemplate`;" + EOL,
-                Sql);
-        }
-
         public override void CreateTableOperation()
         {
             base.CreateTableOperation();
@@ -379,7 +365,7 @@ END;" + EOL +
             base.AlterColumnOperation();
             Assert.Equal(
                 @"ALTER TABLE `dbo`.`People` MODIFY COLUMN `LuckyNumber` int NOT NULL;" + EOL +
-                @"ALTER TABLE `dbo`.`People` ALTER COLUMN `LuckyNumber` SET DEFAULT 7" + EOL,
+                @"ALTER TABLE `dbo`.`People` ALTER COLUMN `LuckyNumber` SET DEFAULT '7'" + EOL,
             Sql, false, true, true);
         }
 
@@ -454,7 +440,7 @@ END;" + EOL +
 
         #region Npgsql-specific
 
-        [Fact(Skip = "TODO")]
+        [Fact(Skip = "true")]
         public void CreateIndexOperation_method()
         {
             Generate(new CreateIndexOperation
