@@ -31,15 +31,5 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Metadata
             //[param: CanBeNull]
             set { _column[MySqlDatabaseModelAnnotationNames.IsSerial] = value; }
         }
-
-        internal string ElementDataType
-        {
-            get
-            {
-                return (string)_column[MySqlDatabaseModelAnnotationNames.ElementDataType];
-            }
-            //[param: CanBeNull]
-            set { _column[MySqlDatabaseModelAnnotationNames.ElementDataType] = value; }
-        }
     }
 }
