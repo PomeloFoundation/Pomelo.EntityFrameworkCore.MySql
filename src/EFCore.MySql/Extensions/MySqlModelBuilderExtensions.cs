@@ -31,5 +31,17 @@ namespace Microsoft.EntityFrameworkCore
 
             return modelBuilder;
         }
+
+        public static ModelBuilder ForMySqlUseComputedColumns(
+            [NotNull] this ModelBuilder modelBuilder)
+        {
+            Check.NotNull(modelBuilder, nameof(modelBuilder));
+
+            var property = modelBuilder.Model;
+
+            property.MySql().ValueGenerationStrategy = MySqlValueGenerationStrategy.ComputedColumn;
+
+            return modelBuilder;
+        }
     }
 }

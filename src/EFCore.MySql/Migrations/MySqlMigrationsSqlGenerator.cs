@@ -357,12 +357,6 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(clrType, nameof(clrType));
             Check.NotNull(builder, nameof(builder));
 
-            var property = FindProperty(model, schema, table, name);
-            if (type == null)
-            {
-                type = Dependencies.TypeMapper.FindMapping(property).StoreType;
-            }
-
 	        var matchType = type;
 	        var matchLen = "";
 	        var match = TypeRe.Match(type);
@@ -375,7 +369,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             var autoIncrement = false;
             var valueGenerationStrategy = annotatable[MySqlAnnotationNames.ValueGenerationStrategy] as MySqlValueGenerationStrategy?;
-            if ((valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn || property.ValueGenerated == ValueGenerated.OnAdd) && string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
+            if ((valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn) && string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
             {
                 switch (matchType)
                 {
@@ -399,7 +393,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             }
             
             string onUpdateSql = null;
-            if (property.ValueGenerated == ValueGenerated.OnAddOrUpdate)
+            if (valueGenerationStrategy == MySqlValueGenerationStrategy.ComputedColumn)
             {
 	           switch (matchType)
 	           {
