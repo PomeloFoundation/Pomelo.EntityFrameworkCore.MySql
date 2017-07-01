@@ -69,7 +69,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
             base.AddColumnOperation_with_defaultValueSql();
 
             Assert.Equal(
-                "ALTER TABLE `People` ADD `Birthday` datetime DEFAULT CURRENT_TIMESTAMP();" + EOL,
+                "ALTER TABLE `People` ADD `Birthday` timestamp DEFAULT CURRENT_TIMESTAMP();" + EOL,
                 Sql);
         }
 
@@ -79,7 +79,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
 		    base.AddColumnOperation_with_computed_column_SQL();
 
 		    Assert.Equal(
-			    "ALTER TABLE `People` ADD `Birthday` datetime DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP();" + EOL,
+			    "ALTER TABLE `People` ADD `Birthday` timestamp DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP();" + EOL,
 			    Sql);
 	    }
 
@@ -89,7 +89,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
             base.AddDefaultDatetimeOperation_with_valueOnUpdate();
 
             Assert.Equal(
-                "ALTER TABLE `People` ADD `Birthday` datetime(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6);" + EOL,
+                "ALTER TABLE `People` ADD `Birthday` timestamp(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6);" + EOL,
                 Sql);
         }
 
