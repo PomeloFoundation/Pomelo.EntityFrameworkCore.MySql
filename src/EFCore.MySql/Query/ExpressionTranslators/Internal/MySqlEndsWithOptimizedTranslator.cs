@@ -18,22 +18,23 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
 
         public virtual Expression Translate(MethodCallExpression methodCallExpression)
         {
-            if (ReferenceEquals(methodCallExpression.Method, _methodInfo))
+            if (Equals(methodCallExpression.Method, _methodInfo))
             {
                 var patternExpression = methodCallExpression.Arguments[0];
                 var patternConstantExpression = patternExpression as ConstantExpression;
 
-                var endsWithExpression = Expression.Equal(
-                    new SqlFunctionExpression(
-                        "RIGHT",
-                        // ReSharper disable once PossibleNullReferenceException
-                        methodCallExpression.Object.Type,
-                        new[]
-                        {
-                            methodCallExpression.Object,
-                            new SqlFunctionExpression("LENGTH", typeof(int), new[] { patternExpression })
-                        }),
-                    patternExpression);
+                var endsWithExpression = new NullCompensatedExpression(
+                    Expression.Equal(
+                        new SqlFunctionExpression(
+                            "RIGHT",
+                            // ReSharper disable once PossibleNullReferenceException
+                            methodCallExpression.Object.Type,
+                            new[]
+                            {
+                                methodCallExpression.Object,
+                                new SqlFunctionExpression("LENGTH", typeof(int), new[] { patternExpression })
+                            }),
+                        patternExpression));
 
                 return patternConstantExpression != null
                     ? (string)patternConstantExpression.Value == string.Empty

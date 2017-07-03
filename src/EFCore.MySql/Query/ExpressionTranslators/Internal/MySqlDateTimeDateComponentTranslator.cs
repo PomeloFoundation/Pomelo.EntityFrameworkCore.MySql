@@ -11,27 +11,23 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public class MySqlDateTimeNowTranslator : IMemberTranslator
+    public class MySqlDateTimeDateComponentTranslator : IMemberTranslator
     {
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public virtual Expression Translate(MemberExpression memberExpression)
-        {
-            if (memberExpression.Expression == null
-                && memberExpression.Member.DeclaringType == typeof(DateTime))
-            {
-                switch (memberExpression.Member.Name)
-                {
-                    case nameof(DateTime.Now):
-                        return new SqlFunctionExpression("CURRENT_TIMESTAMP", memberExpression.Type);
-                    case nameof(DateTime.UtcNow):
-                        return new SqlFunctionExpression("UTC_TIMESTAMP", memberExpression.Type);
-                }
-            }
-
-            return null;
-        }
+            => memberExpression.Expression != null
+               && (memberExpression.Expression.Type == typeof(DateTime) || memberExpression.Expression.Type == typeof(DateTimeOffset))
+               && memberExpression.Member.Name == nameof(DateTime.Date)
+                ? new SqlFunctionExpression("CONVERT",
+                    memberExpression.Type,
+                    new[]
+                    {
+                        new SqlFragmentExpression("date"),
+                        memberExpression.Expression
+                    })
+                : null;
     }
 }

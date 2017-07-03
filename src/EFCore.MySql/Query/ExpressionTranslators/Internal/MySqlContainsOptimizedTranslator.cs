@@ -18,13 +18,13 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
 
         public virtual Expression Translate(MethodCallExpression methodCallExpression)
         {
-            if (ReferenceEquals(methodCallExpression.Method, _methodInfo))
+            if (Equals(methodCallExpression.Method, _methodInfo))
             {
                 var patternExpression = methodCallExpression.Arguments[0];
                 var patternConstantExpression = patternExpression as ConstantExpression;
 
                 var charIndexExpression = Expression.GreaterThan(
-                    new SqlFunctionExpression("POSITION", typeof(int), new[] { patternExpression, methodCallExpression.Object }),
+                    new SqlFunctionExpression("LOCATE", typeof(int), new[] { patternExpression, methodCallExpression.Object }),
                     Expression.Constant(0));
 
                 return

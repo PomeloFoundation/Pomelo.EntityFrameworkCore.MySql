@@ -1,28 +1,33 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
-// Licensed under the MIT. See LICENSE in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text.RegularExpressions;
-using System.Reflection;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Query.Expressions;
 using Microsoft.EntityFrameworkCore.Query.Expressions.Internal;
+using Microsoft.EntityFrameworkCore.Query.ExpressionVisitors;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Remotion.Linq.Clauses;
 
-// ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
 {
+    /// <summary>
+    ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+    ///     directly from your code. This API may change or be removed in future releases.
+    /// </summary>
     public class MySqlQuerySqlGenerator : DefaultQuerySqlGenerator
     {
         protected override string TypedTrueLiteral => "TRUE";
         protected override string TypedFalseLiteral => "FALSE";
 
-        private static FieldInfo _relationalCommandBuilderFieldInfo = typeof(DefaultQuerySqlGenerator).GetTypeInfo().DeclaredFields.Single(x => x.Name == "_relationalCommandBuilder");
-
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public MySqlQuerySqlGenerator(
             [NotNull] QuerySqlGeneratorDependencies dependencies,
             [NotNull] SelectExpression selectExpression)
@@ -34,73 +39,10 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
         {
         }
 
-        private static string[] SqlFuncAInB = new[] { "POSITION" };
-
-        public override Expression VisitSqlFunction(SqlFunctionExpression sqlFunctionExpression)
-        {
-            if (!SqlFuncAInB.Contains(sqlFunctionExpression.FunctionName))
-                return base.VisitSqlFunction(sqlFunctionExpression);
-
-            if (sqlFunctionExpression.FunctionName == "COUNT")
-            {
-                if (sqlFunctionExpression.Type == typeof(long))
-                {
-                    Sql.Append("COUNT(*)");
-                }
-                else if (sqlFunctionExpression.Type == typeof(int))
-                {
-                    Sql.Append("CAST(COUNT(*) AS UNSIGNED)");
-                }
-                else throw new NotSupportedException($"Count expression with type {sqlFunctionExpression.Type} not supported");
-            }
-
-            var  _relationalCommandBuilder = (IRelationalCommandBuilder)_relationalCommandBuilderFieldInfo.GetValue(this);
-            _relationalCommandBuilder.Append(sqlFunctionExpression.FunctionName);
-            _relationalCommandBuilder.Append("(");
-
-            VisitAInB(sqlFunctionExpression.Arguments.ToList());
-
-            _relationalCommandBuilder.Append(")");
-
-            return sqlFunctionExpression;
-        }
-
-        private void VisitAInB(
-            IReadOnlyList<Expression> expressions, Action<IRelationalCommandBuilder> joinAction = null)
-            => VisitAInB(expressions, e => Visit(e), joinAction);
-
-        private void VisitAInB<T>(
-            IReadOnlyList<T> items, Action<T> itemAction, Action<IRelationalCommandBuilder> joinAction = null)
-        {
-            if (items.Count != 2)
-                throw new ArgumentException("Argument count must be 2.");
-
-            joinAction = joinAction ?? (isb => isb.Append(" IN "));
-
-            for (var i = 0; i < items.Count; i++)
-            {
-                if (i > 0)
-                {
-                    var _relationalCommandBuilder = (IRelationalCommandBuilder)_relationalCommandBuilderFieldInfo.GetValue(this);
-                    joinAction(_relationalCommandBuilder);
-                }
-
-                itemAction(items[i]);
-            }
-        }
-
-        public override Expression VisitTable(TableExpression tableExpression)
-        {
-            Check.NotNull(tableExpression, nameof(tableExpression));
-
-            Sql.Append(SqlGenerator.DelimitIdentifier(tableExpression.Table, tableExpression.Schema))
-                .Append(" AS ")
-                .Append(SqlGenerator.DelimitIdentifier(tableExpression.Alias));
-
-            return tableExpression;
-        }
-
-
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         protected override void GenerateLimitOffset(SelectExpression selectExpression)
         {
             Check.NotNull(selectExpression, nameof(selectExpression));
@@ -118,10 +60,46 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
                     // if we want to use Skip() without Take() we have to define the upper limit of LIMIT 
                     Sql.AppendLine().Append("LIMIT ").Append(18446744073709551610);
                 }
-                Sql.Append(' ');
-                Sql.Append("OFFSET ");
+                Sql.Append(" OFFSET ");
                 Visit(selectExpression.Offset);
             }
+        }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public override Expression VisitSqlFunction(SqlFunctionExpression sqlFunctionExpression)
+        {
+            if (sqlFunctionExpression.FunctionName.StartsWith("@@", StringComparison.Ordinal))
+            {
+                Sql.Append(sqlFunctionExpression.FunctionName);
+
+                return sqlFunctionExpression;
+            }
+
+            return base.VisitSqlFunction(sqlFunctionExpression);
+        }
+
+        protected override void GenerateProjection(Expression projection)
+        {
+            var aliasedProjection = projection as AliasExpression;
+            var expressionToProcess = aliasedProjection?.Expression ?? projection;
+            var updatedExperssion = ExplicitCastToBool(expressionToProcess);
+
+            expressionToProcess = aliasedProjection != null
+                ? new AliasExpression(aliasedProjection.Alias, updatedExperssion)
+                : updatedExperssion;
+
+            base.GenerateProjection(expressionToProcess);
+        }
+
+        private Expression ExplicitCastToBool(Expression expression)
+        {
+            return (expression as BinaryExpression)?.NodeType == ExpressionType.Coalesce
+                   && expression.Type.UnwrapNullableType() == typeof(bool)
+                ? new ExplicitCastExpression(expression, expression.Type)
+                : expression;
         }
 
         protected override Expression VisitBinary(BinaryExpression binaryExpression)
@@ -143,53 +121,6 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
             
             return expr;
         }
-        
-        public Expression VisitRegexMatch([NotNull] RegexMatchExpression regexMatchExpression)
-        {
-            Check.NotNull(regexMatchExpression, nameof(regexMatchExpression));
 
-            Visit(regexMatchExpression.Match);
-            Sql.Append(" RLIKE ");
-            Visit(regexMatchExpression.Pattern);
-
-            return regexMatchExpression;
-        }
-
-        public Expression VisitAtTimeZone([NotNull] AtTimeZoneExpression atTimeZoneExpression)
-        {
-            Check.NotNull(atTimeZoneExpression, nameof(atTimeZoneExpression));
-
-            //Visit(atTimeZoneExpression.TimestampExpression);
-
-            Sql.Append("UTC_TIMESTAMP()");
-            return atTimeZoneExpression;
-        }
-
-        public Expression VisitDateAdd([NotNull] DateAddExpression dateAddExpression)
-        {
-            Check.NotNull(dateAddExpression, nameof(dateAddExpression));
-
-            Sql.Append("DATE_ADD(");
-            Visit(dateAddExpression.Arguments.First());
-
-            Sql.Append(", INTERVAL ");
-
-            Visit(dateAddExpression.Arguments.Last());
-            Sql.Append($" {dateAddExpression.DatePart})");
-
-            return dateAddExpression;
-        }
-
-        public Expression VisitDatePart([NotNull] DatePartExpression datePartExpression)
-        {
-            Check.NotNull(datePartExpression, nameof(datePartExpression));
-
-            Sql.Append($"EXTRACT({datePartExpression.DatePart} FROM ");
-
-            Visit(datePartExpression.Argument);
-            Sql.Append(")");
-
-            return datePartExpression;
-        }
     }
 }

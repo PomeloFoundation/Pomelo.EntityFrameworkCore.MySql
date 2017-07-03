@@ -88,7 +88,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
 			_fixture = fixture;
 		}
 
-		[Fact]
+		[Fact(Skip="https://github.com/aspnet/EntityFramework/issues/9038")]
 		public async Task TestDiscriminator()
 		{
 			using (var db = new AppDb())

@@ -14,14 +14,14 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
     public class MySqlStartsWithOptimizedTranslator : IMethodCallTranslator
     {
         private static readonly MethodInfo _methodInfo
-                    = typeof(string).GetRuntimeMethod(nameof(string.StartsWith), new[] { typeof(string) });
+            = typeof(string).GetRuntimeMethod(nameof(string.StartsWith), new[] { typeof(string) });
 
         private static readonly MethodInfo _concat
             = typeof(string).GetRuntimeMethod(nameof(string.Concat), new[] { typeof(string), typeof(string) });
 
         public virtual Expression Translate(MethodCallExpression methodCallExpression)
         {
-            if (ReferenceEquals(methodCallExpression.Method, _methodInfo))
+            if (Equals(methodCallExpression.Method, _methodInfo))
             {
                 var patternExpression = methodCallExpression.Arguments[0];
                 var patternConstantExpression = patternExpression as ConstantExpression;
@@ -31,9 +31,18 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
                         // ReSharper disable once AssignNullToNotNullAttribute
                         methodCallExpression.Object,
                         Expression.Add(methodCallExpression.Arguments[0], Expression.Constant("%", typeof(string)), _concat)),
-                    Expression.Equal(
-                        new SqlFunctionExpression("POSITION", typeof(int), new[] { patternExpression, methodCallExpression.Object }),
-                        Expression.Constant(1)));
+                    new NullCompensatedExpression(
+                        Expression.Equal(
+                            new SqlFunctionExpression(
+                                "LEFT",
+                                // ReSharper disable once PossibleNullReferenceException
+                                methodCallExpression.Object.Type,
+                                new[]
+                                {
+                                    methodCallExpression.Object,
+                                    new SqlFunctionExpression("LENGTH", typeof(int), new[] { patternExpression })
+                                }),
+                            patternExpression)));
 
                 return patternConstantExpression != null
                     ? (string)patternConstantExpression.Value == string.Empty
