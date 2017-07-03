@@ -8,7 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Pomelo.EntityFrameworkCore.MySql.PerfTests.Models;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 #if ORACLE
@@ -18,7 +18,7 @@ using MySQL.Data.EntityFrameworkCore.Extensions;
 using MySQL.Data.Entity.Extensions;
 #endif
 
-namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
     public class Startup
     {

@@ -6,9 +6,9 @@ using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Threading.Tasks;
-using Pomelo.EntityFrameworkCore.MySql.PerfTests.Models;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models;
 
-namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Commands{
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Commands{
 
     public static class TestPerformanceCommand{
 

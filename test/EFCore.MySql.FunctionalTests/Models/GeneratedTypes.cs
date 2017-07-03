@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Models
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models
 {
 	public static class GeneratedContactMeta
 	{

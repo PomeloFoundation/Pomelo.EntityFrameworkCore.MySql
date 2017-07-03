@@ -2,10 +2,10 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql.PerfTests.Models;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Tests.Models
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
 {
 	public class CrmFixture
 	{

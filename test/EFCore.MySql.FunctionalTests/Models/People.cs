@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Models
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models
 {
 	public static class PeopleMeta
 	{

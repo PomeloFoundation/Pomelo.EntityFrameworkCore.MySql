@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Models
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models
 {
     public class Blog
     {

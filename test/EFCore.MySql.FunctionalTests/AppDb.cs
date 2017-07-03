@@ -6,14 +6,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Logging;
-using Pomelo.EntityFrameworkCore.MySql.PerfTests.Models;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models;
 #if ORACLE
 using MySQL.Data.EntityFrameworkCore.Extensions;
 #elif SAPIENT
 using MySQL.Data.Entity.Extensions;
 #endif
 
-namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
 	public class AppDb : IdentityDbContext<AppIdentityUser>//, IDesignTimeDbContextFactory<AppDb>
 	{

@@ -1,6 +1,6 @@
 using System;
 
-namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Commands{
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Commands{
 
     public static class CommandRunner
     {

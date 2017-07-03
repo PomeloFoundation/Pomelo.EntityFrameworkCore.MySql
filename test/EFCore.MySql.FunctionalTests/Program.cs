@@ -1,8 +1,8 @@
 ﻿using System;
 using Microsoft.AspNetCore.Hosting;
-using Pomelo.EntityFrameworkCore.MySql.PerfTests.Commands;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Commands;
 
-namespace Pomelo.EntityFrameworkCore.MySql.PerfTests
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
     public class Program
     {
