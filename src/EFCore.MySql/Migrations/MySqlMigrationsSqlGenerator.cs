@@ -291,64 +291,39 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             EndStatement(builder);
         }
 
-        // protected override void Generate(
-        //     [NotNull] RenameColumnOperation operation,
-        //     [CanBeNull] IModel model,
-        //     [NotNull] MigrationCommandListBuilder builder)
-        // {
-        //     Check.NotNull(operation, nameof(operation));
-        //     Check.NotNull(builder, nameof(builder));
+        protected override void Generate(
+            [NotNull] RenameColumnOperation operation,
+            [CanBeNull] IModel model,
+            [NotNull] MigrationCommandListBuilder builder)
+        {
+            Check.NotNull(operation, nameof(operation));
+            Check.NotNull(builder, nameof(builder));
 
-        //     string createTableSyntax = null;
+            var createTableSyntax = _options.GetCreateTable(Dependencies.SqlGenerationHelper, operation.Table, operation.Schema);
 
-        //     var connection = _relationalConnection.DbConnection;
-        //     var opened = false;
-        //     if (connection.State == ConnectionState.Closed)
-        //     {
-        //         connection.Open();
-        //         opened = true;
-        //     }
-        //     try
-        //     {
-        //         using (var cmd = _relationalConnection.DbConnection.CreateCommand())
-        //         {
-        //             cmd.CommandText = $"SHOW CREATE TABLE {Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}";
-        //             using (var reader = cmd.ExecuteReader())
-        //             {
-        //                 if (reader.Read())
-        //                     createTableSyntax = reader.GetFieldValue<string>(1);
-        //             }
-        //         }
-        //     }
-        //     finally
-        //     {
-        //         if (opened)
-        //             connection.Close();
-        //     }
+            if (createTableSyntax == null)
+                throw new InvalidOperationException($"Could not find SHOW CREATE TABLE syntax for table: '{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}'");
 
-        //     if (createTableSyntax == null)
-        //         throw new InvalidOperationException($"Could not find SHOW CREATE TABLE syntax for table: '{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}'");
+            var columnDefinitionRe = new Regex($"^\\s*`?{operation.Name}`?\\s(.*)?$", RegexOptions.Multiline);
+            var match = columnDefinitionRe.Match(createTableSyntax);
 
-        //     var columnDefinitionRe = new Regex($"^\\s*`?{operation.Name}`?\\s(.*)?$", RegexOptions.Multiline);
-        //     var match = columnDefinitionRe.Match(createTableSyntax);
+            string columnDefinition;
+            if (match.Success)
+                columnDefinition = match.Groups[1].Value.TrimEnd(',');
+            else
+                throw new InvalidOperationException($"Could not find column definition for table: '{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}' column: {operation.Name}");
 
-        //     string columnDefinition;
-        //     if (match.Success)
-        //         columnDefinition = match.Groups[1].Value.TrimEnd(',');
-        //     else
-        //         throw new InvalidOperationException($"Could not find column definition for table: '{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}' column: {operation.Name}");
+            builder.Append("ALTER TABLE ")
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
+                .Append(" CHANGE ")
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
+                .Append(" ")
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName))
+                .Append(" ")
+                .Append(columnDefinition);
 
-        //     builder.Append("ALTER TABLE ")
-        //         .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
-        //         .Append(" CHANGE ")
-        //         .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
-        //         .Append(" ")
-        //         .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName))
-        //         .Append(" ")
-        //         .Append(columnDefinition);
-
-        //     EndStatement(builder);
-        // }
+            EndStatement(builder);
+        }
 
         protected override void ColumnDefinition(
             [CanBeNull] string schema, 
