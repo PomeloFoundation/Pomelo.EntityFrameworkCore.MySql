@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.4
+VisualStudioVersion = 15.0.26621.2
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7E8380DB-F015-407B-99C2-26404E551673}"
 EndProject
@@ -21,15 +21,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{212DAE3C-D991-4213-AC4B-E23E923F2DC7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.MySql", "src\EFCore.MySql\EFCore.MySql.csproj", "{FC2779F0-2A2A-4BE2-B5A8-FDA31A4A404A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pomelo.EntityFrameworkCore.MySql", "src\Pomelo.EntityFrameworkCore.MySql\Pomelo.EntityFrameworkCore.MySql.csproj", "{FC2779F0-2A2A-4BE2-B5A8-FDA31A4A404A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.MySql.Tests", "test\EFCore.MySql.Tests\EFCore.MySql.Tests.csproj", "{DE5212AE-4C17-4702-851D-0F1FC0D32E3C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pomelo.EntityFrameworkCore.MySql.Tests", "test\Pomelo.EntityFrameworkCore.MySql.Tests\Pomelo.EntityFrameworkCore.MySql.Tests.csproj", "{DE5212AE-4C17-4702-851D-0F1FC0D32E3C}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pomelo.EntityFrameworkCore.MySql.PerfTests", "test\Pomelo.EntityFrameworkCore.MySql.PerfTests\Pomelo.EntityFrameworkCore.MySql.PerfTests.csproj", "{E7D9C7D9-1CDD-4745-975D-9752AE095418}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pomelo.EntityFrameworkCore.MySql.Design", "src\Pomelo.EntityFrameworkCore.MySql.Design\Pomelo.EntityFrameworkCore.MySql.Design.csproj", "{CC1EECC1-34F9-4183-B630-CE41AC07D4D0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.MySql.FunctionalTests", "test\EFCore.MySql.FunctionalTests\EFCore.MySql.FunctionalTests.csproj", "{E7D9C7D9-1CDD-4745-975D-9752AE095418}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,19 +45,16 @@ Global
 		{E7D9C7D9-1CDD-4745-975D-9752AE095418}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E7D9C7D9-1CDD-4745-975D-9752AE095418}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E7D9C7D9-1CDD-4745-975D-9752AE095418}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CC1EECC1-34F9-4183-B630-CE41AC07D4D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CC1EECC1-34F9-4183-B630-CE41AC07D4D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CC1EECC1-34F9-4183-B630-CE41AC07D4D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CC1EECC1-34F9-4183-B630-CE41AC07D4D0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{212DAE3C-D991-4213-AC4B-E23E923F2DC7} = {7E8380DB-F015-407B-99C2-26404E551673}
 		{FC2779F0-2A2A-4BE2-B5A8-FDA31A4A404A} = {7E8380DB-F015-407B-99C2-26404E551673}
 		{DE5212AE-4C17-4702-851D-0F1FC0D32E3C} = {6EC4A4AA-D865-4EF9-BD52-C2D0AA075CDF}
 		{E7D9C7D9-1CDD-4745-975D-9752AE095418} = {6EC4A4AA-D865-4EF9-BD52-C2D0AA075CDF}
-		{CC1EECC1-34F9-4183-B630-CE41AC07D4D0} = {7E8380DB-F015-407B-99C2-26404E551673}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {48E34212-4B35-4A81-92F9-3C25D4E76D6C}
 	EndGlobalSection
 EndGlobal
