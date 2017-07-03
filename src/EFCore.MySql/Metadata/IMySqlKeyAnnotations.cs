@@ -5,6 +5,5 @@ namespace Microsoft.EntityFrameworkCore.Metadata
 {
     public interface IMySqlKeyAnnotations : IRelationalKeyAnnotations
     {
-        bool? IsClustered { get; }
     }
 }

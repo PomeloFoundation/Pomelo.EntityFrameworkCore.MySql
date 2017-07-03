@@ -31,7 +31,7 @@ function DownloadWithRetry([string] $url, [string] $downloadLocation, [int] $ret
 $repoFolder = $PSScriptRoot
 $env:REPO_FOLDER = $repoFolder
 
-$koreBuildZip="https://github.com/aspnet/KoreBuild/archive/rel/2.0.0-preview1.zip"
+$koreBuildZip="https://github.com/aspnet/KoreBuild/archive/rel/2.0.0-preview2.zip"
 if ($env:KOREBUILD_ZIP)
 {
     $koreBuildZip=$env:KOREBUILD_ZIP
@@ -63,7 +63,7 @@ if (!(Test-Path $buildFolder)) {
 
 $dotnetArch = 'x64'
 $dotnetChannel = "preview"
-$dotnetVersion = "2.0.0-preview1-005957"
+$dotnetVersion = "2.0.0-preview2-006484"
 
 $dotnetLocalInstallFolder = $env:DOTNET_INSTALL_DIR
 if (!$dotnetLocalInstallFolder)
