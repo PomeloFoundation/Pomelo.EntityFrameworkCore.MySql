@@ -427,7 +427,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     var stringTypeMapping = Dependencies.TypeMapper.GetMapping(typeof(string));
                     builder
                         .Append(" DEFAULT ")
-                        .Append(stringTypeMapping.GenerateSqlLiteral(defaultValue));
+                        .Append(stringTypeMapping.GenerateSqlLiteral(defaultValue.ToString()));
                 }
                 if (onUpdateSql != null)
                 {
