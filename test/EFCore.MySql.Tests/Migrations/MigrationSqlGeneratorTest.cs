@@ -87,7 +87,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
             });
 
             Assert.Equal(
-                "ALTER TABLE `People` ADD `Birthday` timestamp(6) NOT NULL DEFAULT '0001/1/1 0:00:00';" + EOL,
+                "ALTER TABLE `People` ADD `Birthday` timestamp(6) NOT NULL DEFAULT '" + new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified).ToString() + "';" + EOL,
                 Sql);
         }
 
