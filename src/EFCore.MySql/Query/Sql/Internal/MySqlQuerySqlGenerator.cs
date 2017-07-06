@@ -2,24 +2,21 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Linq.Expressions;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Query.Expressions;
 using Microsoft.EntityFrameworkCore.Query.Expressions.Internal;
-using Microsoft.EntityFrameworkCore.Query.ExpressionVisitors;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
-using Remotion.Linq.Clauses;
 
+// ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public class MySqlQuerySqlGenerator : DefaultQuerySqlGenerator
+    public class MySqlQuerySqlGenerator : DefaultQuerySqlGenerator, IMySqlExpressionVisitor
     {
         protected override string TypedTrueLiteral => "TRUE";
         protected override string TypedFalseLiteral => "FALSE";
@@ -120,6 +117,15 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
             var expr = base.VisitBinary(binaryExpression);
             
             return expr;
+        }
+        
+        public virtual Expression VisitRegexp(RegexpExpression regexpExpression)
+        {
+            Check.NotNull(regexpExpression, nameof(regexpExpression));
+            Visit(regexpExpression.Match);
+            Sql.Append(" REGEXP ");
+            Visit(regexpExpression.Pattern);
+            return regexpExpression;
         }
 
     }
