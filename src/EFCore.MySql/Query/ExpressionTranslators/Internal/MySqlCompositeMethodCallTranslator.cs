@@ -20,6 +20,7 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
             new MySqlMathTranslator(),
             new MySqlNewGuidTranslator(),
             new MySqlObjectToStringTranslator(),
+            new MySqlRegexIsMatchTranslator(),
             new MySqlStartsWithOptimizedTranslator(),
             new MySqlStringIsNullOrWhiteSpaceTranslator(),
             new MySqlStringReplaceTranslator(),
