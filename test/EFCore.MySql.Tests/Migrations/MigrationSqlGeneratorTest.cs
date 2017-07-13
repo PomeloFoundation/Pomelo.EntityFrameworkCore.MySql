@@ -10,8 +10,11 @@ using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.EntityFrameworkCore.TestUtilities.FakeProvider;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Xunit;
 using Microsoft.EntityFrameworkCore.Internal;
+using Moq;
+using MySql.Data.MySqlClient;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
 {
@@ -33,9 +36,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                     new MySqlSqlGenerationHelper(new RelationalSqlGenerationHelperDependencies()),
                     typeMapper);
 
+                var mySqlOptions = new Mock<IMySqlOptions>();
+                mySqlOptions.SetupGet(opts => opts.ConnectionSettings).Returns(
+                    new MySqlConnectionSettings(new MySqlConnectionStringBuilder(), new ServerVersion("5.7.18")));
+                
                 return new MySqlMigrationsSqlGenerator(
                     migrationsSqlGeneratorDependencies,
-                    new MySqlOptions());
+                    mySqlOptions.Object);
             }
         }
 
@@ -244,7 +251,15 @@ END;" + EOL +
                 "CREATE INDEX `IX_People_Name` ON `People` (`Name`);" + EOL,
                 Sql);
         }
-        
+
+        public override void RenameIndexOperation_works()
+        {
+            base.RenameIndexOperation_works();
+            
+            Assert.Equal("ALTER TABLE `People` RENAME INDEX `IX_People_Name` TO `IX_People_Better_Name`;" + EOL,
+                Sql);
+        }
+
         public virtual void CreateDatabaseOperation()
         {
             Generate(new MySqlCreateDatabaseOperation { Name = "Northwind" });
