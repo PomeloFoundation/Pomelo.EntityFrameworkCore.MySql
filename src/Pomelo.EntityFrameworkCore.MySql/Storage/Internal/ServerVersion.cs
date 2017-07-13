@@ -1,4 +1,4 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -33,6 +33,20 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         public readonly Version Version;
 
         public bool SupportsDateTime6 => Version >= new Version(5,6);
+
+        public bool SupportsRenameIndex
+        {
+            get
+            {
+                if (Type == ServerType.MySql)
+                {
+                    return Version >= new Version(5, 7);
+                }
+
+                // TODO Awaiting feedback from Mariadb on when they will support rename index!
+                return false;
+            }
+        }
     }
 
     public enum ServerType

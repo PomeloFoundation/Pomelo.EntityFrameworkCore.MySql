@@ -1,4 +1,4 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -185,15 +185,36 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             if (operation.NewName != null)
             {
-                builder.Append("ALTER TABLE ")
-                    .Append(SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
-                    .Append(" RENAME INDEX ")
-                    .Append(SqlGenerationHelper.DelimitIdentifier(operation.Name))
-                    .Append(" TO ")
-                    .Append(SqlGenerationHelper.DelimitIdentifier(operation.NewName))
-                    .AppendLine(";");
+                if (_mySqlTypeMapper.ConnectionSettings.ServerVersion.SupportsRenameIndex)
+                {
+                    builder.Append("ALTER TABLE ")
+                        .Append(SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
+                        .Append(" RENAME INDEX ")
+                        .Append(SqlGenerationHelper.DelimitIdentifier(operation.Name))
+                        .Append(" TO ")
+                        .Append(SqlGenerationHelper.DelimitIdentifier(operation.NewName))
+                        .AppendLine(";");
 
-                EndStatement(builder);
+                    EndStatement(builder);
+                }
+                else
+                {
+                    builder.Append("ALTER TABLE ")
+                        .Append(SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
+                        .Append(" DROP INDEX ")
+                        .Append(SqlGenerationHelper.DelimitIdentifier(operation.Name))
+                        .AppendLine(";");
+
+                    EndStatement(builder);
+
+                    builder.Append("ALTER TABLE ")
+                        .Append(SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
+                        .Append(" CREATE INDEX ")
+                        .Append(SqlGenerationHelper.DelimitIdentifier(operation.NewName))
+                        .AppendLine(";");
+
+                    EndStatement(builder);
+                }
             }
         }
 
