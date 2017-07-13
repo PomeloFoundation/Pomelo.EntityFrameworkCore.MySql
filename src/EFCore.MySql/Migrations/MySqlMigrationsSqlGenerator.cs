@@ -171,21 +171,35 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     EndStatement(builder);
                 }
                 else
-                {
-                    builder.Append("ALTER TABLE ")
+                {   
+                    var createTableSyntax = _options.GetCreateTable(Dependencies.SqlGenerationHelper, operation.Table, operation.Schema);
+
+                    if (createTableSyntax == null)
+                        throw new InvalidOperationException($"Could not find SHOW CREATE TABLE syntax for table: '{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}'");
+
+                    var indexDefinitionRe = new Regex($"^\\s*((?:UNIQUE\\s)?KEY\\s)`?{operation.Name}`?(.*)$", RegexOptions.Multiline);
+                    var match = indexDefinitionRe.Match(createTableSyntax);
+
+                    string newIndexDefinition;
+                    if (match.Success)
+                        newIndexDefinition = match.Groups[1].Value + Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName) + " " + match.Groups[2].Value.Trim().TrimEnd(',');
+                    else
+                        throw new InvalidOperationException($"Could not find column definition for table: '{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}' column: {operation.Name}");
+
+                    builder
+                        .Append("ALTER TABLE ")
                         .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
                         .Append(" DROP INDEX ")
                         .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
-                        .AppendLine(";");
-
+                        .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
                     EndStatement(builder);
-                    
-                    builder.Append("ALTER TABLE ")
+                                
+                    builder
+                        .Append("ALTER TABLE ")
                         .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
-                        .Append(" CREATE INDEX ")
-                        .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName))
-                        .AppendLine(";");
-
+                        .Append(" ADD ")
+                        .Append(newIndexDefinition)
+                        .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
                     EndStatement(builder);
                 }
             }
@@ -330,7 +344,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             string columnDefinition;
             if (match.Success)
-                columnDefinition = match.Groups[1].Value.TrimEnd(',');
+                columnDefinition = match.Groups[1].Value.Trim().TrimEnd(',');
             else
                 throw new InvalidOperationException($"Could not find column definition for table: '{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}' column: {operation.Name}");
 

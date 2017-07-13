@@ -256,7 +256,7 @@ END;" + EOL +
         {
             base.RenameIndexOperation_works();
             
-            Assert.Equal("ALTER TABLE `People` RENAME INDEX `IX_People_Name` TO `IX_People_Better_Name`;" + EOL,
+            Assert.Equal("ALTER TABLE `People` RENAME INDEX `IX_People_Discriminator` TO `IX_People_DiscriminatorNew`;" + EOL,
                 Sql);
         }
 
