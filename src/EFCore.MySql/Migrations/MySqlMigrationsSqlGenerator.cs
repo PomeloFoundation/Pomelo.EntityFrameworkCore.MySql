@@ -158,15 +158,36 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             if (operation.NewName != null)
             {
-                builder.Append("ALTER TABLE ")
-                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
-                    .Append(" RENAME INDEX ")
-                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
-                    .Append(" TO ")
-                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName))
-                    .AppendLine(";");
+                if (_options.ConnectionSettings.ServerVersion.SupportsRenameIndex)
+                {
+                    builder.Append("ALTER TABLE ")
+                        .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
+                        .Append(" RENAME INDEX ")
+                        .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
+                        .Append(" TO ")
+                        .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName))
+                        .AppendLine(";");
 
-                EndStatement(builder);
+                    EndStatement(builder);
+                }
+                else
+                {
+                    builder.Append("ALTER TABLE ")
+                        .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
+                        .Append(" DROP INDEX ")
+                        .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
+                        .AppendLine(";");
+
+                    EndStatement(builder);
+                    
+                    builder.Append("ALTER TABLE ")
+                        .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
+                        .Append(" CREATE INDEX ")
+                        .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName))
+                        .AppendLine(";");
+
+                    EndStatement(builder);
+                }
             }
         }
 

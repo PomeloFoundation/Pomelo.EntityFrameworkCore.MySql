@@ -255,6 +255,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
         }
 
         [Fact]
+        public virtual void RenameIndexOperation_works()
+        {
+            Generate(
+                new RenameIndexOperation
+                {
+                    IsDestructiveChange = false,
+                    Name = "IX_People_Name",
+                    NewName = "IX_People_Better_Name",
+                    Table = "People"
+                });
+        }
+        
+        [Fact]
         public virtual void CreateTableOperation()
         {
             Generate(

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -71,7 +71,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             });
         }
 
-        private MySqlConnectionSettings(MySqlConnectionStringBuilder settingsCsb, ServerVersion serverVersion)
+        internal MySqlConnectionSettings(MySqlConnectionStringBuilder settingsCsb, ServerVersion serverVersion)
         {
             // Settings from the connection string
             OldGuids = settingsCsb.OldGuids;
