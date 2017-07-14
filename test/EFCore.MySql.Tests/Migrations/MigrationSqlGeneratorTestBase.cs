@@ -261,8 +261,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                 new RenameIndexOperation
                 {
                     IsDestructiveChange = false,
-                    Name = "IX_People_Name",
-                    NewName = "IX_People_Better_Name",
+                    Name = "IX_People_Discriminator",
+                    NewName = "IX_People_DiscriminatorNew",
                     Table = "People"
                 });
         }
