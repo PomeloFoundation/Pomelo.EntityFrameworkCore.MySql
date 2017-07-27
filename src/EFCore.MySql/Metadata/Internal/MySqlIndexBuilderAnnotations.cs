@@ -35,6 +35,16 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
         /// </summary>
         public new virtual bool HasFilter([CanBeNull] string value) => SetFilter(value);
 
+        public virtual bool IsFullText(bool value = false)
+        {
+            if (value)
+            {
+                this.Annotations.SetAnnotation(MySqlAnnotationNames.FullTextIndex, "FULLTEXT");
+            }
+
+            return true;
+        }
+
 #pragma warning restore 109
     }
 }

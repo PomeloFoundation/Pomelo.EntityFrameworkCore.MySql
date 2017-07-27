@@ -43,6 +43,13 @@ namespace Microsoft.EntityFrameworkCore.Migrations.Internal
         /// </summary>
         public override IEnumerable<IAnnotation> For(IIndex index)
         {
+            if (index.GetAnnotation(MySqlAnnotationNames.FullTextIndex).Value != null)
+            {
+                yield return new Annotation(
+                    MySqlAnnotationNames.FullTextIndex,
+                    "FULLTEXT");
+            }
+
             foreach (var annotation in ForRemove(index))
             {
                 yield return annotation;
