@@ -20,5 +20,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public const string ValueGenerationStrategy = Prefix + "ValueGenerationStrategy";
+
+        public const string FullTextIndex = Prefix + "FullTextIndex";
     }
 }

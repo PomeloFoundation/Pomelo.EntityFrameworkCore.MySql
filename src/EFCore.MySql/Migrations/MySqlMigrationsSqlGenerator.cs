@@ -227,12 +227,17 @@ namespace Microsoft.EntityFrameworkCore.Migrations
         protected override void Generate([NotNull] CreateIndexOperation operation, [CanBeNull] IModel model, [NotNull] MigrationCommandListBuilder builder, bool terminate)
         {
             var method = (string)operation[MySqlAnnotationNames.Prefix];
+            var isFullText = !string.IsNullOrEmpty((string)operation[MySqlAnnotationNames.FullTextIndex]);
 
             builder.Append("CREATE ");
 
             if (operation.IsUnique)
             {
                 builder.Append("UNIQUE ");
+            }
+            else if (isFullText)
+            {
+                builder.Append("FULLTEXT ");
             }
 
             builder

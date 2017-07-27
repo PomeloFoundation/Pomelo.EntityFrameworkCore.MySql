@@ -243,6 +243,15 @@ END;" + EOL +
                 Sql);
         }
 
+        public override void CreateIndexOperation_fulltext()
+        {
+            base.CreateIndexOperation_fulltext();
+
+            Assert.Equal(
+                "CREATE FULLTEXT INDEX `IX_People_Name` ON `dbo`.`People` (`FirstName`, `LastName`);" + EOL,
+                Sql);
+        }
+
         public override void CreateIndexOperation_nonunique()
         {
             base.CreateIndexOperation_nonunique();
