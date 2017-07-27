@@ -99,24 +99,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
         }
 
         [Fact]
-        public void AddColumnOperation_with_datetime()
-        {
-            Generate(new AddColumnOperation
-            {
-                Table = "People",
-                Name = "Birthday",
-                ClrType = typeof(DateTime),
-                ColumnType = "datetime",
-                IsNullable = false,
-                DefaultValue = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
-            });
-
-            Assert.Equal(
-                "ALTER TABLE `People` ADD `Birthday` datetime NOT NULL DEFAULT '" + new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified).ToString("yyyy-MM-dd HH:mm:ss") + "';" + EOL,
-                Sql);
-        }
-
-        [Fact]
         public override void AddColumnOperation_with_computed_column_SQL()
 	    {
 		    base.AddColumnOperation_with_computed_column_SQL();
