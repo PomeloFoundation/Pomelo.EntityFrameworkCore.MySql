@@ -48,7 +48,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Models
 
 	public class CrmAdmin
 	{
-		public int Id { get; set; }
+		public uint Id { get; set; }
 		public string Username { get; set; }
 		public string Password { get; set; }
 		public List<CrmAdminRole> AdminRoles { get; set; }
@@ -57,30 +57,30 @@ namespace Pomelo.EntityFrameworkCore.MySql.PerfTests.Models
 
 	public class CrmRole
 	{
-		public int Id { get; set; }
+		public uint Id { get; set; }
 		public string Name { get; set; }
 		public List<CrmAdminRole> AdminRoles { get; set; }
 	}
 
 	public class CrmMenu
 	{
-		public int Id { get; set; }
+		public uint Id { get; set; }
 		public string Name { get; set; }
 		public List<CrmAdminMenu> AdminMenus { get; set; }
 	}
 
 	public class CrmAdminRole
 	{
-		public int AdminId { get; set; }
-		public int RoleId { get; set; }
+		public uint AdminId { get; set; }
+		public uint RoleId { get; set; }
 		public CrmAdmin Admin { get; set; }
 		public CrmRole Role { get; set; }
 	}
 
 	public class CrmAdminMenu
 	{
-		public int AdminId { get; set; }
-		public int MenuId { get; set; }
+		public uint AdminId { get; set; }
+		public uint MenuId { get; set; }
 		public CrmAdmin Admin { get; set; }
 		public CrmMenu Menu { get; set; }
 	}
