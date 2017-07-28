@@ -43,14 +43,16 @@ namespace Microsoft.EntityFrameworkCore.Migrations.Internal
         /// </summary>
         public override IEnumerable<IAnnotation> For(IIndex index)
         {
-            if (index.GetAnnotation(MySqlAnnotationNames.FullTextIndex).Value != null)
+            var isFullText = index.MySql().IsFullText;
+            if (isFullText.HasValue && isFullText.Value)
             {
                 yield return new Annotation(
                     MySqlAnnotationNames.FullTextIndex,
                     "FULLTEXT");
             }
 
-            if (index.GetAnnotation(MySqlAnnotationNames.SpatialIndex).Value != null)
+            var isSpatial = index.MySql().IsSpatial;
+            if (isSpatial.HasValue && isSpatial.Value)
             {
                 yield return new Annotation(
                     MySqlAnnotationNames.SpatialIndex,
