@@ -15,6 +15,10 @@ namespace Microsoft.EntityFrameworkCore
             {
                 indexBuilder.Metadata.AddAnnotation(MySqlAnnotationNames.FullTextIndex, "FULLTEXT");
             }
+            else
+            {
+                indexBuilder.Metadata.RemoveAnnotation(MySqlAnnotationNames.FullTextIndex);
+            }
             return indexBuilder;
         }
 
@@ -23,6 +27,10 @@ namespace Microsoft.EntityFrameworkCore
             if (isSpatial)
             {
                 indexBuilder.Metadata.AddAnnotation(MySqlAnnotationNames.SpatialIndex, "SPATIAL");
+            }
+            else
+            {
+                indexBuilder.Metadata.RemoveAnnotation(MySqlAnnotationNames.SpatialIndex);
             }
             return indexBuilder;
         }
