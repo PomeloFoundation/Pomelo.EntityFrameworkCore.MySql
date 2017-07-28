@@ -256,6 +256,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
         }
 
         [Fact]
+        public virtual void CreateIndexOperation_spatial()
+        {
+            Generate(
+                new CreateIndexOperation
+                {
+                    Name = "IX_People_Name",
+                    Table = "People",
+                    Schema = "dbo",
+                    Columns = new[] { "FirstName", "LastName" },
+                    [MySqlAnnotationNames.SpatialIndex] = "SPATIAL"
+                });
+        }
+
+        [Fact]
         public virtual void CreateIndexOperation_nonunique()
         {
             Generate(

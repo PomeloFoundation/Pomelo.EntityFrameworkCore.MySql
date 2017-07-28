@@ -50,6 +50,13 @@ namespace Microsoft.EntityFrameworkCore.Migrations.Internal
                     "FULLTEXT");
             }
 
+            if (index.GetAnnotation(MySqlAnnotationNames.SpatialIndex).Value != null)
+            {
+                yield return new Annotation(
+                    MySqlAnnotationNames.SpatialIndex,
+                    "SPATIAL");
+            }
+
             foreach (var annotation in ForRemove(index))
             {
                 yield return annotation;

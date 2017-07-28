@@ -22,5 +22,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
         public const string ValueGenerationStrategy = Prefix + "ValueGenerationStrategy";
 
         public const string FullTextIndex = Prefix + "FullTextIndex";
+
+        public const string SpatialIndex = Prefix + "SpatialIndex";
     }
 }

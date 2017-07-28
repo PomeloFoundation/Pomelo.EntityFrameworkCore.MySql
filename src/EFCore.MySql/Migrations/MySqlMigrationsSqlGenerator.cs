@@ -228,6 +228,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
         {
             var method = (string)operation[MySqlAnnotationNames.Prefix];
             var isFullText = !string.IsNullOrEmpty((string)operation[MySqlAnnotationNames.FullTextIndex]);
+            var isSpatial = !string.IsNullOrEmpty((string)operation[MySqlAnnotationNames.SpatialIndex]);
 
             builder.Append("CREATE ");
 
@@ -238,6 +239,10 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             else if (isFullText)
             {
                 builder.Append("FULLTEXT ");
+            }
+            else if (isSpatial)
+            {
+                builder.Append("SPATIAL ");
             }
 
             builder

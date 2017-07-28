@@ -252,6 +252,15 @@ END;" + EOL +
                 Sql);
         }
 
+        public override void CreateIndexOperation_spatial()
+        {
+            base.CreateIndexOperation_spatial();
+
+            Assert.Equal(
+                "CREATE SPATIAL INDEX `IX_People_Name` ON `dbo`.`People` (`FirstName`, `LastName`);" + EOL,
+                Sql);
+        }
+
         public override void CreateIndexOperation_nonunique()
         {
             base.CreateIndexOperation_nonunique();
