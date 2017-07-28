@@ -5,5 +5,8 @@ namespace Microsoft.EntityFrameworkCore.Metadata
 {
     public interface IMySqlIndexAnnotations : IRelationalIndexAnnotations
     {
+        bool? IsFullText { get; }
+
+        bool? IsSpatial { get; }
     }
 }
