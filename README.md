@@ -160,7 +160,11 @@ Milestone | Release week
 2.0.0-preview2-final     | July 26th 2017
 2.0.0-rtm     | TBD
 
-### 2.0.0-preview2-unstable
+### 2.0.0-rtm
+
+Support full text and spatial indexes.
+
+### 2.0.0-preview2
 
 Compatible with Entity Framework Core 2.0.0-preview2-final.
 
