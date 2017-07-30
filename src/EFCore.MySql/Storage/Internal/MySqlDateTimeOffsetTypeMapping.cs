@@ -20,7 +20,7 @@ namespace Microsoft.EntityFrameworkCore.Storage
     {
         private const string DateTimeOffsetFormatConst6 = @"{0:yyyy-MM-dd HH\:mm\:ss.ffffff}";
         private const string DateTimeOffsetFormatConst = @"{0:yyyy-MM-dd HH\:mm\:ss}";
-        private string _storeType;
+        private readonly string _storeType;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="DateTimeOffsetTypeMapping" /> class.

@@ -21,7 +21,7 @@ namespace Microsoft.EntityFrameworkCore.Storage
     {
         private const string DateTimeFormatConst6 = @"{0:yyyy-MM-dd HH\:mm\:ss.ffffff}";
         private const string DateTimeFormatConst = @"{0:yyyy-MM-dd HH\:mm\:ss}";
-        private string _storeType;
+        private readonly string _storeType;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="DateTimeTypeMapping" /> class.
