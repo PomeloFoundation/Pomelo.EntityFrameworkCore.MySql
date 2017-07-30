@@ -17,7 +17,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         private static readonly Regex TypeRe = new Regex(@"([a-z0-9]+)\s*?(?:\(\s*(\d+)?\s*\))?\s*(unsigned)?", RegexOptions.IgnoreCase);
 
         // boolean
-        private readonly BoolTypeMapping _bit               = new BoolTypeMapping("bit", DbType.Boolean);
+        private readonly MySqlBoolTypeMapping _bit               = new MySqlBoolTypeMapping("bit", DbType.Boolean);
 
         // integers
         private readonly SByteTypeMapping _tinyint          = new SByteTypeMapping("tinyint", DbType.SByte);
@@ -47,8 +47,8 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 	    private readonly MySqlStringTypeMapping _varcharmax      = new MySqlStringTypeMapping("longtext", DbType.AnsiString);
 
 	    // DateTime
-        private readonly DateTimeTypeMapping _dateTime6              = new DateTimeTypeMapping("datetime(6)", DbType.DateTime);
-        private readonly DateTimeOffsetTypeMapping _dateTimeOffset6  = new DateTimeOffsetTypeMapping("datetime(6)", DbType.DateTime);
+        private readonly MySqlDateTimeTypeMapping _dateTime6              = new MySqlDateTimeTypeMapping("datetime(6)", DbType.DateTime);
+        private readonly MySqlDateTimeOffsetTypeMapping _dateTimeOffset6  = new MySqlDateTimeOffsetTypeMapping("datetime(6)", DbType.DateTime);
         private readonly TimeSpanTypeMapping _time6                  = new TimeSpanTypeMapping("time(6)", DbType.Time);
 
         // json

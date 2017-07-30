@@ -81,7 +81,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
         }
 
         [Fact]
-        public void AddColumnOperation_with_datetime()
+        public void AddColumnOperation_with_datetime6()
         {
             Generate(new AddColumnOperation
             {
@@ -94,7 +94,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
             });
 
             Assert.Equal(
-                "ALTER TABLE `People` ADD `Birthday` timestamp(6) NOT NULL DEFAULT '" + new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified).ToString() + "';" + EOL,
+                "ALTER TABLE `People` ADD `Birthday` timestamp(6) NOT NULL DEFAULT '" + new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified).ToString("yyyy-MM-dd HH:mm:ss.ffffff") + "';" + EOL,
                 Sql);
         }
 
@@ -115,6 +115,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
 
             Assert.Equal(
                 "ALTER TABLE `People` ADD `Birthday` timestamp(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6);" + EOL,
+                Sql);
+        }
+
+        [Fact]
+        public override void AddDefaultBooleanOperation()
+        {
+            base.AddDefaultBooleanOperation();
+
+            Assert.Equal(
+                "ALTER TABLE `People` ADD `IsLeader` bit DEFAULT TRUE;" + EOL,
                 Sql);
         }
 
@@ -416,7 +426,7 @@ END;" + EOL +
             base.AlterColumnOperation();
             Assert.Equal(
                 @"ALTER TABLE `dbo`.`People` MODIFY COLUMN `LuckyNumber` int NOT NULL;" + EOL +
-                @"ALTER TABLE `dbo`.`People` ALTER COLUMN `LuckyNumber` SET DEFAULT '7'" + EOL,
+                @"ALTER TABLE `dbo`.`People` ALTER COLUMN `LuckyNumber` SET DEFAULT 7" + EOL,
             Sql, false, true, true);
         }
 
@@ -550,11 +560,11 @@ END;" + EOL +
                     ClrType = typeof(int),
                     ColumnType = "int",
                     IsNullable = false,
-                    DefaultValue = "8"
+                    DefaultValue = 8
                 });
 
             Assert.Equal(
-                "ALTER TABLE `People` ADD `foo` int NOT NULL DEFAULT '8';" + EOL,
+                "ALTER TABLE `People` ADD `foo` int NOT NULL DEFAULT 8;" + EOL,
                 Sql);
         }
 

@@ -79,6 +79,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
         }
 
         [Fact]
+        public virtual void AddDefaultBooleanOperation()
+        {
+            Generate(
+                new AddColumnOperation
+                {
+                    Table = "People",
+                    Name = "IsLeader",
+                    ClrType = typeof(Boolean),
+                    ColumnType = "bit",
+                    IsNullable = true,
+                    DefaultValue = true
+                });
+        }
+
+        [Fact]
         public virtual void AddColumnOperation_without_column_type()
         {
             Generate(

@@ -15,8 +15,8 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 {
     public class MySqlSmartTypeMapper : MySqlTypeMapper
     {
-        private static readonly DateTimeTypeMapping DateTime             = new DateTimeTypeMapping("datetime", DbType.DateTime);
-        private static readonly DateTimeOffsetTypeMapping DateTimeOffset = new DateTimeOffsetTypeMapping("datetime", DbType.DateTime);
+        private static readonly MySqlDateTimeTypeMapping DateTime             = new MySqlDateTimeTypeMapping("datetime", DbType.DateTime);
+        private static readonly MySqlDateTimeOffsetTypeMapping DateTimeOffset = new MySqlDateTimeOffsetTypeMapping("datetime", DbType.DateTime);
         private static readonly TimeSpanTypeMapping Time                 = new TimeSpanTypeMapping("time", DbType.Time);
         private static readonly GuidTypeMapping OldGuid                  = new GuidTypeMapping("binary(16)", DbType.Guid);
 

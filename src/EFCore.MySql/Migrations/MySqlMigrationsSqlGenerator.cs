@@ -32,7 +32,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             [NotNull] IMySqlOptions options)
             : base(dependencies)
         {
-	        _options = options;
+            _options = options;
         }
 
         protected override void Generate([NotNull] MigrationOperation operation, [CanBeNull] IModel model, [NotNull] MigrationCommandListBuilder builder)
@@ -125,9 +125,9 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
                     if (operation.DefaultValue != null)
                     {
-                        var stringTypeMapping = Dependencies.TypeMapper.GetMapping(typeof(string));
+                        var typeMapping = Dependencies.TypeMapper.GetMapping(operation.DefaultValue.GetType());
                         builder.Append(" SET DEFAULT ")
-                            .Append(stringTypeMapping.GenerateSqlLiteral(operation.DefaultValue.ToString()))
+                            .Append(typeMapping.GenerateSqlLiteral(operation.DefaultValue))
                             .AppendLine(Dependencies.SqlGenerationHelper.BatchTerminator);
                     }
                     else if (!string.IsNullOrWhiteSpace(operation.DefaultValueSql))
@@ -469,10 +469,10 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 }
                 else if (defaultValue != null)
                 {
-                    var stringTypeMapping = Dependencies.TypeMapper.GetMapping(typeof(string));
+                    var defaultValueLiteral = Dependencies.TypeMapper.GetMapping(clrType);
                     builder
                         .Append(" DEFAULT ")
-                        .Append(stringTypeMapping.GenerateSqlLiteral(defaultValue.ToString()));
+                        .Append(defaultValueLiteral.GenerateSqlLiteral(defaultValue));
                 }
                 if (onUpdateSql != null)
                 {
@@ -496,10 +496,10 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             }
             else if (defaultValue != null)
             {
-                var stringTypeMapping = Dependencies.TypeMapper.GetMapping(typeof(string));
+                var typeMapping = Dependencies.TypeMapper.GetMapping(defaultValue.GetType());
                 builder
                     .Append(" DEFAULT ")
-                    .Append(stringTypeMapping.GenerateSqlLiteral(defaultValue));
+                    .Append(typeMapping.GenerateSqlLiteral(defaultValue));
             }
         }
 
