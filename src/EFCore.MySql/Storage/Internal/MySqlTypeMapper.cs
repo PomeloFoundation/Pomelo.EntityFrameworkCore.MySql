@@ -110,7 +110,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     // DateTime
                     { "datetime", _dateTime6 },
                     { "time", _time6 },
-                    { "timestamp", _timeStamp }
+                    { "timestamp", _timeStamp },
 
                     // json
                     { "json", _json },
