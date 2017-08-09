@@ -22,5 +22,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Query.Models
         public Guid PressId { get; set; }
 
         public virtual Press Press { get; set; }
+
+        public int SaleCount { get; set; }
+
+        public float SinglePrice { get; set; }
     }
 }
