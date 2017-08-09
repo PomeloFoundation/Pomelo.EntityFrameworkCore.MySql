@@ -9,14 +9,14 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public class MySqlNewGuidTranslator : SingleOverloadStaticMethodCallTranslator
+    public class MySqlRandTranslator : SingleOverloadStaticMethodCallTranslator
     {
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public MySqlNewGuidTranslator()
-            : base(typeof(Guid), nameof(Guid.NewGuid), "UUID")
+        public MySqlRandTranslator()
+            : base(typeof(Random), nameof(Random.Next), "RAND")
         {
         }
     }
