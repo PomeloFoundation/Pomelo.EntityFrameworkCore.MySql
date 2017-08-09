@@ -49,7 +49,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 	    // DateTime
         private readonly MySqlDateTimeTypeMapping _dateTime6              = new MySqlDateTimeTypeMapping("datetime(6)", DbType.DateTime);
         private readonly MySqlDateTimeOffsetTypeMapping _dateTimeOffset6  = new MySqlDateTimeOffsetTypeMapping("datetime(6)", DbType.DateTime);
-        private readonly MySqlDateTimeOffsetTypeMapping _timeStamp        = new MySqlDateTimeOffsetTypeMapping("timestamp", DbType.DateTime);
+        private readonly MySqlDateTimeOffsetTypeMapping _timeStamp6 = new MySqlDateTimeOffsetTypeMapping("timestamp(6)", DbType.DateTime);
         private readonly TimeSpanTypeMapping _time6                       = new TimeSpanTypeMapping("time(6)", DbType.Time);
 
         // json
@@ -110,7 +110,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     // DateTime
                     { "datetime", _dateTime6 },
                     { "time", _time6 },
-                    { "timestamp", _timeStamp },
+                    { "timestamp", _timeStamp6 },
 
                     // json
                     { "json", _json },
