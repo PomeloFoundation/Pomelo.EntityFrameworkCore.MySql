@@ -17,7 +17,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         private static readonly Regex TypeRe = new Regex(@"([a-z0-9]+)\s*?(?:\(\s*(\d+)?\s*\))?\s*(unsigned)?", RegexOptions.IgnoreCase);
 
         // boolean
-        private readonly MySqlBoolTypeMapping _bit               = new MySqlBoolTypeMapping("bit", DbType.Boolean);
+        private readonly MySqlBoolTypeMapping _bit          = new MySqlBoolTypeMapping("bit", DbType.Boolean);
 
         // integers
         private readonly SByteTypeMapping _tinyint          = new SByteTypeMapping("tinyint", DbType.SByte);
@@ -49,7 +49,8 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 	    // DateTime
         private readonly MySqlDateTimeTypeMapping _dateTime6              = new MySqlDateTimeTypeMapping("datetime(6)", DbType.DateTime);
         private readonly MySqlDateTimeOffsetTypeMapping _dateTimeOffset6  = new MySqlDateTimeOffsetTypeMapping("datetime(6)", DbType.DateTime);
-        private readonly TimeSpanTypeMapping _time6                  = new TimeSpanTypeMapping("time(6)", DbType.Time);
+        private readonly MySqlDateTimeOffsetTypeMapping _timeStamp6 = new MySqlDateTimeOffsetTypeMapping("timestamp(6)", DbType.DateTime);
+        private readonly TimeSpanTypeMapping _time6                       = new TimeSpanTypeMapping("time(6)", DbType.Time);
 
         // json
         private readonly RelationalTypeMapping _json         = new RelationalTypeMapping("json", typeof(JsonObject<>), DbType.String, false, null);
@@ -109,6 +110,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     // DateTime
                     { "datetime", _dateTime6 },
                     { "time", _time6 },
+                    { "timestamp", _timeStamp6 },
 
                     // json
                     { "json", _json },
