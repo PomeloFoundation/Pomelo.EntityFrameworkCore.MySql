@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace EFCore.MySql.Tests.Query.Models
+namespace Pomelo.EntityFrameworkCore.MySql.Tests.Query.Models
 {
     public class Book
     {

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace EFCore.MySql.Tests.Query.Models
+namespace Pomelo.EntityFrameworkCore.MySql.Tests.Query.Models
 {
     public class Author
     {

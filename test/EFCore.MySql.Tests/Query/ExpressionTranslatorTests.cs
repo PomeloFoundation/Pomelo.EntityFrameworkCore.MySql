@@ -3,10 +3,10 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
-using EFCore.MySql.Tests.Query.Models;
+using Pomelo.EntityFrameworkCore.MySql.Tests.Query.Models;
 using Xunit;
 
-namespace EFCore.MySql.Tests.Query
+namespace Pomelo.EntityFrameworkCore.MySql.Tests.Query
 {
     public class ExpressionTranslatorTests
     {
@@ -21,7 +21,7 @@ namespace EFCore.MySql.Tests.Query
             Assert.Equal(@"SELECT `x`.`ISBN`, `x`.`AuthorId`, `x`.`PressId`, `x`.`Title`
 FROM `Books` AS `x`
 ORDER BY RAND();
-", sql);
+", sql, false, true, true);
         }
 
         [Fact]
@@ -38,7 +38,7 @@ ORDER BY RAND();
                 .ToSql();
 
             Assert.Equal(@"SELECT UUID() AS `Guid`, `x`.`ISBN`
-FROM `Books` AS `x`;", sql);
+FROM `Books` AS `x`;", sql, false, true, true);
         }
     }
 }

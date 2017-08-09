@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace EFCore.MySql.Tests.Query.Models
+namespace Pomelo.EntityFrameworkCore.MySql.Tests.Query.Models
 {
     public class BookContext : DbContext
     {
