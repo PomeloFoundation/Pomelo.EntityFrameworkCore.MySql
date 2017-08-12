@@ -380,6 +380,27 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
             Assert.NotEqual(0, result);
         }
 
+        [Fact]
+        public async Task MySqlToStringConvertTranslator()
+        {
+            var result = await _db.DataTypesSimple.Select(m => new {
+                ConvertedInt32 = m.Id.ToString(),
+                ConvertedLong = m.TypeLong.ToString(),
+                ConvertedByte = m.TypeByte.ToString(),
+                ConvertedSByte = m.TypeSbyte.ToString(),
+                ConvertedBool = m.TypeBool.ToString(),
+                ConvertedNullBool = m.TypeBoolN.ToString(),
+                ConvertedDecimal = m.TypeDecimal.ToString(),
+                ConvertedDouble = m.TypeDouble.ToString(),
+                ConvertedFloat = m.TypeFloat.ToString(),
+                ConvertedGuid = m.TypeGuid.ToString(),
+                Text = m.TypeChar
+            }
+            ).FirstOrDefaultAsync();
+
+            Assert.NotNull(result);
+        }
+
     }
 
 }
