@@ -13,7 +13,7 @@ branches:
 
 before_install:
   - docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -d mysql:5.7
-  - docker run -v $(pwd):/dotnet/:rw -e 'CI=True' --name dotnet --link mysql:mysql -d microsoft/dotnet:2.0.0-preview2-sdk sh -c 'while true; do sleep 0.1; done'
+  - docker run -v $(pwd):/dotnet/:rw -e 'CI=True' --name dotnet --link mysql:mysql -d microsoft/dotnet:2.0.0-sdk sh -c 'while true; do sleep 0.1; done'
 
 script:
   - docker exec -it dotnet sh -c 'cd /dotnet && dotnet restore'

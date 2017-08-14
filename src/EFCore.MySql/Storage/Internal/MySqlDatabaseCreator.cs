@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -95,6 +96,8 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     {
                         try
                         {
+                            if (_connection.DbConnection.State == ConnectionState.Open)
+                                return true;
                             _connection.DbConnection.Open();
                             _connection.DbConnection.Close();
                             return true;
@@ -122,6 +125,8 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     {
                         try
                         {
+                            if (_connection.DbConnection.State == ConnectionState.Open)
+                                return true;
                             await _connection.DbConnection.OpenAsync(ct).ConfigureAwait(false);
                             _connection.DbConnection.Close();
                             return true;

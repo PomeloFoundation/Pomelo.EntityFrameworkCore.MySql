@@ -26,10 +26,9 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 	    protected override object Execute(
             [NotNull] IRelationalConnection connection,
             DbCommandMethod executeMethod,
-            [CanBeNull] IReadOnlyDictionary<string, object> parameterValues,
-            bool closeConnection = true)
+            [CanBeNull] IReadOnlyDictionary<string, object> parameterValues)
         {
-		    return ExecuteAsync(IOBehavior.Synchronous, connection, executeMethod, parameterValues, closeConnection)
+		    return ExecuteAsync(IOBehavior.Synchronous, connection, executeMethod, parameterValues)
 			    .GetAwaiter()
 			    .GetResult();
 	    }
@@ -38,10 +37,9 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             [NotNull] IRelationalConnection connection,
             DbCommandMethod executeMethod,
             [CanBeNull] IReadOnlyDictionary<string, object> parameterValues,
-            bool closeConnection = true,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-		    return await ExecuteAsync(IOBehavior.Asynchronous, connection, executeMethod, parameterValues, closeConnection, cancellationToken).ConfigureAwait(false);
+		    return await ExecuteAsync(IOBehavior.Asynchronous, connection, executeMethod, parameterValues, cancellationToken).ConfigureAwait(false);
 	    }
 
 	    private async Task<object> ExecuteAsync(
@@ -49,7 +47,6 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 		    [NotNull] IRelationalConnection connection,
             DbCommandMethod executeMethod,
             [CanBeNull] IReadOnlyDictionary<string, object> parameterValues,
-            bool closeConnection = true,
             CancellationToken cancellationToken = default(CancellationToken))
 	    {
             Check.NotNull(connection, nameof(connection));
@@ -67,7 +64,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 				{
 					if (ioBehavior == IOBehavior.Asynchronous)
 						// ReSharper disable once PossibleNullReferenceException
-						await mySqlConnection.OpenAsync(false, cancellationToken).ConfigureAwait(false);
+						await mySqlConnection.OpenAsync(cancellationToken, false).ConfigureAwait(false);
 					else
 						// ReSharper disable once PossibleNullReferenceException
 						mySqlConnection.Open();
@@ -112,9 +109,6 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 						ioBehavior == IOBehavior.Asynchronous,
 						startTime,
 						stopwatch.Elapsed);
-
-					if (closeConnection)
-						connection.Close();
 				}
 				catch (Exception exception)
 				{
