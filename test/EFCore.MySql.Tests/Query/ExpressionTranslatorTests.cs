@@ -68,7 +68,7 @@ FROM `Books` AS `x`;
 ", sql, false, true, true);
         }
 
-        [Fact]
+        [Fact(Skip = "Conflict with smart type mapper")]
         public void Select_to_lower_case_test()
         {
             var db = new BookContext();
@@ -182,7 +182,7 @@ WHERE `x`.`SaleCount` >= 100;
 ", sql, false, true, true);
         }
 
-        [Fact]
+        [Fact(Skip = "Conflict with smart type mapper")]
         public void Select_string_replace_test()
         {
             var db = new BookContext();
