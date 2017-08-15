@@ -96,10 +96,16 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     {
                         try
                         {
-                            if (_connection.DbConnection.State == ConnectionState.Open)
-                                return true;
-                            _connection.DbConnection.Open();
-                            _connection.DbConnection.Close();
+                            using (var masterConnection = _connection.CreateMasterConnection())
+                            {
+                                masterConnection.Open();
+                                using (var cmd = masterConnection.DbConnection.CreateCommand())
+                                {
+                                    cmd.CommandText = $"USE `{_connection.DbConnection.Database}`";
+                                    cmd.ExecuteNonQuery();
+                                }
+                                masterConnection.Close();
+                            }
                             return true;
                         }
                         catch (MySqlException e)
@@ -125,10 +131,16 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     {
                         try
                         {
-                            if (_connection.DbConnection.State == ConnectionState.Open)
-                                return true;
-                            await _connection.DbConnection.OpenAsync(ct).ConfigureAwait(false);
-                            _connection.DbConnection.Close();
+                            using (var masterConnection = _connection.CreateMasterConnection())
+                            {
+                                await masterConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
+                                using (var cmd = masterConnection.DbConnection.CreateCommand())
+                                {
+                                    cmd.CommandText = $"USE `{_connection.DbConnection.Database}`";
+                                    await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                                }
+                                masterConnection.Close();
+                            }
                             return true;
                         }
                         catch (MySqlException e)
