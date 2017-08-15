@@ -18,27 +18,15 @@ using MySql.Data.MySqlClient;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
 {
-    public class MigrationSqlGeneratorMySql56Test : MigrationSqlGeneratorTestBase
+    public class MigrationSqlGeneratorMySql55Test : MigrationSqlGeneratorTestBase
     {
         protected override IMigrationsSqlGenerator SqlGenerator
         {
             get
             {
-                // type mapper
-                var typeMapper = new MySqlTypeMapper(new RelationalTypeMapperDependencies());
-
-                // migrationsSqlGeneratorDependencies
-                var commandBuilderFactory = new RelationalCommandBuilderFactory(
-                    new FakeDiagnosticsLogger<DbLoggerCategory.Database.Command>(),
-                    typeMapper);
-                var migrationsSqlGeneratorDependencies = new MigrationsSqlGeneratorDependencies(
-                    commandBuilderFactory,
-                    new MySqlSqlGenerationHelper(new RelationalSqlGenerationHelperDependencies()),
-                    typeMapper);
-
                 var mySqlOptions = new Mock<IMySqlOptions>();
                 mySqlOptions.SetupGet(opts => opts.ConnectionSettings).Returns(
-                    new MySqlConnectionSettings(new MySqlConnectionStringBuilder(), new ServerVersion("5.6.2")));
+                    new MySqlConnectionSettings(new MySqlConnectionStringBuilder(), new ServerVersion("5.5.2")));
                 mySqlOptions
                     .Setup(fn =>
                         fn.GetCreateTable(It.IsAny<ISqlGenerationHelper>(), It.IsAny<string>(), It.IsAny<string>()))
@@ -60,6 +48,18 @@ CREATE TABLE `People` (
  CONSTRAINT `FK_People_People_TeacherId` FOREIGN KEY (`TeacherId`) REFERENCES `People` (`Id`) ON DELETE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1
 ");
+                
+                // type mapper
+                var typeMapper = new MySqlSmartTypeMapper(new RelationalTypeMapperDependencies(), mySqlOptions.Object);
+
+                // migrationsSqlGeneratorDependencies
+                var commandBuilderFactory = new RelationalCommandBuilderFactory(
+                    new FakeDiagnosticsLogger<DbLoggerCategory.Database.Command>(),
+                    typeMapper);
+                var migrationsSqlGeneratorDependencies = new MigrationsSqlGeneratorDependencies(
+                    commandBuilderFactory,
+                    new MySqlSqlGenerationHelper(new RelationalSqlGenerationHelperDependencies()),
+                    typeMapper);
                 
                 return new MySqlMigrationsSqlGenerator(
                     migrationsSqlGeneratorDependencies,
@@ -88,6 +88,24 @@ CREATE TABLE `People` (
             
             Assert.Equal("ALTER TABLE `People` DROP INDEX `IX_People_Discriminator`;" + EOL 
                          + "ALTER TABLE `People` ADD KEY `IX_People_DiscriminatorNew` (`Discriminator`);" + EOL,
+                Sql);
+        }
+
+        [Fact]
+        public void AddColumnOperation_with_datetime()
+        {
+            Generate(new AddColumnOperation
+            {
+                Table = "People",
+                Name = "Birthday",
+                ClrType = typeof(DateTime),
+                ColumnType = "datetime",
+                IsNullable = false,
+                DefaultValue = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+            });
+
+            Assert.Equal(
+                "ALTER TABLE `People` ADD `Birthday` datetime NOT NULL DEFAULT '" + new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified).ToString("yyyy-MM-dd HH:mm:ss") + "';" + EOL,
                 Sql);
         }
     }
