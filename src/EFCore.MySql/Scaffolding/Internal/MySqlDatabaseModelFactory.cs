@@ -74,6 +74,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
 
                 GetTables();
                 GetColumns();
+                GetPrimaryKeys();
                 GetIndexes();
                 GetConstraints();
                 return _databaseModel;
@@ -130,6 +131,46 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                             DefaultValueSql = reader[4].ToString() == "" ? null : reader[4].ToString(),
                         };
                         x.Value.Columns.Add(column);
+                    }
+            }
+        }
+
+        const string GetPrimaryQuery = @"SELECT `INDEX_NAME`, 
+     `NON_UNIQUE`, 
+     GROUP_CONCAT(`COLUMN_NAME` ORDER BY `SEQ_IN_INDEX` SEPARATOR ',') AS COLUMNS
+     FROM `INFORMATION_SCHEMA`.`STATISTICS`
+     WHERE `TABLE_SCHEMA` = '{0}'
+     AND `TABLE_NAME` = '{1}'
+     AND `INDEX_NAME` = 'PRIMARY'
+     GROUP BY `INDEX_NAME`, `NON_UNIQUE`;";
+
+        /// <remarks>
+        /// Primary keys are handled as in <see cref="GetConstraints"/>, not here
+        /// </remarks>
+        void GetPrimaryKeys()
+        {
+            foreach (var x in _tables)
+            {
+                using (var command = new MySqlCommand(string.Format(GetPrimaryQuery, _connection.Database, x.Key.Replace("`", "")), _connection))
+                using (var reader = command.ExecuteReader())
+                    while (reader.Read())
+                    {
+                        try
+                        {
+                            var index = new DatabasePrimaryKey
+                            {
+                                Table = x.Value,
+                                Name = reader.GetString(0),
+                            };
+
+                            foreach (var column in reader.GetString(2).Split(','))
+                            {
+                                index.Columns.Add(x.Value.Columns.Single(y => y.Name == column));
+                            }
+
+                            x.Value.PrimaryKey = index;
+                        }
+                        catch { }
                     }
             }
         }
