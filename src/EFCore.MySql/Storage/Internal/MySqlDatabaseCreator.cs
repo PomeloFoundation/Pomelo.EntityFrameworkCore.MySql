@@ -104,7 +104,6 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                                     cmd.CommandText = $"USE `{_connection.DbConnection.Database}`";
                                     cmd.ExecuteNonQuery();
                                 }
-                                masterConnection.Close();
                             }
                             return true;
                         }
@@ -139,7 +138,6 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                                     cmd.CommandText = $"USE `{_connection.DbConnection.Database}`";
                                     await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
                                 }
-                                masterConnection.Close();
                             }
                             return true;
                         }

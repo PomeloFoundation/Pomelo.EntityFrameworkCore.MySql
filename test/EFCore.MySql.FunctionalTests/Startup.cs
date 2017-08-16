@@ -11,12 +11,6 @@ using Newtonsoft.Json;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
-#if ORACLE
-using MySQL.Data.EntityFrameworkCore;
-using MySQL.Data.EntityFrameworkCore.Extensions;
-#elif SAPIENT
-using MySQL.Data.Entity.Extensions;
-#endif
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
