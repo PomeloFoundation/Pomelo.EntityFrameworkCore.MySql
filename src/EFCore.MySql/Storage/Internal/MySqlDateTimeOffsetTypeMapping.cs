@@ -16,7 +16,7 @@ namespace Microsoft.EntityFrameworkCore.Storage
     ///         not used in application code.
     ///     </para>
     /// </summary>
-    public class MySqlDateTimeOffsetTypeMapping : RelationalTypeMapping<DateTimeOffset>
+    public class MySqlDateTimeOffsetTypeMapping : RelationalTypeMapping
     {
         private const string DateTimeOffsetFormatConst6 = @"{0:yyyy-MM-dd HH\:mm\:ss.ffffff}";
         private const string DateTimeOffsetFormatConst = @"{0:yyyy-MM-dd HH\:mm\:ss}";
@@ -30,7 +30,7 @@ namespace Microsoft.EntityFrameworkCore.Storage
         public MySqlDateTimeOffsetTypeMapping(
             [NotNull] string storeType,
             [CanBeNull] DbType? dbType = null)
-            : base(storeType, dbType, unicode: false, size: null)
+            : base(storeType, typeof(DateTimeOffset), dbType, unicode: false, size: null)
         {
             _storeType = storeType;
         }
@@ -41,8 +41,10 @@ namespace Microsoft.EntityFrameworkCore.Storage
         /// <param name="storeType"> The name of the database type. </param>
         /// <param name="size"> The size of data the property is configured to store, or null if no size is configured. </param>
         /// <returns> The newly created mapping. </returns>
-        public override RelationalTypeMapping CreateCopy(string storeType, int? size)
-            => new DateTimeOffsetTypeMapping(storeType, DbType);
+        public override RelationalTypeMapping Clone(string storeType, int? size)
+            => new MySqlDateTimeOffsetTypeMapping(
+                storeType,
+                DbType);
 
         /// <summary>
         ///     Gets the string format to be used to generate SQL literals of this type.

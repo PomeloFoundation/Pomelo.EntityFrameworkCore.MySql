@@ -53,10 +53,10 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         private readonly TimeSpanTypeMapping _time6                       = new TimeSpanTypeMapping("time(6)", DbType.Time);
 
         // json
-        private readonly RelationalTypeMapping _json         = new RelationalTypeMapping("json", typeof(JsonObject<>), DbType.String, false, null);
+        private readonly RelationalTypeMapping _json         = new MySqlJsonTypeMapping("json", DbType.String);
 
 	    // row version
-        private readonly RelationalTypeMapping _rowversion   = new RelationalTypeMapping("TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", typeof(byte[]), DbType.Binary, false, null);
+        private readonly RelationalTypeMapping _rowversion   = new MySqlByteArrayTypeMapping("TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", DbType.Binary);
 
         // guid
 	    private readonly GuidTypeMapping _uniqueidentifier   = new GuidTypeMapping("char(36)", DbType.Guid);
