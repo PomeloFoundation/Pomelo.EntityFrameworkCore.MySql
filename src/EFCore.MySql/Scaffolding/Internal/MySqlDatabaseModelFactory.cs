@@ -222,19 +222,18 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
             }
         }
 
-        const string GetConstraintsQuery = @"SELECT `CONSTRAINT_SCHEMA`, 
+        const string GetConstraintsQuery = @"SELECT
  	`CONSTRAINT_NAME`, 
  	`TABLE_NAME`, 
- 	`COLUMN_NAME`, 
  	`REFERENCED_TABLE_NAME`, 
- 	`REFERENCED_COLUMN_NAME`, 
+ 	GROUP_CONCAT(CONCAT_WS('|', `COLUMN_NAME`, `REFERENCED_COLUMN_NAME`) ORDER BY `ORDINAL_POSITION` SEPARATOR ',') AS PAIRED_COLUMNS, 
  	(SELECT `DELETE_RULE` FROM `INFORMATION_SCHEMA`.`REFERENTIAL_CONSTRAINTS` WHERE `REFERENTIAL_CONSTRAINTS`.`CONSTRAINT_NAME` = `KEY_COLUMN_USAGE`.`CONSTRAINT_NAME`) AS `DELETE_RULE`
  FROM `INFORMATION_SCHEMA`.`KEY_COLUMN_USAGE` 
- WHERE `CONSTRAINT_SCHEMA` = '{0}' 
- 		AND `TABLE_SCHEMA` = '{0}' 
+ WHERE `TABLE_SCHEMA` = '{0}' 
  		AND `TABLE_NAME` = '{1}' 
  		AND `CONSTRAINT_NAME` <> 'PRIMARY'
-         AND `REFERENCED_TABLE_NAME` IS NOT NULL";
+        AND `REFERENCED_TABLE_NAME` IS NOT NULL
+        GROUP BY `CONSTRAINT_NAME`;";
 
         void GetConstraints()
         {
@@ -244,22 +243,25 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                 using (var reader = command.ExecuteReader())
                     while (reader.Read())
                     {
-                        if (_tables.ContainsKey($"`{ reader.GetString(4) }`"))
+                        if (_tables.ContainsKey($"`{ reader.GetString(2) }`"))
                         {
                             var fkInfo = new DatabaseForeignKey
                             {
-                                Name = reader.GetString(1),
-                                OnDelete = ConvertToReferentialAction(reader.GetString(6)),
+                                Name = reader.GetString(0),
+                                OnDelete = ConvertToReferentialAction(reader.GetString(4)),
                                 Table = x.Value,
-                                PrincipalTable = _tables[$"`{ reader.GetString(4) }`"]                                
+                                PrincipalTable = _tables[$"`{ reader.GetString(2) }`"]
                             };
-                            fkInfo.Columns.Add(x.Value.Columns.Single(y => y.Name == reader.GetString(3)));
-                            fkInfo.PrincipalColumns.Add(fkInfo.PrincipalTable.Columns.Single(y => y.Name == reader.GetString(5)));
+                            foreach (var pair in reader.GetString(3).Split(','))
+                            {
+                                fkInfo.Columns.Add(x.Value.Columns.Single(y => y.Name == pair.Split('|')[0]));
+                                fkInfo.PrincipalColumns.Add(fkInfo.PrincipalTable.Columns.Single(y => y.Name == pair.Split('|')[1]));
+                            }
                             x.Value.ForeignKeys.Add(fkInfo);
                         }
                         else
                         {
-                            Logger.LogWarning($"Referenced table `{ reader.GetString(4) }` is not in dictionary.");
+                            Logger.LogWarning($"Referenced table `{ reader.GetString(2) }` is not in dictionary.");
                         }
                     }
             }
