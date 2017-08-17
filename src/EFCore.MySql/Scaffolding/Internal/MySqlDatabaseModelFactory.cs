@@ -170,7 +170,10 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
 
                             x.Value.PrimaryKey = index;
                         }
-                        catch { }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError(ex, "Error assigning primary key for {table}.", x.Key);
+                        }
                     }
             }
         }
@@ -211,7 +214,10 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
 
                             x.Value.Indexes.Add(index);
                         }
-                        catch { }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError(ex, "Error assigning index for {table}.", x.Key);
+                        }
                     }
             }
         }
@@ -245,9 +251,10 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                                 Name = reader.GetString(1),
                                 OnDelete = ConvertToReferentialAction(reader.GetString(6)),
                                 Table = x.Value,
-                                PrincipalTable = _tables[$"`{ reader.GetString(4) }`"]
+                                PrincipalTable = _tables[$"`{ reader.GetString(4) }`"]                                
                             };
                             fkInfo.Columns.Add(x.Value.Columns.Single(y => y.Name == reader.GetString(3)));
+                            fkInfo.PrincipalColumns.Add(fkInfo.PrincipalTable.Columns.Single(y => y.Name == reader.GetString(5)));
                             x.Value.ForeignKeys.Add(fkInfo);
                         }
                         else
