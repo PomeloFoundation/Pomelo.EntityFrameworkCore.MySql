@@ -233,7 +233,9 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
  		AND `TABLE_NAME` = '{1}' 
  		AND `CONSTRAINT_NAME` <> 'PRIMARY'
         AND `REFERENCED_TABLE_NAME` IS NOT NULL
-        GROUP BY `CONSTRAINT_NAME`;";
+        GROUP BY `CONSTRAINT_NAME`, 
+        `TABLE_NAME`, 
+        `REFERENCED_TABLE_NAME`;";
 
         void GetConstraints()
         {
