@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -95,8 +96,15 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     {
                         try
                         {
-                            _connection.DbConnection.Open();
-                            _connection.DbConnection.Close();
+                            using (var masterConnection = _connection.CreateMasterConnection())
+                            {
+                                masterConnection.Open();
+                                using (var cmd = masterConnection.DbConnection.CreateCommand())
+                                {
+                                    cmd.CommandText = $"USE `{_connection.DbConnection.Database}`";
+                                    cmd.ExecuteNonQuery();
+                                }
+                            }
                             return true;
                         }
                         catch (MySqlException e)
@@ -122,8 +130,15 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     {
                         try
                         {
-                            await _connection.DbConnection.OpenAsync(ct).ConfigureAwait(false);
-                            _connection.DbConnection.Close();
+                            using (var masterConnection = _connection.CreateMasterConnection())
+                            {
+                                await masterConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
+                                using (var cmd = masterConnection.DbConnection.CreateCommand())
+                                {
+                                    cmd.CommandText = $"USE `{_connection.DbConnection.Database}`";
+                                    await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                                }
+                            }
                             return true;
                         }
                         catch (MySqlException e)

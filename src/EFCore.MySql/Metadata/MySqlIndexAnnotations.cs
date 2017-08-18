@@ -20,8 +20,8 @@ namespace Microsoft.EntityFrameworkCore.Metadata
 
         public virtual bool? IsFullText
         {
-            get { return (bool?)Annotations.GetAnnotation(MySqlAnnotationNames.FullTextIndex); }
-            [param: CanBeNull] set { SetIsFullText(value); }
+            get => (bool?)Annotations.Metadata[MySqlAnnotationNames.FullTextIndex];
+            set => SetIsFullText(value);
         }
 
         protected virtual bool SetIsFullText(bool? value) => Annotations.SetAnnotation(
@@ -30,8 +30,8 @@ namespace Microsoft.EntityFrameworkCore.Metadata
 
         public virtual bool? IsSpatial
         {
-            get { return (bool?)Annotations.GetAnnotation(MySqlAnnotationNames.SpatialIndex); }
-            [param: CanBeNull] set { SetIsSpatial(value); }
+            get => (bool?)Annotations.Metadata[MySqlAnnotationNames.SpatialIndex];
+            set => SetIsSpatial(value);
         }
 
         protected virtual bool SetIsSpatial(bool? value) => Annotations.SetAnnotation(

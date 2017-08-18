@@ -56,17 +56,6 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public override RelationalTypeMapping CreateCopy(string storeType, int? size)
-            => new MySqlStringTypeMapping(
-                storeType,
-                DbType,
-                IsUnicode,
-                size);
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         protected override void ConfigureParameter(DbParameter parameter)
         {
             // For strings and byte arrays, set the max length to the size facet if specified, or
