@@ -19,7 +19,6 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
             new MySqlEndsWithOptimizedTranslator(),
             new MySqlMathTranslator(),
             new MySqlNewGuidTranslator(),
-            new MySqlRandTranslator(),
             new MySqlObjectToStringTranslator(),
             new MySqlRegexIsMatchTranslator(),
             new MySqlStartsWithOptimizedTranslator(),
