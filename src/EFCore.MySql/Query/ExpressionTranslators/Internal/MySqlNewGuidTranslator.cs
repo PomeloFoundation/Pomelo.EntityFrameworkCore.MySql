@@ -16,7 +16,7 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public MySqlNewGuidTranslator()
-            : base(typeof(Guid), nameof(Guid.NewGuid), "NEWID")
+            : base(typeof(Guid), nameof(Guid.NewGuid), "UUID")
         {
         }
     }

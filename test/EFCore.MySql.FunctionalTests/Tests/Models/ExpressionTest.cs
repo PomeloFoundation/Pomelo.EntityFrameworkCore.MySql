@@ -242,6 +242,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
         }
 
         [Fact]
+        public async Task MySqlNewGuidTranslator()
+        {
+            var result = await _db.DataTypesSimple.Select(m =>
+                new {
+                    Id = m.Id,
+                    Guid = Guid.NewGuid(),
+                }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
+
+            Assert.NotEqual(Guid.Empty, result.Guid);
+        }
+
+        [Fact]
         public async Task MySqlRegexIsMatchTranslator()
         {
             var result = await _db.DataTypesVariable.Select(m =>
