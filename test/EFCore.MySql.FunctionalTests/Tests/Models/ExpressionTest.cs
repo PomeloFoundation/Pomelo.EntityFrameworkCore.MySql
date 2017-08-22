@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -366,6 +366,34 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
                 }).FirstOrDefaultAsync(m => m.Id == _simple2.Id);
 
             Assert.Equal(Math.Sin(_simple2.TypeDouble), result.Sin);
+        }
+
+        [Fact]
+        public async Task MySqlDateToDateTimeConvertTranslator()
+        {
+            var result = await _db.DataTypesSimple.CountAsync(m => m.TypeDateTimeN <= DateTime.Now.Date);
+            Assert.NotEqual(0, result);
+        }
+
+        [Fact]
+        public async Task MySqlToStringConvertTranslator()
+        {
+            var result = await _db.DataTypesSimple.Select(m => new {
+                ConvertedInt32 = m.Id.ToString(),
+                ConvertedLong = m.TypeLong.ToString(),
+                ConvertedByte = m.TypeByte.ToString(),
+                ConvertedSByte = m.TypeSbyte.ToString(),
+                ConvertedBool = m.TypeBool.ToString(),
+                ConvertedNullBool = m.TypeBoolN.ToString(),
+                ConvertedDecimal = m.TypeDecimal.ToString(),
+                ConvertedDouble = m.TypeDouble.ToString(),
+                ConvertedFloat = m.TypeFloat.ToString(),
+                ConvertedGuid = m.TypeGuid.ToString(),
+                Text = m.TypeChar
+            }
+            ).FirstOrDefaultAsync();
+
+            Assert.NotNull(result);
         }
 
     }

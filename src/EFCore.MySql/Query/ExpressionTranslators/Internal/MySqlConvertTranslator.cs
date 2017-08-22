@@ -50,17 +50,19 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public virtual Expression Translate(MethodCallExpression methodCallExpression)
-            => _supportedMethods.Contains(methodCallExpression.Method)
+         public virtual Expression Translate(MethodCallExpression methodCallExpression)
+            => (methodCallExpression.Method.Name == nameof(ToString)) ? 
+            new MySqlObjectToStringTranslator().Translate(methodCallExpression) :
+            (_supportedMethods.Contains(methodCallExpression.Method)
                 ? new SqlFunctionExpression(
                     "CONVERT",
                     methodCallExpression.Type,
                     new[]
-                    {
+                    {    
                         new SqlFragmentExpression(
                             _typeMapping[methodCallExpression.Method.Name]),
                         methodCallExpression.Arguments[0]
                     })
-                : null;
+                : null);
     }
 }
