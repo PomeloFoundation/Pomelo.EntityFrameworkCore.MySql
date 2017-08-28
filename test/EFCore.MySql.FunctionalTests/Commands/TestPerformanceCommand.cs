@@ -61,6 +61,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Commands{
             async Task SleepMillisecond(AppDb db)
             {
                 await db.Database.ExecuteSqlCommandAsync("SELECT SLEEP(0.001)");
+                db.Database.CloseConnection();
                 Interlocked.Increment(ref sleepNum);
             }
 

@@ -35,24 +35,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 		public DbSet<PersonParent> PeopleParents { get; set; }
 		public DbSet<PersonFamily> PeopleFamilies { get; set; }
 
-		private readonly bool _configured;
-	    private readonly DbConnection _connection;
-
-		public AppDb()
-		{
-			_configured = false;
-		}
-
 		public AppDb(DbContextOptions options) : base(options)
 		{
-			_configured = true;
 		}
-
-	    public AppDb(DbConnection connection)
-	    {
-	        _configured = false;
-	        _connection = connection;
-	    }
 
 		AppDb IDesignTimeDbContextFactory<AppDb>.CreateDbContext(string[] args)
 		{
@@ -60,19 +45,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 				.UseMySql(AppConfig.Config["Data:ConnectionString"]);
 			new MySqlDbContextOptionsBuilder(optionsBuilder).MaxBatchSize(AppConfig.EfBatchSize);
 			return new AppDb(optionsBuilder.Options);
-		}
-
-		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-		{
-		    if (_configured)
-		        return;
-
-		    if (_connection != null)
-                optionsBuilder.UseMySql(_connection, options => options.MaxBatchSize(AppConfig.EfBatchSize));
-		    else
-				optionsBuilder.UseMySql(AppConfig.Config["Data:ConnectionString"], options => options.MaxBatchSize(AppConfig.EfBatchSize));
-
-		    optionsBuilder.UseLoggerFactory(new LoggerFactory().AddConsole(AppConfig.Config.GetSection("Logging")));
 		}
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)

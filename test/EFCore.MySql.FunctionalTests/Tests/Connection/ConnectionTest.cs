@@ -9,9 +9,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Connection
     {
         private static readonly MySqlConnection Connection = new MySqlConnection(AppConfig.Config["Data:ConnectionString"]);
 
-        private static AppDb NewDbContext(bool reuseConnection)
+        private static AppDbScope NewDbScope(bool reuseConnection)
         {
-            return reuseConnection ? new AppDb(Connection) : new AppDb();
+            return reuseConnection ? new AppDbScope(Connection) : new AppDbScope();
         }
 
         [Theory]
@@ -21,8 +21,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Connection
         {
             var title = "test";
             var blog = new Blog {Title = title};
-            using (var db = NewDbContext(reuseConnection))
+            using (var scope = NewDbScope(reuseConnection))
             {
+                var db = scope.AppDb;
                 db.Blogs.Add(blog);
                 await db.SaveChangesAsync();
             }
@@ -30,8 +31,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Connection
 
             // this will throw a DbUpdateConcurrencyException if UseAffectedRows=true
             var sameBlog = new Blog {Id = blog.Id, Title = title};
-            using (var db = NewDbContext(reuseConnection))
+            using (var scope = NewDbScope(reuseConnection))
             {
+                var db = scope.AppDb;
                 db.Blogs.Update(sameBlog);
                 await db.SaveChangesAsync();
             }

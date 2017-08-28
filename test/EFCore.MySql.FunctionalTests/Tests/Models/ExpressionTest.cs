@@ -14,14 +14,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
     public class ExpressionTest : IDisposable
     {
 
-        private readonly AppDb _db;
+        private readonly AppDbScope _scope;
+        private AppDb _db => _scope.AppDb;
         private readonly DataTypesSimple _simple;
         private readonly DataTypesSimple _simple2;
         private readonly DataTypesVariable _variable;
 
         public ExpressionTest()
         {
-            _db = new AppDb();
+            _scope = new AppDbScope();
 
             // initialize simple data types
             _simple = new DataTypesSimple
@@ -58,7 +59,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
             }
             finally
             {
-                _db.Dispose();
+                _scope.Dispose();
             }
         }
 

@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using System.Data.Common;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
@@ -42,16 +43,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 		        .AddDefaultTokenProviders();
         }
 
-        public static void ConfigureEntityFramework(IServiceCollection services)
+        public static void ConfigureEntityFramework(IServiceCollection services, DbConnection connection = null)
         {
-            Console.WriteLine($"Using Batch Size: {AppConfig.EfBatchSize}");
-            if (AppConfig.EfSchema != null)
-                Console.WriteLine($"Using Schema: {AppConfig.EfSchema}");
-
-            services.AddDbContext<AppDb>(
-                options => options.UseMySql(AppConfig.Config["Data:ConnectionString"],
-                    mysqlOptions => mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize)),
-                ServiceLifetime.Scoped);
+            if (connection == null)
+            {
+                services.AddDbContextPool<AppDb>(
+                    options => options.UseMySql(AppConfig.Config["Data:ConnectionString"],
+                        mysqlOptions => mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize)));
+            }
+            else
+            {
+                services.AddDbContext<AppDb>(
+                    options => options.UseMySql(connection,
+                        mysqlOptions => mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize)));
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
