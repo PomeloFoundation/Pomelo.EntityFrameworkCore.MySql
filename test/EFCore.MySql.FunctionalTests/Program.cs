@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Commands;
+using Microsoft.AspNetCore;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
@@ -12,12 +13,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
             if (args.Length == 0)
             {
-	            var host = new WebHostBuilder()
-                    .UseUrls("http://*:5000")
-                    .UseKestrel()
-                    .UseStartup<Startup>()
-                    .Build();
-                host.Run();
+	            BuildWebHost(args).Run();
             }
             else
             {
@@ -40,5 +36,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Environment.Exit(commandRunner.Run(args));
             }
         }
+
+        public static IWebHost BuildWebHost(string[] args)
+        {
+            return WebHost.CreateDefaultBuilder(args)
+                .UseUrls("http://*:5000")
+                .UseStartup<Startup>()
+                .Build();
+        }
+
     }
 }

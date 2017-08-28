@@ -10,7 +10,7 @@ using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
-	public class AppDb : IdentityDbContext<AppIdentityUser>, IDesignTimeDbContextFactory<AppDb>
+	public class AppDb : IdentityDbContext<AppIdentityUser>
 	{
 		// blog
 		public DbSet<Blog> Blogs { get; set; }
@@ -34,17 +34,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 		public DbSet<PersonKid> PeopleKids { get; set; }
 		public DbSet<PersonParent> PeopleParents { get; set; }
 		public DbSet<PersonFamily> PeopleFamilies { get; set; }
-
+		
 		public AppDb(DbContextOptions options) : base(options)
 		{
-		}
-
-		AppDb IDesignTimeDbContextFactory<AppDb>.CreateDbContext(string[] args)
-		{
-			var optionsBuilder = new DbContextOptionsBuilder<AppDb>()
-				.UseMySql(AppConfig.Config["Data:ConnectionString"]);
-			new MySqlDbContextOptionsBuilder(optionsBuilder).MaxBatchSize(AppConfig.EfBatchSize);
-			return new AppDb(optionsBuilder.Options);
 		}
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
