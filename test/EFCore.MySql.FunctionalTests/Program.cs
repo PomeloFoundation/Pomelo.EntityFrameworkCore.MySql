@@ -1,5 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Commands;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
@@ -19,7 +21,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             }
             else
             {
-                Environment.Exit(CommandRunner.Run(args));
+                var serviceCollection = new ServiceCollection();
+                serviceCollection
+                    .AddLogging()
+                    .AddSingleton<ICommandRunner, CommandRunner>()
+                    .AddSingleton<IConnectionStringCommand, ConnectionStringCommand>()
+                    .AddSingleton<ITestMigrateCommand, TestMigrateCommand>()
+                    .AddSingleton<ITestPerformanceCommand, TestPerformanceCommand>();
+                Startup.ConfigureEntityFramework(serviceCollection);
+                var serviceProvider = serviceCollection.BuildServiceProvider();
+
+                serviceProvider
+                    .GetService<ILoggerFactory>()
+                    .AddConsole(AppConfig.Config.GetSection("Logging"));
+
+                var commandRunner = serviceProvider.GetService<ICommandRunner>();
+
+                Environment.Exit(commandRunner.Run(args));
             }
         }
     }

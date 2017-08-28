@@ -7,12 +7,36 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Threading.Tasks;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Commands{
 
-    public static class TestPerformanceCommand{
+    public class TestPerformanceCommand : ITestPerformanceCommand
+    {
 
-        public static void Run(int iterations, int concurrency, int ops)
+        private AppDb _db;
+
+        public TestPerformanceCommand(AppDb db)
+        {
+            _db = db;
+        }
+
+        private Lazy<ServiceProvider> _serviceProvider = new Lazy<ServiceProvider>(() => {
+            var serviceCollection = new ServiceCollection();
+                serviceCollection
+                    .AddLogging()
+                    .AddScoped<ITestPerformanceRunner, TestPerformanceRunner>();
+                Startup.ConfigureEntityFramework(serviceCollection);
+
+                var serviceProvider = serviceCollection.BuildServiceProvider();
+                serviceProvider
+                    .GetService<ILoggerFactory>()
+                    .AddConsole(AppConfig.Config.GetSection("Logging"));
+                return serviceProvider;
+        });
+
+        public void Run(int iterations, int concurrency, int ops)
         {
 
             var recordNum = 0;
@@ -40,17 +64,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Commands{
                 Interlocked.Increment(ref sleepNum);
             }
 
-            using (var db = new AppDb())
-            {
-                db.Database.ExecuteSqlCommand($"DELETE FROM `{db.Model.FindEntityType(typeof(Blog)).Relational().TableName}`");
-            }
+            _db.Database.ExecuteSqlCommand("DELETE FROM `" + _db.Model.FindEntityType(typeof(Blog)).Relational().TableName + "`");
 
             PerfTest(InsertOne, "Insert One", iterations, concurrency, ops).GetAwaiter().GetResult();
-            using (var db = new AppDb())
-            {
-                Console.WriteLine("Records Inserted: " + db.Blogs.Count());
-                Console.WriteLine();
-            }
+            Console.WriteLine("Records Inserted: " + _db.Blogs.Count());
+            Console.WriteLine();
 
             PerfTest(SelectOne, "Select One", iterations, concurrency, ops).GetAwaiter().GetResult();
             Console.WriteLine("Records Selected: " +selected.Count);
@@ -64,20 +82,28 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Commands{
             Console.WriteLine();
         }
 
-        public static async Task PerfTest(Func<AppDb, Task> test, string testName, int iterations, int concurrency, int ops)
+        public async Task PerfTest(Func<AppDb, Task> test, string testName, int iterations, int concurrency, int ops)
         {
             var timers = new List<TimeSpan>();
             for (var iteration = 0; iteration < iterations; iteration++)
             {
+                // run the timed tests
                 var tasks = new List<Task>();
                 var start = DateTime.UtcNow;
                 for (var connection = 0; connection < concurrency; connection++)
                 {
-                    tasks.Add(ConnectionTask(test, ops));
+                    var scope = _serviceProvider.Value.CreateScope();
+                    var testPerformanceRunner = scope.ServiceProvider.GetService<ITestPerformanceRunner>();
+                    async Task callable() {
+                        await testPerformanceRunner.ConnectionTask(test, ops);
+                        scope.Dispose();
+                    };
+                    tasks.Add(callable());
                 }
                 await Task.WhenAll(tasks);
                 timers.Add(DateTime.UtcNow - start);
             }
+            
             Console.WriteLine("Test:                     " + testName);
             Console.WriteLine("Iterations:               " + iterations);
             Console.WriteLine("Concurrency:              " + concurrency);
@@ -87,17 +113,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Commands{
                               + TimeSpan.FromTicks(timers.Sum(timer => timer.Ticks) / timers.Count) + ", "
                               + timers.Max());
             Console.WriteLine();
-        }
-
-        private static async Task ConnectionTask(Func<AppDb, Task> cb, int ops)
-        {
-            using (var db = new AppDb())
-            {
-                for (var op = 0; op < ops; op++)
-                {
-                    await cb(db);
-                }
-            }
         }
 
     }

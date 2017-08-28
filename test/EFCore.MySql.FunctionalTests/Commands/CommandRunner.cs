@@ -2,19 +2,35 @@ using System;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Commands{
 
-    public static class CommandRunner
+    public class CommandRunner : ICommandRunner
     {
-        public static void Help()
+
+        private IConnectionStringCommand _connectionStringCommand;
+        private ITestMigrateCommand _testMigrateCommand;
+        private ITestPerformanceCommand _testPerformanceCommand;
+
+        public CommandRunner(
+            IConnectionStringCommand connectionStringCommand,
+            ITestMigrateCommand testMigrateCommand,
+            ITestPerformanceCommand testPerformanceCommand
+        )
+        {
+            _connectionStringCommand = connectionStringCommand;
+            _testMigrateCommand = testMigrateCommand;
+            _testPerformanceCommand = testPerformanceCommand;
+        }
+
+        public void Help()
         {
             Console.Error.WriteLine(@"dotnet run
     connectionString   print connection string
     testMigrate        test dbContext.Database functions: ensureCreate, ensureDelete, migrate
-    testPerformance [iteratoins] [concurrency] [operations]
+    testPerformance [iterations] [concurrency] [operations]
     -h, --help         show this message
             ");
         }
 
-        public static int Run(string[] args)
+        public int Run(string[] args)
         {
             var cmd = args[0];
 
@@ -23,15 +39,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Commands{
 	            switch (cmd)
 	            {
 		            case "connectionString":
-						ConnectionStringCommand.Run();
+						_connectionStringCommand.Run();
 			            break;
 		            case "testMigrate":
-						TestMigrateCommand.Run();
+						_testMigrateCommand.Run();
 			            break;
 	                case "testPerformance":
 	                    if (args.Length != 4)
 	                        goto default;
-	                    TestPerformanceCommand.Run(int.Parse(args[1]), int.Parse(args[2]), int.Parse(args[3]));
+	                    _testPerformanceCommand.Run(int.Parse(args[1]), int.Parse(args[2]), int.Parse(args[3]));
 	                    break;
 		            case "-h":
 		            case "--help":

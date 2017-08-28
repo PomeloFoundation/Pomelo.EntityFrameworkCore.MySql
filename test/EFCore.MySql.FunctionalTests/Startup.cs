@@ -42,7 +42,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 		        .AddDefaultTokenProviders();
         }
 
-        public void ConfigureEntityFramework(IServiceCollection services)
+        public static void ConfigureEntityFramework(IServiceCollection services)
         {
             Console.WriteLine($"Using Batch Size: {AppConfig.EfBatchSize}");
             if (AppConfig.EfSchema != null)
