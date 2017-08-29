@@ -21,8 +21,9 @@ script:
   - echo "Building migrations" && docker exec -it dotnet sh -c 'cd /dotnet/test/EFCore.MySql.FunctionalTests&& cp config.json.example config.json && sed -i "s/127.0.0.1/mysql/g" config.json && ./scripts/rebuild.sh'
   - echo "Test applying migrations" && docker exec -it dotnet sh -c 'cd /dotnet/test/EFCore.MySql.FunctionalTests && dotnet run -c Release testMigrate'
   - echo "Test scaffolding" && docker exec -it dotnet sh -c 'cd /dotnet/test/EFCore.MySql.FunctionalTests&& ./scripts/scaffold.sh; rc=$?; rm -rf Scaffold; exit $rc'
-  - echo "Test with EF_BATCH_SIZE=1" && docker exec -it dotnet sh -c 'cd /dotnet/test/EFCore.MySql.FunctionalTests&& dotnet test -c Release'
-  - echo "Test with EF_BATCH_SIZE=10" && docker exec -it dotnet sh -c 'cd /dotnet/test/EFCore.MySql.FunctionalTests&& export EF_BATCH_SIZE=10 && dotnet test -c Release'
+  - echo "Test with EF_BATCH_SIZE=1" && docker exec -it dotnet sh -c 'cd /dotnet/test/EFCore.MySql.FunctionalTests && dotnet test -c Release'
+  - echo "Test with EF_BATCH_SIZE=10" && docker exec -it dotnet sh -c 'cd /dotnet/test/EFCore.MySql.FunctionalTests && export EF_BATCH_SIZE=10 && dotnet test -c Release'
+  - echo "Test legacy migrations" && docker exec -it dotnet sh -c 'cd /dotnet/test/EFCore.MySql.FunctionalTests && ./scripts/legacy.sh'
   - echo "Building migrations with EF_DATABASE=pomelo_test2" && docker exec -it mysql sh -c 'mysql -uroot -pPassword12! -e "CREATE SCHEMA IF NOT EXISTS pomelo_test2;"' && docker exec -it dotnet sh -c 'cd /dotnet/test/EFCore.MySql.FunctionalTests&& export EF_SCHEMA=pomelo_test2 && ./scripts/rebuild.sh'
   - echo "Test with EF_SCHEMA=pomelo_test2" && docker exec -it dotnet sh -c 'cd /dotnet/test/EFCore.MySql.FunctionalTests&& export EF_SCHEMA=pomelo_test2 && dotnet test -c Release'
 

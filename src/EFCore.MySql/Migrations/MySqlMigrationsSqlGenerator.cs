@@ -24,10 +24,10 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 {
     public class MySqlMigrationsSqlGenerator : MigrationsSqlGenerator
     {
-	    private static readonly Regex TypeRe = new Regex(@"([a-z0-9]+)\s*?(?:\(\s*(\d+)?\s*\))?", RegexOptions.IgnoreCase);
-	    private readonly IMySqlOptions _options;
+        private static readonly Regex TypeRe = new Regex(@"([a-z0-9]+)\s*?(?:\(\s*(\d+)?\s*\))?", RegexOptions.IgnoreCase);
+        private readonly IMySqlOptions _options;
 
-	    public MySqlMigrationsSqlGenerator(
+        public MySqlMigrationsSqlGenerator(
             [NotNull] MigrationsSqlGeneratorDependencies dependencies,
             [NotNull] IMySqlOptions options)
             : base(dependencies)
@@ -171,7 +171,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     EndStatement(builder);
                 }
                 else
-                {   
+                {
                     var createTableSyntax = _options.GetCreateTable(Dependencies.SqlGenerationHelper, operation.Table, operation.Schema);
 
                     if (createTableSyntax == null)
@@ -193,7 +193,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                         .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
                         .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
                     EndStatement(builder);
-                                
+
                     builder
                         .Append("ALTER TABLE ")
                         .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
@@ -371,20 +371,20 @@ namespace Microsoft.EntityFrameworkCore.Migrations
         }
 
         protected override void ColumnDefinition(
-            [CanBeNull] string schema, 
-            [NotNull] string table, 
-            [NotNull] string name, 
-            [NotNull] Type clrType, 
-            [CanBeNull] string type, 
-            [CanBeNull] bool? unicode, 
-            [CanBeNull] int? maxLength, 
-            bool rowVersion, 
-            bool nullable, 
-            [CanBeNull] object defaultValue, 
-            [CanBeNull] string defaultValueSql, 
-            [CanBeNull] string computedColumnSql, 
-            [NotNull] IAnnotatable annotatable, 
-            [CanBeNull] IModel model, 
+            [CanBeNull] string schema,
+            [NotNull] string table,
+            [NotNull] string name,
+            [NotNull] Type clrType,
+            [CanBeNull] string type,
+            [CanBeNull] bool? unicode,
+            [CanBeNull] int? maxLength,
+            bool rowVersion,
+            bool nullable,
+            [CanBeNull] object defaultValue,
+            [CanBeNull] string defaultValueSql,
+            [CanBeNull] string computedColumnSql,
+            [NotNull] IAnnotatable annotatable,
+            [CanBeNull] IModel model,
             [NotNull] MigrationCommandListBuilder builder)
         {
             Check.NotEmpty(name, nameof(name));
@@ -392,19 +392,32 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(clrType, nameof(clrType));
             Check.NotNull(builder, nameof(builder));
 
-	        var matchType = type;
-	        var matchLen = "";
-	        var match = TypeRe.Match(type ?? "-");
-	        if (match.Success)
-	        {
-		        matchType = match.Groups[1].Value.ToLower();
-		        if (!string.IsNullOrWhiteSpace(match.Groups[2].Value))
-			        matchLen = match.Groups[2].Value;
-	        }
+            if (type == null)
+                type = GetColumnType(schema, table, name, clrType, unicode, maxLength, rowVersion, model);
+
+            var matchType = type;
+            var matchLen = "";
+            var match = TypeRe.Match(type ?? "-");
+            if (match.Success)
+            {
+                matchType = match.Groups[1].Value.ToLower();
+                if (!string.IsNullOrWhiteSpace(match.Groups[2].Value))
+                    matchLen = match.Groups[2].Value;
+            }
 
             var autoIncrement = false;
             var valueGenerationStrategy = annotatable[MySqlAnnotationNames.ValueGenerationStrategy] as MySqlValueGenerationStrategy?;
-           if ((valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn) && string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
+            if (!valueGenerationStrategy.HasValue)
+            {
+                // check 1.x Value Generation Annotations
+                var generatedOnAddAnnotation = annotatable[MySqlAnnotationNames.LegacyValueGeneratedOnAdd];
+                if (generatedOnAddAnnotation != null && (bool)generatedOnAddAnnotation)
+                    valueGenerationStrategy = MySqlValueGenerationStrategy.IdentityColumn;
+                var generatedOnAddOrUpdateAnnotation = annotatable[MySqlAnnotationNames.LegacyValueGeneratedOnAddOrUpdate];
+                if (generatedOnAddOrUpdateAnnotation != null && (bool)generatedOnAddOrUpdateAnnotation)
+                    valueGenerationStrategy = MySqlValueGenerationStrategy.ComputedColumn;
+            }
+            if ((valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn) && string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
             {
                 switch (matchType)
                 {
@@ -426,23 +439,23 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                         break;
                 }
             }
-            
+
             string onUpdateSql = null;
             if (valueGenerationStrategy == MySqlValueGenerationStrategy.ComputedColumn)
             {
-	           switch (matchType)
-	           {
-	               case "datetime":
-	                   if (!_options.ConnectionSettings.ServerVersion.SupportsDateTime6)
-	                       throw new InvalidOperationException($"Error in {table}.{name}: DATETIME does not support values generated " +
-                               "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");
-	                   goto case "timestamp";
-	               case "timestamp":
-                       if (string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
-                           defaultValueSql = $"CURRENT_TIMESTAMP({matchLen})";
-			           onUpdateSql = $"CURRENT_TIMESTAMP({matchLen})";
-			           break;
-               }
+                switch (matchType)
+                {
+                    case "datetime":
+                        if (!_options.ConnectionSettings.ServerVersion.SupportsDateTime6)
+                            throw new InvalidOperationException($"Error in {table}.{name}: DATETIME does not support values generated " +
+                                "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");
+                        goto case "timestamp";
+                    case "timestamp":
+                        if (string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
+                            defaultValueSql = $"CURRENT_TIMESTAMP({matchLen})";
+                        onUpdateSql = $"CURRENT_TIMESTAMP({matchLen})";
+                        break;
+                }
             }
 
             builder
@@ -755,7 +768,7 @@ END;");
             }
         }
 
-	    protected override string ColumnList(string[] columns) => string.Join(", ", columns.Select(Dependencies.SqlGenerationHelper.DelimitIdentifier));
+        protected override string ColumnList(string[] columns) => string.Join(", ", columns.Select(Dependencies.SqlGenerationHelper.DelimitIdentifier));
     }
 
     public static class StringExtensions
