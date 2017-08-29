@@ -21,8 +21,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
 			const string zip = "99999";
 			var addressFormatted = string.Join(", ", address, city, state, zip);
 
-		    using (var db = new AppDb())
+		    using (var scope = new AppDbScope())
 			{
+				var db = scope.AppDb;
 			    void TestContact(GeneratedContact contact)
 			    {
 			        var csb = new MySqlConnectionStringBuilder(db.Database.GetDbConnection().ConnectionString);
@@ -66,8 +67,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
 		{
 			var gt = new GeneratedTime {Name = "test"};
 
-			using (var db = new AppDb())
+			using (var scope = new AppDbScope())
 			{
+				var db = scope.AppDb;
 				db.GeneratedTime.Add(gt);
 				await db.SaveChangesAsync();
 

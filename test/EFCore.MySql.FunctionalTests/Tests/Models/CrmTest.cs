@@ -11,8 +11,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
 	{
 		public CrmFixture()
 		{
-			using (var db = new AppDb())
+			using (var scope = new AppDbScope())
 			{
+				var db = scope.AppDb;
 				var superAdmin = new CrmAdmin
 				{
 					Username = "test",
@@ -59,8 +60,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
 		[Fact]
 		public async Task TestCrmSuperUserEagerLoading()
 		{
-			using (var db = new AppDb())
+			using (var scope = new AppDbScope())
 			{
+				var db = scope.AppDb;
 				var superUser = await db.CrmAdmins
 					.OrderByDescending(m => m.Id)
 					.Include(m => m.AdminMenus)
@@ -82,8 +84,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
 		[Fact]
 		public async Task TestCrmSuperUserExplicitLoading()
 		{
-			using (var db = new AppDb())
+			using (var scope = new AppDbScope())
 			{
+				var db = scope.AppDb;
 				// load just the superUser
 				var superUser = await db.CrmAdmins.OrderByDescending(m => m.Id).FirstOrDefaultAsync();
 

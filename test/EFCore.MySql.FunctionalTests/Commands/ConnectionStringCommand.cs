@@ -2,9 +2,11 @@ using System;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Commands{
 
-    public static class ConnectionStringCommand{
+    public class ConnectionStringCommand : IConnectionStringCommand
+    {
 
-        public static void Run(){
+        public void Run()
+        {
             Console.Write(AppConfig.Config["Data:ConnectionString"]);
         }
 

@@ -67,8 +67,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
 				new PersonParent {Name = "Sharon", Occupation = "Receptionist at Tom's Rhinoplasty", OnPta = true, Family = famalies[4]},
 			};
 
-			using (var db = new AppDb())
+			using (var scope = new AppDbScope())
 			{
+				var db = scope.AppDb;
 				db.People.AddRange(teachers);
 				db.People.AddRange(students);
 				db.People.AddRange(parents);
@@ -91,8 +92,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
 		[Fact(Skip="https://github.com/aspnet/EntityFramework/issues/9038")]
 		public async Task TestDiscriminator()
 		{
-			using (var db = new AppDb())
+			using (var scope = new AppDbScope())
 			{
+				var db = scope.AppDb;
 				var teachers = await db.People.OfType<PersonTeacher>()
 					.Where(m => m.Id >= _fixture.LowestTeacherId && m.Id <= _fixture.HighestTeacherId)
 					.OrderBy(m => m.Id)

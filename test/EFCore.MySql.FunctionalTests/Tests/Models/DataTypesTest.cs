@@ -222,7 +222,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
 	        var valueMemSync = NewValueMem();
 
 	        // save them to the database
-	        using (var db = new AppDb()){
+	        using (var scope = new AppDbScope())
+			{
+				var db = scope.AppDb;
 		        db.DataTypesSimple.Add(emptyMemAsync);
 		        db.DataTypesSimple.Add(valueMemAsync);
 		        await db.SaveChangesAsync();
@@ -233,8 +235,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
 	        }
 
 	        // load them from the database and run tests
-	        using (var db = new AppDb())
-	        {
+	        using (var scope = new AppDbScope())
+			{
+				var db = scope.AppDb;
 		        // ReSharper disable once AccessToDisposedClosure
 	            async Task<DataTypesSimple> FromDbAsync(DataTypesSimple dt) => await db.DataTypesSimple.FirstOrDefaultAsync(m => m.Id == dt.Id);
 
@@ -346,7 +349,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
 		    var valueMemSync = NewValueMem();
 
 		    // save them to the database
-		    using (var db = new AppDb()){
+		    using (var scope = new AppDbScope())
+			{
+				var db = scope.AppDb;
 			    db.DataTypesVariable.Add(emptyMemAsync);
 			    db.DataTypesVariable.Add(valueMemAsync);
 			    await db.SaveChangesAsync();
@@ -357,8 +362,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
 		    }
 
 		    // load them from the database and run tests
-		    using (var db = new AppDb())
-		    {
+		    using (var scope = new AppDbScope())
+			{
+				var db = scope.AppDb;
 			    // ReSharper disable once AccessToDisposedClosure
 		        async Task<DataTypesVariable> FromDbAsync(DataTypesVariable dt) => await db.DataTypesVariable.FirstOrDefaultAsync(m => m.Id == dt.Id);
 
