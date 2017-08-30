@@ -13,8 +13,7 @@ do
     do
         mv $f $(printf "$f" | awk '{print substr($0, 1, length($0)-3)}')
     done
+    dotnet ef migrations add current
     dotnet ef database update
-    # dotnet ef migrations add current
-    # dotnet ef database update
-    # dotnet test
+    dotnet test
 done

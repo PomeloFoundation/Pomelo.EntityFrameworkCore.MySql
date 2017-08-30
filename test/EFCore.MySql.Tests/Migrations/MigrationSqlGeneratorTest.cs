@@ -293,7 +293,7 @@ END;" + EOL +
             Generate(new MySqlCreateDatabaseOperation { Name = "Northwind" });
 
             Assert.Equal(
-                @"CREATE SCHEMA  `Northwind`;" + EOL,
+                @"CREATE DATABASE  `Northwind`;" + EOL,
                 Sql);
         }
 
@@ -527,7 +527,20 @@ END;" + EOL +
             });
 
             Assert.Equal(
-                @"CREATE SCHEMA `hstore`" + EOL,
+                @"CREATE DATABASE `hstore`;" + EOL,
+                Sql);
+        }
+
+        [Fact]
+        public void EnsureMySqlSchemaOperation()
+        {
+            Generate(new EnsureSchemaOperation
+            {
+                Name = "hstore",
+            });
+
+            Assert.Equal(
+                @"CREATE DATABASE IF NOT EXISTS `hstore`;" + EOL,
                 Sql);
         }
 

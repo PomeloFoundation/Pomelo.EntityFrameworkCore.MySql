@@ -287,15 +287,11 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(builder, nameof(builder));
 
             builder
-                .AppendLine($"DROP PROCEDURE IF EXISTS mysql_ef_ensure_schema;")
-                .AppendLine($"CREATE PROCEDURE mysql_ef_ensure_schema()")
-                .AppendLine($"BEGIN")
-                .AppendLine($"    IF NOT EXISTS (SELECT 1 FROM `INFORMATION_SCHEMA`.`SCHEMATA` WHERE `SCHEMA_NAME` = '{ operation.Name }')")
-                .AppendLine($"    THEN")
-                .AppendLine($"        CREATE SCHEMA `{ operation.Name }`;")
-                .AppendLine($"    END IF;")
-                .AppendLine($"END;")
+                .Append("CREATE DATABASE IF NOT EXISTS ")
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
+                .Append(Dependencies.SqlGenerationHelper.StatementTerminator)
                 .AppendLine(Dependencies.SqlGenerationHelper.BatchTerminator);
+            EndStatement(builder);
         }
 
         public virtual void Generate(MySqlCreateDatabaseOperation operation, IModel model, MigrationCommandListBuilder builder)
@@ -304,9 +300,11 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(builder, nameof(builder));
 
             builder
-                .Append("CREATE SCHEMA ")
+                .Append("CREATE DATABASE ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
+                .Append(Dependencies.SqlGenerationHelper.StatementTerminator)
                 .AppendLine(Dependencies.SqlGenerationHelper.BatchTerminator);
+            EndStatement(builder);
         }
 
         public virtual void Generate(MySqlDropDatabaseOperation operation, IModel model, MigrationCommandListBuilder builder)
@@ -314,11 +312,12 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
-            var dbName = Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name);
-
             builder
                 .Append("DROP DATABASE ")
-                .Append(dbName);
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
+                .Append(Dependencies.SqlGenerationHelper.StatementTerminator)
+                .AppendLine(Dependencies.SqlGenerationHelper.BatchTerminator);
+            EndStatement(builder);
         }
 
         protected override void Generate(DropIndexOperation operation, IModel model, MigrationCommandListBuilder builder)
