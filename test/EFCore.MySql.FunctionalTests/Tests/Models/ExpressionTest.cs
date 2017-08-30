@@ -269,6 +269,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
         }
 
         [Fact]
+        public async Task MySqlStringEqualsTranslator()
+        {
+            var result = await _db.DataTypesVariable.Select(m =>
+                new {
+                    Id = m.Id,
+                    Equals = m.TypeString.Equals("EntityFramework"),
+                    NotEquals = m.TypeString.Equals("asdf")
+                }).FirstOrDefaultAsync(m => m.Id == _variable.Id);
+
+            Assert.True(result.Equals);
+            Assert.False(result.NotEquals);
+        }
+
+        [Fact]
         public async Task MySqlStartsWithOptimizedTranslator()
         {
             var result = await _db.DataTypesVariable.Select(m =>
@@ -403,6 +417,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
                 ConvertedFloat = m.TypeFloat.ToString(),
                 ConvertedGuid = m.TypeGuid.ToString(),
                 Text = m.TypeChar
+            }
+            ).FirstOrDefaultAsync();
+
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task MySqlCastTranslator()
+        {
+            var result = await _db.DataTypesSimple.Select(m => new {
+                IntToUlong = (ulong) m.TypeInt,
+                IntToDecimal = (decimal) m.TypeInt,
+                IntToString = "test" + m.TypeInt,
             }
             ).FirstOrDefaultAsync();
 

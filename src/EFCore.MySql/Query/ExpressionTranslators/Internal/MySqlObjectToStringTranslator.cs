@@ -14,7 +14,7 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
     /// </summary>
     public class MySqlObjectToStringTranslator : IMethodCallTranslator
     {
-        private const int DefaultLength = 100;
+        private const int DefaultLength = 127;
 
         private static readonly Dictionary<Type, string> _typeMapping
             = new Dictionary<Type, string>
