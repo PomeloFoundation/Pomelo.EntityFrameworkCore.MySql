@@ -38,8 +38,8 @@ show variables like 'character_set_database';
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.0-rc-*" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.0.0-rc-*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.0-rtm-*" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.0.0-rtm-*" />
   </ItemGroup>
 
   <ItemGroup>
@@ -158,7 +158,7 @@ By viewing the following full project which is a single-user blog system and bas
 Milestone | Release week
 ----------|-------------
 2.0.0-preview2-final     | July 26th 2017
-2.0.0-rtm     | TBD
+2.0.0 | September 4th, 2017
 
 ### 2.0.0-rtm
 
