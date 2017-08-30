@@ -2,6 +2,7 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query.Expressions;
@@ -126,6 +127,53 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
             Sql.Append(" REGEXP ");
             Visit(regexpExpression.Pattern);
             return regexpExpression;
+        }
+
+        private static readonly Dictionary<string, string[]> CastMappings = new Dictionary<string, string[]>
+        {
+            { "signed", new []{ "tinyint", "smallint", "mediumint", "int", "bigint" }},
+            { "decimal", new []{ "decimal", "double", "float" } },
+            { "binary", new []{ "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob" } },
+            { "datetime", new []{ "datetime", "timestamp" } },
+            { "time", new []{ "time" } },
+            { "json", new []{ "json" } },
+        };
+
+        public override Expression VisitExplicitCast(ExplicitCastExpression explicitCastExpression)
+        {
+            Sql.Append("CAST(");
+            Visit(explicitCastExpression.Operand);
+            Sql.Append(" AS ");
+            var typeMapping = Dependencies.RelationalTypeMapper.FindMapping(explicitCastExpression.Type);
+            if (typeMapping == null)
+            {
+                throw new InvalidOperationException($"Cannot cast to type '{explicitCastExpression.Type.Name}'");
+            }
+
+            var storeTypeLower = typeMapping.StoreType.ToLower();
+            string castMapping = null;
+            foreach (KeyValuePair<string, string[]> kvp in CastMappings)
+            {
+                
+                foreach (var storeType in kvp.Value)
+                {
+                    if (storeTypeLower.StartsWith(storeType))
+                    {
+                        castMapping = kvp.Key;
+                        break;
+                    }
+                }
+                if (castMapping != null)
+                    break;
+            }
+            if (castMapping == "signed" && storeTypeLower.Contains("unsigned"))
+                castMapping = "unsigned";
+            else if (castMapping == null)
+                castMapping = "char";
+
+            Sql.Append(castMapping);
+            Sql.Append(")");
+            return explicitCastExpression;
         }
     }
 }
