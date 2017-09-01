@@ -38,14 +38,14 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
 
         public static ConventionSet Build()
         {
-            var sqlServerTypeMapper = new MySqlTypeMapper(new RelationalTypeMapperDependencies());
+            var typeMapper = new MySqlTypeMapper(new RelationalTypeMapperDependencies());
 
             return new MySqlConventionSetBuilder(
-                    new RelationalConventionSetBuilderDependencies(sqlServerTypeMapper, null, null),
+                    new RelationalConventionSetBuilderDependencies(typeMapper, null, null),
                     new MySqlSqlGenerationHelper(new RelationalSqlGenerationHelperDependencies()))
                 .AddConventions(
                     new CoreConventionSetBuilder(
-                            new CoreConventionSetBuilderDependencies(sqlServerTypeMapper))
+                            new CoreConventionSetBuilderDependencies(typeMapper))
                         .CreateConventionSet());
         }
     }
