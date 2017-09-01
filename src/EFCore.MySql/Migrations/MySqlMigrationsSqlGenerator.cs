@@ -393,6 +393,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             if (type == null)
                 type = GetColumnType(schema, table, name, clrType, unicode, maxLength, rowVersion, model);
+            var property = FindProperty(model, schema, table, name);
 
             var matchType = type;
             var matchLen = "";
@@ -403,19 +404,31 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 if (!string.IsNullOrWhiteSpace(match.Groups[2].Value))
                     matchLen = match.Groups[2].Value;
             }
-
+            
             var autoIncrement = false;
             var valueGenerationStrategy = annotatable[MySqlAnnotationNames.ValueGenerationStrategy] as MySqlValueGenerationStrategy?;
             if (!valueGenerationStrategy.HasValue)
             {
-                // check 1.x Value Generation Annotations
-                var generatedOnAddAnnotation = annotatable[MySqlAnnotationNames.LegacyValueGeneratedOnAdd];
-                if (generatedOnAddAnnotation != null && (bool)generatedOnAddAnnotation)
+                if (property?.ValueGenerated == ValueGenerated.OnAdd)
+                {
                     valueGenerationStrategy = MySqlValueGenerationStrategy.IdentityColumn;
-                var generatedOnAddOrUpdateAnnotation = annotatable[MySqlAnnotationNames.LegacyValueGeneratedOnAddOrUpdate];
-                if (generatedOnAddOrUpdateAnnotation != null && (bool)generatedOnAddOrUpdateAnnotation)
+                }
+                else if (property?.ValueGenerated == ValueGenerated.OnAddOrUpdate)
+                {
                     valueGenerationStrategy = MySqlValueGenerationStrategy.ComputedColumn;
+                }
+                else
+                {
+                    // check 1.x Value Generation Annotations
+                    var generatedOnAddAnnotation = annotatable[MySqlAnnotationNames.LegacyValueGeneratedOnAdd];
+                    if (generatedOnAddAnnotation != null && (bool)generatedOnAddAnnotation)
+                        valueGenerationStrategy = MySqlValueGenerationStrategy.IdentityColumn;
+                    var generatedOnAddOrUpdateAnnotation = annotatable[MySqlAnnotationNames.LegacyValueGeneratedOnAddOrUpdate];
+                    if (generatedOnAddOrUpdateAnnotation != null && (bool)generatedOnAddOrUpdateAnnotation)
+                        valueGenerationStrategy = MySqlValueGenerationStrategy.ComputedColumn;
+                }
             }
+            
             if ((valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn) && string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
             {
                 switch (matchType)

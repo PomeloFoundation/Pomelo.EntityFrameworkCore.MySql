@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
@@ -111,6 +112,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models
 		[Column(TypeName = "TIMESTAMP(6)")]
 		[DatabaseGenerated(DatabaseGeneratedOption.Computed)]
 		public DateTime UpdatedTimetamp6 { get; set; }
+	}
+
+	public class GeneratedConcurrencyToken
+	{
+		public int Id { get; set; }
+
+		public int Gen { get; set; }
+
+		[Timestamp]
+		public DateTime Updated { get; set; }
 	}
 
 }

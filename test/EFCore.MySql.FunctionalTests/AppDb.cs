@@ -27,6 +27,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 		// generated data types
 		public DbSet<GeneratedContact> GeneratedContacts { get; set; }
 		public DbSet<GeneratedTime> GeneratedTime { get; set; }
+		public DbSet<GeneratedConcurrencyToken> GeneratedConcurrencyToken { get; set; }
 
 		// people
 		public DbSet<Person> People { get; set; }

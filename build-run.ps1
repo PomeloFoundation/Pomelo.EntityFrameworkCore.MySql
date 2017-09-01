@@ -106,6 +106,9 @@ if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
 
+# supress logging output (exceptions will still be printed)
+cp -Force test\EFCore.MySql.FunctionalTests\appsettings.ci.json test\EFCore.MySql.FunctionalTests\appsettings.json
+
 # build to verify no build errors
 cd (Join-Path $repoFolder (Join-Path "src" "EFCore.MySql"))
 dotnet build -c Release

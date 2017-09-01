@@ -98,5 +98,28 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
 				Assert.NotEqual(gt.CreatedTimestamp6, gt.UpdatedTimetamp6);
 			}
 		}
+
+		[Fact]
+		public async Task TestGeneratedConcurrencyToken()
+		{
+			var gct = new GeneratedConcurrencyToken { Gen = 1 };
+			using (var scope = new AppDbScope())
+			{
+				var db = scope.AppDb;
+				db.GeneratedConcurrencyToken.Add(gct);
+				await db.SaveChangesAsync();
+
+				using (var scope2 = new AppDbScope())
+				{
+					var db2 = scope2.AppDb;
+					var gct2 = await db2.GeneratedConcurrencyToken.FindAsync(gct.Id);
+					gct2.Gen++;
+					await db2.SaveChangesAsync();
+				}
+
+				gct.Gen++;
+				await Assert.ThrowsAsync(typeof(DbUpdateConcurrencyException), () => db.SaveChangesAsync());
+			}
+		}
 	}
 }
