@@ -68,21 +68,21 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
 
     private static int CountParameters(ModificationCommand modificationCommand)
     {
-      var parameterCount = 0;
-      foreach (var columnModification in modificationCommand.ColumnModifications)
-      {
-        if (columnModification.UseOriginalValueParameter)
+        var parameterCount = 0;
+        foreach (var columnModification in modificationCommand.ColumnModifications)
         {
-          parameterCount++;
+            if (columnModification.UseCurrentValueParameter)
+            {
+                parameterCount++;
+            }
+
+            if (columnModification.UseOriginalValueParameter)
+            {
+                parameterCount++;
+            }
         }
 
-        if (columnModification.UseOriginalValueParameter)
-        {
-          parameterCount++;
-        }
-      }
-
-      return parameterCount;
+        return parameterCount;
     }
 
     protected override void ResetCommandText()
