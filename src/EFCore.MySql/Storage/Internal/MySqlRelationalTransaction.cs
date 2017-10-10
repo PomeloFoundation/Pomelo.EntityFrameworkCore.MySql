@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Threading;
@@ -46,7 +46,14 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
             try
             {
-                await (_dbTransaction as MySqlTransaction).CommitAsync(cancellationToken).ConfigureAwait(false);
+                if (_dbTransaction is MySqlTransaction)
+                {
+                    await (_dbTransaction as MySqlTransaction).CommitAsync(cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    _dbTransaction.Commit();
+                }
 
                 _logger.TransactionCommitted(
                     _relationalConnection,
@@ -81,7 +88,14 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
             try
             {
-                await (_dbTransaction as MySqlTransaction).RollbackAsync(cancellationToken).ConfigureAwait(false);
+                if (_dbTransaction is MySqlTransaction)
+                {
+                    await (_dbTransaction as MySqlTransaction).RollbackAsync(cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    _dbTransaction.Rollback();
+                }
 
                 _logger.TransactionRolledBack(
                     _relationalConnection,

@@ -53,7 +53,15 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
         private async Task<IDbContextTransaction> BeginTransactionWithNoPreconditionsAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken=default(CancellationToken))
         {
-            var dbTransaction = await (DbConnection as MySqlConnection).BeginTransactionAsync(isolationLevel).ConfigureAwait(false);
+            MySqlTransaction dbTransaction = null;
+            if (DbConnection is MySqlConnection mySqlConnection)
+            {
+                dbTransaction = await mySqlConnection.BeginTransactionAsync(isolationLevel).ConfigureAwait(false);
+            }
+            else
+            {
+                dbTransaction = (MySqlTransaction)DbConnection.BeginTransaction(isolationLevel);
+            }            
 
             CurrentTransaction
                 = new MySqlRelationalTransaction(
