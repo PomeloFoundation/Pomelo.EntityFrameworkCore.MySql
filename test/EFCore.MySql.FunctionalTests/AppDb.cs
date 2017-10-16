@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data.Common;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -15,8 +15,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 		// blog
 		public DbSet<Blog> Blogs { get; set; }
 
-		// crm
-		public DbSet<CrmAdmin> CrmAdmins { get; set; }
+        // invoice
+	    public DbSet<Invoice> Invoices { get; set; }
+
+        // crm
+        public DbSet<CrmAdmin> CrmAdmins { get; set; }
 		public DbSet<CrmRole> CrmRoles { get; set; }
 		public DbSet<CrmMenu> CrmMenus { get; set; }
 
@@ -77,6 +80,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 			CrmMeta.OnModelCreating(modelBuilder);
 			GeneratedContactMeta.OnModelCreating(modelBuilder);
 			PeopleMeta.OnModelCreating(modelBuilder);
+            InvoiceMeta.OnModelCreating(modelBuilder);
 
 		    if (AppConfig.EfSchema != null)
 		    {

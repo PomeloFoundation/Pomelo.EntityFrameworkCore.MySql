@@ -72,6 +72,7 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
                 if (readOperations.Length == 0)
                 {
                     AppendSelectAffectedCountCommand(commandStringBuilder, name, schema, commandPosition);
+                    resultSetCreated = true;
                 }
                 else if (readOperations.Length > 0)
                 {
