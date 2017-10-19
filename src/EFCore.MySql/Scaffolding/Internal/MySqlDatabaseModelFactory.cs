@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
 {
@@ -126,7 +127,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                         {
                             Table = x.Value,
                             Name = reader.GetString(0),
-                            StoreType = reader.GetString(1),
+                            StoreType = Regex.Replace(reader.GetString(1), @"(?<=int)\(\d+\)(?=\sunsigned)", string.Empty),
                             IsNullable = reader.GetString(2) == "YES",
                             DefaultValueSql = reader[4].ToString() == "" ? null : reader[4].ToString(),
                         };
