@@ -10,7 +10,7 @@ using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
-	public class AppDb : IdentityDbContext<AppIdentityUser>
+    public class AppDb : IdentityDbContext<AppIdentityUser>
 	{
 		// blog
 		public DbSet<Blog> Blogs { get; set; }
@@ -35,8 +35,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 		public DbSet<PersonKid> PeopleKids { get; set; }
 		public DbSet<PersonParent> PeopleParents { get; set; }
 		public DbSet<PersonFamily> PeopleFamilies { get; set; }
-		
-		public AppDb(DbContextOptions options) : base(options)
+
+        // batch
+        public DbSet<Product> Products { get; set; }
+        public DbSet<ProductCategory> ProductCategory { get; set; }
+        public DbSet<Category> Categories { get; set; }
+
+        public AppDb(DbContextOptions options) : base(options)
 		{
 		}
 
@@ -72,9 +77,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 				entity.Property(m => m.Name).HasMaxLength(127);
 
 			});
+            modelBuilder.Entity<ProductCategory>()
+                .HasKey(x => new { x.ProductId, x.CategoryId });
 
-			// Add our models fluent APIs
-			CrmMeta.OnModelCreating(modelBuilder);
+            // Add our models fluent APIs
+            CrmMeta.OnModelCreating(modelBuilder);
 			GeneratedContactMeta.OnModelCreating(modelBuilder);
 			PeopleMeta.OnModelCreating(modelBuilder);
 

@@ -69,11 +69,7 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
                 }
                 commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
 
-                if (readOperations.Length == 0)
-                {
-                    AppendSelectAffectedCountCommand(commandStringBuilder, name, schema, commandPosition);
-                }
-                else if (readOperations.Length > 0)
+                if (readOperations.Length > 0)
                 {
                     AppendInsertOutputClause(commandStringBuilder, name, schema, readOperations, operations);
                     resultSetCreated = true;
@@ -132,7 +128,7 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
 
             }
         }
-
+        
         protected override ResultSetMapping AppendSelectAffectedCountCommand(StringBuilder commandStringBuilder, string name, string schema, int commandPosition)
         {
             commandStringBuilder
