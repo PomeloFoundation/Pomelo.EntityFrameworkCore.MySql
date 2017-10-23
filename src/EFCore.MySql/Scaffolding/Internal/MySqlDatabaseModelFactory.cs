@@ -129,11 +129,20 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                             Name = reader.GetString(0),
                             StoreType = Regex.Replace(reader.GetString(1), @"(?<=int)\(\d+\)(?=\sunsigned)", string.Empty),
                             IsNullable = reader.GetString(2) == "YES",
-                            DefaultValueSql = reader[4].ToString() == "" ? null : reader[4].ToString(),
+                            DefaultValueSql = reader[4] == DBNull.Value ? null : '\'' + ParseToMySqlString(reader[4].ToString()) + '\'',
                         };
                         x.Value.Columns.Add(column);
                     }
             }
+        }
+
+        string ParseToMySqlString(string str)
+        {
+            // Pending the MySqlConnector implement MySqlCommandBuilder class
+            return str
+                .Replace("\\", "\\\\")
+                .Replace("'", "\\'")
+                .Replace("\"", "\\\"");
         }
 
         const string GetPrimaryQuery = @"SELECT `INDEX_NAME`, 
@@ -228,13 +237,14 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
  	`TABLE_NAME`, 
  	`REFERENCED_TABLE_NAME`, 
  	GROUP_CONCAT(CONCAT_WS('|', `COLUMN_NAME`, `REFERENCED_COLUMN_NAME`) ORDER BY `ORDINAL_POSITION` SEPARATOR ',') AS PAIRED_COLUMNS, 
- 	(SELECT `DELETE_RULE` FROM `INFORMATION_SCHEMA`.`REFERENTIAL_CONSTRAINTS` WHERE `REFERENTIAL_CONSTRAINTS`.`CONSTRAINT_NAME` = `KEY_COLUMN_USAGE`.`CONSTRAINT_NAME`) AS `DELETE_RULE`
+ 	(SELECT `DELETE_RULE` FROM `INFORMATION_SCHEMA`.`REFERENTIAL_CONSTRAINTS` WHERE `REFERENTIAL_CONSTRAINTS`.`CONSTRAINT_NAME` = `KEY_COLUMN_USAGE`.`CONSTRAINT_NAME` AND `REFERENTIAL_CONSTRAINTS`.`CONSTRAINT_SCHEMA` = `KEY_COLUMN_USAGE`.`CONSTRAINT_SCHEMA`) AS `DELETE_RULE`
  FROM `INFORMATION_SCHEMA`.`KEY_COLUMN_USAGE` 
  WHERE `TABLE_SCHEMA` = '{0}' 
- 		AND `TABLE_NAME` = '{1}' 
+ 		AND `TABLE_NAME` = '{1}'
  		AND `CONSTRAINT_NAME` <> 'PRIMARY'
         AND `REFERENCED_TABLE_NAME` IS NOT NULL
-        GROUP BY `CONSTRAINT_NAME`, 
+        GROUP BY `CONSTRAINT_SCHEMA`,
+        `CONSTRAINT_NAME`, 
         `TABLE_NAME`, 
         `REFERENCED_TABLE_NAME`;";
 
