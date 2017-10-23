@@ -129,11 +129,20 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                             Name = reader.GetString(0),
                             StoreType = Regex.Replace(reader.GetString(1), @"(?<=int)\(\d+\)(?=\sunsigned)", string.Empty),
                             IsNullable = reader.GetString(2) == "YES",
-                            DefaultValueSql = reader[4].ToString() == "" ? null : reader[4].ToString(),
+                            DefaultValueSql = reader[4] == DBNull.Value ? null : '\'' + ParseToMySqlString(reader[4].ToString()) + '\'',
                         };
                         x.Value.Columns.Add(column);
                     }
             }
+        }
+
+        string ParseToMySqlString(string str)
+        {
+            // Pending the MySqlConnector implement MySqlCommandBuilder class
+            return str
+                .Replace("\\", "\\\\")
+                .Replace("'", "\\'")
+                .Replace("\"", "\\\"");
         }
 
         const string GetPrimaryQuery = @"SELECT `INDEX_NAME`, 
