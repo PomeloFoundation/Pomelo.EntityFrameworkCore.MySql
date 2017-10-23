@@ -3,132 +3,200 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Utilities;
 
-// ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Update.Internal
 {
+    /// <summary>
+    ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+    ///     directly from your code. This API may change or be removed in future releases.
+    /// </summary>
     public class MySqlUpdateSqlGenerator : UpdateSqlGenerator, IMySqlUpdateSqlGenerator
     {
+        private readonly IRelationalTypeMapper _typeMapper;
+
         public MySqlUpdateSqlGenerator(
-            [NotNull] UpdateSqlGeneratorDependencies dependencies)
+            [NotNull] UpdateSqlGeneratorDependencies dependencies,
+            [NotNull] IRelationalTypeMapper typeMapper)
             : base(dependencies)
         {
+            _typeMapper = typeMapper;
         }
 
-        public override ResultSetMapping AppendInsertOperation(
-           StringBuilder commandStringBuilder,
-           ModificationCommand command, 
-           int commandPosition)
-        {
-            Check.NotNull(command, nameof(command));
-
-            return AppendBulkInsertOperation(commandStringBuilder, new[] { command }, commandPosition);
-        }
-
-
-        public ResultSetMapping AppendBulkInsertOperation(StringBuilder commandStringBuilder, IReadOnlyList<ModificationCommand> modificationCommands,
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public virtual ResultSetMapping AppendBulkInsertOperation(
+            StringBuilder commandStringBuilder,
+            IReadOnlyList<ModificationCommand> modificationCommands,
             int commandPosition)
         {
-            Check.NotNull(commandStringBuilder, nameof(commandStringBuilder));
-            Check.NotEmpty(modificationCommands, nameof(modificationCommands));
+            if (modificationCommands.Count == 1
+                && modificationCommands[0].ColumnModifications.All(o =>
+                    !o.IsKey
+                    || !o.IsRead
+                    || o.Property.MySql().ValueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn))
+            {
+                return AppendInsertOperation(commandStringBuilder, modificationCommands[0], commandPosition);
+            }
+
+            var readOperations = modificationCommands[0].ColumnModifications.Where(o => o.IsRead).ToList();
+            var writeOperations = modificationCommands[0].ColumnModifications.Where(o => o.IsWrite).ToList();
+            var keyOperations = modificationCommands[0].ColumnModifications.Where(o => o.IsKey).ToList();
+
+            var defaultValuesOnly = writeOperations.Count == 0;
+            var nonIdentityOperations = modificationCommands[0].ColumnModifications
+                .Where(o => o.Property.MySql().ValueGenerationStrategy != MySqlValueGenerationStrategy.IdentityColumn)
+                .ToList();
+
+            if (defaultValuesOnly)
+            {
+                if (nonIdentityOperations.Count == 0
+                    || readOperations.Count == 0)
+                {
+                    foreach (var modification in modificationCommands)
+                    {
+                        AppendInsertOperation(commandStringBuilder, modification, commandPosition);
+                    }
+
+                    return readOperations.Count == 0
+                        ? ResultSetMapping.NoResultSet
+                        : ResultSetMapping.LastInResultSet;
+                }
+
+                if (nonIdentityOperations.Count > 1)
+                {
+                    nonIdentityOperations = new List<ColumnModification> { nonIdentityOperations.First() };
+                }
+            }
+
+            if (readOperations.Count == 0)
+            {
+                return AppendBulkInsertWithoutServerValues(commandStringBuilder, modificationCommands, writeOperations);
+            }
+
+            foreach (var modification in modificationCommands)
+            {
+                AppendInsertOperation(commandStringBuilder, modification, commandPosition);
+            }
+
+            return ResultSetMapping.LastInResultSet;
+        }
+
+        private ResultSetMapping AppendBulkInsertWithoutServerValues(
+            StringBuilder commandStringBuilder,
+            IReadOnlyList<ModificationCommand> modificationCommands,
+            List<ColumnModification> writeOperations)
+        {
+            Debug.Assert(writeOperations.Count > 0);
 
             var name = modificationCommands[0].TableName;
             var schema = modificationCommands[0].Schema;
 
-            // TODO: Support TPH
-            var defaultValuesOnly = !modificationCommands.First().ColumnModifications.Any(o => o.IsWrite);
-            var statementCount = defaultValuesOnly
-                ? modificationCommands.Count
-                : 1;
-            var valueSetCount = defaultValuesOnly
-                ? 1
-                : modificationCommands.Count;
-            var resultSetCreated = false;
-            for (var i = 0; i < statementCount; i++)
+            AppendInsertCommandHeader(commandStringBuilder, name, schema, writeOperations);
+            AppendValuesHeader(commandStringBuilder, writeOperations);
+            AppendValues(commandStringBuilder, writeOperations);
+            for (var i = 1; i < modificationCommands.Count; i++)
             {
-                var operations = modificationCommands[i].ColumnModifications;
-                var writeOperations = operations.Where(o => o.IsWrite).ToArray();
-                var readOperations = operations.Where(o => o.IsRead).ToArray();
-
-                AppendInsertCommandHeader(commandStringBuilder, name, schema, writeOperations);
-                /*if (readOperations.Length > 0)
-                {
-                    AppendOutputClause(commandStringBuilder, readOperations);
-                }*/
-                AppendValuesHeader(commandStringBuilder, writeOperations);
-                AppendValues(commandStringBuilder, writeOperations);
-                for (var j = 1; j < valueSetCount; j++)
-                {
-                    commandStringBuilder.Append(",").AppendLine();
-                    AppendValues(commandStringBuilder, modificationCommands[j].ColumnModifications.Where(o => o.IsWrite).ToArray());
-                }
-                commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
-
-                if (readOperations.Length > 0)
-                {
-                    AppendInsertOutputClause(commandStringBuilder, name, schema, readOperations, operations);
-                    resultSetCreated = true;
-                }
+                commandStringBuilder.Append(",").AppendLine();
+                AppendValues(commandStringBuilder, modificationCommands[i].ColumnModifications.Where(o => o.IsWrite).ToList());
             }
+            commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
 
-            return resultSetCreated ?
-                defaultValuesOnly
-                    ? ResultSetMapping.LastInResultSet
-                    : ResultSetMapping.NotLastInResultSet
-                : ResultSetMapping.NoResultSet;
+            return ResultSetMapping.NoResultSet;
         }
 
-        // ReSharper disable once ParameterTypeCanBeEnumerable.Local
-        private void AppendInsertOutputClause(
+        private void AppendValues(
             StringBuilder commandStringBuilder,
-            string name,
-            string schema,
             IReadOnlyList<ColumnModification> operations,
-            IReadOnlyList<ColumnModification> allOperations)
+            string additionalLiteral)
         {
-            if (allOperations.Count > 0 && allOperations[0] == operations[0])
-            {
-                commandStringBuilder.Append($"SELECT { string.Join(", ", operations.Select(o => SqlGenerationHelper.DelimitIdentifier(o.ColumnName))) } FROM { SqlGenerationHelper.DelimitIdentifier(name, schema) } WHERE { SqlGenerationHelper.DelimitIdentifier(operations.First().ColumnName) } = LAST_INSERT_ID()");
-                commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
-            }
-            else if (operations.Count > 0)
+            if (operations.Count > 0)
             {
                 commandStringBuilder
-                    .Append("SELECT ");
-
-                bool isFirst = true;
-
-                foreach(var x in operations)
-                {
-                    if (!isFirst)
-                        commandStringBuilder.Append(", ");
-                    if (isFirst)
-                        isFirst = false;
-                    commandStringBuilder.Append($"{ SqlGenerationHelper.DelimitIdentifier(x.ColumnName) }");
-                }
-
-                commandStringBuilder
-                    .Append($" FROM { SqlGenerationHelper.DelimitIdentifier(name, schema) }")
-                    .Append(" WHERE ");
-
-                var predicates = new List<string>();
-                foreach(var x in allOperations.Where(y => y.IsKey))
-                {
-                    predicates.Add($"{SqlGenerationHelper.DelimitIdentifier(x.ColumnName)} = @{ x.ParameterName }");
-                }
-
-                commandStringBuilder
-                    .Append(string.Join(" AND ", predicates))
-                    .Append(SqlGenerationHelper.StatementTerminator).AppendLine();
-
+                    .Append("(")
+                    .AppendJoin(
+                        operations,
+                        SqlGenerationHelper,
+                        (sb, o, helper) =>
+                            {
+                                if (o.IsWrite)
+                                {
+                                    helper.GenerateParameterName(sb, o.ParameterName);
+                                }
+                                else
+                                {
+                                    sb.Append("DEFAULT");
+                                }
+                            })
+                    .Append(", ")
+                    .Append(additionalLiteral)
+                    .Append(")");
             }
         }
-        
+
+        private ResultSetMapping AppendSelectCommand(
+            StringBuilder commandStringBuilder,
+            IReadOnlyList<ColumnModification> readOperations,
+            IReadOnlyList<ColumnModification> keyOperations,
+            string insertedTableName,
+            int insertedTableIndex,
+            string tableName,
+            string schema,
+            string orderColumn = null)
+        {
+            commandStringBuilder
+                .AppendLine()
+                .Append("SELECT ")
+                .AppendJoin(
+                    readOperations,
+                    SqlGenerationHelper,
+                    (sb, o, helper) => helper.DelimitIdentifier(sb, o.ColumnName, "t"))
+                .Append(" FROM ");
+            SqlGenerationHelper.DelimitIdentifier(commandStringBuilder, tableName, schema);
+            commandStringBuilder
+                .Append(" t")
+                .AppendLine()
+                .Append("INNER JOIN ")
+                .Append(insertedTableName).Append(insertedTableIndex)
+                .Append(" i")
+                .Append(" ON ")
+                .AppendJoin(keyOperations, (sb, c) =>
+                    {
+                        sb.Append("(");
+                        SqlGenerationHelper.DelimitIdentifier(sb, c.ColumnName, "t");
+                        sb.Append(" = ");
+                        SqlGenerationHelper.DelimitIdentifier(sb, c.ColumnName, "i");
+                        sb.Append(")");
+                    }, " AND ");
+
+            if (orderColumn != null)
+            {
+                commandStringBuilder
+                    .AppendLine()
+                    .Append("ORDER BY ");
+                SqlGenerationHelper.DelimitIdentifier(commandStringBuilder, orderColumn, "i");
+            }
+
+            commandStringBuilder
+                .Append(SqlGenerationHelper.StatementTerminator).AppendLine()
+                .AppendLine();
+
+            return ResultSetMapping.LastInResultSet;
+        }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         protected override ResultSetMapping AppendSelectAffectedCountCommand(StringBuilder commandStringBuilder, string name, string schema, int commandPosition)
         {
             commandStringBuilder
@@ -141,18 +209,28 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
 
         public override void AppendBatchHeader(StringBuilder commandStringBuilder)
         {
-            Check.NotNull(commandStringBuilder, nameof(commandStringBuilder));
-
-            // TODO: MySql
+            // TODO: what is the effect of this statment?
+            // there is no equivalent in mysql: https://stackoverflow.com/questions/3386217/is-there-an-equivalent-to-sql-servers-set-nocount-in-mysql
         }
-
+        
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         protected override void AppendIdentityWhereCondition(StringBuilder commandStringBuilder, ColumnModification columnModification)
         {
-            throw new NotImplementedException();
+            SqlGenerationHelper.DelimitIdentifier(commandStringBuilder, columnModification.ColumnName);
+            commandStringBuilder.Append(" = ")
+                .Append("LAST_INSERT_ID()");
         }
 
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         protected override void AppendRowsAffectedWhereCondition(StringBuilder commandStringBuilder, int expectedRowsAffected)
-            => Check.NotNull(commandStringBuilder, nameof(commandStringBuilder))
-                .Append("ROW_COUNT() = " + expectedRowsAffected);
+            => commandStringBuilder
+                .Append("ROW_COUNT() = ")
+                .Append(expectedRowsAffected.ToString(CultureInfo.InvariantCulture));
     }
 }
