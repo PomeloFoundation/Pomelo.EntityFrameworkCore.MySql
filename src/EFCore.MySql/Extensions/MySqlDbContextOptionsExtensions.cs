@@ -26,7 +26,6 @@ namespace Microsoft.EntityFrameworkCore
             var csb = new MySqlConnectionStringBuilder(connectionString)
             {
 	            AllowUserVariables = true,
-                BufferResultSets = true,
 	            UseAffectedRows = false
             };
             
@@ -48,19 +47,18 @@ namespace Microsoft.EntityFrameworkCore
             Check.NotNull(connection, nameof(connection));
 
             var csb = new MySqlConnectionStringBuilder(connection.ConnectionString);
-	        if (csb.AllowUserVariables != true || csb.BufferResultSets != true || csb.UseAffectedRows != false)
+	        if (csb.AllowUserVariables != true || csb.UseAffectedRows != false)
 	        {
 	            try
 	            {
 		            csb.AllowUserVariables = true;
-                    csb.BufferResultSets = true;
 		            csb.UseAffectedRows = false;
 		            connection.ConnectionString = csb.ConnectionString;
 	            }
 	            catch (MySqlException e)
                 {
                     throw new InvalidOperationException("The MySql Connection string used with Pomelo.EntityFrameworkCore.MySql " +
-                    	"must contain \"AllowUserVariables=true;BufferResultSets=true;UseAffectedRows=false\"", e);
+                    	"must contain \"AllowUserVariables=true;UseAffectedRows=false\"", e);
                 }
             }
             

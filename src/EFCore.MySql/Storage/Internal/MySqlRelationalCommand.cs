@@ -51,89 +51,100 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 	    {
             Check.NotNull(connection, nameof(connection));
 
-            using (var dbCommand = CreateCommand(connection, parameterValues))
-			{
-				var mySqlConnection = connection as MySqlRelationalConnection;
-				object result;
-				var opened = false;
-				var commandId = Guid.NewGuid();
-				var startTime = DateTimeOffset.UtcNow;
-            	var stopwatch = Stopwatch.StartNew();
+            var dbCommand = CreateCommand(connection, parameterValues);
+            var mySqlConnection = connection as MySqlRelationalConnection;
 
-				try
-				{
-					if (ioBehavior == IOBehavior.Asynchronous)
-						// ReSharper disable once PossibleNullReferenceException
-						await mySqlConnection.OpenAsync(cancellationToken, false).ConfigureAwait(false);
-					else
-						// ReSharper disable once PossibleNullReferenceException
-						mySqlConnection.Open();
-					opened = true;
+            if (ioBehavior == IOBehavior.Asynchronous)
+                // ReSharper disable once PossibleNullReferenceException
+                await mySqlConnection.OpenAsync(cancellationToken, false).ConfigureAwait(false);
+            else
+                // ReSharper disable once PossibleNullReferenceException
+                mySqlConnection.Open();
 
-					switch (executeMethod)
-					{
-						case DbCommandMethod.ExecuteNonQuery:
-						{
-							result = ioBehavior == IOBehavior.Asynchronous ?
-								await dbCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false) :
-								dbCommand.ExecuteNonQuery();
-							break;
-						}
-						case DbCommandMethod.ExecuteScalar:
-						{
-							result = ioBehavior == IOBehavior.Asynchronous ?
-								await dbCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) :
-								dbCommand.ExecuteScalar();
-							break;
-						}
-						case DbCommandMethod.ExecuteReader:
-						{
-							var dataReader = ioBehavior == IOBehavior.Asynchronous ?
-								await dbCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false) :
-								dbCommand.ExecuteReader();
-							result = new RelationalDataReader(connection, dbCommand, new WrappedMySqlDataReader(dataReader), commandId, Logger);
-							break;
-						}
-						default:
-						{
-							throw new NotSupportedException();
-						}
-					}
-					
-					Logger.CommandExecuted(
-						dbCommand,
-						executeMethod,
-						commandId,
-						connection.ConnectionId,
-						result,
-						ioBehavior == IOBehavior.Asynchronous,
-						startTime,
-						stopwatch.Elapsed);
-				}
-				catch (Exception exception)
-				{
-					Logger.CommandError(
-						dbCommand,
-						executeMethod,
-						commandId,
-						connection.ConnectionId,
-						exception,
-						ioBehavior == IOBehavior.Asynchronous,
-						startTime,
-						stopwatch.Elapsed);
-					
-					if (opened)
-						connection.Close();
-						
-					throw;
-				}
-				finally
-				{
-					dbCommand.Parameters.Clear();
-				}
+            var commandId = Guid.NewGuid();
 
-				return result;
-			}
+            var startTime = DateTimeOffset.UtcNow;
+            var stopwatch = Stopwatch.StartNew();
+
+            Logger.CommandExecuting(
+                dbCommand,
+                executeMethod,
+                commandId,
+                connection.ConnectionId,
+                async: true,
+                startTime: startTime);
+
+            object result;
+            var readerOpen = false;
+            try
+            {
+                switch (executeMethod)
+                {
+                    case DbCommandMethod.ExecuteNonQuery:
+                    {
+                        result = ioBehavior == IOBehavior.Asynchronous ?
+                            await dbCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false) :
+                            dbCommand.ExecuteNonQuery();
+                        break;
+                    }
+                    case DbCommandMethod.ExecuteScalar:
+                    {
+                        result = ioBehavior == IOBehavior.Asynchronous ?
+                            await dbCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) :
+                            dbCommand.ExecuteScalar();
+                        break;
+                    }
+                    case DbCommandMethod.ExecuteReader:
+                    {
+                        var dataReader = ioBehavior == IOBehavior.Asynchronous ?
+                            await dbCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false) :
+                            dbCommand.ExecuteReader();
+                        result = new RelationalDataReader(connection, dbCommand, new WrappedMySqlDataReader(dataReader), commandId, Logger);
+                        readerOpen = true;
+                        break;
+                    }
+                    default:
+                    {
+                        throw new NotSupportedException();
+                    }
+                }
+
+                Logger.CommandExecuted(
+                    dbCommand,
+                    executeMethod,
+                    commandId,
+                    connection.ConnectionId,
+                    result,
+                    true,
+                    startTime,
+                    stopwatch.Elapsed);
+            }
+            catch (Exception exception)
+            {
+                Logger.CommandError(
+                    dbCommand,
+                    executeMethod,
+                    commandId,
+                    connection.ConnectionId,
+                    exception,
+                    true,
+                    startTime,
+                    stopwatch.Elapsed);
+
+                throw;
+            }
+            finally
+            {
+                dbCommand.Parameters.Clear();
+
+                if (!readerOpen)
+                {
+                    dbCommand.Dispose();
+                    connection.Close();
+                }
+            }
+
+            return result;
         }
 
         private DbCommand CreateCommand(
