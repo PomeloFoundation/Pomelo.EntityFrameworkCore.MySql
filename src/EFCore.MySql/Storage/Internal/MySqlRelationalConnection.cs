@@ -34,7 +34,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             return new MySqlRelationalConnection(Dependencies.With(contextOptions));
         }
 
-        public override bool IsMultipleActiveResultSetsEnabled => true;
+        public override bool IsMultipleActiveResultSetsEnabled => false;
 
         [NotNull]
         public override async Task<IDbContextTransaction> BeginTransactionAsync(
