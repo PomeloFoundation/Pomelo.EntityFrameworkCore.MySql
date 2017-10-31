@@ -47,6 +47,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<IBatchExecutor, MySqlBatchExecutor>()
                 .TryAdd<IRelationalDatabaseCreator, MySqlDatabaseCreator>()
                 .TryAdd<IHistoryRepository, MySqlHistoryRepository>()
+                .TryAdd<IExecutionStrategyFactory, MySqlExecutionStrategyFactory>()
                 .TryAdd<IMemberTranslator, MySqlCompositeMemberTranslator>()
                 .TryAdd<ICompositeMethodCallTranslator, MySqlCompositeMethodCallTranslator>()
                 .TryAdd<IQuerySqlGeneratorFactory, MySqlQuerySqlGeneratorFactory>()
