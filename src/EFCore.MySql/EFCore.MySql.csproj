@@ -1,16 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <VersionPrefix>2.0.0.1-Resilliency</VersionPrefix>
+    <VersionPrefix>2.0.0</VersionPrefix>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <AssemblyName>XCell.EntityFrameworkCore.MySql</AssemblyName>
-    <PackageId>XCell.EntityFrameworkCore.MySql</PackageId>
+    <AssemblyName>Pomelo.EntityFrameworkCore.MySql</AssemblyName>
+    <PackageId>Pomelo.EntityFrameworkCore.MySql</PackageId>
     <PackageTags>Entity Framework Core;entity-framework-core;MySQL;EF;ORM;Data</PackageTags>
     <PackageIconUrl>https://avatars2.githubusercontent.com/u/19828814?v=3</PackageIconUrl>
-    <PackageProjectUrl>https://github.com/xcellsoft/Pomelo.EntityFrameworkCore.MySql</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/xcellsoft/Pomelo.EntityFrameworkCore.MySql/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>git://github.com/xcellsoft/Pomelo.EntityFrameworkCore.MySql</RepositoryUrl>
+    <RepositoryUrl>git://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql</RepositoryUrl>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
   </PropertyGroup>
