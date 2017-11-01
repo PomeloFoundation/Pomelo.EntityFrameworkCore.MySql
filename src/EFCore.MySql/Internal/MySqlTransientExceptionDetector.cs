@@ -10,8 +10,8 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
     public class MySqlTransientExceptionDetector
     {
         public static bool ShouldRetryOn(Exception ex)
-            => ((ex as MySqlException)?.Number > 2000 && (ex as MySqlException)?.Number <= 2027)
-                || ((ex as MySqlException)?.Number > 2047 && (ex as MySqlException)?.Number <= 2050)
+            => ((ex as MySqlException)?.Number >= 2000 && (ex as MySqlException)?.Number <= 2027)
+                || ((ex as MySqlException)?.Number >= 2047 && (ex as MySqlException)?.Number <= 2050)
                 || (ex as MySqlException)?.Number == 0
                 || ex is TimeoutException;
     }
