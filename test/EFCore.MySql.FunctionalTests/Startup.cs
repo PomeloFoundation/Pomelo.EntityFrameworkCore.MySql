@@ -47,15 +47,40 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
             if (connection == null)
             {
-                services.AddDbContextPool<AppDb>(
-                    options => options.UseMySql(AppConfig.Config["Data:ConnectionString"],
-                        mysqlOptions => mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize)));
+                if (AppConfig.EfRetryOnFailure > 0)
+                {
+                    services.AddDbContextPool<AppDb>(
+                        options => options.UseMySql(AppConfig.Config["Data:ConnectionString"],
+                            mysqlOptions => 
+                            {
+                                mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize);
+                                mysqlOptions.EnableRetryOnFailure(AppConfig.EfRetryOnFailure, TimeSpan.FromSeconds(5), null);
+                            }));
+                }
+                else
+                {
+                    services.AddDbContextPool<AppDb>(
+                        options => options.UseMySql(AppConfig.Config["Data:ConnectionString"],
+                            mysqlOptions => mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize)));
+                }
             }
             else
             {
-                services.AddDbContext<AppDb>(
-                    options => options.UseMySql(connection,
-                        mysqlOptions => mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize)));
+                if (AppConfig.EfRetryOnFailure > 0)
+                {
+                    services.AddDbContext<AppDb>(
+                        options => options.UseMySql(connection,
+                            mysqlOptions => {
+                                mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize);
+                                mysqlOptions.EnableRetryOnFailure(AppConfig.EfRetryOnFailure, TimeSpan.FromSeconds(5), null);
+                            }));
+                }
+                else
+                {
+                    services.AddDbContext<AppDb>(
+                        options => options.UseMySql(connection,
+                            mysqlOptions => mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize)));
+                }
             }
         }
 
