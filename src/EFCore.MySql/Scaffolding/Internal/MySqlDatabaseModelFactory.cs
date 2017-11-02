@@ -123,6 +123,29 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                 using (var reader = command.ExecuteReader())
                     while (reader.Read())
                     {
+                        var extra = reader.GetString(5);
+                        EntityFrameworkCore.Metadata.ValueGenerated valueGenerated;
+                        if (extra.IndexOf("auto_increment") >= 0)
+                        {
+                            valueGenerated = EntityFrameworkCore.Metadata.ValueGenerated.OnAdd;
+                        }
+                        else if (extra.IndexOf("on update") >= 0)
+                        {
+                            if (reader[4] != DBNull.Value && extra.IndexOf(reader[4].ToString()) > 0)
+                            {
+                                valueGenerated = EntityFrameworkCore.Metadata.ValueGenerated.OnAddOrUpdate;
+                            }
+                            else
+                            {
+                                valueGenerated = EntityFrameworkCore.Metadata.ValueGenerated.OnUpdate;
+                            }
+                        }
+                        else
+                        {
+                            valueGenerated = EntityFrameworkCore.Metadata.ValueGenerated.Never;
+                        }
+
+
                         var column = new DatabaseColumn
                         {
                             Table = x.Value,
@@ -130,6 +153,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                             StoreType = Regex.Replace(reader.GetString(1), @"(?<=int)\(\d+\)(?=\sunsigned)", string.Empty),
                             IsNullable = reader.GetString(2) == "YES",
                             DefaultValueSql = reader[4] == DBNull.Value ? null : '\'' + ParseToMySqlString(reader[4].ToString()) + '\'',
+                            ValueGenerated = valueGenerated
                         };
                         x.Value.Columns.Add(column);
                     }
