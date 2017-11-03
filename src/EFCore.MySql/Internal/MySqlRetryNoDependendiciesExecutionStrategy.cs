@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace EFCore.MySql.Internal
 {
@@ -14,6 +17,27 @@ namespace EFCore.MySql.Internal
         private int _maxRetryCount { get; set; }
 
         private TimeSpan _maxRetryDelay { get; set; }
+
+        /// <summary>
+        ///     The default maximum random factor, must not be lesser than 1.
+        /// </summary>
+        private const double DefaultRandomFactor = 1.1;
+
+        /// <summary>
+        ///     The default base for the exponential function used to compute the delay between retries, must be positive.
+        /// </summary>
+        private const double DefaultExponentialBase = 2;
+
+        /// <summary>
+        ///     The default coefficient for the exponential function used to compute the delay between retries, must be nonnegative.
+        /// </summary>
+        private static readonly TimeSpan _defaultCoefficient = TimeSpan.FromSeconds(1);
+
+        /// <summary>
+        ///     A pseudo-random number generator that can be used to vary the delay between retries.
+        /// </summary>
+        private static Random Random { get; } = new Random();
+
 
         /// <summary>
         /// Configure for only 1 attempt.
@@ -62,7 +86,7 @@ namespace EFCore.MySql.Internal
                 throw new ArgumentOutOfRangeException(nameof(_maxRetryCount));
             }
 
-            var tryCount = _maxRetryCount;
+            var tryCount = 0;
 
             while (true)
             {
@@ -73,17 +97,54 @@ namespace EFCore.MySql.Internal
                 }
                 catch (Exception exception)
                 {
-                    if (--tryCount == 0)
-                        throw;
-
                     if (!_mySqlRetryingExecutionStrategy.ShouldRetryOnPublic(exception))
                     {
                         throw;
                     }
 
-                    Thread.Sleep(_maxRetryDelay);
+                    var delay = GetNextDelay(tryCount);
+
+                    if (delay == null)
+                    {
+                        throw new RetryLimitExceededException(CoreStrings.RetryLimitExceeded(_maxRetryCount, GetType().Name), exception);
+                    }
+                    else
+                    {
+                        using (var waitEvent = new ManualResetEventSlim(false))
+                        {
+                            waitEvent.WaitHandle.WaitOne(delay.Value);
+                        }     
+                    }
+                    
+                    tryCount++;
                 }
             }
         }
+
+        /// <summary>
+        ///     Determines whether the operation should be retried and the delay before the next attempt.
+        /// </summary>
+        /// <param name="currentRetryCount">Current retry count</param>
+        /// <returns>
+        ///     Returns the delay indicating how long to wait for before the next execution attempt if the operation should be retried;
+        ///     <c>null</c> otherwise
+        /// </returns>
+
+        protected virtual TimeSpan? GetNextDelay(int currentRetryCount)
+        {
+            if (currentRetryCount < _maxRetryCount)
+            {
+                var delta = (Math.Pow(DefaultExponentialBase, currentRetryCount) - 1.0)
+                            * (1.0 + Random.NextDouble() * (DefaultRandomFactor - 1.0));
+
+                var delay = Math.Min(
+                    _defaultCoefficient.TotalMilliseconds * delta,
+                    _maxRetryDelay.TotalMilliseconds);
+
+                return TimeSpan.FromMilliseconds(delay);
+            }
+
+            return null;
+        }        
     }
 }
