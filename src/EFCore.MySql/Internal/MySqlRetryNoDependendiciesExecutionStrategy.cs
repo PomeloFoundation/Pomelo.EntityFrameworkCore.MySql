@@ -36,7 +36,7 @@ namespace EFCore.MySql.Internal
         /// <summary>
         ///     A pseudo-random number generator that can be used to vary the delay between retries.
         /// </summary>
-        protected virtual Random Random { get; } = new Random();
+        private static Random Random { get; } = new Random();
 
 
         /// <summary>
