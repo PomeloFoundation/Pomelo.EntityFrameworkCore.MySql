@@ -71,7 +71,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                 executeMethod,
                 commandId,
                 connection.ConnectionId,
-                async: true,
+                async: ioBehavior == IOBehavior.Asynchronous,
                 startTime: startTime);
 
             object result;
@@ -115,9 +115,9 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     commandId,
                     connection.ConnectionId,
                     result,
-                    true,
-                    startTime,
-                    stopwatch.Elapsed);
+                    async: ioBehavior == IOBehavior.Asynchronous,
+                    startTime: startTime,
+                    duration: stopwatch.Elapsed);
             }
             catch (Exception exception)
             {
@@ -127,9 +127,9 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     commandId,
                     connection.ConnectionId,
                     exception,
-                    true,
-                    startTime,
-                    stopwatch.Elapsed);
+                    async: ioBehavior == IOBehavior.Asynchronous,
+                    startTime: startTime,
+                    duration: stopwatch.Elapsed);
 
                 throw;
             }
