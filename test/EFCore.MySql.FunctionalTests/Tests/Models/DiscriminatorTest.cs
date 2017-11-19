@@ -89,7 +89,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
 			_fixture = fixture;
 		}
 
-		[Fact(Skip="https://github.com/aspnet/EntityFramework/issues/9038")]
 		public async Task TestDiscriminator()
 		{
 			using (var scope = new AppDbScope())
