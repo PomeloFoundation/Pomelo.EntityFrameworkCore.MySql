@@ -1,16 +1,18 @@
+// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore;
+using MySql.Data.MySqlClient;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
-using MySql.Data.MySqlClient;
 
 namespace Microsoft.EntityFrameworkCore
 {
     public class MySqlRetryingExecutionStrategy : ExecutionStrategy
     {
-        public readonly ICollection<int> AdditionalErrorNumbers;
+        private readonly ICollection<int> _additionalErrorNumbers;
 
         /// <summary>
         ///     Creates a new instance of <see cref="MySqlRetryingExecutionStrategy" />.
@@ -20,7 +22,7 @@ namespace Microsoft.EntityFrameworkCore
         ///     The default retry limit is 6, which means that the total amount of time spent before failing is about a minute.
         /// </remarks>
         public MySqlRetryingExecutionStrategy(
-            DbContext context)
+            [NotNull] DbContext context)
             : this(context, DefaultMaxRetryCount)
         {
         }
@@ -30,7 +32,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="dependencies"> Parameter object containing service dependencies. </param>
         public MySqlRetryingExecutionStrategy(
-            ExecutionStrategyDependencies dependencies)
+            [NotNull] ExecutionStrategyDependencies dependencies)
             : this(dependencies, DefaultMaxRetryCount)
         {
         }
@@ -41,7 +43,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="context"> The context on which the operations will be invoked. </param>
         /// <param name="maxRetryCount"> The maximum number of retry attempts. </param>
         public MySqlRetryingExecutionStrategy(
-            DbContext context,
+            [NotNull] DbContext context,
             int maxRetryCount)
             : this(context, maxRetryCount, DefaultMaxDelay, errorNumbersToAdd: null)
         {
@@ -53,7 +55,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="dependencies"> Parameter object containing service dependencies. </param>
         /// <param name="maxRetryCount"> The maximum number of retry attempts. </param>
         public MySqlRetryingExecutionStrategy(
-            ExecutionStrategyDependencies dependencies,
+            [NotNull] ExecutionStrategyDependencies dependencies,
             int maxRetryCount)
             : this(dependencies, maxRetryCount, DefaultMaxDelay, errorNumbersToAdd: null)
         {
@@ -67,16 +69,15 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="maxRetryDelay"> The maximum delay between retries. </param>
         /// <param name="errorNumbersToAdd"> Additional SQL error numbers that should be considered transient. </param>
         public MySqlRetryingExecutionStrategy(
-            DbContext context,
+            [NotNull] DbContext context,
             int maxRetryCount,
             TimeSpan maxRetryDelay,
-             ICollection<int> errorNumbersToAdd)
-            : base(
-                context,
+            [CanBeNull] ICollection<int> errorNumbersToAdd)
+            : base(context,
                 maxRetryCount,
                 maxRetryDelay)
         {
-            AdditionalErrorNumbers = errorNumbersToAdd;
+            _additionalErrorNumbers = errorNumbersToAdd;
         }
 
         /// <summary>
@@ -87,32 +88,24 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="maxRetryDelay"> The maximum delay between retries. </param>
         /// <param name="errorNumbersToAdd"> Additional SQL error numbers that should be considered transient. </param>
         public MySqlRetryingExecutionStrategy(
-            ExecutionStrategyDependencies dependencies,
+            [NotNull] ExecutionStrategyDependencies dependencies,
             int maxRetryCount,
             TimeSpan maxRetryDelay,
-             ICollection<int> errorNumbersToAdd)
+            [CanBeNull] ICollection<int> errorNumbersToAdd)
             : base(dependencies, maxRetryCount, maxRetryDelay)
         {
-            AdditionalErrorNumbers = errorNumbersToAdd;
-        }
-
-        /// <summary>
-        /// Public version of ShouldRetryOn since we cannot change the existing one as it's an override.
-        /// </summary>
-        /// <param name="exception"></param>
-        /// <returns></returns>
-        public bool ShouldRetryOnPublic(Exception exception)
-        {
-            return ShouldRetryOn(exception);
+            _additionalErrorNumbers = errorNumbersToAdd;
         }
 
         protected override bool ShouldRetryOn(Exception exception)
         {
-            if (AdditionalErrorNumbers != null)
+            if (_additionalErrorNumbers != null)
             {
-                if (exception is MySqlException sqlException)
+                var mySqlException = exception as MySqlException;
+                if (mySqlException != null)
                 {
-                    if(AdditionalErrorNumbers.Contains(((MySqlException)exception).Number)) {
+                    if (_additionalErrorNumbers.Contains(mySqlException.Number))
+                    {
                         return true;
                     }
                 }

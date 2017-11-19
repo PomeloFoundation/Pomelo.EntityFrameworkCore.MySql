@@ -5,7 +5,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Data;
 using System.Data.Common;
-using EFCore.MySql.Internal;
 using MySql.Data.MySqlClient;
 
 // ReSharper disable once CheckNamespace
@@ -27,7 +26,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             };
         }
 
-        public static MySqlConnectionSettings GetSettings(string connectionString, MySqlRetryNoDependendiciesExecutionStrategy mySqlRetryNoDependendiciesExecutionStrategy)
+        public static MySqlConnectionSettings GetSettings(string connectionString)
         {
             var csb = new MySqlConnectionStringBuilder(connectionString);
             var settingsCsb = _settingsCsb(csb);
@@ -35,23 +34,18 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             {
                 csb.Database = "";
                 csb.Pooling = false;
-                string serverVersion = "";
-
-                mySqlRetryNoDependendiciesExecutionStrategy.Execute(() =>
+                string serverVersion;
+                using (var schemalessConnection = new MySqlConnection(csb.ConnectionString))
                 {
-                    using (var schemalessConnection = new MySqlConnection(csb.ConnectionString))
-                        {
-                            schemalessConnection.Open();
-                            serverVersion = schemalessConnection.ServerVersion;
-                        }
-                });
-
+                    schemalessConnection.Open();
+                    serverVersion = schemalessConnection.ServerVersion;
+                }
                 var version = new ServerVersion(serverVersion);
                 return new MySqlConnectionSettings(settingsCsb, version);
             });
         }
 
-        public static MySqlConnectionSettings GetSettings(DbConnection connection, MySqlRetryNoDependendiciesExecutionStrategy mySqlRetryNoDependendiciesExecutionStrategy)
+        public static MySqlConnectionSettings GetSettings(DbConnection connection)
         {
             var csb = new MySqlConnectionStringBuilder(connection.ConnectionString);
             var settingsCsb = _settingsCsb(csb);
@@ -60,10 +54,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                 var opened = false;
                 if (connection.State == ConnectionState.Closed)
                 {
-                    mySqlRetryNoDependendiciesExecutionStrategy.Execute(() =>
-                    {
-                        connection.Open();
-                    });
+                    connection.Open();
                     opened = true;
                 }
                 try
