@@ -4,7 +4,6 @@
 using System;
 using System.Data;
 using System.Data.Common;
-using EFCore.MySql.Internal;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -18,18 +17,15 @@ namespace Microsoft.EntityFrameworkCore.Internal
 
         private MySqlOptionsExtension _relationalOptions;
 
-        private MySqlRetryNoDependendiciesExecutionStrategy _mySqlRetryNoDependendiciesExecutionStrategy;
-
         private readonly Lazy<MySqlConnectionSettings> _lazyConnectionSettings;
 
         public MySqlOptions()
         {
             _lazyConnectionSettings = new Lazy<MySqlConnectionSettings>(() =>
             {
-                
                 if (_relationalOptions.Connection != null)
-                    return MySqlConnectionSettings.GetSettings(_relationalOptions.Connection, _mySqlRetryNoDependendiciesExecutionStrategy);
-                return MySqlConnectionSettings.GetSettings(_relationalOptions.ConnectionString, _mySqlRetryNoDependendiciesExecutionStrategy);
+                    return MySqlConnectionSettings.GetSettings(_relationalOptions.Connection);
+                return MySqlConnectionSettings.GetSettings(_relationalOptions.ConnectionString);
             });
         }
 
@@ -37,15 +33,6 @@ namespace Microsoft.EntityFrameworkCore.Internal
         {
             _relationalOptions = options.FindExtension<MySqlOptionsExtension>() ?? new MySqlOptionsExtension();
 
-            if (_relationalOptions.ExecutionStrategyFactory != null)
-            {
-                _mySqlRetryNoDependendiciesExecutionStrategy
-                    = new MySqlRetryNoDependendiciesExecutionStrategy((MySqlRetryingExecutionStrategy)_relationalOptions.ExecutionStrategyFactory(null));
-            } else 
-            {
-                _mySqlRetryNoDependendiciesExecutionStrategy
-                    = new MySqlRetryNoDependendiciesExecutionStrategy();
-            }
         }
 
         public virtual void Validate(IDbContextOptions options)
