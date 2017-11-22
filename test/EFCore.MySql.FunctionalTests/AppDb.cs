@@ -41,6 +41,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         public DbSet<ProductCategory> ProductCategory { get; set; }
         public DbSet<Category> Categories { get; set; }
 
+		// sequence
+		public DbSet<Sequence> Sequence { get; set; }
+
         public AppDb(DbContextOptions options) : base(options)
 		{
 		}

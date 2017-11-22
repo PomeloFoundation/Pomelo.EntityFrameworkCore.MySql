@@ -11,29 +11,20 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Utilities;
 
 namespace Microsoft.EntityFrameworkCore.Update.Internal
 {
-    /// <summary>
-    ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-    ///     directly from your code. This API may change or be removed in future releases.
-    /// </summary>
+    
     public class MySqlUpdateSqlGenerator : UpdateSqlGenerator, IMySqlUpdateSqlGenerator
     {
-        private readonly IRelationalTypeMapper _typeMapper;
 
         public MySqlUpdateSqlGenerator(
-            [NotNull] UpdateSqlGeneratorDependencies dependencies,
-            [NotNull] IRelationalTypeMapper typeMapper)
-            : base(dependencies)
+            [NotNull] UpdateSqlGeneratorDependencies dependencies
+        ) : base(dependencies)
         {
-            _typeMapper = typeMapper;
         }
 
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public virtual ResultSetMapping AppendBulkInsertOperation(
             StringBuilder commandStringBuilder,
             IReadOnlyList<ModificationCommand> modificationCommands,
@@ -114,89 +105,29 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
             return ResultSetMapping.NoResultSet;
         }
 
-        private void AppendValues(
-            StringBuilder commandStringBuilder,
-            IReadOnlyList<ColumnModification> operations,
-            string additionalLiteral)
+        protected override void AppendValuesHeader(
+            [NotNull] StringBuilder commandStringBuilder,
+            [NotNull] IReadOnlyList<ColumnModification> operations)
         {
-            if (operations.Count > 0)
+            Check.NotNull(commandStringBuilder, nameof(commandStringBuilder));
+            Check.NotNull(operations, nameof(operations));
+
+            commandStringBuilder.AppendLine();
+            commandStringBuilder.Append("VALUES ");
+        }
+
+        protected override void AppendValues(
+            [NotNull] StringBuilder commandStringBuilder,
+            [NotNull] IReadOnlyList<ColumnModification> operations)
+        {
+            base.AppendValues(commandStringBuilder, operations);
+            
+            if (operations.Count == 0)
             {
-                commandStringBuilder
-                    .Append("(")
-                    .AppendJoin(
-                        operations,
-                        SqlGenerationHelper,
-                        (sb, o, helper) =>
-                            {
-                                if (o.IsWrite)
-                                {
-                                    helper.GenerateParameterName(sb, o.ParameterName);
-                                }
-                                else
-                                {
-                                    sb.Append("DEFAULT");
-                                }
-                            })
-                    .Append(", ")
-                    .Append(additionalLiteral)
-                    .Append(")");
+                commandStringBuilder.Append("()");
             }
         }
 
-        private ResultSetMapping AppendSelectCommand(
-            StringBuilder commandStringBuilder,
-            IReadOnlyList<ColumnModification> readOperations,
-            IReadOnlyList<ColumnModification> keyOperations,
-            string insertedTableName,
-            int insertedTableIndex,
-            string tableName,
-            string schema,
-            string orderColumn = null)
-        {
-            commandStringBuilder
-                .AppendLine()
-                .Append("SELECT ")
-                .AppendJoin(
-                    readOperations,
-                    SqlGenerationHelper,
-                    (sb, o, helper) => helper.DelimitIdentifier(sb, o.ColumnName, "t"))
-                .Append(" FROM ");
-            SqlGenerationHelper.DelimitIdentifier(commandStringBuilder, tableName, schema);
-            commandStringBuilder
-                .Append(" t")
-                .AppendLine()
-                .Append("INNER JOIN ")
-                .Append(insertedTableName).Append(insertedTableIndex)
-                .Append(" i")
-                .Append(" ON ")
-                .AppendJoin(keyOperations, (sb, c) =>
-                    {
-                        sb.Append("(");
-                        SqlGenerationHelper.DelimitIdentifier(sb, c.ColumnName, "t");
-                        sb.Append(" = ");
-                        SqlGenerationHelper.DelimitIdentifier(sb, c.ColumnName, "i");
-                        sb.Append(")");
-                    }, " AND ");
-
-            if (orderColumn != null)
-            {
-                commandStringBuilder
-                    .AppendLine()
-                    .Append("ORDER BY ");
-                SqlGenerationHelper.DelimitIdentifier(commandStringBuilder, orderColumn, "i");
-            }
-
-            commandStringBuilder
-                .Append(SqlGenerationHelper.StatementTerminator).AppendLine()
-                .AppendLine();
-
-            return ResultSetMapping.LastInResultSet;
-        }
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         protected override ResultSetMapping AppendSelectAffectedCountCommand(StringBuilder commandStringBuilder, string name, string schema, int commandPosition)
         {
             commandStringBuilder
@@ -213,10 +144,6 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
             // there is no equivalent in mysql: https://stackoverflow.com/questions/3386217/is-there-an-equivalent-to-sql-servers-set-nocount-in-mysql
         }
         
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         protected override void AppendIdentityWhereCondition(StringBuilder commandStringBuilder, ColumnModification columnModification)
         {
             SqlGenerationHelper.DelimitIdentifier(commandStringBuilder, columnModification.ColumnName);
@@ -224,10 +151,6 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
                 .Append("LAST_INSERT_ID()");
         }
 
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         protected override void AppendRowsAffectedWhereCondition(StringBuilder commandStringBuilder, int expectedRowsAffected)
             => commandStringBuilder
                 .Append("ROW_COUNT() = ")
