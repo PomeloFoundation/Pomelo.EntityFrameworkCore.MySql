@@ -4,6 +4,7 @@
 using System;
 using System.Data;
 using System.Data.Common;
+using System.Threading;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -26,7 +27,7 @@ namespace Microsoft.EntityFrameworkCore.Internal
                 if (_relationalOptions.Connection != null)
                     return MySqlConnectionSettings.GetSettings(_relationalOptions.Connection);
                 return MySqlConnectionSettings.GetSettings(_relationalOptions.ConnectionString);
-            });
+            }, LazyThreadSafetyMode.PublicationOnly);
         }
 
         public virtual void Initialize(IDbContextOptions options)
