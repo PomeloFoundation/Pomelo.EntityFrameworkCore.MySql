@@ -30,5 +30,11 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure.Internal
             services.AddEntityFrameworkMySql();
             return true;
         }
+        public bool SelectForUpdate { get; private set; }
+        public MySqlOptionsExtension WithSelectForUpdate(bool sfu=true)
+        {
+            this.SelectForUpdate = sfu;
+            return this;
+        }
     }
 }

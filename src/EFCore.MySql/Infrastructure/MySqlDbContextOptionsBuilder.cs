@@ -38,5 +38,10 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
             TimeSpan maxRetryDelay,
             [NotNull] ICollection<int> errorNumbersToAdd)
             => ExecutionStrategy(c => new MySqlRetryingExecutionStrategy(c, maxRetryCount, maxRetryDelay, errorNumbersToAdd));
+
+        public virtual MySqlDbContextOptionsBuilder WithSelectForUpdate(bool sfu=true)
+        {
+            return WithOption(t => t.WithSelectForUpdate(sfu));
+        }
     }
 }

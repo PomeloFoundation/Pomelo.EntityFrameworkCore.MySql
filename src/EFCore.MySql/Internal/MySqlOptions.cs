@@ -44,6 +44,8 @@ namespace Microsoft.EntityFrameworkCore.Internal
 
         public virtual MySqlConnectionSettings ConnectionSettings => _lazyConnectionSettings.Value;
 
+        public bool SelectForUpdate => _relationalOptions.SelectForUpdate;
+
         public virtual string GetCreateTable(ISqlGenerationHelper sqlGenerationHelper, string table, string schema)
         {
             if (_relationalOptions.Connection != null)

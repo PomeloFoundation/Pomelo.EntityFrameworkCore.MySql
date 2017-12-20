@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.Query.Expressions;
 using Microsoft.EntityFrameworkCore.Query.Expressions.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -22,15 +23,18 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
         protected override string TypedTrueLiteral => "TRUE";
         protected override string TypedFalseLiteral => "FALSE";
 
+        private readonly IMySqlOptions Options;
+
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public MySqlQuerySqlGenerator(
             [NotNull] QuerySqlGeneratorDependencies dependencies,
-            [NotNull] SelectExpression selectExpression)
-            : base(dependencies, selectExpression)
+            [NotNull] SelectExpression selectExpression,
+            [NotNull] IMySqlOptions options):base(dependencies,selectExpression)
         {
+            Options = options;
         }
 
         protected override void GenerateTop(SelectExpression selectExpression)
@@ -61,6 +65,8 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
                 Sql.Append(" OFFSET ");
                 Visit(selectExpression.Offset);
             }
+            if (Options.SelectForUpdate)
+                Sql.Append(" FOR UPDATE ");
         }
 
         /// <summary>
