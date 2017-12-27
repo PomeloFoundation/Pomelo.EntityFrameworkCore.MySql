@@ -23,7 +23,7 @@ To add a `NuGet.config` file in your solution root, then you can use the unstabl
 
 Here is a console application sample for accessing a MySQL database using Entity Framework:
 
-① We recommand you to set `utf8mb4` as your MySQL database default charset. The following statement will check your DB charset.
+① We recommend you to set `utf8mb4` as your MySQL database default charset. The following statement will check your DB charset.
 ```sql
 show variables like 'character_set_database';
 ```
