@@ -1,4 +1,4 @@
-﻿/// Copyright (c) Pomelo Foundation. All rights reserved.
+/// Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System.Linq.Expressions;
@@ -32,7 +32,7 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
                             new[]
                             {
                                 methodCallExpression.Object,
-                                new SqlFunctionExpression("LENGTH", typeof(int), new[] { patternExpression })
+                                new SqlFunctionExpression("CHAR_LENGTH", typeof(int), new[] { patternExpression })
                             }),
                         patternExpression));
 
