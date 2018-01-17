@@ -288,6 +288,14 @@ END;" + EOL +
                 Sql);
         }
 
+        public override void RenameColumnOperation_works()
+        {
+            base.RenameColumnOperation_works();
+
+            Assert.Equal("ALTER TABLE `People` CHANGE `Name` `NameNew` varchar (255);" + EOL,
+                Sql);
+        }
+
         public virtual void CreateDatabaseOperation()
         {
             Generate(new MySqlCreateDatabaseOperation { Name = "Northwind" });

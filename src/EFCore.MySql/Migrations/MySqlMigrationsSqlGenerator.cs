@@ -343,20 +343,10 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
-            var createTableSyntax = _options.GetCreateTable(Dependencies.SqlGenerationHelper, operation.Table, operation.Schema);
-
-            if (createTableSyntax == null)
-                throw new InvalidOperationException($"Could not find SHOW CREATE TABLE syntax for table: '{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}'");
-
-            var columnDefinitionRe = new Regex($"^\\s*`?{operation.Name}`?\\s(.*)?$", RegexOptions.Multiline);
-            var match = columnDefinitionRe.Match(createTableSyntax);
-
-            string columnDefinition;
-            if (match.Success)
-                columnDefinition = match.Groups[1].Value.Trim().TrimEnd(',');
-            else
+            var property = FindProperty(model, operation.Schema, operation.Table, operation.NewName);
+            if (property == null)
                 throw new InvalidOperationException($"Could not find column definition for table: '{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}' column: {operation.Name}");
-
+            
             builder.Append("ALTER TABLE ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
                 .Append(" CHANGE ")
@@ -364,7 +354,8 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 .Append(" ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName))
                 .Append(" ")
-                .Append(columnDefinition);
+                .Append(property.Relational().ColumnType)
+                .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
 
             EndStatement(builder);
         }
