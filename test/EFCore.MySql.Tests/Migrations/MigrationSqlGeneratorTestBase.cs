@@ -309,7 +309,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
                     Table = "People"
                 });
         }
-        
+
+        [Fact]
+        public virtual void RenameColumnOperation_works()
+        {
+            Generate(
+                modelBuilder => modelBuilder.Entity("People")
+                    .Property<string>("Name")
+                    .HasColumnName("NameNew")
+                    .HasColumnType("varchar (255)"),
+                new RenameColumnOperation
+                {
+                    Name = "Name",
+                    NewName = "NameNew",
+                    Table = "People"
+                });
+        }
+
         [Fact]
         public virtual void CreateTableOperation()
         {
