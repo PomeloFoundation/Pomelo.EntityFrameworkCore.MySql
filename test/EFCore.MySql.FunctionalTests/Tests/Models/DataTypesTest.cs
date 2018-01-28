@@ -18,9 +18,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
             void TestEmpty(DataTypesSimple emptyDb)
             {
                 // bool
-                Assert.Equal(default(bool), emptyDb.TypeBool);
+                Assert.False(emptyDb.TypeBool);
                 // nullable bool
-                Assert.Equal(null, emptyDb.TypeBoolN);
+                Assert.Null(emptyDb.TypeBoolN);
 
                 // integers
                 Assert.Equal(default(short), emptyDb.TypeShort);
@@ -30,51 +30,51 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
                 Assert.Equal(default(long), emptyDb.TypeLong);
                 Assert.Equal(default(ulong), emptyDb.TypeUlong);
                 // nullable integers
-                Assert.Equal(null, emptyDb.TypeShortN);
-                Assert.Equal(null, emptyDb.TypeUshortN);
-                Assert.Equal(null, emptyDb.TypeIntN);
-                Assert.Equal(null, emptyDb.TypeUintN);
-                Assert.Equal(null, emptyDb.TypeLongN);
-                Assert.Equal(null, emptyDb.TypeUlongN);
+                Assert.Null(emptyDb.TypeShortN);
+                Assert.Null(emptyDb.TypeUshortN);
+                Assert.Null(emptyDb.TypeIntN);
+                Assert.Null(emptyDb.TypeUintN);
+                Assert.Null(emptyDb.TypeLongN);
+                Assert.Null(emptyDb.TypeUlongN);
 
                 // decimals
                 Assert.Equal(default(decimal), emptyDb.TypeDecimal);
                 Assert.Equal(default(double), emptyDb.TypeDouble);
                 Assert.Equal(default(float), emptyDb.TypeFloat);
                 // nullable decimals
-                Assert.Equal(null, emptyDb.TypeDecimalN);
-                Assert.Equal(null, emptyDb.TypeDoubleN);
-                Assert.Equal(null, emptyDb.TypeFloatN);
+                Assert.Null(emptyDb.TypeDecimalN);
+                Assert.Null(emptyDb.TypeDoubleN);
+                Assert.Null(emptyDb.TypeFloatN);
 
                 // byte
                 Assert.Equal(default(sbyte), emptyDb.TypeSbyte);
                 Assert.Equal(default(byte), emptyDb.TypeByte);
                 Assert.Equal(default(char), emptyDb.TypeChar);
                 // nullable byte
-                Assert.Equal(null, emptyDb.TypeSbyteN);
-                Assert.Equal(null, emptyDb.TypeByteN);
-                Assert.Equal(null, emptyDb.TypeCharN);
+                Assert.Null(emptyDb.TypeSbyteN);
+                Assert.Null(emptyDb.TypeByteN);
+                Assert.Null(emptyDb.TypeCharN);
 
                 // DateTime
                 Assert.Equal(default(DateTime), emptyDb.TypeDateTime);
                 Assert.Equal(default(DateTimeOffset), emptyDb.TypeDateTimeOffset);
                 Assert.Equal(default(TimeSpan), emptyDb.TypeTimeSpan);
                 // nullable DateTime
-                Assert.Equal(null, emptyDb.TypeDateTimeN);
-                Assert.Equal(null, emptyDb.TypeDateTimeOffsetN);
-                Assert.Equal(null, emptyDb.TypeTimeSpanN);
+                Assert.Null(emptyDb.TypeDateTimeN);
+                Assert.Null(emptyDb.TypeDateTimeOffsetN);
+                Assert.Null(emptyDb.TypeTimeSpanN);
 
                 // Enum
                 Assert.Equal(default(TestEnum), emptyDb.TypeEnum);
                 Assert.Equal(default(TestEnumByte), emptyDb.TypeEnumByte);
                 // nullableEnum
-                Assert.Equal(null, emptyDb.TypeEnumN);
-                Assert.Equal(null, emptyDb.TypeEnumByteN);
+                Assert.Null(emptyDb.TypeEnumN);
+                Assert.Null(emptyDb.TypeEnumByteN);
 
                 // guid
                 Assert.Equal(default(Guid), emptyDb.TypeGuid);
                 // nullable guid
-                Assert.Equal(null, emptyDb.TypeGuidN);
+                Assert.Null(emptyDb.TypeGuidN);
             }
 
             const sbyte testSbyte = (sbyte) -128;
@@ -156,9 +156,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
             void TestValue(DataTypesSimple valueDb)
             {
                 // bool
-                Assert.Equal(true, valueDb.TypeBool);
+                Assert.True(valueDb.TypeBool);
                 // nullable bool
-                Assert.Equal(true, valueDb.TypeBoolN);
+                Assert.True(valueDb.TypeBoolN);
 
                 // integers
                 Assert.Equal(short.MinValue, valueDb.TypeShort);
@@ -260,22 +260,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
 	            Assert.Equal("", valueDb.TypeString);
 	            Assert.Equal("", valueDb.TypeString255);
 	            // string null
-	            Assert.Equal(null, valueDb.TypeStringN);
-	            Assert.Equal(null, valueDb.TypeString255N);
+	            Assert.Null(valueDb.TypeStringN);
+	            Assert.Null(valueDb.TypeString255N);
 
 	            // binary not null
 	            Assert.Equal(DataTypesVariable.EmptyByteArray, valueDb.TypeByteArray);
 	            Assert.Equal(DataTypesVariable.EmptyByteArray, valueDb.TypeByteArray255);
 	            // binary null
-	            Assert.Equal(null, valueDb.TypeByteArrayN);
-	            Assert.Equal(null, valueDb.TypeByteArray255N);
+	            Assert.Null(valueDb.TypeByteArrayN);
+	            Assert.Null(valueDb.TypeByteArray255N);
 
 	            // json not null
 	            Assert.Equal(DataTypesVariable.EmptyJsonArray.Json, valueDb.TypeJsonArray.Json);
 	            Assert.Equal(DataTypesVariable.EmptyJsonObject.Json, valueDb.TypeJsonObject.Json);
 	            // json null
-	            Assert.Equal(null, valueDb.TypeJsonArrayN);
-	            Assert.Equal(null, valueDb.TypeJsonObjectN);
+	            Assert.Null(valueDb.TypeJsonArrayN);
+	            Assert.Null(valueDb.TypeJsonObjectN);
 	        }
 
 	        var string255 = new string('a', 255);

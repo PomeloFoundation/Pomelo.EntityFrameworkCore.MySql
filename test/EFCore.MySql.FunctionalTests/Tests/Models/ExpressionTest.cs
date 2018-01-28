@@ -274,12 +274,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
             var result = await _db.DataTypesVariable.Select(m =>
                 new {
                     Id = m.Id,
-                    Equals = m.TypeString.Equals("EntityFramework"),
-                    NotEquals = m.TypeString.Equals("asdf")
+                    StringEquals = m.TypeString.Equals("EntityFramework"),
+                    StringNotEquals = m.TypeString.Equals("asdf")
                 }).FirstOrDefaultAsync(m => m.Id == _variable.Id);
 
-            Assert.True(result.Equals);
-            Assert.False(result.NotEquals);
+            Assert.True(result.StringEquals);
+            Assert.False(result.StringNotEquals);
         }
 
         [Fact]
@@ -398,7 +398,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
         [Fact]
         public async Task MySqlDateToDateTimeConvertTranslator()
         {
-            var result = await _db.DataTypesSimple.CountAsync(m => m.TypeDateTimeN <= DateTime.Now.Date);
+            var result = await _db.DataTypesSimple.CountAsync(m => m.TypeDateTime <= DateTime.Now.Date);
             Assert.NotEqual(0, result);
         }
 

@@ -118,7 +118,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
 				}
 
 				gct.Gen++;
-				await Assert.ThrowsAsync(typeof(DbUpdateConcurrencyException), () => db.SaveChangesAsync());
+				await Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => db.SaveChangesAsync());
 			}
 		}
 	}

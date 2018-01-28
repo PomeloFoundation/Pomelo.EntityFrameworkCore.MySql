@@ -113,7 +113,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
 				Assert.Equal(3, frizzle.Students.Count);
 				var students = new HashSet<string> {"Arnold", "Phoebe", "Wanda"};
 				foreach (var student in frizzle.Students)
-					Assert.True(students.Contains(student.Name));
+					Assert.Contains(student.Name, students);
 
 				// southpark
 				var garrison = teachers[1];
@@ -123,7 +123,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
 				Assert.Equal(4, garrison.Students.Count);
 				students = new HashSet<string> {"Eric Cartman", "Kenny McCormick", "Kyle Broflovski", "Stan Marsh"};
 				foreach (var student in garrison.Students)
-					Assert.True(students.Contains(student.Name + " " + (student.Family?.LastName ?? "")));
+					Assert.Contains(student.Name + " " + (student.Family?.LastName ?? ""), students);
 
 				// everyone's parents are on the PTA except for Kenny's
 				var pta = new HashSet<string> {"Liane Cartman", "Sheila Broflovski", "Gerald Broflovski", "Randy Marsh", "Sharon Marsh"};
@@ -135,7 +135,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
 						if (member is PersonParent && (member as PersonParent).OnPta)
 						{
 							ptaSize++;
-							Assert.True(pta.Contains(member.Name + " " + (member.Family?.LastName ?? "")));
+							Assert.Contains(member.Name + " " + (member.Family?.LastName ?? ""), pta);
 						}
 					}
 				}
