@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using Microsoft.Extensions.Configuration;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
@@ -19,19 +20,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
         public static IConfigurationRoot Config => LazyConfig.Value;
 
-        private static readonly Lazy<IConfigurationRoot> LazyConfig = new Lazy<IConfigurationRoot>(() =>
-        {
-            var pwd = new DirectoryInfo(Directory.GetCurrentDirectory());
-            var basePath = pwd.FullName;
-            if (pwd.Name.StartsWith("netcoreapp"))
-                basePath = pwd.Parent.Parent.Parent.FullName;
-
-            return new ConfigurationBuilder()
-                .SetBasePath(basePath)
-                .AddJsonFile("appsettings.json")
-                .AddJsonFile("config.json")
-                .Build();
-        });
+        private static readonly Lazy<IConfigurationRoot> LazyConfig = new Lazy<IConfigurationRoot>(() => new ConfigurationBuilder()
+            .SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
+            .AddJsonFile("appsettings.json")
+            .AddJsonFile("config.json")
+            .Build());
         
     }
 }
