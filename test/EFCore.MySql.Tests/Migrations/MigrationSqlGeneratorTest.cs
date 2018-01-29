@@ -126,6 +126,7 @@ namespace EFCore.MySql.Tests.Migrations
                 Sql);
         }
 
+        [Fact]
         public override void AddColumnOperation_without_column_type()
         {
             base.AddColumnOperation_without_column_type();
@@ -135,6 +136,7 @@ namespace EFCore.MySql.Tests.Migrations
                 Sql);
         }
 
+        [Fact]
         public override void AddColumnOperation_with_maxLength()
         {
             base.AddColumnOperation_with_maxLength();
@@ -144,6 +146,7 @@ namespace EFCore.MySql.Tests.Migrations
                 Sql);
         }
 
+        [Fact]
         public override void AddForeignKeyOperation_with_name()
         {
             base.AddForeignKeyOperation_with_name();
@@ -153,6 +156,7 @@ namespace EFCore.MySql.Tests.Migrations
                 Sql);
         }
 
+        [Fact]
         public override void AddForeignKeyOperation_without_name()
         {
             base.AddForeignKeyOperation_without_name();
@@ -162,6 +166,7 @@ namespace EFCore.MySql.Tests.Migrations
                 Sql);
         }
 
+        [Fact]
         public override void AddPrimaryKeyOperation_with_name()
         {
             base.AddPrimaryKeyOperation_with_name();
@@ -171,6 +176,7 @@ namespace EFCore.MySql.Tests.Migrations
                 Sql);
         }
 
+        [Fact]
         public override void AddPrimaryKeyOperation_without_name()
         {
             base.AddPrimaryKeyOperation_without_name();
@@ -224,6 +230,7 @@ END;" + EOL +
                 Sql);
         }
 
+        [Fact]
         public override void AddUniqueConstraintOperation_with_name()
         {
             base.AddUniqueConstraintOperation_with_name();
@@ -233,6 +240,7 @@ END;" + EOL +
                 Sql);
         }
 
+        [Fact]
         public override void AddUniqueConstraintOperation_without_name()
         {
             base.AddUniqueConstraintOperation_without_name();
@@ -242,6 +250,7 @@ END;" + EOL +
                 Sql);
         }
 
+        [Fact]
         public override void CreateIndexOperation_unique()
         {
             base.CreateIndexOperation_unique();
@@ -251,6 +260,7 @@ END;" + EOL +
                 Sql);
         }
 
+        [Fact]
         public override void CreateIndexOperation_fulltext()
         {
             base.CreateIndexOperation_fulltext();
@@ -260,6 +270,7 @@ END;" + EOL +
                 Sql);
         }
 
+        [Fact]
         public override void CreateIndexOperation_spatial()
         {
             base.CreateIndexOperation_spatial();
@@ -269,6 +280,7 @@ END;" + EOL +
                 Sql);
         }
 
+        [Fact]
         public override void CreateIndexOperation_nonunique()
         {
             base.CreateIndexOperation_nonunique();
@@ -278,6 +290,7 @@ END;" + EOL +
                 Sql);
         }
 
+        [Fact]
         public override void RenameIndexOperation_works()
         {
             base.RenameIndexOperation_works();
@@ -286,15 +299,17 @@ END;" + EOL +
                 Sql);
         }
 
+        [Fact]
         public virtual void CreateDatabaseOperation()
         {
             Generate(new MySqlCreateDatabaseOperation { Name = "Northwind" });
 
             Assert.Equal(
-                @"CREATE DATABASE  `Northwind`;" + EOL,
+                @"CREATE DATABASE `Northwind`;" + EOL,
                 Sql);
         }
 
+        [Fact]
         public override void CreateTableOperation()
         {
             base.CreateTableOperation();
@@ -311,6 +326,7 @@ END;" + EOL +
                 Sql);
         }
 
+        [Fact]
         public override void CreateTableUlongAi()
         {
             base.CreateTableUlongAi();
@@ -323,6 +339,7 @@ END;" + EOL +
                 Sql);
         }
 
+        [Fact]
         public override void DropColumnOperation()
         {
             base.DropColumnOperation();
@@ -332,6 +349,7 @@ END;" + EOL +
                 Sql);
         }
 
+        [Fact]
         public override void DropForeignKeyOperation()
         {
             base.DropForeignKeyOperation();
@@ -341,6 +359,7 @@ END;" + EOL +
                 Sql);
         }
 
+        [Fact]
         public override void DropPrimaryKeyOperation()
         {
             base.DropPrimaryKeyOperation();
@@ -390,6 +409,7 @@ END;" + EOL +
                 Sql);
         }
 
+        [Fact]
         public override void DropTableOperation()
         {
             base.DropTableOperation();
@@ -399,6 +419,7 @@ END;" + EOL +
                 Sql);
         }
 
+        [Fact]
         public override void DropUniqueConstraintOperation()
         {
             base.DropUniqueConstraintOperation();
@@ -408,6 +429,7 @@ END;" + EOL +
                 Sql);
         }
 
+        [Fact]
         public override void SqlOperation()
         {
             base.SqlOperation();
@@ -419,6 +441,7 @@ END;" + EOL +
 
         #region AlterColumn
 
+        [Fact]
         public override void AlterColumnOperation()
         {
             base.AlterColumnOperation();
@@ -428,6 +451,7 @@ END;" + EOL +
             Sql, false, true, true);
         }
 
+        [Fact]
         public override void AlterColumnOperation_without_column_type()
         {
             base.AlterColumnOperation_without_column_type();

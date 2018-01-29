@@ -77,7 +77,7 @@ CREATE TABLE `People` (
             return optionsBuilder.Options;
         }
 
-
+        [Fact]
         public override void RenameIndexOperation_works()
         {
             base.RenameIndexOperation_works();
