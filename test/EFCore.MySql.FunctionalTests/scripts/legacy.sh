@@ -15,5 +15,5 @@ do
     done
     dotnet ef migrations add current
     dotnet ef database update
-    dotnet test
+    dotnet xunit
 done
