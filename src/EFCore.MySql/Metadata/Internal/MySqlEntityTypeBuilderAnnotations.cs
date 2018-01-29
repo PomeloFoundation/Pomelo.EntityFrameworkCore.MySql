@@ -4,6 +4,7 @@
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Utilities;
 
+//ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Metadata.Internal
 {
     public class MySqlEntityTypeBuilderAnnotations : MySqlEntityTypeAnnotations

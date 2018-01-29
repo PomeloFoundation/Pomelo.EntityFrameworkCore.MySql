@@ -4,6 +4,7 @@
 using Microsoft.EntityFrameworkCore.Query.Expressions;
 using Microsoft.EntityFrameworkCore.Query.Sql;
 
+//ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.TestUtilities
 {
     public class TestQuerySqlGeneratorFactory : QuerySqlGeneratorFactoryBase

@@ -7,6 +7,7 @@ using System.Threading;
 using System;
 using Microsoft.EntityFrameworkCore.Internal;
 
+//ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Storage.Internal
 {
     public class MySqlRelationalConnection : RelationalConnection, IMySqlRelationalConnection

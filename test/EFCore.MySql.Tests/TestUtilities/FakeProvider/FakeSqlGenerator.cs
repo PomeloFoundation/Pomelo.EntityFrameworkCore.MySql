@@ -4,6 +4,7 @@
 using Microsoft.EntityFrameworkCore.Update;
 using System.Text;
 
+//ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.TestUtilities.FakeProvider
 {
     public class FakeSqlGenerator : UpdateSqlGenerator

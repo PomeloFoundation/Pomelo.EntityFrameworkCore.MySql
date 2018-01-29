@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Pomelo.EntityFrameworkCore.MySql {
+namespace EFCore.MySql {
     using System;
     using System.Reflection;
     

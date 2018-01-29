@@ -5,6 +5,7 @@ using System;
 using MySql.Data.MySqlClient;
 using JetBrains.Annotations;
 
+//ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Storage.Internal
 {
     /// <summary>

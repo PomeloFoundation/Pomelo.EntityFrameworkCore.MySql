@@ -2,9 +2,9 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models;
+using EFCore.MySql.FunctionalTests.Models;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Controllers
+namespace EFCore.MySql.FunctionalTests.Controllers
 {
     [Route("api/[controller]")]
     public class AsyncController : Controller

@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -12,11 +11,10 @@ using Microsoft.EntityFrameworkCore.TestUtilities.FakeProvider;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Xunit;
-using Microsoft.EntityFrameworkCore.Internal;
 using Moq;
 using MySql.Data.MySqlClient;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
+namespace EFCore.MySql.Tests.Migrations
 {
     public class MigrationSqlGeneratorTest : MigrationSqlGeneratorTestBase
     {

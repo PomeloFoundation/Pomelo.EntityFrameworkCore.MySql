@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
+//ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
 {
     public class MySqlTestHelpers : TestHelpers

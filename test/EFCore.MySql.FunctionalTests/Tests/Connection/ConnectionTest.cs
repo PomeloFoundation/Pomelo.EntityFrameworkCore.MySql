@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models;
+using EFCore.MySql.FunctionalTests.Models;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Connection
+namespace EFCore.MySql.FunctionalTests.Tests.Connection
 {
     public class ConnectionTest
     {

@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Commands;
+using EFCore.MySql.FunctionalTests.Commands;
 using Microsoft.AspNetCore;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
+namespace EFCore.MySql.FunctionalTests
 {
     public class Program
     {

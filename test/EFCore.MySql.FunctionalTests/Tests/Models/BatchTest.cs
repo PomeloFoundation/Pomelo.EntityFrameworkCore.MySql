@@ -1,9 +1,9 @@
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models;
+using EFCore.MySql.FunctionalTests.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
+namespace EFCore.MySql.FunctionalTests.Tests.Models
 {
     public class BatchTest
     {

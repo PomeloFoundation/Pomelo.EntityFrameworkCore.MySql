@@ -2,7 +2,7 @@ using System;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
+namespace EFCore.MySql.Tests.Migrations
 {
     public class ServerVersionTest
     {

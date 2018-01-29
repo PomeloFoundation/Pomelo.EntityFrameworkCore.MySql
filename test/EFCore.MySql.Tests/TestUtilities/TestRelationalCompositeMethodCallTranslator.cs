@@ -3,6 +3,7 @@
 
 using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators;
 
+//ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.TestUtilities
 {
     public class TestRelationalCompositeMethodCallTranslator : RelationalCompositeMethodCallTranslator

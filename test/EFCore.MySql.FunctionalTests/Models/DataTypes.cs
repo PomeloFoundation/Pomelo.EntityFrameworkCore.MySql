@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models
+namespace EFCore.MySql.FunctionalTests.Models
 {
 	public class DataTypesSimple
 	{

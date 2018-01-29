@@ -1,14 +1,9 @@
-﻿using System;
-using System.Data.Common;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.Extensions.Logging;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models;
+using EFCore.MySql.FunctionalTests.Models;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
+namespace EFCore.MySql.FunctionalTests
 {
     public class AppDb : IdentityDbContext<AppIdentityUser>
 	{
