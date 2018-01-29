@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using MySql.Data.MySqlClient;
 
+//ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Internal
 {
     public class MySqlOptions : IMySqlOptions

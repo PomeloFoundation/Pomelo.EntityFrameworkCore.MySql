@@ -1,8 +1,4 @@
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
-
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models
+namespace EFCore.MySql.FunctionalTests.Models
 {
 
 	public class Sequence

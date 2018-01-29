@@ -1,6 +1,6 @@
 ﻿using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests
+namespace EFCore.MySql.FunctionalTests.Tests
 {
 	public class SkipAppVeyorFact : FactAttribute {
 

@@ -1,5 +1,6 @@
 using System;
 
+//ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
 {
     internal static class MySqlTableSelectionSetExtensions

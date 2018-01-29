@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Update;
 
+//ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.TestUtilities
 {
     public class FakeModificationCommand : ModificationCommand

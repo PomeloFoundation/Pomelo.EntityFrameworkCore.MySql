@@ -1,3 +1,6 @@
+// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -9,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using System.Text.RegularExpressions;
 
+//ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
 {
     public class MySqlDatabaseModelFactory : IDatabaseModelFactory

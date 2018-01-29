@@ -7,6 +7,7 @@ using System.Data;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
 
+//ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.TestUtilities
 {
     public class TestRelationalTypeMapper : RelationalTypeMapper

@@ -1,14 +1,12 @@
 using System;
-using System.Data;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using MySql.Data.MySqlClient;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models;
+using EFCore.MySql.FunctionalTests.Models;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Tests.Models
+namespace EFCore.MySql.FunctionalTests.Tests.Models
 {
 
     public class ExpressionTest : IDisposable

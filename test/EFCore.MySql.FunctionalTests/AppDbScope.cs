@@ -1,10 +1,9 @@
 ﻿using System;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using System.Data.Common;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
+namespace EFCore.MySql.FunctionalTests
 {
     public class AppDbScope : IDisposable
     {

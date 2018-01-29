@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.TestUtilities.FakeProvider;
 using Microsoft.Extensions.DependencyInjection;
 
+//ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.TestUtilities
 {
     public class RelationalTestHelpers : TestHelpers

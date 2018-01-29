@@ -4,11 +4,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 
+//ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.TestUtilities.FakeProvider
 {
     public class FakeDbDataReader : DbDataReader

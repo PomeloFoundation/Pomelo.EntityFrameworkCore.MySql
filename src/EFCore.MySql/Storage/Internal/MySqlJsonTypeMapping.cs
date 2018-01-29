@@ -6,6 +6,7 @@ using System.Data;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Utilities;
 
+//ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Storage.Internal
 {
     /// <summary>

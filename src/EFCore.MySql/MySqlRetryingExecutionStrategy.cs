@@ -8,6 +8,7 @@ using MySql.Data.MySqlClient;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 
+//ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
 {
     public class MySqlRetryingExecutionStrategy : ExecutionStrategy

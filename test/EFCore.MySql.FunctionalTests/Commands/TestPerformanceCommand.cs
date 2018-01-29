@@ -6,11 +6,11 @@ using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Threading.Tasks;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models;
+using EFCore.MySql.FunctionalTests.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Commands{
+namespace EFCore.MySql.FunctionalTests.Commands{
 
     public class TestPerformanceCommand : ITestPerformanceCommand
     {

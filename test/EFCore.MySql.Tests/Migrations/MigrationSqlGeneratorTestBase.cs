@@ -7,7 +7,7 @@ using System;
 using System.Linq;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
+namespace EFCore.MySql.Tests.Migrations
 {
     public abstract class MigrationSqlGeneratorTestBase
     {

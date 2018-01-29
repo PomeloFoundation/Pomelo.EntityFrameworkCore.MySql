@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
+//ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Design.Internal
 {
     public class MySqlDesignTimeServices : IDesignTimeServices

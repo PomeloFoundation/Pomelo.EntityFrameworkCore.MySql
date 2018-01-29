@@ -2,12 +2,12 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System.Collections.Generic;
-using System.Linq;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
+//ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Migrations.Internal
 {
     /// <summary>

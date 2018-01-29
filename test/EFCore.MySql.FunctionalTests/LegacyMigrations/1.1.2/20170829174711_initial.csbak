@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Migrations
+namespace EFCore.MySql.FunctionalTests.Migrations
 {
     public partial class initial : Migration
     {

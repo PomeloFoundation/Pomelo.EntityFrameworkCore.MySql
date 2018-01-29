@@ -3,6 +3,7 @@
 
 using Microsoft.EntityFrameworkCore.Metadata;
 
+//ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.TestUtilities
 {
     public static class TestRelationalMetadataExtensions

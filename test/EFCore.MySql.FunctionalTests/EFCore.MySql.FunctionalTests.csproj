@@ -2,10 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <AssemblyName>Pomelo.EntityFrameworkCore.MySql.FunctionalTests</AssemblyName>
-    <StartupObject>Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Program</StartupObject>
+    <AssemblyName>EFCore.MySql.FunctionalTests</AssemblyName>
+    <StartupObject>EFCore.MySql.FunctionalTests.Program</StartupObject>
     <OutputType>Exe</OutputType>
-    <PackageId>Pomelo.EntityFrameworkCore.MySql.FunctionalTests</PackageId>
+    <PackageId>EFCore.MySql.FunctionalTests</PackageId>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
     <ThreadPoolMinThreads>64</ThreadPoolMinThreads>
