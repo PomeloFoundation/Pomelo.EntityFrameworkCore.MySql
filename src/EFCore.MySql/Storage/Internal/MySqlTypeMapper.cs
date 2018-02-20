@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Utilities;
@@ -14,8 +13,6 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 {
     public class MySqlTypeMapper : RelationalTypeMapper
     {
-        private static readonly Regex TypeRe = new Regex(@"([a-z0-9]+)\s*?(?:\(\s*(\d+)?\s*\))?\s*(unsigned)?", RegexOptions.IgnoreCase);
-
         // boolean
         private readonly MySqlBoolTypeMapping _bit          = new MySqlBoolTypeMapping("bit", DbType.Boolean);
 

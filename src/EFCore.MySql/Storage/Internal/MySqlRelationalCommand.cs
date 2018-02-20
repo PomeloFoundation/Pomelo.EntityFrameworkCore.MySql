@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Diagnostics;
@@ -55,11 +58,13 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             var mySqlConnection = connection as MySqlRelationalConnection;
 
             if (ioBehavior == IOBehavior.Asynchronous)
-                // ReSharper disable once PossibleNullReferenceException
+            {
                 await mySqlConnection.OpenAsync(cancellationToken, false).ConfigureAwait(false);
+            }
             else
-                // ReSharper disable once PossibleNullReferenceException
+            {
                 mySqlConnection.Open();
+            }
 
             var commandId = Guid.NewGuid();
 
@@ -174,25 +179,31 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
                 foreach (var parameter in Parameters)
                 {
-                    object parameterValue;
-
-                    if (parameterValues.TryGetValue(parameter.InvariantName, out parameterValue))
+                    if (parameterValues.TryGetValue(parameter.InvariantName, out var parameterValue))
                     {
-	                    if (parameterValue != null)
-	                    {
-		                    if (parameterValue is char)
-			                    parameter.AddDbParameter(command, Convert.ToByte((char)parameterValue));
-		                    else if (parameterValue.GetType().FullName.StartsWith("System.JsonObject"))
-			                    parameter.AddDbParameter(command, parameterValue.ToString());
-							else if (parameterValue.GetType().GetTypeInfo().IsEnum)
+                        if (parameterValue != null)
+                        {
+                            if (parameterValue is char)
+                            {
+                                parameter.AddDbParameter(command, Convert.ToByte((char)parameterValue));
+                            }
+                            else if (parameterValue.GetType().FullName.StartsWith("System.JsonObject"))
+                            {
+                                parameter.AddDbParameter(command, parameterValue.ToString());
+                            }
+                            else if (parameterValue.GetType().GetTypeInfo().IsEnum)
+                            {
                                 parameter.AddDbParameter(command, Convert.ChangeType(parameterValue, Enum.GetUnderlyingType(parameterValue.GetType())));
-		                    else
-			                    parameter.AddDbParameter(command, parameterValue);
-	                    }
-	                    else
-	                    {
-		                    parameter.AddDbParameter(command, parameterValue);
-	                    }
+                            }
+                            else
+                            {
+                                parameter.AddDbParameter(command, parameterValue);
+                            }
+                        }
+                        else
+                        {
+                            parameter.AddDbParameter(command, parameterValue);
+                        }
                     }
                     else
                     {
@@ -204,6 +215,5 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
             return command;
         }
-
     }
 }

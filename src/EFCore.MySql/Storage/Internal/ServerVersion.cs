@@ -32,7 +32,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
         public readonly Version Version;
 
-        public bool SupportsDateTime6 => Version >= new Version(5,6);
+        public bool SupportsDateTime6 => Version >= new Version(5, 6);
 
         public bool SupportsRenameIndex
         {
@@ -40,9 +40,9 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             {
                 if (Type == ServerType.MySql)
                 {
-                    return Version >= new Version(5,7);
+                    return Version >= new Version(5, 7);
                 }
-                
+
                 // TODO Awaiting feedback from Mariadb on when they will support rename index!
                 return false;
             }

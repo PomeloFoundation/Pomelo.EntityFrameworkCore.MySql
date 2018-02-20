@@ -81,6 +81,5 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         public readonly bool OldGuids;
         public readonly bool TreatTinyAsBoolean;
         public readonly ServerVersion ServerVersion;
-
     }
 }

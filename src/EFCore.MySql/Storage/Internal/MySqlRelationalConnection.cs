@@ -1,3 +1,6 @@
+// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
 using System.Data.Common;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
@@ -12,7 +15,6 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 {
     public class MySqlRelationalConnection : RelationalConnection, IMySqlRelationalConnection
     {
-        
         public MySqlRelationalConnection([NotNull] RelationalConnectionDependencies dependencies)
             : base(dependencies)
         {
@@ -31,7 +33,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             var contextOptions = new DbContextOptionsBuilder()
                 .UseMySql(csb.ConnectionString)
                 .Options;
-                
+
             return new MySqlRelationalConnection(Dependencies.With(contextOptions));
         }
 
@@ -52,7 +54,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             return await BeginTransactionWithNoPreconditionsAsync(isolationLevel, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task<IDbContextTransaction> BeginTransactionWithNoPreconditionsAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken=default(CancellationToken))
+        private async Task<IDbContextTransaction> BeginTransactionWithNoPreconditionsAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken))
         {
             DbTransaction dbTransaction = null;
             if (DbConnection is MySqlConnection mySqlConnection)
@@ -62,7 +64,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             else
             {
                 dbTransaction = DbConnection.BeginTransaction(isolationLevel);
-            }            
+            }
 
             CurrentTransaction
                 = new MySqlRelationalTransaction(
@@ -70,10 +72,10 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                     dbTransaction,
                     Dependencies.TransactionLogger,
                     transactionOwned: true);
-            
+
             Dependencies.TransactionLogger.TransactionStarted(
-                this, 
-                dbTransaction, 
+                this,
+                dbTransaction,
                 CurrentTransaction.TransactionId,
                 DateTimeOffset.UtcNow);
 
@@ -103,14 +105,14 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
                 Open();
 
                 CurrentTransaction = new MySqlRelationalTransaction(
-                    this, 
-                    transaction, 
-                    Dependencies.TransactionLogger, 
+                    this,
+                    transaction,
+                    Dependencies.TransactionLogger,
                     transactionOwned: false);
 
                 Dependencies.TransactionLogger.TransactionUsed(
-                    this, 
-                    transaction, 
+                    this,
+                    transaction,
                     CurrentTransaction.TransactionId,
                     DateTimeOffset.UtcNow);
             }
@@ -118,7 +120,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             return CurrentTransaction;
         }
 
-        public virtual async Task CommitTransactionAsync(CancellationToken cancellationToken=default(CancellationToken))
+        public virtual async Task CommitTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             if (CurrentTransaction == null)
             {
@@ -128,7 +130,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             await (CurrentTransaction as MySqlRelationalTransaction).CommitAsync().ConfigureAwait(false);
         }
 
-        public virtual async Task RollbackTransactionAsync(CancellationToken cancellationToken=default(CancellationToken))
+        public virtual async Task RollbackTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             if (CurrentTransaction == null)
             {

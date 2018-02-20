@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. */
 
 /*
-    This file is downloaded from https://github.com/bepost/jetbrains-annotations-internal    
+    This file is downloaded from https://github.com/bepost/jetbrains-annotations-internal
 */
 
 using System;

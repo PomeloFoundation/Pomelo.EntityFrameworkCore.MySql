@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System;
 using System.Collections;
 using System.Data.Common;
 using System.IO;
@@ -15,7 +18,6 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
     /// </summary>
     public class WrappedMySqlDataReader : DbDataReader
     {
-
         private DbDataReader _reader;
         private bool _disposed;
 
@@ -132,7 +134,10 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         private DbDataReader GetReader()
         {
             if (_reader == null)
+            {
                 throw new ObjectDisposedException(nameof(WrappedMySqlDataReader));
+            }
+
             return _reader;
         }
     }

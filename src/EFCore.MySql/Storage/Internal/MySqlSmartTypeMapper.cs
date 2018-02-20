@@ -13,10 +13,10 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 {
     public class MySqlSmartTypeMapper : MySqlTypeMapper
     {
-        private static readonly MySqlDateTimeTypeMapping DateTime             = new MySqlDateTimeTypeMapping("datetime", DbType.DateTime);
-        private static readonly MySqlDateTimeOffsetTypeMapping DateTimeOffset = new MySqlDateTimeOffsetTypeMapping("datetime", DbType.DateTime);
-        private static readonly TimeSpanTypeMapping Time                 = new TimeSpanTypeMapping("time", DbType.Time);
-        private static readonly GuidTypeMapping OldGuid                  = new GuidTypeMapping("binary(16)", DbType.Guid);
+        private static readonly MySqlDateTimeTypeMapping _dateTime = new MySqlDateTimeTypeMapping("datetime", DbType.DateTime);
+        private static readonly MySqlDateTimeOffsetTypeMapping _dateTimeOffset = new MySqlDateTimeOffsetTypeMapping("datetime", DbType.DateTime);
+        private static readonly TimeSpanTypeMapping _time = new TimeSpanTypeMapping("time", DbType.Time);
+        private static readonly GuidTypeMapping _oldGuid = new GuidTypeMapping("binary(16)", DbType.Guid);
 
         private readonly IMySqlOptions _options;
 
@@ -53,24 +53,36 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             if (_options.ConnectionSettings.OldGuids)
             {
                 if (mapping.StoreType == "binary(16)" && mapping.ClrType == typeof(byte[]))
-                    return OldGuid;
+                {
+                    return _oldGuid;
+                }
+
                 if (mapping.StoreType == "char(36)" && mapping.ClrType == typeof(Guid))
-                    return OldGuid;
+                {
+                    return _oldGuid;
+                }
             }
 
             // SupportsDateTime6
             if (!_options.ConnectionSettings.ServerVersion.SupportsDateTime6)
             {
                 if (mapping.StoreType == "datetime(6)" && mapping.ClrType == typeof(DateTime))
-                    return DateTime;
+                {
+                    return _dateTime;
+                }
+
                 if (mapping.StoreType == "datetime(6)" && mapping.ClrType == typeof(DateTimeOffset))
-                    return DateTimeOffset;
+                {
+                    return _dateTimeOffset;
+                }
+
                 if (mapping.StoreType == "time(6)")
-                    return Time;
+                {
+                    return _time;
+                }
             }
 
             return mapping;
         }
-        
     }
 }
