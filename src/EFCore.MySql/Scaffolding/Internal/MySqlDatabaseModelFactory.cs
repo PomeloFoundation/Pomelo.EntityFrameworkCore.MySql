@@ -198,7 +198,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                             var index = new DatabasePrimaryKey
                             {
                                 Table = x.Value,
-                                Name = reader.GetString(0),
+                                Name = reader.GetString(0)
                             };
 
                             foreach (var column in reader.GetString(2).Split(','))
@@ -242,7 +242,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                             {
                                 Table = x.Value,
                                 Name = reader.GetString(0),
-                                IsUnique = !reader.GetBoolean(1),
+                                IsUnique = reader.GetFieldType(1) == typeof(string) ? reader.GetString(1) == "1" : !reader.GetBoolean(1)
                             };
 
                             foreach (var column in reader.GetString(2).Split(','))
@@ -295,8 +295,8 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                             };
                             foreach (var pair in reader.GetString(3).Split(','))
                             {
-                                fkInfo.Columns.Add(x.Value.Columns.Single(y => y.Name == pair.Split('|')[0]));
-                                fkInfo.PrincipalColumns.Add(fkInfo.PrincipalTable.Columns.Single(y => y.Name == pair.Split('|')[1]));
+                                fkInfo.Columns.Add(x.Value.Columns.Single(y => string.Equals(y.Name, pair.Split('|')[0], StringComparison.OrdinalIgnoreCase)));
+                                fkInfo.PrincipalColumns.Add(fkInfo.PrincipalTable.Columns.Single(y => string.Equals(y.Name, pair.Split('|')[1], StringComparison.OrdinalIgnoreCase)));
                             }
                             x.Value.ForeignKeys.Add(fkInfo);
                         }
