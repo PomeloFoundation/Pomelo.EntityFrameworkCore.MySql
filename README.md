@@ -38,12 +38,12 @@ show variables like 'character_set_database';
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.0-rtm-*" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.0.0-rtm-*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.1.0-preview1-*" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.1.0-preview1-*" />
   </ItemGroup>
 
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.0" />
+    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.1.0-preview1-final" />
   </ItemGroup>
   
 </Project>
@@ -157,21 +157,12 @@ By viewing the following full project which is a single-user blog system and bas
 
 Milestone | Release week
 ----------|-------------
-2.0.0.1 | Oct. 27th, 2017 
-2.0.0 | Sep. 4th, 2017
-2.0.0-preview2-final     | July 26th 2017
+2.1.0-preview1-* | 2018/03/02
+2.1.0-preview1-final | 2018/03/23
 
-### 2.0.0.1
+### 2.1.0-preview1-10085
 
-Bug fixes, scaffolding enhancements.
-
-### 2.0.0-rtm
-
-Support full text and spatial indexes.
-
-### 2.0.0-preview2
-
-Compatible with Entity Framework Core 2.0.0-preview2-final.
+Upgrade pomelo to EF core 2.1.0-preview1
 
 #### Scaffolding Tutorial
 
