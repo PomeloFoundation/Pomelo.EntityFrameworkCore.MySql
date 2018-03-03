@@ -16,7 +16,6 @@ namespace Microsoft.EntityFrameworkCore.Internal
 {
     public class MySqlOptions : IMySqlOptions
     {
-
         private MySqlOptionsExtension _relationalOptions;
 
         private readonly Lazy<MySqlConnectionSettings> _lazyConnectionSettings;
@@ -26,7 +25,10 @@ namespace Microsoft.EntityFrameworkCore.Internal
             _lazyConnectionSettings = new Lazy<MySqlConnectionSettings>(() =>
             {
                 if (_relationalOptions.Connection != null)
+                {
                     return MySqlConnectionSettings.GetSettings(_relationalOptions.Connection);
+                }
+
                 return MySqlConnectionSettings.GetSettings(_relationalOptions.ConnectionString);
             }, LazyThreadSafetyMode.PublicationOnly);
         }
@@ -40,7 +42,9 @@ namespace Microsoft.EntityFrameworkCore.Internal
         public virtual void Validate(IDbContextOptions options)
         {
             if (_relationalOptions.ConnectionString == null && _relationalOptions.Connection == null)
+            {
                 throw new InvalidOperationException(RelationalStrings.NoConnectionOrConnectionString);
+            }
         }
 
         public virtual MySqlConnectionSettings ConnectionSettings => _lazyConnectionSettings.Value;
@@ -48,7 +52,10 @@ namespace Microsoft.EntityFrameworkCore.Internal
         public virtual string GetCreateTable(ISqlGenerationHelper sqlGenerationHelper, string table, string schema)
         {
             if (_relationalOptions.Connection != null)
+            {
                 return GetCreateTable(_relationalOptions.Connection, sqlGenerationHelper, table, schema);
+            }
+
             return GetCreateTable(_relationalOptions.ConnectionString, sqlGenerationHelper, table, schema);
         }
 
@@ -76,7 +83,9 @@ namespace Microsoft.EntityFrameworkCore.Internal
             finally
             {
                 if (opened)
+                {
                     connection.Close();
+                }
             }
         }
 
@@ -88,11 +97,12 @@ namespace Microsoft.EntityFrameworkCore.Internal
                 using (var reader = cmd.ExecuteReader())
                 {
                     if (reader.Read())
+                    {
                         return reader.GetFieldValue<string>(1);
+                    }
                 }
             }
             return null;
         }
-
     }
 }

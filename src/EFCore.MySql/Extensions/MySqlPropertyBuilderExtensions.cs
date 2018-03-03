@@ -12,14 +12,13 @@ using Microsoft.EntityFrameworkCore.Utilities;
 namespace Microsoft.EntityFrameworkCore
 {
     /// <summary>
-    ///     SQL Server specific extension methods for <see cref="PropertyBuilder" />.
+    ///     MySQL specific extension methods for <see cref="PropertyBuilder" />.
     /// </summary>
     public static class MySqlPropertyBuilderExtensions
     {
-
         /// <summary>
-        ///     Configures the key property to use the SQL Server IDENTITY feature to generate values for new entities,
-        ///     when targeting SQL Server. This method sets the property to be <see cref="ValueGenerated.OnAdd" />.
+        ///     Configures the key property to use the MySQL IDENTITY feature to generate values for new entities,
+        ///     when targeting MySQL. This method sets the property to be <see cref="ValueGenerated.OnAdd" />.
         /// </summary>
         /// <param name="propertyBuilder"> The builder for the property being configured. </param>
         /// <returns> The same builder instance so that multiple calls can be chained. </returns>
@@ -34,8 +33,8 @@ namespace Microsoft.EntityFrameworkCore
         }
 
         /// <summary>
-        ///     Configures the key property to use the SQL Server IDENTITY feature to generate values for new entities,
-        ///     when targeting SQL Server. This method sets the property to be <see cref="ValueGenerated.OnAdd" />.
+        ///     Configures the key property to use the MySQL IDENTITY feature to generate values for new entities,
+        ///     when targeting MySQL. This method sets the property to be <see cref="ValueGenerated.OnAdd" />.
         /// </summary>
         /// <typeparam name="TProperty"> The type of the property being configured. </typeparam>
         /// <param name="propertyBuilder"> The builder for the property being configured. </param>

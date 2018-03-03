@@ -17,7 +17,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal
         public override InternalPropertyBuilder Apply(InternalPropertyBuilder propertyBuilder, DatabaseGeneratedAttribute attribute, MemberInfo clrMember)
         {
             MySqlValueGenerationStrategy? valueGenerationStrategy = null;
-            ValueGenerated valueGenerated = ValueGenerated.Never;
+            var valueGenerated = ValueGenerated.Never;
             if (attribute.DatabaseGeneratedOption == DatabaseGeneratedOption.Computed)
             {
                 valueGenerated = ValueGenerated.OnAddOrUpdate;

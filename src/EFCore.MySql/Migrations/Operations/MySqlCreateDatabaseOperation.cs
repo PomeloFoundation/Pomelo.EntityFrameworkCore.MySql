@@ -6,7 +6,7 @@ using JetBrains.Annotations;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Migrations.Operations
 {
-    public class MySqlCreateDatabaseOperation : MigrationOperation 
+    public class MySqlCreateDatabaseOperation : MigrationOperation
     {
         public virtual string Name { get;[param: NotNull] set; }
 

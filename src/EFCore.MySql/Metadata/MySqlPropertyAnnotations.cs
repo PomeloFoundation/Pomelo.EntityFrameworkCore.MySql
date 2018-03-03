@@ -23,8 +23,9 @@ namespace Microsoft.EntityFrameworkCore.Metadata
 
         public virtual MySqlValueGenerationStrategy? ValueGenerationStrategy
         {
-            get { return GetMySqlValueGenerationStrategy(fallbackToModel: true); }
-            [param: CanBeNull] set { SetValueGenerationStrategy(value); }
+            get => GetMySqlValueGenerationStrategy(fallbackToModel: true);
+            [param: CanBeNull]
+            set => SetValueGenerationStrategy(value);
         }
 
         public virtual MySqlValueGenerationStrategy? GetMySqlValueGenerationStrategy(bool fallbackToModel)
@@ -244,6 +245,5 @@ namespace Microsoft.EntityFrameworkCore.Metadata
 
         private static bool IsCompatibleIdentityColumn(Type type)
             => type.IsInteger() || type == typeof(DateTime);
-
     }
 }

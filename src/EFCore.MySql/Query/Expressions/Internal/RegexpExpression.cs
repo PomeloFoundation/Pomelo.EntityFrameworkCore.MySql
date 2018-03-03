@@ -10,10 +10,8 @@ using Microsoft.EntityFrameworkCore.Utilities;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Query.Expressions.Internal
 {
-    
     public class RegexpExpression : Expression
     {
-        
         public RegexpExpression([NotNull] Expression match, [NotNull] Expression pattern)
         {
             Check.NotNull(match, nameof(match));
@@ -55,7 +53,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions.Internal
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj))
+            if (obj is null)
             {
                 return false;
             }
@@ -84,7 +82,5 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions.Internal
         }
 
         public override string ToString() => $"{Match} REGEXP {Pattern}";
-        
     }
-    
 }

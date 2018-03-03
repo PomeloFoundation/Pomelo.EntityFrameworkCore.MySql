@@ -32,7 +32,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations.Internal
                 var builder = new StringBuilder();
 
                 builder.Append("SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE ");
-                
+
                 builder
                     .Append("TABLE_SCHEMA='")
                     .Append(SqlGenerationHelper.EscapeLiteral(TableSchema ?? Dependencies.Connection.DbConnection.Database))

@@ -18,7 +18,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 {
     public class MySqlMigrationsSqlGenerator : MigrationsSqlGenerator
     {
-        private static readonly Regex TypeRe = new Regex(@"([a-z0-9]+)\s*?(?:\(\s*(\d+)?\s*\))?", RegexOptions.IgnoreCase);
+        private static readonly Regex _typeRe = new Regex(@"([a-z0-9]+)\s*?(?:\(\s*(\d+)?\s*\))?", RegexOptions.IgnoreCase);
         private readonly IMySqlOptions _options;
 
         public MySqlMigrationsSqlGenerator(
@@ -34,8 +34,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
-            var createDatabaseOperation = operation as MySqlCreateDatabaseOperation;
-            if (createDatabaseOperation != null)
+            if (operation is MySqlCreateDatabaseOperation createDatabaseOperation)
             {
                 Generate(createDatabaseOperation, model, builder);
                 builder.EndCommand();
@@ -340,16 +339,22 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             var createTableSyntax = _options.GetCreateTable(Dependencies.SqlGenerationHelper, operation.Table, operation.Schema);
 
             if (createTableSyntax == null)
+            {
                 throw new InvalidOperationException($"Could not find SHOW CREATE TABLE syntax for table: '{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}'");
+            }
 
             var columnDefinitionRe = new Regex($"^\\s*`?{operation.Name}`?\\s(.*)?$", RegexOptions.Multiline);
             var match = columnDefinitionRe.Match(createTableSyntax);
 
             string columnDefinition;
             if (match.Success)
+            {
                 columnDefinition = match.Groups[1].Value.Trim().TrimEnd(',');
+            }
             else
+            {
                 throw new InvalidOperationException($"Could not find column definition for table: '{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}' column: {operation.Name}");
+            }
 
             builder.Append("ALTER TABLE ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
@@ -386,19 +391,24 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(builder, nameof(builder));
 
             if (type == null)
+            {
                 type = GetColumnType(schema, table, name, clrType, unicode, maxLength, rowVersion, model);
+            }
+
             var property = FindProperty(model, schema, table, name);
 
             var matchType = type;
             var matchLen = "";
-            var match = TypeRe.Match(type ?? "-");
+            var match = _typeRe.Match(type ?? "-");
             if (match.Success)
             {
                 matchType = match.Groups[1].Value.ToLower();
                 if (!string.IsNullOrWhiteSpace(match.Groups[2].Value))
+                {
                     matchLen = match.Groups[2].Value;
+                }
             }
-            
+
             var autoIncrement = false;
             var valueGenerationStrategy = annotatable[MySqlAnnotationNames.ValueGenerationStrategy] as MySqlValueGenerationStrategy?;
             if (!valueGenerationStrategy.HasValue)
@@ -422,7 +432,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                         valueGenerationStrategy = MySqlValueGenerationStrategy.ComputedColumn;
                 }
             }
-            
+
             if ((valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn) && string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
             {
                 switch (matchType)
@@ -453,12 +463,18 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 {
                     case "datetime":
                         if (!_options.ConnectionSettings.ServerVersion.SupportsDateTime6)
+                        {
                             throw new InvalidOperationException($"Error in {table}.{name}: DATETIME does not support values generated " +
                                 "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");
+                        }
+
                         goto case "timestamp";
                     case "timestamp":
                         if (string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
+                        {
                             defaultValueSql = $"CURRENT_TIMESTAMP({matchLen})";
+                        }
+
                         onUpdateSql = $"CURRENT_TIMESTAMP({matchLen})";
                         break;
                 }
@@ -560,8 +576,8 @@ BEGIN
 	DECLARE PRIMARY_KEY_TYPE VARCHAR(255);
 	DECLARE SQL_EXP VARCHAR(1000);
 
-	SELECT COUNT(*) 
-		INTO HAS_AUTO_INCREMENT_ID 
+	SELECT COUNT(*)
+		INTO HAS_AUTO_INCREMENT_ID
 		FROM `information_schema`.`COLUMNS`
 		WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
 			AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
@@ -622,8 +638,8 @@ BEGIN
 	DECLARE PRIMARY_KEY_TYPE VARCHAR(255);
 	DECLARE SQL_EXP VARCHAR(1000);
 
-	SELECT COUNT(*) 
-		INTO HAS_AUTO_INCREMENT_ID 
+	SELECT COUNT(*)
+		INTO HAS_AUTO_INCREMENT_ID
 		FROM `information_schema`.`COLUMNS`
 		WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
 			AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
@@ -654,7 +670,7 @@ BEGIN
 END;");
             builder.AppendLine();
 
-            if (String.IsNullOrWhiteSpace(operation.Schema))
+            if (string.IsNullOrWhiteSpace(operation.Schema))
             {
                 builder.Append($"CALL POMELO_BEFORE_DROP_PRIMARY_KEY(NULL, '{ operation.Table }');");
             }

@@ -13,7 +13,6 @@ using Microsoft.EntityFrameworkCore.Utilities;
 //ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Update.Internal
 {
-    
     public class MySqlUpdateSqlGenerator : UpdateSqlGenerator, IMySqlUpdateSqlGenerator
     {
 
@@ -119,7 +118,7 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
             [NotNull] IReadOnlyList<ColumnModification> operations)
         {
             base.AppendValues(commandStringBuilder, operations);
-            
+
             if (operations.Count == 0)
             {
                 commandStringBuilder.Append("()");
@@ -141,7 +140,7 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
             // TODO: what is the effect of this statment?
             // there is no equivalent in mysql: https://stackoverflow.com/questions/3386217/is-there-an-equivalent-to-sql-servers-set-nocount-in-mysql
         }
-        
+
         protected override void AppendIdentityWhereCondition(StringBuilder commandStringBuilder, ColumnModification columnModification)
         {
             SqlGenerationHelper.DelimitIdentifier(commandStringBuilder, columnModification.ColumnName);

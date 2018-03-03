@@ -102,8 +102,7 @@ namespace Microsoft.EntityFrameworkCore
         {
             if (_additionalErrorNumbers != null)
             {
-                var mySqlException = exception as MySqlException;
-                if (mySqlException != null)
+                if (exception is MySqlException mySqlException)
                 {
                     if (_additionalErrorNumbers.Contains(mySqlException.Number))
                     {

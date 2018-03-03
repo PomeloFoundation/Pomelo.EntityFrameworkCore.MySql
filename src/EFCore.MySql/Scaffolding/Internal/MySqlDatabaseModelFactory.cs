@@ -36,7 +36,7 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
 
         public virtual ILogger Logger { get; }
 
-        void ResetState()
+        private void ResetState()
         {
             _connection = null;
             _tableSelectionSet = null;
@@ -93,9 +93,9 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
             }
         }
 
-        const string GetTablesQuery = @"SHOW FULL TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
+        private const string GetTablesQuery = @"SHOW FULL TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
 
-        void GetTables()
+        private void GetTables()
         {
             using (var command = new MySqlCommand(GetTablesQuery, _connection))
             using (var reader = command.ExecuteReader())
@@ -117,14 +117,15 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
             }
         }
 
-        const string GetColumnsQuery = @"SHOW COLUMNS FROM {0}";
+        private const string GetColumnsQuery = @"SHOW COLUMNS FROM {0}";
 
-        void GetColumns()
+        private void GetColumns()
         {
             foreach (var x in _tables)
             {
                 using (var command = new MySqlCommand(string.Format(GetColumnsQuery, x.Key), _connection))
                 using (var reader = command.ExecuteReader())
+                {
                     while (reader.Read())
                     {
                         var extra = reader.GetString(5);
@@ -161,10 +162,11 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                         };
                         x.Value.Columns.Add(column);
                     }
+                }
             }
         }
 
-        string ParseToMySqlString(string str)
+        private string ParseToMySqlString(string str)
         {
             // Pending the MySqlConnector implement MySqlCommandBuilder class
             return str
@@ -173,8 +175,8 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                 .Replace("\"", "\\\"");
         }
 
-        const string GetPrimaryQuery = @"SELECT `INDEX_NAME`, 
-     `NON_UNIQUE`, 
+        private const string GetPrimaryQuery = @"SELECT `INDEX_NAME`,
+     `NON_UNIQUE`,
      GROUP_CONCAT(`COLUMN_NAME` ORDER BY `SEQ_IN_INDEX` SEPARATOR ',') AS COLUMNS
      FROM `INFORMATION_SCHEMA`.`STATISTICS`
      WHERE `TABLE_SCHEMA` = '{0}'
@@ -185,12 +187,13 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
         /// <remarks>
         /// Primary keys are handled as in <see cref="GetConstraints"/>, not here
         /// </remarks>
-        void GetPrimaryKeys()
+        private void GetPrimaryKeys()
         {
             foreach (var x in _tables)
             {
                 using (var command = new MySqlCommand(string.Format(GetPrimaryQuery, _connection.Database, x.Key.Replace("`", "")), _connection))
                 using (var reader = command.ExecuteReader())
+                {
                     while (reader.Read())
                     {
                         try
@@ -213,11 +216,12 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                             Logger.LogError(ex, "Error assigning primary key for {table}.", x.Key);
                         }
                     }
+                }
             }
         }
 
-        const string GetIndexesQuery = @"SELECT `INDEX_NAME`, 
-     `NON_UNIQUE`, 
+        private const string GetIndexesQuery = @"SELECT `INDEX_NAME`,
+     `NON_UNIQUE`,
      GROUP_CONCAT(`COLUMN_NAME` ORDER BY `SEQ_IN_INDEX` SEPARATOR ',') AS COLUMNS
      FROM `INFORMATION_SCHEMA`.`STATISTICS`
      WHERE `TABLE_SCHEMA` = '{0}'
@@ -228,12 +232,13 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
         /// <remarks>
         /// Primary keys are handled as in <see cref="GetConstraints"/>, not here
         /// </remarks>
-        void GetIndexes()
+        private void GetIndexes()
         {
             foreach (var x in _tables)
             {
                 using (var command = new MySqlCommand(string.Format(GetIndexesQuery, _connection.Database, x.Key.Replace("`", "")), _connection))
                 using (var reader = command.ExecuteReader())
+                {
                     while (reader.Read())
                     {
                         try
@@ -257,31 +262,33 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                             Logger.LogError(ex, "Error assigning index for {table}.", x.Key);
                         }
                     }
+                }
             }
         }
 
-        const string GetConstraintsQuery = @"SELECT
- 	`CONSTRAINT_NAME`, 
- 	`TABLE_NAME`, 
- 	`REFERENCED_TABLE_NAME`, 
- 	GROUP_CONCAT(CONCAT_WS('|', `COLUMN_NAME`, `REFERENCED_COLUMN_NAME`) ORDER BY `ORDINAL_POSITION` SEPARATOR ',') AS PAIRED_COLUMNS, 
+        private const string GetConstraintsQuery = @"SELECT
+ 	`CONSTRAINT_NAME`,
+ 	`TABLE_NAME`,
+ 	`REFERENCED_TABLE_NAME`,
+ 	GROUP_CONCAT(CONCAT_WS('|', `COLUMN_NAME`, `REFERENCED_COLUMN_NAME`) ORDER BY `ORDINAL_POSITION` SEPARATOR ',') AS PAIRED_COLUMNS,
  	(SELECT `DELETE_RULE` FROM `INFORMATION_SCHEMA`.`REFERENTIAL_CONSTRAINTS` WHERE `REFERENTIAL_CONSTRAINTS`.`CONSTRAINT_NAME` = `KEY_COLUMN_USAGE`.`CONSTRAINT_NAME` AND `REFERENTIAL_CONSTRAINTS`.`CONSTRAINT_SCHEMA` = `KEY_COLUMN_USAGE`.`CONSTRAINT_SCHEMA`) AS `DELETE_RULE`
- FROM `INFORMATION_SCHEMA`.`KEY_COLUMN_USAGE` 
- WHERE `TABLE_SCHEMA` = '{0}' 
+ FROM `INFORMATION_SCHEMA`.`KEY_COLUMN_USAGE`
+ WHERE `TABLE_SCHEMA` = '{0}'
  		AND `TABLE_NAME` = '{1}'
  		AND `CONSTRAINT_NAME` <> 'PRIMARY'
         AND `REFERENCED_TABLE_NAME` IS NOT NULL
         GROUP BY `CONSTRAINT_SCHEMA`,
-        `CONSTRAINT_NAME`, 
-        `TABLE_NAME`, 
+        `CONSTRAINT_NAME`,
+        `TABLE_NAME`,
         `REFERENCED_TABLE_NAME`;";
 
-        void GetConstraints()
+        private void GetConstraints()
         {
             foreach (var x in _tables)
             {
                 using (var command = new MySqlCommand(string.Format(GetConstraintsQuery, _connection.Database, x.Key.Replace("`", "")), _connection))
                 using (var reader = command.ExecuteReader())
+                {
                     while (reader.Read())
                     {
                         if (_tables.ContainsKey($"`{ reader.GetString(2) }`"))
@@ -305,8 +312,10 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                             Logger.LogWarning($"Referenced table `{ reader.GetString(2) }` is not in dictionary.");
                         }
                     }
+                }
             }
         }
+
         private static ReferentialAction? ConvertToReferentialAction(string onDeleteAction)
         {
             switch (onDeleteAction.ToUpperInvariant())

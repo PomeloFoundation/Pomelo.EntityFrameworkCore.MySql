@@ -55,7 +55,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
             {
                 if (selectExpression.Limit == null)
                 {
-                    // if we want to use Skip() without Take() we have to define the upper limit of LIMIT 
+                    // if we want to use Skip() without Take() we have to define the upper limit of LIMIT
                     Sql.AppendLine().Append("LIMIT ").Append(18446744073709551610);
                 }
                 Sql.Append(" OFFSET ");
@@ -103,8 +103,8 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
         protected override Expression VisitBinary(BinaryExpression binaryExpression)
         {
             if (binaryExpression.NodeType == ExpressionType.Add &&
-                binaryExpression.Left.Type == typeof (string) &&
-                binaryExpression.Right.Type == typeof (string))
+                binaryExpression.Left.Type == typeof(string) &&
+                binaryExpression.Right.Type == typeof(string))
             {
                 Sql.Append("CONCAT(");
                 //var exp = base.VisitBinary(binaryExpression);
@@ -114,12 +114,12 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
                 Sql.Append(")");
                 return exp;
             }
-            
+
             var expr = base.VisitBinary(binaryExpression);
-            
+
             return expr;
         }
-        
+
         public virtual Expression VisitRegexp(RegexpExpression regexpExpression)
         {
             Check.NotNull(regexpExpression, nameof(regexpExpression));
@@ -152,9 +152,9 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
 
             var storeTypeLower = typeMapping.StoreType.ToLower();
             string castMapping = null;
-            foreach (KeyValuePair<string, string[]> kvp in CastMappings)
+            foreach (var kvp in CastMappings)
             {
-                
+
                 foreach (var storeType in kvp.Value)
                 {
                     if (storeTypeLower.StartsWith(storeType))
@@ -164,12 +164,18 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
                     }
                 }
                 if (castMapping != null)
+                {
                     break;
+                }
             }
             if (castMapping == "signed" && storeTypeLower.Contains("unsigned"))
+            {
                 castMapping = "unsigned";
+            }
             else if (castMapping == null)
+            {
                 castMapping = "char";
+            }
 
             Sql.Append(castMapping);
             Sql.Append(")");

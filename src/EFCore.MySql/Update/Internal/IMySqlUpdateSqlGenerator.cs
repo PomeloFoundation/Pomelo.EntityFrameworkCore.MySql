@@ -15,5 +15,4 @@ namespace Microsoft.EntityFrameworkCore.Update.Internal
             [NotNull] IReadOnlyList<ModificationCommand> modificationCommands,
             int commandPosition);
     }
-   
 }

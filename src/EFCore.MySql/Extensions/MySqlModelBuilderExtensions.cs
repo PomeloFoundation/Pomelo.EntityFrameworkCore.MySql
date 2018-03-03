@@ -9,14 +9,14 @@ using Microsoft.EntityFrameworkCore.Utilities;
 namespace Microsoft.EntityFrameworkCore
 {
     /// <summary>
-    ///     SQL Server specific extension methods for <see cref="ModelBuilder" />.
+    ///     MySQL specific extension methods for <see cref="ModelBuilder" />.
     /// </summary>
     public static class MySqlModelBuilderExtensions
     {
         /// <summary>
-        ///     Configures the model to use the SQL Server IDENTITY feature to generate values for key properties
-        ///     marked as <see cref="ValueGenerated.OnAdd" />, when targeting SQL Server. This is the default
-        ///     behavior when targeting SQL Server.
+        ///     Configures the model to use the MySQL IDENTITY feature to generate values for key properties
+        ///     marked as <see cref="ValueGenerated.OnAdd" />, when targeting MySQL. This is the default
+        ///     behavior when targeting MySQL.
         /// </summary>
         /// <param name="modelBuilder"> The model builder. </param>
         /// <returns> The same builder instance so that multiple calls can be chained. </returns>
