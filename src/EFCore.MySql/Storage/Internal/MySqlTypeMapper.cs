@@ -43,8 +43,9 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 	    private readonly MySqlStringTypeMapping _varchar127      = new MySqlStringTypeMapping("varchar(127)", DbType.AnsiString, true, 127);
 	    private readonly MySqlStringTypeMapping _varcharmax      = new MySqlStringTypeMapping("longtext", DbType.AnsiString);
 
-	    // DateTime
-        private readonly MySqlDateTimeTypeMapping _dateTime6              = new MySqlDateTimeTypeMapping("datetime(6)", DbType.DateTime);
+        // DateTime
+        private readonly MySqlDateTimeTypeMapping _dateTime6 = new MySqlDateTimeTypeMapping("datetime(6)", DbType.DateTime);
+        private readonly MySqlDateTypeMapping _date = new MySqlDateTypeMapping("date", DbType.Date);
         private readonly MySqlDateTimeOffsetTypeMapping _dateTimeOffset6  = new MySqlDateTimeOffsetTypeMapping("datetime(6)", DbType.DateTime);
         private readonly MySqlDateTimeOffsetTypeMapping _timeStamp6 = new MySqlDateTimeOffsetTypeMapping("timestamp(6)", DbType.DateTime);
         private readonly TimeSpanTypeMapping _time6                       = new TimeSpanTypeMapping("time(6)", DbType.Time);
@@ -106,6 +107,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
                     // DateTime
                     { "datetime", _dateTime6 },
+                    { "date", _date },
                     { "time", _time6 },
                     { "timestamp", _timeStamp6 },
 
