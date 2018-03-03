@@ -37,7 +37,7 @@ namespace EFCore.MySql.Tests.Migrations
                 var mySqlOptions = new Mock<IMySqlOptions>();
                 mySqlOptions.SetupGet(opts => opts.ConnectionSettings).Returns(
                     new MySqlConnectionSettings(new MySqlConnectionStringBuilder(), new ServerVersion("5.7.18")));
-                
+
                 return new MySqlMigrationsSqlGenerator(
                     migrationsSqlGeneratorDependencies,
                     mySqlOptions.Object);
@@ -225,7 +225,7 @@ BEGIN
 END;" + EOL +
                 "CALL POMELO_AFTER_ADD_PRIMARY_KEY(NULL, 'People', 'Id');" + EOL +
                 "DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;" + EOL;
-            
+
             Assert.Equal(test,
                 Sql);
         }
@@ -294,7 +294,7 @@ END;" + EOL +
         public override void RenameIndexOperation_works()
         {
             base.RenameIndexOperation_works();
-            
+
             Assert.Equal("ALTER TABLE `People` RENAME INDEX `IX_People_Discriminator` TO `IX_People_DiscriminatorNew`;" + EOL,
                 Sql);
         }
@@ -373,8 +373,8 @@ BEGIN
 	DECLARE PRIMARY_KEY_TYPE VARCHAR(255);
 	DECLARE SQL_EXP VARCHAR(1000);
 
-	SELECT COUNT(*) 
-		INTO HAS_AUTO_INCREMENT_ID 
+	SELECT COUNT(*)
+		INTO HAS_AUTO_INCREMENT_ID
 		FROM `information_schema`.`COLUMNS`
 		WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
 			AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
