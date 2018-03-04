@@ -5,5 +5,5 @@ services:
 build_script:
 - dotnet --info
 test_script:
-- ps: .\build-run.ps1
+- ps: .\build.ps1
 deploy: off
