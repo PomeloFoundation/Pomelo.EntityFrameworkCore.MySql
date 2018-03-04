@@ -631,6 +631,7 @@ END;");
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
             builder.Append(@"DROP PROCEDURE IF EXISTS POMELO_BEFORE_DROP_PRIMARY_KEY;
+	DELIMITER //
 CREATE PROCEDURE POMELO_BEFORE_DROP_PRIMARY_KEY(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255))
 BEGIN
 	DECLARE HAS_AUTO_INCREMENT_ID TINYINT(1);
@@ -667,7 +668,9 @@ BEGIN
 		EXECUTE SQL_EXP_EXECUTE;
 		DEALLOCATE PREPARE SQL_EXP_EXECUTE;
 	END IF;
-END;");
+END //
+	DELIMITER ;
+");
             builder.AppendLine();
 
             if (string.IsNullOrWhiteSpace(operation.Schema))
