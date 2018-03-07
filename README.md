@@ -38,12 +38,12 @@ show variables like 'character_set_database';
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.1.0-preview1-*" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.1.0-preview1-*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.1" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.0.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.1.0-preview1-final" />
+    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.1" />
   </ItemGroup>
   
 </Project>
@@ -157,12 +157,8 @@ By viewing the following full project which is a single-user blog system and bas
 
 Milestone | Release week
 ----------|-------------
-2.1.0-preview1-* | 2018/03/02
-2.1.0-preview1-final | 2018/03/23
-
-### 2.1.0-preview1-10085
-
-Upgrade pomelo to EF core 2.1.0-preview1
+2.1.0-preview1-* | 2018/03/16
+2.1.0-preview1-final | 2018/03/30
 
 #### Scaffolding Tutorial
 
