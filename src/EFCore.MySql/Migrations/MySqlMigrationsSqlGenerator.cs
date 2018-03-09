@@ -739,7 +739,7 @@ END;");
 
             if (referentialAction == ReferentialAction.Restrict)
             {
-                builder.Append("NO ACTION");
+                builder.Append("RESTRICT");
             }
             else
             {
