@@ -1,4 +1,4 @@
-﻿/// Copyright (c) Pomelo Foundation. All rights reserved.
+/// Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System.Collections.Generic;
@@ -20,7 +20,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
         public MySqlCommandBuilder(
             [NotNull] IDiagnosticsLogger<DbLoggerCategory.Database.Command> logger,
-            [NotNull] IRelationalTypeMapper typeMapper)
+            [NotNull] IRelationalCoreTypeMapper typeMapper)
         {
             Check.NotNull(logger, nameof(logger));
             Check.NotNull(typeMapper, nameof(typeMapper));
