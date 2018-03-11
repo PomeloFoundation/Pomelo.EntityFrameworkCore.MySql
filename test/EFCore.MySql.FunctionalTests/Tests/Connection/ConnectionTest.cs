@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
 using EFCore.MySql.FunctionalTests.Models;
+using MySql.Data.MySqlClient;
 using Xunit;
 
 namespace EFCore.MySql.FunctionalTests.Tests.Connection

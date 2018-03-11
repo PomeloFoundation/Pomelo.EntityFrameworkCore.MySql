@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using EFCore.MySql.Storage.Internal;
 using JetBrains.Annotations;
-using MySql.Data.MySqlClient;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
+using MySql.Data.MySqlClient;
 
 //ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore

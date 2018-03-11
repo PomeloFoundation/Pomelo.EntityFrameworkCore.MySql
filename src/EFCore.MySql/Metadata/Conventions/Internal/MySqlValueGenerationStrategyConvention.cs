@@ -3,10 +3,12 @@
 
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
+using EFCore.MySql.Metadata.Internal;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
-//ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal
+namespace EFCore.MySql.Metadata.Conventions.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used

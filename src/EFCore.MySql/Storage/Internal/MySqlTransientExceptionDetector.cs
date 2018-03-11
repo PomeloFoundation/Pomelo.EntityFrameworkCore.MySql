@@ -2,11 +2,10 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
-using MySql.Data.MySqlClient;
 using JetBrains.Annotations;
+using MySql.Data.MySqlClient;
 
-//ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Storage.Internal
+namespace EFCore.MySql.Storage.Internal
 {
     /// <summary>
     ///     Detects the exceptions caused by SQL Server transient failures.

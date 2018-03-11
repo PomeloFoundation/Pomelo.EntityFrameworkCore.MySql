@@ -2,9 +2,9 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using Microsoft.EntityFrameworkCore.Scaffolding.Internal;
 
-//ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
+namespace EFCore.MySql.Scaffolding.Internal
 {
     internal static class MySqlTableSelectionSetExtensions
     {

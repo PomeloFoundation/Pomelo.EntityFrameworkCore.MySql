@@ -4,10 +4,11 @@
 using System;
 using System.Text;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Migrations;
 
-// ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Migrations.Internal
+namespace EFCore.MySql.Migrations.Internal
 {
     public class MySqlHistoryRepository : HistoryRepository
     {

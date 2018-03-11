@@ -6,8 +6,7 @@ using System.Data;
 using System.Data.Common;
 using MySql.Data.MySqlClient;
 
-// ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Storage.Internal
+namespace EFCore.MySql.Storage.Internal
 {
     public class MySqlConnectionSettings
     {

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Security.Cryptography;
+using EFCore.MySql.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
+using Microsoft.EntityFrameworkCore.ValueGeneration;
 
-// ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.ValueGeneration.Internal
+namespace EFCore.MySql.ValueGeneration.Internal
 {
     public class MySqlSequentialGuidValueGenerator  : ValueGenerator<Guid>
     {

@@ -2,10 +2,11 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
 
-//ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Metadata.Internal
+namespace EFCore.MySql.Metadata.Internal
 {
     public class MySqlEntityTypeBuilderAnnotations : MySqlEntityTypeAnnotations
     {

@@ -3,10 +3,10 @@
 
 using System.Text;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
 
-// ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Storage.Internal
+namespace EFCore.MySql.Storage.Internal
 {
     public class MySqlSqlGenerationHelper : RelationalSqlGenerationHelper
     {

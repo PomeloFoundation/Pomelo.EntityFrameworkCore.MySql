@@ -2,13 +2,14 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using EFCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Microsoft.EntityFrameworkCore.ValueGeneration;
 
-// ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.ValueGeneration.Internal
+namespace EFCore.MySql.ValueGeneration.Internal
 {
     public class MySqlValueGeneratorSelector : RelationalValueGeneratorSelector
     {

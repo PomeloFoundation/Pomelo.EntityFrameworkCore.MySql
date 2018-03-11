@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using EFCore.MySql.FunctionalTests.Models;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace EFCore.MySql.FunctionalTests.Tests.Models

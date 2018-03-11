@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using EFCore.MySql.FunctionalTests.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using EFCore.MySql.FunctionalTests.Models;
 
 namespace EFCore.MySql.FunctionalTests
 {

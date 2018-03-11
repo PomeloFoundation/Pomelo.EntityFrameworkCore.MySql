@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Buffers;
+using System.Data.Common;
+using EFCore.MySql.FunctionalTests.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using EFCore.MySql.FunctionalTests.Models;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
-using System.Data.Common;
 
 namespace EFCore.MySql.FunctionalTests
 {

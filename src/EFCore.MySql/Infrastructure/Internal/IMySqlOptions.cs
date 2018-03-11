@@ -1,11 +1,11 @@
 // Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
+using EFCore.MySql.Storage.Internal;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
 
-//ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Infrastructure.Internal
+namespace EFCore.MySql.Infrastructure.Internal
 {
     public interface IMySqlOptions : ISingletonOptions
     {

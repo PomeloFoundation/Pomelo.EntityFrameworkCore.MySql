@@ -1,5 +1,5 @@
 using System;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
+using EFCore.MySql.Storage.Internal;
 using Xunit;
 
 namespace EFCore.MySql.Tests.Migrations
