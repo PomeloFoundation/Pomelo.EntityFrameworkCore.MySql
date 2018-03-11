@@ -1,12 +1,13 @@
-﻿/// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
 
-// ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Storage.Internal
+namespace EFCore.MySql.Storage.Internal
 {
 
     public class MySqlCommandBuilderFactory : IRelationalCommandBuilderFactory

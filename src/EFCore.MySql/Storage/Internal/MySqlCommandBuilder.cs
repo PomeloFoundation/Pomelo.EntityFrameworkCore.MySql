@@ -3,13 +3,15 @@
 
 using System.Collections.Generic;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
 
-// ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Storage.Internal
+namespace EFCore.MySql.Storage.Internal
 {
 
     public class MySqlCommandBuilder : IRelationalCommandBuilder

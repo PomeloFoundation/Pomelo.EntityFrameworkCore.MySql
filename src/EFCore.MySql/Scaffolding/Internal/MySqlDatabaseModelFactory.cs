@@ -6,14 +6,16 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Text.RegularExpressions;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Scaffolding;
+using Microsoft.EntityFrameworkCore.Scaffolding.Internal;
 using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
-using System.Text.RegularExpressions;
 
-//ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
+namespace EFCore.MySql.Scaffolding.Internal
 {
     public class MySqlDatabaseModelFactory : IDatabaseModelFactory
     {
@@ -129,25 +131,25 @@ namespace Microsoft.EntityFrameworkCore.Scaffolding.Internal
                     while (reader.Read())
                     {
                         var extra = reader.GetString(5);
-                        EntityFrameworkCore.Metadata.ValueGenerated valueGenerated;
+                        ValueGenerated valueGenerated;
                         if (extra.IndexOf("auto_increment") >= 0)
                         {
-                            valueGenerated = EntityFrameworkCore.Metadata.ValueGenerated.OnAdd;
+                            valueGenerated = ValueGenerated.OnAdd;
                         }
                         else if (extra.IndexOf("on update") >= 0)
                         {
                             if (reader[4] != DBNull.Value && extra.IndexOf(reader[4].ToString()) > 0)
                             {
-                                valueGenerated = EntityFrameworkCore.Metadata.ValueGenerated.OnAddOrUpdate;
+                                valueGenerated = ValueGenerated.OnAddOrUpdate;
                             }
                             else
                             {
-                                valueGenerated = EntityFrameworkCore.Metadata.ValueGenerated.OnUpdate;
+                                valueGenerated = ValueGenerated.OnUpdate;
                             }
                         }
                         else
                         {
-                            valueGenerated = EntityFrameworkCore.Metadata.ValueGenerated.Never;
+                            valueGenerated = ValueGenerated.Never;
                         }
 
 

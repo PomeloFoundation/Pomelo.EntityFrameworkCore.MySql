@@ -1,7 +1,7 @@
-using Microsoft.EntityFrameworkCore;
 using System;
-using Xunit;
+using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
+using Xunit;
 
 namespace EFCore.MySql.FunctionalTests.Commands{
 

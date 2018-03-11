@@ -9,8 +9,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-// ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Storage.Internal
+namespace EFCore.MySql.Storage.Internal
 {
     /// <summary>
     /// <see cref="WrappedMySqlDataReader"/> wraps <see cref="DbDataReader" /> and enhances <see cref="GetFieldValue{T}"/> to

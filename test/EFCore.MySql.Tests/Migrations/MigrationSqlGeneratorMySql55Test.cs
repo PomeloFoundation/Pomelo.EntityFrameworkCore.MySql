@@ -1,4 +1,7 @@
 using System;
+using EFCore.MySql.Infrastructure.Internal;
+using EFCore.MySql.Storage.Internal;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
@@ -6,11 +9,9 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.EntityFrameworkCore.TestUtilities.FakeProvider;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
-using Xunit;
 using Moq;
 using MySql.Data.MySqlClient;
+using Xunit;
 
 namespace EFCore.MySql.Tests.Migrations
 {
@@ -44,7 +45,7 @@ CREATE TABLE `People` (
  CONSTRAINT `FK_People_People_TeacherId` FOREIGN KEY (`TeacherId`) REFERENCES `People` (`Id`) ON DELETE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1
 ");
-                
+
                 // type mapper
                 var typeMapper = new MySqlSmartTypeMapper(new RelationalTypeMapperDependencies(), mySqlOptions.Object);
 
@@ -56,7 +57,7 @@ CREATE TABLE `People` (
                     commandBuilderFactory,
                     new MySqlSqlGenerationHelper(new RelationalSqlGenerationHelperDependencies()),
                     typeMapper);
-                
+
                 return new MySqlMigrationsSqlGenerator(
                     migrationsSqlGeneratorDependencies,
                     mySqlOptions.Object);
@@ -81,8 +82,8 @@ CREATE TABLE `People` (
         public override void RenameIndexOperation_works()
         {
             base.RenameIndexOperation_works();
-            
-            Assert.Equal("ALTER TABLE `People` DROP INDEX `IX_People_Discriminator`;" + EOL 
+
+            Assert.Equal("ALTER TABLE `People` DROP INDEX `IX_People_Discriminator`;" + EOL
                          + "ALTER TABLE `People` ADD KEY `IX_People_DiscriminatorNew` (`Discriminator`);" + EOL,
                 Sql);
         }

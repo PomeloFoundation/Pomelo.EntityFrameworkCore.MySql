@@ -5,14 +5,14 @@ using System;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
+using EFCore.MySql.Infrastructure.Internal;
+using EFCore.MySql.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
 using MySql.Data.MySqlClient;
 
-//ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Internal
+namespace EFCore.MySql.Internal
 {
     public class MySqlOptions : IMySqlOptions
     {

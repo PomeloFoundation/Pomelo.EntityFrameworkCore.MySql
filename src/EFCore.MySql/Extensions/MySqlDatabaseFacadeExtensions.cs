@@ -3,9 +3,9 @@
 
 using System;
 using System.Reflection;
+using EFCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 
 //ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore

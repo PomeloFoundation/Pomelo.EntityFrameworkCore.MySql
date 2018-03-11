@@ -3,10 +3,10 @@
 
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query.Expressions;
+using Microsoft.EntityFrameworkCore.Query.Sql;
 using Microsoft.EntityFrameworkCore.Utilities;
 
-// ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
+namespace EFCore.MySql.Query.Sql.Internal
 {
     public class MySqlQuerySqlGeneratorFactory : QuerySqlGeneratorFactoryBase
     {

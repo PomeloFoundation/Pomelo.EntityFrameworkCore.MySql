@@ -4,12 +4,12 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Microsoft.EntityFrameworkCore.Query.Expressions.Internal;
+using EFCore.MySql.Query.Expressions.Internal;
+using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators;
 
-// ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
+namespace EFCore.MySql.Query.ExpressionTranslators.Internal
 {
-    
+
     public class MySqlRegexIsMatchTranslator : IMethodCallTranslator
     {
         private static readonly MethodInfo _methodInfo

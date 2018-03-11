@@ -2,9 +2,10 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
-//ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Metadata.Internal
+namespace EFCore.MySql.Metadata.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -28,7 +29,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public new virtual bool ValueGenerationStrategy(MySqlValueGenerationStrategy? value) => SetValueGenerationStrategy(value);
+        public new virtual bool ValueGenerationStrategy(MySqlValueGenerationStrategy value) => SetValueGenerationStrategy(value);
 #pragma warning restore 109
     }
 }

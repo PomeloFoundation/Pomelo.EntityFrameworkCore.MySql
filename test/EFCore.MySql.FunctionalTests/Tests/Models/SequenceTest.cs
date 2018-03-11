@@ -1,5 +1,5 @@
-using EFCore.MySql.FunctionalTests.Models;
 using System.Threading.Tasks;
+using EFCore.MySql.FunctionalTests.Models;
 using Xunit;
 
 namespace EFCore.MySql.FunctionalTests.Tests.Models

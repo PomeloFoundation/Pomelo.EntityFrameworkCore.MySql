@@ -1,10 +1,10 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Migrations.Operations;
-using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
 using System.Linq;
+using EFCore.MySql.Metadata.Internal;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Xunit;
 
 namespace EFCore.MySql.Tests.Migrations
@@ -309,7 +309,7 @@ namespace EFCore.MySql.Tests.Migrations
                     Table = "People"
                 });
         }
-        
+
         [Fact]
         public virtual void CreateTableOperation()
         {

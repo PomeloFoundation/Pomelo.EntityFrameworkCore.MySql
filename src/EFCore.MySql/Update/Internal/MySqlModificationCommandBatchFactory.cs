@@ -2,14 +2,14 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System.Linq;
+using EFCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.EntityFrameworkCore.Utilities;
 
-// ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Update.Internal
+namespace EFCore.MySql.Update.Internal
 {
     public class MySqlModificationCommandBatchFactory : IModificationCommandBatchFactory
     {

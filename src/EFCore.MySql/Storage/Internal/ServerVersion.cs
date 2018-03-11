@@ -4,8 +4,7 @@
 using System;
 using System.Text.RegularExpressions;
 
-// ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Storage.Internal
+namespace EFCore.MySql.Storage.Internal
 {
     public class ServerVersion
     {

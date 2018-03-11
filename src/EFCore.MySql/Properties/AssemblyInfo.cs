@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore.Design;
 
-[assembly: AssemblyTitle("Pomelo.EntityFrameworkCore.MySql")]
+[assembly: AssemblyTitle("EFCore.MySql")]
 [assembly: AssemblyDescription("MySQL provider for Entity Framework Core")]
-[assembly: DesignTimeProviderServices("Microsoft.EntityFrameworkCore.Design.Internal.MySqlDesignTimeServices")]
+[assembly: DesignTimeProviderServices("EFCore.MySql.Design.Internal.MySqlDesignTimeServices")]
 [assembly: InternalsVisibleTo("EFCore.MySql.Tests")]

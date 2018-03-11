@@ -1,9 +1,9 @@
 ﻿using System;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
 using EFCore.MySql.FunctionalTests.Commands;
 using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace EFCore.MySql.FunctionalTests
 {

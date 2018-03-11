@@ -2,13 +2,14 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System.Collections.Generic;
+using EFCore.MySql.Metadata.Internal;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.EntityFrameworkCore.Migrations;
 
-//ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Migrations.Internal
+namespace EFCore.MySql.Migrations.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used

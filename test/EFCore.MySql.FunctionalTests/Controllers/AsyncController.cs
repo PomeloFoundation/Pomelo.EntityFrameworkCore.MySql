@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using EFCore.MySql.FunctionalTests.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using EFCore.MySql.FunctionalTests.Models;
 
 namespace EFCore.MySql.FunctionalTests.Controllers
 {

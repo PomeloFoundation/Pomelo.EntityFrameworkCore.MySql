@@ -3,12 +3,11 @@
 
 using System;
 using System.Linq.Expressions;
+using EFCore.MySql.Query.Sql.Internal;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Query.Sql.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
 
-// ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Query.Expressions.Internal
+namespace EFCore.MySql.Query.Expressions.Internal
 {
     public class RegexpExpression : Expression
     {

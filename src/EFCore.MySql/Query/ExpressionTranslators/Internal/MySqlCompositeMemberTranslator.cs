@@ -3,9 +3,9 @@
 
 using System.Collections.Generic;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators;
 
-//ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
+namespace EFCore.MySql.Query.ExpressionTranslators.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used

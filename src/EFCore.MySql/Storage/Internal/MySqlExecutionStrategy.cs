@@ -5,9 +5,10 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
-//ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Storage.Internal
+namespace EFCore.MySql.Storage.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used

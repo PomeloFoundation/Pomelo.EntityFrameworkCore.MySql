@@ -3,9 +3,9 @@
 
 using System.Data;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Storage;
 
-//ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Storage
+namespace EFCore.MySql.Storage.Internal
 {
     /// <summary>
     ///     <para>

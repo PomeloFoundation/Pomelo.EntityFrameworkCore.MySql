@@ -5,9 +5,9 @@ using System;
 using System.Data;
 using System.Data.Common;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Storage;
 
-//ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Storage.Internal
+namespace EFCore.MySql.Storage.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -61,7 +61,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         {
             // For strings and byte arrays, set the max length to the size facet if specified, or
             // 8000 bytes if no size facet specified, if the data will fit so as to avoid query cache
-            // fragmentation by setting lots of different Size values otherwise always set to 
+            // fragmentation by setting lots of different Size values otherwise always set to
             // -1 (unbounded) to avoid SQL client size inference.
 
             var value = parameter.Value;
