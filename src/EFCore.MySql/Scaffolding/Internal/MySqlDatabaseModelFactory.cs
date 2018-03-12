@@ -10,7 +10,6 @@ using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Scaffolding;
-using Microsoft.EntityFrameworkCore.Scaffolding.Internal;
 using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
@@ -19,16 +18,9 @@ namespace EFCore.MySql.Scaffolding.Internal
 {
     public class MySqlDatabaseModelFactory : IDatabaseModelFactory
     {
-        MySqlConnection _connection;
-        TableSelectionSet _tableSelectionSet;
-        DatabaseModel _databaseModel;
-        Dictionary<string, DatabaseTable> _tables;
-        Dictionary<string, DatabaseColumn> _tableColumns;
-
-        static string TableKey(DatabaseTable table) => TableKey(table.Name, table.Schema);
-        static string TableKey(string name, string schema) => $"`{name}`";
-        static string ColumnKey(DatabaseTable table, string columnName) => $"{TableKey(table)}.`{columnName}`";
-
+        private MySqlConnection _connection;
+        private DatabaseModel _databaseModel;
+        private Dictionary<string, DatabaseTable> _tables;
 
         public MySqlDatabaseModelFactory(ILoggerFactory loggerFactory)
         {
@@ -36,15 +28,14 @@ namespace EFCore.MySql.Scaffolding.Internal
             Logger = loggerFactory.CreateCommandsLogger();
         }
 
-        public virtual ILogger Logger { get; }
+        protected virtual ILogger Logger { get; }
 
         private void ResetState()
         {
             _connection = null;
-            _tableSelectionSet = null;
             _databaseModel = new DatabaseModel();
             _tables = new Dictionary<string, DatabaseTable>();
-            _tableColumns = new Dictionary<string, DatabaseColumn>(StringComparer.OrdinalIgnoreCase);
+            new Dictionary<string, DatabaseColumn>(StringComparer.OrdinalIgnoreCase);
         }
 
         public DatabaseModel Create(string connectionString, IEnumerable<string> tables, IEnumerable<string> schemas)
@@ -56,11 +47,6 @@ namespace EFCore.MySql.Scaffolding.Internal
         }
 
         public DatabaseModel Create(DbConnection connection, IEnumerable<string> tables, IEnumerable<string> schemas)
-        {
-            return Create(connection, new TableSelectionSet(tables, schemas));
-        }
-
-        public DatabaseModel Create(DbConnection connection, TableSelectionSet tableSelectionSet)
         {
             ResetState();
 
@@ -74,16 +60,15 @@ namespace EFCore.MySql.Scaffolding.Internal
 
             try
             {
-                _tableSelectionSet = tableSelectionSet;
-
                 _databaseModel.DatabaseName = _connection.Database;
                 _databaseModel.DefaultSchema = null;
 
-                GetTables();
+                GetTables(tables.ToList());
                 GetColumns();
                 GetPrimaryKeys();
                 GetIndexes();
                 GetConstraints();
+
                 return _databaseModel;
             }
             finally
@@ -97,7 +82,7 @@ namespace EFCore.MySql.Scaffolding.Internal
 
         private const string GetTablesQuery = @"SHOW FULL TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
 
-        private void GetTables()
+        private void GetTables(List<string> allowedTables)
         {
             using (var command = new MySqlCommand(GetTablesQuery, _connection))
             using (var reader = command.ExecuteReader())
@@ -110,10 +95,10 @@ namespace EFCore.MySql.Scaffolding.Internal
                         Name = reader.GetString(0)
                     };
 
-                    if (_tableSelectionSet.Allows(table.Schema, table.Name))
+                    if (allowedTables.Contains(table.Name))
                     {
                         _databaseModel.Tables.Add(table);
-                        _tables[TableKey(table)] = table;
+                        _tables[table.Name] = table;
                     }
                 }
             }
@@ -132,13 +117,13 @@ namespace EFCore.MySql.Scaffolding.Internal
                     {
                         var extra = reader.GetString(5);
                         ValueGenerated valueGenerated;
-                        if (extra.IndexOf("auto_increment") >= 0)
+                        if (extra.IndexOf("auto_increment", StringComparison.Ordinal) >= 0)
                         {
                             valueGenerated = ValueGenerated.OnAdd;
                         }
-                        else if (extra.IndexOf("on update") >= 0)
+                        else if (extra.IndexOf("on update", StringComparison.Ordinal) >= 0)
                         {
-                            if (reader[4] != DBNull.Value && extra.IndexOf(reader[4].ToString()) > 0)
+                            if (reader[4] != DBNull.Value && extra.IndexOf(reader[4].ToString(), StringComparison.Ordinal) > 0)
                             {
                                 valueGenerated = ValueGenerated.OnAddOrUpdate;
                             }
@@ -157,9 +142,12 @@ namespace EFCore.MySql.Scaffolding.Internal
                         {
                             Table = x.Value,
                             Name = reader.GetString(0),
-                            StoreType = Regex.Replace(reader.GetString(1), @"(?<=int)\(\d+\)(?=\sunsigned)", string.Empty),
+                            StoreType = Regex.Replace(reader.GetString(1), @"(?<=int)\(\d+\)(?=\sunsigned)",
+                                string.Empty),
                             IsNullable = reader.GetString(2) == "YES",
-                            DefaultValueSql = reader[4] == DBNull.Value ? null : '\'' + ParseToMySqlString(reader[4].ToString()) + '\'',
+                            DefaultValueSql = reader[4] == DBNull.Value
+                                ? null
+                                : '\'' + ParseToMySqlString(reader[4].ToString()) + '\'',
                             ValueGenerated = valueGenerated
                         };
                         x.Value.Columns.Add(column);
@@ -193,7 +181,9 @@ namespace EFCore.MySql.Scaffolding.Internal
         {
             foreach (var x in _tables)
             {
-                using (var command = new MySqlCommand(string.Format(GetPrimaryQuery, _connection.Database, x.Key.Replace("`", "")), _connection))
+                using (var command =
+                    new MySqlCommand(string.Format(GetPrimaryQuery, _connection.Database, x.Key.Replace("`", "")),
+                        _connection))
                 using (var reader = command.ExecuteReader())
                 {
                     while (reader.Read())
@@ -238,7 +228,9 @@ namespace EFCore.MySql.Scaffolding.Internal
         {
             foreach (var x in _tables)
             {
-                using (var command = new MySqlCommand(string.Format(GetIndexesQuery, _connection.Database, x.Key.Replace("`", "")), _connection))
+                using (var command =
+                    new MySqlCommand(string.Format(GetIndexesQuery, _connection.Database, x.Key.Replace("`", "")),
+                        _connection))
                 using (var reader = command.ExecuteReader())
                 {
                     while (reader.Read())
@@ -249,7 +241,9 @@ namespace EFCore.MySql.Scaffolding.Internal
                             {
                                 Table = x.Value,
                                 Name = reader.GetString(0),
-                                IsUnique = reader.GetFieldType(1) == typeof(string) ? reader.GetString(1) == "1" : !reader.GetBoolean(1)
+                                IsUnique = reader.GetFieldType(1) == typeof(string)
+                                    ? reader.GetString(1) == "1"
+                                    : !reader.GetBoolean(1)
                             };
 
                             foreach (var column in reader.GetString(2).Split(','))
@@ -288,30 +282,35 @@ namespace EFCore.MySql.Scaffolding.Internal
         {
             foreach (var x in _tables)
             {
-                using (var command = new MySqlCommand(string.Format(GetConstraintsQuery, _connection.Database, x.Key.Replace("`", "")), _connection))
+                using (var command =
+                    new MySqlCommand(string.Format(GetConstraintsQuery, _connection.Database, x.Key.Replace("`", "")),
+                        _connection))
                 using (var reader = command.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        if (_tables.ContainsKey($"`{ reader.GetString(2) }`"))
+                        if (_tables.ContainsKey($"`{reader.GetString(2)}`"))
                         {
                             var fkInfo = new DatabaseForeignKey
                             {
                                 Name = reader.GetString(0),
                                 OnDelete = ConvertToReferentialAction(reader.GetString(4)),
                                 Table = x.Value,
-                                PrincipalTable = _tables[$"`{ reader.GetString(2) }`"]
+                                PrincipalTable = _tables[$"`{reader.GetString(2)}`"]
                             };
                             foreach (var pair in reader.GetString(3).Split(','))
                             {
-                                fkInfo.Columns.Add(x.Value.Columns.Single(y => string.Equals(y.Name, pair.Split('|')[0], StringComparison.OrdinalIgnoreCase)));
-                                fkInfo.PrincipalColumns.Add(fkInfo.PrincipalTable.Columns.Single(y => string.Equals(y.Name, pair.Split('|')[1], StringComparison.OrdinalIgnoreCase)));
+                                fkInfo.Columns.Add(x.Value.Columns.Single(y =>
+                                    string.Equals(y.Name, pair.Split('|')[0], StringComparison.OrdinalIgnoreCase)));
+                                fkInfo.PrincipalColumns.Add(fkInfo.PrincipalTable.Columns.Single(y =>
+                                    string.Equals(y.Name, pair.Split('|')[1], StringComparison.OrdinalIgnoreCase)));
                             }
+
                             x.Value.ForeignKeys.Add(fkInfo);
                         }
                         else
                         {
-                            Logger.LogWarning($"Referenced table `{ reader.GetString(2) }` is not in dictionary.");
+                            Logger.LogWarning($"Referenced table `{reader.GetString(2)}` is not in dictionary.");
                         }
                     }
                 }

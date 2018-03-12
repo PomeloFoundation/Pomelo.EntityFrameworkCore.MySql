@@ -1,13 +1,11 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
-// Licensed under the MIT. See LICENSE in the project root for license information.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Data;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
 
-//ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.TestUtilities.FakeProvider
 {
     public class FakeRelationalTypeMapper : RelationalTypeMapper
@@ -16,9 +14,8 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities.FakeProvider
         private static readonly RelationalTypeMapping _long = new LongTypeMapping("DefaultLong", DbType.Int64);
         private static readonly RelationalTypeMapping _string = new StringTypeMapping("DefaultString", DbType.String);
 
-        protected override string GetColumnType(IProperty property) => property.TestProvider().ColumnType;
-
-        public FakeRelationalTypeMapper(RelationalTypeMapperDependencies dependencies)
+        public FakeRelationalTypeMapper(
+            RelationalTypeMapperDependencies dependencies)
             : base(dependencies)
         {
         }

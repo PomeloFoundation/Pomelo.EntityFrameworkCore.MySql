@@ -20,6 +20,8 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
+using FallbackRelationalCoreTypeMapper =
+    EFCore.MySql.Storage.Internal.FallbackRelationalCoreTypeMapper;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection
@@ -33,6 +35,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var builder = new EntityFrameworkRelationalServicesBuilder(serviceCollection)
                 .TryAdd<IDatabaseProvider, DatabaseProvider<MySqlOptionsExtension>>()
                 .TryAdd<IRelationalTypeMapper, MySqlSmartTypeMapper>()
+                .TryAdd<IRelationalCoreTypeMapper, FallbackRelationalCoreTypeMapper>()
                 .TryAdd<ISqlGenerationHelper, MySqlSqlGenerationHelper>()
                 .TryAdd<IMigrationsAnnotationProvider, MySqlMigrationsAnnotationProvider>()
                 .TryAdd<IConventionSetBuilder, MySqlConventionSetBuilder>()

@@ -1,12 +1,11 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
-// Licensed under the MIT. See LICENSE in the project root for license information.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 
-//ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.TestUtilities
 {
     public class FakeDiagnosticsLogger<T> : IDiagnosticsLogger<T>, ILogger
@@ -21,10 +20,10 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
         public DiagnosticSource DiagnosticSource { get; } = new DiagnosticListener("Fake");
 
         public void Log<TState>(
-            LogLevel logLevel, 
-            EventId eventId, 
-            TState state, 
-            Exception exception, 
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception exception,
             Func<TState, Exception, string> formatter)
         {
         }
