@@ -70,8 +70,8 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             {
                 var property = FindProperty(model, operation.Schema, operation.Table, operation.Name);
                 type = property != null
-                    ? Dependencies.TypeMapper.GetMapping(property).StoreType
-                    : Dependencies.TypeMapper.GetMapping(operation.ClrType).StoreType;
+                    ? Dependencies.CoreTypeMapper.GetMapping(property).StoreType
+                    : Dependencies.CoreTypeMapper.GetMapping(operation.ClrType).StoreType;
             }
 
             var identifier = Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema);
@@ -118,7 +118,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
                     if (operation.DefaultValue != null)
                     {
-                        var typeMapping = Dependencies.TypeMapper.GetMapping(operation.DefaultValue.GetType());
+                        var typeMapping = Dependencies.CoreTypeMapper.GetMapping(operation.DefaultValue.GetType());
                         builder.Append(" SET DEFAULT ")
                             .Append(typeMapping.GenerateSqlLiteral(operation.DefaultValue))
                             .AppendLine(Dependencies.SqlGenerationHelper.BatchTerminator);
@@ -504,7 +504,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 }
                 else if (defaultValue != null)
                 {
-                    var defaultValueLiteral = Dependencies.TypeMapper.GetMapping(clrType);
+                    var defaultValueLiteral = Dependencies.CoreTypeMapper.GetMapping(clrType);
                     builder
                         .Append(" DEFAULT ")
                         .Append(defaultValueLiteral.GenerateSqlLiteral(defaultValue));
@@ -531,7 +531,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             }
             else if (defaultValue != null)
             {
-                var typeMapping = Dependencies.TypeMapper.GetMapping(defaultValue.GetType());
+                var typeMapping = Dependencies.CoreTypeMapper.GetMapping(defaultValue.GetType());
                 builder
                     .Append(" DEFAULT ")
                     .Append(typeMapping.GenerateSqlLiteral(defaultValue));

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using JetBrains.Annotations;
@@ -13,11 +13,11 @@ namespace EFCore.MySql.Storage.Internal
     public class MySqlCommandBuilderFactory : IRelationalCommandBuilderFactory
     {
         private readonly IDiagnosticsLogger<DbLoggerCategory.Database.Command> _logger;
-        private readonly IRelationalTypeMapper _typeMapper;
+        private readonly IRelationalCoreTypeMapper _typeMapper;
 
         public MySqlCommandBuilderFactory(
             [NotNull] IDiagnosticsLogger<DbLoggerCategory.Database.Command> logger,
-            [NotNull] IRelationalTypeMapper typeMapper)
+            [NotNull] IRelationalCoreTypeMapper typeMapper)
         {
             Check.NotNull(logger, nameof(logger));
             Check.NotNull(typeMapper, nameof(typeMapper));
@@ -30,7 +30,7 @@ namespace EFCore.MySql.Storage.Internal
 
         protected virtual IRelationalCommandBuilder CreateCore(
             [NotNull] IDiagnosticsLogger<DbLoggerCategory.Database.Command> logger,
-            [NotNull] IRelationalTypeMapper relationalTypeMapper)
+            [NotNull] IRelationalCoreTypeMapper relationalTypeMapper)
             => new MySqlCommandBuilder(
                 logger,
                 relationalTypeMapper);

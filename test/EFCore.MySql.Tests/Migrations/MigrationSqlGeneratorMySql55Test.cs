@@ -1,17 +1,22 @@
 using System;
 using EFCore.MySql.Infrastructure.Internal;
 using EFCore.MySql.Storage.Internal;
+using EFCore.MySql.Update.Internal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.Converters;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.EntityFrameworkCore.TestUtilities.FakeProvider;
+using Microsoft.EntityFrameworkCore.Update;
 using Moq;
 using MySql.Data.MySqlClient;
 using Xunit;
+using FallbackRelationalCoreTypeMapper =
+    EFCore.MySql.Storage.Internal.FallbackRelationalCoreTypeMapper;
 
 namespace EFCore.MySql.Tests.Migrations
 {
@@ -46,17 +51,29 @@ CREATE TABLE `People` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1
 ");
 
-                // type mapper
                 var typeMapper = new MySqlSmartTypeMapper(new RelationalTypeMapperDependencies(), mySqlOptions.Object);
 
-                // migrationsSqlGeneratorDependencies
+                var coreTypeMapper = new FallbackRelationalCoreTypeMapper(
+                    new CoreTypeMapperDependencies(
+                        new ValueConverterSelector(
+                            new ValueConverterSelectorDependencies())),
+                    new RelationalTypeMapperDependencies(),
+                    typeMapper
+                );
+
                 var commandBuilderFactory = new RelationalCommandBuilderFactory(
                     new FakeDiagnosticsLogger<DbLoggerCategory.Database.Command>(),
-                    typeMapper);
+                    coreTypeMapper);
+
+                var updateSqlGenerationHelper =
+                    new MySqlSqlGenerationHelper(new RelationalSqlGenerationHelperDependencies());
+
                 var migrationsSqlGeneratorDependencies = new MigrationsSqlGeneratorDependencies(
                     commandBuilderFactory,
+                    new MySqlUpdateSqlGenerator(new UpdateSqlGeneratorDependencies(updateSqlGenerationHelper, coreTypeMapper)),
                     new MySqlSqlGenerationHelper(new RelationalSqlGenerationHelperDependencies()),
-                    typeMapper);
+                    typeMapper,
+                    coreTypeMapper);
 
                 return new MySqlMigrationsSqlGenerator(
                     migrationsSqlGeneratorDependencies,

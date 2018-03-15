@@ -1,4 +1,4 @@
-/// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -144,7 +144,7 @@ namespace EFCore.MySql.Query.Sql.Internal
             Sql.Append("CAST(");
             Visit(explicitCastExpression.Operand);
             Sql.Append(" AS ");
-            var typeMapping = Dependencies.RelationalTypeMapper.FindMapping(explicitCastExpression.Type);
+            var typeMapping = Dependencies.CoreTypeMapper.FindMapping(explicitCastExpression.Type);
             if (typeMapping == null)
             {
                 throw new InvalidOperationException($"Cannot cast to type '{explicitCastExpression.Type.Name}'");

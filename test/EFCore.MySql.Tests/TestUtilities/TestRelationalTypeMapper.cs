@@ -1,13 +1,11 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
-// Licensed under the MIT. See LICENSE in the project root for license information.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Data;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
 
-//ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.TestUtilities
 {
     public class TestRelationalTypeMapper : RelationalTypeMapper
@@ -15,7 +13,7 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
         private static readonly RelationalTypeMapping _string = new StringTypeMapping("just_string(2000)");
         private static readonly RelationalTypeMapping _unboundedString = new StringTypeMapping("just_string(max)");
         private static readonly RelationalTypeMapping _stringKey = new StringTypeMapping("just_string(450)", dbType: null, unicode: true, size: 450);
-        private static readonly RelationalTypeMapping _ansiStringKey = new StringTypeMapping("ansi_string(900)", dbType: null, unicode: true, size: 450);
+        private static readonly RelationalTypeMapping _ansiStringKey = new StringTypeMapping("ansi_string(900)", dbType: null, unicode: false, size: 900);
         private static readonly RelationalTypeMapping _unboundedBinary = new ByteArrayTypeMapping("just_binary(max)", dbType: DbType.Binary);
         private static readonly RelationalTypeMapping _binary = new ByteArrayTypeMapping("just_binary(max)", dbType: DbType.Binary);
         private static readonly RelationalTypeMapping _binaryKey = new ByteArrayTypeMapping("just_binary(900)", dbType: DbType.Binary, size: 900);
@@ -60,12 +58,11 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
         private static readonly RelationalTypeMapping _defaultTimeSpanMapping
             = new TimeSpanTypeMapping("default_timespan_mapping");
 
-        public TestRelationalTypeMapper(RelationalTypeMapperDependencies dependencies)
+        public TestRelationalTypeMapper(
+            RelationalTypeMapperDependencies dependencies)
             : base(dependencies)
         {
         }
-
-        protected override string GetColumnType(IProperty property) => property.TestProvider().ColumnType;
 
         private readonly IReadOnlyDictionary<Type, RelationalTypeMapping> _simpleMappings
             = new Dictionary<Type, RelationalTypeMapping>
@@ -114,7 +111,7 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
                 _unboundedString,
                 _ansiStringKey,
                 size => new StringTypeMapping(
-                    "just_string(" + size + ")",
+                    "ansi_string(" + size + ")",
                     dbType: DbType.AnsiString,
                     unicode: false,
                     size: size),
@@ -136,11 +133,11 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
 
         public override RelationalTypeMapping FindMapping(Type clrType)
         {
-            //clrType = clrType.UnwrapNullableType().UnwrapEnumType();
+            var underlyingType = clrType.UnwrapNullableType().UnwrapEnumType();
 
-            return clrType == typeof(string)
+            return underlyingType == typeof(string)
                 ? _string
-                : (clrType == typeof(byte[])
+                : (underlyingType == typeof(byte[])
                     ? _binary
                     : base.FindMapping(clrType));
         }

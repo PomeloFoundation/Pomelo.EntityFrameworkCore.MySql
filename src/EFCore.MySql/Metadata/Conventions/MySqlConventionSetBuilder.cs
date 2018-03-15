@@ -6,21 +6,21 @@ using EFCore.MySql.Storage.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.Converters;
 using Microsoft.EntityFrameworkCore.Utilities;
+using FallbackRelationalCoreTypeMapper =
+    EFCore.MySql.Storage.Internal.FallbackRelationalCoreTypeMapper;
 
-//ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
 {
     public class MySqlConventionSetBuilder : RelationalConventionSetBuilder
     {
-        private readonly ISqlGenerationHelper _sqlGenerationHelper;
-
         public MySqlConventionSetBuilder(
-            [NotNull] RelationalConventionSetBuilderDependencies dependencies,
-            [NotNull] ISqlGenerationHelper sqlGenerationHelper)
+            [NotNull] RelationalConventionSetBuilderDependencies dependencies
+        )
             : base(dependencies)
         {
-            _sqlGenerationHelper = sqlGenerationHelper;
         }
 
         public override ConventionSet AddConventions(ConventionSet conventionSet)
@@ -31,23 +31,46 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
 
             var valueGenerationStrategyConvention = new MySqlValueGenerationStrategyConvention();
             conventionSet.ModelInitializedConventions.Add(valueGenerationStrategyConvention);
+            conventionSet.ModelInitializedConventions.Add(new RelationalMaxIdentifierLengthConvention(64));
 
-            ReplaceConvention(conventionSet.PropertyAddedConventions, (DatabaseGeneratedAttributeConvention)valueGenerationStrategyConvention);
-            ReplaceConvention(conventionSet.PropertyFieldChangedConventions, (DatabaseGeneratedAttributeConvention)valueGenerationStrategyConvention);
+            ValueGeneratorConvention valueGeneratorConvention = new MySqlValueGeneratorConvention();
+            ReplaceConvention(conventionSet.BaseEntityTypeChangedConventions, valueGeneratorConvention);
+
+            ReplaceConvention(conventionSet.PrimaryKeyChangedConventions, valueGeneratorConvention);
+
+            ReplaceConvention(conventionSet.ForeignKeyAddedConventions, valueGeneratorConvention);
+
+            ReplaceConvention(conventionSet.ForeignKeyRemovedConventions, valueGeneratorConvention);
+
+            conventionSet.PropertyAnnotationChangedConventions.Add(
+                (MySqlValueGeneratorConvention)valueGeneratorConvention);
 
             return conventionSet;
         }
 
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public static ConventionSet Build()
         {
-            var typeMapper = new MySqlTypeMapper(new RelationalTypeMapperDependencies());
+            var coreTypeMapperDependencies = new CoreTypeMapperDependencies(
+                new ValueConverterSelector(
+                    new ValueConverterSelectorDependencies()));
+
+            var mySqlTypeMapper = new MySqlTypeMapper(
+                new RelationalTypeMapperDependencies());
+
+            var convertingTypeMapper = new FallbackRelationalCoreTypeMapper(
+                coreTypeMapperDependencies,
+                new RelationalTypeMapperDependencies(),
+                mySqlTypeMapper);
 
             return new MySqlConventionSetBuilder(
-                    new RelationalConventionSetBuilderDependencies(typeMapper, null, null),
-                    new MySqlSqlGenerationHelper(new RelationalSqlGenerationHelperDependencies()))
+                    new RelationalConventionSetBuilderDependencies(convertingTypeMapper, null, null, null))
                 .AddConventions(
                     new CoreConventionSetBuilder(
-                            new CoreConventionSetBuilderDependencies(typeMapper))
+                            new CoreConventionSetBuilderDependencies(convertingTypeMapper, null, null))
                         .CreateConventionSet());
         }
     }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using EFCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 
+// ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Infrastructure
 {
     public class MySqlDbContextOptionsBuilder : RelationalDbContextOptionsBuilder<MySqlDbContextOptionsBuilder, MySqlOptionsExtension>

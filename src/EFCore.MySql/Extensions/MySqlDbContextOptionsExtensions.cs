@@ -47,7 +47,7 @@ namespace Microsoft.EntityFrameworkCore
             Check.NotNull(connection, nameof(connection));
 
             var csb = new MySqlConnectionStringBuilder(connection.ConnectionString);
-            if (csb.AllowUserVariables != true || csb.UseAffectedRows != false)
+            if (csb.AllowUserVariables != true || csb.UseAffectedRows)
             {
                 try
                 {
