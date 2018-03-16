@@ -447,8 +447,9 @@ END;" + EOL +
         {
             base.AlterColumnOperation();
             Assert.Equal(
+                @"ALTER TABLE `dbo`.`People` ALTER COLUMN `LuckyNumber` DROP DEFAULT;" + EOL +
                 @"ALTER TABLE `dbo`.`People` MODIFY COLUMN `LuckyNumber` int NOT NULL;" + EOL +
-                @"ALTER TABLE `dbo`.`People` ALTER COLUMN `LuckyNumber` SET DEFAULT 7" + EOL,
+                @"ALTER TABLE `dbo`.`People` ALTER COLUMN `LuckyNumber` SET DEFAULT 7;" + EOL,
             Sql, false, true, true);
         }
 
@@ -457,8 +458,7 @@ END;" + EOL +
         {
             base.AlterColumnOperation_without_column_type();
             Assert.Equal(
-                @"ALTER TABLE `People` MODIFY COLUMN `LuckyNumber` int NOT NULL;" + EOL +
-                @"ALTER TABLE `People` ALTER COLUMN `LuckyNumber` DROP DEFAULT;",
+                @"ALTER TABLE `People` MODIFY COLUMN `LuckyNumber` int NOT NULL;" + EOL,
             Sql);
         }
 
@@ -472,13 +472,17 @@ END;" + EOL +
                     Name = "GuidKey",
                     ClrType = typeof(int),
                     ColumnType = "char(38)",
+                    OldColumn = new ColumnOperation
+                    {
+                        ColumnType = "char(38)"
+                    },
                     IsNullable = false,
                     [MySqlAnnotationNames.ValueGenerationStrategy] = MySqlValueGenerationStrategy.IdentityColumn
                 });
 
             Assert.Equal(
-                @"ALTER TABLE `People` MODIFY COLUMN `GuidKey` char(38) NOT NULL;" + EOL +
-                @"ALTER TABLE `People` ALTER COLUMN `GuidKey` DROP DEFAULT;",
+                @"ALTER TABLE `People` ALTER COLUMN `GuidKey` DROP DEFAULT;" + EOL +
+                @"ALTER TABLE `People` MODIFY COLUMN `GuidKey` char(38) NOT NULL;" + EOL,
             Sql, false , true, true);
         }
 
@@ -512,10 +516,33 @@ END;" + EOL +
                     Name = "Blob",
                     ClrType = typeof(string),
                     ColumnType = type,
+                    OldColumn = new ColumnOperation
+                    {
+                        ColumnType = type,
+                    },
                     IsNullable = true,
                 });
 
             Assert.Equal(
+                $"ALTER TABLE `People` MODIFY COLUMN `Blob` {type} NULL;" + EOL,
+                Sql);
+
+            Generate(
+                new AlterColumnOperation
+                {
+                    Table = "People",
+                    Name = "Blob",
+                    ClrType = typeof(string),
+                    ColumnType = type,
+                    OldColumn = new ColumnOperation
+                    {
+                        ColumnType = "varchar(127)",
+                    },
+                    IsNullable = true,
+                });
+
+            Assert.Equal(
+                @"ALTER TABLE `People` ALTER COLUMN `Blob` DROP DEFAULT;" + EOL +
                 $"ALTER TABLE `People` MODIFY COLUMN `Blob` {type} NULL;" + EOL,
                 Sql);
         }

@@ -196,6 +196,11 @@ namespace EFCore.MySql.Tests.Migrations
                     Name = "LuckyNumber",
                     ClrType = typeof(int),
                     ColumnType = "int",
+                    OldColumn = new ColumnOperation
+                    {
+                        ClrType = typeof(long),
+                        ColumnType = "bigint"
+                    },
                     IsNullable = false,
                     DefaultValue = 7
                 });
@@ -210,7 +215,6 @@ namespace EFCore.MySql.Tests.Migrations
                     Table = "People",
                     Name = "LuckyNumber",
                     ClrType = typeof(int),
-                    ColumnType = "int",
                 });
         }
 
