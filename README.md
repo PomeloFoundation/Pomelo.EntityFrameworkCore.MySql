@@ -5,6 +5,8 @@
 
 Pomelo.EntityFrameworkCore.MySql is an Entity Framework Core provider built on top of [MySqlConnector](https://github.com/mysql-net/MySqlConnector). It allows us to use the Entity Framework Core ORM with MySQL.  Async functions in this library properly implement Async I/O at the lowest level, unlike providers based on Oracle's MySql.Data library which uses Sync I/O at the lowest level.
 
+**Pomelo.EntityFrameworkCore.MySql is currently [looking for core contributors](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/522)**
+
 ## Nightly Builds
 
 To add a `NuGet.config` file in your solution root, then you can use the unstable packages:
@@ -157,8 +159,8 @@ By viewing the following full project which is a single-user blog system and bas
 
 Milestone | Release week
 ----------|-------------
-2.1.0-preview1-* | 2018/03/16
-2.1.0-preview1-final | 2018/03/30
+2.1.0-preview1-* | TBD
+2.1.0-preview1-final | TBD
 
 #### Scaffolding Tutorial
 
