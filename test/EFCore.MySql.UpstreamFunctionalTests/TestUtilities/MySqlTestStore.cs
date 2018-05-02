@@ -3,6 +3,7 @@ using System.Data.Common;
 using System.IO;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
@@ -46,8 +47,13 @@ namespace EFCore.MySql.UpstreamFunctionalTests.TestUtilities
 
         public override DbContextOptionsBuilder AddProviderOptions(DbContextOptionsBuilder builder)
             => _useConnectionString
-                ? builder.UseMySql(ConnectionString, b => b.CommandTimeout(CommandTimeout))
-                : builder.UseMySql(Connection, b => b.CommandTimeout(CommandTimeout));
+                ? builder.UseMySql(ConnectionString, AddOptions)
+                : builder.UseMySql(Connection, AddOptions);
+
+        private static void AddOptions(MySqlDbContextOptionsBuilder builder)
+        {
+            builder.CommandTimeout(CommandTimeout).ServerVersion(LazyConfig.Value["Data:ServerVersion"]);
+        }
 
         public MySqlTestStore InitializeMySql(IServiceProvider serviceProvider, Func<DbContext> createContext, Action<DbContext> seed)
             => (MySqlTestStore)Initialize(serviceProvider, createContext, seed);

@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <LangVersion>7.2</LangVersion>
     <AssemblyName>EFCore.MySql.FunctionalTests</AssemblyName>
     <StartupObject>EFCore.MySql.FunctionalTests.Program</StartupObject>
     <OutputType>Exe</OutputType>

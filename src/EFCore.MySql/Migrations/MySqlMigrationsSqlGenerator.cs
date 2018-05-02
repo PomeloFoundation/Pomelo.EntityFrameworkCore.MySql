@@ -151,7 +151,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             if (operation.NewName != null)
             {
-                if (_options.ConnectionSettings.ServerVersion.SupportsRenameIndex)
+                if (_options.ServerVersion.SupportsRenameIndex)
                 {
                     builder.Append("ALTER TABLE ")
                         .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
@@ -445,7 +445,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                         autoIncrement = true;
                         break;
                     case "datetime":
-                        if (!_options.ConnectionSettings.ServerVersion.SupportsDateTime6)
+                        if (!_options.ServerVersion.SupportsDateTime6)
                             throw new InvalidOperationException(
                                 $"Error in {table}.{name}: DATETIME does not support values generated " +
                                 "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");
@@ -462,7 +462,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 switch (matchType)
                 {
                     case "datetime":
-                        if (!_options.ConnectionSettings.ServerVersion.SupportsDateTime6)
+                        if (!_options.ServerVersion.SupportsDateTime6)
                         {
                             throw new InvalidOperationException($"Error in {table}.{name}: DATETIME does not support values generated " +
                                 "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");

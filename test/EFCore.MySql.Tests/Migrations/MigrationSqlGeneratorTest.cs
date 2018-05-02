@@ -52,7 +52,10 @@ namespace EFCore.MySql.Tests.Migrations
 
                 var mySqlOptions = new Mock<IMySqlOptions>();
                 mySqlOptions.SetupGet(opts => opts.ConnectionSettings).Returns(
-                    new MySqlConnectionSettings(new MySqlConnectionStringBuilder(), new ServerVersion("5.7.18")));
+                    new MySqlConnectionSettings(new MySqlConnectionStringBuilder().ToString()));
+
+                mySqlOptions
+                    .SetupGet(fn => fn.ServerVersion).Returns(new ServerVersion("5.7.18"));
 
                 return new MySqlMigrationsSqlGenerator(
                     migrationsSqlGeneratorDependencies,
