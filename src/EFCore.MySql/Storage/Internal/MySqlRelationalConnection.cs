@@ -40,7 +40,6 @@ namespace EFCore.MySql.Storage.Internal
 
         public override bool IsMultipleActiveResultSetsEnabled => false;
 
-        [NotNull]
         public override async Task<IDbContextTransaction> BeginTransactionAsync(
             IsolationLevel isolationLevel,
             CancellationToken cancellationToken = default(CancellationToken))

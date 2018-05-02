@@ -144,7 +144,7 @@ namespace EFCore.MySql.Query.Sql.Internal
             Sql.Append("CAST(");
             Visit(explicitCastExpression.Operand);
             Sql.Append(" AS ");
-            var typeMapping = Dependencies.CoreTypeMapper.FindMapping(explicitCastExpression.Type);
+            var typeMapping = Dependencies.TypeMappingSource.FindMapping(explicitCastExpression.Type);
             if (typeMapping == null)
             {
                 throw new InvalidOperationException($"Cannot cast to type '{explicitCastExpression.Type.Name}'");

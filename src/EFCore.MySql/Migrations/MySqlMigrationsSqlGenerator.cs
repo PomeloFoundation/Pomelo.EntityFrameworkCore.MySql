@@ -70,8 +70,8 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             {
                 var property = FindProperty(model, operation.Schema, operation.Table, operation.Name);
                 type = property != null
-                    ? Dependencies.CoreTypeMapper.GetMapping(property).StoreType
-                    : Dependencies.CoreTypeMapper.GetMapping(operation.ClrType).StoreType;
+                    ? Dependencies.TypeMappingSource.GetMapping(property).StoreType
+                    : Dependencies.TypeMappingSource.GetMapping(operation.ClrType).StoreType;
             }
 
             var identifier = Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema);
@@ -118,7 +118,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
                     if (operation.DefaultValue != null)
                     {
-                        var typeMapping = Dependencies.CoreTypeMapper.GetMapping(operation.DefaultValue.GetType());
+                        var typeMapping = Dependencies.TypeMappingSource.GetMapping(operation.DefaultValue.GetType());
                         builder.Append(" SET DEFAULT ")
                             .Append(typeMapping.GenerateSqlLiteral(operation.DefaultValue))
                             .AppendLine(Dependencies.SqlGenerationHelper.BatchTerminator);
@@ -209,7 +209,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(builder, nameof(builder));
 
             builder
-                .Append("ALTER TABLE")
+                .Append("ALTER TABLE ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name, operation.Schema))
                 .Append(" RENAME ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName, operation.NewSchema));
@@ -504,7 +504,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 }
                 else if (defaultValue != null)
                 {
-                    var defaultValueLiteral = Dependencies.CoreTypeMapper.GetMapping(clrType);
+                    var defaultValueLiteral = Dependencies.TypeMappingSource.GetMapping(clrType);
                     builder
                         .Append(" DEFAULT ")
                         .Append(defaultValueLiteral.GenerateSqlLiteral(defaultValue));
@@ -531,7 +531,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             }
             else if (defaultValue != null)
             {
-                var typeMapping = Dependencies.CoreTypeMapper.GetMapping(defaultValue.GetType());
+                var typeMapping = Dependencies.TypeMappingSource.GetMapping(defaultValue.GetType());
                 builder
                     .Append(" DEFAULT ")
                     .Append(typeMapping.GenerateSqlLiteral(defaultValue));

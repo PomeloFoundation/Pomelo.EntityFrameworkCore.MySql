@@ -83,16 +83,18 @@ namespace EFCore.MySql.Storage.Internal
 
         private IReadOnlyList<MigrationCommand> CreateCreateOperations()
         {
-            var builder = new MySqlConnectionStringBuilder(_connection.DbConnection.ConnectionString);
             return Dependencies.MigrationsSqlGenerator.Generate((new[] { new MySqlCreateDatabaseOperation { Name = _connection.DbConnection.Database } }));
         }
+
         public override bool Exists()
             => Exists(retryOnNotExists: false);
 
         private bool Exists(bool retryOnNotExists)
             => Dependencies.ExecutionStrategyFactory.Create().Execute(DateTime.UtcNow + RetryTimeout, giveUp =>
+            {
+                while (true)
                 {
-                    while (true)
+                    try
                     {
                         try
                         {
@@ -105,28 +107,42 @@ namespace EFCore.MySql.Storage.Internal
                                     cmd.ExecuteNonQuery();
                                 }
                             }
-                            return true;
                         }
                         catch (MySqlException e)
                         {
-                            if (!retryOnNotExists && IsDoesNotExist(e))
-                                return false;
-
-                            if (DateTime.UtcNow > giveUp || !RetryOnExistsFailure(e))
+                            if (e.Number != 1045) // Access denied because credentials were lost
+                            {
                                 throw;
+                            }
 
-                            Thread.Sleep(RetryDelay);
+                            _connection.Open(errorsExpected: true);
+
+                            _connection.Close();
                         }
+                        return true;
                     }
-                });
+                    catch (MySqlException e)
+                    {
+                        if (!retryOnNotExists && IsDoesNotExist(e))
+                            return false;
+
+                        if (DateTime.UtcNow > giveUp || !RetryOnExistsFailure(e))
+                            throw;
+
+                        Thread.Sleep(RetryDelay);
+                    }
+                }
+            });
 
         public override Task<bool> ExistsAsync(CancellationToken cancellationToken = default(CancellationToken))
             => ExistsAsync(retryOnNotExists: false, cancellationToken: cancellationToken);
 
         private Task<bool> ExistsAsync(bool retryOnNotExists, CancellationToken cancellationToken)
             => Dependencies.ExecutionStrategyFactory.Create().ExecuteAsync(DateTime.UtcNow + RetryTimeout, async (giveUp, ct) =>
+            {
+                while (true)
                 {
-                    while (true)
+                    try
                     {
                         try
                         {
@@ -139,25 +155,35 @@ namespace EFCore.MySql.Storage.Internal
                                     await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
                                 }
                             }
-                            return true;
                         }
                         catch (MySqlException e)
                         {
-                            if (!retryOnNotExists && IsDoesNotExist(e))
-                                return false;
-
-                            if (DateTime.UtcNow > giveUp || !RetryOnExistsFailure(e))
+                            if (e.Number != 1045) // Access denied because credentials were lost
+                            {
                                 throw;
+                            }
 
-                            await Task.Delay(RetryDelay, ct).ConfigureAwait(false);
+                            await _connection.OpenAsync(ct, errorsExpected: true);
+
+                            _connection.Close();
                         }
+                        return true;
                     }
-                }, cancellationToken);
+                    catch (MySqlException e)
+                    {
+                        if (!retryOnNotExists && IsDoesNotExist(e))
+                            return false;
 
-        // Login failed is thrown when database does not exist (See Issue #776)
+                        if (DateTime.UtcNow > giveUp || !RetryOnExistsFailure(e))
+                            throw;
+
+                        await Task.Delay(RetryDelay, ct).ConfigureAwait(false);
+                    }
+                }
+            }, cancellationToken);
+
         private static bool IsDoesNotExist(MySqlException exception) => exception.Number == 1049;
 
-        // See Issue #985
         private bool RetryOnExistsFailure(MySqlException exception)
         {
             if (exception.Number == 1049)

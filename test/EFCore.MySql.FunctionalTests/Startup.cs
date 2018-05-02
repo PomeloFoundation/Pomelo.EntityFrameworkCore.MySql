@@ -48,7 +48,7 @@ namespace EFCore.MySql.FunctionalTests
             {
                 services.AddDbContextPool<AppDb>(
                     options => options.UseMySql(AppConfig.Config["Data:ConnectionString"],
-                        mysqlOptions => 
+                        mysqlOptions =>
                         {
                             mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize);
                             if (AppConfig.EfRetryOnFailure > 0)

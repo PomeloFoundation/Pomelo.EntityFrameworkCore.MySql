@@ -1,6 +1,7 @@
 // Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
+using System;
 using System.Collections.Concurrent;
 using System.Data;
 using System.Data.Common;
@@ -32,13 +33,12 @@ namespace EFCore.MySql.Storage.Internal
             {
                 csb.Database = "";
                 csb.Pooling = false;
-                string serverVersion;
+                ServerVersion version;
                 using (var schemalessConnection = new MySqlConnection(csb.ConnectionString))
                 {
                     schemalessConnection.Open();
-                    serverVersion = schemalessConnection.ServerVersion;
+                    version = new ServerVersion(schemalessConnection.ServerVersion);
                 }
-                var version = new ServerVersion(serverVersion);
                 return new MySqlConnectionSettings(settingsCsb, version);
             });
         }
@@ -49,23 +49,23 @@ namespace EFCore.MySql.Storage.Internal
             var settingsCsb = _settingsCsb(csb);
             return Settings.GetOrAdd(settingsCsb.ConnectionString, key =>
             {
-                var opened = false;
+                ServerVersion version;
                 if (connection.State == ConnectionState.Closed)
                 {
-                    connection.Open();
-                    opened = true;
+                    csb.Database = "";
+                    csb.Pooling = false;
+                    using (var schemalessConnection = new MySqlConnection(csb.ConnectionString))
+                    {
+                        schemalessConnection.Open();
+                        version = new ServerVersion(schemalessConnection.ServerVersion);
+                    }
                 }
-                try
+                else
                 {
-                    var version = new ServerVersion(connection.ServerVersion);
-                    var connectionSettings = new MySqlConnectionSettings(settingsCsb, version);
-                    return connectionSettings;
+                    version = new ServerVersion(connection.ServerVersion);
                 }
-                finally
-                {
-                    if (opened)
-                        connection.Close();
-                }
+
+                return new MySqlConnectionSettings(settingsCsb, version);
             });
         }
 

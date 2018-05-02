@@ -9,21 +9,30 @@ namespace EFCore.MySql.Storage.Internal
     public class ServerVersion
     {
         public static Regex ReVersion = new Regex(@"\d+\.\d+\.?(?:\d+)?");
+        private static readonly Version DefaultVersion = new Version(8, 0);
 
         public ServerVersion(string versionString)
         {
-            Type = versionString.ToLower().Contains("mariadb") ? ServerType.MariaDb : ServerType.MySql;
-            var semanticVersion = ReVersion.Matches(versionString);
-            if (semanticVersion.Count > 0)
+            if (versionString != null)
             {
-                if (Type == ServerType.MariaDb && semanticVersion.Count > 1)
-                    Version = Version.Parse(semanticVersion[1].Value);
+                Type = versionString.ToLower().Contains("mariadb") ? ServerType.MariaDb : ServerType.MySql;
+                var semanticVersion = ReVersion.Matches(versionString);
+                if (semanticVersion.Count > 0)
+                {
+                    if (Type == ServerType.MariaDb && semanticVersion.Count > 1)
+                        Version = Version.Parse(semanticVersion[1].Value);
+                    else
+                        Version = Version.Parse(semanticVersion[0].Value);
+                }
                 else
-                    Version = Version.Parse(semanticVersion[0].Value);
+                {
+                    throw new InvalidOperationException(
+                        $"Unable to determine server version from version string '${versionString}'");
+                }
             }
             else
             {
-                throw new InvalidOperationException($"Unable to determine server version from version string '${versionString}'");
+                Version = DefaultVersion;
             }
         }
 

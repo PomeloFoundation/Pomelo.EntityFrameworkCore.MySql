@@ -3,6 +3,7 @@
 
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 
 namespace EFCore.MySql.Scaffolding.Internal
@@ -14,7 +15,7 @@ namespace EFCore.MySql.Scaffolding.Internal
         {
         }
 
-        public override string UseProviderMethod
-            => nameof(MySqlDbContextOptionsExtensions.UseMySql);
+        public override MethodCallCodeFragment GenerateUseProvider(string connectionString)
+            => new MethodCallCodeFragment(nameof(MySqlDbContextOptionsExtensions.UseMySql), connectionString);
     }
 }

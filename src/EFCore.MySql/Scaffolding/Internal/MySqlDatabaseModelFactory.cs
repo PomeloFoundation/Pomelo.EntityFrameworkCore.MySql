@@ -24,7 +24,6 @@ namespace EFCore.MySql.Scaffolding.Internal
 
         public MySqlDatabaseModelFactory(ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole();
             Logger = loggerFactory.CreateCommandsLogger();
         }
 
@@ -35,7 +34,6 @@ namespace EFCore.MySql.Scaffolding.Internal
             _connection = null;
             _databaseModel = new DatabaseModel();
             _tables = new Dictionary<string, DatabaseTable>();
-            new Dictionary<string, DatabaseColumn>(StringComparer.OrdinalIgnoreCase);
         }
 
         public DatabaseModel Create(string connectionString, IEnumerable<string> tables, IEnumerable<string> schemas)
@@ -92,10 +90,11 @@ namespace EFCore.MySql.Scaffolding.Internal
                     var table = new DatabaseTable
                     {
                         Schema = null,
-                        Name = reader.GetString(0)
+                        Name = reader.GetString(0).Replace("`", "")
                     };
 
-                    if (allowedTables.Contains(table.Name))
+                    if (allowedTables.Count == 0
+                        || allowedTables.Contains(table.Name))
                     {
                         _databaseModel.Tables.Add(table);
                         _tables[table.Name] = table;
@@ -104,7 +103,7 @@ namespace EFCore.MySql.Scaffolding.Internal
             }
         }
 
-        private const string GetColumnsQuery = @"SHOW COLUMNS FROM {0}";
+        private const string GetColumnsQuery = @"SHOW COLUMNS FROM `{0}`";
 
         private void GetColumns()
         {
@@ -182,7 +181,7 @@ namespace EFCore.MySql.Scaffolding.Internal
             foreach (var x in _tables)
             {
                 using (var command =
-                    new MySqlCommand(string.Format(GetPrimaryQuery, _connection.Database, x.Key.Replace("`", "")),
+                    new MySqlCommand(string.Format(GetPrimaryQuery, _connection.Database, x.Key),
                         _connection))
                 using (var reader = command.ExecuteReader())
                 {
@@ -229,7 +228,7 @@ namespace EFCore.MySql.Scaffolding.Internal
             foreach (var x in _tables)
             {
                 using (var command =
-                    new MySqlCommand(string.Format(GetIndexesQuery, _connection.Database, x.Key.Replace("`", "")),
+                    new MySqlCommand(string.Format(GetIndexesQuery, _connection.Database, x.Key),
                         _connection))
                 using (var reader = command.ExecuteReader())
                 {
@@ -283,20 +282,21 @@ namespace EFCore.MySql.Scaffolding.Internal
             foreach (var x in _tables)
             {
                 using (var command =
-                    new MySqlCommand(string.Format(GetConstraintsQuery, _connection.Database, x.Key.Replace("`", "")),
+                    new MySqlCommand(string.Format(GetConstraintsQuery, _connection.Database, x.Key),
                         _connection))
                 using (var reader = command.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        if (_tables.ContainsKey($"`{reader.GetString(2)}`"))
+                        var referencedTableName = reader.GetString(2);
+                        if (_tables.TryGetValue(referencedTableName, out var referencedTable))
                         {
                             var fkInfo = new DatabaseForeignKey
                             {
                                 Name = reader.GetString(0),
                                 OnDelete = ConvertToReferentialAction(reader.GetString(4)),
                                 Table = x.Value,
-                                PrincipalTable = _tables[$"`{reader.GetString(2)}`"]
+                                PrincipalTable = referencedTable
                             };
                             foreach (var pair in reader.GetString(3).Split(','))
                             {
@@ -310,7 +310,7 @@ namespace EFCore.MySql.Scaffolding.Internal
                         }
                         else
                         {
-                            Logger.LogWarning($"Referenced table `{reader.GetString(2)}` is not in dictionary.");
+                            Logger.LogWarning($"Referenced table `{referencedTableName}` is not in dictionary.");
                         }
                     }
                 }

@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.Converters;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.EntityFrameworkCore.TestUtilities.FakeProvider;
@@ -15,8 +15,6 @@ using Microsoft.EntityFrameworkCore.Update;
 using Moq;
 using MySql.Data.MySqlClient;
 using Xunit;
-using FallbackRelationalCoreTypeMapper =
-    EFCore.MySql.Storage.Internal.FallbackRelationalCoreTypeMapper;
 
 namespace EFCore.MySql.Tests.Migrations
 {
@@ -53,11 +51,11 @@ CREATE TABLE `People` (
 
                 var typeMapper = new MySqlSmartTypeMapper(new RelationalTypeMapperDependencies(), mySqlOptions.Object);
 
-                var coreTypeMapper = new FallbackRelationalCoreTypeMapper(
-                    new CoreTypeMapperDependencies(
+                var coreTypeMapper = new FallbackRelationalTypeMappingSource(
+                    new TypeMappingSourceDependencies(
                         new ValueConverterSelector(
                             new ValueConverterSelectorDependencies())),
-                    new RelationalTypeMapperDependencies(),
+                    new RelationalTypeMappingSourceDependencies(),
                     typeMapper
                 );
 
