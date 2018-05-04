@@ -110,21 +110,15 @@ namespace EFCore.MySql.Storage.Internal
             }
         }
 
-        private void CloseReader()
-        {
-            if (_reader != null)
-            {
-                // dispose the underlying MySQL data reader
-                _reader.Dispose();
-                _reader = null;
-            }
-        }
-
         protected override void Dispose(bool disposing)
         {
             if (disposing && !_disposed)
             {
-                CloseReader();
+                if (!_disposed)
+                {
+                    // dispose the underlying MySQL data reader
+                    _reader.Dispose();
+                }
                 base.Dispose(disposing);
                 _disposed = true;
             }
@@ -132,11 +126,6 @@ namespace EFCore.MySql.Storage.Internal
 
         private DbDataReader GetReader()
         {
-            if (_reader == null)
-            {
-                throw new ObjectDisposedException(nameof(WrappedMySqlDataReader));
-            }
-
             return _reader;
         }
     }

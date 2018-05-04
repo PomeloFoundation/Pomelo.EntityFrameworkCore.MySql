@@ -22,7 +22,7 @@ namespace EFCore.MySql.Storage.Internal
 
         public MySqlCommandBuilder(
             [NotNull] IDiagnosticsLogger<DbLoggerCategory.Database.Command> logger,
-            [NotNull] IRelationalCoreTypeMapper typeMapper)
+            [NotNull] IRelationalTypeMappingSource typeMapper)
         {
             Check.NotNull(logger, nameof(logger));
             Check.NotNull(typeMapper, nameof(typeMapper));

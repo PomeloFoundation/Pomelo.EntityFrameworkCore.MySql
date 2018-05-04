@@ -1,8 +1,9 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 
 //ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore
+namespace EFCore.MySql.UpstreamFunctionalTests.TestUtilities
 {
     public class MySqlTestHelpers : TestHelpers
     {

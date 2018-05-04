@@ -7,8 +7,6 @@ using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
-using FallbackRelationalCoreTypeMapper =
-    EFCore.MySql.Storage.Internal.FallbackRelationalCoreTypeMapper;
 
 namespace EFCore.MySql.Design.Internal
 {
@@ -17,10 +15,9 @@ namespace EFCore.MySql.Design.Internal
         public void ConfigureDesignTimeServices(IServiceCollection serviceCollection)
         {
             serviceCollection
-                .AddSingleton<IRelationalCoreTypeMapper, FallbackRelationalCoreTypeMapper>()
                 .AddSingleton<IRelationalTypeMapper, MySqlTypeMapper>()
                 .AddSingleton<IDatabaseModelFactory, MySqlDatabaseModelFactory>()
-                .AddSingleton<IProviderCodeGenerator, MySqlCodeGenerator>()
+                .AddSingleton<IProviderConfigurationCodeGenerator, MySqlCodeGenerator>()
                 .AddSingleton<IAnnotationCodeGenerator, MySqlAnnotationCodeGenerator>();
         }
     }

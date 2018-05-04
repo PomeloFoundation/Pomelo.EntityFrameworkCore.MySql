@@ -2,14 +2,10 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using EFCore.MySql.Metadata.Conventions.Internal;
-using EFCore.MySql.Storage.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.Converters;
 using Microsoft.EntityFrameworkCore.Utilities;
-using FallbackRelationalCoreTypeMapper =
-    EFCore.MySql.Storage.Internal.FallbackRelationalCoreTypeMapper;
+using Microsoft.Extensions.DependencyInjection;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
@@ -54,24 +50,18 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
         /// </summary>
         public static ConventionSet Build()
         {
-            var coreTypeMapperDependencies = new CoreTypeMapperDependencies(
-                new ValueConverterSelector(
-                    new ValueConverterSelectorDependencies()));
+            var serviceProvider = new ServiceCollection()
+                .AddEntityFrameworkMySql()
+                .AddDbContext<DbContext>(o => o.UseMySql("server=."))
+                .BuildServiceProvider();
 
-            var mySqlTypeMapper = new MySqlTypeMapper(
-                new RelationalTypeMapperDependencies());
-
-            var convertingTypeMapper = new FallbackRelationalCoreTypeMapper(
-                coreTypeMapperDependencies,
-                new RelationalTypeMapperDependencies(),
-                mySqlTypeMapper);
-
-            return new MySqlConventionSetBuilder(
-                    new RelationalConventionSetBuilderDependencies(convertingTypeMapper, null, null, null))
-                .AddConventions(
-                    new CoreConventionSetBuilder(
-                            new CoreConventionSetBuilderDependencies(convertingTypeMapper, null, null))
-                        .CreateConventionSet());
+            using (var serviceScope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
+            {
+                using (var context = serviceScope.ServiceProvider.GetService<DbContext>())
+                {
+                    return ConventionSet.CreateConventionSet(context);
+                }
+            }
         }
     }
 }

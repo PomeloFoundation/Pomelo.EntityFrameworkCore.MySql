@@ -13,11 +13,11 @@ namespace EFCore.MySql.Storage.Internal
     public class MySqlCommandBuilderFactory : IRelationalCommandBuilderFactory
     {
         private readonly IDiagnosticsLogger<DbLoggerCategory.Database.Command> _logger;
-        private readonly IRelationalCoreTypeMapper _typeMapper;
+        private readonly IRelationalTypeMappingSource _typeMapper;
 
         public MySqlCommandBuilderFactory(
             [NotNull] IDiagnosticsLogger<DbLoggerCategory.Database.Command> logger,
-            [NotNull] IRelationalCoreTypeMapper typeMapper)
+            [NotNull] IRelationalTypeMappingSource typeMapper)
         {
             Check.NotNull(logger, nameof(logger));
             Check.NotNull(typeMapper, nameof(typeMapper));
@@ -30,7 +30,7 @@ namespace EFCore.MySql.Storage.Internal
 
         protected virtual IRelationalCommandBuilder CreateCore(
             [NotNull] IDiagnosticsLogger<DbLoggerCategory.Database.Command> logger,
-            [NotNull] IRelationalCoreTypeMapper relationalTypeMapper)
+            [NotNull] IRelationalTypeMappingSource relationalTypeMapper)
             => new MySqlCommandBuilder(
                 logger,
                 relationalTypeMapper);

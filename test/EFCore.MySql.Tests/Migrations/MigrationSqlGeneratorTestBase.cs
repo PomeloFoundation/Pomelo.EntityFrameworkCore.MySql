@@ -1,10 +1,12 @@
 using System;
 using System.Linq;
 using EFCore.MySql.Metadata.Internal;
+using EFCore.MySql.UpstreamFunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
+using Microsoft.EntityFrameworkCore.TestUtilities;
 using Xunit;
 
 namespace EFCore.MySql.Tests.Migrations

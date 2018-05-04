@@ -25,6 +25,5 @@ namespace EFCore.MySql.FunctionalTests
             .AddJsonFile("appsettings.json")
             .AddJsonFile("config.json")
             .Build());
-        
     }
 }
