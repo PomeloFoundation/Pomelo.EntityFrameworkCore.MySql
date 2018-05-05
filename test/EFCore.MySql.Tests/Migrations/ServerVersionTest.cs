@@ -1,4 +1,5 @@
 using System;
+using EFCore.MySql.Infrastructure;
 using EFCore.MySql.Storage.Internal;
 using Xunit;
 

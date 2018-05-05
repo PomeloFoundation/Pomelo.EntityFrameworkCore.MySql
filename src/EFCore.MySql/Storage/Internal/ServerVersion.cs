@@ -3,6 +3,7 @@
 
 using System;
 using System.Text.RegularExpressions;
+using EFCore.MySql.Infrastructure;
 
 namespace EFCore.MySql.Storage.Internal
 {
@@ -36,6 +37,12 @@ namespace EFCore.MySql.Storage.Internal
             }
         }
 
+        public ServerVersion(Version version, ServerType type)
+        {
+            Version = version;
+            Type = type;
+        }
+
         public readonly ServerType Type;
 
         public readonly Version Version;
@@ -55,11 +62,16 @@ namespace EFCore.MySql.Storage.Internal
                 return false;
             }
         }
-    }
+        public override bool Equals(object obj)
+            => !(obj is null)
+               && obj is ServerVersion version
+               && Equals(version);
 
-    public enum ServerType
-    {
-        MySql,
-        MariaDb
+        private bool Equals(ServerVersion other)
+            => Version.Equals(other.Version)
+               && Type == other.Type;
+
+        public override int GetHashCode()
+            => (Version.GetHashCode() * 397) ^ Type.GetHashCode();
     }
 }

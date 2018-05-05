@@ -1,5 +1,6 @@
 ﻿{
   "Data": {
-    "ConnectionString": "server=127.0.0.1;user id=root;password=Password12!;port=3306;database=pomelo_test;"
+    "ConnectionString": "server=127.0.0.1;user id=root;password=Password12!;port=3306;database=pomelo_test;",
+    "ServerVersion": "8.0.0-mysql"
   }
 }

@@ -7,6 +7,7 @@ using System.Data.Common;
 using System.Threading;
 using EFCore.MySql.Infrastructure.Internal;
 using EFCore.MySql.Storage.Internal;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -37,6 +38,10 @@ namespace EFCore.MySql.Internal
         {
             _relationalOptions = options.FindExtension<MySqlOptionsExtension>() ?? new MySqlOptionsExtension();
 
+            var mySqlOptions = options.FindExtension<MySqlOptionsExtension>() ?? new MySqlOptionsExtension();
+
+            ServerVersion = mySqlOptions.ServerVersion ?? new ServerVersion(null);
+
         }
 
         public virtual void Validate(IDbContextOptions options)
@@ -45,9 +50,20 @@ namespace EFCore.MySql.Internal
             {
                 throw new InvalidOperationException(RelationalStrings.NoConnectionOrConnectionString);
             }
+
+            var mySqlOptions = options.FindExtension<MySqlOptionsExtension>() ?? new MySqlOptionsExtension();
+
+            if (!Equals(ServerVersion, mySqlOptions.ServerVersion ?? new ServerVersion(null)))
+            {
+                throw new InvalidOperationException(
+                    CoreStrings.SingletonOptionChanged(
+                        nameof(MySqlDbContextOptionsBuilder.ServerVersion),
+                        nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
+            }
         }
 
         public virtual MySqlConnectionSettings ConnectionSettings => _lazyConnectionSettings.Value;
+        public virtual ServerVersion ServerVersion { get; private set; }
 
         public virtual string GetCreateTable(ISqlGenerationHelper sqlGenerationHelper, string table, string schema)
         {

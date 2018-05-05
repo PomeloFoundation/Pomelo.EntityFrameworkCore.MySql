@@ -26,7 +26,9 @@ namespace EFCore.MySql.Tests.Migrations
             {
                 var mySqlOptions = new Mock<IMySqlOptions>();
                 mySqlOptions.SetupGet(opts => opts.ConnectionSettings).Returns(
-                    new MySqlConnectionSettings(new MySqlConnectionStringBuilder(), new ServerVersion("5.5.2")));
+                    new MySqlConnectionSettings(new MySqlConnectionStringBuilder().ToString()));
+                mySqlOptions
+                    .SetupGet(fn => fn.ServerVersion).Returns(new ServerVersion("5.5.2"));
                 mySqlOptions
                     .Setup(fn =>
                         fn.GetCreateTable(It.IsAny<ISqlGenerationHelper>(), It.IsAny<string>(), It.IsAny<string>()))

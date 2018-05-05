@@ -64,7 +64,7 @@ namespace EFCore.MySql.Storage.Internal
             }
 
             // SupportsDateTime6
-            if (!_options.ConnectionSettings.ServerVersion.SupportsDateTime6)
+            if (!_options.ServerVersion.SupportsDateTime6)
             {
                 if (mapping.StoreType == "datetime(6)" && mapping.ClrType == typeof(DateTime))
                 {

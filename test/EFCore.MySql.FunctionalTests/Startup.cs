@@ -51,6 +51,7 @@ namespace EFCore.MySql.FunctionalTests
                         mysqlOptions =>
                         {
                             mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize);
+                            mysqlOptions.ServerVersion(AppConfig.Config["Data:ServerVersion"]);
                             if (AppConfig.EfRetryOnFailure > 0)
                                 mysqlOptions.EnableRetryOnFailure(AppConfig.EfRetryOnFailure, TimeSpan.FromSeconds(5), null);
                         }
@@ -63,6 +64,7 @@ namespace EFCore.MySql.FunctionalTests
                         mysqlOptions =>
                         {
                             mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize);
+                            mysqlOptions.ServerVersion(AppConfig.Config["Data:ServerVersion"]);
                             if (AppConfig.EfRetryOnFailure > 0)
                                 mysqlOptions.EnableRetryOnFailure(AppConfig.EfRetryOnFailure, TimeSpan.FromSeconds(5), null);
                         }
