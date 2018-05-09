@@ -1,10 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
-using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Xunit;
 
 namespace EFCore.MySql.UpstreamFunctionalTests
@@ -65,14 +61,14 @@ CREATE TABLE `Table1` (
 );
 
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
-VALUES ('00000000000001_Migration1', '7.0.0-test');
+VALUES (N'00000000000001_Migration1', N'7.0.0-test');
 
 ALTER TABLE `Table1` RENAME `Table2`
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
-VALUES ('00000000000002_Migration2', '7.0.0-test');
+VALUES (N'00000000000002_Migration2', N'7.0.0-test');
 
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
-VALUES ('00000000000003_Migration3', '7.0.0-test');
+VALUES (N'00000000000003_Migration3', N'7.0.0-test');
 
 ",
                 Sql,
@@ -86,7 +82,7 @@ VALUES ('00000000000003_Migration3', '7.0.0-test');
             Assert.Equal(
                 @"ALTER TABLE `Table1` RENAME `Table2`
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
-VALUES ('00000000000002_Migration2', '7.0.0-test');
+VALUES (N'00000000000002_Migration2', N'7.0.0-test');
 
 ",
                 Sql,
@@ -100,7 +96,7 @@ VALUES ('00000000000002_Migration2', '7.0.0-test');
             Assert.Equal(
                 @"ALTER TABLE `Table1` RENAME `Table2`
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
-VALUES ('00000000000002_Migration2', '7.0.0-test');
+VALUES (N'00000000000002_Migration2', N'7.0.0-test');
 
 ",
                 Sql,
@@ -119,12 +115,12 @@ VALUES ('00000000000002_Migration2', '7.0.0-test');
             Assert.Equal(
                 @"ALTER TABLE `Table2` RENAME `Table1`
 DELETE FROM `__EFMigrationsHistory`
-WHERE `MigrationId` = '00000000000002_Migration2';
+WHERE `MigrationId` = N'00000000000002_Migration2';
 
 DROP TABLE `Table1`;
 
 DELETE FROM `__EFMigrationsHistory`
-WHERE `MigrationId` = '00000000000001_Migration1';
+WHERE `MigrationId` = N'00000000000001_Migration1';
 
 ",
                 Sql,
@@ -138,7 +134,7 @@ WHERE `MigrationId` = '00000000000001_Migration1';
             Assert.Equal(
                 @"ALTER TABLE `Table2` RENAME `Table1`
 DELETE FROM `__EFMigrationsHistory`
-WHERE `MigrationId` = '00000000000002_Migration2';
+WHERE `MigrationId` = N'00000000000002_Migration2';
 
 ",
                 Sql,
@@ -152,7 +148,7 @@ WHERE `MigrationId` = '00000000000002_Migration2';
             Assert.Equal(
                 @"ALTER TABLE `Table2` RENAME `Table1`
 DELETE FROM `__EFMigrationsHistory`
-WHERE `MigrationId` = '00000000000002_Migration2';
+WHERE `MigrationId` = N'00000000000002_Migration2';
 
 ",
                 Sql,

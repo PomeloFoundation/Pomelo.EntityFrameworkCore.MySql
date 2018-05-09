@@ -2,9 +2,11 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
-using System.Data;
+using System.Collections.Generic;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.EntityFrameworkCore.Utilities;
 
 namespace EFCore.MySql.Storage.Internal
@@ -20,34 +22,75 @@ namespace EFCore.MySql.Storage.Internal
     /// </summary>
     public class MySqlJsonTypeMapping : RelationalTypeMapping
     {
+        private static readonly Dictionary<Type, ValueConverter> JsonConverters = new Dictionary<Type, ValueConverter>();
+        private static readonly Dictionary<Type, ValueComparer> JsonComparers = new Dictionary<Type, ValueComparer>();
+
         /// <summary>
-        ///     Initializes a new instance of the <see cref="MySqlJsonTypeMapping" /> class.
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        /// <param name="storeType"> The name of the database type. </param>
-        /// <param name="dbType"> The <see cref="System.Data.DbType" /> to be used. </param>
-        /// <param name="unicode"> A value indicating whether the type should handle Unicode data or not. </param>
-        /// <param name="size"> The size of data the property is configured to store, or null if no size is configured. </param>
         public MySqlJsonTypeMapping(
-            [NotNull] string storeType,
-            [CanBeNull] DbType? dbType = null,
-            bool unicode = false,
-            int? size = null)
-            : base(storeType, typeof(JsonObject<>), dbType, unicode, size)
+            Type clrType,
+            string storeType = null,
+            bool? unicode = null)
+            : this(
+                new RelationalTypeMappingParameters(
+                    new CoreTypeMappingParameters(clrType, GetConverter(clrType), GetComprarer(clrType)),
+                    storeType ?? "json",
+                    StoreTypePostfix.None,
+                    System.Data.DbType.String,
+                    unicode ?? false))
+        {
+        }
+
+        private static ValueConverter GetConverter(Type jsonType)
+        {
+            var elementType = jsonType.TryGetElementType(typeof(JsonObject<>));
+            if (!JsonConverters.TryGetValue(elementType, out var converter))
+            {
+                converter = (ValueConverter)typeof(JsonToStringConverter<>).MakeGenericType(elementType)
+                    .GetDeclaredConstructor(new Type[0]).Invoke(new object[0]);
+                JsonConverters[elementType] = converter;
+            }
+
+            return converter;
+        }
+
+        private static ValueComparer GetComprarer(Type jsonType)
+        {
+            var elementType = jsonType.TryGetElementType(typeof(JsonObject<>));
+            if (!JsonComparers.TryGetValue(elementType, out var converter))
+            {
+                converter = (ValueComparer)typeof(JsonComparer<>).MakeGenericType(elementType)
+                    .GetDeclaredConstructor(new Type[0]).Invoke(new object[0]);
+                JsonComparers[elementType] = converter;
+            }
+
+            return converter;
+        }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        protected MySqlJsonTypeMapping(RelationalTypeMappingParameters parameters)
+            : base(parameters)
         {
         }
 
         /// <summary>
-        ///     Creates a copy of this mapping.
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        /// <param name="storeType"> The name of the database type. </param>
-        /// <param name="size"> The size of data the property is configured to store, or null if no size is configured. </param>
-        /// <returns> The newly created mapping. </returns>
         public override RelationalTypeMapping Clone(string storeType, int? size)
-            => new MySqlJsonTypeMapping(
-                storeType,
-                DbType,
-                IsUnicode,
-                size);
+            => new MySqlJsonTypeMapping(Parameters.WithStoreTypeAndSize(storeType, size));
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public override CoreTypeMapping Clone(ValueConverter converter)
+            => new MySqlJsonTypeMapping(Parameters.WithComposedConverter(converter));
 
         /// <summary>
         ///     Generates the escaped SQL representation of a literal value.
@@ -68,5 +111,25 @@ namespace EFCore.MySql.Storage.Internal
         /// </returns>
         protected override string GenerateNonNullSqlLiteral(object value)
             => $"'{EscapeSqlLiteral((string)value)}'";
+
+        private class JsonToStringConverter<T> : ValueConverter<JsonObject<T>, string>
+            where T : class
+        {
+            public JsonToStringConverter()
+                : base(
+                    v => v.ToString(),
+                    v => new JsonObject<T>(v))
+            {
+            }
+        }
+
+        private class JsonComparer<T> : ValueComparer<JsonObject<T>>
+            where T : class
+        {
+            public JsonComparer()
+                : base((l, r) => Object.Equals(l, r), v => v.GetHashCode())
+            {
+            }
+        }
     }
 }

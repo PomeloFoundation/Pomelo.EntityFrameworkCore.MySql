@@ -22,8 +22,8 @@ LIMIT 1",
                 //
                 @"@p1='1'
 @p2='1'
-@p0='FO 108X' (Size = 8000) (DbType = AnsiString)
-@p3='ChangedEngine' (Size = 8000) (DbType = AnsiString)
+@p0='FO 108X' (Size = 4000)
+@p3='ChangedEngine' (Size = 4000)
 
 UPDATE `Engines` SET `Name` = @p0
 WHERE `Id` = @p1 AND `EngineSupplierId` = @p2 AND `Name` = @p3;

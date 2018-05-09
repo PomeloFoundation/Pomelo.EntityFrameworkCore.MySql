@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Query;
+﻿using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Query;
 using Xunit.Abstractions;
 
 namespace EFCore.MySql.UpstreamFunctionalTests.Query

@@ -21,25 +21,15 @@ namespace EFCore.MySql.FunctionalTests.Models
 
 				entity.Property(m => m.Name)
 					.ValueGeneratedOnAddOrUpdate()
-					.HasColumnType(@"VARCHAR(63) GENERATED ALWAYS AS (
-						`Names` ->> ""$[0]""
-					) VIRTUAL");
+					.HasColumnType(@"VARCHAR(63) GENERATED ALWAYS AS (`Names` ->> ""$[0]"") VIRTUAL");
 
 				entity.Property(m => m.Email)
 					.ValueGeneratedOnAddOrUpdate()
-					.HasColumnType(@"VARCHAR(63) GENERATED ALWAYS AS (
-						`ContactInfo` ->> ""$.Email""
-					) VIRTUAL");
+					.HasColumnType(@"VARCHAR(63) GENERATED ALWAYS AS (`ContactInfo` ->> ""$.Email"") VIRTUAL");
 
 				entity.Property(m => m.Address)
 					.ValueGeneratedOnAddOrUpdate()
-					.HasColumnType(@"VARCHAR(63) GENERATED ALWAYS AS (
-						CONCAT_WS(', ',
-							`ContactInfo` ->> ""$.Address"",
-                            `ContactInfo` ->> ""$.City"",
-                            `ContactInfo` ->> ""$.State"",
-                            `ContactInfo` ->> ""$.Zip""
-						)) STORED");
+					.HasColumnType(@"VARCHAR(63) GENERATED ALWAYS AS (CONCAT_WS(', ',	`ContactInfo` ->> ""$.Address"", `ContactInfo` ->> ""$.City"", `ContactInfo` ->> ""$.State"", `ContactInfo` ->> ""$.Zip"")) STORED");
 			});
 		}
 	}

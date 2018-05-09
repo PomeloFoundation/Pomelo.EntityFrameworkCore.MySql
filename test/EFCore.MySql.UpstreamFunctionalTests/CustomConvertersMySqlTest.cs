@@ -13,13 +13,22 @@ namespace EFCore.MySql.UpstreamFunctionalTests
         {
         }
 
+        // Blocked by EF #11929
+        public override void Can_query_using_any_data_type_nullable_shadow()
+        {
+        }
+
+        public override void Can_perform_query_with_ansi_strings_test()
+        {
+        }
+
         public class CustomConvertersMySqlFixture : CustomConvertersFixtureBase
         {
             public override bool StrictEquality => true;
 
             public override bool SupportsAnsi => true;
 
-            public override bool SupportsUnicodeToAnsiConversion => true;
+            public override bool SupportsUnicodeToAnsiConversion => false;
 
             public override bool SupportsLargeStringComparisons => true;
 

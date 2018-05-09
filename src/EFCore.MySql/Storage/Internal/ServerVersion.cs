@@ -10,7 +10,7 @@ namespace EFCore.MySql.Storage.Internal
     public class ServerVersion
     {
         public static Regex ReVersion = new Regex(@"\d+\.\d+\.?(?:\d+)?");
-        private static readonly Version DefaultVersion = new Version(8, 0);
+        private static readonly Version DefaultVersion = new Version(8, 0, 0);
 
         public ServerVersion(string versionString)
         {
@@ -62,6 +62,13 @@ namespace EFCore.MySql.Storage.Internal
                 return false;
             }
         }
+
+        public int IndexMaxBytes =>
+            (Type == ServerType.MySql && Version >= new Version(5, 7, 7))
+            || (Type == ServerType.MariaDb && Version >= new Version(10, 2, 2))
+                ? 3072
+                : 767;
+
         public override bool Equals(object obj)
             => !(obj is null)
                && obj is ServerVersion version

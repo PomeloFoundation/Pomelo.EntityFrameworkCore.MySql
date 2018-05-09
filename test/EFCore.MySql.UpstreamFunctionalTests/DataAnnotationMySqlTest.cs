@@ -1,8 +1,8 @@
 using System;
-using EFCore.MySql.Storage.Internal;
 using EFCore.MySql.UpstreamFunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -64,8 +64,9 @@ namespace EFCore.MySql.UpstreamFunctionalTests
 
             var property = GetProperty<ColumnKeyAnnotationClass2>(modelBuilder, "PersonFirstName");
 
-            var storeType = TestServiceFactory.Instance.Create<MySqlTypeMapper>().GetMapping(property).StoreType;
-            Assert.Equal("TEXT", storeType);
+            var storeType = property.FindRelationalMapping().StoreType;
+
+            Assert.Equal("varchar(64) CHARACTER SET ucs2", storeType);
 
             return modelBuilder;
         }
@@ -76,9 +77,9 @@ namespace EFCore.MySql.UpstreamFunctionalTests
 
             var property = GetProperty<TimestampAndMaxlen>(modelBuilder, "MaxTimestamp");
 
-            var storeType = TestServiceFactory.Instance.Create<MySqlTypeMapper>().GetMapping(property).StoreType;
+            var storeType = property.FindRelationalMapping().StoreType;
 
-            Assert.Equal("BLOB", storeType);
+            Assert.Equal("timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", storeType);
 
             return modelBuilder;
         }
@@ -97,56 +98,49 @@ namespace EFCore.MySql.UpstreamFunctionalTests
         {
             base.ConcurrencyCheckAttribute_throws_if_value_in_database_changed();
 
-            Assert.Contains(
-                @"SELECT ""r"".""UniqueNo"", ""r"".""MaxLengthProperty"", ""r"".""Name"", ""r"".""RowVersion"", ""r"".""UniqueNo"", ""r"".""Details_Name"", ""r"".""UniqueNo"", ""r"".""AdditionalDetails_Name""" + _eol +
-                @"FROM ""Sample"" AS ""r""" + _eol +
-                @"WHERE ""r"".""UniqueNo"" = 1" + _eol +
-                @"LIMIT 1",
-                Sql);
+            AssertSql(@"SELECT `r`.`UniqueNo`, `r`.`MaxLengthProperty`, `r`.`Name`, `r`.`RowVersion`, `r`.`UniqueNo`, `r`.`Details_Name`, `r`.`UniqueNo`, `r`.`AdditionalDetails_Name`
+FROM `Sample` AS `r`
+WHERE `r`.`UniqueNo` = 1
+LIMIT 1",
+                @"SELECT `r`.`UniqueNo`, `r`.`MaxLengthProperty`, `r`.`Name`, `r`.`RowVersion`, `r`.`UniqueNo`, `r`.`Details_Name`, `r`.`UniqueNo`, `r`.`AdditionalDetails_Name`
+FROM `Sample` AS `r`
+WHERE `r`.`UniqueNo` = 1
+LIMIT 1",
+                /////////////////////////////
+@"@p2='1'
+@p0='ModifiedData' (Nullable = false) (Size = 4000)
+@p1='00000000-0000-0000-0003-000000000001'
+@p3='00000001-0000-0000-0000-000000000001'
 
-            Assert.Contains(
-                @"SELECT ""r"".""UniqueNo"", ""r"".""MaxLengthProperty"", ""r"".""Name"", ""r"".""RowVersion"", ""r"".""UniqueNo"", ""r"".""Details_Name"", ""r"".""UniqueNo"", ""r"".""AdditionalDetails_Name""" + _eol +
-                @"FROM ""Sample"" AS ""r""" + _eol +
-                @"WHERE ""r"".""UniqueNo"" = 1" + _eol +
-                @"LIMIT 1" + _eol +
-                _eol +
-                @"@p2='1' (DbType = String)" + _eol +
-                @"@p0='ModifiedData' (Nullable = false) (Size = 12)" + _eol +
-                @"@p1='00000000-0000-0000-0003-000000000001' (DbType = String)" + _eol +
-                @"@p3='00000001-0000-0000-0000-000000000001' (DbType = String)" + _eol +
-                _eol +
-                @"UPDATE ""Sample"" SET ""Name"" = @p0, ""RowVersion"" = @p1" + _eol +
-                @"WHERE ""UniqueNo"" = @p2 AND ""RowVersion"" = @p3;" + _eol +
-                @"SELECT changes();" + _eol +
-                _eol +
-                @"@p2='1' (DbType = String)" + _eol +
-                @"@p0='ChangedData' (Nullable = false) (Size = 11)" + _eol +
-                @"@p1='00000000-0000-0000-0002-000000000001' (DbType = String)" + _eol +
-                @"@p3='00000001-0000-0000-0000-000000000001' (DbType = String)" + _eol +
-                _eol +
-                @"UPDATE ""Sample"" SET ""Name"" = @p0, ""RowVersion"" = @p1" + _eol +
-                @"WHERE ""UniqueNo"" = @p2 AND ""RowVersion"" = @p3;" + _eol +
-                @"SELECT changes();",
-                Sql);
+UPDATE `Sample` SET `Name` = @p0, `RowVersion` = @p1
+WHERE `UniqueNo` = @p2 AND `RowVersion` = @p3;
+SELECT ROW_COUNT();",
+                /////////////////////////////
+@"@p2='1'
+@p0='ChangedData' (Nullable = false) (Size = 4000)
+@p1='00000000-0000-0000-0002-000000000001'
+@p3='00000001-0000-0000-0000-000000000001'
+
+UPDATE `Sample` SET `Name` = @p0, `RowVersion` = @p1
+WHERE `UniqueNo` = @p2 AND `RowVersion` = @p3;
+SELECT ROW_COUNT();");
         }
 
         public override void DatabaseGeneratedAttribute_autogenerates_values_when_set_to_identity()
         {
             base.DatabaseGeneratedAttribute_autogenerates_values_when_set_to_identity();
 
-            Assert.Contains(
-                @"@p0=''" + _eol +
-                @"@p1='Third' (Nullable = false) (Size = 5)" + _eol +
-                @"@p2='00000000-0000-0000-0000-000000000003' (DbType = String)" + _eol +
-                @"@p3='Third Additional Name' (Size = 21)" + _eol +
-                @"@p4='Third Name' (Size = 10)" + _eol +
-                _eol +
-                @"INSERT INTO ""Sample"" (""MaxLengthProperty"", ""Name"", ""RowVersion"", ""AdditionalDetails_Name"", ""Details_Name"")" + _eol +
-                @"VALUES (@p0, @p1, @p2, @p3, @p4);" + _eol +
-                @"SELECT ""UniqueNo""" + _eol +
-                @"FROM ""Sample""" + _eol +
-                @"WHERE changes() = 1 AND ""UniqueNo"" = last_insert_rowid();",
-                Sql);
+            AssertSql(@"@p0='' (Size = 10)
+@p1='Third' (Nullable = false) (Size = 4000)
+@p2='00000000-0000-0000-0000-000000000003'
+@p3='Third Additional Name' (Size = 4000)
+@p4='Third Name' (Size = 4000)
+
+INSERT INTO `Sample` (`MaxLengthProperty`, `Name`, `RowVersion`, `AdditionalDetails_Name`, `Details_Name`)
+VALUES (@p0, @p1, @p2, @p3, @p4);
+SELECT `UniqueNo`
+FROM `Sample`
+WHERE ROW_COUNT() = 1 AND `UniqueNo` = LAST_INSERT_ID();");
         }
 
 
@@ -154,52 +148,58 @@ namespace EFCore.MySql.UpstreamFunctionalTests
         {
             base.RequiredAttribute_for_navigation_throws_while_inserting_null_value();
 
-            Assert.Contains(
-                @"@p1='1' (DbType = String)" + _eol,
-                Sql);
+            AssertSql(@"@p0='' (DbType = Int32)
+@p1='1'
 
-            Assert.Contains(
-                @"@p1='' (Nullable = false)" + _eol,
-                Sql);
+INSERT INTO `BookDetails` (`AdditionalBookDetailsId`, `AnotherBookId`)
+VALUES (@p0, @p1);
+SELECT `Id`
+FROM `BookDetails`
+WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();",
+                //////////////////
+                @"@p0='' (DbType = Int32)
+@p1='' (Nullable = false) (DbType = Int32)
+
+INSERT INTO `BookDetails` (`AdditionalBookDetailsId`, `AnotherBookId`)
+VALUES (@p0, @p1);
+SELECT `Id`
+FROM `BookDetails`
+WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();");
         }
 
         public override void RequiredAttribute_for_property_throws_while_inserting_null_value()
         {
             base.RequiredAttribute_for_property_throws_while_inserting_null_value();
 
-            Assert.Contains(
-                @"@p0=''" + _eol +
-                @"@p1='ValidString' (Nullable = false) (Size = 11)" + _eol +
-                @"@p2='00000000-0000-0000-0000-000000000001' (DbType = String)" + _eol +
-                @"@p3='Two' (Size = 3)" + _eol +
-                @"@p4='One' (Size = 3)" + _eol +
-                _eol +
-                @"INSERT INTO ""Sample"" (""MaxLengthProperty"", ""Name"", ""RowVersion"", ""AdditionalDetails_Name"", ""Details_Name"")" + _eol +
-                @"VALUES (@p0, @p1, @p2, @p3, @p4);" + _eol +
-                @"SELECT ""UniqueNo""" + _eol +
-                @"FROM ""Sample""" + _eol +
-                @"WHERE changes() = 1 AND ""UniqueNo"" = last_insert_rowid();",
-                Sql);
+            AssertSql(@"@p0='' (Size = 10)
+@p1='ValidString' (Nullable = false) (Size = 4000)
+@p2='00000000-0000-0000-0000-000000000001'
+@p3='Two' (Size = 4000)
+@p4='One' (Size = 4000)
 
-            Assert.Contains(
-                @"@p0=''" + _eol +
-                @"@p1='' (Nullable = false)" + _eol +
-                @"@p2='00000000-0000-0000-0000-000000000002' (DbType = String)" + _eol +
-                @"@p3='Two' (Size = 3)" + _eol +
-                @"@p4='One' (Size = 3)" + _eol +
-                _eol +
-                @"INSERT INTO ""Sample"" (""MaxLengthProperty"", ""Name"", ""RowVersion"", ""AdditionalDetails_Name"", ""Details_Name"")" + _eol +
-                @"VALUES (@p0, @p1, @p2, @p3, @p4);" + _eol +
-                @"SELECT ""UniqueNo""" + _eol +
-                @"FROM ""Sample""" + _eol +
-                @"WHERE changes() = 1 AND ""UniqueNo"" = last_insert_rowid();",
-                Sql);
+INSERT INTO `Sample` (`MaxLengthProperty`, `Name`, `RowVersion`, `AdditionalDetails_Name`, `Details_Name`)
+VALUES (@p0, @p1, @p2, @p3, @p4);
+SELECT `UniqueNo`
+FROM `Sample`
+WHERE ROW_COUNT() = 1 AND `UniqueNo` = LAST_INSERT_ID();",
+                ///////////////////
+                @"@p0='' (Size = 10)
+@p1='' (Nullable = false) (Size = 4000)
+@p2='00000000-0000-0000-0000-000000000002'
+@p3='Two' (Size = 4000)
+@p4='One' (Size = 4000)
+
+INSERT INTO `Sample` (`MaxLengthProperty`, `Name`, `RowVersion`, `AdditionalDetails_Name`, `Details_Name`)
+VALUES (@p0, @p1, @p2, @p3, @p4);
+SELECT `UniqueNo`
+FROM `Sample`
+WHERE ROW_COUNT() = 1 AND `UniqueNo` = LAST_INSERT_ID();");
         }
-
 
         private static readonly string _eol = Environment.NewLine;
 
-        private string Sql => Fixture.TestSqlLoggerFactory.Sql;
+        private void AssertSql(params string[] expected)
+            => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
         public class DataAnnotationMySqlFixture : DataAnnotationFixtureBase
         {

@@ -15,7 +15,7 @@ namespace EFCore.MySql.Design.Internal
         public void ConfigureDesignTimeServices(IServiceCollection serviceCollection)
         {
             serviceCollection
-                .AddSingleton<IRelationalTypeMapper, MySqlTypeMapper>()
+                .AddSingleton<IRelationalTypeMappingSource, MySqlTypeMappingSource>()
                 .AddSingleton<IDatabaseModelFactory, MySqlDatabaseModelFactory>()
                 .AddSingleton<IProviderConfigurationCodeGenerator, MySqlCodeGenerator>()
                 .AddSingleton<IAnnotationCodeGenerator, MySqlAnnotationCodeGenerator>();

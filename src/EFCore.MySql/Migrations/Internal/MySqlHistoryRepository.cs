@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace EFCore.MySql.Migrations.Internal
 {
@@ -30,16 +31,18 @@ namespace EFCore.MySql.Migrations.Internal
         {
             get
             {
+                var stringTypeMapping = Dependencies.TypeMappingSource.GetMapping(typeof(string));
+
                 var builder = new StringBuilder();
 
                 builder.Append("SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE ");
 
                 builder
-                    .Append("TABLE_SCHEMA='")
-                    .Append(SqlGenerationHelper.EscapeLiteral(TableSchema ?? Dependencies.Connection.DbConnection.Database))
-                    .Append("' AND TABLE_NAME='")
-                    .Append(SqlGenerationHelper.EscapeLiteral(TableName))
-                    .Append("';");
+                    .Append("TABLE_SCHEMA=")
+                    .Append(stringTypeMapping.GenerateSqlLiteral(TableSchema ?? Dependencies.Connection.DbConnection.Database))
+                    .Append(" AND TABLE_NAME=")
+                    .Append(stringTypeMapping.GenerateSqlLiteral(TableName))
+                    .Append(";");
 
                 return builder.ToString();
             }

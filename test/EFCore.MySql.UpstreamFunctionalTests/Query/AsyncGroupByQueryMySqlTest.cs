@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Query;
+﻿using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Xunit.Abstractions;
 
@@ -12,6 +13,11 @@ namespace EFCore.MySql.UpstreamFunctionalTests.Query
         {
             Fixture.TestSqlLoggerFactory.Clear();
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
+        }
+
+        public override Task GroupJoin_GroupBy_Aggregate()
+        {
+            return base.GroupJoin_GroupBy_Aggregate();
         }
     }
 }

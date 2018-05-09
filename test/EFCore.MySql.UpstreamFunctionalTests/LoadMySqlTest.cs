@@ -18,8 +18,7 @@ namespace EFCore.MySql.UpstreamFunctionalTests
 
             public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
                 => base.AddOptions(builder).ConfigureWarnings(
-                    c => c
-                        .Log(RelationalEventId.QueryClientEvaluationWarning));
+                    c => c.Log(RelationalEventId.QueryClientEvaluationWarning));
         }
     }
 }
