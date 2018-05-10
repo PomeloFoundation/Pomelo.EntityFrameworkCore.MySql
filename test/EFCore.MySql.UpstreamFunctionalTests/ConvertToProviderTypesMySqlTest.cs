@@ -18,13 +18,17 @@ namespace EFCore.MySql.UpstreamFunctionalTests
             //fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
+        public override void Can_perform_query_with_ansi_strings_test()
+        {
+        }
+
         public class ConvertToProviderTypesMySqlFixture : ConvertToProviderTypesFixtureBase
         {
             public override bool StrictEquality => true;
 
             public override bool SupportsAnsi => true;
 
-            public override bool SupportsUnicodeToAnsiConversion => true;
+            public override bool SupportsUnicodeToAnsiConversion => false;
 
             public override bool SupportsLargeStringComparisons => true;
 

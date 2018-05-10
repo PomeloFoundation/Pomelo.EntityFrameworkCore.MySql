@@ -1,0 +1,23 @@
+﻿using System.Data.Common;
+using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Storage;
+
+namespace EFCore.MySql.Storage.Internal
+{
+    public class MySqlRelationalTransactionFactory : RelationalTransactionFactory
+    {
+        public MySqlRelationalTransactionFactory([NotNull] RelationalTransactionFactoryDependencies dependencies)
+            : base(dependencies)
+        {
+        }
+
+        public override RelationalTransaction Create(
+            IRelationalConnection connection,
+            DbTransaction transaction,
+            IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger,
+            bool transactionOwned)
+            => new MySqlRelationalTransaction(connection, transaction, logger, transactionOwned);
+    }
+}

@@ -2,9 +2,10 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
-using System.Data;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace EFCore.MySql.Storage.Internal
 {
@@ -19,37 +20,55 @@ namespace EFCore.MySql.Storage.Internal
     /// </summary>
     public class MySqlDateTimeTypeMapping : RelationalTypeMapping
     {
-        private const string DateTimeFormatConst6 = @"{0:yyyy-MM-dd HH\:mm\:ss.ffffff}";
-        private const string DateTimeFormatConst = @"{0:yyyy-MM-dd HH\:mm\:ss}";
-        private readonly string _storeType;
+        private const string DateTimeFormatConst6 = @"'{0:yyyy-MM-dd HH\:mm\:ss.ffffff}'";
+        private const string DateTimeFormatConst = @"'{0:yyyy-MM-dd HH\:mm\:ss}'";
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="DateTimeTypeMapping" /> class.
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        /// <param name="storeType"> The name of the database type. </param>
-        /// <param name="dbType"> The <see cref="DbType" /> to be used. </param>
         public MySqlDateTimeTypeMapping(
             [NotNull] string storeType,
-            [CanBeNull] DbType? dbType = null)
-            : base(storeType, typeof(DateTime), dbType, unicode: false, size: null)
+            ValueConverter converter = null,
+            ValueComparer comparer = null,
+            int? precision = null)
+            : this(
+                new RelationalTypeMappingParameters(
+                    new CoreTypeMappingParameters(typeof(DateTime), converter, comparer),
+                    storeType,
+                    precision == null ? StoreTypePostfix.None : StoreTypePostfix.Precision,
+                    System.Data.DbType.DateTime,
+                    precision: precision))
         {
-            _storeType = storeType;
         }
 
         /// <summary>
-        ///     Creates a copy of this mapping.
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        /// <param name="storeType"> The name of the database type. </param>
-        /// <param name="size"> The size of data the property is configured to store, or null if no size is configured. </param>
-        /// <returns> The newly created mapping. </returns>
+        protected MySqlDateTimeTypeMapping(RelationalTypeMappingParameters parameters)
+            : base(parameters)
+        {
+        }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public override RelationalTypeMapping Clone(string storeType, int? size)
-            => new MySqlDateTimeTypeMapping(
-                storeType,
-                DbType);
+            => new MySqlDateTimeTypeMapping(Parameters.WithStoreTypeAndSize(storeType, size));
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public override CoreTypeMapping Clone(ValueConverter converter)
+            => new MySqlDateTimeTypeMapping(Parameters.WithComposedConverter(converter));
 
         /// <summary>
         ///     Gets the string format to be used to generate SQL literals of this type.
         /// </summary>
-        protected override string SqlLiteralFormatString => "'" + (_storeType.EndsWith("(6)") ? DateTimeFormatConst6 : DateTimeFormatConst) + "'";
+        protected override string SqlLiteralFormatString
+            => Parameters.Precision == null ? DateTimeFormatConst : DateTimeFormatConst6;
     }
 }

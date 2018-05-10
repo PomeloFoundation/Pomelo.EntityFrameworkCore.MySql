@@ -3,8 +3,6 @@
 
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
 
 namespace Microsoft.EntityFrameworkCore.TestUtilities
 {
@@ -18,10 +16,7 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
         public static ConventionSet Build()
             => new TestRelationalConventionSetBuilder(
                 new RelationalConventionSetBuilderDependencies(
-                    new FallbackRelationalTypeMappingSource(
-                        TestServiceFactory.Instance.Create<TypeMappingSourceDependencies>(),
-                        TestServiceFactory.Instance.Create<RelationalTypeMappingSourceDependencies>(),
-                        TestServiceFactory.Instance.Create<TestRelationalTypeMapper>()),
+                    TestServiceFactory.Instance.Create<TestRelationalTypeMappingSource>(),
                     new FakeDiagnosticsLogger<DbLoggerCategory.Model>(),
                     null,
                     null,

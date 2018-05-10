@@ -50,7 +50,7 @@ namespace EFCore.MySql.UpstreamFunctionalTests.TestUtilities
                 ? builder.UseMySql(ConnectionString, AddOptions)
                 : builder.UseMySql(Connection, AddOptions);
 
-        private static void AddOptions(MySqlDbContextOptionsBuilder builder)
+        public static void AddOptions(MySqlDbContextOptionsBuilder builder)
         {
             builder.CommandTimeout(CommandTimeout).ServerVersion(LazyConfig.Value["Data:ServerVersion"]);
         }

@@ -1,7 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Transactions;
 using EFCore.MySql.UpstreamFunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Xunit;
 
 namespace EFCore.MySql.UpstreamFunctionalTests
 {
@@ -13,12 +18,13 @@ namespace EFCore.MySql.UpstreamFunctionalTests
         }
 
         protected override bool SnapshotSupported => false;
+        protected override bool AmbientTransactionsSupported => false;
 
         protected override DbContext CreateContextWithConnectionString()
         {
             var options = Fixture.AddOptions(
                     new DbContextOptionsBuilder()
-                        .UseMySql(TestStore.ConnectionString))
+                        .UseMySql(TestStore.ConnectionString, MySqlTestStore.AddOptions))
                 .UseInternalServiceProvider(Fixture.ServiceProvider);
 
             return new DbContext(options.Options);

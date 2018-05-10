@@ -118,7 +118,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
                     if (operation.DefaultValue != null)
                     {
-                        var typeMapping = Dependencies.TypeMappingSource.GetMapping(operation.DefaultValue.GetType());
+                        var typeMapping = Dependencies.TypeMappingSource.GetMappingForValue(operation.DefaultValue);
                         builder.Append(" SET DEFAULT ")
                             .Append(typeMapping.GenerateSqlLiteral(operation.DefaultValue))
                             .AppendLine(Dependencies.SqlGenerationHelper.BatchTerminator);
@@ -504,7 +504,8 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 }
                 else if (defaultValue != null)
                 {
-                    var defaultValueLiteral = Dependencies.TypeMappingSource.GetMapping(clrType);
+                    var defaultValueLiteral = Dependencies.TypeMappingSource.GetMappingForValue(defaultValue);
+
                     builder
                         .Append(" DEFAULT ")
                         .Append(defaultValueLiteral.GenerateSqlLiteral(defaultValue));
@@ -514,6 +515,12 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     builder
                         .Append(" ON UPDATE ")
                         .Append(onUpdateSql);
+                }
+                if (computedColumnSql != null)
+                {
+                    builder
+                        .Append(" AS ")
+                        .Append(computedColumnSql);
                 }
             }
 
@@ -531,7 +538,8 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             }
             else if (defaultValue != null)
             {
-                var typeMapping = Dependencies.TypeMappingSource.GetMapping(defaultValue.GetType());
+                var typeMapping = Dependencies.TypeMappingSource.GetMappingForValue(defaultValue);
+
                 builder
                     .Append(" DEFAULT ")
                     .Append(typeMapping.GenerateSqlLiteral(defaultValue));
