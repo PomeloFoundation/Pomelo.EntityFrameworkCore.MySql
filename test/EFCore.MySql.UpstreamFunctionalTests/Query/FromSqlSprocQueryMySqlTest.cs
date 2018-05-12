@@ -10,38 +10,13 @@ using Xunit.Abstractions;
 
 namespace EFCore.MySql.UpstreamFunctionalTests.Query
 {
-    public class FromSqlSprocQueryMySqlTest : FromSqlSprocQueryTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>, IDisposable
+    public class FromSqlSprocQueryMySqlTest : FromSqlSprocQueryTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>
     {
         public FromSqlSprocQueryMySqlTest(
             NorthwindQueryMySqlFixture<NoopModelCustomizer> fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
         {
             fixture.TestSqlLoggerFactory.Clear();
-            ((MySqlTestStore)Fixture.TestStore).ExecuteNonQuery(
-                @"CREATE PROCEDURE `Ten Most Expensive Products` ()
-BEGIN
-  SELECT `ProductName` AS `TenMostExpensiveProducts`, `UnitPrice`
-  FROM `Products`
-  ORDER BY `UnitPrice` DESC
-  LIMIT 10;
-END;");
-            ((MySqlTestStore)Fixture.TestStore).ExecuteNonQuery(
-                @"CREATE PROCEDURE `CustOrderHist` (IN CustomerID VARCHAR(768))
-BEGIN
-  SELECT `ProductName`, SUM(`Quantity`) AS `Total`
-  FROM `Products` `p`, `Order Details` `od`, `Orders` `o`, `Customers` `c`
-  WHERE `c`.`CustomerId` = `CustomerId`
-  AND `c`.`CustomerId` = `o`.`CustomerId`
-  AND `o`.`OrderId` = `od`.`OrderId`
-  AND `od`.`ProductId` = `p`.`ProductId`
-  GROUP BY `ProductName`;
-END;");
-        }
-
-        public void Dispose()
-        {
-            ((MySqlTestStore)Fixture.TestStore).ExecuteNonQuery("DROP PROCEDURE `Ten Most Expensive Products`;");
-            ((MySqlTestStore)Fixture.TestStore).ExecuteNonQuery("DROP PROCEDURE `CustOrderHist`;");
         }
 
         public override void From_sql_queryable_stored_procedure()

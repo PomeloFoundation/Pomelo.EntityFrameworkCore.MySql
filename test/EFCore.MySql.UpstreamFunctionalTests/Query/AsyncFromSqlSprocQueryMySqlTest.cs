@@ -1,3 +1,4 @@
+using EFCore.MySql.UpstreamFunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 
@@ -10,8 +11,8 @@ namespace EFCore.MySql.UpstreamFunctionalTests.Query
         {
         }
 
-        protected override string TenMostExpensiveProductsSproc => "`dbo`.`Ten Most Expensive Products`";
+        protected override string TenMostExpensiveProductsSproc => "CALL `Ten Most Expensive Products`()";
 
-        protected override string CustomerOrderHistorySproc => "`dbo`.`CustOrderHist` @CustomerID = {0}";
+        protected override string CustomerOrderHistorySproc => "CALL `CustOrderHist` ({0})";
     }
 }
