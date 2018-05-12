@@ -1,18 +1,47 @@
 using System;
+using System.Linq;
+using EFCore.MySql.UpstreamFunctionalTests.TestUtilities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace EFCore.MySql.UpstreamFunctionalTests.Query
 {
-    public class FromSqlSprocQueryMySqlTest : FromSqlSprocQueryTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>
+    public class FromSqlSprocQueryMySqlTest : FromSqlSprocQueryTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>, IDisposable
     {
         public FromSqlSprocQueryMySqlTest(
             NorthwindQueryMySqlFixture<NoopModelCustomizer> fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
         {
             fixture.TestSqlLoggerFactory.Clear();
+            ((MySqlTestStore)Fixture.TestStore).ExecuteNonQuery(
+                @"CREATE PROCEDURE `Ten Most Expensive Products` ()
+BEGIN
+  SELECT `ProductName` AS `TenMostExpensiveProducts`, `UnitPrice`
+  FROM `Products`
+  ORDER BY `UnitPrice` DESC
+  LIMIT 10;
+END;");
+            ((MySqlTestStore)Fixture.TestStore).ExecuteNonQuery(
+                @"CREATE PROCEDURE `CustOrderHist` (IN CustomerID VARCHAR(768))
+BEGIN
+  SELECT `ProductName`, SUM(`Quantity`) AS `Total`
+  FROM `Products` `p`, `Order Details` `od`, `Orders` `o`, `Customers` `c`
+  WHERE `c`.`CustomerId` = `CustomerId`
+  AND `c`.`CustomerId` = `o`.`CustomerId`
+  AND `o`.`OrderId` = `od`.`OrderId`
+  AND `od`.`ProductId` = `p`.`ProductId`
+  GROUP BY `ProductName`;
+END;");
+        }
+
+        public void Dispose()
+        {
+            ((MySqlTestStore)Fixture.TestStore).ExecuteNonQuery("DROP PROCEDURE `Ten Most Expensive Products`;");
+            ((MySqlTestStore)Fixture.TestStore).ExecuteNonQuery("DROP PROCEDURE `CustOrderHist`;");
         }
 
         public override void From_sql_queryable_stored_procedure()
@@ -20,7 +49,7 @@ namespace EFCore.MySql.UpstreamFunctionalTests.Query
             base.From_sql_queryable_stored_procedure();
 
             Assert.Equal(
-                "[dbo].[Ten Most Expensive Products]",
+                "CALL `Ten Most Expensive Products`()",
                 Sql);
         }
 
@@ -29,7 +58,7 @@ namespace EFCore.MySql.UpstreamFunctionalTests.Query
             base.From_sql_queryable_stored_procedure_projection();
 
             Assert.Equal(
-                "[dbo].[Ten Most Expensive Products]",
+                "CALL `Ten Most Expensive Products`()",
                 Sql);
         }
 
@@ -40,7 +69,7 @@ namespace EFCore.MySql.UpstreamFunctionalTests.Query
             Assert.Equal(
                 @"@p0='ALFKI' (Size = 4000)
 
-[dbo].[CustOrderHist] @CustomerID = @p0",
+CALL `CustOrderHist` (@p0)",
                 Sql,
                 ignoreLineEndingDifferences: true);
         }
@@ -50,7 +79,7 @@ namespace EFCore.MySql.UpstreamFunctionalTests.Query
             base.From_sql_queryable_stored_procedure_reprojection();
 
             Assert.Equal(
-                "[dbo].[Ten Most Expensive Products]",
+                "CALL `Ten Most Expensive Products`()",
                 Sql);
         }
 
@@ -59,7 +88,7 @@ namespace EFCore.MySql.UpstreamFunctionalTests.Query
             base.From_sql_queryable_stored_procedure_composed();
 
             Assert.Equal(
-                "[dbo].[Ten Most Expensive Products]",
+                "CALL `Ten Most Expensive Products`()",
                 Sql);
         }
 
@@ -70,7 +99,7 @@ namespace EFCore.MySql.UpstreamFunctionalTests.Query
             Assert.Equal(
                 @"@p0='ALFKI' (Size = 4000)
 
-[dbo].[CustOrderHist] @CustomerID = @p0",
+CALL `CustOrderHist` (@p0)",
                 Sql,
                 ignoreLineEndingDifferences: true);
         }
@@ -80,7 +109,7 @@ namespace EFCore.MySql.UpstreamFunctionalTests.Query
             base.From_sql_queryable_stored_procedure_take();
 
             Assert.Equal(
-                "[dbo].[Ten Most Expensive Products]",
+                "CALL `Ten Most Expensive Products`()",
                 Sql);
         }
 
@@ -89,7 +118,7 @@ namespace EFCore.MySql.UpstreamFunctionalTests.Query
             base.From_sql_queryable_stored_procedure_min();
 
             Assert.Equal(
-                "[dbo].[Ten Most Expensive Products]",
+                "CALL `Ten Most Expensive Products`()",
                 Sql);
         }
 
@@ -98,51 +127,76 @@ namespace EFCore.MySql.UpstreamFunctionalTests.Query
             base.From_sql_queryable_with_multiple_stored_procedures();
 
             Assert.StartsWith(
-                @"[dbo].[Ten Most Expensive Products]" + _eol +
+                @"CALL `Ten Most Expensive Products`()" + _eol +
                 _eol +
-                @"[dbo].[Ten Most Expensive Products]" + _eol +
+                @"CALL `Ten Most Expensive Products`()" + _eol +
                 _eol +
-                @"[dbo].[Ten Most Expensive Products]",
+                @"CALL `Ten Most Expensive Products`()",
                 Sql);
         }
 
         public override void From_sql_queryable_stored_procedure_and_select()
         {
-            base.From_sql_queryable_stored_procedure_and_select();
+            // base.From_sql_queryable_stored_procedure_and_select();
+
+            using (var context = CreateContext())
+            {
+                var actual
+                    = (from mep in context.Set<MostExpensiveProduct>()
+                           .FromSql(TenMostExpensiveProductsSproc, GetTenMostExpensiveProductsParameters())
+                       from p in context.Set<Product>().FromSql("SELECT * FROM `Products`")
+                       where mep.TenMostExpensiveProducts == p.ProductName
+                       select new { mep, p })
+                    .ToArray();
+
+                Assert.Equal(10, actual.Length);
+            }
 
             Assert.StartsWith(
-                @"[dbo].[Ten Most Expensive Products]" + _eol +
+                @"CALL `Ten Most Expensive Products`()" + _eol +
                 _eol +
-                @"SELECT [p].[ProductID], [p].[Discontinued], [p].[ProductName], [p].[SupplierID], [p].[UnitPrice], [p].[UnitsInStock]" + _eol +
+                @"SELECT `p`.`ProductID`, `p`.`Discontinued`, `p`.`ProductName`, `p`.`SupplierID`, `p`.`UnitPrice`, `p`.`UnitsInStock`" + _eol +
                 @"FROM (" + _eol +
-                @"    SELECT * FROM ""Products""" + _eol +
-                @") AS [p]" + _eol +
+                @"    SELECT * FROM `Products`" + _eol +
+                @") AS `p`" + _eol +
                 _eol +
-                @"SELECT [p].[ProductID], [p].[Discontinued], [p].[ProductName], [p].[SupplierID], [p].[UnitPrice], [p].[UnitsInStock]" + _eol +
+                @"SELECT `p`.`ProductID`, `p`.`Discontinued`, `p`.`ProductName`, `p`.`SupplierID`, `p`.`UnitPrice`, `p`.`UnitsInStock`" + _eol +
                 @"FROM (" + _eol +
-                @"    SELECT * FROM ""Products""" + _eol +
-                @") AS [p]",
+                @"    SELECT * FROM `Products`" + _eol +
+                @") AS `p`",
                 Sql);
         }
 
         public override void From_sql_queryable_select_and_stored_procedure()
         {
-            base.From_sql_queryable_select_and_stored_procedure();
+            // base.From_sql_queryable_select_and_stored_procedure();
+            using (var context = CreateContext())
+            {
+                var actual
+                    = (from p in context.Set<Product>().FromSql("SELECT * FROM `Products`")
+                       from mep in context.Set<MostExpensiveProduct>()
+                           .FromSql(TenMostExpensiveProductsSproc, GetTenMostExpensiveProductsParameters())
+                       where mep.TenMostExpensiveProducts == p.ProductName
+                       select new { mep, p })
+                    .ToArray();
+
+                Assert.Equal(10, actual.Length);
+            }
 
             Assert.StartsWith(
-                @"SELECT [p].[ProductID], [p].[Discontinued], [p].[ProductName], [p].[SupplierID], [p].[UnitPrice], [p].[UnitsInStock]" + _eol +
+                @"SELECT `p`.`ProductID`, `p`.`Discontinued`, `p`.`ProductName`, `p`.`SupplierID`, `p`.`UnitPrice`, `p`.`UnitsInStock`" + _eol +
                 @"FROM (" + _eol +
-                @"    SELECT * FROM ""Products""" + _eol +
-                @") AS [p]" + _eol +
+                @"    SELECT * FROM `Products`" + _eol +
+                @") AS `p`" + _eol +
                 _eol +
-                @"[dbo].[Ten Most Expensive Products]" + _eol +
+                @"CALL `Ten Most Expensive Products`()" + _eol +
                 _eol +
-                @"[dbo].[Ten Most Expensive Products]",
+                @"CALL `Ten Most Expensive Products`()",
                 Sql);
         }
 
-        protected override string TenMostExpensiveProductsSproc => "[dbo].[Ten Most Expensive Products]";
-        protected override string CustomerOrderHistorySproc => "[dbo].[CustOrderHist] @CustomerID = {0}";
+        protected override string TenMostExpensiveProductsSproc => "CALL `Ten Most Expensive Products`()";
+        protected override string CustomerOrderHistorySproc => "CALL `CustOrderHist` ({0})";
 
         private static readonly string _eol = Environment.NewLine;
 
