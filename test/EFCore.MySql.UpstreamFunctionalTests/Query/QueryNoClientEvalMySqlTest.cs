@@ -1,4 +1,7 @@
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using Xunit;
 
 namespace EFCore.MySql.UpstreamFunctionalTests.Query
 {
@@ -7,6 +10,20 @@ namespace EFCore.MySql.UpstreamFunctionalTests.Query
         public QueryNoClientEvalMySqlTest(QueryNoClientEvalMySqlFixture fixture)
             : base(fixture)
         {
+        }
+
+        [Fact]
+        public override void Doesnt_throw_when_from_sql_not_composed()
+        {
+            using (var context = CreateContext())
+            {
+                var customers
+                    = context.Customers
+                        .FromSql(@"select * from `Customers`")
+                        .ToList();
+
+                Assert.Equal(91, customers.Count);
+            }
         }
     }
 }

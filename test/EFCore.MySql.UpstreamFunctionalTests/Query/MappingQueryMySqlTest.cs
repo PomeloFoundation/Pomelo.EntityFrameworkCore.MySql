@@ -19,8 +19,8 @@ namespace EFCore.MySql.UpstreamFunctionalTests.Query
             base.All_customers();
 
             Assert.Contains(
-                @"SELECT ""c"".""CustomerID"", ""c"".""CompanyName""" + _eol +
-                @"FROM ""Customers"" AS ""c""",
+                @"SELECT `c`.`CustomerID`, `c`.`CompanyName`" + _eol +
+                @"FROM `Customers` AS `c`",
                 Sql);
         }
 
@@ -29,8 +29,8 @@ namespace EFCore.MySql.UpstreamFunctionalTests.Query
             base.All_employees();
 
             Assert.Contains(
-                @"SELECT ""e"".""EmployeeID"", ""e"".""City""" + _eol +
-                @"FROM ""Employees"" AS ""e""",
+                @"SELECT `e`.`EmployeeID`, `e`.`City`" + _eol +
+                @"FROM `Employees` AS `e`",
                 Sql);
         }
 
@@ -39,8 +39,8 @@ namespace EFCore.MySql.UpstreamFunctionalTests.Query
             base.All_orders();
 
             Assert.Contains(
-                @"SELECT ""o"".""OrderID"", ""o"".""ShipVia""" + _eol +
-                @"FROM ""Orders"" AS ""o""",
+                @"SELECT `o`.`OrderID`, `o`.`ShipVia`" + _eol +
+                @"FROM `Orders` AS `o`",
                 Sql);
         }
 
@@ -49,8 +49,8 @@ namespace EFCore.MySql.UpstreamFunctionalTests.Query
             base.Project_nullable_enum();
 
             Assert.Contains(
-                @"SELECT ""o"".""ShipVia""" + _eol +
-                @"FROM ""Orders"" AS ""o""",
+                @"SELECT `o`.`ShipVia`" + _eol +
+                @"FROM `Orders` AS `o`",
                 Sql);
         }
 
