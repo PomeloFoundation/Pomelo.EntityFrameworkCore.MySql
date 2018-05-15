@@ -514,7 +514,7 @@ BEGIN
 		EXECUTE SQL_EXP_EXECUTE;
 		DEALLOCATE PREPARE SQL_EXP_EXECUTE;
 	END IF;
-END;" + EOL +
+END;".Replace("\r", string.Empty).Replace("\n", EOL) + EOL +
                 "CALL POMELO_AFTER_ADD_PRIMARY_KEY(NULL, 'People', 'Id');" + EOL +
                 "DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;" + EOL;
 
@@ -714,7 +714,7 @@ BEGIN
 		EXECUTE SQL_EXP_EXECUTE;
 		DEALLOCATE PREPARE SQL_EXP_EXECUTE;
 	END IF;
-END;" + EOL +
+END;".Replace("\r", string.Empty).Replace("\n", EOL) + EOL +
                 "CALL POMELO_BEFORE_DROP_PRIMARY_KEY('dbo', 'People');" + EOL +
                 "DROP PROCEDURE IF EXISTS POMELO_BEFORE_DROP_PRIMARY_KEY;" + EOL +
                 "ALTER TABLE `dbo`.`People` DROP PRIMARY KEY;" + EOL,
