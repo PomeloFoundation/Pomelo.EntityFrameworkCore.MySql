@@ -2,6 +2,7 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -22,8 +23,8 @@ namespace EFCore.MySql.Storage.Internal
     /// </summary>
     public class MySqlJsonTypeMapping : RelationalTypeMapping
     {
-        private static readonly Dictionary<Type, ValueConverter> JsonConverters = new Dictionary<Type, ValueConverter>();
-        private static readonly Dictionary<Type, ValueComparer> JsonComparers = new Dictionary<Type, ValueComparer>();
+        private static readonly ConcurrentDictionary<Type, ValueConverter> JsonConverters = new ConcurrentDictionary<Type, ValueConverter>();
+        private static readonly ConcurrentDictionary<Type, ValueComparer> JsonComparers = new ConcurrentDictionary<Type, ValueComparer>();
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -44,30 +45,16 @@ namespace EFCore.MySql.Storage.Internal
         }
 
         private static ValueConverter GetConverter(Type jsonType)
-        {
-            var elementType = jsonType.TryGetElementType(typeof(JsonObject<>));
-            if (!JsonConverters.TryGetValue(elementType, out var converter))
-            {
-                converter = (ValueConverter)typeof(JsonToStringConverter<>).MakeGenericType(elementType)
-                    .GetDeclaredConstructor(new Type[0]).Invoke(new object[0]);
-                JsonConverters[elementType] = converter;
-            }
-
-            return converter;
-        }
+            => JsonConverters.GetOrAdd(jsonType, t =>
+                (ValueConverter)typeof(JsonToStringConverter<>)
+                    .MakeGenericType(t.TryGetElementType(typeof(JsonObject<>)))
+                    .GetDeclaredConstructor(new Type[0]).Invoke(new object[0]));
 
         private static ValueComparer GetComprarer(Type jsonType)
-        {
-            var elementType = jsonType.TryGetElementType(typeof(JsonObject<>));
-            if (!JsonComparers.TryGetValue(elementType, out var converter))
-            {
-                converter = (ValueComparer)typeof(JsonComparer<>).MakeGenericType(elementType)
-                    .GetDeclaredConstructor(new Type[0]).Invoke(new object[0]);
-                JsonComparers[elementType] = converter;
-            }
-
-            return converter;
-        }
+            => JsonComparers.GetOrAdd(jsonType, t =>
+                (ValueComparer)typeof(JsonComparer<>)
+                    .MakeGenericType(t.TryGetElementType(typeof(JsonObject<>)))
+                    .GetDeclaredConstructor(new Type[0]).Invoke(new object[0]));
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used

@@ -8,13 +8,16 @@ namespace EFCore.MySql.Storage.Internal
 {
     public class MySqlConnectionSettings
     {
-        public static MySqlConnectionSettings GetSettings(string connectionString)
-            => new MySqlConnectionSettings(connectionString);
+        public MySqlConnectionSettings()
+        {
+        }
 
-        public static MySqlConnectionSettings GetSettings(DbConnection connection)
-            => new MySqlConnectionSettings(connection.ConnectionString);
+        public MySqlConnectionSettings(DbConnection connection)
+            : this(connection.ConnectionString)
+        {
+        }
 
-        internal MySqlConnectionSettings(string connectionString)
+        public MySqlConnectionSettings(string connectionString)
         {
             var csb = new MySqlConnectionStringBuilder(connectionString);
             OldGuids = csb.OldGuids;

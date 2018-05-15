@@ -3,6 +3,7 @@ using EFCore.MySql.Metadata.Internal;
 using EFCore.MySql.UpstreamFunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Xunit;
@@ -514,9 +515,9 @@ BEGIN
 		EXECUTE SQL_EXP_EXECUTE;
 		DEALLOCATE PREPARE SQL_EXP_EXECUTE;
 	END IF;
-END;".Replace("\r", string.Empty).Replace("\n", EOL) + EOL +
-                "CALL POMELO_AFTER_ADD_PRIMARY_KEY(NULL, 'People', 'Id');" + EOL +
-                "DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;" + EOL;
+END;
+CALL POMELO_AFTER_ADD_PRIMARY_KEY(NULL, 'People', 'Id');
+DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;".Replace("\r", string.Empty).Replace("\n", EOL) + EOL;
 
             Assert.Equal(test,
                 Sql);
@@ -552,29 +553,6 @@ END;".Replace("\r", string.Empty).Replace("\n", EOL) + EOL +
 
             Assert.Equal(
                 @"DROP SCHEMA `mySchema`;" + EOL,
-                Sql);
-        }
-
-        [Fact]
-        public virtual void RenameIndexOperation()
-        {
-            Generate(
-                modelBuilder => modelBuilder.Entity(
-                    "Person",
-                    x =>
-                    {
-                        x.Property<string>("FullName");
-                        x.HasIndex("FullName").IsUnique().HasFilter("`Id` > 2");
-                    }),
-                new RenameIndexOperation
-                {
-                    Table = "Person",
-                    Name = "IX_Person_Name",
-                    NewName = "IX_Person_FullName"
-                });
-
-            Assert.Equal(
-                @"ALTER TABLE `Person` RENAME INDEX `IX_Person_Name` TO `IX_Person_FullName`;" + EOL,
                 Sql);
         }
 
@@ -635,7 +613,7 @@ END;".Replace("\r", string.Empty).Replace("\n", EOL) + EOL +
         }
 
         [Fact]
-        public virtual void RenameIndexOperations()
+        public virtual void RenameIndexOperation()
         {
             var migrationBuilder = new MigrationBuilder("MySql");
 
@@ -648,6 +626,71 @@ END;".Replace("\r", string.Empty).Replace("\n", EOL) + EOL +
 
             Assert.Equal(
                 @"ALTER TABLE `Person` RENAME INDEX `IX_Person_Name` TO `IX_Person_FullName`;" + EOL,
+                Sql);
+        }
+
+        [Fact]
+        public virtual void RenameIndexOperation_with_model()
+        {
+            Generate(
+                modelBuilder => modelBuilder.Entity(
+                    "Person",
+                    x =>
+                    {
+                        x.Property<string>("FullName");
+                        x.HasIndex("FullName").IsUnique().HasFilter("`Id` > 2");
+                    }),
+                new RenameIndexOperation
+                {
+                    Table = "Person",
+                    Name = "IX_Person_Name",
+                    NewName = "IX_Person_FullName"
+                });
+
+            Assert.Equal(
+                @"ALTER TABLE `Person` RENAME INDEX `IX_Person_Name` TO `IX_Person_FullName`;" + EOL,
+                Sql);
+        }
+
+        [Fact]
+        public virtual void RenameColumnOperation()
+        {
+            var migrationBuilder = new MigrationBuilder("MySql");
+
+            migrationBuilder.RenameColumn(
+                table: "Person",
+                name: "Name",
+                newName: "FullName")
+                .Annotation(RelationalAnnotationNames.ColumnType, "VARCHAR(4000)");
+
+            Generate(migrationBuilder.Operations.ToArray());
+
+            Assert.Equal(
+                "ALTER TABLE `Person` CHANGE `Name` `FullName` VARCHAR(4000)",
+                Sql);
+        }
+
+        [Fact]
+        public virtual void RenameColumnOperation_with_model()
+        {
+            var migrationBuilder = new MigrationBuilder("MySql");
+
+            migrationBuilder.RenameColumn(
+                table: "Person",
+                name: "Name",
+                newName: "FullName");
+
+            Generate(
+                modelBuilder => modelBuilder.Entity(
+                    "Person",
+                    x =>
+                    {
+                        x.Property<string>("FullName");
+                    }),
+                migrationBuilder.Operations.ToArray());
+
+            Assert.Equal(
+                "ALTER TABLE `Person` CHANGE `Name` `FullName` longtext CHARACTER SET ucs2",
                 Sql);
         }
 
@@ -714,10 +757,10 @@ BEGIN
 		EXECUTE SQL_EXP_EXECUTE;
 		DEALLOCATE PREPARE SQL_EXP_EXECUTE;
 	END IF;
-END;".Replace("\r", string.Empty).Replace("\n", EOL) + EOL +
-                "CALL POMELO_BEFORE_DROP_PRIMARY_KEY('dbo', 'People');" + EOL +
-                "DROP PROCEDURE IF EXISTS POMELO_BEFORE_DROP_PRIMARY_KEY;" + EOL +
-                "ALTER TABLE `dbo`.`People` DROP PRIMARY KEY;" + EOL,
+END;
+CALL POMELO_BEFORE_DROP_PRIMARY_KEY('dbo', 'People');
+DROP PROCEDURE IF EXISTS POMELO_BEFORE_DROP_PRIMARY_KEY;
+ALTER TABLE `dbo`.`People` DROP PRIMARY KEY;".Replace("\r", string.Empty).Replace("\n", EOL) + EOL,
                 Sql);
         }
 

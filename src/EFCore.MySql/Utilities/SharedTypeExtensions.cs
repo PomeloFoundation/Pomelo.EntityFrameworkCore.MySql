@@ -174,5 +174,41 @@ namespace System
                     c => !c.IsStatic
                          && c.GetParameters().Select(p => p.ParameterType).SequenceEqual(types));
         }
+
+        private static readonly Dictionary<Type, object> _commonTypeDictionary = new Dictionary<Type, object>
+        {
+#pragma warning disable IDE0034 // Simplify 'default' expression - default causes default(object)
+            { typeof(int), default(int) },
+            { typeof(Guid), default(Guid) },
+            { typeof(DateTime), default(DateTime) },
+            { typeof(DateTimeOffset), default(DateTimeOffset) },
+            { typeof(long), default(long) },
+            { typeof(bool), default(bool) },
+            { typeof(double), default(double) },
+            { typeof(short), default(short) },
+            { typeof(float), default(float) },
+            { typeof(byte), default(byte) },
+            { typeof(char), default(char) },
+            { typeof(uint), default(uint) },
+            { typeof(ushort), default(ushort) },
+            { typeof(ulong), default(ulong) },
+            { typeof(sbyte), default(sbyte) }
+#pragma warning restore IDE0034 // Simplify 'default' expression
+        };
+
+        public static object GetDefaultValue(this Type type)
+        {
+            if (!type.GetTypeInfo().IsValueType)
+            {
+                return null;
+            }
+
+            // A bit of perf code to avoid calling Activator.CreateInstance for common types and
+            // to avoid boxing on every call. This is about 50% faster than just calling CreateInstance
+            // for all value types.
+            return _commonTypeDictionary.TryGetValue(type, out var value)
+                ? value
+                : Activator.CreateInstance(type);
+        }
     }
 }
