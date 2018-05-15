@@ -67,25 +67,6 @@ namespace EFCore.MySql.UpstreamFunctionalTests.TestUtilities
                     Clean(context);
                 }
                 seed(context);
-                context.Database.ExecuteSqlCommand(@"DROP PROCEDURE IF EXISTS `Ten Most Expensive Products`;
-CREATE PROCEDURE `Ten Most Expensive Products` ()
-BEGIN
-  SELECT `ProductName` AS `TenMostExpensiveProducts`, `UnitPrice`
-  FROM `Products`
-  ORDER BY `UnitPrice` DESC
-  LIMIT 10;
-END;");
-                context.Database.ExecuteSqlCommand(@"DROP PROCEDURE IF EXISTS `CustOrderHist`;
-CREATE PROCEDURE `CustOrderHist` (IN CustomerID VARCHAR(768))
-BEGIN
-  SELECT `ProductName`, SUM(`Quantity`) AS `Total`
-  FROM `Products` `p`, `Order Details` `od`, `Orders` `o`, `Customers` `c`
-  WHERE `c`.`CustomerId` = `CustomerId`
-  AND `c`.`CustomerId` = `o`.`CustomerId`
-  AND `o`.`OrderId` = `od`.`OrderId`
-  AND `od`.`ProductId` = `p`.`ProductId`
-  GROUP BY `ProductName`;
-END;");
             }
         }
 
