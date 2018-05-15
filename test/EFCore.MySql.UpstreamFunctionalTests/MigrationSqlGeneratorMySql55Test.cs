@@ -14,10 +14,31 @@ namespace EFCore.MySql.UpstreamFunctionalTests
     {
         public override void RenameIndexOperation()
         {
+            Assert.Throws<InvalidOperationException>(() => base.RenameIndexOperation());
         }
 
-        public override void RenameIndexOperations()
+        public override void RenameIndexOperation_with_model()
         {
+            Generate(
+                modelBuilder => modelBuilder.Entity(
+                    "Person",
+                    x =>
+                    {
+                        x.Property<string>("FullName");
+                        x.HasIndex("FullName").ForMySqlIsFullText();
+                    }),
+                new RenameIndexOperation
+                {
+                    Table = "Person",
+                    Name = "IX_Person_Name",
+                    NewName = "IX_Person_FullName"
+                });
+
+            Assert.Equal(
+                @"ALTER TABLE `Person` DROP INDEX `IX_Person_Name`;" + EOL +
+                "GO" + EOL + EOL +
+                @"CREATE FULLTEXT INDEX `IX_Person_FullName` ON `Person` (`FullName`);" + EOL,
+                Sql);
         }
 
         [Fact]

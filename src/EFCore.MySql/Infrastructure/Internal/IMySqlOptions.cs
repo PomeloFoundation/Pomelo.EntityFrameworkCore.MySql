@@ -3,7 +3,6 @@
 
 using EFCore.MySql.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Storage;
 
 namespace EFCore.MySql.Infrastructure.Internal
 {
@@ -11,7 +10,5 @@ namespace EFCore.MySql.Infrastructure.Internal
     {
         MySqlConnectionSettings ConnectionSettings { get; }
         ServerVersion ServerVersion { get; }
-
-        string GetCreateTable(ISqlGenerationHelper sqlGenerationHelper, string schema, string table);
     }
 }
