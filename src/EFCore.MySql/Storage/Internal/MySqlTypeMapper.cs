@@ -105,6 +105,8 @@ namespace EFCore.MySql.Storage.Internal
                     { "text", _varcharmax },
                     { "mediumtext", _varcharmax },
                     { "longtext", _varcharmax },
+                    { "enum", _varchar },
+                    { "set", _varchar },
 
                     // DateTime
                     { "datetime", _dateTime6 },
