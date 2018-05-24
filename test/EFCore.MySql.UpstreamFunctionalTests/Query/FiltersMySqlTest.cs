@@ -15,12 +15,13 @@ namespace EFCore.MySql.UpstreamFunctionalTests.Query
         public override void Count_query()
         {
             base.Count_query();
+
             AssertSql(
-                @"@__ef_filter__TenantPrefix_0='B' (Size = 1)
+                @"@__ef_filter__TenantPrefix_0='B' (Size = 4000)
 
 SELECT COUNT(*)
 FROM `Customers` AS `c`
-WHERE (`c`.`CompanyName` LIKE @__ef_filter__TenantPrefix_0 || '%' AND (substr(`c`.`CompanyName`, 1, length(@__ef_filter__TenantPrefix_0)) = @__ef_filter__TenantPrefix_0)) OR (@__ef_filter__TenantPrefix_0 = '')");
+WHERE (`c`.`CompanyName` LIKE CONCAT(@__ef_filter__TenantPrefix_0, N'%') AND (LEFT(`c`.`CompanyName`, CHAR_LENGTH(@__ef_filter__TenantPrefix_0)) = @__ef_filter__TenantPrefix_0)) OR (@__ef_filter__TenantPrefix_0 = N'')");
         }
 
         private void AssertSql(params string[] expected)

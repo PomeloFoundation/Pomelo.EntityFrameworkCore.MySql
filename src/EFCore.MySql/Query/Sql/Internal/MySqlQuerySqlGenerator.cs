@@ -19,6 +19,8 @@ namespace EFCore.MySql.Query.Sql.Internal
     /// </summary>
     public class MySqlQuerySqlGenerator : DefaultQuerySqlGenerator, IMySqlExpressionVisitor
     {
+        private const ulong LimitUpperBound = 18446744073709551610;
+
         protected override string TypedTrueLiteral => "TRUE";
         protected override string TypedFalseLiteral => "FALSE";
 
@@ -56,8 +58,9 @@ namespace EFCore.MySql.Query.Sql.Internal
                 if (selectExpression.Limit == null)
                 {
                     // if we want to use Skip() without Take() we have to define the upper limit of LIMIT
-                    Sql.AppendLine().Append("LIMIT ").Append(18446744073709551610);
+                    Sql.AppendLine().Append("LIMIT ").Append(LimitUpperBound);
                 }
+
                 Sql.Append(" OFFSET ");
                 Visit(selectExpression.Offset);
             }
@@ -107,25 +110,25 @@ namespace EFCore.MySql.Query.Sql.Internal
                 binaryExpression.Right.Type == typeof(string))
             {
                 Sql.Append("CONCAT(");
-                //var exp = base.VisitBinary(binaryExpression);
                 Visit(binaryExpression.Left);
-                Sql.Append(",");
+                Sql.Append(", ");
                 var exp = Visit(binaryExpression.Right);
                 Sql.Append(")");
-                return exp;
+
+                return binaryExpression;
             }
 
-            var expr = base.VisitBinary(binaryExpression);
-
-            return expr;
+            return base.VisitBinary(binaryExpression);
         }
 
         public virtual Expression VisitRegexp(RegexpExpression regexpExpression)
         {
             Check.NotNull(regexpExpression, nameof(regexpExpression));
+
             Visit(regexpExpression.Match);
             Sql.Append(" REGEXP ");
             Visit(regexpExpression.Pattern);
+
             return regexpExpression;
         }
 
@@ -179,7 +182,24 @@ namespace EFCore.MySql.Query.Sql.Internal
 
             Sql.Append(castMapping);
             Sql.Append(")");
+
             return explicitCastExpression;
+        }
+
+        public Expression VisitMySqlFunction(MySqlFunctionExpression mySqlFunctionExpression)
+        {
+            Check.NotNull(mySqlFunctionExpression, nameof(mySqlFunctionExpression));
+
+            Sql.Append(mySqlFunctionExpression.FunctionName);
+            Sql.Append("(");
+            foreach (var argument in mySqlFunctionExpression.Arguments)
+            {
+                Visit(argument);
+            }
+
+            Sql.Append(")");
+
+            return mySqlFunctionExpression;
         }
     }
 }
