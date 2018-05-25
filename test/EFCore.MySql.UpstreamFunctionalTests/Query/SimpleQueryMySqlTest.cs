@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Query;
+﻿using System.Linq;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Xunit.Abstractions;
 
@@ -24,8 +26,8 @@ namespace EFCore.MySql.UpstreamFunctionalTests.Query
             base.Take_Skip();
 
             AssertSql(
-                @"@__p_0='10' (DbType = String)
-@__p_1='5' (DbType = String)
+                @"@__p_0='10'
+@__p_1='5'
 
 SELECT `t`.*
 FROM (
@@ -35,20 +37,19 @@ FROM (
     LIMIT @__p_0
 ) AS `t`
 ORDER BY `t`.`ContactName`
-LIMIT -1 OFFSET @__p_1");
+LIMIT 18446744073709551610 OFFSET @__p_1");
         }
-
 
         public override void Where_datetime_now()
         {
             base.Where_datetime_now();
 
             AssertSql(
-                @"@__myDatetime_0='2015-04-10T00:00:00' (DbType = String)
+                @"@__myDatetime_0='2015-04-10T00:00:00' (DbType = DateTime)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE rtrim(rtrim(strftime('%Y-%m-%d %H:%M:%f', 'now', 'localtime'), '0'), '.') <> @__myDatetime_0");
+WHERE CURRENT_TIMESTAMP() <> @__myDatetime_0");
         }
 
         public override void Where_datetime_utcnow()
@@ -56,11 +57,11 @@ WHERE rtrim(rtrim(strftime('%Y-%m-%d %H:%M:%f', 'now', 'localtime'), '0'), '.') 
             base.Where_datetime_utcnow();
 
             AssertSql(
-                @"@__myDatetime_0='2015-04-10T00:00:00' (DbType = String)
+                @"@__myDatetime_0='2015-04-10T00:00:00' (DbType = DateTime)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE rtrim(rtrim(strftime('%Y-%m-%d %H:%M:%f', 'now'), '0'), '.') <> @__myDatetime_0");
+WHERE UTC_TIMESTAMP() <> @__myDatetime_0");
         }
 
         public override void Where_datetime_today()
@@ -78,11 +79,11 @@ WHERE rtrim(rtrim(strftime('%Y-%m-%d %H:%M:%f', rtrim(rtrim(strftime('%Y-%m-%d %
             base.Where_datetime_date_component();
 
             AssertSql(
-                @"@__myDatetime_0='1998-05-04T00:00:00' (DbType = String)
+                @"@__myDatetime_0='1998-05-04T00:00:00' (DbType = DateTime)
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE rtrim(rtrim(strftime('%Y-%m-%d %H:%M:%f', `o`.`OrderDate`, 'start of day'), '0'), '.') = @__myDatetime_0");
+WHERE CONVERT(`o`.`OrderDate`, date) = @__myDatetime_0");
         }
 
         public override void Where_datetime_year_component()
@@ -92,7 +93,7 @@ WHERE rtrim(rtrim(strftime('%Y-%m-%d %H:%M:%f', `o`.`OrderDate`, 'start of day')
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE CAST(strftime('%Y', `o`.`OrderDate`) AS INTEGER) = 1998");
+WHERE EXTRACT(year FROM `o`.`OrderDate`) = 1998");
         }
 
         public override void Where_datetime_month_component()
@@ -102,7 +103,7 @@ WHERE CAST(strftime('%Y', `o`.`OrderDate`) AS INTEGER) = 1998");
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE CAST(strftime('%m', `o`.`OrderDate`) AS INTEGER) = 4");
+WHERE EXTRACT(month FROM `o`.`OrderDate`) = 4");
         }
 
         public override void Where_datetime_dayOfYear_component()
@@ -112,7 +113,7 @@ WHERE CAST(strftime('%m', `o`.`OrderDate`) AS INTEGER) = 4");
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE CAST(strftime('%j', `o`.`OrderDate`) AS INTEGER) = 68");
+WHERE DAYOFYEAR(`o`.`OrderDate`) = 68");
         }
 
         public override void Where_datetime_day_component()
@@ -122,7 +123,7 @@ WHERE CAST(strftime('%j', `o`.`OrderDate`) AS INTEGER) = 68");
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE CAST(strftime('%d', `o`.`OrderDate`) AS INTEGER) = 4");
+WHERE EXTRACT(day FROM `o`.`OrderDate`) = 4");
         }
 
         public override void Where_datetime_hour_component()
@@ -132,7 +133,7 @@ WHERE CAST(strftime('%d', `o`.`OrderDate`) AS INTEGER) = 4");
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE CAST(strftime('%H', `o`.`OrderDate`) AS INTEGER) = 14");
+WHERE EXTRACT(hour FROM `o`.`OrderDate`) = 14");
         }
 
         public override void Where_datetime_minute_component()
@@ -142,7 +143,7 @@ WHERE CAST(strftime('%H', `o`.`OrderDate`) AS INTEGER) = 14");
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE CAST(strftime('%M', `o`.`OrderDate`) AS INTEGER) = 23");
+WHERE EXTRACT(minute FROM `o`.`OrderDate`) = 23");
         }
 
         public override void Where_datetime_second_component()
@@ -152,7 +153,7 @@ WHERE CAST(strftime('%M', `o`.`OrderDate`) AS INTEGER) = 23");
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE CAST(strftime('%S', `o`.`OrderDate`) AS INTEGER) = 44");
+WHERE EXTRACT(second FROM `o`.`OrderDate`) = 44");
         }
 
         public override void Where_datetime_millisecond_component()
@@ -161,10 +162,8 @@ WHERE CAST(strftime('%S', `o`.`OrderDate`) AS INTEGER) = 44");
 
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
-FROM `Orders` AS `o`
-WHERE ((strftime('%f', `o`.`OrderDate`) * 1000) % 1000) = 88");
+FROM `Orders` AS `o`");
         }
-
 
         public override void String_StartsWith_Literal()
         {
@@ -173,7 +172,7 @@ WHERE ((strftime('%f', `o`.`OrderDate`) * 1000) % 1000) = 88");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` LIKE 'M' || '%' AND (SUBSTRING(`c`.`ContactName`, 1, length('M')) = N'M')");
+WHERE `c`.`ContactName` LIKE CONCAT(N'M', N'%') AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(N'M')) = N'M')");
         }
 
         public override void String_StartsWith_Identity()
@@ -183,7 +182,7 @@ WHERE `c`.`ContactName` LIKE 'M' || '%' AND (SUBSTRING(`c`.`ContactName`, 1, len
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` LIKE `c`.`ContactName` || '%' AND (SUBSTRING(`c`.`ContactName`, 1, length(`c`.`ContactName`)) = `c`.`ContactName`)) OR (`c`.`ContactName` = N'')");
+WHERE (`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, N'%') AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`)) OR (`c`.`ContactName` = N'')");
         }
 
         public override void String_StartsWith_Column()
@@ -193,22 +192,20 @@ WHERE (`c`.`ContactName` LIKE `c`.`ContactName` || '%' AND (SUBSTRING(`c`.`Conta
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` LIKE `c`.`ContactName` || '%' AND (SUBSTRING(`c`.`ContactName`, 1, length(`c`.`ContactName`)) = `c`.`ContactName`)) OR (`c`.`ContactName` = N'')");
+WHERE (`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, N'%') AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`)) OR (`c`.`ContactName` = N'')");
         }
-
 
         public override void String_StartsWith_MethodCall()
         {
             base.String_StartsWith_MethodCall();
 
             AssertSql(
-                @"@__LocalMethod1_0='M' (Size = 1)
+                @"@__LocalMethod1_0='M' (Size = 4000)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` LIKE @__LocalMethod1_0 || '%' AND (SUBSTRING(`c`.`ContactName`, 1, length(@__LocalMethod1_0)) = @__LocalMethod1_0)) OR (@__LocalMethod1_0 = N'')");
+WHERE (`c`.`ContactName` LIKE CONCAT(@__LocalMethod1_0, N'%') AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(@__LocalMethod1_0)) = @__LocalMethod1_0)) OR (@__LocalMethod1_0 = N'')");
         }
-
 
         public override void String_EndsWith_Literal()
         {
@@ -217,7 +214,7 @@ WHERE (`c`.`ContactName` LIKE @__LocalMethod1_0 || '%' AND (SUBSTRING(`c`.`Conta
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE RIGHT(`c`.`ContactName`, CHAR_LENGTH('b')) = N'b'");
+WHERE RIGHT(`c`.`ContactName`, CHAR_LENGTH(N'b')) = N'b'");
         }
 
         public override void String_EndsWith_Identity()
@@ -240,28 +237,29 @@ FROM `Customers` AS `c`
 WHERE (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`) OR (`c`.`ContactName` = N'')");
         }
 
-
         public override void String_EndsWith_MethodCall()
         {
             base.String_EndsWith_MethodCall();
 
             AssertSql(
-                @"@__LocalMethod2_0='m' (Size = 1)
+                @"@__LocalMethod2_0='m' (Size = 4000)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE (RIGHT(`c`.`ContactName`, CHAR_LENGTH(@__LocalMethod2_0)) = @__LocalMethod2_0) OR (@__LocalMethod2_0 = N'')");
         }
 
-
         public override void String_Contains_Literal()
         {
-            base.String_Contains_Literal();
+            AssertQuery<Customer>(
+                cs => cs.Where(c => c.ContactName.Contains("M")), // case-insensitive
+                cs => cs.Where(c => c.ContactName.Contains("M") || c.ContactName.Contains("m")), // case-sensitive
+                entryCount: 34);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE LOCATE(`c`.`ContactName`, 'M') > 0");
+WHERE LOCATE(N'M', `c`.`ContactName`) > 0");
         }
 
         public override void String_Contains_Identity()
@@ -284,19 +282,20 @@ FROM `Customers` AS `c`
 WHERE (LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0) OR (`c`.`ContactName` = N'')");
         }
 
-
         public override void String_Contains_MethodCall()
         {
-            base.String_Contains_MethodCall();
+            AssertQuery<Customer>(
+                cs => cs.Where(c => c.ContactName.Contains(LocalMethod1())), // case-insensitive
+                cs => cs.Where(c => c.ContactName.Contains(LocalMethod1().ToLower()) || c.ContactName.Contains(LocalMethod1().ToUpper())), // case-sensitive
+                entryCount: 34);
 
             AssertSql(
-                @"@__LocalMethod1_0='M' (Size = 1)
+                @"@__LocalMethod1_0='M' (Size = 4000)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LOCATE(`c`.`ContactName`, @__LocalMethod1_0) > 0) OR (@__LocalMethod1_0 = N'')");
+WHERE (LOCATE(@__LocalMethod1_0, `c`.`ContactName`) > 0) OR (@__LocalMethod1_0 = N'')");
         }
-
 
         public override void IsNullOrWhiteSpace_in_predicate()
         {
@@ -305,7 +304,7 @@ WHERE (LOCATE(`c`.`ContactName`, @__LocalMethod1_0) > 0) OR (@__LocalMethod1_0 =
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`Region` IS NULL OR (trim(`c`.`Region`) = N'')");
+WHERE `c`.`Region` IS NULL OR (LTRIM(RTRIM(`c`.`Region`)) = N'')");
         }
 
         public override void Where_string_length()
@@ -317,7 +316,6 @@ WHERE `c`.`Region` IS NULL OR (trim(`c`.`Region`) = N'')");
 FROM `Customers` AS `c`
 WHERE CHAR_LENGTH(`c`.`City`) = 6");
         }
-
 
         public override void Where_string_indexof()
         {
@@ -354,7 +352,7 @@ WHERE REPLACE(`c`.`City`, N'Sea', N'Rea') = N'Reattle'");
             base.Replace_with_emptystring();
 
             AssertSql(
-                @"SELECT replace(`c`.`ContactName`, 'ari', '')
+                @"SELECT REPLACE(`c`.`ContactName`, N'ari', N'')
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = N'ALFKI'");
         }
@@ -394,13 +392,12 @@ WHERE `c`.`CustomerID` = N'ALFKI'");
             base.Substring_with_closure();
 
             AssertSql(
-                @"@__start_0='2' (DbType = String)
+                @"@__start_0='2'
 
 SELECT SUBSTRING(`c`.`ContactName`, @__start_0 + 1, 3)
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = N'ALFKI'");
         }
-
 
         public override void Substring_with_client_eval()
         {
@@ -412,7 +409,6 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = N'ALFKI'");
         }
 
-
         public override void Substring_with_zero_length()
         {
             base.Substring_with_zero_length();
@@ -422,7 +418,6 @@ WHERE `c`.`CustomerID` = N'ALFKI'");
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = N'ALFKI'");
         }
-
 
         public override void Where_math_abs1()
         {
@@ -449,13 +444,12 @@ WHERE ABS(`od`.`Quantity`) > 10");
             base.Where_math_abs_uncorrelated();
 
             AssertSql(
-                @"@__Abs_0='10' (DbType = String)
+                @"@__Abs_0='10'
 
 SELECT `od`.`OrderID`, `od`.`ProductID`, `od`.`Discount`, `od`.`Quantity`, `od`.`UnitPrice`
 FROM `Order Details` AS `od`
 WHERE @__Abs_0 < `od`.`ProductID`");
         }
-
 
         public override void Select_math_round_int()
         {
@@ -474,7 +468,7 @@ WHERE `o`.`OrderID` < 10250");
             AssertSql(
                 @"SELECT `od`.`OrderID`, `od`.`ProductID`, `od`.`Discount`, `od`.`Quantity`, `od`.`UnitPrice`
 FROM `Order Details` AS `od`
-WHERE `od`.`OrderID` = 11077 AND min(`od`.`OrderID`, `od`.`ProductID`) = `od`.`ProductID`");
+WHERE `od`.`OrderID` = 11077");
         }
 
         public override void Where_math_max()
@@ -484,9 +478,8 @@ WHERE `od`.`OrderID` = 11077 AND min(`od`.`OrderID`, `od`.`ProductID`) = `od`.`P
             AssertSql(
                 @"SELECT `od`.`OrderID`, `od`.`ProductID`, `od`.`Discount`, `od`.`Quantity`, `od`.`UnitPrice`
 FROM `Order Details` AS `od`
-WHERE `od`.`OrderID` = 11077 AND max(`od`.`OrderID`, `od`.`ProductID`) = `od`.`OrderID`");
+WHERE `od`.`OrderID` = 11077");
         }
-
 
         public override void Where_string_to_lower()
         {
@@ -524,8 +517,7 @@ WHERE LTRIM(`c`.`ContactTitle`) = N'Owner'");
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`
-WHERE LTRIM(`c`.`ContactTitle`, 'O') = N'wner'");
+FROM `Customers` AS `c`");
         }
 
         public override void TrimStart_with_char_array_argument_in_predicate()
@@ -534,8 +526,7 @@ WHERE LTRIM(`c`.`ContactTitle`, 'O') = N'wner'");
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`
-WHERE LTRIM(`c`.`ContactTitle`, 'Ow') = N'ner'");
+FROM `Customers` AS `c`");
         }
 
         public override void TrimEnd_without_arguments_in_predicate()
@@ -554,8 +545,7 @@ WHERE RTRIM(`c`.`ContactTitle`) = N'Owner'");
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`
-WHERE RTRIM(`c`.`ContactTitle`, 'r') = N'Owne'");
+FROM `Customers` AS `c`");
         }
 
         public override void TrimEnd_with_char_array_argument_in_predicate()
@@ -564,8 +554,7 @@ WHERE RTRIM(`c`.`ContactTitle`, 'r') = N'Owne'");
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`
-WHERE RTRIM(`c`.`ContactTitle`, 'er') = N'Own'");
+FROM `Customers` AS `c`");
         }
 
         public override void Trim_without_argument_in_predicate()
@@ -575,7 +564,7 @@ WHERE RTRIM(`c`.`ContactTitle`, 'er') = N'Own'");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE trim(`c`.`ContactTitle`) = N'Owner'");
+WHERE LTRIM(RTRIM(`c`.`ContactTitle`)) = N'Owner'");
         }
 
         public override void Trim_with_char_argument_in_predicate()
@@ -584,8 +573,7 @@ WHERE trim(`c`.`ContactTitle`) = N'Owner'");
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`
-WHERE trim(`c`.`ContactTitle`, 'O') = N'wner'");
+FROM `Customers` AS `c`");
         }
 
         public override void Trim_with_char_array_argument_in_predicate()
@@ -594,17 +582,15 @@ WHERE trim(`c`.`ContactTitle`, 'O') = N'wner'");
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`
-WHERE trim(`c`.`ContactTitle`, 'Or') = N'wne'");
+FROM `Customers` AS `c`");
         }
-
 
         public override void Sum_with_coalesce()
         {
             base.Sum_with_coalesce();
 
             AssertSql(
-                @"SELECT SUM(COALESCE(`p`.`UnitPrice`, '0.0'))
+                @"SELECT SUM(COALESCE(`p`.`UnitPrice`, 0.0))
 FROM `Products` AS `p`
 WHERE `p`.`ProductID` < 40");
         }
@@ -614,7 +600,7 @@ WHERE `p`.`ProductID` < 40");
             base.Select_datetime_year_component();
 
             AssertSql(
-                @"SELECT CAST(strftime('%Y', `o`.`OrderDate`) AS INTEGER)
+                @"SELECT EXTRACT(year FROM `o`.`OrderDate`)
 FROM `Orders` AS `o`");
         }
 
@@ -623,7 +609,7 @@ FROM `Orders` AS `o`");
             base.Select_datetime_month_component();
 
             AssertSql(
-                @"SELECT CAST(strftime('%m', `o`.`OrderDate`) AS INTEGER)
+                @"SELECT EXTRACT(month FROM `o`.`OrderDate`)
 FROM `Orders` AS `o`");
         }
 
@@ -632,7 +618,7 @@ FROM `Orders` AS `o`");
             base.Select_datetime_day_of_year_component();
 
             AssertSql(
-                @"SELECT CAST(strftime('%j', `o`.`OrderDate`) AS INTEGER)
+                @"SELECT DAYOFYEAR(`o`.`OrderDate`)
 FROM `Orders` AS `o`");
         }
 
@@ -641,7 +627,7 @@ FROM `Orders` AS `o`");
             base.Select_datetime_day_component();
 
             AssertSql(
-                @"SELECT CAST(strftime('%d', `o`.`OrderDate`) AS INTEGER)
+                @"SELECT EXTRACT(day FROM `o`.`OrderDate`)
 FROM `Orders` AS `o`");
         }
 
@@ -650,7 +636,7 @@ FROM `Orders` AS `o`");
             base.Select_datetime_hour_component();
 
             AssertSql(
-                @"SELECT CAST(strftime('%H', `o`.`OrderDate`) AS INTEGER)
+                @"SELECT EXTRACT(hour FROM `o`.`OrderDate`)
 FROM `Orders` AS `o`");
         }
 
@@ -659,7 +645,7 @@ FROM `Orders` AS `o`");
             base.Select_datetime_minute_component();
 
             AssertSql(
-                @"SELECT CAST(strftime('%M', `o`.`OrderDate`) AS INTEGER)
+                @"SELECT EXTRACT(minute FROM `o`.`OrderDate`)
 FROM `Orders` AS `o`");
         }
 
@@ -668,7 +654,7 @@ FROM `Orders` AS `o`");
             base.Select_datetime_second_component();
 
             AssertSql(
-                @"SELECT CAST(strftime('%S', `o`.`OrderDate`) AS INTEGER)
+                @"SELECT EXTRACT(second FROM `o`.`OrderDate`)
 FROM `Orders` AS `o`");
         }
 
@@ -677,10 +663,25 @@ FROM `Orders` AS `o`");
             base.Select_datetime_millisecond_component();
 
             AssertSql(
-                @"SELECT (strftime('%f', `o`.`OrderDate`) * 1000) % 1000
+                @"SELECT `o`.`OrderDate`
 FROM `Orders` AS `o`");
         }
 
+        public override void Select_expression_references_are_updated_correctly_with_subquery()
+        {
+            base.Select_expression_references_are_updated_correctly_with_subquery();
+
+            AssertSql(
+                @"@__nextYear_0='2017'
+
+SELECT `t`.`c`
+FROM (
+    SELECT DISTINCT EXTRACT(year FROM `o`.`OrderDate`) AS `c`
+    FROM `Orders` AS `o`
+    WHERE `o`.`OrderDate` IS NOT NULL
+) AS `t`
+WHERE `t`.`c` < @__nextYear_0");
+        }
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);

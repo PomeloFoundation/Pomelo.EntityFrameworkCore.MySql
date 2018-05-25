@@ -60,9 +60,9 @@ namespace EFCore.MySql.Query.ExpressionTranslators.Internal
                    methodCallExpression.Type,
                    new[]
                    {
+                        methodCallExpression.Arguments[0],
                         new SqlFragmentExpression(
-                            _typeMapping[methodCallExpression.Method.Name]),
-                        methodCallExpression.Arguments[0]
+                            _typeMapping[methodCallExpression.Method.Name])
                    })
                : null);
     }
