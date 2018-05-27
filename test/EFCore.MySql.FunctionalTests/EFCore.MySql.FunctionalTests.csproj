@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <RestoreAdditionalProjectSources>
+      https://dotnetfeed.blob.core.windows.net/orchestrated-release-2-1/20180515-07/final/index.json
+    </RestoreAdditionalProjectSources>
     <LangVersion>7.2</LangVersion>
     <AssemblyName>EFCore.MySql.FunctionalTests</AssemblyName>
     <StartupObject>EFCore.MySql.FunctionalTests.Program</StartupObject>
@@ -18,7 +21,7 @@
     <PackageReference Include="xunit" Version="2.3.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
     <!--app packages-->
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.0" />
   </ItemGroup>
 
   <ItemGroup>
