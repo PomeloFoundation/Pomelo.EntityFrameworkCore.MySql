@@ -2,6 +2,9 @@
   <PropertyGroup>
     <VersionPrefix>2.1.0</VersionPrefix>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <RestoreAdditionalProjectSources>
+      https://dotnetfeed.blob.core.windows.net/orchestrated-release-2-1/20180515-07/final/index.json
+    </RestoreAdditionalProjectSources>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>7.2</LangVersion>
     <AssemblyName>Pomelo.EntityFrameworkCore.MySql</AssemblyName>
@@ -16,9 +19,9 @@
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.1.0-*" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.1.0-*" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.0-*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.1.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.0" />
     <PackageReference Include="MySqlConnector" Version="0.*" />
     <PackageReference Include="Pomelo.JsonObject" Version="1.1.1" />
   </ItemGroup>
