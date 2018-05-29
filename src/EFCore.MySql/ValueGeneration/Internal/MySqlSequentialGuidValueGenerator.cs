@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Security.Cryptography;
-using EFCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
 
-namespace EFCore.MySql.ValueGeneration.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.ValueGeneration.Internal
 {
     public class MySqlSequentialGuidValueGenerator  : ValueGenerator<Guid>
     {

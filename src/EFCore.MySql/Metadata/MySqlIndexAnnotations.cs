@@ -1,7 +1,7 @@
 // Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
-using EFCore.MySql.Metadata.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using JetBrains.Annotations;
 
 //ReSharper disable once CheckNamespace

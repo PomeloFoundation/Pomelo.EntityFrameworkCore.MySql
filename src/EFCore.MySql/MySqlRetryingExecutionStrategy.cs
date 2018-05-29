@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using EFCore.MySql.Storage.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
 using MySql.Data.MySqlClient;

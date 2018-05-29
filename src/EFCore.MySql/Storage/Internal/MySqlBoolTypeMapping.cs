@@ -1,11 +1,10 @@
 // Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
-using System.Data;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace EFCore.MySql.Storage.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     /// <summary>
     ///     <para>
@@ -22,24 +21,39 @@ namespace EFCore.MySql.Storage.Internal
         ///     Initializes a new instance of the <see cref="BoolTypeMapping" /> class.
         /// </summary>
         /// <param name="storeType"> The name of the database type. </param>
-        /// <param name="dbType"> The <see cref="DbType" /> to be used. </param>
         public MySqlBoolTypeMapping(
-            [NotNull] string storeType,
-            [CanBeNull] DbType? dbType = null)
-            : base(storeType, typeof(bool), dbType, unicode: false, size: null)
+            string storeType = null)
+            : this(
+                new RelationalTypeMappingParameters(
+                    new CoreTypeMappingParameters(typeof(bool)),
+                    storeType ?? "bit",
+                    StoreTypePostfix.None,
+                    System.Data.DbType.Boolean))
         {
         }
 
         /// <summary>
-        ///     Creates a copy of this mapping.
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        /// <param name="storeType"> The name of the database type. </param>
-        /// <param name="size"> The size of data the property is configured to store, or null if no size is configured. </param>
-        /// <returns> The newly created mapping. </returns>
+        protected MySqlBoolTypeMapping(RelationalTypeMappingParameters parameters)
+            : base(parameters)
+        {
+        }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public override RelationalTypeMapping Clone(string storeType, int? size)
-            => new MySqlBoolTypeMapping(
-                storeType,
-                DbType);
+            => new MySqlBoolTypeMapping(Parameters.WithStoreTypeAndSize(storeType, size));
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public override CoreTypeMapping Clone(ValueConverter converter)
+            => new MySqlBoolTypeMapping(Parameters.WithComposedConverter(converter));
 
         /// <summary>
         ///     Generates the SQL representation of a literal value.

@@ -1,6 +1,7 @@
 // Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -85,5 +86,129 @@ namespace System
 
         public static Type UnwrapEnumType(this Type type)
             => type.GetTypeInfo().IsEnum ? Enum.GetUnderlyingType(type) : type;
+
+        public static Type GetSequenceType(this Type type)
+        {
+            var sequenceType = TryGetSequenceType(type);
+            if (sequenceType == null)
+            {
+                throw new ArgumentException();
+            }
+
+            return sequenceType;
+        }
+
+        public static Type TryGetSequenceType(this Type type)
+            => type.TryGetElementType(typeof(IEnumerable<>))
+               ?? type.TryGetElementType(typeof(IAsyncEnumerable<>));
+
+        public static Type TryGetElementType(this Type type, Type interfaceOrBaseType)
+        {
+            if (type.GetTypeInfo().IsGenericTypeDefinition)
+            {
+                return null;
+            }
+
+            var types = GetGenericTypeImplementations(type, interfaceOrBaseType);
+
+            Type singleImplementation = null;
+            foreach (var impelementation in types)
+            {
+                if (singleImplementation == null)
+                {
+                    singleImplementation = impelementation;
+                }
+                else
+                {
+                    singleImplementation = null;
+                    break;
+                }
+            }
+
+            return singleImplementation?.GetTypeInfo().GenericTypeArguments.FirstOrDefault();
+        }
+
+        public static IEnumerable<Type> GetGenericTypeImplementations(this Type type, Type interfaceOrBaseType)
+        {
+            var typeInfo = type.GetTypeInfo();
+            if (!typeInfo.IsGenericTypeDefinition)
+            {
+                var baseTypes = interfaceOrBaseType.GetTypeInfo().IsInterface
+                    ? typeInfo.ImplementedInterfaces
+                    : type.GetBaseTypes();
+                foreach (var baseType in baseTypes)
+                {
+                    if (baseType.GetTypeInfo().IsGenericType
+                        && baseType.GetGenericTypeDefinition() == interfaceOrBaseType)
+                    {
+                        yield return baseType;
+                    }
+                }
+
+                if (type.GetTypeInfo().IsGenericType
+                    && type.GetGenericTypeDefinition() == interfaceOrBaseType)
+                {
+                    yield return type;
+                }
+            }
+        }
+
+        public static IEnumerable<Type> GetBaseTypes(this Type type)
+        {
+            type = type.GetTypeInfo().BaseType;
+
+            while (type != null)
+            {
+                yield return type;
+
+                type = type.GetTypeInfo().BaseType;
+            }
+        }
+
+        public static ConstructorInfo GetDeclaredConstructor(this Type type, Type[] types)
+        {
+            types = types ?? Array.Empty<Type>();
+
+            return type.GetTypeInfo().DeclaredConstructors
+                .SingleOrDefault(
+                    c => !c.IsStatic
+                         && c.GetParameters().Select(p => p.ParameterType).SequenceEqual(types));
+        }
+
+        private static readonly Dictionary<Type, object> _commonTypeDictionary = new Dictionary<Type, object>
+        {
+#pragma warning disable IDE0034 // Simplify 'default' expression - default causes default(object)
+            { typeof(int), default(int) },
+            { typeof(Guid), default(Guid) },
+            { typeof(DateTime), default(DateTime) },
+            { typeof(DateTimeOffset), default(DateTimeOffset) },
+            { typeof(long), default(long) },
+            { typeof(bool), default(bool) },
+            { typeof(double), default(double) },
+            { typeof(short), default(short) },
+            { typeof(float), default(float) },
+            { typeof(byte), default(byte) },
+            { typeof(char), default(char) },
+            { typeof(uint), default(uint) },
+            { typeof(ushort), default(ushort) },
+            { typeof(ulong), default(ulong) },
+            { typeof(sbyte), default(sbyte) }
+#pragma warning restore IDE0034 // Simplify 'default' expression
+        };
+
+        public static object GetDefaultValue(this Type type)
+        {
+            if (!type.GetTypeInfo().IsValueType)
+            {
+                return null;
+            }
+
+            // A bit of perf code to avoid calling Activator.CreateInstance for common types and
+            // to avoid boxing on every call. This is about 50% faster than just calling CreateInstance
+            // for all value types.
+            return _commonTypeDictionary.TryGetValue(type, out var value)
+                ? value
+                : Activator.CreateInstance(type);
+        }
     }
 }

@@ -9,19 +9,17 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using MySql.Data.MySqlClient;
 
-namespace EFCore.MySql.Storage.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     public class MySqlRelationalTransaction : RelationalTransaction
     {
         private readonly IRelationalConnection _relationalConnection;
-        private readonly DbTransaction _dbTransaction;
         private readonly IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> _logger;
-        private readonly bool _transactionOwned;
-
         private bool _connectionClosed;
 
         public MySqlRelationalTransaction(
@@ -37,10 +35,10 @@ namespace EFCore.MySql.Storage.Internal
             }
 
             _relationalConnection = connection;
-            _dbTransaction = transaction;
             _logger = logger;
-            _transactionOwned = transactionOwned;
         }
+
+        private DbTransaction DbTransaction => ((IInfrastructure<DbTransaction>)this).Instance;
 
         public virtual async Task CommitAsync(CancellationToken cancellationToken=default(CancellationToken))
         {
@@ -49,18 +47,18 @@ namespace EFCore.MySql.Storage.Internal
 
             try
             {
-                if (_dbTransaction is MySqlTransaction)
+                if (DbTransaction is MySqlTransaction transaction)
                 {
-                    await (_dbTransaction as MySqlTransaction).CommitAsync(cancellationToken).ConfigureAwait(false);
+                    await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
-                    _dbTransaction.Commit();
+                    DbTransaction.Commit();
                 }
 
                 _logger.TransactionCommitted(
                     _relationalConnection,
-                    _dbTransaction,
+                    DbTransaction,
                     TransactionId,
                     startTime,
                     stopwatch.Elapsed);
@@ -69,7 +67,7 @@ namespace EFCore.MySql.Storage.Internal
             {
                 _logger.TransactionError(
                     _relationalConnection,
-                    _dbTransaction,
+                    DbTransaction,
                     TransactionId,
                     "CommitAsync",
                     e,
@@ -91,18 +89,18 @@ namespace EFCore.MySql.Storage.Internal
 
             try
             {
-                if (_dbTransaction is MySqlTransaction)
+                if (DbTransaction is MySqlTransaction transaction)
                 {
-                    await (_dbTransaction as MySqlTransaction).RollbackAsync(cancellationToken).ConfigureAwait(false);
+                    await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
-                    _dbTransaction.Rollback();
+                    DbTransaction.Rollback();
                 }
 
                 _logger.TransactionRolledBack(
                     _relationalConnection,
-                    _dbTransaction,
+                    DbTransaction,
                     TransactionId,
                     startTime,
                     stopwatch.Elapsed);
@@ -111,7 +109,7 @@ namespace EFCore.MySql.Storage.Internal
             {
                 _logger.TransactionError(
                     _relationalConnection,
-                    _dbTransaction,
+                    DbTransaction,
                     TransactionId,
                     "RollbackAsync",
                     e,

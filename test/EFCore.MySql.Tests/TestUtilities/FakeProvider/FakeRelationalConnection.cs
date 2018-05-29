@@ -1,5 +1,5 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
-// Licensed under the MIT. See LICENSE in the project root for license information.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Data.Common;
@@ -10,11 +10,12 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.Extensions.Logging;
 
-//ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.TestUtilities.FakeProvider
 {
     public class FakeRelationalConnection : RelationalConnection
     {
+        private DbConnection _connection;
+
         private readonly List<FakeDbConnection> _dbConnections = new List<FakeDbConnection>();
 
         public FakeRelationalConnection(IDbContextOptions options)
@@ -29,9 +30,14 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities.FakeProvider
                         new LoggerFactory(),
                         new LoggingOptions(),
                         new DiagnosticListener("FakeDiagnosticListener")),
-                    new NamedConnectionStringResolver(options)))
+                    new NamedConnectionStringResolver(options),
+                    new RelationalTransactionFactory(new RelationalTransactionFactoryDependencies())))
         {
         }
+
+        public void UseConnection(DbConnection connection) => _connection = connection;
+
+        public override DbConnection DbConnection => _connection ?? base.DbConnection;
 
         public IReadOnlyList<FakeDbConnection> DbConnections => _dbConnections;
 

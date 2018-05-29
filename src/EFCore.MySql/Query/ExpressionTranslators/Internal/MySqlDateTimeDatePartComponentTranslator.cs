@@ -3,10 +3,11 @@
 
 using System;
 using System.Linq.Expressions;
+using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Microsoft.EntityFrameworkCore.Query.Expressions;
 using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators;
 
-namespace EFCore.MySql.Query.ExpressionTranslators.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -20,19 +21,27 @@ namespace EFCore.MySql.Query.ExpressionTranslators.Internal
         /// </summary>
         public virtual Expression Translate(MemberExpression memberExpression)
         {
-            string datePart;
             if (memberExpression.Expression != null
-                && (memberExpression.Expression.Type == typeof(DateTime) || memberExpression.Expression.Type == typeof(DateTimeOffset))
-                && (datePart = GetDatePart(memberExpression.Member.Name)) != null)
+                && (memberExpression.Expression.Type == typeof(DateTime) || memberExpression.Expression.Type == typeof(DateTimeOffset)))
             {
-                return new SqlFunctionExpression(
-                    functionName: "EXTRACT",
-                    returnType: memberExpression.Type,
-                    arguments: new[]
-                    {
-                        new SqlFragmentExpression($"{datePart} FROM {memberExpression.Expression}")
-                    });
+                var datePart = GetDatePart(memberExpression.Member.Name);
+                if (datePart != null)
+                {
+                    return new MySqlFunctionExpression(
+                        functionName: "EXTRACT",
+                        returnType: memberExpression.Type,
+                        arguments: new[]
+                        {
+                            new SqlFragmentExpression($"{datePart} FROM "),
+                            memberExpression.Expression
+                        });
+                }
+                else if (memberExpression.Member.Name == nameof(DateTime.DayOfYear))
+                {
+                    return new SqlFunctionExpression("DAYOFYEAR", memberExpression.Type, new[] { memberExpression.Expression });
+                }
             }
+
             return null;
         }
 

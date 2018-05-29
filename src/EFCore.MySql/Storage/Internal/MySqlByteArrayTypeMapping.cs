@@ -6,10 +6,10 @@ using System.Data;
 using System.Data.Common;
 using System.Globalization;
 using System.Text;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace EFCore.MySql.Storage.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -17,25 +17,78 @@ namespace EFCore.MySql.Storage.Internal
     /// </summary>
     public class MySqlByteArrayTypeMapping : ByteArrayTypeMapping
     {
+        private const int MaxSize = 8000;
         private readonly int _maxSpecificSize;
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="MySqlByteArrayTypeMapping" /> class.
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        /// <param name="storeType"> The name of the database type. </param>
-        /// <param name="dbType"> The <see cref="System.Data.DbType" /> to be used. </param>
-        /// <param name="size"> The size of data the property is configured to store, or null if no size is configured. </param>
         public MySqlByteArrayTypeMapping(
-            [NotNull] string storeType,
-            [CanBeNull] DbType? dbType = System.Data.DbType.Binary,
-            int? size = null)
-            : base(storeType, dbType, size)
+            string storeType = null,
+            int? size = null,
+            bool fixedLength = false)
+            : this(System.Data.DbType.Binary,
+                storeType,
+                size.HasValue && size < MaxSize ? size : null,
+                fixedLength)
         {
-            _maxSpecificSize = CalculateSize(size);
         }
 
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        protected MySqlByteArrayTypeMapping(
+            DbType type,
+            string storeType,
+            int? size,
+            bool fixedLength)
+            : this(
+                new RelationalTypeMappingParameters(
+                    new CoreTypeMappingParameters(typeof(byte[])),
+                    storeType ?? GetBaseType(size, fixedLength),
+                    GetStoreTypePostfix(size),
+                    type,
+                    size: size,
+                    fixedLength: fixedLength))
+        {
+        }
+
+        private static string GetBaseType(int? size, bool isFixedLength)
+            => size == null
+                ? "longblob"
+                : isFixedLength ? "binary" : "varbinary";
+
+        private static StoreTypePostfix GetStoreTypePostfix(int? size)
+            => size != null && size <= MaxSize ? StoreTypePostfix.Size : StoreTypePostfix.None;
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        protected MySqlByteArrayTypeMapping(RelationalTypeMappingParameters parameters)
+            : base(parameters)
+        {
+            _maxSpecificSize = CalculateSize(parameters.Size);
+        }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public override RelationalTypeMapping Clone(string storeType, int? size)
+            => new MySqlByteArrayTypeMapping(Parameters.WithStoreTypeAndSize(storeType, size));
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public override CoreTypeMapping Clone(ValueConverter converter)
+            => new MySqlByteArrayTypeMapping(Parameters.WithComposedConverter(converter));
+
         private static int CalculateSize(int? size)
-            => size.HasValue && size < 8000 ? size.Value : 8000;
+            => size.HasValue && size < MaxSize ? size.Value : MaxSize;
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used

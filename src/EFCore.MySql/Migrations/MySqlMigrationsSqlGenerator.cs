@@ -4,11 +4,12 @@
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-using EFCore.MySql.Infrastructure.Internal;
-using EFCore.MySql.Metadata.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
@@ -20,13 +21,16 @@ namespace Microsoft.EntityFrameworkCore.Migrations
     {
         private static readonly Regex _typeRe = new Regex(@"([a-z0-9]+)\s*?(?:\(\s*(\d+)?\s*\))?", RegexOptions.IgnoreCase);
         private readonly IMySqlOptions _options;
+        private readonly IMigrationsAnnotationProvider _migrationsAnnotationProvider;
 
         public MySqlMigrationsSqlGenerator(
             [NotNull] MigrationsSqlGeneratorDependencies dependencies,
-            [NotNull] IMySqlOptions options)
+            [NotNull] IMySqlOptions options,
+            [NotNull] IMigrationsAnnotationProvider migrationsAnnotationProvider)
             : base(dependencies)
         {
             _options = options;
+            _migrationsAnnotationProvider = migrationsAnnotationProvider;
         }
 
         protected override void Generate([NotNull] MigrationOperation operation, [CanBeNull] IModel model, [NotNull] MigrationCommandListBuilder builder)
@@ -105,8 +109,8 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             {
                 var property = FindProperty(model, operation.Schema, operation.Table, operation.Name);
                 newColumnType = property != null
-                    ? Dependencies.TypeMapper.GetMapping(property).StoreType
-                    : Dependencies.TypeMapper.GetMapping(operation.ClrType).StoreType;
+                    ? Dependencies.TypeMappingSource.GetMapping(property).StoreType
+                    : Dependencies.TypeMappingSource.GetMapping(operation.ClrType).StoreType;
             }
             var oldColumnType = operation.OldColumn?.ColumnType;
 
@@ -142,7 +146,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
                 if (hasDefaultValue)
                 {
-                    var typeMapping = Dependencies.TypeMapper.GetMapping(operation.DefaultValue.GetType());
+                    var typeMapping = Dependencies.TypeMappingSource.GetMapping(operation.DefaultValue.GetType());
                     builder.Append(defaultBase)
                         .Append(" SET DEFAULT ")
                         .Append(typeMapping.GenerateSqlLiteral(operation.DefaultValue))
@@ -172,7 +176,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             if (operation.NewName != null)
             {
-                if (_options.ConnectionSettings.ServerVersion.SupportsRenameIndex)
+                if (_options.ServerVersion.SupportsRenameIndex)
                 {
                     builder.Append("ALTER TABLE ")
                         .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
@@ -186,35 +190,34 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 }
                 else
                 {
-                    var createTableSyntax = _options.GetCreateTable(Dependencies.SqlGenerationHelper, operation.Table, operation.Schema);
+                    var index = FindEntityTypes(model, operation.Schema, operation.Table)?.SelectMany(e => e.GetDeclaredIndexes())
+                        .FirstOrDefault(i => i.Relational().Name == operation.NewName);
+                    if (index == null)
+                    {
+                        throw new InvalidOperationException(
+                            $"Could not find the model index: {Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}.{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName)}. Upgrade to Mysql 5.7+ or split the 'RenameIndex' call into 'DropIndex' and 'CreateIndex'");
+                    }
 
-                    if (createTableSyntax == null)
-                        throw new InvalidOperationException($"Could not find SHOW CREATE TABLE syntax for table: '{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}'");
+                    Generate(new DropIndexOperation
+                    {
+                        Schema = operation.Schema,
+                        Table = operation.Table,
+                        Name = operation.Name
+                    }, model, builder);
 
-                    var indexDefinitionRe = new Regex($"^\\s*((?:UNIQUE\\s)?KEY\\s)`?{operation.Name}`?(.*)$", RegexOptions.Multiline);
-                    var match = indexDefinitionRe.Match(createTableSyntax);
+                    var createIndexOperation = new CreateIndexOperation
+                    {
+                        Schema = operation.Schema,
+                        Table = operation.Table,
+                        Name = operation.NewName,
+                        Columns = index.Properties.Select(p => p.Relational().ColumnName).ToArray(),
+                        IsUnique = index.IsUnique,
+                        Filter = index.Relational().Filter
+                    };
+                    createIndexOperation.AddAnnotations(_migrationsAnnotationProvider.For(index));
+                    createIndexOperation.AddAnnotations(operation.GetAnnotations());
 
-                    string newIndexDefinition;
-                    if (match.Success)
-                        newIndexDefinition = match.Groups[1].Value + Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName) + " " + match.Groups[2].Value.Trim().TrimEnd(',');
-                    else
-                        throw new InvalidOperationException($"Could not find column definition for table: '{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}' column: {operation.Name}");
-
-                    builder
-                        .Append("ALTER TABLE ")
-                        .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
-                        .Append(" DROP INDEX ")
-                        .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
-                        .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
-                    EndStatement(builder);
-
-                    builder
-                        .Append("ALTER TABLE ")
-                        .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
-                        .Append(" ADD ")
-                        .Append(newIndexDefinition)
-                        .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
-                    EndStatement(builder);
+                    Generate(createIndexOperation, model, builder);
                 }
             }
         }
@@ -230,7 +233,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(builder, nameof(builder));
 
             builder
-                .Append("ALTER TABLE")
+                .Append("ALTER TABLE ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name, operation.Schema))
                 .Append(" RENAME ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName, operation.NewSchema));
@@ -238,7 +241,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             EndStatement(builder);
         }
 
-        protected override void Generate([NotNull] CreateIndexOperation operation, [CanBeNull] IModel model, [NotNull] MigrationCommandListBuilder builder, bool terminate)
+        protected override void Generate(CreateIndexOperation operation, IModel model, MigrationCommandListBuilder builder, bool terminate)
         {
             var method = (string)operation[MySqlAnnotationNames.Prefix];
             var isFullText = !string.IsNullOrEmpty((string)operation[MySqlAnnotationNames.FullTextIndex]);
@@ -261,7 +264,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             builder
                 .Append("INDEX ")
-                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name.LimitLength(64)))
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
                 .Append(" ON ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema));
 
@@ -284,10 +287,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             }
         }
 
-        protected override void Generate(
-            [NotNull] CreateIndexOperation operation,
-            [CanBeNull] IModel model,
-            [NotNull] MigrationCommandListBuilder builder)
+        protected override void Generate(CreateIndexOperation operation, IModel model, MigrationCommandListBuilder builder)
         {
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
@@ -345,75 +345,108 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 .Append(" DROP INDEX ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
                 .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
-
             EndStatement(builder);
         }
 
         protected override void Generate(
-            [NotNull] RenameColumnOperation operation,
-            [CanBeNull] IModel model,
-            [NotNull] MigrationCommandListBuilder builder)
+            RenameColumnOperation operation,
+            IModel model,
+            MigrationCommandListBuilder builder)
         {
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
-
-            var createTableSyntax = _options.GetCreateTable(Dependencies.SqlGenerationHelper, operation.Table, operation.Schema);
-
-            if (createTableSyntax == null)
-            {
-                throw new InvalidOperationException($"Could not find SHOW CREATE TABLE syntax for table: '{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}'");
-            }
-
-            var columnDefinitionRe = new Regex($"^\\s*`?{operation.Name}`?\\s(.*)?$", RegexOptions.Multiline);
-            var match = columnDefinitionRe.Match(createTableSyntax);
-
-            string columnDefinition;
-            if (match.Success)
-            {
-                columnDefinition = match.Groups[1].Value.Trim().TrimEnd(',');
-            }
-            else
-            {
-                throw new InvalidOperationException($"Could not find column definition for table: '{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}' column: {operation.Name}");
-            }
 
             builder.Append("ALTER TABLE ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
                 .Append(" CHANGE ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
-                .Append(" ")
-                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName))
-                .Append(" ")
-                .Append(columnDefinition);
+                .Append(" ");
+
+            var property = FindProperty(model, operation.Schema, operation.Table, operation.NewName);
+            if (property == null)
+            {
+                var type = operation[RelationalAnnotationNames.ColumnType];
+                if (type == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Could not find the property corresponding to the column: {Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}.{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName)}. Specify the column type explicitly on 'RenameColumn' using the \"{RelationalAnnotationNames.ColumnType}\" annotation");
+                }
+
+                builder
+                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName))
+                    .Append(" ")
+                    .Append(type);
+
+                EndStatement(builder);
+                return;
+            }
+
+            var typeMapping = Dependencies.TypeMappingSource.GetMapping(property);
+            var converter = typeMapping.Converter;
+            var clrType = (converter?.ProviderClrType ?? typeMapping.ClrType).UnwrapNullableType();
+            var columnType = (string)(operation[RelationalAnnotationNames.ColumnType]
+                                      ?? property[RelationalAnnotationNames.ColumnType]);
+            var annotations = property.Relational();
+            var isNullable = property.IsColumnNullable();
+
+            var defaultValue = annotations.DefaultValue;
+            defaultValue = converter != null
+                ? converter.ConvertToProvider(defaultValue)
+                : defaultValue;
+            defaultValue = (defaultValue == DBNull.Value ? null : defaultValue)
+                           ?? (isNullable
+                               ? null
+                               : clrType == typeof(string)
+                                   ? string.Empty
+                                   : clrType.IsArray
+                                       ? Array.CreateInstance(clrType.GetElementType(), 0)
+                                       : clrType.GetDefaultValue());
+
+            var isRowVersion = property.ClrType == typeof(byte[])
+                               && property.IsConcurrencyToken
+                               && property.ValueGenerated == ValueGenerated.OnAddOrUpdate;
+            ColumnDefinition(
+                operation.Schema,
+                operation.Table,
+                operation.NewName,
+                clrType,
+                columnType,
+                property.IsUnicode(),
+                property.GetMaxLength(),
+                annotations.IsFixedLength,
+                isRowVersion,
+                isNullable,
+                defaultValue,
+                annotations.DefaultValueSql,
+                annotations.ComputedColumnSql,
+                operation,
+                model,
+                builder);
 
             EndStatement(builder);
         }
 
         protected override void ColumnDefinition(
-            [CanBeNull] string schema,
-            [NotNull] string table,
-            [NotNull] string name,
-            [NotNull] Type clrType,
-            [CanBeNull] string type,
-            [CanBeNull] bool? unicode,
-            [CanBeNull] int? maxLength,
+            string schema,
+            string table,
+            string name,
+            Type clrType,
+            string type,
+            bool? unicode,
+            int? maxLength,
+            bool? fixedLength,
             bool rowVersion,
             bool nullable,
-            [CanBeNull] object defaultValue,
-            [CanBeNull] string defaultValueSql,
-            [CanBeNull] string computedColumnSql,
-            [NotNull] IAnnotatable annotatable,
-            [CanBeNull] IModel model,
-            [NotNull] MigrationCommandListBuilder builder)
+            object defaultValue,
+            string defaultValueSql,
+            string computedColumnSql,
+            IAnnotatable annotatable,
+            IModel model,
+            MigrationCommandListBuilder builder)
         {
-            Check.NotEmpty(name, nameof(name));
-            Check.NotNull(annotatable, nameof(annotatable));
-            Check.NotNull(clrType, nameof(clrType));
-            Check.NotNull(builder, nameof(builder));
-
             if (type == null)
             {
-                type = GetColumnType(schema, table, name, clrType, unicode, maxLength, rowVersion, model);
+                type = GetColumnType(schema, table, name, clrType, unicode, maxLength, fixedLength, rowVersion, model);
             }
 
             var property = FindProperty(model, schema, table, name);
@@ -466,7 +499,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                         autoIncrement = true;
                         break;
                     case "datetime":
-                        if (!_options.ConnectionSettings.ServerVersion.SupportsDateTime6)
+                        if (!_options.ServerVersion.SupportsDateTime6)
                             throw new InvalidOperationException(
                                 $"Error in {table}.{name}: DATETIME does not support values generated " +
                                 "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");
@@ -483,7 +516,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 switch (matchType)
                 {
                     case "datetime":
-                        if (!_options.ConnectionSettings.ServerVersion.SupportsDateTime6)
+                        if (!_options.ServerVersion.SupportsDateTime6)
                         {
                             throw new InvalidOperationException($"Error in {table}.{name}: DATETIME does not support values generated " +
                                 "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");
@@ -525,7 +558,8 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 }
                 else if (defaultValue != null)
                 {
-                    var defaultValueLiteral = Dependencies.TypeMapper.GetMapping(clrType);
+                    var defaultValueLiteral = Dependencies.TypeMappingSource.GetMappingForValue(defaultValue);
+
                     builder
                         .Append(" DEFAULT ")
                         .Append(defaultValueLiteral.GenerateSqlLiteral(defaultValue));
@@ -535,6 +569,12 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     builder
                         .Append(" ON UPDATE ")
                         .Append(onUpdateSql);
+                }
+                if (computedColumnSql != null)
+                {
+                    builder
+                        .Append(" AS ")
+                        .Append(computedColumnSql);
                 }
             }
 
@@ -552,7 +592,8 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             }
             else if (defaultValue != null)
             {
-                var typeMapping = Dependencies.TypeMapper.GetMapping(defaultValue.GetType());
+                var typeMapping = Dependencies.TypeMappingSource.GetMappingForValue(defaultValue);
+
                 builder
                     .Append(" DEFAULT ")
                     .Append(typeMapping.GenerateSqlLiteral(defaultValue));
@@ -628,7 +669,7 @@ BEGIN
 		EXECUTE SQL_EXP_EXECUTE;
 		DEALLOCATE PREPARE SQL_EXP_EXECUTE;
 	END IF;
-END;");
+END;".Replace("\r", string.Empty).Replace("\n", Environment.NewLine));
                 builder.AppendLine();
 
                 if (operation.Schema == null)
@@ -688,7 +729,7 @@ BEGIN
 		EXECUTE SQL_EXP_EXECUTE;
 		DEALLOCATE PREPARE SQL_EXP_EXECUTE;
 	END IF;
-END;");
+END;".Replace("\r", string.Empty).Replace("\n", Environment.NewLine));
             builder.AppendLine();
 
             if (string.IsNullOrWhiteSpace(operation.Schema))
@@ -812,23 +853,5 @@ END;");
         }
 
         protected override string ColumnList(string[] columns) => string.Join(", ", columns.Select(Dependencies.SqlGenerationHelper.DelimitIdentifier));
-    }
-
-    public static class StringExtensions
-    {
-        /// <summary>
-        /// Method that limits the length of text to a defined length.
-        /// </summary>
-        /// <param name="source">The source text.</param>
-        /// <param name="maxLength">The maximum limit of the string to return.</param>
-        public static string LimitLength(this string source, int maxLength)
-        {
-            if (source.Length <= maxLength)
-            {
-                return source;
-            }
-
-            return source.Substring(0, maxLength);
-        }
     }
 }

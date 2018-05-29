@@ -3,9 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using EFCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Storage;
 
+// ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Infrastructure
 {
     public class MySqlDbContextOptionsBuilder : RelationalDbContextOptionsBuilder<MySqlDbContextOptionsBuilder, MySqlOptionsExtension>
@@ -14,6 +18,19 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
             : base(optionsBuilder)
         {
         }
+
+        /// <summary>
+        ///     Configures the target server version and type.
+        /// </summary>
+        public virtual MySqlDbContextOptionsBuilder ServerVersion(Version version, ServerType type)
+        => WithOption(e => e.WithServerVersion(new ServerVersion(version, type)));
+
+        /// <summary>
+        ///     Configures the target server version and type.
+        /// </summary>
+        public virtual MySqlDbContextOptionsBuilder ServerVersion(string serverVersion)
+            => WithOption(e => e.WithServerVersion(new ServerVersion(serverVersion)));
+
         /// <summary>
         ///     Configures the context to use the default retrying <see cref="IExecutionStrategy" />.
         /// </summary>

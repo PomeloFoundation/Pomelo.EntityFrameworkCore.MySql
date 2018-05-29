@@ -2,17 +2,17 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
-using System.Data;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Transactions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using MySql.Data.MySqlClient;
 
-namespace EFCore.MySql.Storage.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     public class MySqlRelationalConnection : RelationalConnection, IMySqlRelationalConnection
     {
@@ -38,85 +38,50 @@ namespace EFCore.MySql.Storage.Internal
             return new MySqlRelationalConnection(Dependencies.With(contextOptions));
         }
 
+        protected override bool SupportsAmbientTransactions => false;
         public override bool IsMultipleActiveResultSetsEnabled => false;
 
-        [NotNull]
         public override async Task<IDbContextTransaction> BeginTransactionAsync(
-            IsolationLevel isolationLevel,
+            System.Data.IsolationLevel isolationLevel,
             CancellationToken cancellationToken = default(CancellationToken))
         {
+            await OpenAsync(cancellationToken).ConfigureAwait(false);
+
             if (CurrentTransaction != null)
             {
                 throw new InvalidOperationException(RelationalStrings.TransactionAlreadyStarted);
             }
 
-            await OpenAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            if (Transaction.Current != null)
+            {
+                throw new InvalidOperationException(RelationalStrings.ConflictingAmbientTransaction);
+            }
+
+            if (EnlistedTransaction != null)
+            {
+                throw new InvalidOperationException(RelationalStrings.ConflictingEnlistedTransaction);
+            }
 
             return await BeginTransactionWithNoPreconditionsAsync(isolationLevel, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task<IDbContextTransaction> BeginTransactionWithNoPreconditionsAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken))
+        private async Task<IDbContextTransaction> BeginTransactionWithNoPreconditionsAsync(
+            System.Data.IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken))
         {
-            DbTransaction dbTransaction = null;
-            if (DbConnection is MySqlConnection mySqlConnection)
-            {
-                dbTransaction = await mySqlConnection.BeginTransactionAsync(isolationLevel).ConfigureAwait(false);
-            }
-            else
-            {
-                dbTransaction = DbConnection.BeginTransaction(isolationLevel);
-            }
+            var dbTransaction = await ((MySqlConnection)DbConnection).BeginTransactionAsync(isolationLevel, cancellationToken)
+                .ConfigureAwait(false);
 
-            CurrentTransaction
-                = new MySqlRelationalTransaction(
-                    this,
-                    dbTransaction,
-                    Dependencies.TransactionLogger,
-                    transactionOwned: true);
+            CurrentTransaction = Dependencies.RelationalTransactionFactory.Create(
+                this,
+                dbTransaction,
+                Dependencies.TransactionLogger,
+                transactionOwned: true);
 
             Dependencies.TransactionLogger.TransactionStarted(
                 this,
                 dbTransaction,
                 CurrentTransaction.TransactionId,
                 DateTimeOffset.UtcNow);
-
-            return CurrentTransaction;
-        }
-
-        /// <summary>
-        ///     Specifies an existing <see cref="DbTransaction" /> to be used for database operations.
-        /// </summary>
-        /// <param name="transaction"> The transaction to be used. </param>
-        public override IDbContextTransaction UseTransaction(DbTransaction transaction)
-        {
-            if (transaction == null)
-            {
-                if (CurrentTransaction != null)
-                {
-                    CurrentTransaction = null;
-                }
-            }
-            else
-            {
-                if (CurrentTransaction != null)
-                {
-                    throw new InvalidOperationException(RelationalStrings.TransactionAlreadyStarted);
-                }
-
-                Open();
-
-                CurrentTransaction = new MySqlRelationalTransaction(
-                    this,
-                    transaction,
-                    Dependencies.TransactionLogger,
-                    transactionOwned: false);
-
-                Dependencies.TransactionLogger.TransactionUsed(
-                    this,
-                    transaction,
-                    CurrentTransaction.TransactionId,
-                    DateTimeOffset.UtcNow);
-            }
 
             return CurrentTransaction;
         }
@@ -128,7 +93,7 @@ namespace EFCore.MySql.Storage.Internal
                 throw new InvalidOperationException(RelationalStrings.NoActiveTransaction);
             }
 
-            await (CurrentTransaction as MySqlRelationalTransaction).CommitAsync().ConfigureAwait(false);
+            await ((MySqlRelationalTransaction)CurrentTransaction).CommitAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public virtual async Task RollbackTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))
@@ -138,7 +103,7 @@ namespace EFCore.MySql.Storage.Internal
                 throw new InvalidOperationException(RelationalStrings.NoActiveTransaction);
             }
 
-            await (CurrentTransaction as MySqlRelationalTransaction).RollbackAsync().ConfigureAwait(false);
+            await ((MySqlRelationalTransaction)CurrentTransaction).RollbackAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 }

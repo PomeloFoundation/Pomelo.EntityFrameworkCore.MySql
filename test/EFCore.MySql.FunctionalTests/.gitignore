@@ -1,5 +1,2 @@
 ﻿/config.json
-/Migrations/*.cs
-/scripts/vegeta/results.bin
 /.vscode
-/Scaffold

@@ -1,14 +1,14 @@
 // Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
-using EFCore.MySql.Infrastructure.Internal;
-using EFCore.MySql.Internal;
-using EFCore.MySql.Migrations.Internal;
-using EFCore.MySql.Query.ExpressionTranslators.Internal;
-using EFCore.MySql.Query.Sql.Internal;
-using EFCore.MySql.Storage.Internal;
-using EFCore.MySql.Update.Internal;
-using EFCore.MySql.ValueGeneration.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Migrations.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Update.Internal;
+using Pomelo.EntityFrameworkCore.MySql.ValueGeneration.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
@@ -32,7 +32,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var builder = new EntityFrameworkRelationalServicesBuilder(serviceCollection)
                 .TryAdd<IDatabaseProvider, DatabaseProvider<MySqlOptionsExtension>>()
-                .TryAdd<IRelationalTypeMapper, MySqlSmartTypeMapper>()
+                .TryAdd<IRelationalTypeMappingSource, MySqlTypeMappingSource>()
+                .TryAdd<IRelationalTransactionFactory, MySqlRelationalTransactionFactory>()
                 .TryAdd<ISqlGenerationHelper, MySqlSqlGenerationHelper>()
                 .TryAdd<IMigrationsAnnotationProvider, MySqlMigrationsAnnotationProvider>()
                 .TryAdd<IConventionSetBuilder, MySqlConventionSetBuilder>()
@@ -40,9 +41,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<IModificationCommandBatchFactory, MySqlModificationCommandBatchFactory>()
                 .TryAdd<IValueGeneratorSelector, MySqlValueGeneratorSelector>()
                 .TryAdd<IRelationalConnection>(p => p.GetService<IMySqlRelationalConnection>())
-                .TryAdd<IRelationalCommandBuilderFactory, MySqlCommandBuilderFactory>()
                 .TryAdd<IMigrationsSqlGenerator, MySqlMigrationsSqlGenerator>()
-                .TryAdd<IBatchExecutor, MySqlBatchExecutor>()
                 .TryAdd<IRelationalDatabaseCreator, MySqlDatabaseCreator>()
                 .TryAdd<IHistoryRepository, MySqlHistoryRepository>()
                 .TryAdd<IExecutionStrategyFactory, MySqlExecutionStrategyFactory>()

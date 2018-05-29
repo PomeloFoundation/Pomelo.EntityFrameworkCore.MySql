@@ -5,7 +5,7 @@ using System;
 using JetBrains.Annotations;
 using MySql.Data.MySqlClient;
 
-namespace EFCore.MySql.Storage.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     /// <summary>
     ///     Detects the exceptions caused by SQL Server transient failures.

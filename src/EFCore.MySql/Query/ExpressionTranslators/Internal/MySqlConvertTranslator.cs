@@ -9,7 +9,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore.Query.Expressions;
 using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators;
 
-namespace EFCore.MySql.Query.ExpressionTranslators.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -60,9 +60,9 @@ namespace EFCore.MySql.Query.ExpressionTranslators.Internal
                    methodCallExpression.Type,
                    new[]
                    {
+                        methodCallExpression.Arguments[0],
                         new SqlFragmentExpression(
-                            _typeMapping[methodCallExpression.Method.Name]),
-                        methodCallExpression.Arguments[0]
+                            _typeMapping[methodCallExpression.Method.Name])
                    })
                : null);
     }
