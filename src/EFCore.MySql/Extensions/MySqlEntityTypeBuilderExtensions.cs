@@ -2,6 +2,9 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 // ReSharper disable once CheckNamespace
+
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
 namespace Microsoft.EntityFrameworkCore
 {
     /// <summary>

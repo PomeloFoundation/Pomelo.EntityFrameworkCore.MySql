@@ -6,7 +6,7 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
 
-namespace EFCore.MySql.Storage.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     public class MySqlSqlGenerationHelper : RelationalSqlGenerationHelper
     {

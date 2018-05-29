@@ -3,11 +3,11 @@
 
 using System;
 using System.Linq.Expressions;
-using EFCore.MySql.Query.Expressions.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Microsoft.EntityFrameworkCore.Query.Expressions;
 using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators;
 
-namespace EFCore.MySql.Query.ExpressionTranslators.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used

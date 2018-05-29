@@ -2,14 +2,14 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System.Collections.Generic;
-using EFCore.MySql.Metadata.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace EFCore.MySql.Migrations.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used

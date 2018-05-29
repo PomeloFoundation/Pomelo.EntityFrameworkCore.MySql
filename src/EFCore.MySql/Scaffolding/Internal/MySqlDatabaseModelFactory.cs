@@ -14,7 +14,7 @@ using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 
-namespace EFCore.MySql.Scaffolding.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
 {
     public class MySqlDatabaseModelFactory : IDatabaseModelFactory
     {

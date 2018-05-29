@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
 
-namespace EFCore.MySql.Metadata.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
 {
     public class MySqlEntityTypeBuilderAnnotations : MySqlEntityTypeAnnotations
     {

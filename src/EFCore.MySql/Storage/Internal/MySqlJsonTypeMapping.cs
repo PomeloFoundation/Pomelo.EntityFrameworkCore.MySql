@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.EntityFrameworkCore.Utilities;
 
-namespace EFCore.MySql.Storage.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     /// <summary>
     ///     <para>

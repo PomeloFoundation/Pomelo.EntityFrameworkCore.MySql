@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 
-namespace EFCore.MySql.Scaffolding.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
 {
     public class MySqlCodeGenerator : ProviderCodeGenerator
     {

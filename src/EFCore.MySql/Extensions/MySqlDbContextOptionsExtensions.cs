@@ -4,7 +4,7 @@
 using System;
 using System.Data;
 using System.Data.Common;
-using EFCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;

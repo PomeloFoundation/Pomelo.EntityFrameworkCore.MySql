@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <RestoreAdditionalProjectSources>
+      https://dotnetfeed.blob.core.windows.net/orchestrated-release-2-1/20180515-07/final/index.json
+    </RestoreAdditionalProjectSources>
+    <LangVersion>7.2</LangVersion>
+    <AssemblyName>Pomelo.EntityFrameworkCore.MySql.IntegrationTests</AssemblyName>
+    <StartupObject>Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Program</StartupObject>
+    <OutputType>Exe</OutputType>
+    <PackageId>Pomelo.EntityFrameworkCore.MySql.IntegrationTests</PackageId>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
+    <ThreadPoolMinThreads>64</ThreadPoolMinThreads>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="$(MicrosoftAspNetCoreAllVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\EFCore.MySql\EFCore.MySql.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="config.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

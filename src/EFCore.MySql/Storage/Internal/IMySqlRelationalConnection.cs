@@ -3,7 +3,7 @@
 
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace EFCore.MySql.Storage.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used

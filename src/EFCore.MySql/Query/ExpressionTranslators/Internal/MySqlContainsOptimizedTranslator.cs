@@ -1,4 +1,4 @@
-﻿/// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System.Linq.Expressions;
@@ -6,7 +6,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore.Query.Expressions;
 using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators;
 
-namespace EFCore.MySql.Query.ExpressionTranslators.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used

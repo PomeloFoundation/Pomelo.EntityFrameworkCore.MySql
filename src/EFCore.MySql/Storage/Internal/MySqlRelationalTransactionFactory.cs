@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace EFCore.MySql.Storage.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     public class MySqlRelationalTransactionFactory : RelationalTransactionFactory
     {

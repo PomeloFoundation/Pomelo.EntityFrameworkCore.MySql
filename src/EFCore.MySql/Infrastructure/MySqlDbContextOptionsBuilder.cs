@@ -3,10 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using EFCore.MySql.Infrastructure;
-using EFCore.MySql.Infrastructure.Internal;
-using EFCore.MySql.Storage.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Storage;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Infrastructure

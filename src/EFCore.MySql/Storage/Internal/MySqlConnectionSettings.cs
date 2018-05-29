@@ -4,7 +4,7 @@
 using System.Data.Common;
 using MySql.Data.MySqlClient;
 
-namespace EFCore.MySql.Storage.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     public class MySqlConnectionSettings
     {

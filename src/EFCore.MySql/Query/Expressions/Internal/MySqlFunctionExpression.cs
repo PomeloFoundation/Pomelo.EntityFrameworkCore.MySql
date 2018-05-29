@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
-using EFCore.MySql.Query.Sql.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Utilities;
 
-namespace EFCore.MySql.Query.Expressions.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 {
     public class MySqlFunctionExpression : Expression
     {

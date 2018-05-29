@@ -4,8 +4,8 @@
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-using EFCore.MySql.Infrastructure.Internal;
-using EFCore.MySql.Metadata.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;

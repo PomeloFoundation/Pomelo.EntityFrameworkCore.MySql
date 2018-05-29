@@ -4,12 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using EFCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace EFCore.MySql.Storage.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     public class MySqlTypeMappingSource : RelationalTypeMappingSource
     {

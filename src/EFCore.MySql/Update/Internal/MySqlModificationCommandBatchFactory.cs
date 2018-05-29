@@ -2,14 +2,14 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System.Linq;
-using EFCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.EntityFrameworkCore.Utilities;
 
-namespace EFCore.MySql.Update.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
 {
     public class MySqlModificationCommandBatchFactory : IModificationCommandBatchFactory
     {

@@ -1,14 +1,14 @@
 // Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
-using EFCore.MySql.Metadata.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
-namespace EFCore.MySql.Metadata.Conventions.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used

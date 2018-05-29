@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using MySql.Data.MySqlClient;
 
-namespace EFCore.MySql.Storage.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     public class MySqlRelationalConnection : RelationalConnection, IMySqlRelationalConnection
     {
