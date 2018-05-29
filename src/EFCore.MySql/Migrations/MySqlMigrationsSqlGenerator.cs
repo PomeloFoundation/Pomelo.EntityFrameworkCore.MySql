@@ -64,42 +64,24 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             EndStatement(builder);
         }
 
-        protected override void Generate(AlterColumnOperation operation, IModel model, MigrationCommandListBuilder builder)
+        private bool columnSupportsDefault(string columnType)
         {
-            Check.NotNull(operation, nameof(operation));
-            Check.NotNull(builder, nameof(builder));
+            if (string.IsNullOrWhiteSpace(columnType))
+                return false;
 
-            var type = operation.ColumnType;
-            if (operation.ColumnType == null)
+            switch (columnType.ToLower())
             {
-                var property = FindProperty(model, operation.Schema, operation.Table, operation.Name);
-                type = property != null
-                    ? Dependencies.TypeMappingSource.GetMapping(property).StoreType
-                    : Dependencies.TypeMappingSource.GetMapping(operation.ClrType).StoreType;
-            }
-
-            var identifier = Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema);
-            var alterBase = $"ALTER TABLE {identifier} MODIFY COLUMN {Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name)}";
-
-            // TYPE
-            builder.Append(alterBase)
-                .Append(" ")
-                .Append(type)
-                .Append(operation.IsNullable ? " NULL" : " NOT NULL")
-                .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
-
-            switch (type)
-            {
+                // blob
                 case "tinyblob":
                 case "blob":
                 case "mediumblob":
                 case "longblob":
-
+                // text
                 case "tinytext":
                 case "text":
                 case "mediumtext":
                 case "longtext":
-
+                // geometry
                 case "geometry":
                 case "point":
                 case "linestring":
@@ -108,36 +90,75 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 case "multilinestring":
                 case "multipolygon":
                 case "geometrycollection":
-
+                // json
                 case "json":
-                    if (operation.DefaultValue != null || !string.IsNullOrWhiteSpace(operation.DefaultValueSql))
-                    {
-                        throw new NotSupportedException($"{type} column can't have a default value");
-                    }
-                    break;
+                    return false;
+
                 default:
-                    alterBase = $"ALTER TABLE {identifier} ALTER COLUMN {Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name)}";
+                    return true;
+            }
+        }
 
-                    builder.Append(alterBase);
+        protected override void Generate(AlterColumnOperation operation, IModel model, MigrationCommandListBuilder builder)
+        {
+            Check.NotNull(operation, nameof(operation));
+            Check.NotNull(builder, nameof(builder));
 
-                    if (operation.DefaultValue != null)
-                    {
-                        var typeMapping = Dependencies.TypeMappingSource.GetMappingForValue(operation.DefaultValue);
-                        builder.Append(" SET DEFAULT ")
-                            .Append(typeMapping.GenerateSqlLiteral(operation.DefaultValue))
-                            .AppendLine(Dependencies.SqlGenerationHelper.BatchTerminator);
-                    }
-                    else if (!string.IsNullOrWhiteSpace(operation.DefaultValueSql))
-                    {
-                        builder.Append(" SET DEFAULT ")
-                            .Append(operation.DefaultValueSql)
-                            .AppendLine(Dependencies.SqlGenerationHelper.BatchTerminator);
-                    }
-                    else
-                    {
-                        builder.Append(" DROP DEFAULT;");
-                    }
-                    break;
+            var newColumnType = operation.ColumnType;
+            if (newColumnType == null)
+            {
+                var property = FindProperty(model, operation.Schema, operation.Table, operation.Name);
+                newColumnType = property != null
+                    ? Dependencies.TypeMappingSource.GetMapping(property).StoreType
+                    : Dependencies.TypeMappingSource.GetMapping(operation.ClrType).StoreType;
+            }
+            var oldColumnType = operation.OldColumn?.ColumnType;
+
+            var identifier = Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema);
+
+            // default value
+            var defaultBase = $"ALTER TABLE {identifier} ALTER COLUMN {Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name)}";
+            var hasDefaultValue = operation.DefaultValue != null;
+            var hasDefaultSql = !string.IsNullOrWhiteSpace(operation.DefaultValueSql);
+            var hasDefault = hasDefaultValue || hasDefaultSql;
+
+            // drop old default value if supported
+            if (columnSupportsDefault(oldColumnType))
+            {
+                builder.Append(defaultBase)
+                    .Append(" DROP DEFAULT")
+                    .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
+            }
+
+            // alter the column
+            var alterBase = $"ALTER TABLE {identifier} MODIFY COLUMN {Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name)}";
+            builder.Append(alterBase)
+                .Append(" ")
+                .Append(newColumnType)
+                .Append(operation.IsNullable ? " NULL" : " NOT NULL")
+                .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
+
+            // set default value after altering column if new column definition has a default value
+            if (hasDefault)
+            {
+                if (!columnSupportsDefault(newColumnType))
+                    throw new NotSupportedException($"{newColumnType} column can't have a default value");
+
+                if (hasDefaultValue)
+                {
+                    var typeMapping = Dependencies.TypeMappingSource.GetMapping(operation.DefaultValue.GetType());
+                    builder.Append(defaultBase)
+                        .Append(" SET DEFAULT ")
+                        .Append(typeMapping.GenerateSqlLiteral(operation.DefaultValue))
+                        .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
+                }
+                else if (hasDefaultSql)
+                {
+                    builder.Append(defaultBase)
+                        .Append(" SET DEFAULT ")
+                        .Append(operation.DefaultValueSql)
+                        .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
+                }
             }
 
             EndStatement(builder);

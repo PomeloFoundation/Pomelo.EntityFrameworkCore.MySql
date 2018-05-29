@@ -362,46 +362,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        public override void AlterColumnOperation()
-        {
-            base.AlterColumnOperation();
-
-            Assert.Equal(
-                @"ALTER TABLE `dbo`.`People` MODIFY COLUMN `LuckyNumber` int NOT NULL;" + EOL +
-                @"ALTER TABLE `dbo`.`People` ALTER COLUMN `LuckyNumber` SET DEFAULT 7" + EOL,
-                Sql, false, true, true);
-        }
-
-
-        public override void AlterColumnOperation_without_column_type()
-        {
-            base.AlterColumnOperation_without_column_type();
-
-            Assert.Equal(
-                @"ALTER TABLE `People` MODIFY COLUMN `LuckyNumber` int NOT NULL;" + EOL +
-                @"ALTER TABLE `People` ALTER COLUMN `LuckyNumber` DROP DEFAULT;",
-                Sql);
-        }
-
-        [Fact]
-        public virtual void AlterColumnOperation_dbgenerated_uuid()
-        {
-            Generate(
-                new AlterColumnOperation
-                {
-                    Table = "People",
-                    Name = "GuidKey",
-                    ClrType = typeof(int),
-                    ColumnType = "char(38)",
-                    IsNullable = false,
-                    [MySqlAnnotationNames.ValueGenerationStrategy] = MySqlValueGenerationStrategy.IdentityColumn
-                });
-
-            Assert.Equal(
-                @"ALTER TABLE `People` MODIFY COLUMN `GuidKey` char(38) NOT NULL;" + EOL +
-                @"ALTER TABLE `People` ALTER COLUMN `GuidKey` DROP DEFAULT;",
-                Sql, false , true, true);
-        }
+     
 
         [Theory]
         [InlineData("tinyblob")]
@@ -424,7 +385,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         [InlineData("geometrycollection")]
 
         [InlineData("json")]
-        public virtual void AlterColumnOperation_with_no_default_value_column_types(string type)
+        public void AlterColumnOperation_with_no_default_value_column_types(string type)
         {
             Generate(
                 new AlterColumnOperation
@@ -433,10 +394,33 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                     Name = "Blob",
                     ClrType = typeof(string),
                     ColumnType = type,
+                    OldColumn = new ColumnOperation
+                    {
+                        ColumnType = type,
+                    },
                     IsNullable = true,
                 });
 
             Assert.Equal(
+                $"ALTER TABLE `People` MODIFY COLUMN `Blob` {type} NULL;" + EOL,
+                Sql);
+
+            Generate(
+                new AlterColumnOperation
+                {
+                    Table = "People",
+                    Name = "Blob",
+                    ClrType = typeof(string),
+                    ColumnType = type,
+                    OldColumn = new ColumnOperation
+                    {
+                        ColumnType = "varchar(127)",
+                    },
+                    IsNullable = true,
+                });
+
+            Assert.Equal(
+                @"ALTER TABLE `People` ALTER COLUMN `Blob` DROP DEFAULT;" + EOL +
                 $"ALTER TABLE `People` MODIFY COLUMN `Blob` {type} NULL;" + EOL,
                 Sql);
         }
