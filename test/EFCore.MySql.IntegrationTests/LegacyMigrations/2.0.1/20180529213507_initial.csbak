@@ -1,6 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
+using System;
+using System.Collections.Generic;
 
 namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
 {
@@ -12,8 +13,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                 name: "AspNetRoles",
                 columns: table => new
                 {
-                    Id = table.Column<string>(nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAdd", true),
+                    Id = table.Column<string>(nullable: false),
                     ConcurrencyStamp = table.Column<string>(nullable: true),
                     Name = table.Column<string>(maxLength: 127, nullable: true),
                     NormalizedName = table.Column<string>(maxLength: 127, nullable: true)
@@ -24,25 +24,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AspNetUserTokens",
-                columns: table => new
-                {
-                    UserId = table.Column<string>(maxLength: 127, nullable: false),
-                    LoginProvider = table.Column<string>(maxLength: 127, nullable: false),
-                    Name = table.Column<string>(maxLength: 127, nullable: false),
-                    Value = table.Column<string>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetUserTokens", x => new { x.UserId, x.LoginProvider, x.Name });
-                });
-
-            migrationBuilder.CreateTable(
                 name: "AspNetUsers",
                 columns: table => new
                 {
-                    Id = table.Column<string>(nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAdd", true),
+                    Id = table.Column<string>(nullable: false),
                     AccessFailedCount = table.Column<int>(nullable: false),
                     ConcurrencyStamp = table.Column<string>(nullable: true),
                     Email = table.Column<string>(maxLength: 127, nullable: true),
@@ -68,7 +53,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAdd", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Title = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
@@ -77,11 +62,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Categories",
+                columns: table => new
+                {
+                    CategoryId = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Categories", x => x.CategoryId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CrmAdmins",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAdd", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Password = table.Column<string>(maxLength: 20, nullable: true),
                     Username = table.Column<string>(maxLength: 10, nullable: true)
                 },
@@ -95,7 +93,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAdd", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
@@ -108,7 +106,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAdd", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
@@ -121,7 +119,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAdd", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     TypeBool = table.Column<bool>(nullable: false),
                     TypeBoolN = table.Column<bool>(nullable: true),
                     TypeByte = table.Column<byte>(nullable: false),
@@ -171,7 +169,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAdd", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     TypeByteArray = table.Column<byte[]>(nullable: false),
                     TypeByteArray255 = table.Column<byte[]>(maxLength: 255, nullable: false),
                     TypeByteArray255N = table.Column<byte[]>(maxLength: 255, nullable: true),
@@ -191,28 +189,38 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "GeneratedConcurrencyToken",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Gen = table.Column<int>(nullable: false),
+                    Updated = table.Column<DateTime>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GeneratedConcurrencyToken", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "GeneratedContacts",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAdd", true),
+                    Id = table.Column<Guid>(nullable: false),
                     Address = table.Column<string>(type: @"VARCHAR(63) GENERATED ALWAYS AS (
 						CONCAT_WS(', ',
 							`ContactInfo` ->> ""$.Address"",
                             `ContactInfo` ->> ""$.City"",
                             `ContactInfo` ->> ""$.State"",
                             `ContactInfo` ->> ""$.Zip""
-						)) STORED", nullable: true)
-                        .Annotation("MySql:ValueGeneratedOnAddOrUpdate", true),
+						)) STORED", nullable: true),
                     ContactInfo = table.Column<JsonObject<Dictionary<string, string>>>(nullable: true),
                     Email = table.Column<string>(type: @"VARCHAR(63) GENERATED ALWAYS AS (
 						`ContactInfo` ->> ""$.Email""
-					) VIRTUAL", nullable: true)
-                        .Annotation("MySql:ValueGeneratedOnAddOrUpdate", true),
+					) VIRTUAL", nullable: true),
                     Name = table.Column<string>(type: @"VARCHAR(63) GENERATED ALWAYS AS (
 						`Names` ->> ""$[0]""
-					) VIRTUAL", nullable: true)
-                        .Annotation("MySql:ValueGeneratedOnAddOrUpdate", true),
+					) VIRTUAL", nullable: true),
                     Names = table.Column<JsonObject<List<string>>>(nullable: true)
                 },
                 constraints: table =>
@@ -225,32 +233,32 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAdd", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     CreatedDateTime = table.Column<DateTime>(type: "DATETIME", nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAdd", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     CreatedDateTime3 = table.Column<DateTime>(type: "DATETIME(3)", nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAdd", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     CreatedDateTime6 = table.Column<DateTime>(nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAdd", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     CreatedTimestamp = table.Column<DateTime>(type: "TIMESTAMP", nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAdd", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     CreatedTimestamp3 = table.Column<DateTime>(type: "TIMESTAMP(3)", nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAdd", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     CreatedTimestamp6 = table.Column<DateTime>(type: "TIMESTAMP(6)", nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAdd", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(nullable: true),
                     UpdatedDateTime = table.Column<DateTime>(type: "DATETIME", nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAddOrUpdate", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.ComputedColumn),
                     UpdatedDateTime3 = table.Column<DateTime>(type: "DATETIME(3)", nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAddOrUpdate", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.ComputedColumn),
                     UpdatedDateTime6 = table.Column<DateTime>(nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAddOrUpdate", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.ComputedColumn),
                     UpdatedTimetamp = table.Column<DateTime>(type: "TIMESTAMP", nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAddOrUpdate", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.ComputedColumn),
                     UpdatedTimetamp3 = table.Column<DateTime>(type: "TIMESTAMP(3)", nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAddOrUpdate", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.ComputedColumn),
                     UpdatedTimetamp6 = table.Column<DateTime>(type: "TIMESTAMP(6)", nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAddOrUpdate", true)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.ComputedColumn)
                 },
                 constraints: table =>
                 {
@@ -262,7 +270,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAdd", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     LastName = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
@@ -271,11 +279,43 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Products",
+                columns: table => new
+                {
+                    ProductId = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(nullable: true),
+                    ParentProductId = table.Column<int>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Products", x => x.ProductId);
+                    table.ForeignKey(
+                        name: "FK_Products_Products_ParentProductId",
+                        column: x => x.ParentProductId,
+                        principalTable: "Products",
+                        principalColumn: "ProductId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Sequence",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Sequence", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAdd", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     ClaimType = table.Column<string>(nullable: true),
                     ClaimValue = table.Column<string>(nullable: true),
                     RoleId = table.Column<string>(nullable: false)
@@ -296,7 +336,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAdd", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     ClaimType = table.Column<string>(nullable: true),
                     ClaimValue = table.Column<string>(nullable: true),
                     UserId = table.Column<string>(nullable: false)
@@ -357,11 +397,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AspNetUserTokens",
+                columns: table => new
+                {
+                    UserId = table.Column<string>(maxLength: 127, nullable: false),
+                    LoginProvider = table.Column<string>(maxLength: 127, nullable: false),
+                    Name = table.Column<string>(maxLength: 127, nullable: false),
+                    Value = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetUserTokens", x => new { x.UserId, x.LoginProvider, x.Name });
+                    table.ForeignKey(
+                        name: "FK_AspNetUserTokens_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "BlogPost",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAdd", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     BlogId = table.Column<int>(nullable: false),
                     Content = table.Column<string>(nullable: true),
                     Title = table.Column<string>(nullable: true)
@@ -430,7 +490,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGeneratedOnAdd", true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Discriminator = table.Column<string>(maxLength: 63, nullable: false),
                     FamilyId = table.Column<int>(nullable: true),
                     Name = table.Column<string>(nullable: true),
@@ -456,16 +516,40 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
-            migrationBuilder.CreateIndex(
-                name: "RoleNameIndex",
-                table: "AspNetRoles",
-                column: "NormalizedName",
-                unique: true);
+            migrationBuilder.CreateTable(
+                name: "ProductCategory",
+                columns: table => new
+                {
+                    ProductId = table.Column<int>(nullable: false),
+                    CategoryId = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductCategory", x => new { x.ProductId, x.CategoryId });
+                    table.ForeignKey(
+                        name: "FK_ProductCategory_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "CategoryId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProductCategory_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "ProductId",
+                        onDelete: ReferentialAction.Cascade);
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
                 column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "RoleNameIndex",
+                table: "AspNetRoles",
+                column: "NormalizedName",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
@@ -532,6 +616,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                 name: "IX_People_TeacherId",
                 table: "People",
                 column: "TeacherId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductCategory_CategoryId",
+                table: "ProductCategory",
+                column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_ParentProductId",
+                table: "Products",
+                column: "ParentProductId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -567,6 +661,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                 name: "DataTypesVariable");
 
             migrationBuilder.DropTable(
+                name: "GeneratedConcurrencyToken");
+
+            migrationBuilder.DropTable(
                 name: "GeneratedContacts");
 
             migrationBuilder.DropTable(
@@ -574,6 +671,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
 
             migrationBuilder.DropTable(
                 name: "People");
+
+            migrationBuilder.DropTable(
+                name: "ProductCategory");
+
+            migrationBuilder.DropTable(
+                name: "Sequence");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
@@ -595,6 +698,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
 
             migrationBuilder.DropTable(
                 name: "PeopleFamilies");
+
+            migrationBuilder.DropTable(
+                name: "Categories");
+
+            migrationBuilder.DropTable(
+                name: "Products");
         }
     }
 }
