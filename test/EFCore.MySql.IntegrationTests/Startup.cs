@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Buffers;
 using System.Data.Common;
-using EFCore.MySql.FunctionalTests.Models;
+using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-namespace EFCore.MySql.FunctionalTests
+namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
 {
     public class Startup
     {

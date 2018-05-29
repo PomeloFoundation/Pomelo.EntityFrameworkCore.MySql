@@ -2,13 +2,13 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System.Text;
-using EFCore.MySql.Storage.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EFCore.MySql.Infrastructure.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
 {
     public sealed class MySqlOptionsExtension : RelationalOptionsExtension
     {

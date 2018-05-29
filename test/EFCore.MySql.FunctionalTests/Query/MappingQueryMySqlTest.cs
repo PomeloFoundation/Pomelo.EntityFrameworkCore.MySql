@@ -1,11 +1,11 @@
 using System;
-using EFCore.MySql.UpstreamFunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Xunit;
 
-namespace EFCore.MySql.UpstreamFunctionalTests.Query
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class MappingQueryMySqlTest : MappingQueryTestBase<MappingQueryMySqlTest.MappingQueryMySqlFixture>
     {

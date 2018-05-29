@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.TestModels.Inheritance;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace EFCore.MySql.UpstreamFunctionalTests.Query
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class InheritanceMySqlTest : InheritanceRelationalTestBase<InheritanceMySqlFixture>
     {

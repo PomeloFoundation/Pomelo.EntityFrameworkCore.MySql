@@ -1,8 +1,8 @@
-using EFCore.MySql.UpstreamFunctionalTests.Query;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 
-namespace EFCore.MySql.UpstreamFunctionalTests
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
     public class ConcurrencyDetectorMySqlTest : ConcurrencyDetectorRelationalTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>
     {

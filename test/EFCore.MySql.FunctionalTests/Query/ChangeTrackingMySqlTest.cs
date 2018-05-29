@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 
-namespace EFCore.MySql.UpstreamFunctionalTests.Query
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class ChangeTrackingMySqlTest : ChangeTrackingTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>
     {

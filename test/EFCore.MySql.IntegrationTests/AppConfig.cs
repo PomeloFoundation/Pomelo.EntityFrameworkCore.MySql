@@ -3,7 +3,7 @@ using System.IO;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 
-namespace EFCore.MySql.FunctionalTests
+namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
 {
     public static class AppConfig
     {

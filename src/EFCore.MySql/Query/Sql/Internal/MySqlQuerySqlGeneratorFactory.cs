@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Query.Expressions;
 using Microsoft.EntityFrameworkCore.Query.Sql;
 using Microsoft.EntityFrameworkCore.Utilities;
 
-namespace EFCore.MySql.Query.Sql.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
 {
     public class MySqlQuerySqlGeneratorFactory : QuerySqlGeneratorFactoryBase
     {

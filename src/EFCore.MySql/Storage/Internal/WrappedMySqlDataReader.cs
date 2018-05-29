@@ -9,7 +9,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EFCore.MySql.Storage.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     /// <summary>
     /// <see cref="WrappedMySqlDataReader"/> wraps <see cref="DbDataReader" /> and enhances <see cref="GetFieldValue{T}"/> to

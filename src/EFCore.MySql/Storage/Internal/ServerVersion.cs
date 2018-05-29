@@ -3,9 +3,9 @@
 
 using System;
 using System.Text.RegularExpressions;
-using EFCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
-namespace EFCore.MySql.Storage.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     public class ServerVersion
     {

@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace EFCore.MySql.FunctionalTests.Commands
+namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands
 {
 
     public interface ITestPerformanceRunner

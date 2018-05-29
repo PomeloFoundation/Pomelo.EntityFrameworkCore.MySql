@@ -1,9 +1,9 @@
 using System;
-using EFCore.MySql.Infrastructure;
-using EFCore.MySql.Storage.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Xunit;
 
-namespace EFCore.MySql.Tests.Migrations
+namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
 {
     public class ServerVersionTest
     {

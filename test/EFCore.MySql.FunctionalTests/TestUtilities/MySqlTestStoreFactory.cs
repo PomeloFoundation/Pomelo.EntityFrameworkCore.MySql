@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace EFCore.MySql.UpstreamFunctionalTests.TestUtilities
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {
     public class MySqlTestStoreFactory : ITestStoreFactory
     {

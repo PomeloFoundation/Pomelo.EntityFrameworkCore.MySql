@@ -3,7 +3,7 @@ using System.Data.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace EFCore.MySql.FunctionalTests
+namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
 {
     public class AppDbScope : IDisposable
     {

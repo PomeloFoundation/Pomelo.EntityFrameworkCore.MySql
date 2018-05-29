@@ -1,4 +1,4 @@
-Upstream Functional Tests
+Functional Tests
 ================================
 
 **Configuring the Database**

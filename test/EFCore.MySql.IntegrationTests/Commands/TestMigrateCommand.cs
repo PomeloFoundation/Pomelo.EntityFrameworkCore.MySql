@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
 using Xunit;
 
-namespace EFCore.MySql.FunctionalTests.Commands{
+namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands{
 
     public class TestMigrateCommand : ITestMigrateCommand {
 

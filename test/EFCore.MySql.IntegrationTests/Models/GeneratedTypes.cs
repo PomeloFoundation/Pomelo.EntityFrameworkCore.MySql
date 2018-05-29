@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace EFCore.MySql.FunctionalTests.Models
+namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models
 {
 	public static class GeneratedContactMeta
 	{

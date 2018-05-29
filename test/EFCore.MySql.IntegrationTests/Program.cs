@@ -1,11 +1,11 @@
 ﻿using System;
-using EFCore.MySql.FunctionalTests.Commands;
+using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace EFCore.MySql.FunctionalTests
+namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
 {
     public class Program
     {

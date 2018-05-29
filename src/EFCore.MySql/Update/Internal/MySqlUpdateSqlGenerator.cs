@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.EntityFrameworkCore.Utilities;
 
-namespace EFCore.MySql.Update.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
 {
     public class MySqlUpdateSqlGenerator : UpdateSqlGenerator, IMySqlUpdateSqlGenerator
     {

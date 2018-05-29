@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 
-namespace EFCore.MySql.UpstreamFunctionalTests.Query
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class IncludeMySqlFixture : NorthwindQueryMySqlFixture<NoopModelCustomizer>
     {

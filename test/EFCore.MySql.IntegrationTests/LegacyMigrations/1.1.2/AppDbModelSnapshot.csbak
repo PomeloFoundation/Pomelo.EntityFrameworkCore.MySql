@@ -6,12 +6,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
-using EFCore.MySql.FunctionalTests;
-using EFCore.MySql.FunctionalTests.Models;
+using Pomelo.EntityFrameworkCore.MySql.IntegrationTests;
+using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models;
 using System;
 using System.Collections.Generic;
 
-namespace EFCore.MySql.FunctionalTests.Migrations
+namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
 {
     [DbContext(typeof(AppDb))]
     partial class AppDbModelSnapshot : ModelSnapshot

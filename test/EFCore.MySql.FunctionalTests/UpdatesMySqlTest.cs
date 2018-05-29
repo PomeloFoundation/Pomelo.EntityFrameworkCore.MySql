@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestModels.UpdatesModel;
 using Xunit;
 
-namespace EFCore.MySql.UpstreamFunctionalTests
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
     public class UpdatesMySqlTest : UpdatesRelationalTestBase<UpdatesMySqlFixture>
     {

@@ -1,7 +1,7 @@
-using EFCore.MySql.UpstreamFunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 
-namespace EFCore.MySql.UpstreamFunctionalTests
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
     public class MySqlServiceCollectionExtensionsTest : RelationalServiceCollectionExtensionsTestBase
     {

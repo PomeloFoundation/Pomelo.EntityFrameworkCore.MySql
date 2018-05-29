@@ -2,13 +2,13 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
-using EFCore.MySql.Infrastructure.Internal;
-using EFCore.MySql.Storage.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
 
-namespace EFCore.MySql.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Internal
 {
     public class MySqlOptions : IMySqlOptions
     {

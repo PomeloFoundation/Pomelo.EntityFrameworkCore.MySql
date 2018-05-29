@@ -4,10 +4,10 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using EFCore.MySql.Query.Expressions.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators;
 
-namespace EFCore.MySql.Query.ExpressionTranslators.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
 
     public class MySqlRegexIsMatchTranslator : IMethodCallTranslator

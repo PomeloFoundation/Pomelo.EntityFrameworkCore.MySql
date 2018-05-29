@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace EFCore.MySql.Migrations.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
 {
     public class MySqlHistoryRepository : HistoryRepository
     {

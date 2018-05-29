@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore.Query;
 using Xunit.Abstractions;
 
-namespace EFCore.MySql.UpstreamFunctionalTests.Query
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class IncludeMySqlTest : IncludeTestBase<IncludeMySqlFixture>
     {

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
 
-namespace EFCore.MySql.UpstreamFunctionalTests.TestUtilities
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {
     public class MySqlTestStore : RelationalTestStore
     {

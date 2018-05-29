@@ -19,7 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 // ReSharper disable InconsistentNaming
-namespace EFCore.MySql.UpstreamFunctionalTests.Query
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class BadDataMySqlTest : IClassFixture<BadDataMySqlTest.BadDataMySqlFixture>
     {

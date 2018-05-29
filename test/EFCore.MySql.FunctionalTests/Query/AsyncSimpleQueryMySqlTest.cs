@@ -8,7 +8,7 @@ using Xunit;
 
 // ReSharper disable InconsistentNaming
 #pragma warning disable 1998
-namespace EFCore.MySql.UpstreamFunctionalTests.Query
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class AsyncSimpleQueryMySqlTest : AsyncSimpleQueryTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>
     {

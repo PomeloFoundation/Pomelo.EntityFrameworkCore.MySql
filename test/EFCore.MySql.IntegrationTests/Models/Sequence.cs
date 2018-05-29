@@ -1,4 +1,4 @@
-namespace EFCore.MySql.FunctionalTests.Models
+namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models
 {
 
 	public class Sequence

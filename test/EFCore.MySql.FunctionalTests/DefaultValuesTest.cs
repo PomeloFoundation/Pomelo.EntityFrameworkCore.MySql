@@ -1,12 +1,12 @@
 using System;
 using System.Linq;
-using EFCore.MySql.UpstreamFunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Xunit;
 
 // ReSharper disable InconsistentNaming
-namespace EFCore.MySql.UpstreamFunctionalTests
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
     public class DefaultValuesTest : SharedStoreFixtureBase<DbContext>
     {

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using EFCore.MySql.Scaffolding.Internal;
-using EFCore.MySql.UpstreamFunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 using Xunit;
 
 // ReSharper disable InconsistentNaming
-namespace EFCore.MySql.UpstreamFunctionalTests.Scaffolding
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Scaffolding
 {
     public class MySqlDatabaseModelFactoryTest : IClassFixture<MySqlDatabaseModelFactoryTest.MySqlDatabaseModelFixture>
     {

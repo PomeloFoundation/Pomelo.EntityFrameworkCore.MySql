@@ -1,6 +1,6 @@
 using System;
 
-namespace EFCore.MySql.FunctionalTests.Commands{
+namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands{
 
     public class CommandRunner : ICommandRunner
     {

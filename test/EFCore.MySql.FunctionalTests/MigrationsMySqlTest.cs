@@ -3,7 +3,7 @@ using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
-namespace EFCore.MySql.UpstreamFunctionalTests
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
     public class MigrationsMySqlTest : MigrationsTestBase<MigrationsMySqlFixture>
     {

@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace EFCore.MySql.UpstreamFunctionalTests
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
     public class DatabindingMySqlTest : DatabindingTestBase<F1MySqlFixture>
     {

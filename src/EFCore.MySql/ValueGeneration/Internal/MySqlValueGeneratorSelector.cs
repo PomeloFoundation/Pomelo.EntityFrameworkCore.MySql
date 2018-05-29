@@ -2,14 +2,14 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
-using EFCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
 
-namespace EFCore.MySql.ValueGeneration.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.ValueGeneration.Internal
 {
     public class MySqlValueGeneratorSelector : RelationalValueGeneratorSelector
     {

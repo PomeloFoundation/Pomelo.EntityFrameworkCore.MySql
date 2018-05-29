@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Infrastructure;
 
-namespace EFCore.MySql.UpstreamFunctionalTests.TestUtilities
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {
     public static class MySqlDatabaseFacadeTestExtensions
     {

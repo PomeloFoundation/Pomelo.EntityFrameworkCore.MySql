@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySql.Data.MySqlClient;
 using Xunit;
 
-namespace EFCore.MySql.UpstreamFunctionalTests.Query
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class FromSqlQueryMySqlTest : FromSqlQueryTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>
     {

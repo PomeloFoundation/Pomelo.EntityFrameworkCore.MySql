@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestModels.ConcurrencyModel;
 using Xunit;
 
-namespace EFCore.MySql.UpstreamFunctionalTests
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
     public class OptimisticConcurrencyMySqlTest : OptimisticConcurrencyTestBase<F1MySqlFixture>
     {

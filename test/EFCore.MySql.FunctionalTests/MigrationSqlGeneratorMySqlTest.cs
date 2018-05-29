@@ -1,6 +1,6 @@
 using System;
-using EFCore.MySql.Metadata.Internal;
-using EFCore.MySql.UpstreamFunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Xunit;
 
 // ReSharper disable InconsistentNaming
-namespace EFCore.MySql.UpstreamFunctionalTests
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
     public class MigrationSqlGeneratorMySqlTest : MigrationSqlGeneratorTestBase
     {

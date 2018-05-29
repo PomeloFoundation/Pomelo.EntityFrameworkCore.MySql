@@ -1,4 +1,4 @@
-Functional and Performance Tests
+Integration and Performance Tests
 ================================
 
 **Configuring the Database**
@@ -7,7 +7,7 @@ You first must configure your MySql Database.  Open the `config.json.example` fi
 
 Next, you must rebuild migrations.  Run the `scripts/rebuild.sh` script on Linux or the `scripts/rebuild.ps1` script on Windows.  Any time you make changes to database models, run the rebuild script.
 
-**Running Functional Tests**
+**Running Integration Tests**
 
 1. Configure the Databse
 2. Run `dotnet test`

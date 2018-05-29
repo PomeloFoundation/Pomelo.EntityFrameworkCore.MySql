@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using EFCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 
 //ReSharper disable once CheckNamespace
-namespace EFCore.MySql.UpstreamFunctionalTests.TestUtilities
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {
     public class MySqlTestHelpers : TestHelpers
     {

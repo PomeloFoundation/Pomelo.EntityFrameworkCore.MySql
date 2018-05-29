@@ -1,9 +1,9 @@
 ﻿using System.Linq;
-using EFCore.MySql.FunctionalTests.Models;
+using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace EFCore.MySql.FunctionalTests.Controllers
+namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Controllers
 {
     [Route("api/[controller]")]
     public class SyncController : Controller

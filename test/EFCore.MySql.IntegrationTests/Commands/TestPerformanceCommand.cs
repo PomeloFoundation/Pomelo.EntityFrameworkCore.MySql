@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using EFCore.MySql.FunctionalTests.Models;
+using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace EFCore.MySql.FunctionalTests.Commands{
+namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands{
 
     public class TestPerformanceCommand : ITestPerformanceCommand
     {

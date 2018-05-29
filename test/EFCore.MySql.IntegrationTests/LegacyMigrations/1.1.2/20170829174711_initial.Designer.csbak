@@ -4,10 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using EFCore.MySql.FunctionalTests;
-using EFCore.MySql.FunctionalTests.Models;
+using Pomelo.EntityFrameworkCore.MySql.IntegrationTests;
+using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models;
 
-namespace EFCore.MySql.FunctionalTests.Migrations
+namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
 {
     [DbContext(typeof(AppDb))]
     [Migration("20170829174711_initial")]

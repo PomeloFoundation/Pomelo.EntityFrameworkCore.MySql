@@ -1,4 +1,4 @@
-namespace EFCore.MySql.UpstreamFunctionalTests.Query
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class FiltersInheritanceMySqlFixture : InheritanceMySqlFixture
     {

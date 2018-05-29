@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace EFCore.MySql.Design.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
 {
     public class MySqlAnnotationCodeGenerator : AnnotationCodeGenerator
     {

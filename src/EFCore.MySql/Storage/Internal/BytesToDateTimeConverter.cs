@@ -4,7 +4,7 @@
 using System;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace EFCore.MySql.Storage.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     public class BytesToDateTimeConverter : ValueConverter<byte[], DateTime>
     {

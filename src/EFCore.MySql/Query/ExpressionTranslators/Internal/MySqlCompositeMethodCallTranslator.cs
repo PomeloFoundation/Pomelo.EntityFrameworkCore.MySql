@@ -4,7 +4,7 @@
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators;
 
-namespace EFCore.MySql.Query.ExpressionTranslators.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
