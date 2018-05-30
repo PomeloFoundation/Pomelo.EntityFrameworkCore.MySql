@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <LangVersion>7.2</LangVersion>
     <AssemblyName>Pomelo.EntityFrameworkCore.MySql.IntegrationTests</AssemblyName>
     <StartupObject>Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Program</StartupObject>
     <OutputType>Exe</OutputType>

@@ -1244,7 +1244,7 @@ unicodedatatypes.StringUnicode ---> [nullable longtext] [MaxLength = 2147483647]
 
         public class BuiltInDataTypesMySqlFixture : BuiltInDataTypesFixtureBase
         {
-            public override bool StrictEquality => true;
+            public override bool StrictEquality => false;
 
             public override bool SupportsAnsi => true;
 
