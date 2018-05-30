@@ -1,0 +1,4 @@
+<#
+    Session["ResourceFile"] = "MySqlStrings.resx";
+#>
+<#@ include file="..\..\..\tools\Resources.tt" #>

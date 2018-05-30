@@ -1,24 +1,39 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
-// Licensed under the MIT. See LICENSE in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions.Internal;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 
-// ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
 {
+    /// <summary>
+    ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+    ///     directly from your code. This API may change or be removed in future releases.
+    /// </summary>
     public class MySqlConventionSetBuilder : RelationalConventionSetBuilder
     {
+        private readonly ISqlGenerationHelper _sqlGenerationHelper;
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public MySqlConventionSetBuilder(
-            [NotNull] RelationalConventionSetBuilderDependencies dependencies
-        )
+            [NotNull] RelationalConventionSetBuilderDependencies dependencies,
+            [NotNull] ISqlGenerationHelper sqlGenerationHelper)
             : base(dependencies)
         {
+            _sqlGenerationHelper = sqlGenerationHelper;
         }
 
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public override ConventionSet AddConventions(ConventionSet conventionSet)
         {
             Check.NotNull(conventionSet, nameof(conventionSet));
@@ -38,8 +53,9 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
 
             ReplaceConvention(conventionSet.ForeignKeyRemovedConventions, valueGeneratorConvention);
 
-            conventionSet.PropertyAnnotationChangedConventions.Add(
-                (MySqlValueGeneratorConvention)valueGeneratorConvention);
+            conventionSet.ModelBuiltConventions.Add(valueGenerationStrategyConvention);
+
+            conventionSet.PropertyAnnotationChangedConventions.Add((MySqlValueGeneratorConvention)valueGeneratorConvention);
 
             return conventionSet;
         }
@@ -52,7 +68,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
         {
             var serviceProvider = new ServiceCollection()
                 .AddEntityFrameworkMySql()
-                .AddDbContext<DbContext>(o => o.UseMySql("server=."))
+                .AddDbContext<DbContext>(o => o.UseMySql("Server=."))
                 .BuildServiceProvider();
 
             using (var serviceScope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
