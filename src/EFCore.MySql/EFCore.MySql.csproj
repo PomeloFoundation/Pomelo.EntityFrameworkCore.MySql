@@ -3,7 +3,6 @@
     <VersionPrefix>2.1.0</VersionPrefix>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <LangVersion>7.2</LangVersion>
     <AssemblyName>Pomelo.EntityFrameworkCore.MySql</AssemblyName>
     <PackageId>Pomelo.EntityFrameworkCore.MySql</PackageId>
     <PackageTags>Entity Framework Core;entity-framework-core;MySQL;EF;ORM;Data</PackageTags>

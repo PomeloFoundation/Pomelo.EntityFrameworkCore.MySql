@@ -1,3 +1,4 @@
+using System.Linq;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -12,6 +13,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
     {
         // TODO: Consider using an existing database/initialize from script
         protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
+        {
+            base.OnModelCreating(modelBuilder, context);
+
+            var northwindContext = (NorthwindRelationalContext)context;
+            modelBuilder
+                .Query<OrderQuery>()
+                .ToQuery(() => northwindContext.Orders
+                    .FromSql("select * from `Orders`")
+                    .Select(
+                        o => new OrderQuery
+                        {
+                            CustomerID = o.CustomerID
+                        }));
+        }
 
         protected override void Seed(NorthwindContext context)
         {
