@@ -1,12 +1,12 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
-// Licensed under the MIT. See LICENSE in the project root for license information.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions.Internal
 {
@@ -43,9 +43,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions.Internal
                 return valueGenerated;
             }
 
-            return property.MySql().GetMySqlValueGenerationStrategy(fallbackToModel: false) != null
-                ? ValueGenerated.OnAdd
-                : (ValueGenerated?)null;
+            var valueGenerationStrategy = property.MySql().GetMySqlValueGenerationStrategy(fallbackToModel: false);
+            if (valueGenerationStrategy.HasValue)
+            {
+                switch (valueGenerationStrategy.Value)
+                {
+                    case MySqlValueGenerationStrategy.IdentityColumn:
+                        return ValueGenerated.OnAdd;
+                    case MySqlValueGenerationStrategy.ComputedColumn:
+                        return ValueGenerated.OnAddOrUpdate;
+                }
+            }
+
+            return null;
         }
     }
 }
