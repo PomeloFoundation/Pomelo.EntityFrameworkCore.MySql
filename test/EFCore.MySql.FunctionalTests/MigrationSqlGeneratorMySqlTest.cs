@@ -85,7 +85,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             });
 
             Assert.Equal(
-                @"CREATE DATABASE IF NOT EXISTS `mySchema`;"+ EOL,
+                @"CREATE DATABASE IF NOT EXISTS `mySchema`;" + EOL,
                 Sql,
                 ignoreLineEndingDifferences: true);
         }
@@ -93,7 +93,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         [Fact]
         public virtual void CreateDatabaseOperation()
         {
-            Generate(new MySqlCreateDatabaseOperation { Name = "Northwind" });
+            Generate(new MySqlCreateDatabaseOperation {Name = "Northwind"});
 
             Assert.Equal(
                 @"CREATE DATABASE `Northwind`;" + EOL,
@@ -108,8 +108,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             Assert.Equal(
                 "CREATE TABLE `dbo`.`People` (" + EOL +
                 "    `Id` int NOT NULL," + EOL +
-                "    `EmployerId` int," + EOL +
-                "    `SSN` char(11)," + EOL +
+                "    `EmployerId` int NULL," + EOL +
+                "    `SSN` char(11) NULL," + EOL +
                 "    PRIMARY KEY (`Id`)," + EOL +
                 "    UNIQUE (`SSN`)," + EOL +
                 "    FOREIGN KEY (`EmployerId`) REFERENCES `Companies` (`Id`)" + EOL +
@@ -139,7 +139,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                     },
                     PrimaryKey = new AddPrimaryKeyOperation
                     {
-                        Columns = new[] { "Id" }
+                        Columns = new[] {"Id"}
                     }
                 });
 
@@ -156,7 +156,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.AddColumnOperation_with_ansi();
 
             Assert.Equal(
-                @"ALTER TABLE `Person` ADD `Name` longtext CHARACTER SET latin1;" + EOL,
+                @"ALTER TABLE `Person` ADD `Name` longtext CHARACTER SET latin1 NULL;" + EOL,
                 Sql);
         }
 
@@ -183,7 +183,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.AddColumnOperation_with_defaultValueSql();
 
             Assert.Equal(
-                @"ALTER TABLE `People` ADD `Birthday` date DEFAULT CURRENT_TIMESTAMP;" + EOL,
+                @"ALTER TABLE `People` ADD `Birthday` date NULL DEFAULT CURRENT_TIMESTAMP;" + EOL,
                 Sql);
         }
 
@@ -201,7 +201,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             });
 
             Assert.Equal(
-                "ALTER TABLE `People` ADD `Birthday` timestamp(6) NOT NULL DEFAULT '" + new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified).ToString("yyyy-MM-dd HH:mm:ss.ffffff") + "';" + EOL,
+                "ALTER TABLE `People` ADD `Birthday` timestamp(6) NOT NULL DEFAULT '" +
+                new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified).ToString("yyyy-MM-dd HH:mm:ss.ffffff") +
+                "';" + EOL,
                 Sql);
         }
 
@@ -210,7 +212,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.AddColumnOperation_with_maxLength();
 
             Assert.Equal(
-                @"ALTER TABLE `Person` ADD `Name` varchar(30) CHARACTER SET ucs2;" + EOL,
+                @"ALTER TABLE `Person` ADD `Name` varchar(30) CHARACTER SET ucs2 NULL;" + EOL,
                 Sql);
         }
 
@@ -219,7 +221,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.AddColumnOperation_with_maxLength_overridden();
 
             Assert.Equal(
-                @"ALTER TABLE `Person` ADD `Name` varchar(32) CHARACTER SET ucs2;" + EOL,
+                @"ALTER TABLE `Person` ADD `Name` varchar(32) CHARACTER SET ucs2 NULL;" + EOL,
                 Sql);
         }
 
@@ -228,7 +230,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.AddColumnOperation_with_maxLength_on_derived();
 
             Assert.Equal(
-                @"ALTER TABLE `Person` ADD `Name` varchar(30) CHARACTER SET ucs2;" + EOL,
+                @"ALTER TABLE `Person` ADD `Name` varchar(30) CHARACTER SET ucs2 NULL;" + EOL,
                 Sql);
         }
 
@@ -237,7 +239,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.AddColumnOperation_with_shared_column();
 
             Assert.Equal(
-                @"ALTER TABLE `Base` ADD `Foo` longtext CHARACTER SET ucs2;" + EOL,
+                @"ALTER TABLE `Base` ADD `Foo` longtext CHARACTER SET ucs2 NULL;" + EOL,
                 Sql);
         }
 
@@ -246,7 +248,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.AddColumnOperation_with_computed_column_SQL();
 
             Assert.Equal(
-                @"ALTER TABLE `People` ADD `Birthday` date AS CURRENT_TIMESTAMP;" + EOL,
+                @"ALTER TABLE `People` ADD `Birthday` date NULL AS CURRENT_TIMESTAMP;" + EOL,
                 Sql);
         }
 
@@ -265,7 +267,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 });
 
             Assert.Equal(
-                @"ALTER TABLE `People` ADD `Birthday` timestamp DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP();" + EOL,
+                @"ALTER TABLE `People` ADD `Birthday` timestamp NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP();" +
+                EOL,
                 Sql);
         }
 
@@ -339,7 +342,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 });
 
             Assert.Equal(
-                "ALTER TABLE `People` ADD `Birthday` timestamp(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6);" + EOL,
+                "ALTER TABLE `People` ADD `Birthday` timestamp(6) NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6);" +
+                EOL,
                 Sql);
         }
 
@@ -358,23 +362,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 });
 
             Assert.Equal(
-                "ALTER TABLE `People` ADD `IsLeader` bit DEFAULT TRUE;" + EOL,
+                "ALTER TABLE `People` ADD `IsLeader` bit NULL DEFAULT TRUE;" + EOL,
                 Sql);
         }
 
-     
 
         [Theory]
         [InlineData("tinyblob")]
         [InlineData("blob")]
         [InlineData("mediumblob")]
         [InlineData("longblob")]
-
         [InlineData("tinytext")]
         [InlineData("text")]
         [InlineData("mediumtext")]
         [InlineData("longtext")]
-
         [InlineData("geometry")]
         [InlineData("point")]
         [InlineData("linestring")]
@@ -383,7 +384,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         [InlineData("multilinestring")]
         [InlineData("multipolygon")]
         [InlineData("geometrycollection")]
-
         [InlineData("json")]
         public void AlterColumnOperation_with_no_default_value_column_types(string type)
         {
@@ -402,7 +402,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 });
 
             Assert.Equal(
-                $"ALTER TABLE `People` MODIFY COLUMN `Blob` {type} NULL;" + EOL,
+                $"ALTER TABLE `People` ALTER COLUMN `Blob` {type} NULL;" + EOL,
                 Sql);
 
             Generate(
@@ -420,8 +420,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 });
 
             Assert.Equal(
-                @"ALTER TABLE `People` ALTER COLUMN `Blob` DROP DEFAULT;" + EOL +
-                $"ALTER TABLE `People` MODIFY COLUMN `Blob` {type} NULL;" + EOL,
+                $"ALTER TABLE `People` ALTER COLUMN `Blob` {type} NULL;" + EOL,
                 Sql);
         }
 
@@ -430,7 +429,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.AddForeignKeyOperation_with_name();
 
             Assert.Equal(
-                "ALTER TABLE `dbo`.`People` ADD CONSTRAINT `FK_People_Companies` FOREIGN KEY (`EmployerId1`, `EmployerId2`) REFERENCES `hr`.`Companies` (`Id1`, `Id2`) ON DELETE CASCADE;" + EOL,
+                "ALTER TABLE `dbo`.`People` ADD CONSTRAINT `FK_People_Companies` FOREIGN KEY (`EmployerId1`, `EmployerId2`) REFERENCES `hr`.`Companies` (`Id1`, `Id2`) ON DELETE CASCADE;" +
+                EOL,
                 Sql);
         }
 
@@ -467,7 +467,6 @@ BEGIN
 	DECLARE PRIMARY_KEY_COLUMN_NAME VARCHAR(255);
 	DECLARE PRIMARY_KEY_TYPE VARCHAR(255);
 	DECLARE SQL_EXP VARCHAR(1000);
-
 	SELECT COUNT(*)
 		INTO HAS_AUTO_INCREMENT_ID
 		FROM `information_schema`.`COLUMNS`
@@ -513,7 +512,8 @@ DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;".Replace("\r", string.Emp
             base.AddUniqueConstraintOperation_with_name();
 
             Assert.Equal(
-                "ALTER TABLE `dbo`.`People` ADD CONSTRAINT `AK_People_DriverLicense` UNIQUE (`DriverLicense_State`, `DriverLicense_Number`);" + EOL,
+                "ALTER TABLE `dbo`.`People` ADD CONSTRAINT `AK_People_DriverLicense` UNIQUE (`DriverLicense_State`, `DriverLicense_Number`);" +
+                EOL,
                 Sql);
         }
 
@@ -559,7 +559,7 @@ DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;".Replace("\r", string.Emp
                     Name = "IX_People_Name",
                     Table = "People",
                     Schema = "dbo",
-                    Columns = new[] { "FirstName", "LastName" },
+                    Columns = new[] {"FirstName", "LastName"},
                     [MySqlAnnotationNames.FullTextIndex] = "FULLTEXT"
                 });
 
@@ -577,7 +577,7 @@ DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;".Replace("\r", string.Emp
                     Name = "IX_People_Name",
                     Table = "People",
                     Schema = "dbo",
-                    Columns = new[] { "FirstName", "LastName" },
+                    Columns = new[] {"FirstName", "LastName"},
                     [MySqlAnnotationNames.SpatialIndex] = "SPATIAL"
                 });
 
@@ -642,9 +642,9 @@ DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;".Replace("\r", string.Emp
             var migrationBuilder = new MigrationBuilder("MySql");
 
             migrationBuilder.RenameColumn(
-                table: "Person",
-                name: "Name",
-                newName: "FullName")
+                    table: "Person",
+                    name: "Name",
+                    newName: "FullName")
                 .Annotation(RelationalAnnotationNames.ColumnType, "VARCHAR(4000)");
 
             Generate(migrationBuilder.Operations.ToArray());
@@ -667,14 +667,11 @@ DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;".Replace("\r", string.Emp
             Generate(
                 modelBuilder => modelBuilder.Entity(
                     "Person",
-                    x =>
-                    {
-                        x.Property<string>("FullName");
-                    }),
+                    x => { x.Property<string>("FullName"); }),
                 migrationBuilder.Operations.ToArray());
 
             Assert.Equal(
-                "ALTER TABLE `Person` CHANGE `Name` `FullName` longtext CHARACTER SET ucs2",
+                "ALTER TABLE `Person` CHANGE `Name` `FullName` longtext CHARACTER SET ucs2 NULL",
                 Sql);
         }
 
@@ -684,7 +681,7 @@ DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;".Replace("\r", string.Emp
             base.DropColumnOperation();
 
             Assert.Equal(
-                "ALTER TABLE `dbo`.`People` DROP COLUMN `LuckyNumber`;",
+                "ALTER TABLE `dbo`.`People` DROP COLUMN `LuckyNumber`;" + EOL,
                 Sql);
         }
 
@@ -711,7 +708,6 @@ BEGIN
 	DECLARE PRIMARY_KEY_COLUMN_NAME VARCHAR(255);
 	DECLARE PRIMARY_KEY_TYPE VARCHAR(255);
 	DECLARE SQL_EXP VARCHAR(1000);
-
 	SELECT COUNT(*)
 		INTO HAS_AUTO_INCREMENT_ID
 		FROM `information_schema`.`COLUMNS`
