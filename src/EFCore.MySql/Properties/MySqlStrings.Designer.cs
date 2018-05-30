@@ -19,7 +19,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             = new ResourceManager("Pomelo.EntityFrameworkCore.MySql.Properties.MySqlStrings", typeof(MySqlStrings).GetTypeInfo().Assembly);
 
         /// <summary>
-        ///     Identity value generation cannot be used for the property '{property}' on entity type '{entityType}' because the property type is '{propertyType}'. Identity value generation can only be used with signed integer properties.
+        ///     Identity value generation cannot be used for the property '{property}' on entity type '{entityType}' because the property type is '{propertyType}'. Identity value generation can only be used with signed integer and DateTime properties.
         /// </summary>
         public static string IdentityBadType([CanBeNull] object property, [CanBeNull] object entityType, [CanBeNull] object propertyType)
             => string.Format(
@@ -43,7 +43,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                 dataType, property);
 
         /// <summary>
-        ///     MySql sequences cannot be used to generate values for the property '{property}' on entity type '{entityType}' because the property type is '{propertyType}'. Sequences can only be used with integer properties.
+        ///     SQL Server sequences cannot be used to generate values for the property '{property}' on entity type '{entityType}' because the property type is '{propertyType}'. Sequences can only be used with integer properties.
         /// </summary>
         public static string SequenceBadType([CanBeNull] object property, [CanBeNull] object entityType, [CanBeNull] object propertyType)
             => string.Format(
@@ -51,7 +51,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                 property, entityType, propertyType);
 
         /// <summary>
-        ///     MySql requires the table name to be specified for rename index operations. Specify table name in the call to MigrationBuilder.RenameIndex.
+        ///     SQL Server requires the table name to be specified for rename index operations. Specify table name in the call to MigrationBuilder.RenameIndex.
         /// </summary>
         public static string IndexTableRequired
             => GetString("IndexTableRequired");
@@ -88,7 +88,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                     _resourceManager.GetString("LogDefaultDecimalTypeColumn")));
 
         /// <summary>
-        ///     The property '{property}' on entity type '{entityType}' is of type 'byte', but is set up to use a MySql identity column. This requires that values starting at 255 and counting down will be used for temporary key values. A temporary key value is needed for every entity inserted in a single call to 'SaveChanges'. Care must be taken that these values do not collide with real key values.
+        ///     The property '{property}' on entity type '{entityType}' is of type 'byte', but is set up to use a SQL Server identity column. This requires that values starting at 255 and counting down will be used for temporary key values. A temporary key value is needed for every entity inserted in a single call to 'SaveChanges'. Care must be taken that these values do not collide with real key values.
         /// </summary>
         public static readonly EventDefinition<string, string> LogByteIdentityColumn
             = new EventDefinition<string, string>(
@@ -316,10 +316,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             => GetString("FreeTextFunctionOnClient");
 
         /// <summary>
-        ///     The expression passed to the 'propertyReference' parameter of the 'FreeText' method is not a valid reference to a property. The expression should represent a reference to a full-text indexed property on the object referenced in the from clause: 'from e in context.Entities where EF.Functions.FreeText(e.SomeProperty, textToSearchFor) select e'
+        ///     Computed value generation cannot be used for the property '{property}' on entity type '{entityType}' because the property type is '{propertyType}'. Computed value generation can only be used with DateTime and DateTimeOffset properties.
         /// </summary>
-        public static string InvalidColumnNameForFreeText
-            => GetString("InvalidColumnNameForFreeText");
+        public static string ComputedBadType([CanBeNull] object property, [CanBeNull] object entityType, [CanBeNull] object propertyType)
+            => string.Format(
+                GetString("ComputedBadType", nameof(property), nameof(entityType), nameof(propertyType)),
+                property, entityType, propertyType);
 
         private static string GetString(string name, params string[] formatterNames)
         {
