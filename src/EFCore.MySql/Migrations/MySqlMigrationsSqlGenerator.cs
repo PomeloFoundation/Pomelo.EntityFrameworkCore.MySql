@@ -1286,16 +1286,16 @@ END;".Replace("\r", string.Empty).Replace("\n", Environment.NewLine));
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
-            var fullText = operation[MySqlAnnotationNames.FullTextIndex] as bool?;
-            if (fullText.HasValue)
+            var fullText = operation[MySqlAnnotationNames.FullTextIndex] as string;
+            if (!string.IsNullOrEmpty(fullText))
             {
-                builder.Append(fullText.Value ? "FULLTEXT " : " ");
+                builder.Append("FULLTEXT ");
             }
 
-            var spatial = operation[MySqlAnnotationNames.SpatialIndex] as bool?;
-            if (spatial.HasValue)
+            var spatial = operation[MySqlAnnotationNames.SpatialIndex] as string;
+            if (!string.IsNullOrEmpty(spatial))
             {
-                builder.Append(spatial.Value ? "SPATIAL " : " ");
+                builder.Append("SPATIAL ");
             }
         }
 
