@@ -77,16 +77,10 @@ namespace Microsoft.EntityFrameworkCore.Metadata
                 return null;
             }
 
-            if (Property.ValueGenerated != ValueGenerated.OnAdd)
+            if (Property.ValueGenerated == ValueGenerated.Never)
             {
                 var sharedTablePrincipalPrimaryKeyProperty = Property.FindSharedTableRootPrimaryKeyProperty();
-                if (sharedTablePrincipalPrimaryKeyProperty != null
-                    && sharedTablePrincipalPrimaryKeyProperty.MySql().ValueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn)
-                {
-                    return MySqlValueGenerationStrategy.IdentityColumn;
-                }
-
-                return null;
+                return sharedTablePrincipalPrimaryKeyProperty?.MySql().ValueGenerationStrategy;
             }
 
             var modelStrategy = Property.DeclaringEntityType.Model.MySql().ValueGenerationStrategy;
@@ -94,9 +88,11 @@ namespace Microsoft.EntityFrameworkCore.Metadata
             {
                 switch (modelStrategy.Value)
                 {
-                    case MySqlValueGenerationStrategy.IdentityColumn when IsCompatibleIdentityColumn(Property):
+                    case MySqlValueGenerationStrategy.IdentityColumn
+                        when IsCompatibleIdentityColumn(Property) && Property.ValueGenerated == ValueGenerated.OnAdd:
                         return MySqlValueGenerationStrategy.IdentityColumn;
-                    case MySqlValueGenerationStrategy.ComputedColumn:
+                    case MySqlValueGenerationStrategy.ComputedColumn
+                        when IsCompatibleComputedColumn(Property) && Property.ValueGenerated == ValueGenerated.OnAddOrUpdate:
                         return MySqlValueGenerationStrategy.ComputedColumn;
                 }
             }
@@ -122,6 +118,19 @@ namespace Microsoft.EntityFrameworkCore.Metadata
                     {
                         throw new ArgumentException(
                             MySqlStrings.IdentityBadType(
+                                Property.Name, Property.DeclaringEntityType.DisplayName(), propertyType.ShortDisplayName()));
+                    }
+
+                    return false;
+                }
+
+                if (value == MySqlValueGenerationStrategy.ComputedColumn
+                    && !IsCompatibleComputedColumn(Property))
+                {
+                    if (ShouldThrowOnInvalidConfiguration)
+                    {
+                        throw new ArgumentException(
+                            MySqlStrings.ComputedBadType(
                                 Property.Name, Property.DeclaringEntityType.DisplayName(), propertyType.ShortDisplayName()));
                     }
 
@@ -339,7 +348,14 @@ namespace Microsoft.EntityFrameworkCore.Metadata
         {
             var type = property.ClrType;
 
-            return (type.IsInteger() || type == typeof(decimal)) && !HasConverter(property);
+            return (type.IsInteger() || type == typeof(decimal) || type == typeof(DateTime)) && !HasConverter(property);
+        }
+
+        private static bool IsCompatibleComputedColumn(IProperty property)
+        {
+            var type = property.ClrType;
+
+            return (type == typeof(DateTime) || type == typeof(DateTimeOffset)) && !HasConverter(property);
         }
 
         private static bool HasConverter(IProperty property)

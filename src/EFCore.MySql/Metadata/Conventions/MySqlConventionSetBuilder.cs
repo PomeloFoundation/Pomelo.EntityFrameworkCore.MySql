@@ -16,18 +16,14 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
     /// </summary>
     public class MySqlConventionSetBuilder : RelationalConventionSetBuilder
     {
-        private readonly ISqlGenerationHelper _sqlGenerationHelper;
-
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public MySqlConventionSetBuilder(
-            [NotNull] RelationalConventionSetBuilderDependencies dependencies,
-            [NotNull] ISqlGenerationHelper sqlGenerationHelper)
+            [NotNull] RelationalConventionSetBuilderDependencies dependencies)
             : base(dependencies)
         {
-            _sqlGenerationHelper = sqlGenerationHelper;
         }
 
         /// <summary>
@@ -52,8 +48,6 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
             ReplaceConvention(conventionSet.ForeignKeyAddedConventions, valueGeneratorConvention);
 
             ReplaceConvention(conventionSet.ForeignKeyRemovedConventions, valueGeneratorConvention);
-
-            conventionSet.ModelBuiltConventions.Add(valueGenerationStrategyConvention);
 
             conventionSet.PropertyAnnotationChangedConventions.Add((MySqlValueGeneratorConvention)valueGeneratorConvention);
 
