@@ -83,18 +83,14 @@ namespace Microsoft.EntityFrameworkCore.Metadata
                 return sharedTablePrincipalPrimaryKeyProperty?.MySql().ValueGenerationStrategy;
             }
 
-            var modelStrategy = Property.DeclaringEntityType.Model.MySql().ValueGenerationStrategy;
-            if (modelStrategy.HasValue)
+            if (IsCompatibleIdentityColumn(Property) && Property.ValueGenerated == ValueGenerated.OnAdd)
             {
-                switch (modelStrategy.Value)
-                {
-                    case MySqlValueGenerationStrategy.IdentityColumn
-                        when IsCompatibleIdentityColumn(Property) && Property.ValueGenerated == ValueGenerated.OnAdd:
-                        return MySqlValueGenerationStrategy.IdentityColumn;
-                    case MySqlValueGenerationStrategy.ComputedColumn
-                        when IsCompatibleComputedColumn(Property) && Property.ValueGenerated == ValueGenerated.OnAddOrUpdate:
-                        return MySqlValueGenerationStrategy.ComputedColumn;
-                }
+                return MySqlValueGenerationStrategy.IdentityColumn;
+            }
+
+            if (IsCompatibleComputedColumn(Property) && Property.ValueGenerated == ValueGenerated.OnAddOrUpdate)
+            {
+                return MySqlValueGenerationStrategy.ComputedColumn;
             }
 
             return null;
