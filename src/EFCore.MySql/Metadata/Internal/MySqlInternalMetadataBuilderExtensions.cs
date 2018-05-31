@@ -16,10 +16,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public static MySqlModelBuilderAnnotations MySql(
+        public static RelationalModelBuilderAnnotations MySql(
             [NotNull] this InternalModelBuilder builder,
             ConfigurationSource configurationSource)
-            => new MySqlModelBuilderAnnotations(builder, configurationSource);
+            => new RelationalModelBuilderAnnotations(builder, configurationSource);
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -34,19 +34,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public static MySqlEntityTypeBuilderAnnotations MySql(
+        public static RelationalEntityTypeBuilderAnnotations MySql(
             [NotNull] this InternalEntityTypeBuilder builder,
             ConfigurationSource configurationSource)
-            => new MySqlEntityTypeBuilderAnnotations(builder, configurationSource);
+            => new RelationalEntityTypeBuilderAnnotations(builder, configurationSource);
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public static MySqlKeyBuilderAnnotations MySql(
+        public static RelationalKeyBuilderAnnotations MySql(
             [NotNull] this InternalKeyBuilder builder,
             ConfigurationSource configurationSource)
-            => new MySqlKeyBuilderAnnotations(builder, configurationSource);
+            => new RelationalKeyBuilderAnnotations(builder, configurationSource);
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
