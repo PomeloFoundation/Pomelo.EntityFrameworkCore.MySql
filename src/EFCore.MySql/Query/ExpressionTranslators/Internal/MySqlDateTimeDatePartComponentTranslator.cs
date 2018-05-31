@@ -27,13 +27,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 var datePart = GetDatePart(memberExpression.Member.Name);
                 if (datePart != null)
                 {
-                    return new MySqlFunctionExpression(
+                    return new SqlFunctionExpression(
                         functionName: "EXTRACT",
                         returnType: memberExpression.Type,
                         arguments: new[]
                         {
-                            new SqlFragmentExpression($"{datePart} FROM "),
-                            memberExpression.Expression
+                            new MySqlComplexFunctionArgumentExpression(
+                                new []
+                                {
+                                    new SqlFragmentExpression($"{datePart} FROM"),
+                                    memberExpression.Expression
+                                },
+                                typeof(string))
                         });
                 }
                 else if (memberExpression.Member.Name == nameof(DateTime.DayOfYear))

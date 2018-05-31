@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
 using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
@@ -324,7 +325,7 @@ WHERE CHAR_LENGTH(`c`.`City`) = 6");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LOCATE(`c`.`City`, 'Sea') - 1) <> -1");
+WHERE (LOCATE(N'Sea', `c`.`City`) - 1) <> -1");
         }
 
         public override void Indexof_with_emptystring()
@@ -332,7 +333,7 @@ WHERE (LOCATE(`c`.`City`, 'Sea') - 1) <> -1");
             base.Indexof_with_emptystring();
 
             AssertSql(
-                @"SELECT LOCATE(`c`.`ContactName`, '') - 1
+                @"SELECT LOCATE(N'', `c`.`ContactName`) - 1
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = N'ALFKI'");
         }
@@ -451,6 +452,7 @@ FROM `Order Details` AS `od`
 WHERE @__Abs_0 < `od`.`ProductID`");
         }
 
+        [ConditionalFact(Skip = "issue #571")]
         public override void Select_math_round_int()
         {
             base.Select_math_round_int();
@@ -681,6 +683,132 @@ FROM (
     WHERE `o`.`OrderDate` IS NOT NULL
 ) AS `t`
 WHERE `t`.`c` < @__nextYear_0");
+        }
+
+        [ConditionalFact(Skip = "issue #571")]
+        public override void Select_distinct_average()
+        {
+            base.Select_distinct_average();
+        }
+
+        [ConditionalFact(Skip = "issue #571")]
+        public override void Average_with_binary_expression()
+        {
+            base.Average_with_binary_expression();
+        }
+
+        [ConditionalFact(Skip = "issue #571")]
+        public override void Average_with_arg()
+        {
+            base.Average_with_arg();
+        }
+
+        [ConditionalFact(Skip = "issue #571")]
+        public override void Select_math_truncate_int()
+        {
+            base.Select_math_truncate_int();
+        }
+
+        [ConditionalFact(Skip = "issue #571")]
+        public override void Select_skip_average()
+        {
+            base.Select_skip_average();
+        }
+
+        [ConditionalFact(Skip = "issue #571")]
+        public override void Average_with_arg_expression()
+        {
+            base.Average_with_arg_expression();
+        }
+
+        [ConditionalFact(Skip = "issue #571")]
+        public override void Sum_on_float_column()
+        {
+            base.Sum_on_float_column();
+        }
+
+        [ConditionalFact(Skip = "issue #571")]
+        public override void Average_with_non_matching_types_in_projection_doesnt_produce_second_explicit_cast()
+        {
+            base.Average_with_non_matching_types_in_projection_doesnt_produce_second_explicit_cast();
+        }
+
+        [ConditionalFact(Skip = "issue #571")]
+        public override void Average_with_no_arg()
+        {
+            base.Average_with_no_arg();
+        }
+
+        [ConditionalFact(Skip = "issue #571")]
+        public override void Average_on_float_column()
+        {
+            base.Average_on_float_column();
+        }
+
+        [ConditionalFact(Skip = "issue #571")]
+        public override void Average_on_float_column_in_subquery_with_cast()
+        {
+            base.Average_on_float_column_in_subquery_with_cast();
+        }
+
+        [ConditionalFact(Skip = "issue #571")]
+        public override void Select_take_average()
+        {
+            base.Select_take_average();
+        }
+
+        [ConditionalFact(Skip = "issue #571")]
+        public override void Average_on_float_column_in_subquery()
+        {
+            base.Average_on_float_column_in_subquery();
+        }
+
+        [ConditionalFact(Skip = "issue #571")]
+        public override void Sum_on_float_column_in_subquery()
+        {
+            base.Sum_on_float_column_in_subquery();
+        }
+
+        [ConditionalFact(Skip = "issue #571")]
+        public override void Select_byte_constant()
+        {
+            base.Select_byte_constant();
+        }
+
+        [ConditionalFact(Skip = "issue #573")]
+        public override void Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault_2()
+        {
+            base.Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault_2();
+        }
+
+        [ConditionalFact(Skip = "issue #573")]
+        public override void Project_single_element_from_collection_with_OrderBy_Take_and_FirstOrDefault()
+        {
+            base.Project_single_element_from_collection_with_OrderBy_Take_and_FirstOrDefault();
+        }
+
+        [ConditionalFact(Skip = "issue #573")]
+        public override void Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault()
+        {
+            base.Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault();
+        }
+
+        [ConditionalFact(Skip = "issue #573")]
+        public override void Project_single_element_from_collection_with_OrderBy_Take_and_FirstOrDefault_with_parameter()
+        {
+            base.Project_single_element_from_collection_with_OrderBy_Take_and_FirstOrDefault_with_parameter();
+        }
+
+        [ConditionalFact(Skip = "issue #573")]
+        public override void Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault()
+        {
+            base.Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault();
+        }
+
+        [ConditionalFact(Skip = "issue #573")]
+        public override void Where_as_queryable_expression()
+        {
+            base.Where_as_queryable_expression();
         }
 
         private void AssertSql(params string[] expected)
