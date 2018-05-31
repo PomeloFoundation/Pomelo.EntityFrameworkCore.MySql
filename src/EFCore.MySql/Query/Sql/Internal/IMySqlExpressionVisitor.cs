@@ -10,6 +10,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
     public interface IMySqlExpressionVisitor
     {
         Expression VisitRegexp([NotNull] RegexpExpression regexpExpression);
-        Expression VisitMySqlFunction([NotNull] MySqlFunctionExpression mySqlFunctionExpression);
+        Expression VisitMySqlComplexFunctionArgumentExpression([NotNull] MySqlComplexFunctionArgumentExpression mySqlComplexFunctionArgumentExpression);
     }
 }

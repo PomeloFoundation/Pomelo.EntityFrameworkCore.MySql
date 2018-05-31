@@ -186,20 +186,27 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
             return explicitCastExpression;
         }
 
-        public Expression VisitMySqlFunction(MySqlFunctionExpression mySqlFunctionExpression)
+        public Expression VisitMySqlComplexFunctionArgumentExpression(
+            [NotNull] MySqlComplexFunctionArgumentExpression mySqlComplexFunctionArgumentExpression)
         {
-            Check.NotNull(mySqlFunctionExpression, nameof(mySqlFunctionExpression));
+            Check.NotNull(mySqlComplexFunctionArgumentExpression, nameof(mySqlComplexFunctionArgumentExpression));
 
-            Sql.Append(mySqlFunctionExpression.FunctionName);
-            Sql.Append("(");
-            foreach (var argument in mySqlFunctionExpression.Arguments)
+            var first = true;
+            foreach (var argument in mySqlComplexFunctionArgumentExpression.ArgumentParts)
             {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                { 
+                    Sql.Append(" ");
+                }
+
                 Visit(argument);
             }
 
-            Sql.Append(")");
-
-            return mySqlFunctionExpression;
+            return mySqlComplexFunctionArgumentExpression;
         }
     }
 }

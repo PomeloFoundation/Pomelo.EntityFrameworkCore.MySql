@@ -6,48 +6,28 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
-using Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Utilities;
+using JetBrains.Annotations;
+using Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 {
-    public class MySqlFunctionExpression : Expression
+    public class MySqlComplexFunctionArgumentExpression : Expression
     {
-        private readonly ReadOnlyCollection<Expression> _arguments;
+        private readonly ReadOnlyCollection<Expression> _argumentParts;
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="MySqlFunctionExpression" /> class.
-        /// </summary>
-        /// <param name="functionName"> Name of the function. </param>
-        /// <param name="returnType"> The return type. </param>
-        /// <param name="arguments"> The arguments. </param>
-        public MySqlFunctionExpression(
-            [NotNull] string functionName,
-            [NotNull] Type returnType,
-            [NotNull] IEnumerable<Expression> arguments)
+        public MySqlComplexFunctionArgumentExpression(
+            [NotNull] IEnumerable<Expression> argumentParts,
+            [NotNull] Type argumentType)
         {
-            Check.NotEmpty(functionName, nameof(functionName));
-            Check.NotNull(returnType, nameof(returnType));
-            Check.NotNull(arguments, nameof(arguments));
-
-            FunctionName = functionName;
-            Type = returnType;
-            _arguments = arguments.ToList().AsReadOnly();
+            _argumentParts = argumentParts.ToList().AsReadOnly();
+            Type = argumentType;
         }
 
         /// <summary>
-        ///     Gets the name of the function.
+        ///     The arguments parts.
         /// </summary>
-        /// <value>
-        ///     The name of the function.
-        /// </value>
-        public virtual string FunctionName { get; }
-
-        /// <summary>
-        ///     The arguments.
-        /// </summary>
-        public virtual IReadOnlyList<Expression> Arguments => _arguments;
+        public virtual IReadOnlyList<Expression> ArgumentParts => _argumentParts;
 
         /// <summary>
         ///     Returns the node type of this <see cref="Expression" />. (Inherited from <see cref="Expression" />.)
@@ -69,7 +49,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
             Check.NotNull(visitor, nameof(visitor));
 
             return visitor is IMySqlExpressionVisitor specificVisitor
-                ? specificVisitor.VisitMySqlFunction(this)
+                ? specificVisitor.VisitMySqlComplexFunctionArgumentExpression(this)
                 : base.Accept(visitor);
         }
 
@@ -88,10 +68,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         /// </remarks>
         protected override Expression VisitChildren(ExpressionVisitor visitor)
         {
-            var newArguments = visitor.VisitAndConvert(_arguments, nameof(VisitChildren));
+            var newArgumentParts = visitor.VisitAndConvert(_argumentParts, nameof(VisitChildren));
 
-            return newArguments != _arguments
-                ? new MySqlFunctionExpression(FunctionName, Type, newArguments)
+            return newArgumentParts != _argumentParts
+                ? new MySqlComplexFunctionArgumentExpression(newArgumentParts, Type)
                 : this;
         }
 
@@ -114,13 +94,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
                 return true;
             }
 
-            return obj.GetType() == GetType() && Equals((MySqlFunctionExpression)obj);
+            return obj.GetType() == GetType() && Equals((MySqlComplexFunctionArgumentExpression)obj);
         }
 
-        private bool Equals(MySqlFunctionExpression other)
+        private bool Equals(MySqlComplexFunctionArgumentExpression other)
             => Type == other.Type
-               && string.Equals(FunctionName, other.FunctionName)
-               && _arguments.SequenceEqual(other._arguments);
+               && _argumentParts.SequenceEqual(other._argumentParts);
 
         /// <summary>
         ///     Returns a hash code for this object.
@@ -132,8 +111,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         {
             unchecked
             {
-                var hashCode = _arguments.Aggregate(0, (current, argument) => current + ((current * 397) ^ argument.GetHashCode()));
-                hashCode = (hashCode * 397) ^ FunctionName.GetHashCode();
+                var hashCode = _argumentParts.Aggregate(0, (current, argument) => current + ((current * 397) ^ argument.GetHashCode()));
                 hashCode = (hashCode * 397) ^ Type.GetHashCode();
                 return hashCode;
             }
@@ -144,6 +122,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         /// </summary>
         /// <returns>A <see cref="string" /> representation of the Expression.</returns>
         public override string ToString()
-            => $"{FunctionName}({string.Join("", "", Arguments)}";
+            => string.Join(" ", ArgumentParts);
     }
 }

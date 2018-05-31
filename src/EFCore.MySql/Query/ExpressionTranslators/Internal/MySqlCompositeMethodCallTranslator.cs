@@ -30,7 +30,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             new MySqlStringToUpperTranslator(),
             new MySqlStringTrimEndTranslator(),
             new MySqlStringTrimStartTranslator(),
-            new MySqlStringTrimTranslator()
+            new MySqlStringTrimTranslator(),
+            new MySqlStringIndexOfTranslator()
         };
 
         /// <summary>

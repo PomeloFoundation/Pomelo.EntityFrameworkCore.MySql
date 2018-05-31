@@ -8,6 +8,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore.Query.Expressions;
 using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators;
+using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
@@ -61,7 +62,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     arguments: new[]
                     {
                         methodCallExpression.Object,
-                        new SqlFragmentExpression("INTERVAL " + amountToAdd + " " + datePart),
+                        new MySqlComplexFunctionArgumentExpression(new[]
+                        {
+                            new SqlFragmentExpression("INTERVAL"),
+                            amountToAdd,
+                            new SqlFragmentExpression(datePart)
+                        },
+                        typeof(string)),
                     });
             }
 
