@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -924,31 +923,15 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(annotatable, nameof(annotatable));
             Check.NotNull(builder, nameof(builder));
 
-            var matchType = type;
+            var matchType = type ?? GetColumnType(schema, table, name, clrType, unicode, maxLength, fixedLength, rowVersion, model);
             var matchLen = "";
-            var match = _typeRe.Match(type ?? "-");
+            var match = _typeRe.Match(matchType ?? "-");
             if (match.Success)
             {
                 matchType = match.Groups[1].Value.ToLower();
                 if (!string.IsNullOrWhiteSpace(match.Groups[2].Value))
                 {
                     matchLen = match.Groups[2].Value;
-                }
-            }
-
-            if (identity)
-            {
-                switch (matchType)
-                {
-                    case "tinyint":
-                    case "smallint":
-                    case "mediumint":
-                    case "int":
-                    case "bigint":
-                        break;
-                    default:
-                        identity = false;
-                        break;
                 }
             }
 
@@ -965,11 +948,19 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     valueGenerationStrategy = MySqlValueGenerationStrategy.ComputedColumn;
             }
 
-            if ((valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn) &&
+            var autoIncrement = false;
+            if ((identity || valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn) &&
                 string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
             {
                 switch (matchType)
                 {
+                    case "tinyint":
+                    case "smallint":
+                    case "mediumint":
+                    case "int":
+                    case "bigint":
+                        autoIncrement = true;
+                        break;
                     case "datetime":
                         if (!_options.ServerVersion.SupportsDateTime6)
                             throw new InvalidOperationException(
@@ -1027,7 +1018,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 model,
                 builder);
 
-            if (identity)
+            if (autoIncrement)
             {
                 builder.Append(" AUTO_INCREMENT");
             }
