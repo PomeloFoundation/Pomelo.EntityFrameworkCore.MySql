@@ -104,14 +104,32 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models
 		public DateTime UpdatedTimetamp6 { get; set; }
 	}
 
-	public class GeneratedConcurrencyToken
+    public interface IGeneratedConcurrencyModel
+    {
+        int Id { get; set; }
+
+        int Gen { get; set; }
+    }
+
+	public class GeneratedConcurrencyCheck : IGeneratedConcurrencyModel
 	{
 		public int Id { get; set; }
 
 		public int Gen { get; set; }
 
-		[Timestamp]
+	    [ConcurrencyCheck]
+	    [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
 		public DateTime Updated { get; set; }
 	}
+
+    public class GeneratedRowVersion : IGeneratedConcurrencyModel
+    {
+        public int Id { get; set; }
+
+        public int Gen { get; set; }
+
+        [Timestamp]
+        public DateTime RowVersion { get; set; }
+    }
 
 }

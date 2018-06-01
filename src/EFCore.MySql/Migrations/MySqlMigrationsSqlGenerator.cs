@@ -659,7 +659,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                                        ? Array.CreateInstance(clrType.GetElementType(), 0)
                                        : clrType.GetDefaultValue());
 
-            var isRowVersion = property.ClrType == typeof(DateTime)
+            var isRowVersion = property.ClrType == typeof(byte[])
                                && property.IsConcurrencyToken
                                && property.ValueGenerated == ValueGenerated.OnAddOrUpdate;
             ColumnDefinition(
