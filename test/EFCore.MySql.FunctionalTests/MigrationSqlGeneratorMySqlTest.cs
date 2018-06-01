@@ -402,7 +402,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 });
 
             Assert.Equal(
-                $"ALTER TABLE `People` ALTER COLUMN `Blob` {type} NULL;" + EOL,
+                $"ALTER TABLE `People` MODIFY COLUMN `Blob` {type} NULL;" + EOL,
                 Sql);
 
             Generate(
@@ -420,7 +420,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 });
 
             Assert.Equal(
-                $"ALTER TABLE `People` ALTER COLUMN `Blob` {type} NULL;" + EOL,
+                $"ALTER TABLE `People` MODIFY COLUMN `Blob` {type} NULL;" + EOL,
                 Sql);
         }
 
