@@ -44,6 +44,33 @@ namespace Microsoft.EntityFrameworkCore
             [NotNull] this PropertyBuilder<TProperty> propertyBuilder)
             => (PropertyBuilder<TProperty>)UseMySqlIdentityColumn((PropertyBuilder)propertyBuilder);
 
+        /// <summary>
+        ///     Configures the key property to use the MySQL Computed feature to generate values for new entities,
+        ///     when targeting MySQL. This method sets the property to be <see cref="ValueGenerated.OnAddOrUpdate" />.
+        /// </summary>
+        /// <param name="propertyBuilder"> The builder for the property being configured. </param>
+        /// <returns> The same builder instance so that multiple calls can be chained. </returns>
+        public static PropertyBuilder UseMySqlComputedColumn(
+            [NotNull] this PropertyBuilder propertyBuilder)
+        {
+            Check.NotNull(propertyBuilder, nameof(propertyBuilder));
+
+            GetMySqlInternalBuilder(propertyBuilder).ValueGenerationStrategy(MySqlValueGenerationStrategy.ComputedColumn);
+
+            return propertyBuilder;
+        }
+
+        /// <summary>
+        ///     Configures the key property to use the MySQL Computed feature to generate values for new entities,
+        ///     when targeting MySQL. This method sets the property to be <see cref="ValueGenerated.OnAddOrUpdate" />.
+        /// </summary>
+        /// <typeparam name="TProperty"> The type of the property being configured. </typeparam>
+        /// <param name="propertyBuilder"> The builder for the property being configured. </param>
+        /// <returns> The same builder instance so that multiple calls can be chained. </returns>
+        public static PropertyBuilder<TProperty> UseMySqlComputedColumn<TProperty>(
+            [NotNull] this PropertyBuilder<TProperty> propertyBuilder)
+            => (PropertyBuilder<TProperty>)UseMySqlComputedColumn((PropertyBuilder)propertyBuilder);
+
         private static MySqlPropertyBuilderAnnotations GetMySqlInternalBuilder(PropertyBuilder propertyBuilder)
             => propertyBuilder.GetInfrastructure<InternalPropertyBuilder>().MySql(ConfigurationSource.Explicit);
     }
