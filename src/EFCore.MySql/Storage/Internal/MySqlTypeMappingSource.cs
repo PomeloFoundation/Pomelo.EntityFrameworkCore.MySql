@@ -60,17 +60,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private readonly MySqlTimeSpanTypeMapping _time6                  = new MySqlTimeSpanTypeMapping("time(6)", precision: 6);
         private readonly MySqlTimeSpanTypeMapping _time                   = new MySqlTimeSpanTypeMapping("time");
 
-	    // row version
-        private readonly RelationalTypeMapping _rowversion =
-            new MySqlDateTimeTypeMapping("timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
-        private readonly RelationalTypeMapping _rowversion6 =
-            new MySqlDateTimeTypeMapping("timestamp(6) DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
-
-        private readonly RelationalTypeMapping _binaryRowversion =
-            new MySqlDateTimeTypeMapping("timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
+        private readonly RelationalTypeMapping _binaryRowVersion =
+            new MySqlDateTimeTypeMapping("timestamp",
                 new BytesToDateTimeConverter(), new ByteArrayComparer());
-        private readonly RelationalTypeMapping _binaryRowversion6 =
-            new MySqlDateTimeTypeMapping("timestamp(6) DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
+        private readonly RelationalTypeMapping _binaryRowVersion6 =
+            new MySqlDateTimeTypeMapping("timestamp(6)",
                 new BytesToDateTimeConverter(), new ByteArrayComparer());
 
         // guid
@@ -306,14 +300,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
             if (clrType != null)
             {
-                if (clrType == typeof(DateTime))
-                {
-                    if (mappingInfo.IsRowVersion == true)
-                    {
-                        return _options.ServerVersion.SupportsDateTime6 ? _rowversion : _rowversion6;
-                    }
-                }
-
                 if (_clrTypeMappings.TryGetValue(clrType, out var mapping))
                 {
                     return mapping;
@@ -360,7 +346,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 {
                     if (mappingInfo.IsRowVersion == true)
                     {
-                        return _options.ServerVersion.SupportsDateTime6 ? _binaryRowversion : _binaryRowversion6;
+                        return _options.ServerVersion.SupportsDateTime6 ? _binaryRowVersion6 : _binaryRowVersion;
                     }
 
                     var size = mappingInfo.Size ??

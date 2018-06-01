@@ -24,7 +24,7 @@ script:
   - echo "Tests" && ./dotnet-run.sh dotnet test test/EFCore.MySql.Tests
   # Too many Functional Tests failing; fix before re-enabling in CI
   # - echo "Functional Tests" && ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.FunctionalTests
-  - echo "Functional Migration Tests" && ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.FunctionalTests --filter "FullyQualifiedName~Pomelo.EntityFrameworkCore.MySql.FunctionalTests.MigrationSqlGeneratorMySqlTest|FullyQualifiedName~Pomelo.EntityFrameworkCore.MySql.FunctionalTests.MigrationSqlGeneratorMySql55Test"
+  - echo "Functional Migration Tests" && ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.FunctionalTests --filter "FullyQualifiedName~Pomelo.EntityFrameworkCore.MySql.FunctionalTests.MigrationSqlGeneratorMySqlTest|FullyQualifiedName~Pomelo.EntityFrameworkCore.MySql.FunctionalTests.MigrationSqlGeneratorMySql55Test|FullyQualifiedName~Pomelo.EntityFrameworkCore.MySql.FunctionalTests.OptimisticConcurrencyMySqlTest"
   - echo "Integration Tests applying migrations" && ./dotnet-run.sh dotnet run --project test/EFCore.MySql.IntegrationTests -c Release testMigrate
   - echo "Integration Tests scaffolding" && ./dotnet-run.sh ./test/EFCore.MySql.IntegrationTests/scripts/scaffold.sh
   - echo "Remove scaffolding files" && rm -rf ./test/EFCore.MySql.IntegrationTests/Scaffold

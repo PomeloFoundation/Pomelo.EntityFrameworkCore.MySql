@@ -102,17 +102,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
 		[Fact]
 		public async Task TestGeneratedConcurrencyToken()
 		{
-			var gct = new GeneratedConcurrencyToken { Gen = 1 };
+			var gct = new GeneratedConcurrencyCheck { Gen = 1 };
 			using (var scope = new AppDbScope())
 			{
 				var db = scope.AppDb;
-				db.GeneratedConcurrencyToken.Add(gct);
+				db.GeneratedConcurrencyCheck.Add(gct);
 				await db.SaveChangesAsync();
 
 				using (var scope2 = new AppDbScope())
 				{
 					var db2 = scope2.AppDb;
-					var gct2 = await db2.GeneratedConcurrencyToken.FindAsync(gct.Id);
+					var gct2 = await db2.GeneratedConcurrencyCheck.FindAsync(gct.Id);
 					gct2.Gen++;
 					await db2.SaveChangesAsync();
 				}
@@ -121,5 +121,28 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
 				await Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => db.SaveChangesAsync());
 			}
 		}
+
+	    [Fact]
+	    public async Task TestGeneratedRowVersion()
+	    {
+	        var gct = new GeneratedRowVersion { Gen = 1 };
+	        using (var scope = new AppDbScope())
+	        {
+	            var db = scope.AppDb;
+	            db.GeneratedRowVersion.Add(gct);
+	            await db.SaveChangesAsync();
+
+	            using (var scope2 = new AppDbScope())
+	            {
+	                var db2 = scope2.AppDb;
+	                var gct2 = await db2.GeneratedRowVersion.FindAsync(gct.Id);
+	                gct2.Gen++;
+	                await db2.SaveChangesAsync();
+	            }
+
+	            gct.Gen++;
+	            await Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => db.SaveChangesAsync());
+	        }
+	    }
 	}
 }
