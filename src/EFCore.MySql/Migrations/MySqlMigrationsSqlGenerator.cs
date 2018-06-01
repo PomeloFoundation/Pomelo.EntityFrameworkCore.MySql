@@ -216,7 +216,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             builder
                 .Append("ALTER TABLE ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
-                .Append(" ALTER COLUMN ");
+                .Append(" MODIFY COLUMN ");
 
             ColumnDefinition(
                 operation.Schema,
@@ -659,7 +659,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                                        ? Array.CreateInstance(clrType.GetElementType(), 0)
                                        : clrType.GetDefaultValue());
 
-            var isRowVersion = property.ClrType == typeof(byte[])
+            var isRowVersion = property.ClrType == typeof(DateTime)
                                && property.IsConcurrencyToken
                                && property.ValueGenerated == ValueGenerated.OnAddOrUpdate;
             ColumnDefinition(
@@ -974,7 +974,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             }
 
             string onUpdateSql = null;
-            if (valueGenerationStrategy == MySqlValueGenerationStrategy.ComputedColumn)
+            if (rowVersion || valueGenerationStrategy == MySqlValueGenerationStrategy.ComputedColumn)
             {
                 switch (matchType)
                 {

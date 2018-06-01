@@ -20,7 +20,7 @@
     <MicrosoftExtensionsConfigurationFileExtensionsVersion>2.1.0</MicrosoftExtensionsConfigurationFileExtensionsVersion>
     <MicrosoftExtensionsConfigurationJsonVersion>2.1.0</MicrosoftExtensionsConfigurationJsonVersion>
     <!-- EFCoreMySqlIntegrationTests Dependencies -->
-    <MicrosoftAspNetCoreAllVersion>2.1.0-rc1-final</MicrosoftAspNetCoreAllVersion>
+    <MicrosoftAspNetCoreAllVersion>2.1.0</MicrosoftAspNetCoreAllVersion>
     <!-- EFCoreMySqlTests Dependencies -->
     <MoqVersion>4.8.2</MoqVersion>
   </PropertyGroup>
