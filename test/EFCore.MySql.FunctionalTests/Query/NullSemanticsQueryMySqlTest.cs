@@ -28,6 +28,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             }
         }
 
+        [Fact(Skip = "issue #573")]
+        public override void Projecting_nullable_bool_with_coalesce()
+        {
+            base.Projecting_nullable_bool_with_coalesce();
+        }
+
+        [Fact(Skip = "issue #573")]
+        public override void Projecting_nullable_bool_with_coalesce_nested()
+        {
+            base.Projecting_nullable_bool_with_coalesce_nested();
+        }
+
         protected override NullSemanticsContext CreateContext(bool useRelationalNulls = false)
         {
             var options = new DbContextOptionsBuilder(Fixture.CreateOptions());

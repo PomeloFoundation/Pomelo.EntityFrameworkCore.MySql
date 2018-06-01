@@ -37,6 +37,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 Sql);
         }
 
+        [Fact(Skip = "issue #573")]
         public override void All_orders()
         {
             base.All_orders();
@@ -47,6 +48,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 Sql);
         }
 
+        [Fact(Skip = "issue #573")]
         public override void Project_nullable_enum()
         {
             base.Project_nullable_enum();

@@ -79,7 +79,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
             var storeType = property.FindRelationalMapping().StoreType;
 
-            Assert.Equal("timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", storeType);
+            Assert.Equal("timestamp(6)", storeType);
 
             return modelBuilder;
         }

@@ -1215,7 +1215,6 @@ END;".Replace("\r", string.Empty).Replace("\n", Environment.NewLine));
             EndStatement(builder);
         }
 
-
         /// <summary>
         ///     Generates a SQL fragment for traits of an index from a <see cref="CreateIndexOperation" />,
         ///     <see cref="AddPrimaryKeyOperation" />, or <see cref="AddUniqueConstraintOperation" />.
@@ -1229,14 +1228,14 @@ END;".Replace("\r", string.Empty).Replace("\n", Environment.NewLine));
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
-            var fullText = operation[MySqlAnnotationNames.FullTextIndex] as string;
-            if (!string.IsNullOrEmpty(fullText))
+            var fullText = operation[MySqlAnnotationNames.FullTextIndex] as bool?;
+            if (fullText == true)
             {
                 builder.Append("FULLTEXT ");
             }
 
-            var spatial = operation[MySqlAnnotationNames.SpatialIndex] as string;
-            if (!string.IsNullOrEmpty(spatial))
+            var spatial = operation[MySqlAnnotationNames.SpatialIndex] as bool?;
+            if (spatial == true)
             {
                 builder.Append("SPATIAL ");
             }

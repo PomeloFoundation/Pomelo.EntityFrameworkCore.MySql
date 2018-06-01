@@ -17,7 +17,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             Assert.Throws<InvalidOperationException>(() => base.RenameIndexOperation());
         }
 
-        [Fact(Skip="#576")]
+        [Fact]
         public override void RenameIndexOperation_with_model()
         {
             Generate(
