@@ -37,6 +37,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             }
         }
 
+        [Fact(Skip = "issue #571")]
+        public override void Byte_enum_value_constant_used_in_projection()
+        {
+            base.Byte_enum_value_constant_used_in_projection();
+        }
+
         protected override void UseTransaction(DatabaseFacade facade, IDbContextTransaction transaction)
             => facade.UseTransaction(transaction.GetDbTransaction());
     }

@@ -65,6 +65,7 @@ FROM `Customers` AS `c`
 WHERE UTC_TIMESTAMP() <> @__myDatetime_0");
         }
 
+        [ConditionalFact(Skip = "issue #552")]
         public override void Where_datetime_today()
         {
             base.Where_datetime_today();
@@ -751,6 +752,12 @@ WHERE `t`.`c` < @__nextYear_0");
             base.Average_on_float_column_in_subquery_with_cast();
         }
 
+        [ConditionalFact(Skip = "issue #552")]
+        public override void Average_with_division_on_decimal_no_significant_digits()
+        {
+            base.Average_with_division_on_decimal_no_significant_digits();
+        }
+
         [ConditionalFact(Skip = "issue #571")]
         public override void Select_take_average()
         {
@@ -805,10 +812,28 @@ WHERE `t`.`c` < @__nextYear_0");
             base.Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault();
         }
 
+        [ConditionalFact(Skip = "issue #552")]
+        public override void Projection_containing_DateTime_subtraction()
+        {
+            base.Projection_containing_DateTime_subtraction();
+        }
+
         [ConditionalFact(Skip = "issue #573")]
         public override void Where_as_queryable_expression()
         {
             base.Where_as_queryable_expression();
+        }
+
+        [ConditionalFact(Skip = "issue #552")]
+        public override void Where_multiple_contains_in_subquery_with_and()
+        {
+            base.Where_multiple_contains_in_subquery_with_and();
+        }
+
+        [ConditionalFact(Skip = "issue #552")]
+        public override void Where_multiple_contains_in_subquery_with_or()
+        {
+            base.Where_multiple_contains_in_subquery_with_or();
         }
 
         private void AssertSql(params string[] expected)

@@ -560,7 +560,7 @@ DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;".Replace("\r", string.Emp
                     Table = "People",
                     Schema = "dbo",
                     Columns = new[] {"FirstName", "LastName"},
-                    [MySqlAnnotationNames.FullTextIndex] = "FULLTEXT"
+                    [MySqlAnnotationNames.FullTextIndex] = true
                 });
 
             Assert.Equal(
@@ -578,7 +578,7 @@ DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;".Replace("\r", string.Emp
                     Table = "People",
                     Schema = "dbo",
                     Columns = new[] {"FirstName", "LastName"},
-                    [MySqlAnnotationNames.SpatialIndex] = "SPATIAL"
+                    [MySqlAnnotationNames.SpatialIndex] = true
                 });
 
             Assert.Equal(
