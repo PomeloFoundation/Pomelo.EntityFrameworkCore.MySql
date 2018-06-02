@@ -3,7 +3,7 @@ using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Tests.Migrations
+namespace Pomelo.EntityFrameworkCore.MySql.Migrations
 {
     public class ServerVersionTest
     {
