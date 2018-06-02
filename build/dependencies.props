@@ -22,7 +22,10 @@
     <!-- EFCoreMySqlIntegrationTests Dependencies -->
     <MicrosoftAspNetCoreAllVersion>2.1.0</MicrosoftAspNetCoreAllVersion>
     <!-- EFCoreMySqlTests Dependencies -->
+    <MicrosoftCodeAnalysisCSharpPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0</MicrosoftExtensionsDependencyModelPackageVersion>
     <MoqVersion>4.8.2</MoqVersion>
+    <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
   </PropertyGroup>
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
 </Project>
