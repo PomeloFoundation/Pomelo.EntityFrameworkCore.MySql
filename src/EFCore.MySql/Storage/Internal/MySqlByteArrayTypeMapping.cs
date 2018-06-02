@@ -4,10 +4,9 @@
 using System;
 using System.Data;
 using System.Data.Common;
-using System.Globalization;
-using System.Text;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Pomelo.EntityFrameworkCore.MySql.Utilities;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
@@ -116,17 +115,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// <returns>
         ///     The generated string.
         /// </returns>
-        protected override string GenerateNonNullSqlLiteral(object value)
-        {
-            var builder = new StringBuilder();
-            builder.Append("0x");
-
-            foreach (var @byte in (byte[])value)
-            {
-                builder.Append(@byte.ToString("X2", CultureInfo.InvariantCulture));
-            }
-
-            return builder.ToString();
-        }
+        protected override string GenerateNonNullSqlLiteral(object value) => ByteArrayFormatter.ToHex((byte[])value);
     }
 }
