@@ -23,6 +23,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
             : base(copyFrom)
         {
             ServerVersion = copyFrom.ServerVersion;
+            NullableCharSetBehavior = copyFrom.NullableCharSetBehavior;
+            AnsiCharSetInfo = copyFrom.AnsiCharSetInfo;
+            UnicodeCharSetInfo = copyFrom.UnicodeCharSetInfo;
         }
 
         protected override RelationalOptionsExtension Clone()
@@ -33,6 +36,26 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public ServerVersion ServerVersion { get; private set; }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public CharSetBehavior? NullableCharSetBehavior { get; private set; }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public CharSetInfo AnsiCharSetInfo { get; private set; }
+
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public CharSetInfo UnicodeCharSetInfo { get; private set; }
+
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -51,11 +74,54 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
+        public MySqlOptionsExtension WithCharSetBehavior(CharSetBehavior charSetBehavior)
+        {
+            var clone = (MySqlOptionsExtension)Clone();
+
+            clone.NullableCharSetBehavior = charSetBehavior;
+
+            return clone;
+        }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public MySqlOptionsExtension WithAnsiCharSetInfo(CharSetInfo charSetInfo)
+        {
+            var clone = (MySqlOptionsExtension)Clone();
+
+            clone.AnsiCharSetInfo = charSetInfo;
+
+            return clone;
+        }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public MySqlOptionsExtension WithUnicodeCharSetInfo(CharSetInfo charSetInfo)
+        {
+            var clone = (MySqlOptionsExtension)Clone();
+
+            clone.UnicodeCharSetInfo = charSetInfo;
+
+            return clone;
+        }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public override long GetServiceProviderHashCode()
         {
             if (_serviceProviderHash == null)
             {
-                _serviceProviderHash = (base.GetServiceProviderHashCode() * 397) ^ (ServerVersion?.GetHashCode() ?? 0L);
+                _serviceProviderHash = (base.GetServiceProviderHashCode() * 397) ^
+                                       (ServerVersion?.GetHashCode() ?? 0L) ^
+                                       (NullableCharSetBehavior?.GetHashCode() ?? 0L) ^
+                                       (AnsiCharSetInfo?.GetHashCode() ?? 0L) ^
+                                       (UnicodeCharSetInfo?.GetHashCode() ?? 0L);
             }
 
             return _serviceProviderHash.Value;

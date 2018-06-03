@@ -37,7 +37,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
             Assert.Equal(
                 @"ALTER TABLE `Person` DROP INDEX `IX_Person_Name`;" + EOL +
-                "GO" + EOL + EOL +
+                EOL +
                 @"CREATE FULLTEXT INDEX `IX_Person_FullName` ON `Person` (`FullName`);" + EOL,
                 Sql);
         }
@@ -97,7 +97,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 .Generate(operation, modelBuilder.Model);
 
             Sql = string.Join(
-                "GO" + EOL + EOL,
+                EOL,
                 batch.Select(b => b.CommandText));
         }
     }

@@ -8,6 +8,7 @@ using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
@@ -315,13 +316,39 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     // Some of this logic could be moved into MySqlStringTypeMapping once EF #11896 is fixed
                     var isAnsi = mappingInfo.IsUnicode == false;
                     var isFixedLength = mappingInfo.IsFixedLength == true;
-                    var suffix = isAnsi ? " CHARACTER SET latin1" : " CHARACTER SET ucs2";
-                    var maxSize = isAnsi ? 8000 : 4000;
+                    var charSetSuffix = "";
+                    var bytesPerChar = isAnsi
+                        ? _options.AnsiCharSetInfo.BytesPerChar
+                        : _options.UnicodeCharSetInfo.BytesPerChar;
+
+                    if (isAnsi && (
+                        (mappingInfo.IsKeyOrIndex &&
+                            (_options.CharSetBehavior & CharSetBehavior.AppendToAnsiIndexAndKeyColumns)!= 0)
+                        ||
+                        (!mappingInfo.IsKeyOrIndex &&
+                            (_options.CharSetBehavior & CharSetBehavior.AppendToAnsiNonIndexAndKeyColumns) != 0)
+                        ))
+                    {
+                        charSetSuffix = $" CHARACTER SET {_options.AnsiCharSetInfo.CharSetName}";
+                    }
+
+                    if (!isAnsi && (
+                        (mappingInfo.IsKeyOrIndex &&
+                             (_options.CharSetBehavior & CharSetBehavior.AppendToUnicodeIndexAndKeyColumns)!= 0)
+                        ||
+                        (!mappingInfo.IsKeyOrIndex &&
+                             (_options.CharSetBehavior & CharSetBehavior.AppendToUnicodeNonIndexAndKeyColumns) != 0)
+                        ))
+                    {
+                        charSetSuffix = $" CHARACTER SET {_options.UnicodeCharSetInfo.CharSetName}";
+                    }
+
+                    var maxSize = 8000 / bytesPerChar;
 
                     var size = mappingInfo.Size ??
                                (mappingInfo.IsKeyOrIndex
-                               // Allow to use at most half of the max key length, so at least 2 columns can fit
-                                   ? _options.ServerVersion.IndexMaxBytes / (isAnsi ? 2 : 4)
+                                   // Allow to use at most half of the max key length, so at least 2 columns can fit
+                                   ? Math.Min(_options.ServerVersion.IndexMaxBytes / (bytesPerChar * 2), 255)
                                    : (int?)null);
                     if (size > maxSize)
                     {
@@ -334,8 +361,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
                     return new MySqlStringTypeMapping(
                         size == null
-                            ? "longtext" + suffix
-                            : (isFixedLength ? "char(" : "varchar(") + size + ")" + suffix,
+                            ? "longtext" + charSetSuffix
+                            : (isFixedLength ? "char(" : "varchar(") + size + ")" + charSetSuffix,
                         dbType,
                         !isAnsi,
                         size,

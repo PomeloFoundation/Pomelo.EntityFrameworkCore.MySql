@@ -7,6 +7,7 @@ using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Internal
 {
@@ -16,6 +17,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         {
             ConnectionSettings = new MySqlConnectionSettings();
             ServerVersion = new ServerVersion(null);
+            CharSetBehavior = CharSetBehavior.AppendToAllAnsiColumns;
+            AnsiCharSetInfo = new CharSetInfo(CharSet.Latin1);
+            UnicodeCharSetInfo = new CharSetInfo(CharSet.Utf8mb4);
         }
 
         public virtual void Initialize(IDbContextOptions options)
@@ -24,6 +28,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
 
             ConnectionSettings = GetConnectionSettings(mySqlOptions);
             ServerVersion = mySqlOptions.ServerVersion ?? ServerVersion;
+            CharSetBehavior = mySqlOptions.NullableCharSetBehavior ?? CharSetBehavior;
+            AnsiCharSetInfo = mySqlOptions.AnsiCharSetInfo ?? AnsiCharSetInfo;
+            UnicodeCharSetInfo = mySqlOptions.UnicodeCharSetInfo ?? UnicodeCharSetInfo;
         }
 
         public virtual void Validate(IDbContextOptions options)
@@ -67,5 +74,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
 
         public virtual MySqlConnectionSettings ConnectionSettings { get; private set; }
         public virtual ServerVersion ServerVersion { get; private set; }
+        public virtual CharSetBehavior CharSetBehavior { get; private set; }
+        public virtual CharSetInfo AnsiCharSetInfo { get; private set; }
+        public virtual CharSetInfo UnicodeCharSetInfo { get; private set; }
     }
 }
