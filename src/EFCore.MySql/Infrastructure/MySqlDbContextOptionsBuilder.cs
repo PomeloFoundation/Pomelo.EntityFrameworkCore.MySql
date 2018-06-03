@@ -32,6 +32,24 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
             => WithOption(e => e.WithServerVersion(new ServerVersion(serverVersion)));
 
         /// <summary>
+        ///     Configures the Default CharSet Behavior
+        /// </summary>
+        public virtual MySqlDbContextOptionsBuilder CharSetBehavior(CharSetBehavior charSetBehavior)
+            => WithOption(e => e.WithCharSetBehavior(charSetBehavior));
+
+        /// <summary>
+        ///     Configures the ANSI CharSet
+        /// </summary>
+        public virtual MySqlDbContextOptionsBuilder AnsiCharSet(CharSet charSet)
+            => WithOption(e => e.WithAnsiCharSetInfo(new CharSetInfo(charSet)));
+
+        /// <summary>
+        ///     Configures the Unicode CharSet
+        /// </summary>
+        public virtual MySqlDbContextOptionsBuilder UnicodeCharSet(CharSet charSet)
+            => WithOption(e => e.WithUnicodeCharSetInfo(new CharSetInfo(charSet)));
+
+        /// <summary>
         ///     Configures the context to use the default retrying <see cref="IExecutionStrategy" />.
         /// </summary>
         public virtual MySqlDbContextOptionsBuilder EnableRetryOnFailure()

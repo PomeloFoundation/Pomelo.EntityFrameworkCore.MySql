@@ -1,11 +1,14 @@
 using System;
+using System.Linq;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
+using Microsoft.Extensions.DependencyInjection;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Xunit;
 
 // ReSharper disable InconsistentNaming
@@ -41,7 +44,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 @"CREATE TABLE `Pie` (
     `FlavorId` INT NOT NULL" + EOL +
                 ");" + EOL +
-                "GO" + EOL + EOL +
+                EOL +
                 @"ALTER TABLE `Pie` ADD FOREIGN KEY (`FlavorId`) REFERENCES `Flavor` (`Id`);" + EOL
                 ,
                 Sql,
@@ -151,6 +154,71 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
+        [Theory]
+        [InlineData(true, false, CharSetBehavior.AppendToAllAnsiColumns, CharSet.Latin1, CharSet.Utf8mb4, "")]
+        [InlineData(true, false, CharSetBehavior.AppendToUnicodeIndexAndKeyColumns, CharSet.Latin1, CharSet.Utf8mb4, "")]
+        [InlineData(true, false, CharSetBehavior.AppendToAllUnicodeColumns, CharSet.Latin1, CharSet.Utf8mb4, "utf8mb4")]
+        [InlineData(true, false, CharSetBehavior.AppendToAllColumns, CharSet.Latin1, CharSet.Utf8mb4, "utf8mb4")]
+        [InlineData(true, false, CharSetBehavior.AppendToAllColumns, CharSet.Latin1, CharSet.Ucs2, "ucs2")]
+        [InlineData(true, true, CharSetBehavior.AppendToAnsiIndexAndKeyColumns, CharSet.Latin1, CharSet.Utf8mb4, "")]
+        [InlineData(true, true, CharSetBehavior.AppendToUnicodeIndexAndKeyColumns, CharSet.Latin1, CharSet.Utf8mb4, "utf8mb4")]
+        [InlineData(true, true, CharSetBehavior.AppendToAllUnicodeColumns, CharSet.Latin1, CharSet.Utf8mb4, "utf8mb4")]
+        [InlineData(true, true, CharSetBehavior.AppendToAllColumns, CharSet.Latin1, CharSet.Utf8mb4, "utf8mb4")]
+        [InlineData(true, true, CharSetBehavior.AppendToAllColumns, CharSet.Latin1, CharSet.Ucs2, "ucs2")]
+        [InlineData(false, false, CharSetBehavior.AppendToAllUnicodeColumns, CharSet.Latin1, CharSet.Utf8mb4, "")]
+        [InlineData(false, false, CharSetBehavior.AppendToAnsiIndexAndKeyColumns, CharSet.Latin1, CharSet.Utf8mb4, "")]
+        [InlineData(false, false, CharSetBehavior.AppendToAllAnsiColumns, CharSet.Latin1, CharSet.Utf8mb4, "latin1")]
+        [InlineData(false, false, CharSetBehavior.AppendToAllColumns, CharSet.Latin1, CharSet.Utf8mb4, "latin1")]
+        [InlineData(false, false, CharSetBehavior.AppendToAllColumns, CharSet.Ucs2, CharSet.Utf8mb4, "ucs2")]
+        [InlineData(false, true, CharSetBehavior.AppendToUnicodeIndexAndKeyColumns, CharSet.Latin1, CharSet.Utf8mb4, "")]
+        [InlineData(false, true, CharSetBehavior.AppendToAnsiIndexAndKeyColumns, CharSet.Latin1, CharSet.Utf8mb4, "latin1")]
+        [InlineData(false, true, CharSetBehavior.AppendToAllAnsiColumns, CharSet.Latin1, CharSet.Utf8mb4, "latin1")]
+        [InlineData(false, true, CharSetBehavior.AppendToAllColumns, CharSet.Latin1, CharSet.Utf8mb4, "latin1")]
+        [InlineData(false, true, CharSetBehavior.AppendToAllColumns, CharSet.Ucs2, CharSet.Utf8mb4, "ucs2")]
+        public virtual void AddColumnOperation_with_charset(bool isUnicode, bool isIndex, CharSetBehavior charSetBehavior,
+            CharSet ansiCharSet, CharSet unicodeCharSet, string expectedCharSet)
+        {
+            Generate(
+                modelBuilder => modelBuilder.Entity("Person", eb =>
+                    {
+                        eb.Property<string>("Name").IsUnicode(isUnicode);
+                        if (isIndex)
+                        {
+                            eb.HasIndex("Name");
+                        }
+                    }),
+                charSetBehavior,
+                ansiCharSet,
+                unicodeCharSet,
+                new AddColumnOperation
+                {
+                    Table = "Person",
+                    Name = "Name",
+                    ClrType = typeof(string),
+                    IsUnicode = isUnicode,
+                    IsNullable = true
+                });
+
+            var appendCharSet = "";
+            if (!string.IsNullOrEmpty(expectedCharSet))
+            {
+                appendCharSet = $" CHARACTER SET {expectedCharSet}";
+            }
+
+            var columnType = "longtext";
+            if (isIndex)
+            {
+                var serverVersion = new ServerVersion(null);
+                var charSetInfo = isUnicode ? new CharSetInfo(unicodeCharSet) : new CharSetInfo(ansiCharSet);
+                var columnSize = Math.Min(serverVersion.IndexMaxBytes / (charSetInfo.BytesPerChar * 2), 255);
+                columnType = $"varchar({columnSize})";
+            }
+
+            Assert.Equal(
+                $"ALTER TABLE `Person` ADD `Name` {columnType}{appendCharSet} NULL;" + EOL,
+                Sql);
+        }
+
         public override void AddColumnOperation_with_ansi()
         {
             base.AddColumnOperation_with_ansi();
@@ -174,7 +242,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.AddColumnOperation_without_column_type();
 
             Assert.Equal(
-                @"ALTER TABLE `People` ADD `Alias` longtext CHARACTER SET ucs2 NOT NULL;" + EOL,
+                @"ALTER TABLE `People` ADD `Alias` longtext NOT NULL;" + EOL,
                 Sql);
         }
 
@@ -212,7 +280,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.AddColumnOperation_with_maxLength();
 
             Assert.Equal(
-                @"ALTER TABLE `Person` ADD `Name` varchar(30) CHARACTER SET ucs2 NULL;" + EOL,
+                @"ALTER TABLE `Person` ADD `Name` varchar(30) NULL;" + EOL,
                 Sql);
         }
 
@@ -221,7 +289,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.AddColumnOperation_with_maxLength_overridden();
 
             Assert.Equal(
-                @"ALTER TABLE `Person` ADD `Name` varchar(32) CHARACTER SET ucs2 NULL;" + EOL,
+                @"ALTER TABLE `Person` ADD `Name` varchar(32) NULL;" + EOL,
                 Sql);
         }
 
@@ -230,7 +298,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.AddColumnOperation_with_maxLength_on_derived();
 
             Assert.Equal(
-                @"ALTER TABLE `Person` ADD `Name` varchar(30) CHARACTER SET ucs2 NULL;" + EOL,
+                @"ALTER TABLE `Person` ADD `Name` varchar(30) NULL;" + EOL,
                 Sql);
         }
 
@@ -239,7 +307,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.AddColumnOperation_with_shared_column();
 
             Assert.Equal(
-                @"ALTER TABLE `Base` ADD `Foo` longtext CHARACTER SET ucs2 NULL;" + EOL,
+                @"ALTER TABLE `Base` ADD `Foo` longtext NULL;" + EOL,
                 Sql);
         }
 
@@ -671,7 +739,7 @@ DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;".Replace("\r", string.Emp
                 migrationBuilder.Operations.ToArray());
 
             Assert.Equal(
-                "ALTER TABLE `Person` CHANGE `Name` `FullName` longtext CHARACTER SET ucs2 NULL",
+                "ALTER TABLE `Person` CHANGE `Name` `FullName` longtext NULL",
                 Sql);
         }
 
@@ -811,6 +879,34 @@ ALTER TABLE `dbo`.`People` DROP PRIMARY KEY;".Replace("\r", string.Empty).Replac
         public MigrationSqlGeneratorMySqlTest()
             : base(MySqlTestHelpers.Instance)
         {
+        }
+
+        protected override void Generate(Action<ModelBuilder> buildAction, params MigrationOperation[] operation)
+        {
+            var services = MySqlTestHelpers.Instance.CreateContextServices();
+            var modelBuilder = MySqlTestHelpers.Instance.CreateConventionBuilder(services);
+            buildAction(modelBuilder);
+
+            var batch = services.GetRequiredService<IMigrationsSqlGenerator>()
+                .Generate(operation, modelBuilder.Model);
+
+            Sql = string.Join(
+                EOL,
+                batch.Select(b => b.CommandText));
+        }
+
+        protected virtual void Generate(Action<ModelBuilder> buildAction, CharSetBehavior charSetBehavior, CharSet ansiCharSet, CharSet unicodeCharSet, params MigrationOperation[] operation)
+        {
+            var services = MySqlTestHelpers.Instance.CreateContextServices(charSetBehavior, ansiCharSet, unicodeCharSet);
+            var modelBuilder = MySqlTestHelpers.Instance.CreateConventionBuilder(services);
+            buildAction(modelBuilder);
+
+            var batch = services.GetRequiredService<IMigrationsSqlGenerator>()
+                .Generate(operation, modelBuilder.Model);
+
+            Sql = string.Join(
+                EOL,
+                batch.Select(b => b.CommandText));
         }
     }
 }
