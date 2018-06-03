@@ -44,11 +44,14 @@ script:
   - echo "Integration Tests with EF_SCHEMA=pomelo_test2" && export EF_SCHEMA="pomelo_test2" && ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.IntegrationTests
 
 deploy:
-  provider: script
-  script: dotnet nuget push "./artifacts/build/*.nupkg" --api-key "$MYGET_KEY" --source "https://www.myget.org/F/pomelo/api/v3/index.json"
-  on:
-    branch: master
-    tags: true
+  - provider: script
+    script: dotnet nuget push "./artifacts/build/*.nupkg" --api-key "$MYGET_KEY" --source "https://www.myget.org/F/pomelo/api/v3/index.json"
+    on:
+      branch: master
+  - provider: script
+    script: dotnet nuget push "./artifacts/build/*.nupkg" --api-key "$MYGET_KEY" --source "https://www.myget.org/F/pomelo/api/v3/index.json"
+    on:
+      tags: true
 
 notifications:
   email: false
