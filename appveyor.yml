@@ -11,12 +11,11 @@ build_script:
   - ps: .\dotnet-run.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
 
 test_script:
-  # KoreBuild disabled due to failing Functional Tests
-  # - .\build.cmd
+  # AppVeyor's MySQL server does not have the correct settings, and will not work with all Functional Tests
+  # Run with SkipTests=true until a solution is found
+  - .\build.cmd "/p:SkipTests=true"
   - ps: echo "Tests"; .\dotnet-run.ps1 dotnet test test\EFCore.MySql.Tests
-  # Too many Functional Tests failing; fix before re-enabling in CI
-  # - echo "Functional Tests"; .\dotnet-run.ps1 dotnet test -c Release test\EFCore.MySql.FunctionalTests
-  - ps: echo "Functional Migration Tests"; .\dotnet-run.ps1 dotnet test -c Release test\EFCore.MySql.FunctionalTests --filter "FullyQualifiedName~Pomelo.EntityFrameworkCore.MySql.FunctionalTests.MigrationSqlGeneratorMySqlTest|FullyQualifiedName~Pomelo.EntityFrameworkCore.MySql.FunctionalTests.MigrationSqlGeneratorMySql55Test|FullyQualifiedName~Pomelo.EntityFrameworkCore.MySql.FunctionalTests.OptimisticConcurrencyMySqlTest"
+  - ps: echo "Functional Migration Tests"; .\dotnet-run.ps1 dotnet test -c Release test\EFCore.MySql.FunctionalTests --filter "FullyQualifiedName~Pomelo.EntityFrameworkCore.MySql.FunctionalTests.MigrationSqlGeneratorMySqlTest|FullyQualifiedName~Pomelo.EntityFrameworkCore.MySql.FunctionalTests.MigrationSqlGeneratorMySql55Test"
   - ps: echo "Integration Tests applying migrations"; .\dotnet-run.ps1 dotnet run --project test\EFCore.MySql.IntegrationTests -c Release testMigrate
   - ps: echo "Integration Tests with EF_BATCH_SIZE=1"; .\dotnet-run.ps1 dotnet test -c Release test\EFCore.MySql.IntegrationTests
   - ps: echo "Integration Tests with EF_BATCH_SIZE=10"; .\dotnet-run.ps1 dotnet test -c Release test\EFCore.MySql.IntegrationTests
