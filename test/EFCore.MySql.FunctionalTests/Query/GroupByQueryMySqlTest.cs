@@ -34,6 +34,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [ConditionalFact(Skip = "issue #571")]
+        public override void Join_GroupBy_entity_ToList()
+        {
+            base.Join_GroupBy_entity_ToList();
+        }
+
+        [ConditionalFact(Skip = "issue #571")]
         public override void GroupBy_Property_anonymous_element_selector_Sum_Min_Max_Avg()
         {
             base.GroupBy_Property_anonymous_element_selector_Sum_Min_Max_Avg();

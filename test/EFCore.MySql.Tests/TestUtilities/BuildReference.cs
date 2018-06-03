@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+#if NET461
+using System.Reflection;
+#endif
 using IOPath = System.IO.Path;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyModel;

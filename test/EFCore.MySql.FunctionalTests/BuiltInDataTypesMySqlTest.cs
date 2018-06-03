@@ -898,7 +898,7 @@ WHERE `e`.`TimeSpanAsTime` = @__timeSpan_0",
             }
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "#587")]
         public virtual void Columns_have_expected_data_types()
         {
             var actual = QueryForColumnTypes(CreateContext());
