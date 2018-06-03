@@ -45,10 +45,12 @@ script:
 
 deploy:
   - provider: script
+    skip_cleanup: true
     script: ./dotnet-run.sh dotnet nuget push "./artifacts/build/*.nupkg" --api-key "$MYGET_KEY" --source "https://www.myget.org/F/pomelo/api/v3/index.json"
     on:
       branch: master
   - provider: script
+    skip_cleanup: true
     script: ./dotnet-run.sh dotnet nuget push "./artifacts/build/*.nupkg" --api-key "$MYGET_KEY" --source "https://www.myget.org/F/pomelo/api/v3/index.json"
     on:
       tags: true
