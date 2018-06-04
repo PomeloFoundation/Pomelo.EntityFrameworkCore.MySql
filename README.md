@@ -3,175 +3,111 @@
 [![Travis build status](https://img.shields.io/travis/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql.svg?label=travis-ci&branch=master&style=flat-square)](https://travis-ci.org/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql)
 [![AppVeyor build status](https://img.shields.io/appveyor/ci/Kagamine/Pomelo-EntityFrameworkCore-MySql/master.svg?label=appveyor&style=flat-square)](https://ci.appveyor.com/project/Kagamine/pomelo-entityframeworkcore-mysql/branch/master) [![NuGet](https://img.shields.io/nuget/v/Pomelo.EntityFrameworkCore.MySql.svg?style=flat-square&label=nuget)](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/) [![MyGet](https://img.shields.io/myget/pomelo/vpre/Pomelo.EntityFrameworkCore.MySql.svg?style=flat-square&label=myget)](https://www.myget.org/Package/Details/pomelo?packageType=nuget&packageId=Pomelo.EntityFrameworkCore.MySql) [![Join the chat at https://gitter.im/PomeloFoundation/Home](https://badges.gitter.im/PomeloFoundation/Home.svg)](https://gitter.im/PomeloFoundation/Home?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Pomelo.EntityFrameworkCore.MySql is an Entity Framework Core provider built on top of [MySqlConnector](https://github.com/mysql-net/MySqlConnector). It allows us to use the Entity Framework Core ORM with MySQL.  Async functions in this library properly implement Async I/O at the lowest level, unlike providers based on Oracle's MySql.Data library which uses Sync I/O at the lowest level.
+`Pomelo.EntityFrameworkCore.MySql` is an Entity Framework Core provider built on top of [MySqlConnector](https://github.com/mysql-net/MySqlConnector) that enables the use of the Entity Framework Core ORM with MySQL.
 
 **Pomelo.EntityFrameworkCore.MySql is currently [looking for core contributors](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/522)**
 
 ## Nightly Builds
 
-To add a `NuGet.config` file in your solution root, then you can use the unstable packages:
+To use nightly builds from our MyGet feed, add a `NuGet.config` file in your solution root with the following contents:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
   <packageSources>
     <add key="Pomelo" value="https://www.myget.org/F/pomelo/api/v3/index.json" />
-    <add key="nuget.org" value="https://www.nuget.org/api/v2" />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
   </packageSources>
 </configuration>
 ```
 
 ## Getting Started
 
-Here is a console application sample for accessing a MySQL database using Entity Framework:
+### 1. Recommended Server CharSet
 
-① We recommend you to set `utf8mb4` as your MySQL database default charset. The following statement will check your DB charset.
+We recommend you to set `utf8mb4` as your MySQL database default charset. The following statement will check your DB charset:
+
 ```sql
 show variables like 'character_set_database';
 ```
 
-② Put `Pomelo.EntityFrameworkCore.MySql` into your project's `.csproj` file
+### 2. CSPROJ Configuration
+
+Ensure that your `.csproj` file has the following references.
+
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.1" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.0" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.1.0-*" />
   </ItemGroup>
   
 </Project>
 ```
 
-③ Implement some models, DbContext in `Program.cs`. Then overriding the OnConfiguring of DbContext to use MySQL database. Besides, you can define a JsonObject<T> field if you are using MySQL Server 5.7. Finally to invoking MySQL with EF Core in your Main() method.
+### 3. Services Configuration
 
-```C#
+Add `Pomelo.EntityFrameworkCore.MySql` to the services configuration in your the `Startup.cs` file.
+
+```csharp
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
-namespace MySqlTest
+namespace YourNamespace // replace "YourNamespace" with the namespace of your application
 {
-    public class User
+    public class Startup
     {
-        public int UserId { get; set; }
-
-        [MaxLength(64)]
-        public string Name { get; set; }
-    }
-
-    public class Blog
-    {
-        public Guid Id { get; set; }
-
-        [MaxLength(32)]
-        public string Title { get; set; }
-
-        [ForeignKey("User")]
-        public int UserId { get; set; }
-
-        public virtual User User { get; set; }
-
-        public string Content { get; set; }
-
-        public JsonObject<List<string>> Tags { get; set; } // Json storage (MySQL 5.7 only)
-    }
-
-    public class MyContext : DbContext
-    {
-        public DbSet<Blog> Blogs { get; set; }
-
-        public DbSet<User> Users { get; set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder
-                .UseMySql(@"Server=localhost;database=ef;uid=root;pwd=123456;");
-    }
-
-    public class Program
-    {
-        public static void Main()
+        public void ConfigureServices(IServiceCollection services)
         {
-            using (var context = new MyContext())
-            {
-                // Create database
-                context.Database.EnsureCreated();
-
-                // Init sample data
-                var user = new User { Name = "Yuuko" };
-                context.Add(user);
-                var blog1 = new Blog {
-                    Title = "Title #1",
-                    UserId = user.UserId,
-                    Tags = new List<string>() { "ASP.NET Core", "MySQL", "Pomelo" }
-                };
-                context.Add(blog1);
-                var blog2 = new Blog
-                {
-                    Title = "Title #2",
-                    UserId = user.UserId,
-                    Tags = new List<string>() { "ASP.NET Core", "MySQL" }
-                };
-                context.Add(blog2);
-                context.SaveChanges();
-
-                // Changing and save json object #1
-                blog1.Tags.Object.Clear();
-                context.SaveChanges();
-
-                // Changing and save json object #2
-                blog1.Tags.Object.Add("Pomelo");
-                context.SaveChanges();
-
-                // Output data
-                var ret = context.Blogs
-                    .Where(x => x.Tags.Object.Contains("Pomelo"))
-                    .ToList();
-                foreach (var x in ret)
-                {
-                    Console.WriteLine($"{ x.Id } { x.Title }");
-                    Console.Write("[Tags]: ");
-                    foreach(var y in x.Tags.Object)
-                        Console.Write(y + " ");
-                    Console.WriteLine();
-                }
-            }
-            Console.Read();
+            // other service configurations go here
+            services.AddDbContextPool<YourDbContext>( // replace "YourDbContext" with the class name of your DbContext
+                options => options.UseMySql("Server=localhost;Database=ef;User=root;Password=123456;", // replace with your Connection String
+                    mysqlOptions =>
+                    {
+                        mysqlOptions.ServerVersion(new Version(5, 7, 17), ServerType.MySql); // replace with your Server Version and Type
+                    }
+            ));
         }
     }
 }
 ```
 
-By viewing the following full project which is a single-user blog system and based on this library(MySQL for Entity Framework Core) to explorer more features: [View on GitHub](https://github.com/kagamine/yuukoblog-netcore-mysql).
+View our [MySql Provider Configuration Options Wiki Page](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/wiki/MySql-Provider-Configuration-Options) for a complete list of supported options.
+
+### 4. Sample Application
+
+Check out our [Integration Tests](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/master/test/EFCore.MySql.IntegrationTests) for an example repository that includes a MVC Application.
+
+### 5. Read the EF Core Documentation
+
+Refer to Microsoft's [EF Core Documentation](https://docs.microsoft.com/en-us/ef/core/) for detailed instructions and examples on using EF Core.
 
 ## Schedule and Roadmap
 
 Milestone | Release week
 ----------|-------------
-2.1.0-preview1-* | TBD
-2.1.0-preview1-final | TBD
+2.1.0-rc1-final | 6/3/2018
+2.1.0-rc2-final | 6/20/2018
+2.1.0 | 6/27/2018
 
 #### Scaffolding Tutorial
 
-Using the tool to execute scaffolding commands
+Using the tool to execute scaffolding commands:
+
 ```
-dotnet ef dbcontext scaffold "Server=localhost;User Id=root;Password=123456;Database=eftests" "Pomelo.EntityFrameworkCore.MySql"
+dotnet ef dbcontext scaffold "Server=localhost;Database=ef;User=root;Password=123456;" "Pomelo.EntityFrameworkCore.MySql"
 ```
 
 ## Contribute
 
-One of the easiest ways to contribute is to participate in discussions and discuss issues. You can also contribute by submitting pull requests with code changes.
+One of the easiest ways to contribute is to report issues and participate in discussions on issues. You can also contribute by submitting pull requests with code changes and supporting tests.
 
 ## License
 
