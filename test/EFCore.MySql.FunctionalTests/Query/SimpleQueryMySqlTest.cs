@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
@@ -65,7 +66,7 @@ FROM `Customers` AS `c`
 WHERE UTC_TIMESTAMP() <> @__myDatetime_0");
         }
 
-        [ConditionalFact(Skip = "issue #552")]
+        [ConditionalFact]
         public override void Where_datetime_today()
         {
             base.Where_datetime_today();
@@ -73,7 +74,7 @@ WHERE UTC_TIMESTAMP() <> @__myDatetime_0");
             AssertSql(
                 @"SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
 FROM `Employees` AS `e`
-WHERE rtrim(rtrim(strftime('%Y-%m-%d %H:%M:%f', rtrim(rtrim(strftime('%Y-%m-%d %H:%M:%f', 'now', 'localtime'), '0'), '.'), 'start of day'), '0'), '.') = rtrim(rtrim(strftime('%Y-%m-%d %H:%M:%f', 'now', 'localtime', 'start of day'), '0'), '.')");
+WHERE CONVERT(CURRENT_TIMESTAMP(), date) = CURDATE()");
         }
 
         public override void Where_datetime_date_component()
@@ -752,10 +753,12 @@ WHERE `t`.`c` < @__nextYear_0");
             base.Average_on_float_column_in_subquery_with_cast();
         }
 
-        [ConditionalFact(Skip = "issue #552")]
+        [ConditionalFact]
         public override void Average_with_division_on_decimal_no_significant_digits()
         {
-            base.Average_with_division_on_decimal_no_significant_digits();
+            AssertSingleResult<OrderDetail>(
+                ods => ods.Average(od => od.Quantity / 2m),
+                asserter: (e, a) => Assert.InRange((decimal)e - (decimal)a, -0.2m, 0.2m));
         }
 
         [ConditionalFact(Skip = "issue #571")]
