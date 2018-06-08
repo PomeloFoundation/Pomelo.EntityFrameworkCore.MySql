@@ -67,7 +67,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             base.Select_subquery_boolean();
         }
 
-        [ConditionalFact(Skip = "issue #552")]
+        [ConditionalFact(Skip = "issue #571")]
         public override void Select_subquery_boolean_with_pushdown()
         {
             base.Select_subquery_boolean_with_pushdown();
@@ -91,13 +91,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             base.Select_subquery_projecting_single_constant_bool();
         }
 
-        [ConditionalFact(Skip = "issue #552")]
+        [ConditionalFact(Skip = "DateTimeOffset is mapped to DateTime, which gives different results than Linq To Objects if Offset term is non-zero")]
         public override void Where_datetimeoffset_hour_component()
         {
             base.Where_datetimeoffset_hour_component();
         }
 
-        [ConditionalFact(Skip = "issue #552")]
+        [ConditionalFact(Skip = "DateTimeOffset is mapped to DateTime, which gives different results than Linq To Objects if Offset term is non-zero")]
         public override void Where_datetimeoffset_minute_component()
         {
             base.Where_datetimeoffset_minute_component();

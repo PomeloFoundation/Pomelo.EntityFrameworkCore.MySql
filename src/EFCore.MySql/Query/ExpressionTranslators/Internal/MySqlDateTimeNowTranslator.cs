@@ -29,6 +29,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                         return new SqlFunctionExpression("CURRENT_TIMESTAMP", memberExpression.Type);
                     case nameof(DateTime.UtcNow):
                         return new SqlFunctionExpression("UTC_TIMESTAMP", memberExpression.Type);
+                    case nameof(DateTime.Today):
+                        return new SqlFunctionExpression("CURDATE", memberExpression.Type);
                 }
             }
 
