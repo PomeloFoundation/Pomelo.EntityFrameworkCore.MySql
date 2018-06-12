@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.IO;
 using System.Linq.Expressions;
@@ -18,6 +19,8 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
         private DbDataReader _reader;
         private bool _disposed;
+        private Dictionary<string, Delegate> compiledExpressionCache = new Dictionary<string, Delegate>();
+        private object cacheLock = new object();
 
         internal WrappedMySqlDataReader(DbDataReader reader)
         {
@@ -81,9 +84,12 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         {
             try
             {
-	            // try normal casting
-	            if (typeof(T) == typeof(char))
-		            return (T) Convert.ChangeType(Convert.ToChar(GetReader().GetFieldValue<byte>(ordinal)), typeof(T));
+                // try normal casting
+                if (typeof(T) == typeof(char))
+                    return (T) Convert.ChangeType(Convert.ToChar(GetReader().GetFieldValue<byte>(ordinal)), typeof(T));
+                // for all JsonObject types, use explicit conversion with reflection
+                else if (IsJsonObjectType(typeof(T)))
+                    return ConvertWithReflection<T>(ordinal);
                 return GetReader().GetFieldValue<T>(ordinal);
             }
             catch (InvalidCastException e)
@@ -92,21 +98,50 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             }
         }
 
+        private bool IsJsonObjectType(Type type)
+        {
+            return type == typeof(JsonObject) || type.IsGenericType && type.GetGenericTypeDefinition() == typeof(JsonObject<>);
+        }
+
+        private T ConvertWithReflection<T>(int ordinal)
+        {
+            var run = GetCompiledConversionExpression(typeof(T));
+            return (T)run.DynamicInvoke(GetReader().GetValue(ordinal));
+        }
+
         private T ConvertWithReflection<T>(int ordinal, InvalidCastException e)
         {
             try
             {
-                // try casting using reflection; needed for json
-                var dataParam = Expression.Parameter(typeof(string), "data");
-                var body = Expression.Block(Expression.Convert(dataParam, typeof(T)));
-                var run = Expression.Lambda(body, dataParam).Compile();
-                return (T) run.DynamicInvoke(GetReader().GetValue(ordinal));
+                // for unlisted types, try casting using reflection
+                return ConvertWithReflection<T>(ordinal);
             }
             catch (Exception)
             {
                 // throw original InvalidCastException
                 throw e;
             }
+        }
+
+        private Delegate GetCompiledConversionExpression(Type reflectionType)
+        {
+            string typeFullName = reflectionType.FullName;
+            if (!compiledExpressionCache.ContainsKey(typeFullName))
+            {
+                // make sure it's multi-threading safe
+                lock(cacheLock)
+                {
+                    if (!compiledExpressionCache.ContainsKey(typeFullName))
+                    {
+                        var dataParam = Expression.Parameter(typeof(string), "data");
+                        var body = Expression.Block(Expression.Convert(dataParam, reflectionType));
+                        var compiledExpr = Expression.Lambda(body, dataParam).Compile();
+                        // cache compiled lambda expression to improve the performance
+                        compiledExpressionCache.Add(typeFullName, compiledExpr);
+                    }
+                }
+            }
+            return compiledExpressionCache[typeFullName];
         }
 
         private void CloseReader()
