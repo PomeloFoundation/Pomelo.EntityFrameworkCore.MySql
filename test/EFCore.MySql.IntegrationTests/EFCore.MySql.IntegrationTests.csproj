@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
@@ -21,12 +21,27 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="config.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <AppConfig Include="appsettings.json" />
+    <AppConfig Include="config.json" />
   </ItemGroup>
+
+  <Target Name="CopyDirsAfterBuild" AfterTargets="Build">
+    <Copy 
+      SourceFiles="@(AppConfig)" 
+      DestinationFolder="$(OutDir)\%(RecursiveDir)" 
+      SkipUnchangedFiles="true" 
+      OverwriteReadOnlyFiles="true" 
+      Retries="3"
+      RetryDelayMilliseconds="300"/>
+  </Target>
+  <Target Name="CopyDirsAfterPublish" AfterTargets="Publish">
+    <Copy 
+      SourceFiles="@(AppConfig)" 
+      DestinationFolder="$(PublishDir)\%(RecursiveDir)" 
+      SkipUnchangedFiles="true" 
+      OverwriteReadOnlyFiles="true" 
+      Retries="3"
+      RetryDelayMilliseconds="300"/>
+  </Target>
 
 </Project>
