@@ -17,6 +17,7 @@ before_install:
   - docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -p 3306:3306 -d mysql:5.7
   - sudo apt-get update && sudo apt-get install libunwind8
   - cp test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
+  - cp test/EFCore.MySql.IntegrationTests/appsettings.ci.json test/EFCore.MySql.IntegrationTests/appsettings.json
   - cp test/EFCore.MySql.IntegrationTests/config.json.example test/EFCore.MySql.IntegrationTests/config.json
   - ./run.sh install-tools
   - ./dotnet-run.sh ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.sh

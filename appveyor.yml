@@ -6,6 +6,7 @@ services:
 
 build_script:
   - ps: cp test\EFCore.MySql.FunctionalTests\config.json.example test\EFCore.MySql.FunctionalTests\config.json
+  - ps: cp test\EFCore.MySql.IntegrationTests\appsettings.ci.json test\EFCore.MySql.IntegrationTests\appsettings.json
   - ps: cp test\EFCore.MySql.IntegrationTests\config.json.example test\EFCore.MySql.IntegrationTests\config.json
   - ps: .\run.ps1 install-tools
   - ps: .\dotnet-run.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
