@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 using System.Collections;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Data.Common;
 using System.IO;
 using System.Linq.Expressions;
@@ -19,8 +19,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
 
         private DbDataReader _reader;
         private bool _disposed;
-        private Dictionary<string, Delegate> compiledExpressionCache = new Dictionary<string, Delegate>();
-        private object cacheLock = new object();
+        private static readonly ConcurrentDictionary<string, Delegate> compiledExpressionCache = new ConcurrentDictionary<string, Delegate>();
 
         internal WrappedMySqlDataReader(DbDataReader reader)
         {
@@ -28,10 +27,10 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         }
 
         public override bool GetBoolean(int ordinal) => GetReader().GetBoolean(ordinal);
-	    public override byte GetByte(int ordinal) => GetReader().GetByte(ordinal);
-	    public override long GetBytes(int ordinal, long dataOffset, byte[] buffer, int bufferOffset, int length) => GetReader().GetBytes(ordinal, dataOffset, buffer, bufferOffset, length);
-	    public override char GetChar(int ordinal) => Convert.ToChar(GetReader().GetByte(ordinal));
-	    public override long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length) => GetReader().GetChars(ordinal, dataOffset, buffer, bufferOffset, length);
+        public override byte GetByte(int ordinal) => GetReader().GetByte(ordinal);
+        public override long GetBytes(int ordinal, long dataOffset, byte[] buffer, int bufferOffset, int length) => GetReader().GetBytes(ordinal, dataOffset, buffer, bufferOffset, length);
+        public override char GetChar(int ordinal) => Convert.ToChar(GetReader().GetByte(ordinal));
+        public override long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length) => GetReader().GetChars(ordinal, dataOffset, buffer, bufferOffset, length);
         public override string GetDataTypeName(int ordinal) => GetReader().GetDataTypeName(ordinal);
         public override DateTime GetDateTime(int ordinal) => GetReader().GetDateTime(ordinal);
         public override decimal GetDecimal(int ordinal) => GetReader().GetDecimal(ordinal);
@@ -86,7 +85,7 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
             {
                 // try normal casting
                 if (typeof(T) == typeof(char))
-                    return (T) Convert.ChangeType(Convert.ToChar(GetReader().GetFieldValue<byte>(ordinal)), typeof(T));
+                    return (T)Convert.ChangeType(Convert.ToChar(GetReader().GetFieldValue<byte>(ordinal)), typeof(T));
                 // for all JsonObject types, use explicit conversion with reflection
                 else if (IsJsonObjectType(typeof(T)))
                     return ConvertWithReflection<T>(ordinal);
@@ -126,22 +125,12 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         private Delegate GetCompiledConversionExpression(Type reflectionType)
         {
             string typeFullName = reflectionType.FullName;
-            if (!compiledExpressionCache.ContainsKey(typeFullName))
+            return compiledExpressionCache.GetOrAdd(typeFullName, _ =>
             {
-                // make sure it's multi-threading safe
-                lock(cacheLock)
-                {
-                    if (!compiledExpressionCache.ContainsKey(typeFullName))
-                    {
-                        var dataParam = Expression.Parameter(typeof(string), "data");
-                        var body = Expression.Block(Expression.Convert(dataParam, reflectionType));
-                        var compiledExpr = Expression.Lambda(body, dataParam).Compile();
-                        // cache compiled lambda expression to improve the performance
-                        compiledExpressionCache.Add(typeFullName, compiledExpr);
-                    }
-                }
-            }
-            return compiledExpressionCache[typeFullName];
+                var dataParam = Expression.Parameter(typeof(string), "data");
+                var body = Expression.Block(Expression.Convert(dataParam, reflectionType));
+                return Expression.Lambda(body, dataParam).Compile();
+            });
         }
 
         private void CloseReader()
