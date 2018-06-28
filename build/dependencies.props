@@ -8,7 +8,7 @@
     <MicrosoftEntityFrameworkCoreRelationalVersion>2.1.0</MicrosoftEntityFrameworkCoreRelationalVersion>
     <MicrosoftEntityFrameworkCoreDesignVersion>2.1.0</MicrosoftEntityFrameworkCoreDesignVersion>
     <MicrosoftExtensionsLoggingConsoleVersion>2.1.0</MicrosoftExtensionsLoggingConsoleVersion>
-    <MySqlConnectorVersion>0.40.4</MySqlConnectorVersion>
+    <MySqlConnectorVersion>0.42.1</MySqlConnectorVersion>
     <PomeloJsonObjectVersion>1.1.1</PomeloJsonObjectVersion>
     <!-- Shared Test Dependencies -->
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
