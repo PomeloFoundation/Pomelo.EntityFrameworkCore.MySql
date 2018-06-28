@@ -316,7 +316,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.AddColumnOperation_with_computed_column_SQL();
 
             Assert.Equal(
-                @"ALTER TABLE `People` ADD `Birthday` date NULL AS CURRENT_TIMESTAMP;" + EOL,
+                @"ALTER TABLE `People` ADD `Birthday` date AS (CURRENT_TIMESTAMP) NULL;" + EOL,
                 Sql);
         }
 

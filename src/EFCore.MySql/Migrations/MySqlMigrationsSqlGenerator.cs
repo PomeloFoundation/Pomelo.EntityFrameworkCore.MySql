@@ -998,44 +998,54 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 }
             }
 
-            base.ColumnDefinition(
-                schema,
-                table,
-                name,
-                clrType,
-                type,
-                unicode,
-                maxLength,
-                fixedLength,
-                rowVersion,
-                nullable,
-                identity
-                    ? null
-                    : defaultValue,
-                defaultValueSql,
-                computedColumnSql,
-                annotatable,
-                model,
-                builder);
-
-            if (autoIncrement)
+            if (computedColumnSql == null)
             {
-                builder.Append(" AUTO_INCREMENT");
+                base.ColumnDefinition(
+                    schema,
+                    table,
+                    name,
+                    clrType,
+                    type,
+                    unicode,
+                    maxLength,
+                    fixedLength,
+                    rowVersion,
+                    nullable,
+                    identity
+                        ? null
+                        : defaultValue,
+                    defaultValueSql,
+                    computedColumnSql,
+                    annotatable,
+                    model,
+                    builder);
+
+                if (autoIncrement)
+                {
+                    builder.Append(" AUTO_INCREMENT");
+                }
+                else
+                {
+                    if (onUpdateSql != null)
+                    {
+                        builder
+                            .Append(" ON UPDATE ")
+                            .Append(onUpdateSql);
+                    }
+                }
             }
             else
             {
-                if (onUpdateSql != null)
+                builder
+                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(name))
+                    .Append(" ")
+                    .Append(type ?? GetColumnType(schema, table, name, clrType, unicode, maxLength, fixedLength, rowVersion, model));
+                builder
+                    .Append(" AS ")
+                    .Append($"({computedColumnSql})");
+                if (nullable)
                 {
-                    builder
-                        .Append(" ON UPDATE ")
-                        .Append(onUpdateSql);
-                }
-
-                if (computedColumnSql != null)
-                {
-                    builder
-                        .Append(" AS ")
-                        .Append(computedColumnSql);
+                    builder.Append(" NULL");
                 }
             }
         }
