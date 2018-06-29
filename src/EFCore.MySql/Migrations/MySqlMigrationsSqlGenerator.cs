@@ -375,6 +375,24 @@ namespace Microsoft.EntityFrameworkCore.Migrations
         }
 
         /// <summary>
+        ///     Builds commands for the given <see cref="CreateIndexOperation" /> by making calls on the given
+        ///     <see cref="MigrationCommandListBuilder" />.
+        /// </summary>
+        /// <param name="operation"> The operation. </param>
+        /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
+        /// <param name="builder"> The command builder to use to build the commands. </param>
+        /// <param name="terminate"> Indicates whether or not to terminate the command after generating SQL for the operation. </param>
+        protected override void Generate(
+            CreateIndexOperation operation,
+            IModel model,
+            MigrationCommandListBuilder builder,
+            bool terminate)
+        {
+            operation.Name = Truncate(operation.Name, 64);
+            base.Generate(operation, model, builder, terminate);
+        }
+
+        /// <summary>
         ///     Builds commands for the given <see cref="EnsureSchemaOperation" />
         ///     by making calls on the given <see cref="MigrationCommandListBuilder" />.
         /// </summary>
@@ -1216,6 +1234,21 @@ END;".Replace("\r", string.Empty).Replace("\n", Environment.NewLine));
         }
 
         /// <summary>
+        ///     Generates a SQL fragment for a foreign key constraint of an <see cref="AddForeignKeyOperation" />.
+        /// </summary>
+        /// <param name="operation"> The operation. </param>
+        /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
+        /// <param name="builder"> The command builder to use to add the SQL fragment. </param>
+        protected override void ForeignKeyConstraint(
+            AddForeignKeyOperation operation,
+            IModel model,
+            MigrationCommandListBuilder builder)
+        {
+            operation.Name = Truncate(operation.Name, 64);
+            base.ForeignKeyConstraint(operation, model, builder);
+        }
+
+        /// <summary>
         ///     Generates a SQL fragment for traits of an index from a <see cref="CreateIndexOperation" />,
         ///     <see cref="AddPrimaryKeyOperation" />, or <see cref="AddUniqueConstraintOperation" />.
         /// </summary>
@@ -1351,5 +1384,16 @@ END;".Replace("\r", string.Empty).Replace("\n", Environment.NewLine));
 
         private string IntegerConstant(long value)
             => string.Format(CultureInfo.InvariantCulture, "{0}", value);
+
+        private static string Truncate(string source, int maxLength)
+        {
+            if (source == null
+                || source.Length <= maxLength)
+            {
+                return source;
+            }
+
+            return source.Substring(0, maxLength);
+        }
     }
 }
