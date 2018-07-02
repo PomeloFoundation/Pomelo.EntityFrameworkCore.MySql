@@ -898,7 +898,7 @@ WHERE `e`.`TimeSpanAsTime` = @__timeSpan_0",
             }
         }
 
-        [ConditionalFact(Skip = "#587")]
+        [ConditionalFact]
         public virtual void Columns_have_expected_data_types()
         {
             var actual = QueryForColumnTypes(CreateContext());
@@ -985,7 +985,7 @@ builtinnullabledatatypes.TestNullableTimeSpan ---> [nullable time] [Precision = 
 builtinnullabledatatypes.TestNullableUnsignedInt16 ---> [nullable smallint] [Precision = 5 Scale = 0]
 builtinnullabledatatypes.TestNullableUnsignedInt32 ---> [nullable int] [Precision = 10 Scale = 0]
 builtinnullabledatatypes.TestNullableUnsignedInt64 ---> [nullable bigint] [Precision = 20 Scale = 0]
-builtinnullabledatatypes.TestString ---> [nullable longtext] [MaxLength = 2147483647]
+builtinnullabledatatypes.TestString ---> [nullable longtext] [MaxLength = -1]
 builtinnullabledatatypesshadow.Enum16 ---> [nullable smallint] [Precision = 5 Scale = 0]
 builtinnullabledatatypesshadow.Enum32 ---> [nullable int] [Precision = 10 Scale = 0]
 builtinnullabledatatypesshadow.Enum64 ---> [nullable bigint] [Precision = 19 Scale = 0]
@@ -1013,7 +1013,7 @@ builtinnullabledatatypesshadow.TestNullableTimeSpan ---> [nullable time] [Precis
 builtinnullabledatatypesshadow.TestNullableUnsignedInt16 ---> [nullable smallint] [Precision = 5 Scale = 0]
 builtinnullabledatatypesshadow.TestNullableUnsignedInt32 ---> [nullable int] [Precision = 10 Scale = 0]
 builtinnullabledatatypesshadow.TestNullableUnsignedInt64 ---> [nullable bigint] [Precision = 20 Scale = 0]
-builtinnullabledatatypesshadow.TestString ---> [nullable longtext] [MaxLength = 2147483647]
+builtinnullabledatatypesshadow.TestString ---> [nullable longtext] [MaxLength = -1]
 mappeddatatypes.BoolAsBit ---> [bit] [Precision = 1]
 mappeddatatypes.ByteAsTinyint ---> [tinyint] [Precision = 3 Scale = 0]
 mappeddatatypes.BytesAsBinary ---> [binary] [MaxLength = 5]
@@ -1101,16 +1101,16 @@ maxlengthdatatypes.ByteArray5 ---> [nullable varbinary] [MaxLength = 5]
 maxlengthdatatypes.ByteArray9000 ---> [nullable longblob] [MaxLength = -1]
 maxlengthdatatypes.Id ---> [int] [Precision = 10 Scale = 0]
 maxlengthdatatypes.String3 ---> [nullable varchar] [MaxLength = 3]
-maxlengthdatatypes.String9000 ---> [nullable longtext] [MaxLength = 2147483647]
+maxlengthdatatypes.String9000 ---> [nullable longtext] [MaxLength = -1]
 stringforeignkeydatatype.Id ---> [int] [Precision = 10 Scale = 0]
-stringforeignkeydatatype.StringKeyDataTypeId ---> [nullable varchar] [MaxLength = 768]
-stringkeydatatype.Id ---> [varchar] [MaxLength = 768]
+stringforeignkeydatatype.StringKeyDataTypeId ---> [nullable varchar] [MaxLength = 255]
+stringkeydatatype.Id ---> [varchar] [MaxLength = 255]
 unicodedatatypes.Id ---> [int] [Precision = 10 Scale = 0]
 unicodedatatypes.StringAnsi ---> [nullable longtext] [MaxLength = -1]
 unicodedatatypes.StringAnsi3 ---> [nullable varchar] [MaxLength = 3]
 unicodedatatypes.StringAnsi9000 ---> [nullable longtext] [MaxLength = -1]
-unicodedatatypes.StringDefault ---> [nullable longtext] [MaxLength = 2147483647]
-unicodedatatypes.StringUnicode ---> [nullable longtext] [MaxLength = 2147483647]
+unicodedatatypes.StringDefault ---> [nullable longtext] [MaxLength = -1]
+unicodedatatypes.StringUnicode ---> [nullable longtext] [MaxLength = -1]
 ";
 
             Assert.Equal(expected, actual, ignoreLineEndingDifferences: true);
