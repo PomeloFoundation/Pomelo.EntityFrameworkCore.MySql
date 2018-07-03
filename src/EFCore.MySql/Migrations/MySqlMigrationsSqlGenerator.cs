@@ -137,8 +137,8 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 operation.IsFixedLength,
                 operation.IsRowVersion,
                 operation.IsNullable,
-                /*defaultValue:*/ null,
-                /*defaultValueSql:*/ null,
+                operation.DefaultValue,
+                operation.DefaultValueSql,
                 operation.ComputedColumnSql,
                 /*identity:*/ false,
                 operation,
@@ -146,21 +146,6 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 builder);
 
             builder.AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
-
-            if (operation.DefaultValue != null
-                || operation.DefaultValueSql != null)
-            {
-                builder
-                    .Append("ALTER TABLE ")
-                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
-                    .Append(" ADD");
-                DefaultValue(operation.DefaultValue, operation.DefaultValueSql, builder);
-                builder
-                    .Append(" FOR ")
-                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
-                    .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
-            }
-
             builder.EndCommand();
         }
 
