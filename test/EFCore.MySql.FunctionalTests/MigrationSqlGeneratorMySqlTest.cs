@@ -4,6 +4,7 @@ using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.Extensions.DependencyInjection;
@@ -456,6 +457,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         public void AlterColumnOperation_with_no_default_value_column_types(string type)
         {
             Generate(
+                builder =>
+                {
+                    ((Model)builder.Model).SetProductVersion("2.1.0");
+                },
                 new AlterColumnOperation
                 {
                     Table = "People",
@@ -489,6 +494,64 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
             Assert.Equal(
                 $"ALTER TABLE `People` MODIFY COLUMN `Blob` {type} NULL;" + EOL,
+                Sql);
+        }
+
+        [Fact]
+        public void AlterColumnOperation_type_with_index()
+        {
+            Generate(
+                builder =>
+                {
+                    ((Model)builder.Model).SetProductVersion("2.1.0");
+                    builder.Entity("People", eb =>
+                    {
+                        eb.Property<string>("Blob");
+                        eb.HasIndex("Blob");
+                    });
+                },
+                new AlterColumnOperation
+                {
+                    Table = "People",
+                    Name = "Blob",
+                    ClrType = typeof(string),
+                    ColumnType = "char(127)",
+                    OldColumn = new ColumnOperation
+                    {
+                        ColumnType = "varchar(127)",
+                    },
+                    IsNullable = true
+                });
+
+            Assert.Equal(
+                "ALTER TABLE `People` MODIFY COLUMN `Blob` char(127) NULL;" + EOL,
+                Sql);
+        }
+
+        [Fact]
+        public void AlterColumnOperation_ComputedColumnSql_with_index()
+        {
+            Generate(
+                builder =>
+                {
+                    ((Model)builder.Model).SetProductVersion("2.1.0");
+                    builder.Entity("People", eb =>
+                    {
+                        eb.Property<string>("Blob");
+                        eb.HasIndex("Blob");
+                    });
+                },
+                new AlterColumnOperation
+                {
+                    Table = "People",
+                    Name = "Blob",
+                    ClrType = typeof(string),
+                    ComputedColumnSql = "'TEST'",
+                    ColumnType = "varchar(95)"
+                });
+
+            Assert.Equal(
+                "ALTER TABLE `People` MODIFY COLUMN `Blob` varchar(95) AS ('TEST');" + EOL,
                 Sql);
         }
 

@@ -121,98 +121,6 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
-            IEnumerable<IIndex> indexesToRebuild = null;
-            var property = FindProperty(model, operation.Schema, operation.Table, operation.Name);
-
-            if (operation.ComputedColumnSql != null)
-            {
-                var dropColumnOperation = new DropColumnOperation
-                {
-                    Schema = operation.Schema,
-                    Table = operation.Table,
-                    Name = operation.Name
-                };
-                if (property != null)
-                {
-                    dropColumnOperation.AddAnnotations(_migrationsAnnotations.ForRemove(property));
-                }
-
-                var addColumnOperation = new AddColumnOperation
-                {
-                    Schema = operation.Schema,
-                    Table = operation.Table,
-                    Name = operation.Name,
-                    ClrType = operation.ClrType,
-                    ColumnType = operation.ColumnType,
-                    IsUnicode = operation.IsUnicode,
-                    MaxLength = operation.MaxLength,
-                    IsRowVersion = operation.IsRowVersion,
-                    IsNullable = operation.IsNullable,
-                    DefaultValue = operation.DefaultValue,
-                    DefaultValueSql = operation.DefaultValueSql,
-                    ComputedColumnSql = operation.ComputedColumnSql,
-                    IsFixedLength = operation.IsFixedLength
-                };
-                addColumnOperation.AddAnnotations(operation.GetAnnotations());
-
-                // TODO: Use a column rebuild instead
-                indexesToRebuild = GetIndexesToRebuild(property, operation).ToList();
-                DropIndexes(indexesToRebuild, builder);
-                Generate(dropColumnOperation, model, builder, terminate: false);
-                builder.AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
-                Generate(addColumnOperation, model, builder, terminate: false);
-                builder.AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
-                CreateIndexes(indexesToRebuild, builder);
-                builder.EndCommand();
-
-                return;
-            }
-
-            var narrowed = false;
-            if (IsOldColumnSupported(model))
-            {
-                var valueGenerationStrategy = operation[
-                    MySqlAnnotationNames.ValueGenerationStrategy] as MySqlValueGenerationStrategy?;
-                var identity = valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn;
-                var oldValueGenerationStrategy = operation.OldColumn[
-                    MySqlAnnotationNames.ValueGenerationStrategy] as MySqlValueGenerationStrategy?;
-                var oldIdentity = oldValueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn;
-                if (identity != oldIdentity)
-                {
-                    throw new InvalidOperationException(MySqlStrings.AlterIdentityColumn);
-                }
-
-                var type = operation.ColumnType
-                           ?? GetColumnType(
-                               operation.Schema,
-                               operation.Table,
-                               operation.Name,
-                               operation.ClrType,
-                               operation.IsUnicode,
-                               operation.MaxLength,
-                               operation.IsFixedLength,
-                               operation.IsRowVersion,
-                               model);
-                var oldType = operation.OldColumn.ColumnType
-                              ?? GetColumnType(
-                                  operation.Schema,
-                                  operation.Table,
-                                  operation.Name,
-                                  operation.OldColumn.ClrType,
-                                  operation.OldColumn.IsUnicode,
-                                  operation.OldColumn.MaxLength,
-                                  operation.OldColumn.IsFixedLength,
-                                  operation.OldColumn.IsRowVersion,
-                                  model);
-                narrowed = type != oldType || !operation.IsNullable && operation.OldColumn.IsNullable;
-            }
-
-            if (narrowed)
-            {
-                indexesToRebuild = GetIndexesToRebuild(property, operation).ToList();
-                DropIndexes(indexesToRebuild, builder);
-            }
-
             builder
                 .Append("ALTER TABLE ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
@@ -251,11 +159,6 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     .Append(" FOR ")
                     .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
                     .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
-            }
-
-            if (narrowed)
-            {
-                CreateIndexes(indexesToRebuild, builder);
             }
 
             builder.EndCommand();
@@ -1301,94 +1204,6 @@ END;".Replace("\r", string.Empty).Replace("\n", Environment.NewLine));
             else
             {
                 base.ForeignKeyAction(referentialAction, builder);
-            }
-        }
-
-        /// <summary>
-        ///     Gets the list of indexes that need to be rebuilt when the given property is changing.
-        /// </summary>
-        /// <param name="property"> The property. </param>
-        /// <param name="currentOperation"> The operation which may require a rebuild. </param>
-        /// <returns> The list of indexes affected. </returns>
-        protected virtual IEnumerable<IIndex> GetIndexesToRebuild(
-            [CanBeNull] IProperty property,
-            [NotNull] MigrationOperation currentOperation)
-        {
-            Check.NotNull(currentOperation, nameof(currentOperation));
-
-            if (property == null)
-            {
-                yield break;
-            }
-
-            var createIndexOperations = _operations.SkipWhile(o => o != currentOperation).Skip(1)
-                .OfType<CreateIndexOperation>().ToList();
-            foreach (var index in property.GetContainingIndexes())
-            {
-                var indexName = index.Relational().Name;
-                if (createIndexOperations.Any(o => o.Name == indexName))
-                {
-                    continue;
-                }
-
-                yield return index;
-            }
-        }
-
-        /// <summary>
-        ///     Generates SQL to drop the given indexes.
-        /// </summary>
-        /// <param name="indexes"> The indexes to drop. </param>
-        /// <param name="builder"> The command builder to use to build the commands. </param>
-        protected virtual void DropIndexes(
-            [NotNull] IEnumerable<IIndex> indexes,
-            [NotNull] MigrationCommandListBuilder builder)
-        {
-            Check.NotNull(indexes, nameof(indexes));
-            Check.NotNull(builder, nameof(builder));
-
-            foreach (var index in indexes)
-            {
-                var operation = new DropIndexOperation
-                {
-                    Schema = index.DeclaringEntityType.Relational().Schema,
-                    Table = index.DeclaringEntityType.Relational().TableName,
-                    Name = index.Relational().Name
-                };
-                operation.AddAnnotations(_migrationsAnnotations.ForRemove(index));
-
-                Generate(operation, index.DeclaringEntityType.Model, builder, terminate: false);
-                builder.AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
-            }
-        }
-
-        /// <summary>
-        ///     Generates SQL to create the given indexes.
-        /// </summary>
-        /// <param name="indexes"> The indexes to create. </param>
-        /// <param name="builder"> The command builder to use to build the commands. </param>
-        protected virtual void CreateIndexes(
-            [NotNull] IEnumerable<IIndex> indexes,
-            [NotNull] MigrationCommandListBuilder builder)
-        {
-            Check.NotNull(indexes, nameof(indexes));
-            Check.NotNull(builder, nameof(builder));
-
-            foreach (var index in indexes)
-            {
-                var operation = new CreateIndexOperation
-                {
-                    IsUnique = index.IsUnique,
-                    Name = index.Relational().Name,
-                    Schema = index.DeclaringEntityType.Relational().Schema,
-                    Table = index.DeclaringEntityType.Relational().TableName,
-                    Columns = index.Properties.Select(p => p.Relational().ColumnName).ToArray(),
-                    Filter = index.Relational().Filter
-                };
-                operation.AddAnnotations(_migrationsAnnotations.For(index));
-
-                Generate(operation, index.DeclaringEntityType.Model, builder, terminate: false);
-                builder.AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
             }
         }
 
