@@ -94,7 +94,7 @@ Refer to Microsoft's [EF Core Documentation](https://docs.microsoft.com/en-us/ef
 Milestone | Release week
 ----------|-------------
 2.1.0-rc1-final | 6/3/2018
-2.1.0-rc2-final | TBD, see [milestone](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/milestone/7)
+2.1.0-rc2-final | 7/2/2018
 2.1.0 | TBD, see [milestone](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/milestone/7)
 
 #### Scaffolding Tutorial
