@@ -117,11 +117,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         {
             if (_serviceProviderHash == null)
             {
-                _serviceProviderHash = (base.GetServiceProviderHashCode() * 397) ^
-                                       (ServerVersion?.GetHashCode() ?? 0L) ^
-                                       (NullableCharSetBehavior?.GetHashCode() ?? 0L) ^
-                                       (AnsiCharSetInfo?.GetHashCode() ?? 0L) ^
-                                       (UnicodeCharSetInfo?.GetHashCode() ?? 0L);
+                _serviceProviderHash = (base.GetServiceProviderHashCode() * 397) ^ (ServerVersion?.GetHashCode() ?? 0L);
+                _serviceProviderHash = (_serviceProviderHash * 397) ^ (NullableCharSetBehavior?.GetHashCode() ?? 0L);
+                _serviceProviderHash = (_serviceProviderHash * 397) ^ (AnsiCharSetInfo?.GetHashCode() ?? 0L);
+                _serviceProviderHash = (_serviceProviderHash * 397) ^ (UnicodeCharSetInfo?.GetHashCode() ?? 0L);
             }
 
             return _serviceProviderHash.Value;

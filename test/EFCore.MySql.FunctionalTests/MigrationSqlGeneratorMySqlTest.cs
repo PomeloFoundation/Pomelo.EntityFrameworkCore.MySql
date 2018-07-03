@@ -316,7 +316,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.AddColumnOperation_with_computed_column_SQL();
 
             Assert.Equal(
-                @"ALTER TABLE `People` ADD `Birthday` date NULL AS CURRENT_TIMESTAMP;" + EOL,
+                @"ALTER TABLE `People` ADD `Birthday` date AS (CURRENT_TIMESTAMP) NULL;" + EOL,
                 Sql);
         }
 
@@ -502,6 +502,28 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
+        [Fact]
+        public virtual void AddForeignKeyOperation_with_long_name()
+        {
+            Generate(
+                new AddForeignKeyOperation
+                {
+                    Table = "People",
+                    Schema = "dbo",
+                    Name = "FK_ASuperLongForeignKeyNameThatIsDefinetelyNotGoingToFitInThe64CharactersLimit",
+                    Columns = new[] {"EmployerId1", "EmployerId2"},
+                    PrincipalTable = "Companies",
+                    PrincipalSchema = "hr",
+                    PrincipalColumns = new[] {"Id1", "Id2"},
+                    OnDelete = ReferentialAction.Cascade
+                });
+
+            Assert.Equal(
+                "ALTER TABLE `dbo`.`People` ADD CONSTRAINT `FK_ASuperLongForeignKeyNameThatIsDefinetelyNotGoingToFitInThe64C` FOREIGN KEY (`EmployerId1`, `EmployerId2`) REFERENCES `hr`.`Companies` (`Id1`, `Id2`) ON DELETE CASCADE;" +
+                EOL,
+                Sql);
+        }
+
         public override void AddForeignKeyOperation_without_name()
         {
             base.AddForeignKeyOperation_without_name();
@@ -661,6 +683,23 @@ DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;".Replace("\r", string.Emp
 
             Assert.Equal(
                 "CREATE INDEX `IX_People_Name` ON `People` (`Name`);" + EOL,
+                Sql);
+        }
+
+        [Fact]
+        public virtual void CreateIndexOperation_with_long_name()
+        {
+            Generate(
+                new CreateIndexOperation
+                {
+                    Name = "IX_ASuperLongForeignKeyNameThatIsDefinetelyNotGoingToFitInThe64CharactersLimit",
+                    Table = "People",
+                    Columns = new[] {"Name"},
+                    IsUnique = false
+                });
+
+            Assert.Equal(
+                "CREATE INDEX `IX_ASuperLongForeignKeyNameThatIsDefinetelyNotGoingToFitInThe64C` ON `People` (`Name`);" + EOL,
                 Sql);
         }
 
