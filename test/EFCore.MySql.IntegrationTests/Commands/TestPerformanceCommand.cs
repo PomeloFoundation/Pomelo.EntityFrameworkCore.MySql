@@ -80,6 +80,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands{
             PerfTest(SleepMillisecond, "Sleep 1ms", iterations, concurrency, ops).GetAwaiter().GetResult();
             Console.WriteLine("Total Sleep Commands: " + sleepNum);
             Console.WriteLine();
+
+            Console.WriteLine("Managed Memory: " + GC.GetTotalMemory(true)/(1024*1024) + "MiB");
         }
 
         public async Task PerfTest(Func<AppDb, Task> test, string testName, int iterations, int concurrency, int ops)
