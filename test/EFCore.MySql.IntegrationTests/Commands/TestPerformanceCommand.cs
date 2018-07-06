@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,6 +38,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands{
 
         public void Run(int iterations, int concurrency, int ops)
         {
+            void LogMemory()
+            {
+                Console.WriteLine("Managed Memory: " + GC.GetTotalMemory(false) / (1024 * 1024) + "MiB");
+                Console.WriteLine();
+            }
+
+            Console.WriteLine("EF_BATCH_SIZE is " + AppConfig.EfBatchSize);
 
             var recordNum = 0;
             async Task InsertOne(AppDb db)
@@ -54,6 +62,34 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands{
             {
                 var blog = await db.Blogs.OrderBy(m => m.Id).FirstOrDefaultAsync();
                 selected.Enqueue(blog.Title);
+            }
+
+            Task InsertOneHundred(AppDb db)
+            {
+                for (var i = 0; i < 100; ++i)
+                {
+                    var blog = new Blog
+                    {
+                        Title = "test " + Interlocked.Increment(ref recordNum)
+                    };
+                    db.Blogs.Add(blog);
+                }
+
+                db.SaveChanges();
+                return Task.CompletedTask;
+            }
+
+            var updatedNum = 0;
+            Task UpdateFirstHundred(AppDb db)
+            {
+                var blogs = db.Blogs.Take(100).ToList();
+                foreach (var blog in blogs)
+                {
+                    blog.Title = "updated " + Interlocked.Increment(ref updatedNum);
+                }
+
+                db.SaveChanges();
+                return Task.CompletedTask;
             }
 
             var sleepNum = 0;
@@ -77,16 +113,26 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands{
                 Console.WriteLine("First Record: " + firstRecord);
             Console.WriteLine();
 
+            PerfTest(InsertOneHundred, "Insert 100", iterations, concurrency, ops).GetAwaiter().GetResult();
+            LogMemory();
+            GC.Collect();
+
+            PerfTest(UpdateFirstHundred, "Update 100", iterations, concurrency, ops).GetAwaiter().GetResult();
+            LogMemory();
+            GC.Collect();
+
             PerfTest(SleepMillisecond, "Sleep 1ms", iterations, concurrency, ops).GetAwaiter().GetResult();
             Console.WriteLine("Total Sleep Commands: " + sleepNum);
             Console.WriteLine();
 
-            Console.WriteLine("Managed Memory: " + GC.GetTotalMemory(true)/(1024*1024) + "MiB");
+            LogMemory();
         }
 
         public async Task PerfTest(Func<AppDb, Task> test, string testName, int iterations, int concurrency, int ops)
         {
             var timers = new List<TimeSpan>();
+            var memoryResults = new List<long>();
+
             for (var iteration = 0; iteration < iterations; iteration++)
             {
                 // run the timed tests
@@ -103,6 +149,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands{
                     tasks.Add(callable());
                 }
                 await Task.WhenAll(tasks);
+
+                var managedMemory = GC.GetTotalMemory(false);
+                memoryResults.Add(managedMemory);
                 timers.Add(DateTime.UtcNow - start);
             }
             
@@ -114,6 +163,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands{
                               + timers.Min() + ", "
                               + TimeSpan.FromTicks(timers.Sum(timer => timer.Ticks) / timers.Count) + ", "
                               + timers.Max());
+
+            const double bytesPerMib = 1024 * 1024;
+            var memoryMin = memoryResults.Min() / bytesPerMib;
+            var memoryMax = memoryResults.Max() / bytesPerMib;
+            var memoryAvg = memoryResults.Sum() / bytesPerMib / memoryResults.Count;
+            Console.WriteLine($"Memory (Min, Avg, Max)    {memoryMin:F2}, {memoryAvg:F2}, {memoryMax:F2} MiB");
             Console.WriteLine();
         }
 
