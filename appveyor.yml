@@ -19,7 +19,7 @@ test_script:
   - ps: echo "Functional Migration Tests"; .\dotnet-run.ps1 dotnet test -c Release test\EFCore.MySql.FunctionalTests --filter "FullyQualifiedName~Pomelo.EntityFrameworkCore.MySql.FunctionalTests.MigrationSqlGeneratorMySqlTest|FullyQualifiedName~Pomelo.EntityFrameworkCore.MySql.FunctionalTests.MigrationSqlGeneratorMySql55Test"
   - ps: echo "Integration Tests applying migrations"; .\dotnet-run.ps1 dotnet run --project test\EFCore.MySql.IntegrationTests -c Release testMigrate
   - ps: echo "Integration Tests with EF_BATCH_SIZE=1"; .\dotnet-run.ps1 dotnet test -c Release test\EFCore.MySql.IntegrationTests
-  - ps: echo "Integration Tests with EF_BATCH_SIZE=10"; .\dotnet-run.ps1 dotnet test -c Release test\EFCore.MySql.IntegrationTests
+  - ps: echo "Integration Tests with EF_BATCH_SIZE=10"; $env:EF_BATCH_SIZE="10"; .\dotnet-run.ps1 dotnet test -c Release test\EFCore.MySql.IntegrationTests
   - ps: echo "Integration Tests with EF_RETRY_ON_FAILURE=3"; $env:EF_RETRY_ON_FAILURE="3"; .\dotnet-run.ps1 dotnet test -c Release test\EFCore.MySql.IntegrationTests
   - ps: echo "Integration Tests Building migrations with EF_DATABASE=pomelo_test2"; $env:EF_SCHEMA="pomelo_test2"; .\dotnet-run.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
   - ps: echo "Integration Tests with EF_SCHEMA=pomelo_test2"; $env:EF_SCHEMA="pomelo_test2"; .\dotnet-run.ps1 dotnet test -c Release test\EFCore.MySql.IntegrationTests
