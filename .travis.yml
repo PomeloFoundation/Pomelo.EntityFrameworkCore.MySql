@@ -38,7 +38,7 @@ script:
   - echo "Integration Tests scaffolding" && ./dotnet-run.sh ./test/EFCore.MySql.IntegrationTests/scripts/scaffold.sh
   - echo "Remove scaffolding files" && rm -rf ./test/EFCore.MySql.IntegrationTests/Scaffold
   - echo "Integration Tests with EF_BATCH_SIZE=1" && ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.IntegrationTests
-  - echo "Integration Tests with EF_BATCH_SIZE=10" && ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.IntegrationTests
+  - echo "Integration Tests with EF_BATCH_SIZE=10" && export EF_BATCH_SIZE="10" && ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.IntegrationTests
   - echo "Integration Tests with EF_RETRY_ON_FAILURE=3" && export EF_RETRY_ON_FAILURE="3" && ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.IntegrationTests
   - echo "Integration Tests legacy migrations" && ./dotnet-run.sh ./test/EFCore.MySql.IntegrationTests/scripts/legacy.sh
   - echo "Integration Tests Building migrations with EF_DATABASE=pomelo_test2" && export EF_SCHEMA="pomelo_test2" && ./dotnet-run.sh ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.sh
