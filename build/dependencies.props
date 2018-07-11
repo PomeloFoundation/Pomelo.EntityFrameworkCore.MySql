@@ -5,9 +5,9 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
     <!-- EFCore.MySql Dependencies -->
-    <MicrosoftEntityFrameworkCoreRelationalVersion>2.1.1</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MicrosoftEntityFrameworkCoreDesignVersion>2.1.1</MicrosoftEntityFrameworkCoreDesignVersion>
-    <MicrosoftExtensionsLoggingConsoleVersion>2.1.1</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftEntityFrameworkCoreRelationalVersion>2.1.0</MicrosoftEntityFrameworkCoreRelationalVersion>
+    <MicrosoftEntityFrameworkCoreDesignVersion>2.1.0</MicrosoftEntityFrameworkCoreDesignVersion>
+    <MicrosoftExtensionsLoggingConsoleVersion>2.1.0</MicrosoftExtensionsLoggingConsoleVersion>
     <MySqlConnectorVersion>0.42.1</MySqlConnectorVersion>
     <PomeloJsonObjectVersion>1.1.1</PomeloJsonObjectVersion>
     <!-- Shared Test Dependencies -->
@@ -15,12 +15,12 @@
     <XunitAssertPackageVersion>2.3.1</XunitAssertPackageVersion>
     <XunitCorePackageVersion>2.3.1</XunitCorePackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0-beta.1.build3958</XunitRunnerVisualStudioPackageVersion>
-    <MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>2.1.1</MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>
+    <MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>2.1.0</MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>
     <!-- EFCoreMySqlFunctionalTests Dependencies -->
-    <MicrosoftExtensionsConfigurationFileExtensionsVersion>2.1.1</MicrosoftExtensionsConfigurationFileExtensionsVersion>
-    <MicrosoftExtensionsConfigurationJsonVersion>2.1.1</MicrosoftExtensionsConfigurationJsonVersion>
+    <MicrosoftExtensionsConfigurationFileExtensionsVersion>2.1.0</MicrosoftExtensionsConfigurationFileExtensionsVersion>
+    <MicrosoftExtensionsConfigurationJsonVersion>2.1.0</MicrosoftExtensionsConfigurationJsonVersion>
     <!-- EFCoreMySqlIntegrationTests Dependencies -->
-    <MicrosoftAspNetCoreAllVersion>2.1.1</MicrosoftAspNetCoreAllVersion>
+    <MicrosoftAspNetCoreAllVersion>2.1.0</MicrosoftAspNetCoreAllVersion>
     <!-- EFCoreMySqlTests Dependencies -->
     <MicrosoftCodeAnalysisCSharpPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0</MicrosoftExtensionsDependencyModelPackageVersion>
