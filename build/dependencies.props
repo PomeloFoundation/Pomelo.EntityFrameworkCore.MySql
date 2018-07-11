@@ -6,8 +6,6 @@
   <PropertyGroup Label="Package Versions">
     <!-- EFCore.MySql Dependencies -->
     <MicrosoftEntityFrameworkCoreRelationalVersion>2.1.1</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MicrosoftEntityFrameworkCoreDesignVersion>2.1.1</MicrosoftEntityFrameworkCoreDesignVersion>
-    <MicrosoftExtensionsLoggingConsoleVersion>2.1.1</MicrosoftExtensionsLoggingConsoleVersion>
     <MySqlConnectorVersion>0.42.1</MySqlConnectorVersion>
     <PomeloJsonObjectVersion>1.1.1</PomeloJsonObjectVersion>
     <!-- Shared Test Dependencies -->
@@ -22,6 +20,7 @@
     <!-- EFCoreMySqlIntegrationTests Dependencies -->
     <MicrosoftAspNetCoreAllVersion>2.1.1</MicrosoftAspNetCoreAllVersion>
     <!-- EFCoreMySqlTests Dependencies -->
+    <MicrosoftEntityFrameworkCoreDesignVersion>2.1.1</MicrosoftEntityFrameworkCoreDesignVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0</MicrosoftExtensionsDependencyModelPackageVersion>
     <MoqVersion>4.8.2</MoqVersion>
