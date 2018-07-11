@@ -36,7 +36,7 @@ show variables like 'character_set_database';
 Ensure that your `.csproj` file has the following references.
 
 ```xml
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -44,8 +44,8 @@ Ensure that your `.csproj` file has the following references.
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.0" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.1.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.1" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.1.1" />
   </ItemGroup>
   
 </Project>
@@ -93,9 +93,7 @@ Refer to Microsoft's [EF Core Documentation](https://docs.microsoft.com/en-us/ef
 
 Milestone | Release week
 ----------|-------------
-2.1.0-rc1-final | 6/3/2018
-2.1.0-rc2-final | 7/2/2018
-2.1.1 | 7/8/2018, see [#630](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/630)
+2.1.1 | 7/8/2018
 
 #### Scaffolding Tutorial
 
