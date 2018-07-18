@@ -7,7 +7,7 @@
     <!-- EFCore.MySql Dependencies -->
     <MicrosoftEntityFrameworkCoreRelationalVersion>2.1.1</MicrosoftEntityFrameworkCoreRelationalVersion>
     <MySqlConnectorVersion>0.42.1</MySqlConnectorVersion>
-    <PomeloJsonObjectVersion>1.1.1</PomeloJsonObjectVersion>
+    <PomeloJsonObjectVersion>2.0.0</PomeloJsonObjectVersion>
     <!-- Shared Test Dependencies -->
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <XunitAssertPackageVersion>2.3.1</XunitAssertPackageVersion>
