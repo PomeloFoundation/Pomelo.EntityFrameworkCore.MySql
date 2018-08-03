@@ -70,7 +70,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         // guid
 	    private readonly GuidTypeMapping _uniqueidentifier   = new GuidTypeMapping("char(36)", DbType.Guid);
-        private readonly GuidTypeMapping _oldGuid            = new GuidTypeMapping("binary(16)", DbType.Guid);
+        private readonly GuidTypeMapping _oldGuid            = new MySqlOldGuidTypeMapping();
 
         readonly Dictionary<string, RelationalTypeMapping> _storeTypeMappings;
         readonly Dictionary<string, RelationalTypeMapping> _unicodeStoreTypeMappings;
