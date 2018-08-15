@@ -34,5 +34,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     throw new InvalidOperationException($"No BytesPerChar defined for CharSet '{CharSetName}'");
             }
         }
+
+        public override int GetHashCode()
+        {
+            return CharSet.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is CharSetInfo other)
+            {
+                return CharSet == other.CharSet;
+            }
+
+            return false;
+        }
     }
 }
