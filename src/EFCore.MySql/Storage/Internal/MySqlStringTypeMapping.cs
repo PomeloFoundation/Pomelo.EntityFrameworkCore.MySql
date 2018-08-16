@@ -105,5 +105,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             => IsUnicode
                 ? $"'{EscapeSqlLiteral((string)value)}'" // Interpolation okay; strings
                 : $"'{EscapeSqlLiteral((string)value)}'";
+        
+		protected override string EscapeSqlLiteral(string literal)
+        {
+            return literal.Replace("\\", "\\\\").Replace("'", "\\'");
+        }
     }
 }
