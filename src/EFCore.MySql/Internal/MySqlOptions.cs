@@ -31,6 +31,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             CharSetBehavior = mySqlOptions.NullableCharSetBehavior ?? CharSetBehavior;
             AnsiCharSetInfo = mySqlOptions.AnsiCharSetInfo ?? AnsiCharSetInfo;
             UnicodeCharSetInfo = mySqlOptions.UnicodeCharSetInfo ?? UnicodeCharSetInfo;
+            NoBackslashEscapes = mySqlOptions.NoBackslashEscapes;
         }
 
         public virtual void Validate(IDbContextOptions options)
@@ -77,5 +78,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         public virtual CharSetBehavior CharSetBehavior { get; private set; }
         public virtual CharSetInfo AnsiCharSetInfo { get; private set; }
         public virtual CharSetInfo UnicodeCharSetInfo { get; private set; }
+        public virtual bool NoBackslashEscapes { get; private set; }
     }
 }

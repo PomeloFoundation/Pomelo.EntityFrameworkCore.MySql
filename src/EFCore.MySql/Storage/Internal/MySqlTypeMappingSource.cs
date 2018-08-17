@@ -366,7 +366,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                         dbType,
                         !isAnsi,
                         size,
-                        isFixedLength);
+                        isFixedLength,
+                        _options.NoBackslashEscapes);
                 }
 
                 if (clrType == typeof(byte[]))
