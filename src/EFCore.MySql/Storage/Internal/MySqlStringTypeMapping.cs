@@ -111,11 +111,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         protected override string EscapeSqlLiteral(string literal)
         {
-            if (_noBackslashEscapes)
-            {
-                return base.EscapeSqlLiteral(literal);
-            }
-            return literal.Replace("\\", "\\\\").Replace("'", "\\'");
+            return _noBackslashEscapes
+                ? base.EscapeSqlLiteral(literal)
+                : base.EscapeSqlLiteral(literal).Replace("\\", "\\\\");
         }
     }
 }
