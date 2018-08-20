@@ -15,17 +15,19 @@ namespace Pomelo.EntityFrameworkCore.MySql
             Assert.Equal(new MySqlOptionsExtension().GetServiceProviderHashCode(), new MySqlOptionsExtension().GetServiceProviderHashCode());
 
             Assert.Equal(new MySqlOptionsExtension()
-                .WithAnsiCharSetInfo(new CharSetInfo(CharSet.Latin1))
-                .WithCharSetBehavior(CharSetBehavior.AppendToAllColumns)
-                .WithUnicodeCharSetInfo(new CharSetInfo(CharSet.Utf8mb4))
-                .WithServerVersion(new ServerVersion(new Version(1,2,3,4), ServerType.MySql))
-                .GetServiceProviderHashCode(),
+                    .WithAnsiCharSetInfo(new CharSetInfo(CharSet.Latin1))
+                    .WithCharSetBehavior(CharSetBehavior.AppendToAllColumns)
+                    .WithUnicodeCharSetInfo(new CharSetInfo(CharSet.Utf8mb4))
+                    .WithServerVersion(new ServerVersion(new Version(1, 2, 3, 4), ServerType.MySql))
+                    .DisableBackslashEscaping()
+                    .GetServiceProviderHashCode(),
                 new MySqlOptionsExtension()
-                .WithAnsiCharSetInfo(new CharSetInfo(CharSet.Latin1))
-                .WithCharSetBehavior(CharSetBehavior.AppendToAllColumns)
-                .WithUnicodeCharSetInfo(new CharSetInfo(CharSet.Utf8mb4))
-                .WithServerVersion(new ServerVersion(new Version(1, 2, 3, 4), ServerType.MySql))
-                .GetServiceProviderHashCode());
+                    .WithAnsiCharSetInfo(new CharSetInfo(CharSet.Latin1))
+                    .WithCharSetBehavior(CharSetBehavior.AppendToAllColumns)
+                    .WithUnicodeCharSetInfo(new CharSetInfo(CharSet.Utf8mb4))
+                    .WithServerVersion(new ServerVersion(new Version(1, 2, 3, 4), ServerType.MySql))
+                    .DisableBackslashEscaping()
+                    .GetServiceProviderHashCode());
         }
     }
 }
