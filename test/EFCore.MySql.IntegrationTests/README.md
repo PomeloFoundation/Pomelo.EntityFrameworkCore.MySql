@@ -9,13 +9,13 @@ Next, you must rebuild migrations.  Run the `scripts/rebuild.sh` script on Linux
 
 **Running Integration Tests**
 
-1. Configure the Databse
+1. Configure the Database
 2. Run `dotnet test`
 3. This will run through all of the tests in the Test/ directory.
 
 **Running Performance Tests**
 
-1. Configure the Databse
+1. Configure the Database
 2. Run `dotnet run`
 3. This will start a .NET Core MVC API application running on http://localhost:5000
 
