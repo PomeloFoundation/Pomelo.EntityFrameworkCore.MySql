@@ -62,6 +62,14 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
             => ExecutionStrategy(c => new MySqlRetryingExecutionStrategy(c, maxRetryCount));
 
         /// <summary>
+        ///     Configures string escaping in SQL query generation to ignore backslashes.
+        ///     This applies to both constant and parameter values (i. e. user input, potentially).
+        ///     Use this option if SQL mode NO_BACKSLASH_ESCAPES is guaranteed to be active.
+        /// </summary>
+        public virtual MySqlDbContextOptionsBuilder DisableBackslashEscaping() =>
+            WithOption(e => e.DisableBackslashEscaping());
+
+        /// <summary>
         ///     Configures the context to use the default retrying <see cref="IExecutionStrategy" />.
         /// </summary>
         /// <param name="maxRetryCount"> The maximum number of retry attempts. </param>

@@ -50,6 +50,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private readonly MySqlStringTypeMapping _nvarcharmax     =
             new MySqlStringTypeMapping("longtext CHARACTER SET ucs2", DbType.String, unicode: true);
 
+        private readonly MySqlStringTypeMapping _char_noBackslashEscapes        =
+            new MySqlStringTypeMapping("char", DbType.AnsiStringFixedLength, fixedLength: true, noBackslashEscapes:true);
+        private readonly MySqlStringTypeMapping _varchar_noBackslashEscapes     =
+            new MySqlStringTypeMapping("varchar", DbType.AnsiString, noBackslashEscapes: true);
+        private readonly MySqlStringTypeMapping _nchar_noBackslashEscapes       =
+            new MySqlStringTypeMapping("nchar", DbType.StringFixedLength, unicode: true, fixedLength: true, noBackslashEscapes: true);
+        private readonly MySqlStringTypeMapping _nvarchar_noBackslashEscapes    =
+            new MySqlStringTypeMapping("nvarchar", DbType.String, unicode: true, noBackslashEscapes: true);
+	    private readonly MySqlStringTypeMapping _varcharmax_noBackslashEscapes  =
+	        new MySqlStringTypeMapping("longtext CHARACTER SET latin1", DbType.AnsiString, noBackslashEscapes: true);
+        private readonly MySqlStringTypeMapping _nvarcharmax_noBackslashEscapes =
+            new MySqlStringTypeMapping("longtext CHARACTER SET ucs2", DbType.String, unicode: true, noBackslashEscapes: true);
+
         // DateTime
         private readonly MySqlDateTypeMapping _date                       = new MySqlDateTypeMapping("date");
         private readonly MySqlDateTimeTypeMapping _dateTime6              = new MySqlDateTimeTypeMapping("datetime(6)", precision: 6);
@@ -133,30 +146,41 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     { "longblob", _varbinary },
 
                     // string
-                    { "char", _char },
-                    { "varchar", _varchar },
-                    { "nchar", _nchar },
-                    { "nvarchar", _nvarchar },
-                    { "tinytext", _varcharmax },
-                    { "text", _varcharmax },
-                    { "mediumtext", _varcharmax },
-                    { "longtext", _varcharmax },
+                    { "char", options.NoBackslashEscapes ? _char_noBackslashEscapes : _char },
+                    { "varchar", options.NoBackslashEscapes ? _varchar_noBackslashEscapes : _varchar },
+                    { "nchar", options.NoBackslashEscapes ? _nchar_noBackslashEscapes : _nchar },
+                    { "nvarchar", options.NoBackslashEscapes ? _nvarchar_noBackslashEscapes : _nvarchar },
+                    { "tinytext", options.NoBackslashEscapes ? _varcharmax_noBackslashEscapes : _varcharmax },
+                    { "text", options.NoBackslashEscapes ? _varcharmax_noBackslashEscapes : _varcharmax },
+                    { "mediumtext", options.NoBackslashEscapes ? _varcharmax_noBackslashEscapes : _varcharmax },
+                    { "longtext", options.NoBackslashEscapes ? _varcharmax_noBackslashEscapes : _varcharmax },
 
                     // DateTime
                     { "date", _date }
                 };
 
-            _unicodeStoreTypeMappings
-                = new Dictionary<string, RelationalTypeMapping>(StringComparer.OrdinalIgnoreCase)
+            _unicodeStoreTypeMappings = options.NoBackslashEscapes
+                ? new Dictionary<string, RelationalTypeMapping>(StringComparer.OrdinalIgnoreCase)
                 {
-                    { "char", _nchar },
-                    { "varchar", _nvarchar },
-                    { "nchar", _nchar },
-                    { "nvarchar", _nvarchar },
-                    { "tinytext", _nvarcharmax },
-                    { "text", _nvarcharmax },
-                    { "mediumtext", _nvarcharmax },
-                    { "longtext", _nvarcharmax }
+                    {"char", _nchar_noBackslashEscapes},
+                    {"varchar", _nvarchar_noBackslashEscapes},
+                    {"nchar", _nchar_noBackslashEscapes},
+                    {"nvarchar", _nvarchar_noBackslashEscapes},
+                    {"tinytext", _nvarcharmax_noBackslashEscapes},
+                    {"text", _nvarcharmax_noBackslashEscapes},
+                    {"mediumtext", _nvarcharmax_noBackslashEscapes},
+                    {"longtext", _nvarcharmax_noBackslashEscapes}
+                }
+                : new Dictionary<string, RelationalTypeMapping>(StringComparer.OrdinalIgnoreCase)
+                {
+                    {"char", _nchar},
+                    {"varchar", _nvarchar},
+                    {"nchar", _nchar},
+                    {"nvarchar", _nvarchar},
+                    {"tinytext", _nvarcharmax},
+                    {"text", _nvarcharmax},
+                    {"mediumtext", _nvarcharmax},
+                    {"longtext", _nvarcharmax}
                 };
 
             _clrTypeMappings
@@ -366,7 +390,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                         dbType,
                         !isAnsi,
                         size,
-                        isFixedLength);
+                        isFixedLength,
+                        _options.NoBackslashEscapes);
                 }
 
                 if (clrType == typeof(byte[]))

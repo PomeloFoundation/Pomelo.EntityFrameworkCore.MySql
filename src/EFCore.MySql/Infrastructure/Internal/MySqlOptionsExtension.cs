@@ -26,6 +26,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
             NullableCharSetBehavior = copyFrom.NullableCharSetBehavior;
             AnsiCharSetInfo = copyFrom.AnsiCharSetInfo;
             UnicodeCharSetInfo = copyFrom.UnicodeCharSetInfo;
+            NoBackslashEscapes = copyFrom.NoBackslashEscapes;
         }
 
         protected override RelationalOptionsExtension Clone()
@@ -56,6 +57,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         /// </summary>
         public CharSetInfo UnicodeCharSetInfo { get; private set; }
 
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public bool NoBackslashEscapes { get; private set; }
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -113,6 +119,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
+        public MySqlOptionsExtension DisableBackslashEscaping()
+        {
+            var clone = (MySqlOptionsExtension)Clone();
+            clone.NoBackslashEscapes = true;
+            return clone;
+        }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public override long GetServiceProviderHashCode()
         {
             if (_serviceProviderHash == null)
@@ -121,6 +138,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                 _serviceProviderHash = (_serviceProviderHash * 397) ^ (NullableCharSetBehavior?.GetHashCode() ?? 0L);
                 _serviceProviderHash = (_serviceProviderHash * 397) ^ (AnsiCharSetInfo?.GetHashCode() ?? 0L);
                 _serviceProviderHash = (_serviceProviderHash * 397) ^ (UnicodeCharSetInfo?.GetHashCode() ?? 0L);
+                _serviceProviderHash = (_serviceProviderHash * 397) ^ NoBackslashEscapes.GetHashCode();
             }
 
             return _serviceProviderHash.Value;

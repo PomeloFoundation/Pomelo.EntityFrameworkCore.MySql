@@ -81,6 +81,19 @@ namespace YourNamespace // replace "YourNamespace" with the namespace of your ap
     }
 }
 ```
+#### NO_BACKSLASH_ESCAPES
+The escaping style can be configured to support SQL mode [NO_BACKSLASH_ESCAPES](https://dev.mysql.com/doc/refman/8.0/en/sql-mode.html#sqlmode_no_backslash_escapes) by adding `.DisableBackslashEscaping()` to your MySQL option configuration.
+```csharp
+mysqlOptions =>
+{
+    mysqlOptions
+    .ServerVersion(new Version(5, 7, 17), ServerType.MySql); // replace with your Server Version and Type
+    //further MySQL option configurations go here
+    .DisableBackslashEscaping();
+}
+```
+**PLEASE NOTE** This option does not set the SQL mode and will not check if it matches the actual database configuration either. Do not use this option unless you are absolutely sure it will always be set when queries are performed on the context. 
+As of today, it also **does not apply** to parameter values in insert or update statements; do not use it when the context is used to update entries.
 
 View our [MySql Provider Configuration Options Wiki Page](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/wiki/MySql-Provider-Configuration-Options) for a complete list of supported options.
 

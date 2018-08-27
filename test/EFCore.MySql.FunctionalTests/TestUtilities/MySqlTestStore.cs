@@ -13,24 +13,26 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
     public class MySqlTestStore : RelationalTestStore
     {
         public const int CommandTimeout = 30;
-        private bool _useConnectionString;
+        private readonly bool _useConnectionString;
+        private readonly bool _noBackslashEscapes;
 
-        public static MySqlTestStore GetOrCreate(string name, bool useConnectionString = false)
-            => new MySqlTestStore(name, useConnectionString: useConnectionString);
+        public static MySqlTestStore GetOrCreate(string name, bool useConnectionString = false, bool noBackslashEscapes = false)
+            => new MySqlTestStore(name, useConnectionString: useConnectionString, noBackslashEscapes: noBackslashEscapes);
 
         public static MySqlTestStore GetOrCreateInitialized(string name)
             => new MySqlTestStore(name).InitializeMySql(null, (Func<DbContext>)null, null);
 
-        public static MySqlTestStore Create(string name, bool useConnectionString = false)
-            => new MySqlTestStore(name, useConnectionString: useConnectionString, shared: false);
+        public static MySqlTestStore Create(string name, bool useConnectionString = false, bool noBackslashEscapes = false)
+            => new MySqlTestStore(name, useConnectionString: useConnectionString, shared: false, noBackslashEscapes: noBackslashEscapes);
 
         public static MySqlTestStore CreateInitialized(string name)
             => new MySqlTestStore(name, shared: false).InitializeMySql(null, (Func<DbContext>)null, null);
 
-        private MySqlTestStore(string name, bool useConnectionString = false, bool shared = true)
+        private MySqlTestStore(string name, bool useConnectionString = false, bool shared = true, bool noBackslashEscapes = false)
             : base(name, shared)
         {
             _useConnectionString = useConnectionString;
+            _noBackslashEscapes = noBackslashEscapes;
 
             ConnectionString = new MySqlConnectionStringBuilder(LazyConfig.Value["Data:ConnectionString"])
             {
@@ -47,12 +49,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 
         public override DbContextOptionsBuilder AddProviderOptions(DbContextOptionsBuilder builder)
             => _useConnectionString
-                ? builder.UseMySql(ConnectionString, AddOptions)
-                : builder.UseMySql(Connection, AddOptions);
+                ? builder.UseMySql(ConnectionString,x => AddOptions(x, _noBackslashEscapes))
+                : builder.UseMySql(Connection, x => AddOptions(x, _noBackslashEscapes));
 
         public static void AddOptions(MySqlDbContextOptionsBuilder builder)
         {
             builder.CommandTimeout(CommandTimeout).ServerVersion(LazyConfig.Value["Data:ServerVersion"]);
+        }
+
+        public static void AddOptions(MySqlDbContextOptionsBuilder builder, bool noBackslashEscapes)
+        {
+            AddOptions(builder);
+            if (noBackslashEscapes)
+            {
+                builder.DisableBackslashEscaping();
+            }
         }
 
         public MySqlTestStore InitializeMySql(IServiceProvider serviceProvider, Func<DbContext> createContext, Action<DbContext> seed)

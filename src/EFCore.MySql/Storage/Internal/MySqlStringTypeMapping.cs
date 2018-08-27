@@ -20,6 +20,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private const int AnsiMax = 8000;
 
         private readonly int _maxSpecificSize;
+        private readonly bool _noBackslashEscapes;
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -30,7 +31,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             DbType? dbType,
             bool unicode = false,
             int? size = null,
-            bool fixedLength = false)
+            bool fixedLength = false,
+            bool noBackslashEscapes = false)
             : this(
                 new RelationalTypeMappingParameters(
                     new CoreTypeMappingParameters(typeof(string)),
@@ -41,6 +43,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     size,
                     fixedLength))
         {
+            _noBackslashEscapes = noBackslashEscapes;
         }
 
         /// <summary>
@@ -105,5 +108,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             => IsUnicode
                 ? $"'{EscapeSqlLiteral((string)value)}'" // Interpolation okay; strings
                 : $"'{EscapeSqlLiteral((string)value)}'";
+
+        protected override string EscapeSqlLiteral(string literal)
+        {
+            return _noBackslashEscapes
+                ? base.EscapeSqlLiteral(literal)
+                : base.EscapeSqlLiteral(literal).Replace("\\", "\\\\");
+        }
     }
 }

@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore.Query.Expressions;
 using Microsoft.EntityFrameworkCore.Query.Sql;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
 {
@@ -24,15 +25,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
         protected override string TypedTrueLiteral => "TRUE";
         protected override string TypedFalseLiteral => "FALSE";
 
+        private readonly bool _noBackslashEscapes;
+
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public MySqlQuerySqlGenerator(
             [NotNull] QuerySqlGeneratorDependencies dependencies,
-            [NotNull] SelectExpression selectExpression)
+            [NotNull] SelectExpression selectExpression,
+                IMySqlOptions options)
             : base(dependencies, selectExpression)
         {
+            _noBackslashEscapes = options?.NoBackslashEscapes ?? false;
         }
 
         protected override void GenerateTop(SelectExpression selectExpression)
@@ -119,6 +124,25 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
             }
 
             return base.VisitBinary(binaryExpression);
+        }
+
+        protected override Expression VisitParameter(ParameterExpression parameterExpression)
+        {
+            if (_noBackslashEscapes)
+            {
+                //instead of having MySqlConnector replace parameter placeholders with escaped values
+                //(causing "parameterized" queries to fail with NO_BACKSLASH_ESCAPES),
+                //directly insert the value with only replacing ' with ''
+                Check.NotNull(parameterExpression, nameof(parameterExpression));
+                object value;
+                var isRegistered = ParameterValues.TryGetValue(parameterExpression.Name, out value);
+                if (isRegistered && value is string)
+                {
+                    return VisitConstant(Expression.Constant(value));
+                }
+            }
+
+            return base.VisitParameter(parameterExpression);
         }
 
         public virtual Expression VisitRegexp(RegexpExpression regexpExpression)
