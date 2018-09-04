@@ -5,22 +5,22 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
     <!-- EFCore.MySql Dependencies -->
-    <MicrosoftEntityFrameworkCoreRelationalVersion>2.1.1</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MySqlConnectorVersion>0.42.1</MySqlConnectorVersion>
+    <MicrosoftEntityFrameworkCoreRelationalVersion>2.1.2</MicrosoftEntityFrameworkCoreRelationalVersion>
+    <MySqlConnectorVersion>0.44.1</MySqlConnectorVersion>
     <PomeloJsonObjectVersion>2.0.0</PomeloJsonObjectVersion>
     <!-- Shared Test Dependencies -->
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <XunitAssertPackageVersion>2.3.1</XunitAssertPackageVersion>
     <XunitCorePackageVersion>2.3.1</XunitCorePackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0-beta.1.build3958</XunitRunnerVisualStudioPackageVersion>
-    <MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>2.1.1</MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>
+    <MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>2.1.2</MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>
     <!-- EFCoreMySqlFunctionalTests Dependencies -->
     <MicrosoftExtensionsConfigurationFileExtensionsVersion>2.1.1</MicrosoftExtensionsConfigurationFileExtensionsVersion>
     <MicrosoftExtensionsConfigurationJsonVersion>2.1.1</MicrosoftExtensionsConfigurationJsonVersion>
     <!-- EFCoreMySqlIntegrationTests Dependencies -->
-    <MicrosoftAspNetCoreAllVersion>2.1.1</MicrosoftAspNetCoreAllVersion>
+    <MicrosoftAspNetCoreAppVersion>2.1.1</MicrosoftAspNetCoreAppVersion>
     <!-- EFCoreMySqlTests Dependencies -->
-    <MicrosoftEntityFrameworkCoreDesignVersion>2.1.1</MicrosoftEntityFrameworkCoreDesignVersion>
+    <MicrosoftEntityFrameworkCoreDesignVersion>2.1.2</MicrosoftEntityFrameworkCoreDesignVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0</MicrosoftExtensionsDependencyModelPackageVersion>
     <MoqVersion>4.8.2</MoqVersion>

@@ -21,7 +21,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
 SELECT COUNT(*)
 FROM `Customers` AS `c`
-WHERE (`c`.`CompanyName` LIKE CONCAT(@__ef_filter__TenantPrefix_0, N'%') AND (LEFT(`c`.`CompanyName`, CHAR_LENGTH(@__ef_filter__TenantPrefix_0)) = @__ef_filter__TenantPrefix_0)) OR (@__ef_filter__TenantPrefix_0 = N'')");
+WHERE (`c`.`CompanyName` LIKE CONCAT(@__ef_filter__TenantPrefix_0, '%') AND (LEFT(`c`.`CompanyName`, CHAR_LENGTH(@__ef_filter__TenantPrefix_0)) = @__ef_filter__TenantPrefix_0)) OR (@__ef_filter__TenantPrefix_0 = '')");
         }
 
         private void AssertSql(params string[] expected)

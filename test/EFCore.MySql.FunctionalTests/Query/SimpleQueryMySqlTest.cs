@@ -175,7 +175,7 @@ FROM `Orders` AS `o`");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` LIKE CONCAT(N'M', N'%') AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(N'M')) = N'M')");
+WHERE `c`.`ContactName` LIKE CONCAT('M', '%') AND (LEFT(`c`.`ContactName`, CHAR_LENGTH('M')) = 'M')");
         }
 
         public override void String_StartsWith_Identity()
@@ -185,7 +185,7 @@ WHERE `c`.`ContactName` LIKE CONCAT(N'M', N'%') AND (LEFT(`c`.`ContactName`, CHA
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, N'%') AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`)) OR (`c`.`ContactName` = N'')");
+WHERE (`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, '%') AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`)) OR (`c`.`ContactName` = '')");
         }
 
         public override void String_StartsWith_Column()
@@ -195,7 +195,7 @@ WHERE (`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, N'%') AND (LEFT(`c`.`Con
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, N'%') AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`)) OR (`c`.`ContactName` = N'')");
+WHERE (`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, '%') AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`)) OR (`c`.`ContactName` = '')");
         }
 
         public override void String_StartsWith_MethodCall()
@@ -207,7 +207,7 @@ WHERE (`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, N'%') AND (LEFT(`c`.`Con
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` LIKE CONCAT(@__LocalMethod1_0, N'%') AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(@__LocalMethod1_0)) = @__LocalMethod1_0)) OR (@__LocalMethod1_0 = N'')");
+WHERE (`c`.`ContactName` LIKE CONCAT(@__LocalMethod1_0, '%') AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(@__LocalMethod1_0)) = @__LocalMethod1_0)) OR (@__LocalMethod1_0 = '')");
         }
 
         public override void String_EndsWith_Literal()
@@ -217,7 +217,7 @@ WHERE (`c`.`ContactName` LIKE CONCAT(@__LocalMethod1_0, N'%') AND (LEFT(`c`.`Con
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE RIGHT(`c`.`ContactName`, CHAR_LENGTH(N'b')) = N'b'");
+WHERE RIGHT(`c`.`ContactName`, CHAR_LENGTH('b')) = 'b'");
         }
 
         public override void String_EndsWith_Identity()
@@ -227,7 +227,7 @@ WHERE RIGHT(`c`.`ContactName`, CHAR_LENGTH(N'b')) = N'b'");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`) OR (`c`.`ContactName` = N'')");
+WHERE (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`) OR (`c`.`ContactName` = '')");
         }
 
         public override void String_EndsWith_Column()
@@ -237,7 +237,7 @@ WHERE (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactNa
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`) OR (`c`.`ContactName` = N'')");
+WHERE (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`) OR (`c`.`ContactName` = '')");
         }
 
         public override void String_EndsWith_MethodCall()
@@ -249,7 +249,7 @@ WHERE (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactNa
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (RIGHT(`c`.`ContactName`, CHAR_LENGTH(@__LocalMethod2_0)) = @__LocalMethod2_0) OR (@__LocalMethod2_0 = N'')");
+WHERE (RIGHT(`c`.`ContactName`, CHAR_LENGTH(@__LocalMethod2_0)) = @__LocalMethod2_0) OR (@__LocalMethod2_0 = '')");
         }
 
         public override void String_Contains_Literal()
@@ -262,7 +262,7 @@ WHERE (RIGHT(`c`.`ContactName`, CHAR_LENGTH(@__LocalMethod2_0)) = @__LocalMethod
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE LOCATE(N'M', `c`.`ContactName`) > 0");
+WHERE LOCATE('M', `c`.`ContactName`) > 0");
         }
 
         public override void String_Contains_Identity()
@@ -272,7 +272,7 @@ WHERE LOCATE(N'M', `c`.`ContactName`) > 0");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0) OR (`c`.`ContactName` = N'')");
+WHERE (LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0) OR (`c`.`ContactName` = '')");
         }
 
         public override void String_Contains_Column()
@@ -282,7 +282,7 @@ WHERE (LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0) OR (`c`.`ContactName` =
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0) OR (`c`.`ContactName` = N'')");
+WHERE (LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0) OR (`c`.`ContactName` = '')");
         }
 
         public override void String_Contains_MethodCall()
@@ -297,7 +297,7 @@ WHERE (LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0) OR (`c`.`ContactName` =
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LOCATE(@__LocalMethod1_0, `c`.`ContactName`) > 0) OR (@__LocalMethod1_0 = N'')");
+WHERE (LOCATE(@__LocalMethod1_0, `c`.`ContactName`) > 0) OR (@__LocalMethod1_0 = '')");
         }
 
         public override void IsNullOrWhiteSpace_in_predicate()
@@ -307,7 +307,7 @@ WHERE (LOCATE(@__LocalMethod1_0, `c`.`ContactName`) > 0) OR (@__LocalMethod1_0 =
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`Region` IS NULL OR (LTRIM(RTRIM(`c`.`Region`)) = N'')");
+WHERE `c`.`Region` IS NULL OR (LTRIM(RTRIM(`c`.`Region`)) = '')");
         }
 
         public override void Where_string_length()
@@ -327,7 +327,7 @@ WHERE CHAR_LENGTH(`c`.`City`) = 6");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LOCATE(N'Sea', `c`.`City`) - 1) <> -1");
+WHERE (LOCATE('Sea', `c`.`City`) - 1) <> -1");
         }
 
         public override void Indexof_with_emptystring()
@@ -335,9 +335,9 @@ WHERE (LOCATE(N'Sea', `c`.`City`) - 1) <> -1");
             base.Indexof_with_emptystring();
 
             AssertSql(
-                @"SELECT LOCATE(N'', `c`.`ContactName`) - 1
+                @"SELECT LOCATE('', `c`.`ContactName`) - 1
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` = N'ALFKI'");
+WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
         public override void Where_string_replace()
@@ -347,7 +347,7 @@ WHERE `c`.`CustomerID` = N'ALFKI'");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE REPLACE(`c`.`City`, N'Sea', N'Rea') = N'Reattle'");
+WHERE REPLACE(`c`.`City`, 'Sea', 'Rea') = 'Reattle'");
         }
 
         public override void Replace_with_emptystring()
@@ -355,9 +355,9 @@ WHERE REPLACE(`c`.`City`, N'Sea', N'Rea') = N'Reattle'");
             base.Replace_with_emptystring();
 
             AssertSql(
-                @"SELECT REPLACE(`c`.`ContactName`, N'ari', N'')
+                @"SELECT REPLACE(`c`.`ContactName`, 'ari', '')
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` = N'ALFKI'");
+WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
         public override void Where_string_substring()
@@ -367,7 +367,7 @@ WHERE `c`.`CustomerID` = N'ALFKI'");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE SUBSTRING(`c`.`City`, 2, 2) = N'ea'");
+WHERE SUBSTRING(`c`.`City`, 2, 2) = 'ea'");
         }
 
         public override void Substring_with_zero_startindex()
@@ -377,7 +377,7 @@ WHERE SUBSTRING(`c`.`City`, 2, 2) = N'ea'");
             AssertSql(
                 @"SELECT SUBSTRING(`c`.`ContactName`, 1, 3)
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` = N'ALFKI'");
+WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
         public override void Substring_with_constant()
@@ -387,7 +387,7 @@ WHERE `c`.`CustomerID` = N'ALFKI'");
             AssertSql(
                 @"SELECT SUBSTRING(`c`.`ContactName`, 2, 3)
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` = N'ALFKI'");
+WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
         public override void Substring_with_closure()
@@ -399,7 +399,7 @@ WHERE `c`.`CustomerID` = N'ALFKI'");
 
 SELECT SUBSTRING(`c`.`ContactName`, @__start_0 + 1, 3)
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` = N'ALFKI'");
+WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
         public override void Substring_with_client_eval()
@@ -409,7 +409,7 @@ WHERE `c`.`CustomerID` = N'ALFKI'");
             AssertSql(
                 @"SELECT `c`.`ContactName`
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` = N'ALFKI'");
+WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
         public override void Substring_with_zero_length()
@@ -419,7 +419,7 @@ WHERE `c`.`CustomerID` = N'ALFKI'");
             AssertSql(
                 @"SELECT SUBSTRING(`c`.`ContactName`, 3, 0)
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` = N'ALFKI'");
+WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
         public override void Where_math_abs1()
@@ -492,7 +492,7 @@ WHERE `od`.`OrderID` = 11077");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE LOWER(`c`.`CustomerID`) = N'alfki'");
+WHERE LOWER(`c`.`CustomerID`) = 'alfki'");
         }
 
         public override void Where_string_to_upper()
@@ -502,7 +502,7 @@ WHERE LOWER(`c`.`CustomerID`) = N'alfki'");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE UPPER(`c`.`CustomerID`) = N'ALFKI'");
+WHERE UPPER(`c`.`CustomerID`) = 'ALFKI'");
         }
 
         public override void TrimStart_without_arguments_in_predicate()
@@ -512,7 +512,7 @@ WHERE UPPER(`c`.`CustomerID`) = N'ALFKI'");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE LTRIM(`c`.`ContactTitle`) = N'Owner'");
+WHERE LTRIM(`c`.`ContactTitle`) = 'Owner'");
         }
 
         public override void TrimStart_with_char_argument_in_predicate()
@@ -540,7 +540,7 @@ FROM `Customers` AS `c`");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE RTRIM(`c`.`ContactTitle`) = N'Owner'");
+WHERE RTRIM(`c`.`ContactTitle`) = 'Owner'");
         }
 
         public override void TrimEnd_with_char_argument_in_predicate()
@@ -568,7 +568,7 @@ FROM `Customers` AS `c`");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE LTRIM(RTRIM(`c`.`ContactTitle`)) = N'Owner'");
+WHERE LTRIM(RTRIM(`c`.`ContactTitle`)) = 'Owner'");
         }
 
         public override void Trim_with_char_argument_in_predicate()

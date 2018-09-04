@@ -110,6 +110,8 @@ Refer to Microsoft's [EF Core Documentation](https://docs.microsoft.com/en-us/ef
 Milestone | Release week
 ----------|-------------
 2.1.1 | 7/8/2018
+2.1.2 | 9/4/2018
+2.2.0 | After [upstream](https://github.com/aspnet/entityframeworkcore) 2.2.0 release
 
 #### Scaffolding Tutorial
 
