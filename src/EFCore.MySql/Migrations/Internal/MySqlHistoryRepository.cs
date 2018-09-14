@@ -13,6 +13,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
 {
     public class MySqlHistoryRepository : HistoryRepository
     {
+        private const string MigrationsScript = nameof(MigrationsScript);
 
         public MySqlHistoryRepository(
             [NotNull] HistoryRepositoryDependencies dependencies)
@@ -52,22 +53,32 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
 
         public override string GetCreateIfNotExistsScript()
         {
-            return GetCreateScript();
+            var script = GetCreateScript();
+            return script.Insert(script.IndexOf("CREATE TABLE", StringComparison.Ordinal) + 12, " IF NOT EXISTS");
         }
 
-        public override string GetBeginIfNotExistsScript(string migrationId)
-        {
-            throw new NotSupportedException("Generating idempotent scripts for migration is not currently supported by MySql");
-        }
+        public override string GetBeginIfNotExistsScript(string migrationId) => $@"
+DROP PROCEDURE IF EXISTS {MigrationsScript};
+DELIMITER //
+CREATE PROCEDURE {MigrationsScript}()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM {SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema)} WHERE ""{MigrationIdColumnName}"" = '{migrationId}') THEN
+";
 
-        public override string GetBeginIfExistsScript(string migrationId)
-        {
-            throw new NotSupportedException("Generating idempotent scripts for migration is not currently supported by MySql");
-        }
+        public override string GetBeginIfExistsScript(string migrationId) => $@"
+DROP PROCEDURE IF EXISTS {MigrationsScript};
+DELIMITER //
+CREATE PROCEDURE {MigrationsScript}()
+BEGIN
+    IF EXISTS(SELECT 1 FROM {SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema)} WHERE ""{MigrationIdColumnName}"" = '{migrationId}') THEN
+";
 
-        public override string GetEndIfScript()
-        {
-            throw new NotSupportedException("Generating idempotent scripts for migration is not currently supported by MySql");
-        }
+        public override string GetEndIfScript() => $@"
+    END IF;
+END //
+DELIMITER ;
+CALL {MigrationsScript}();
+DROP PROCEDURE {MigrationsScript};
+";
     }
 }
