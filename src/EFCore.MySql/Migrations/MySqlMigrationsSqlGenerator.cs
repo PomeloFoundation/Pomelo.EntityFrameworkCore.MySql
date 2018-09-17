@@ -1198,7 +1198,7 @@ END;".Replace("\r", string.Empty).Replace("\n", Environment.NewLine));
 
             if (referentialAction == ReferentialAction.Restrict)
             {
-                builder.Append("NO ACTION");
+                builder.Append("RESTRICT");
             }
             else
             {
