@@ -930,7 +930,7 @@ ALTER TABLE `dbo`.`People` DROP PRIMARY KEY;".Replace("\r", string.Empty).Replac
             base.DropUniqueConstraintOperation();
 
             Assert.Equal(
-                "ALTER TABLE `dbo`.`People` DROP CONSTRAINT `AK_People_SSN`;" + EOL,
+                "ALTER TABLE `dbo`.`People` DROP KEY `AK_People_SSN`;" + EOL,
                 Sql);
         }
 
