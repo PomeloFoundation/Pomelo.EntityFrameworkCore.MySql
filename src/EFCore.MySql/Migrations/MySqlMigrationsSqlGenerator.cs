@@ -474,7 +474,47 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             IModel model,
             MigrationCommandListBuilder builder)
             => Generate(operation, model, builder, terminate: true);
+            
+        /// <summary>
+        ///     Builds commands for the given <see cref="DropUniqueConstraintOperation" /> by making calls on the given
+        ///     <see cref="MigrationCommandListBuilder" />, and then terminates the final command.
+        /// </summary>
+        /// <param name="operation"> The operation. </param>
+        /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
+        /// <param name="builder"> The command builder to use to build the commands. </param>
+        protected override void Generate(
+            DropUniqueConstraintOperation operation, IModel model, MigrationCommandListBuilder builder)
+            => Generate(operation, model, builder, terminate: true);
 
+        /// <summary>
+        ///     Builds commands for the given <see cref="DropUniqueConstraintOperation" /> by making calls on the given
+        ///     <see cref="MigrationCommandListBuilder" />, and then terminates the final command.
+        /// </summary>
+        /// <param name="operation"> The operation. </param>
+        /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
+        /// <param name="builder"> The command builder to use to build the commands. </param>
+        /// <param name="terminate"> Indicates whether or not to terminate the command after generating SQL for the operation. </param>
+        protected virtual void Generate(
+            DropUniqueConstraintOperation operation,
+            IModel model,
+            MigrationCommandListBuilder builder,
+            bool terminate)
+        {
+            Check.NotNull(operation, nameof(operation));
+            Check.NotNull(builder, nameof(builder));
+
+            builder
+                .Append("ALTER TABLE ")
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
+                .Append(" DROP KEY ")
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name));
+
+            if (terminate)
+            {
+                builder.AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
+                EndStatement(builder);
+            }
+        }
         /// <summary>
         ///     Builds commands for the given <see cref="DropForeignKeyOperation" /> by making calls on the given
         ///     <see cref="MigrationCommandListBuilder" />, and then terminates the final command.
