@@ -820,7 +820,7 @@ DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;".Replace("\r", string.Emp
             Generate(migrationBuilder.Operations.ToArray());
 
             Assert.Equal(
-                "ALTER TABLE `Person` CHANGE `Name` `FullName` VARCHAR(4000)",
+                "ALTER TABLE `Person` CHANGE `Name` `FullName` VARCHAR(4000);" + EOL,
                 Sql);
         }
 
@@ -841,7 +841,7 @@ DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;".Replace("\r", string.Emp
                 migrationBuilder.Operations.ToArray());
 
             Assert.Equal(
-                "ALTER TABLE `Person` CHANGE `Name` `FullName` longtext NULL",
+                "ALTER TABLE `Person` CHANGE `Name` `FullName` longtext NULL;" + EOL,
                 Sql);
         }
 
