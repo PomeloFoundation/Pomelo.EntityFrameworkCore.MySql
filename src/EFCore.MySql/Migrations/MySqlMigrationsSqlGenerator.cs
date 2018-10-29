@@ -592,7 +592,8 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 builder
                     .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName))
                     .Append(" ")
-                    .Append(type);
+                    .Append(type)
+                    .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
 
                 EndStatement(builder);
                 return;
@@ -639,7 +640,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 operation,
                 model,
                 builder);
-
+            builder.AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
             EndStatement(builder);
         }
 
