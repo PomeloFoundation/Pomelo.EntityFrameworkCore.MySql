@@ -121,7 +121,7 @@ DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
 CREATE PROCEDURE MigrationsScript()
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE ""MigrationId"" = '00000000000001_Migration1') THEN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000001_Migration1') THEN
 
     CREATE TABLE `Table1` (
         `Id` int NOT NULL,
@@ -139,7 +139,7 @@ DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
 CREATE PROCEDURE MigrationsScript()
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE ""MigrationId"" = '00000000000001_Migration1') THEN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000001_Migration1') THEN
 
     INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
     VALUES ('00000000000001_Migration1', '7.0.0-test');
@@ -155,7 +155,7 @@ DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
 CREATE PROCEDURE MigrationsScript()
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE ""MigrationId"" = '00000000000002_Migration2') THEN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000002_Migration2') THEN
 
     ALTER TABLE `Table1` RENAME `Table2`;
 
@@ -170,7 +170,7 @@ DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
 CREATE PROCEDURE MigrationsScript()
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE ""MigrationId"" = '00000000000002_Migration2') THEN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000002_Migration2') THEN
 
     INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
     VALUES ('00000000000002_Migration2', '7.0.0-test');
@@ -186,7 +186,7 @@ DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
 CREATE PROCEDURE MigrationsScript()
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE ""MigrationId"" = '00000000000003_Migration3') THEN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000003_Migration3') THEN
 
     INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
     VALUES ('00000000000003_Migration3', '7.0.0-test');
@@ -262,7 +262,7 @@ DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
 CREATE PROCEDURE MigrationsScript()
 BEGIN
-    IF EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE ""MigrationId"" = '00000000000002_Migration2') THEN
+    IF EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000002_Migration2') THEN
 
     ALTER TABLE `Table2` RENAME `Table1`;
 
@@ -277,7 +277,7 @@ DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
 CREATE PROCEDURE MigrationsScript()
 BEGIN
-    IF EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE ""MigrationId"" = '00000000000002_Migration2') THEN
+    IF EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000002_Migration2') THEN
 
     DELETE FROM `__EFMigrationsHistory`
     WHERE `MigrationId` = '00000000000002_Migration2';
@@ -293,7 +293,7 @@ DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
 CREATE PROCEDURE MigrationsScript()
 BEGIN
-    IF EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE ""MigrationId"" = '00000000000001_Migration1') THEN
+    IF EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000001_Migration1') THEN
 
     DROP TABLE `Table1`;
 
@@ -308,7 +308,7 @@ DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
 CREATE PROCEDURE MigrationsScript()
 BEGIN
-    IF EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE ""MigrationId"" = '00000000000001_Migration1') THEN
+    IF EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000001_Migration1') THEN
 
     DELETE FROM `__EFMigrationsHistory`
     WHERE `MigrationId` = '00000000000001_Migration1';

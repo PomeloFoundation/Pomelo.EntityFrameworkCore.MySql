@@ -62,7 +62,7 @@ DROP PROCEDURE IF EXISTS {MigrationsScript};
 DELIMITER //
 CREATE PROCEDURE {MigrationsScript}()
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM {SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema)} WHERE ""{MigrationIdColumnName}"" = '{migrationId}') THEN
+    IF NOT EXISTS(SELECT 1 FROM {SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema)} WHERE {SqlGenerationHelper.DelimitIdentifier(MigrationIdColumnName)} = '{migrationId}') THEN
 ";
 
         public override string GetBeginIfExistsScript(string migrationId) => $@"
@@ -70,7 +70,7 @@ DROP PROCEDURE IF EXISTS {MigrationsScript};
 DELIMITER //
 CREATE PROCEDURE {MigrationsScript}()
 BEGIN
-    IF EXISTS(SELECT 1 FROM {SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema)} WHERE ""{MigrationIdColumnName}"" = '{migrationId}') THEN
+    IF EXISTS(SELECT 1 FROM {SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema)} WHERE {SqlGenerationHelper.DelimitIdentifier(MigrationIdColumnName)} = '{migrationId}') THEN
 ";
 
         public override string GetEndIfScript() => $@"
