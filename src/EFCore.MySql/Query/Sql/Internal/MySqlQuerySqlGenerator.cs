@@ -126,6 +126,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
             return base.VisitBinary(binaryExpression);
         }
 
+        private bool _isParameterReplaced = false;
+        public override bool IsCacheable => !_isParameterReplaced && base.IsCacheable;
+
         protected override Expression VisitParameter(ParameterExpression parameterExpression)
         {
             if (_noBackslashEscapes)
@@ -138,6 +141,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
                 var isRegistered = ParameterValues.TryGetValue(parameterExpression.Name, out value);
                 if (isRegistered && value is string)
                 {
+                    _isParameterReplaced = true;
                     return VisitConstant(Expression.Constant(value));
                 }
             }

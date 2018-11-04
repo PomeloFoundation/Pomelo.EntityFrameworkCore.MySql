@@ -70,5 +70,25 @@ WHERE `x`.`CompanyName` = @__companyName_0");
 FROM `Customers` AS `x`
 WHERE `x`.`CompanyName` IN ('Back\\slash''s Operation', 'B''s Beverages')");
         }
+
+        [Fact]
+        public void Where_query_multiple_with_different_parameter()
+        {
+            base.Where_query_escapes_parameter(@"Back\slash's Operation");
+            base.Where_query_escapes_parameter(@"Back\slash's 2nd Operation");
+            AssertBaseline(
+            // first operation
+@"@__companyName_0='Back\slash's Operation' (Size = 4000)
+
+SELECT COUNT(*)
+FROM `Customers` AS `x`
+WHERE `x`.`CompanyName` = @__companyName_0",
+            // second operation
+@"@__companyName_0='Back\slash's 2nd Operation' (Size = 4000)
+
+SELECT COUNT(*)
+FROM `Customers` AS `x`
+WHERE `x`.`CompanyName` = @__companyName_0");
+        }
     }
 }
