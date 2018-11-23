@@ -49,6 +49,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 	        new MySqlStringTypeMapping("longtext CHARACTER SET latin1", DbType.AnsiString);
         private readonly MySqlStringTypeMapping _nvarcharmax     =
             new MySqlStringTypeMapping("longtext CHARACTER SET ucs2", DbType.String, unicode: true);
+        private readonly MySqlStringTypeMapping _enum =
+            new MySqlStringTypeMapping("enum", DbType.String, unicode: true, noBackslashEscapes: true);
+
 
         private readonly MySqlStringTypeMapping _char_noBackslashEscapes        =
             new MySqlStringTypeMapping("char", DbType.AnsiStringFixedLength, fixedLength: true, noBackslashEscapes:true);
@@ -62,6 +65,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 	        new MySqlStringTypeMapping("longtext CHARACTER SET latin1", DbType.AnsiString, noBackslashEscapes: true);
         private readonly MySqlStringTypeMapping _nvarcharmax_noBackslashEscapes =
             new MySqlStringTypeMapping("longtext CHARACTER SET ucs2", DbType.String, unicode: true, noBackslashEscapes: true);
+        private readonly MySqlStringTypeMapping _enum_noBackkSlashEscapes=
+            new MySqlStringTypeMapping("enum", DbType.String, unicode: true, noBackslashEscapes: true);
 
         // DateTime
         private readonly MySqlDateTypeMapping _date                       = new MySqlDateTypeMapping("date");
@@ -154,6 +159,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     { "text", options.NoBackslashEscapes ? _varcharmax_noBackslashEscapes : _varcharmax },
                     { "mediumtext", options.NoBackslashEscapes ? _varcharmax_noBackslashEscapes : _varcharmax },
                     { "longtext", options.NoBackslashEscapes ? _varcharmax_noBackslashEscapes : _varcharmax },
+                    { "enum", options.NoBackslashEscapes ? _enum_noBackkSlashEscapes : _enum },
 
                     // DateTime
                     { "date", _date }
@@ -169,7 +175,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     {"tinytext", _nvarcharmax_noBackslashEscapes},
                     {"text", _nvarcharmax_noBackslashEscapes},
                     {"mediumtext", _nvarcharmax_noBackslashEscapes},
-                    {"longtext", _nvarcharmax_noBackslashEscapes}
+                    {"longtext", _nvarcharmax_noBackslashEscapes},
+                    {"enum", _enum_noBackkSlashEscapes}
                 }
                 : new Dictionary<string, RelationalTypeMapping>(StringComparer.OrdinalIgnoreCase)
                 {
@@ -180,7 +187,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     {"tinytext", _nvarcharmax},
                     {"text", _nvarcharmax},
                     {"mediumtext", _nvarcharmax},
-                    {"longtext", _nvarcharmax}
+                    {"longtext", _nvarcharmax},
+                    {"enum", _enum}
                 };
 
             _clrTypeMappings
