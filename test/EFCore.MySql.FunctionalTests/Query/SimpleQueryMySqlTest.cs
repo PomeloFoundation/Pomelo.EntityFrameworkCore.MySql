@@ -839,6 +839,70 @@ WHERE `t`.`c` < @__nextYear_0");
             base.Where_multiple_contains_in_subquery_with_or();
         }
 
+        [ConditionalFact]
+        public void PadLeft_without_second_arg()
+        {
+            AssertSingleResult<Customer>(
+                    customer => customer.Where(r => r.CustomerID.PadLeft(2) == "AL").Count(),
+                    asserter: (_, a) =>
+                    {
+                        var len = (int)a;
+                        Assert.Equal(len, 1);
+                        AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `r`
+WHERE LPAD(`r`.`CustomerID`, 2, ' ') = 'AL'");
+                    }
+                );
+        }
+
+        [ConditionalFact]
+        public void PadLeft_with_second_arg()
+        {
+            AssertSingleResult<Customer>(
+                    customer => customer.Where(r => r.CustomerID.PadLeft(3, 'x') == "AL").Count(),
+                    asserter: (_, a) =>
+                    {
+                        var len = (int)a;
+                        Assert.Equal(len, 0);
+                        AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `r`
+WHERE LPAD(`r`.`CustomerID`, 3, 'x') = 'AL'");
+                    }
+                );
+        }
+
+        [ConditionalFact]
+        public void PadRight_without_second_arg()
+        {
+            AssertSingleResult<Customer>(
+                    customer => customer.Where(r => r.CustomerID.PadRight(3) == "AL").Count(),
+                    asserter: (_, a) =>
+                    {
+                        var len = (int)a;
+                        Assert.Equal(len, 0);
+                        AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `r`
+WHERE RPAD(`r`.`CustomerID`, 3, ' ') = 'AL'");
+                    }
+                );
+        }
+
+        [ConditionalFact]
+        public void PadRight_with_second_arg()
+        {
+            AssertSingleResult<Customer>(
+                  customer => customer.Where(r => r.CustomerID.PadRight(4, 'c') == "AL").Count(),
+                  asserter: (_, a) =>
+                  {
+                      var len = (int)a;
+                      Assert.Equal(len, 0);
+                      AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `r`
+WHERE RPAD(`r`.`CustomerID`, 4, 'c') = 'AL'");
+                  }
+              );
+        }
+
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
     }
