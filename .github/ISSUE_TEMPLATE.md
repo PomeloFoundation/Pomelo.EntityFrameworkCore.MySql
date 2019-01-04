@@ -17,5 +17,6 @@ Stack trace:
 MySQL version: 
 Operating system: 
 Pomelo.EntityFrameworkCore.MySql version:
+Microsoft.AspNetCore.App version:
 
 Other details about my project setup:
