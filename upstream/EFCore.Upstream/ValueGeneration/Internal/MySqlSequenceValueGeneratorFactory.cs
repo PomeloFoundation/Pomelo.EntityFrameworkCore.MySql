@@ -60,6 +60,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.ValueGeneration.Internal
                 return new MySqlSequenceHiLoValueGenerator<int>(_rawSqlCommandBuilder, _sqlGenerator, generatorState, connection);
             }
 
+            if (type == typeof(decimal))
+            {
+                return new MySqlSequenceHiLoValueGenerator<decimal>(_rawSqlCommandBuilder, _sqlGenerator, generatorState, connection);
+            }
+
             if (type == typeof(short))
             {
                 return new MySqlSequenceHiLoValueGenerator<short>(_rawSqlCommandBuilder, _sqlGenerator, generatorState, connection);

@@ -107,7 +107,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private IReadOnlyList<MigrationCommand> CreateCreateOperations()
         {
             var builder = new SqlConnectionStringBuilder(_connection.DbConnection.ConnectionString);
-            return Dependencies.MigrationsSqlGenerator.Generate(new[] { new MySqlCreateDatabaseOperation { Name = builder.InitialCatalog, FileName = builder.AttachDBFilename } });
+            return Dependencies.MigrationsSqlGenerator.Generate(
+                new[]
+                {
+                    new MySqlCreateDatabaseOperation
+                    {
+                        Name = builder.InitialCatalog,
+                        FileName = builder.AttachDBFilename
+                    }
+                });
         }
 
         /// <summary>
@@ -120,36 +128,37 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private bool Exists(bool retryOnNotExists)
             => Dependencies.ExecutionStrategyFactory.Create().Execute(
                 DateTime.UtcNow + RetryTimeout, giveUp =>
+                {
+                    while (true)
                     {
-                        while (true)
+                        try
                         {
-                            try
+                            using (new TransactionScope(TransactionScopeOption.Suppress))
                             {
-                                using (new TransactionScope(TransactionScopeOption.Suppress))
-                                {
-                                    _connection.Open(errorsExpected: true);
-                                    _connection.Close();
-                                }
-                                return true;
+                                _connection.Open(errorsExpected: true);
+                                _connection.Close();
                             }
-                            catch (SqlException e)
-                            {
-                                if (!retryOnNotExists
-                                    && IsDoesNotExist(e))
-                                {
-                                    return false;
-                                }
 
-                                if (DateTime.UtcNow > giveUp
-                                    || !RetryOnExistsFailure(e))
-                                {
-                                    throw;
-                                }
-
-                                Thread.Sleep(RetryDelay);
-                            }
+                            return true;
                         }
-                    });
+                        catch (SqlException e)
+                        {
+                            if (!retryOnNotExists
+                                && IsDoesNotExist(e))
+                            {
+                                return false;
+                            }
+
+                            if (DateTime.UtcNow > giveUp
+                                || !RetryOnExistsFailure(e))
+                            {
+                                throw;
+                            }
+
+                            Thread.Sleep(RetryDelay);
+                        }
+                    }
+                });
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -161,37 +170,38 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private Task<bool> ExistsAsync(bool retryOnNotExists, CancellationToken cancellationToken)
             => Dependencies.ExecutionStrategyFactory.Create().ExecuteAsync(
                 DateTime.UtcNow + RetryTimeout, async (giveUp, ct) =>
+                {
+                    while (true)
                     {
-                        while (true)
+                        try
                         {
-                            try
+                            using (new TransactionScope(TransactionScopeOption.Suppress, TransactionScopeAsyncFlowOption.Enabled))
                             {
-                                using (new TransactionScope(TransactionScopeOption.Suppress, TransactionScopeAsyncFlowOption.Enabled))
-                                {
-                                    await _connection.OpenAsync(ct, errorsExpected: true);
+                                await _connection.OpenAsync(ct, errorsExpected: true);
 
-                                    _connection.Close();
-                                }
-                                return true;
+                                _connection.Close();
                             }
-                            catch (SqlException e)
-                            {
-                                if (!retryOnNotExists
-                                    && IsDoesNotExist(e))
-                                {
-                                    return false;
-                                }
 
-                                if (DateTime.UtcNow > giveUp
-                                    || !RetryOnExistsFailure(e))
-                                {
-                                    throw;
-                                }
-
-                                await Task.Delay(RetryDelay, ct);
-                            }
+                            return true;
                         }
-                    }, cancellationToken);
+                        catch (SqlException e)
+                        {
+                            if (!retryOnNotExists
+                                && IsDoesNotExist(e))
+                            {
+                                return false;
+                            }
+
+                            if (DateTime.UtcNow > giveUp
+                                || !RetryOnExistsFailure(e))
+                            {
+                                throw;
+                            }
+
+                            await Task.Delay(RetryDelay, ct);
+                        }
+                    }
+                }, cancellationToken);
 
         // Login failed is thrown when database does not exist (See Issue #776)
         // Unable to attach database file is thrown when file does not exist (See Issue #2810)
@@ -229,6 +239,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 ClearPool();
                 return true;
             }
+
             return false;
         }
 
@@ -272,7 +283,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
             var operations = new MigrationOperation[]
             {
-                new MySqlDropDatabaseOperation { Name = databaseName }
+                new MySqlDropDatabaseOperation
+                {
+                    Name = databaseName
+                }
             };
 
             var masterCommands = Dependencies.MigrationsSqlGenerator.Generate(operations);

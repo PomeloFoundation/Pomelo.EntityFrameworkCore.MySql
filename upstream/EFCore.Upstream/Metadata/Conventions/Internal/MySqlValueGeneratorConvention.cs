@@ -37,12 +37,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions.Internal
         public override ValueGenerated? GetValueGenerated(Property property)
         {
             var valueGenerated = base.GetValueGenerated(property);
-            if (valueGenerated != null)
-            {
-                return valueGenerated;
-            }
-
-            return property.MySql().GetMySqlValueGenerationStrategy(fallbackToModel: false) != null
+            return valueGenerated != null
+                ? valueGenerated
+                : property.MySql().GetMySqlValueGenerationStrategy(fallbackToModel: false) != null
                 ? ValueGenerated.OnAdd
                 : (ValueGenerated?)null;
         }

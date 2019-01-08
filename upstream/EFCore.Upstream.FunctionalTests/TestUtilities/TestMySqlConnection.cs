@@ -5,12 +5,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
-#if Test20
-using Microsoft.EntityFrameworkCore.Storage.Internal;
-#else
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
-#endif
 using Microsoft.EntityFrameworkCore.Storage;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Microsoft.EntityFrameworkCore.TestUtilities
 {

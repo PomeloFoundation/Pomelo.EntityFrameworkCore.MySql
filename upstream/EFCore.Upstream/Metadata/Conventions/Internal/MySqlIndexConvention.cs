@@ -73,6 +73,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions.Internal
             {
                 SetIndexFilter(index.Builder);
             }
+
             return true;
         }
 
@@ -103,6 +104,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions.Internal
                     SetIndexFilter(index.Builder, columnNameChanged: true);
                 }
             }
+
             return annotation;
         }
 

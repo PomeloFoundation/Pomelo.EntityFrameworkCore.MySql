@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -38,7 +39,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private readonly MySqlByteArrayTypeMapping _rowversion
             = new MySqlByteArrayTypeMapping(
                 "rowversion",
-                DbType.Binary,
                 size: 8,
                 comparer: new ValueComparer<byte[]>(
                     (v1, v2) => StructuralComparisons.StructuralEqualityComparer.Equals(v1, v2),
@@ -53,31 +53,40 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             = new BoolTypeMapping("bit");
 
         private readonly MySqlStringTypeMapping _fixedLengthUnicodeString
-            = new MySqlStringTypeMapping("nchar", dbType: DbType.String, unicode: true, fixedLength: true);
+            = new MySqlStringTypeMapping(unicode: true, fixedLength: true);
 
         private readonly MySqlStringTypeMapping _variableLengthUnicodeString
-            = new MySqlStringTypeMapping("nvarchar", dbType: null, unicode: true);
+            = new MySqlStringTypeMapping(unicode: true);
+
+        private readonly MySqlStringTypeMapping _variableLengthMaxUnicodeString
+            = new MySqlStringTypeMapping("nvarchar(max)", unicode: true, storeTypePostfix: StoreTypePostfix.None);
 
         private readonly MySqlStringTypeMapping _fixedLengthAnsiString
-            = new MySqlStringTypeMapping("char", dbType: DbType.AnsiString, fixedLength: true);
+            = new MySqlStringTypeMapping(fixedLength: true);
 
         private readonly MySqlStringTypeMapping _variableLengthAnsiString
-            = new MySqlStringTypeMapping("varchar", dbType: DbType.AnsiString);
+            = new MySqlStringTypeMapping();
+
+        private readonly MySqlStringTypeMapping _variableLengthMaxAnsiString
+            = new MySqlStringTypeMapping("varchar(max)", storeTypePostfix: StoreTypePostfix.None);
 
         private readonly MySqlByteArrayTypeMapping _variableLengthBinary
-            = new MySqlByteArrayTypeMapping("varbinary");
+            = new MySqlByteArrayTypeMapping();
+
+        private readonly MySqlByteArrayTypeMapping _variableLengthMaxBinary
+            = new MySqlByteArrayTypeMapping("varbinary(max)", storeTypePostfix: StoreTypePostfix.None);
 
         private readonly MySqlByteArrayTypeMapping _fixedLengthBinary
-            = new MySqlByteArrayTypeMapping("binary", fixedLength: true);
+            = new MySqlByteArrayTypeMapping(fixedLength: true);
 
         private readonly MySqlDateTimeTypeMapping _date
-            = new MySqlDateTimeTypeMapping("date", dbType: DbType.Date);
+            = new MySqlDateTimeTypeMapping("date", DbType.Date);
 
         private readonly MySqlDateTimeTypeMapping _datetime
-            = new MySqlDateTimeTypeMapping("datetime", dbType: DbType.DateTime);
+            = new MySqlDateTimeTypeMapping("datetime", DbType.DateTime);
 
         private readonly MySqlDateTimeTypeMapping _datetime2
-            = new MySqlDateTimeTypeMapping("datetime2", dbType: DbType.DateTime2);
+            = new MySqlDateTimeTypeMapping("datetime2", DbType.DateTime2);
 
         private readonly DoubleTypeMapping _double
             = new MySqlDoubleTypeMapping("float");
@@ -89,13 +98,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             = new GuidTypeMapping("uniqueidentifier", DbType.Guid);
 
         private readonly DecimalTypeMapping _decimal
-            = new MySqlDecimalTypeMapping("decimal(18, 2)", null, 18, 2);
+            = new MySqlDecimalTypeMapping("decimal(18, 2)", precision: 18, scale: 2, storeTypePostfix: StoreTypePostfix.PrecisionAndScale);
+
+        private readonly DecimalTypeMapping _money
+            = new MySqlDecimalTypeMapping("money");
 
         private readonly TimeSpanTypeMapping _time
             = new MySqlTimeSpanTypeMapping("time");
 
         private readonly MySqlStringTypeMapping _xml
-            = new MySqlStringTypeMapping("xml", dbType: null, unicode: true);
+            = new MySqlStringTypeMapping("xml", unicode: true, storeTypePostfix: StoreTypePostfix.None);
 
         private readonly Dictionary<Type, RelationalTypeMapping> _clrTypeMappings;
 
@@ -124,9 +136,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private readonly IReadOnlyDictionary<string, Func<Type, RelationalTypeMapping>> _namedClrMappings
             = new Dictionary<string, Func<Type, RelationalTypeMapping>>(StringComparer.Ordinal)
             {
-                { "Microsoft.MySql.Types.SqlHierarchyId", t => new MySqlUdtTypeMapping(t, "hierarchyid") },
-                { "Microsoft.MySql.Types.SqlGeography", t => new MySqlUdtTypeMapping(t, "geography") },
-                { "Microsoft.MySql.Types.SqlGeometry", t => new MySqlUdtTypeMapping(t, "geometry") }
+                {
+                    "Microsoft.MySql.Types.SqlHierarchyId",
+                    t => MySqlUdtTypeMapping.CreateSqlHierarchyIdMapping(t)
+                },
+                {
+                    "Microsoft.MySql.Types.SqlGeography",
+                    t => MySqlUdtTypeMapping.CreateSqlSpatialMapping(t, "geography")
+                },
+                {
+                    "Microsoft.MySql.Types.SqlGeometry",
+                    t => MySqlUdtTypeMapping.CreateSqlSpatialMapping(t, "geometry")
+                }
             };
 
         /// <summary>
@@ -176,7 +197,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     { "float", _double },
                     { "image", _variableLengthBinary },
                     { "int", _int },
-                    { "money", _decimal },
+                    { "money", _money },
                     { "national char varying", _variableLengthUnicodeString },
                     { "national character varying", _variableLengthUnicodeString },
                     { "national character", _fixedLengthUnicodeString },
@@ -184,11 +205,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     { "ntext", _variableLengthUnicodeString },
                     { "numeric", _decimal },
                     { "nvarchar", _variableLengthUnicodeString },
+                    { "nvarchar(max)", _variableLengthMaxUnicodeString },
                     { "real", _real },
                     { "rowversion", _rowversion },
                     { "smalldatetime", _datetime },
                     { "smallint", _short },
-                    { "smallmoney", _decimal },
+                    { "smallmoney", _money },
                     { "sql_variant", _sqlVariant },
                     { "text", _variableLengthAnsiString },
                     { "time", _time },
@@ -196,7 +218,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     { "tinyint", _byte },
                     { "uniqueidentifier", _uniqueidentifier },
                     { "varbinary", _variableLengthBinary },
+                    { "varbinary(max)", _variableLengthMaxBinary },
                     { "varchar", _variableLengthAnsiString },
+                    { "varchar(max)", _variableLengthMaxAnsiString },
                     { "xml", _xml }
                 };
         }
@@ -225,7 +249,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         protected override RelationalTypeMapping FindMapping(in RelationalTypeMappingInfo mappingInfo)
-            => FindRawMapping(mappingInfo)?.Clone(mappingInfo);
+            => FindRawMapping(mappingInfo)?.Clone(mappingInfo)
+                ?? base.FindMapping(mappingInfo);
 
         private RelationalTypeMapping FindRawMapping(RelationalTypeMappingInfo mappingInfo)
         {
@@ -261,7 +286,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     return mapping;
                 }
 
-                if(_namedClrMappings.TryGetValue(clrType.FullName, out var mappingFunc))
+                if (_namedClrMappings.TryGetValue(clrType.FullName, out var mappingFunc))
                 {
                     return mappingFunc(clrType);
                 }
@@ -270,25 +295,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 {
                     var isAnsi = mappingInfo.IsUnicode == false;
                     var isFixedLength = mappingInfo.IsFixedLength == true;
-                    var baseName = (isAnsi ? "" : "n") + (isFixedLength ? "char" : "varchar");
                     var maxSize = isAnsi ? 8000 : 4000;
 
                     var size = mappingInfo.Size ?? (mappingInfo.IsKeyOrIndex ? (int?)(isAnsi ? 900 : 450) : null);
                     if (size > maxSize)
                     {
-                        size = null;
+                        size = isFixedLength ? maxSize : (int?)null;
                     }
 
-                    var dbType = isAnsi
-                        ? (isFixedLength ? DbType.AnsiStringFixedLength : DbType.AnsiString)
-                        : (isFixedLength ? DbType.StringFixedLength : (DbType?)null);
-
-                    return new MySqlStringTypeMapping(
-                        baseName + "(" + (size == null ? "max" : size.ToString()) + ")",
-                        dbType,
-                        !isAnsi,
-                        size,
-                        isFixedLength);
+                    return size == null
+                        ? isAnsi ? _variableLengthMaxAnsiString : _variableLengthMaxUnicodeString
+                        : new MySqlStringTypeMapping(
+                            unicode: !isAnsi,
+                            size: size,
+                            fixedLength: isFixedLength);
                 }
 
                 if (clrType == typeof(byte[]))
@@ -298,18 +318,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                         return _rowversion;
                     }
 
+                    var isFixedLength = mappingInfo.IsFixedLength == true;
+
                     var size = mappingInfo.Size ?? (mappingInfo.IsKeyOrIndex ? (int?)900 : null);
                     if (size > 8000)
                     {
-                        size = null;
+                        size = isFixedLength ? 8000 : (int?)null;
                     }
 
-                    var isFixedLength = mappingInfo.IsFixedLength == true;
-
-                    return new MySqlByteArrayTypeMapping(
-                        (isFixedLength ? "binary(" : "varbinary(") + (size == null ? "max" : size.ToString()) + ")",
-                        DbType.Binary,
-                        size);
+                    return size == null
+                        ? _variableLengthMaxBinary
+                        : new MySqlByteArrayTypeMapping(size: size, fixedLength: isFixedLength);
                 }
             }
 

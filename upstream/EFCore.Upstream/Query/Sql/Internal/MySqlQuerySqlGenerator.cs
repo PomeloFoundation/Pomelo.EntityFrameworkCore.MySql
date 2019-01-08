@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Query.Expressions;
 using Microsoft.EntityFrameworkCore.Query.ExpressionVisitors;
 using Microsoft.EntityFrameworkCore.Query.Sql;
@@ -49,7 +48,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
         protected override Expression VisitBinary(BinaryExpression binaryExpression)
         {
             if (binaryExpression.Left is SqlFunctionExpression sqlFunctionExpression
-                && sqlFunctionExpression.FunctionName == "FREETEXT")
+                && (sqlFunctionExpression.FunctionName == "FREETEXT" || sqlFunctionExpression.FunctionName == "CONTAINS"))
             {
                 Visit(binaryExpression.Left);
 
@@ -81,7 +80,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
         protected override void GenerateLimitOffset(SelectExpression selectExpression)
         {
             if (selectExpression.Offset != null
-                && !selectExpression.OrderBy.Any())
+                && selectExpression.OrderBy.Count == 0)
             {
                 Sql.AppendLine().Append("ORDER BY (SELECT 1)");
             }
@@ -132,22 +131,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        protected override void GenerateProjection(Expression projection)
+        protected override Expression ApplyExplicitCastToBoolInProjectionOptimization(Expression expression)
         {
-            var aliasedProjection = projection as AliasExpression;
-            var expressionToProcess = aliasedProjection?.Expression ?? projection;
+            var aliasedProjection = expression as AliasExpression;
+            var expressionToProcess = aliasedProjection?.Expression ?? expression;
+
             var updatedExpression = ExplicitCastToBool(expressionToProcess);
 
-            expressionToProcess = aliasedProjection != null
+            return aliasedProjection != null
                 ? new AliasExpression(aliasedProjection.Alias, updatedExpression)
                 : updatedExpression;
-
-            base.GenerateProjection(expressionToProcess);
         }
 
         private static Expression ExplicitCastToBool(Expression expression)
             => ((expression as BinaryExpression)?.NodeType == ExpressionType.Coalesce || expression.NodeType == ExpressionType.Constant)
-                && expression.Type.UnwrapNullableType() == typeof(bool)
+               && expression.Type.UnwrapNullableType() == typeof(bool)
                 ? new ExplicitCastExpression(expression, expression.Type)
                 : expression;
 
@@ -158,12 +156,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
 
             public override Expression Visit(Expression expression)
             {
-                if (expression is ExistsExpression existsExpression)
-                {
-                    return VisitExistExpression(existsExpression);
-                }
-
-                return expression is SelectExpression selectExpression
+                return expression is ExistsExpression existsExpression
+                    ? VisitExistExpression(existsExpression)
+                    : expression is SelectExpression selectExpression
                     ? VisitSelectExpression(selectExpression)
                     : base.Visit(expression);
             }
@@ -182,10 +177,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
                 }
 
                 var subQuery = selectExpression.PushDownSubquery();
-
-                foreach (var projection in subQuery.Projection)
+                if (subQuery.Projection.Count > 0)
                 {
-                    selectExpression.AddToProjection(projection.LiftExpressionFromSubquery(subQuery));
+                    selectExpression.ExplodeStarProjection();
                 }
 
                 if (subQuery.OrderBy.Count == 0)

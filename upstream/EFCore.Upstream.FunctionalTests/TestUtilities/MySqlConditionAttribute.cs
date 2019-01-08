@@ -29,40 +29,49 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
                 {
                     isMet &= TestEnvironment.GetFlag(nameof(MySqlCondition.SupportsSequences)) ?? true;
                 }
+
                 if (Conditions.HasFlag(MySqlCondition.SupportsOffset))
                 {
                     isMet &= TestEnvironment.GetFlag(nameof(MySqlCondition.SupportsOffset)) ?? true;
                 }
+
                 if (Conditions.HasFlag(MySqlCondition.SupportsHiddenColumns))
                 {
                     isMet &= TestEnvironment.GetFlag(nameof(MySqlCondition.SupportsHiddenColumns)) ?? false;
                 }
+
                 if (Conditions.HasFlag(MySqlCondition.SupportsMemoryOptimized))
                 {
                     isMet &= TestEnvironment.GetFlag(nameof(MySqlCondition.SupportsMemoryOptimized)) ?? false;
                 }
+
                 if (Conditions.HasFlag(MySqlCondition.IsSqlAzure))
                 {
                     isMet &= TestEnvironment.IsSqlAzure;
                 }
+
                 if (Conditions.HasFlag(MySqlCondition.IsNotSqlAzure))
                 {
                     isMet &= !TestEnvironment.IsSqlAzure;
                 }
+
                 if (Conditions.HasFlag(MySqlCondition.SupportsAttach))
                 {
                     var defaultConnection = new SqlConnectionStringBuilder(TestEnvironment.DefaultConnection);
                     isMet &= defaultConnection.DataSource.Contains("(localdb)")
                              || defaultConnection.UserInstance;
                 }
+
                 if (Conditions.HasFlag(MySqlCondition.IsNotTeamCity))
                 {
                     isMet &= !TestEnvironment.IsTeamCity;
                 }
-                if(Conditions.HasFlag(MySqlCondition.SupportsFullTextSearch))
+
+                if (Conditions.HasFlag(MySqlCondition.SupportsFullTextSearch))
                 {
                     isMet &= TestEnvironment.IsFullTestSearchSupported;
                 }
+
                 return isMet;
             }
         }

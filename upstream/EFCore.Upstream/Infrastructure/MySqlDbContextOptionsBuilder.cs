@@ -16,7 +16,7 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
     ///     <para>
     ///         Instances of this class are returned from a call to
     ///         <see
-    ///             cref="MySqlDbContextOptionsExtensions.UseMySql(DbContextOptionsBuilder, string, Action{MySqlDbContextOptionsBuilder})" />
+    ///             cref="MySqlDbContextOptionsExtensions.UseMySql(DbContextOptionsBuilder,string,Action{MySqlDbContextOptionsBuilder})" />
     ///         and it is not designed to be directly constructed in your application code.
     ///     </para>
     /// </summary>

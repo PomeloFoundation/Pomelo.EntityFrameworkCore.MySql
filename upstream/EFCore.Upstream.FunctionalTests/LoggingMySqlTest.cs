@@ -3,12 +3,8 @@
 
 using System;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-#if Test20
-using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
-#else
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-#endif
 using Xunit;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 // ReSharper disable InconsistentNaming
 namespace Microsoft.EntityFrameworkCore

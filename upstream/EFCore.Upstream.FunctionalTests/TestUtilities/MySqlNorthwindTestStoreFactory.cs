@@ -7,7 +7,7 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
     {
         public const string Name = "Northwind";
         public static readonly string NorthwindConnectionString = MySqlTestStore.CreateConnectionString(Name);
-        public new static MySqlNorthwindTestStoreFactory Instance { get; } = new MySqlNorthwindTestStoreFactory();
+        public static new MySqlNorthwindTestStoreFactory Instance { get; } = new MySqlNorthwindTestStoreFactory();
 
         protected MySqlNorthwindTestStoreFactory()
         {

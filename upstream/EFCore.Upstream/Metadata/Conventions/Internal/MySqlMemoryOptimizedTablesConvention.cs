@@ -29,6 +29,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions.Internal
                 {
                     key.Builder.MySql(ConfigurationSource.Convention).IsClustered(memoryOptimized ? false : (bool?)null);
                 }
+
                 foreach (var index in entityTypeBuilder.Metadata.GetDerivedIndexesInclusive())
                 {
                     index.Builder.MySql(ConfigurationSource.Convention).IsClustered(memoryOptimized ? false : (bool?)null);

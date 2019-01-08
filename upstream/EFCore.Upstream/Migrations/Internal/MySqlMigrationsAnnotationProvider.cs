@@ -67,6 +67,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                     MySqlAnnotationNames.Clustered,
                     isClustered.Value);
             }
+
+            var includeProperties = index.MySql().IncludeProperties;
+            if (includeProperties != null)
+            {
+                yield return new Annotation(
+                    MySqlAnnotationNames.Include,
+                    includeProperties);
+            }
         }
 
         /// <summary>

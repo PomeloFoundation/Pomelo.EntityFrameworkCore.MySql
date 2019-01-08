@@ -186,6 +186,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
                     CachedCommandText.Append(GetBulkInsertCommandText(commandPosition));
                     _bulkInsertCommands.Clear();
                 }
+
                 _bulkInsertCommands.Add(newModificationCommand);
 
                 LastCachedCommandIndex = commandPosition;

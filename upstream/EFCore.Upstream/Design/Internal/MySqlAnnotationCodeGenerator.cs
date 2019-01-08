@@ -38,12 +38,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
             {
                 return string.Equals("dbo", (string)annotation.Value);
             }
-            if (annotation.Name == MySqlAnnotationNames.ValueGenerationStrategy)
-            {
-                return (MySqlValueGenerationStrategy)annotation.Value == MySqlValueGenerationStrategy.IdentityColumn;
-            }
 
-            return false;
+            return annotation.Name == MySqlAnnotationNames.ValueGenerationStrategy
+                ? (MySqlValueGenerationStrategy)annotation.Value == MySqlValueGenerationStrategy.IdentityColumn
+                : false;
         }
 
         /// <summary>
@@ -52,14 +50,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
         /// </summary>
         public override MethodCallCodeFragment GenerateFluentApi(IKey key, IAnnotation annotation)
         {
-            if (annotation.Name == MySqlAnnotationNames.Clustered)
-            {
-                return (bool)annotation.Value == false
+            return annotation.Name == MySqlAnnotationNames.Clustered
+                ? (bool)annotation.Value == false
                     ? new MethodCallCodeFragment(nameof(MySqlIndexBuilderExtensions.ForMySqlIsClustered), false)
-                    : new MethodCallCodeFragment(nameof(MySqlIndexBuilderExtensions.ForMySqlIsClustered));
-            }
-
-            return null;
+                    : new MethodCallCodeFragment(nameof(MySqlIndexBuilderExtensions.ForMySqlIsClustered))
+                : null;
         }
 
         /// <summary>
@@ -68,14 +63,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
         /// </summary>
         public override MethodCallCodeFragment GenerateFluentApi(IIndex index, IAnnotation annotation)
         {
-            if (annotation.Name == MySqlAnnotationNames.Clustered)
-            {
-                return (bool)annotation.Value == false
+            return annotation.Name == MySqlAnnotationNames.Clustered
+                ? (bool)annotation.Value == false
                     ? new MethodCallCodeFragment(nameof(MySqlIndexBuilderExtensions.ForMySqlIsClustered), false)
-                    : new MethodCallCodeFragment(nameof(MySqlIndexBuilderExtensions.ForMySqlIsClustered));
-            }
-
-            return null;
+                    : new MethodCallCodeFragment(nameof(MySqlIndexBuilderExtensions.ForMySqlIsClustered))
+                : null;
         }
     }
 }
