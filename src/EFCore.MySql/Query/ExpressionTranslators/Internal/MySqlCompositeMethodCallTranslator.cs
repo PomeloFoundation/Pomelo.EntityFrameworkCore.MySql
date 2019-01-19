@@ -31,7 +31,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             new MySqlStringTrimEndTranslator(),
             new MySqlStringTrimStartTranslator(),
             new MySqlStringTrimTranslator(),
-            new MySqlStringIndexOfTranslator()
+            new MySqlStringIndexOfTranslator(),
+            new MySqlStringPadLeftRightTranslator()
         };
 
         /// <summary>
