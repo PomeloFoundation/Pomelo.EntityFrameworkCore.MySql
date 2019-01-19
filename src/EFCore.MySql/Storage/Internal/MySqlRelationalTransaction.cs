@@ -121,7 +121,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             ClearTransaction();
         }
 
-        private void ClearTransaction()
+        protected override void ClearTransaction()
         {
             Debug.Assert(_relationalConnection.CurrentTransaction == null || _relationalConnection.CurrentTransaction == this);
 
