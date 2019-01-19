@@ -130,7 +130,7 @@ namespace Microsoft.EntityFrameworkCore.Utilities
             {
                 NotEmpty(parameterName, nameof(parameterName));
 
-                throw new ArgumentException(CoreStrings.InvalidEntityType(parameterName, value));
+                throw new ArgumentException(CoreStrings.InvalidEntityType(value));
             }
 
             return value;
