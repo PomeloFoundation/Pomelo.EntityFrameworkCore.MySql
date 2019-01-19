@@ -27,15 +27,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection
-                .AddLogging()
+                .AddLogging(builder =>
+                    builder
+                        .AddConfiguration(AppConfig.Config.GetSection("Logging"))
+                        .AddConsole()
+                )
                 .AddScoped<ITestPerformanceRunner, TestPerformanceRunner>();
             Startup.ConfigureEntityFramework(serviceCollection);
 
-            var serviceProvider = serviceCollection.BuildServiceProvider();
-            serviceProvider
-                .GetService<ILoggerFactory>()
-                .AddConsole(AppConfig.Config.GetSection("Logging"));
-            return serviceProvider;
+            return serviceCollection.BuildServiceProvider();
         });
 
         public void Run(int iterations, int concurrency, int ops)

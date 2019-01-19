@@ -32,7 +32,7 @@ namespace Pomelo.EntityFrameworkCore.TestUtilities
                 new[] { MetadataReference.CreateFromFile(assembly.Location) },
                 copyLocal,
                 new Uri(assembly.CodeBase).LocalPath);
-#elif NETCOREAPP2_0 || NETCOREAPP2_1
+#elif NETCOREAPP2_0 || NETCOREAPP2_2
             var references = (from l in DependencyContext.Default.CompileLibraries
                 from r in l.ResolveReferencePaths()
                 where IOPath.GetFileNameWithoutExtension(r) == name

@@ -17,6 +17,8 @@
     <!-- EFCoreMySqlFunctionalTests Dependencies -->
     <MicrosoftExtensionsConfigurationFileExtensionsVersion>2.1.1</MicrosoftExtensionsConfigurationFileExtensionsVersion>
     <MicrosoftExtensionsConfigurationJsonVersion>2.1.1</MicrosoftExtensionsConfigurationJsonVersion>
+     <!-- EFCoreMySqlIntegrationTests Dependencies -->
+    <MicrosoftAspNetCoreAppVersion>2.2.0</MicrosoftAspNetCoreAppVersion>
     <!-- EFCoreMySqlTests Dependencies -->
     <MicrosoftEntityFrameworkCoreDesignVersion>2.2.0</MicrosoftEntityFrameworkCoreDesignVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpPackageVersion>

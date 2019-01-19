@@ -159,11 +159,24 @@ builder.Entity(""Pomelo.EntityFrameworkCore.MySql.Migrations.ModelSnapshotMySqlT
             CreateModelValidator().Validate(modelBuilder.Model);
             var model = modelBuilder.Model;
 
-            var generator = new CSharpSnapshotGenerator(new CSharpSnapshotGeneratorDependencies(new CSharpHelper()));
+            var codeHelper = new CSharpHelper(
+                new MySqlTypeMappingSource(
+                        TestServiceFactory.Instance.Create<TypeMappingSourceDependencies>(),
+                        TestServiceFactory.Instance.Create<RelationalTypeMappingSourceDependencies>(),
+                        new MySqlOptions()));
 
-            var builder = new IndentedStringBuilder();
-            generator.Generate("builder", model, builder);
-            var code = builder.ToString();
+            var generator = new CSharpMigrationsGenerator(
+                new MigrationsCodeGeneratorDependencies(),
+                new CSharpMigrationsGeneratorDependencies(
+                    codeHelper,
+                    new CSharpMigrationOperationGenerator(
+                        new CSharpMigrationOperationGeneratorDependencies(
+                            codeHelper)),
+                    new CSharpSnapshotGenerator(
+                        new CSharpSnapshotGeneratorDependencies(
+                            codeHelper))));
+
+            var code = generator.GenerateSnapshot("RootNamespace", typeof(DbContext), "Snapshot", model);
 
             Assert.Equal(expectedCode, code, ignoreLineEndingDifferences: true);
 
