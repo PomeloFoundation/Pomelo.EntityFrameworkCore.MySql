@@ -111,22 +111,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                         // The instance of MySql you attempted to connect to does not support encryption.
                         case 20:
                             return true;
-                            // This exception can be thrown even if the operation completed succesfully, so it's safer to let the application fail.
-                            // DBNETLIB Error Code: -2
-                            // Timeout expired. The timeout period elapsed prior to completion of the operation or the server is not responding. The statement has been terminated.
-                            //case -2:
+                        // This exception can be thrown even if the operation completed successfully, so it's safer to let the application fail.
+                        // DBNETLIB Error Code: -2
+                        // Timeout expired. The timeout period elapsed prior to completion of the operation or the server is not responding. The statement has been terminated.
+                        //case -2:
                     }
                 }
 
                 return false;
             }
 
-            if (ex is TimeoutException)
-            {
-                return true;
-            }
-
-            return false;
+            return ex is TimeoutException;
         }
     }
 }

@@ -97,12 +97,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
                 return false;
             }
 
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            return obj.GetType() == GetType() && Equals((RowNumberExpression)obj);
+            return ReferenceEquals(this, obj) ? true : obj.GetType() == GetType() && Equals((RowNumberExpression)obj);
         }
 
         private bool Equals([NotNull] RowNumberExpression other) => _orderings.SequenceEqual(other._orderings);

@@ -13,11 +13,9 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
     {
         public IEnumerable<KeyValuePair<string, string>> GetTraits(IAttributeInfo traitAttribute)
         {
-            if (!((traitAttribute as IReflectionAttributeInfo)?.Attribute is MySqlConditionAttribute mySqlCondition))
-            {
-                return Enumerable.Empty<KeyValuePair<string, string>>();
-            }
-            return Enum.GetValues(typeof(MySqlCondition)).Cast<MySqlCondition>()
+            return !((traitAttribute as IReflectionAttributeInfo)?.Attribute is MySqlConditionAttribute mySqlCondition)
+                ? Enumerable.Empty<KeyValuePair<string, string>>()
+                : Enum.GetValues(typeof(MySqlCondition)).Cast<MySqlCondition>()
                 .Where(c => mySqlCondition.Conditions.HasFlag(c))
                 .Select(c => new KeyValuePair<string, string>(nameof(MySqlCondition), c.ToString()));
         }

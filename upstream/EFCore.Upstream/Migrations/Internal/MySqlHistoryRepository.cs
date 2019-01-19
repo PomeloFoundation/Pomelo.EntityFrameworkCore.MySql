@@ -37,9 +37,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                 var stringTypeMapping = Dependencies.TypeMappingSource.GetMapping(typeof(string));
 
                 return "SELECT OBJECT_ID(" +
-                    stringTypeMapping.GenerateSqlLiteral(
-                        SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema)) +
-                    ")" + SqlGenerationHelper.StatementTerminator;
+                       stringTypeMapping.GenerateSqlLiteral(
+                           SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema)) +
+                       ")" + SqlGenerationHelper.StatementTerminator;
             }
         }
 

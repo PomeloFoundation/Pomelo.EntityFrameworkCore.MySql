@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if !Test20
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -13,6 +12,7 @@ using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
+// ReSharper disable InconsistentNaming
 namespace Microsoft.EntityFrameworkCore
 {
     [MySqlCondition(MySqlCondition.IsNotSqlAzure)]
@@ -139,6 +139,8 @@ BuiltInNullableDataTypesShadow.TestNullableUnsignedInt16 ---> [nullable nvarchar
 BuiltInNullableDataTypesShadow.TestNullableUnsignedInt32 ---> [nullable nvarchar] [MaxLength = 64]
 BuiltInNullableDataTypesShadow.TestNullableUnsignedInt64 ---> [nullable nvarchar] [MaxLength = 64]
 BuiltInNullableDataTypesShadow.TestString ---> [nullable nvarchar] [MaxLength = -1]
+EmailTemplate.Id ---> [nvarchar] [MaxLength = 36]
+EmailTemplate.TemplateType ---> [nvarchar] [MaxLength = -1]
 MaxLengthDataTypes.ByteArray5 ---> [nullable nvarchar] [MaxLength = 8]
 MaxLengthDataTypes.ByteArray9000 ---> [nullable nvarchar] [MaxLength = -1]
 MaxLengthDataTypes.Id ---> [nvarchar] [MaxLength = 64]
@@ -193,7 +195,7 @@ UnicodeDataTypes.StringUnicode ---> [nullable nvarchar] [MaxLength = -1]
 
         public class MySqlStringsTestStoreFactory : MySqlTestStoreFactory
         {
-            public new static MySqlStringsTestStoreFactory Instance { get; } = new MySqlStringsTestStoreFactory();
+            public static new MySqlStringsTestStoreFactory Instance { get; } = new MySqlStringsTestStoreFactory();
 
             public override IServiceCollection AddProviderServices(IServiceCollection serviceCollection)
                 => base.AddProviderServices(
@@ -202,6 +204,7 @@ UnicodeDataTypes.StringUnicode ---> [nullable nvarchar] [MaxLength = -1]
 
         public class MySqlStringsTypeMappingSource : RelationalTypeMappingSource
         {
+#if Test21
             private readonly MySqlStringTypeMapping _fixedLengthUnicodeString
                 = new MySqlStringTypeMapping("nchar", dbType: DbType.String, unicode: true);
 
@@ -213,6 +216,19 @@ UnicodeDataTypes.StringUnicode ---> [nullable nvarchar] [MaxLength = -1]
 
             private readonly MySqlStringTypeMapping _variableLengthAnsiString
                 = new MySqlStringTypeMapping("varchar", dbType: DbType.AnsiString);
+#else
+            private readonly MySqlStringTypeMapping _fixedLengthUnicodeString
+                = new MySqlStringTypeMapping(unicode: true, fixedLength: true);
+
+            private readonly MySqlStringTypeMapping _variableLengthUnicodeString
+                = new MySqlStringTypeMapping(unicode: true);
+
+            private readonly MySqlStringTypeMapping _fixedLengthAnsiString
+                = new MySqlStringTypeMapping(fixedLength: true);
+
+            private readonly MySqlStringTypeMapping _variableLengthAnsiString
+                = new MySqlStringTypeMapping();
+#endif
 
             private readonly Dictionary<string, RelationalTypeMapping> _storeTypeMappings;
 
@@ -269,20 +285,30 @@ UnicodeDataTypes.StringUnicode ---> [nullable nvarchar] [MaxLength = -1]
                     if (clrType == typeof(string))
                     {
                         var isAnsi = mappingInfo.IsUnicode == false;
+                        var isFixedLength = mappingInfo.IsFixedLength == true;
                         var baseName = isAnsi ? "varchar" : "nvarchar";
                         var maxSize = isAnsi ? 8000 : 4000;
 
                         var size = mappingInfo.Size ?? (mappingInfo.IsKeyOrIndex ? (int?)(isAnsi ? 900 : 450) : null);
                         if (size > maxSize)
                         {
-                            size = null;
+                            size = isFixedLength ? maxSize : (int?)null;
                         }
 
+#if Test21
                         return new MySqlStringTypeMapping(
                             baseName + "(" + (size == null ? "max" : size.ToString()) + ")",
                             isAnsi ? DbType.AnsiString : (DbType?)null,
                             !isAnsi,
                             size);
+#else
+                        return new MySqlStringTypeMapping(
+                            baseName + "(" + (size == null ? "max" : size.ToString()) + ")",
+                            !isAnsi,
+                            size,
+                            isFixedLength,
+                            storeTypePostfix: size == null ? StoreTypePostfix.None : (StoreTypePostfix?)null);
+#endif
                     }
                 }
 
@@ -291,4 +317,3 @@ UnicodeDataTypes.StringUnicode ---> [nullable nvarchar] [MaxLength = -1]
         }
     }
 }
-#endif

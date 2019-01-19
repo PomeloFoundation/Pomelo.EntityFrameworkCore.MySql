@@ -16,18 +16,29 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public class MySqlFreeTextMethodCallTranslator : IMethodCallTranslator
+    public class MySqlFullTextSearchMethodCallTranslator : IMethodCallTranslator
     {
-        private const string FunctionName = "FREETEXT";
+        private const string FreeTextFunctionName = "FREETEXT";
+        private const string ContainsFunctionName = "CONTAINS";
 
-        private static readonly MethodInfo _methodInfo
+        private static readonly MethodInfo _freeTextMethodInfo
             = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(
                 nameof(MySqlDbFunctionsExtensions.FreeText),
                 new[] { typeof(DbFunctions), typeof(string), typeof(string) });
 
-        private static readonly MethodInfo _methodInfoWithLanguage
+        private static readonly MethodInfo _freeTextMethodInfoWithLanguage
             = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(
                 nameof(MySqlDbFunctionsExtensions.FreeText),
+                new[] { typeof(DbFunctions), typeof(string), typeof(string), typeof(int) });
+
+        private static readonly MethodInfo _containsMethodInfo
+            = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(
+                nameof(MySqlDbFunctionsExtensions.Contains),
+                new[] { typeof(DbFunctions), typeof(string), typeof(string) });
+
+        private static readonly MethodInfo _containsMethodInfoWithLanguage
+            = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(
+                nameof(MySqlDbFunctionsExtensions.Contains),
                 new[] { typeof(DbFunctions), typeof(string), typeof(string), typeof(int) });
 
         /// <summary>
@@ -38,27 +49,58 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         {
             Check.NotNull(methodCallExpression, nameof(methodCallExpression));
 
-            if (Equals(methodCallExpression.Method, _methodInfo))
+            if (Equals(methodCallExpression.Method, _freeTextMethodInfo))
             {
                 ValidatePropertyReference(methodCallExpression.Arguments[1]);
 
                 return new SqlFunctionExpression(
-                    FunctionName,
+                    FreeTextFunctionName,
                     typeof(bool),
-                    new Expression[]
+                    new[]
                     {
                         methodCallExpression.Arguments[1],
                         methodCallExpression.Arguments[2]
                     });
             }
-            else if (Equals(methodCallExpression.Method, _methodInfoWithLanguage))
+
+            if (Equals(methodCallExpression.Method, _freeTextMethodInfoWithLanguage))
             {
                 ValidatePropertyReference(methodCallExpression.Arguments[1]);
 
                 return new SqlFunctionExpression(
-                    FunctionName,
+                    FreeTextFunctionName,
                     typeof(bool),
-                    new Expression[]
+                    new[]
+                    {
+                        methodCallExpression.Arguments[1],
+                        methodCallExpression.Arguments[2],
+                        new SqlFragmentExpression(
+                            $"LANGUAGE {((ConstantExpression)methodCallExpression.Arguments[3]).Value}")
+                    });
+            }
+
+            if (Equals(methodCallExpression.Method, _containsMethodInfo))
+            {
+                ValidatePropertyReference(methodCallExpression.Arguments[1]);
+
+                return new SqlFunctionExpression(
+                    ContainsFunctionName,
+                    typeof(bool),
+                    new[]
+                    {
+                        methodCallExpression.Arguments[1],
+                        methodCallExpression.Arguments[2]
+                    });
+            }
+
+            if (Equals(methodCallExpression.Method, _containsMethodInfoWithLanguage))
+            {
+                ValidatePropertyReference(methodCallExpression.Arguments[1]);
+
+                return new SqlFunctionExpression(
+                    ContainsFunctionName,
+                    typeof(bool),
+                    new[]
                     {
                         methodCallExpression.Arguments[1],
                         methodCallExpression.Arguments[2],

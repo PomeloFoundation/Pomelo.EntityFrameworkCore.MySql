@@ -72,11 +72,11 @@ FROM [dbo].[Orders] AS [o]",
 
                 modelBuilder.Entity<MappedCustomer>(
                     e =>
-                        {
-                            e.Property(c => c.CompanyName2).Metadata.MySql().ColumnName = "CompanyName";
-                            e.Metadata.MySql().TableName = "Customers";
-                            e.Metadata.MySql().Schema = "dbo";
-                        });
+                    {
+                        e.Property(c => c.CompanyName2).Metadata.MySql().ColumnName = "CompanyName";
+                        e.Metadata.MySql().TableName = "Customers";
+                        e.Metadata.MySql().Schema = "dbo";
+                    });
 
                 modelBuilder.Entity<MappedEmployee>()
                     .Property(c => c.EmployeeID)

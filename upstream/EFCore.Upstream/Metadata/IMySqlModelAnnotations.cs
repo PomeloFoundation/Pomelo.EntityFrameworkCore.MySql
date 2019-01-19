@@ -10,8 +10,8 @@ namespace Microsoft.EntityFrameworkCore.Metadata
     public interface IMySqlModelAnnotations : IRelationalModelAnnotations
     {
         /// <summary>
-        /// The <see cref="MySqlValueGenerationStrategy"/> to use for properties
-        /// of keys in the model, unless the property has a different strategy explicitly set.
+        ///     The <see cref="MySqlValueGenerationStrategy" /> to use for properties
+        ///     of keys in the model, unless the property has a different strategy explicitly set.
         /// </summary>
         MySqlValueGenerationStrategy? ValueGenerationStrategy { get; }
 

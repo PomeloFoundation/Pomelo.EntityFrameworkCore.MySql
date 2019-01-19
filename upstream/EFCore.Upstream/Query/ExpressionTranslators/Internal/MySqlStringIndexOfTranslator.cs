@@ -35,12 +35,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     Expression.Constant(1));
 
                 return patternExpression is ConstantExpression constantExpression
-                    && !string.IsNullOrEmpty((string)constantExpression.Value)
-                        ? (Expression)charIndexExpression
-                        : Expression.Condition(
-                            Expression.Equal(patternExpression, Expression.Constant(string.Empty)),
-                            Expression.Constant(0),
-                            charIndexExpression);
+                       && !string.IsNullOrEmpty((string)constantExpression.Value)
+                    ? (Expression)charIndexExpression
+                    : Expression.Condition(
+                        Expression.Equal(patternExpression, Expression.Constant(string.Empty)),
+                        Expression.Constant(0),
+                        charIndexExpression);
             }
 
             return null;

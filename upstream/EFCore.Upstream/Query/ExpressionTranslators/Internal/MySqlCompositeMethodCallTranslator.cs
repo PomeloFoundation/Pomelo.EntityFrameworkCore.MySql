@@ -19,7 +19,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             new MySqlDateAddTranslator(),
             new MySqlDateDiffTranslator(),
             new MySqlEndsWithOptimizedTranslator(),
-            new MySqlFreeTextMethodCallTranslator(),
+            new MySqlFullTextSearchMethodCallTranslator(),
             new MySqlMathTranslator(),
             new MySqlNewGuidTranslator(),
             new MySqlObjectToStringTranslator(),
@@ -32,7 +32,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             new MySqlStringTrimEndTranslator(),
             new MySqlStringTrimStartTranslator(),
             new MySqlStringTrimTranslator(),
-            new MySqlStringIndexOfTranslator()
+            new MySqlStringIndexOfTranslator(),
+            new MySqlStringConcatMethodCallTranslator()
         };
 
         /// <summary>

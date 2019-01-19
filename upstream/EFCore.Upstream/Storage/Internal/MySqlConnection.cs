@@ -17,7 +17,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private bool? _multipleActiveResultSetsEnabled;
 
         // Compensate for slow MySql database creation
-        internal const int DefaultMasterConnectionCommandTimeout = 60;
+        private const int DefaultMasterConnectionCommandTimeout = 60;
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -40,7 +40,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// </summary>
         public virtual IMySqlConnection CreateMasterConnection()
         {
-            var connectionStringBuilder = new SqlConnectionStringBuilder(ConnectionString) { InitialCatalog = "master" };
+            var connectionStringBuilder = new SqlConnectionStringBuilder(ConnectionString)
+            {
+                InitialCatalog = "master"
+            };
             connectionStringBuilder.Remove("AttachDBFilename");
 
             var contextOptions = new DbContextOptionsBuilder()

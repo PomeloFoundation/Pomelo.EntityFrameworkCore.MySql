@@ -48,16 +48,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             {
                 var amountToAdd = methodCallExpression.Arguments.First();
 
-                if (!datePart.Equals("year")
+                return !datePart.Equals("year")
                     && !datePart.Equals("month")
                     && amountToAdd is ConstantExpression constantExpression
                     && ((double)constantExpression.Value >= int.MaxValue
-                        || (double)constantExpression.Value <= int.MinValue))
-                {
-                    return null;
-                }
-
-                return new SqlFunctionExpression(
+                        || (double)constantExpression.Value <= int.MinValue)
+                    ? null
+                    : new SqlFunctionExpression(
                     functionName: "DATEADD",
                     returnType: methodCallExpression.Type,
                     arguments: new[]

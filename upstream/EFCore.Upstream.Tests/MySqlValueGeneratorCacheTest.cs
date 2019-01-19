@@ -313,15 +313,6 @@ namespace Microsoft.EntityFrameworkCore
 
         protected virtual ModelBuilder CreateConventionModelBuilder() => MySqlTestHelpers.Instance.CreateConventionBuilder();
 
-        private static Property CreateProperty()
-        {
-            var entityType = new Model().AddEntityType("MyType");
-            var property = entityType.AddProperty("MyProperty", typeof(string));
-            entityType.MySql().TableName = "MyTable";
-
-            return property;
-        }
-
         private class Robot
         {
             public int Id { get; set; }
@@ -342,11 +333,11 @@ namespace Microsoft.EntityFrameworkCore
 
             modelBuilder.Entity<Led>(
                 b =>
-                    {
-                        b.Property(e => e.Zeppelin).ForMySqlUseSequenceHiLo("Heaven");
-                        b.Property(e => e.Stairway).ForMySqlUseSequenceHiLo("Heaven");
-                        b.Property(e => e.WholeLotta).ForMySqlUseSequenceHiLo("Rosie");
-                    });
+                {
+                    b.Property(e => e.Zeppelin).ForMySqlUseSequenceHiLo("Heaven");
+                    b.Property(e => e.Stairway).ForMySqlUseSequenceHiLo("Heaven");
+                    b.Property(e => e.WholeLotta).ForMySqlUseSequenceHiLo("Rosie");
+                });
 
             return modelBuilder.Model;
         }

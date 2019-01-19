@@ -49,17 +49,17 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <example>
         ///     <code>
-        ///           public void ConfigureServices(IServiceCollection services)
-        ///           {
-        ///               var connectionString = "connection string to database";
-        ///
-        ///               services
-        ///                   .AddEntityFrameworkMySql()
-        ///                   .AddDbContext&lt;MyContext&gt;((serviceProvider, options) =>
-        ///                       options.UseMySql(connectionString)
-        ///                              .UseInternalServiceProvider(serviceProvider));
-        ///           }
-        ///       </code>
+        ///            public void ConfigureServices(IServiceCollection services)
+        ///            {
+        ///                var connectionString = "connection string to database";
+        /// 
+        ///                services
+        ///                    .AddEntityFrameworkMySql()
+        ///                    .AddDbContext&lt;MyContext&gt;((serviceProvider, options) =>
+        ///                        options.UseMySql(connectionString)
+        ///                               .UseInternalServiceProvider(serviceProvider));
+        ///            }
+        ///        </code>
         /// </example>
         /// <param name="serviceCollection"> The <see cref="IServiceCollection" /> to add services to. </param>
         /// <returns>

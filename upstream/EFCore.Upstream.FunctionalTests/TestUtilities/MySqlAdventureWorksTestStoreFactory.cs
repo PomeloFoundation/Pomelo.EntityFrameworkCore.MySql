@@ -7,7 +7,7 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
 {
     public class MySqlAdventureWorksTestStoreFactory : MySqlTestStoreFactory
     {
-        public new static MySqlAdventureWorksTestStoreFactory Instance { get; } = new MySqlAdventureWorksTestStoreFactory();
+        public static new MySqlAdventureWorksTestStoreFactory Instance { get; } = new MySqlAdventureWorksTestStoreFactory();
 
         protected MySqlAdventureWorksTestStoreFactory()
         {
