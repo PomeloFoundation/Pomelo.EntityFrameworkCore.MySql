@@ -37,7 +37,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
             });
             ConfigureEntityFramework(services);
 
-	        services.AddIdentity<AppIdentityUser, IdentityRole>()
+	        services
+                .AddLogging(builder =>
+                    builder
+                        .AddConfiguration(AppConfig.Config.GetSection("Logging"))
+                        .AddConsole()
+                        .AddDebug()
+                )
+                .AddIdentity<AppIdentityUser, IdentityRole>()
 		        .AddEntityFrameworkStores<AppDb>()
 		        .AddDefaultTokenProviders();
         }
@@ -73,11 +80,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
-
             app.UseMvc();
         }
     }

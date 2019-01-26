@@ -5,22 +5,22 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
     <!-- EFCore.MySql Dependencies -->
-    <MicrosoftEntityFrameworkCoreRelationalVersion>2.1.4</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MySqlConnectorVersion>0.47.1</MySqlConnectorVersion>
-    <PomeloJsonObjectVersion>2.0.0</PomeloJsonObjectVersion>
+    <MicrosoftEntityFrameworkCoreRelationalVersion>2.2.0</MicrosoftEntityFrameworkCoreRelationalVersion>
+    <MySqlConnectorVersion>0.49.2</MySqlConnectorVersion>
+    <PomeloJsonObjectVersion>2.2.0-preview1-final</PomeloJsonObjectVersion>
     <!-- Shared Test Dependencies -->
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <XunitAssertPackageVersion>2.3.1</XunitAssertPackageVersion>
     <XunitCorePackageVersion>2.3.1</XunitCorePackageVersion>
-    <XunitRunnerVisualStudioPackageVersion>2.4.0-beta.1.build3958</XunitRunnerVisualStudioPackageVersion>
+    <XunitRunnerVisualStudioPackageVersion>2.4.0</XunitRunnerVisualStudioPackageVersion>
     <MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>2.1.4</MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>
     <!-- EFCoreMySqlFunctionalTests Dependencies -->
     <MicrosoftExtensionsConfigurationFileExtensionsVersion>2.1.1</MicrosoftExtensionsConfigurationFileExtensionsVersion>
     <MicrosoftExtensionsConfigurationJsonVersion>2.1.1</MicrosoftExtensionsConfigurationJsonVersion>
-    <!-- EFCoreMySqlIntegrationTests Dependencies -->
-    <MicrosoftAspNetCoreAppVersion>2.1.1</MicrosoftAspNetCoreAppVersion>
+     <!-- EFCoreMySqlIntegrationTests Dependencies -->
+    <MicrosoftAspNetCoreAppVersion>2.2.0</MicrosoftAspNetCoreAppVersion>
     <!-- EFCoreMySqlTests Dependencies -->
-    <MicrosoftEntityFrameworkCoreDesignVersion>2.1.4</MicrosoftEntityFrameworkCoreDesignVersion>
+    <MicrosoftEntityFrameworkCoreDesignVersion>2.2.0</MicrosoftEntityFrameworkCoreDesignVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0</MicrosoftExtensionsDependencyModelPackageVersion>
     <MoqVersion>4.8.2</MoqVersion>

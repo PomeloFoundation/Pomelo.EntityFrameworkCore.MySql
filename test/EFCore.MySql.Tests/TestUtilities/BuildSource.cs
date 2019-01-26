@@ -33,7 +33,7 @@ namespace Pomelo.EntityFrameworkCore.TestUtilities
             BuildReference.ByName("System.Threading", true),
             BuildReference.ByName("System.Threading.Tasks", true),
             BuildReference.ByName("System.ValueTuple", true)
-#elif NETCOREAPP2_0 || NETCOREAPP2_1
+#elif NETCOREAPP2_0 || NETCOREAPP2_2
             BuildReference.ByName("netstandard"),
             BuildReference.ByName("System.Collections"),
             BuildReference.ByName("System.ComponentModel.Annotations"),

@@ -11,14 +11,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
         {
             var serviceCollection = new ServiceCollection();
                 serviceCollection
-                    .AddLogging();
+                    .AddLogging(builder =>
+                        builder
+                            .AddConfiguration(AppConfig.Config.GetSection("Logging"))
+                            .AddConsole()
+                    );
                 Startup.ConfigureEntityFramework(serviceCollection);
 
-                var serviceProvider = serviceCollection.BuildServiceProvider();
-                serviceProvider
-                    .GetService<ILoggerFactory>()
-                    .AddConsole(AppConfig.Config.GetSection("Logging"));
-                return serviceProvider;
+                return serviceCollection.BuildServiceProvider();
         }
 
         private static Lazy<ServiceProvider> DefaultLazyServiceProvider = new Lazy<ServiceProvider>(() => {
