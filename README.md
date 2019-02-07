@@ -48,7 +48,7 @@ Ensure that your `.csproj` file has the following references.
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.0" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.2.0-preview1-final" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.2.0" />
   </ItemGroup>
   
 </Project>
@@ -110,8 +110,7 @@ Refer to Microsoft's [EF Core Documentation](https://docs.microsoft.com/en-us/ef
 Milestone | Release week
 ----------|-------------
 2.1.4 | 11/29/2018
-2.2.0-preview1-final | 1/26/2019
-2.2.0 | 2/6/2019
+2.2.0 | 2/7/2019
 
 #### Scaffolding Tutorial
 
