@@ -18,20 +18,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// </summary>
         public static bool ShouldRetryOn([NotNull] Exception ex)
         {
-            var mySqlException = ex as MySqlException;
-            if (mySqlException != null)
+            if (ex is MySqlException mySqlException)
             {
-                switch (mySqlException.Number)
+                switch ((MySqlErrorCode)mySqlException.Number)
                 {
+                    // Thrown if timer queue couldn't be cleared while reading sockets
+                    case MySqlErrorCode.CommandTimeoutExpired:
+                    // Unable to open connection
+                    case MySqlErrorCode.UnableToConnectToHost:
                     // Too many connections
-                    case 1040:
+                    case MySqlErrorCode.ConnectionCountError:
                     // Lock wait timeout exceeded; try restarting transaction
-                    case 1205:
+                    case MySqlErrorCode.LockWaitTimeout:
                     // Deadlock found when trying to get lock; try restarting transaction
-                    case 1213:
+                    case MySqlErrorCode.LockDeadlock:
                     // Transaction branch was rolled back: deadlock was detected
-                    case 1614:
-                    // Retry in all cases above
+                    case MySqlErrorCode.XARBDeadlock:
+                        // Retry in all cases above
                         return true;
                 }
 
@@ -39,12 +42,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 return false;
             }
 
-            if (ex is TimeoutException)
-            {
-                return true;
-            }
-
-            return false;
+            return ex is TimeoutException;
         }
     }
 }

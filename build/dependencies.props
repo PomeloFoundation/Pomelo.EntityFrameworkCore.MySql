@@ -6,7 +6,7 @@
   <PropertyGroup Label="Package Versions">
     <!-- EFCore.MySql Dependencies -->
     <MicrosoftEntityFrameworkCoreRelationalVersion>2.2.0</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MySqlConnectorVersion>0.49.2</MySqlConnectorVersion>
+    <MySqlConnectorVersion>0.51.1</MySqlConnectorVersion>
     <PomeloJsonObjectVersion>2.2.0</PomeloJsonObjectVersion>
     <!-- Shared Test Dependencies -->
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
