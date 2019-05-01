@@ -27,7 +27,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         {
             var csb = new MySqlConnectionStringBuilder(ConnectionString)
             {
-                Database = "",
+                Database = null,
                 Pooling = false
             };
 
