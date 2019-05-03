@@ -11,7 +11,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
 {
 	public class GeneratedTypesTest
 	{
-		[SkipAppVeyorFact]
+		[SkipAppVeyorAndMariaDbFact]
 		public async Task TestGeneratedContact()
 		{
 			const string email = "bob@example.com";

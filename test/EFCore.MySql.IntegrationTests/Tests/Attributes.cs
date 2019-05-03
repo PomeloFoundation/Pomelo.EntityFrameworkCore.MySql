@@ -1,11 +1,12 @@
-﻿using Xunit;
+﻿using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests
 {
-	public class SkipAppVeyorFact : FactAttribute {
+	public class SkipAppVeyorAndMariaDbFact : FactAttribute {
 
-		public SkipAppVeyorFact() {
-			if(AppConfig.AppVeyor) {
+		public SkipAppVeyorAndMariaDbFact() {
+			if(AppConfig.AppVeyor  || new ServerVersion(AppConfig.Config["Data:ServerVersion"]).Type == Infrastructure.ServerType.MariaDb) {
 				Skip = "Test does not work with AppVeyor's MySQL version";
 			}
 		}
