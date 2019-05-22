@@ -227,7 +227,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
                     first = false;
                 }
                 else
-                { 
+                {
                     Sql.Append(" ");
                 }
 
@@ -235,6 +235,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
             }
 
             return mySqlComplexFunctionArgumentExpression;
+        }
+
+        public Expression VisitMySqlCollateExpression(
+            [NotNull] MySqlCollateExpression mySqlCollateExpression)
+        {
+            Check.NotNull(mySqlCollateExpression, nameof(mySqlCollateExpression));
+
+            Sql.Append("CONVERT(");
+
+            Visit(mySqlCollateExpression.ValueExpression);
+
+            Sql.Append($" USING {mySqlCollateExpression.Charset}) COLLATE {mySqlCollateExpression.Collation}");
+
+            return mySqlCollateExpression;
         }
     }
 }
