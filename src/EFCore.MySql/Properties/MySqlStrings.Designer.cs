@@ -323,6 +323,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                 GetString("ComputedBadType", nameof(property), nameof(entityType), nameof(propertyType)),
                 property, entityType, propertyType);
 
+        /// <summary>
+        ///     The specified expression does not have the correct Type.
+        /// </summary>
+        public static string ExpressionTypeMismatch
+            => GetString("ExpressionTypeMismatch");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

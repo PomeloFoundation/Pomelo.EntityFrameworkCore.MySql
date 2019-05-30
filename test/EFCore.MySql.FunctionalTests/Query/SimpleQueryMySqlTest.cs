@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -901,6 +902,782 @@ FROM `Customers` AS `r`
 WHERE RPAD(`r`.`CustomerID`, 4, 'c') = 'AL'");
                   }
               );
+        }
+
+        [ConditionalTheory]
+        [InlineData(StringComparison.OrdinalIgnoreCase, 1)]
+        [InlineData(StringComparison.CurrentCultureIgnoreCase, 1)]
+        [InlineData(StringComparison.InvariantCultureIgnoreCase, 1)]
+        [InlineData(StringComparison.Ordinal, 0)]
+        [InlineData(StringComparison.CurrentCulture, 0)]
+        [InlineData(StringComparison.InvariantCulture, 0)]
+        public void StringEquals_with_comparison(StringComparison comparison, int expected)
+        {
+            AssertSingleResult<Customer>(
+                customer => customer.Where(c => c.CustomerID.Equals("anton", comparison)).Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(expected, (int)a);
+                    // When the comparison parameter is not a constant, we have to use a case
+                    // statement
+                    AssertSql($"@__comparison_0='{comparison:D}'" + @"
+
+SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE CASE
+    WHEN @__comparison_0 IN (4, 0, 2) THEN CASE
+        WHEN `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin
+        THEN TRUE ELSE FALSE
+    END
+    ELSE CASE
+        WHEN LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin
+        THEN TRUE ELSE FALSE
+    END
+END = TRUE");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringEquals_ordinal()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.Equals("anton", StringComparison.Ordinal))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(0, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringEquals_invariant()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.Equals("anton", StringComparison.CurrentCulture))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(0, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringEquals_current()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.Equals("anton", StringComparison.InvariantCulture))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(0, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringEquals_ordinal_ignore_case()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.Equals("anton", StringComparison.OrdinalIgnoreCase))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(1, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringEquals_current_ignore_case()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.Equals("anton", StringComparison.CurrentCultureIgnoreCase))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(1, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringEquals_invariant_ignore_case()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.Equals("anton", StringComparison.InvariantCultureIgnoreCase))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(1, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin");
+                });
+        }
+
+        [ConditionalTheory]
+        [InlineData(StringComparison.OrdinalIgnoreCase, 1)]
+        [InlineData(StringComparison.CurrentCultureIgnoreCase, 1)]
+        [InlineData(StringComparison.InvariantCultureIgnoreCase, 1)]
+        [InlineData(StringComparison.Ordinal, 0)]
+        [InlineData(StringComparison.CurrentCulture, 0)]
+        [InlineData(StringComparison.InvariantCulture, 0)]
+        public void StaticStringEquals_with_comparison(StringComparison comparison, int expected)
+        {
+            AssertSingleResult<Customer>(
+                customer => customer.Where(c => string.Equals(c.CustomerID, "anton", comparison)).Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(expected, (int)a);
+                    // When the comparison parameter is not a constant, we have to use a case
+                    // statement
+                    AssertSql($"@__comparison_0='{comparison:D}'" + @"
+
+SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE CASE
+    WHEN @__comparison_0 IN (4, 0, 2) THEN CASE
+        WHEN `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin
+        THEN TRUE ELSE FALSE
+    END
+    ELSE CASE
+        WHEN LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin
+        THEN TRUE ELSE FALSE
+    END
+END = TRUE");
+                });
+        }
+
+        [ConditionalFact]
+        public void StaticStringEquals_ordinal()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => string.Equals(c.CustomerID, "anton", StringComparison.Ordinal))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(0, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin");
+                });
+        }
+
+        [ConditionalFact]
+        public void StaticStringEquals_invariant()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => string.Equals(c.CustomerID, "anton", StringComparison.CurrentCulture))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(0, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin");
+                });
+        }
+
+        [ConditionalFact]
+        public void StaticStringEquals_current()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => string.Equals(c.CustomerID, "anton", StringComparison.InvariantCulture))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(0, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin");
+                });
+        }
+
+        [ConditionalFact]
+        public void StaticStringEquals_ordinal_ignore_case()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => string.Equals(c.CustomerID, "anton", StringComparison.OrdinalIgnoreCase))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(1, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin");
+                });
+        }
+
+        [ConditionalFact]
+        public void StaticStringEquals_current_ignore_case()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => string.Equals(c.CustomerID, "anton", StringComparison.CurrentCultureIgnoreCase))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(1, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin");
+                });
+        }
+
+        [ConditionalFact]
+        public void StaticStringEquals_invariant_ignore_case()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => string.Equals(c.CustomerID, "anton", StringComparison.InvariantCultureIgnoreCase))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(1, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin");
+                });
+        }
+
+#if NETCOREAPP2_2
+        [ConditionalTheory]
+        [InlineData(StringComparison.OrdinalIgnoreCase, 1)]
+        [InlineData(StringComparison.CurrentCultureIgnoreCase, 1)]
+        [InlineData(StringComparison.InvariantCultureIgnoreCase, 1)]
+        [InlineData(StringComparison.Ordinal, 0)]
+        [InlineData(StringComparison.CurrentCulture, 0)]
+        [InlineData(StringComparison.InvariantCulture, 0)]
+        public void StringContains_with_comparison(StringComparison comparison, int expected)
+        {
+            AssertSingleResult<Customer>(
+                customer => customer.Where(c => c.CustomerID.Contains("nto", comparison)).Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(expected, (int)a);
+                    // When the comparison parameter is not a constant, we have to use a case
+                    // statement
+                    AssertSql($"@__comparison_0='{comparison:D}'" + @"
+
+SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE CASE
+    WHEN @__comparison_0 IN (4, 0, 2) THEN CASE
+        WHEN LOCATE(CONVERT('nto' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`CustomerID`) > 0
+        THEN TRUE ELSE FALSE
+    END
+    ELSE CASE
+        WHEN LOCATE(CONVERT(LCASE('nto') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`)) > 0
+        THEN TRUE ELSE FALSE
+    END
+END = TRUE");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringContains_ordinal()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.Contains("nto", StringComparison.Ordinal))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(0, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE LOCATE(CONVERT('nto' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`CustomerID`) > 0");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringContains_invariant()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.Contains("nto", StringComparison.CurrentCulture))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(0, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE LOCATE(CONVERT('nto' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`CustomerID`) > 0");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringContains_current()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.Contains("nto", StringComparison.InvariantCulture))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(0, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE LOCATE(CONVERT('nto' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`CustomerID`) > 0");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringContains_ordinal_ignore_case()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.Contains("nto", StringComparison.OrdinalIgnoreCase))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(1, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE LOCATE(CONVERT(LCASE('nto') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`)) > 0");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringContains_current_ignore_case()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.Contains("nto", StringComparison.CurrentCultureIgnoreCase))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(1, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE LOCATE(CONVERT(LCASE('nto') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`)) > 0");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringContains_invariant_ignore_case()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.Contains("nto", StringComparison.InvariantCultureIgnoreCase))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(1, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE LOCATE(CONVERT(LCASE('nto') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`)) > 0");
+                });
+        }
+#endif
+
+        [ConditionalTheory]
+        [InlineData(StringComparison.OrdinalIgnoreCase, 1)]
+        [InlineData(StringComparison.CurrentCultureIgnoreCase, 1)]
+        [InlineData(StringComparison.InvariantCultureIgnoreCase, 1)]
+        [InlineData(StringComparison.Ordinal, 0)]
+        [InlineData(StringComparison.CurrentCulture, 0)]
+        [InlineData(StringComparison.InvariantCulture, 0)]
+        public void StringStartsWith_with_comparison(StringComparison comparison, int expected)
+        {
+            AssertSingleResult<Customer>(
+                customer => customer.Where(c => c.CustomerID.StartsWith("anto", comparison)).Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(expected, (int)a);
+                    // When the comparison parameter is not a constant, we have to use a case
+                    // statement
+                    AssertSql($"@__comparison_0='{comparison:D}'" + @"
+
+SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE CASE
+    WHEN @__comparison_0 IN (4, 0, 2) THEN CASE
+        WHEN `c`.`CustomerID` LIKE CONCAT('anto', '%') AND (LEFT(`c`.`CustomerID`, CHAR_LENGTH(CONVERT('anto' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('anto' USING utf8mb4) COLLATE utf8mb4_bin)
+        THEN TRUE ELSE FALSE
+    END
+    ELSE CASE
+        WHEN LCASE(`c`.`CustomerID`) LIKE CONCAT(CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin, '%') AND (LEFT(LCASE(`c`.`CustomerID`), CHAR_LENGTH(CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin)
+        THEN TRUE ELSE FALSE
+    END
+END = TRUE");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringStartsWith_ordinal()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.StartsWith("anto", StringComparison.Ordinal))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(0, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` LIKE CONCAT('anto', '%') AND " +
+                        "(LEFT(`c`.`CustomerID`, CHAR_LENGTH(CONVERT('anto' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('anto' USING utf8mb4) COLLATE utf8mb4_bin)");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringStartsWith_invariant()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.StartsWith("anto", StringComparison.CurrentCulture))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(0, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` LIKE CONCAT('anto', '%') AND " +
+                        "(LEFT(`c`.`CustomerID`, CHAR_LENGTH(CONVERT('anto' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('anto' USING utf8mb4) COLLATE utf8mb4_bin)");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringStartsWith_current()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.StartsWith("anto", StringComparison.InvariantCulture))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(0, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` LIKE CONCAT('anto', '%') AND " +
+                        "(LEFT(`c`.`CustomerID`, CHAR_LENGTH(CONVERT('anto' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('anto' USING utf8mb4) COLLATE utf8mb4_bin)");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringStartsWith_ordinal_ignore_case()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.StartsWith("anto", StringComparison.OrdinalIgnoreCase))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(1, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE LCASE(`c`.`CustomerID`) LIKE CONCAT(CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin, '%') AND " +
+                        "(LEFT(LCASE(`c`.`CustomerID`), CHAR_LENGTH(CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin)");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringStartsWith_current_ignore_case()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.StartsWith("anto", StringComparison.CurrentCultureIgnoreCase))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(1, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE LCASE(`c`.`CustomerID`) LIKE CONCAT(CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin, '%') AND " +
+                        "(LEFT(LCASE(`c`.`CustomerID`), CHAR_LENGTH(CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin)");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringStartsWith_invariant_ignore_case()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.StartsWith("anto", StringComparison.InvariantCultureIgnoreCase))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(1, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE LCASE(`c`.`CustomerID`) LIKE CONCAT(CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin, '%') AND " +
+                        "(LEFT(LCASE(`c`.`CustomerID`), CHAR_LENGTH(CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin)");
+                });
+        }
+
+        [ConditionalTheory]
+        [InlineData(StringComparison.OrdinalIgnoreCase, 1)]
+        [InlineData(StringComparison.CurrentCultureIgnoreCase, 1)]
+        [InlineData(StringComparison.InvariantCultureIgnoreCase, 1)]
+        [InlineData(StringComparison.Ordinal, 0)]
+        [InlineData(StringComparison.CurrentCulture, 0)]
+        [InlineData(StringComparison.InvariantCulture, 0)]
+        public void StringEndsWith_with_comparison(StringComparison comparison, int expected)
+        {
+            AssertSingleResult<Customer>(
+                customer => customer.Where(c => c.CustomerID.EndsWith("nton", comparison)).Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(expected, (int)a);
+                    // When the comparison parameter is not a constant, we have to use a case
+                    // statement
+                    AssertSql($"@__comparison_0='{comparison:D}'" + @"
+
+SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE CASE
+    WHEN @__comparison_0 IN (4, 0, 2) THEN CASE
+        WHEN RIGHT(`c`.`CustomerID`, CHAR_LENGTH(CONVERT('nton' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('nton' USING utf8mb4) COLLATE utf8mb4_bin
+        THEN TRUE ELSE FALSE
+    END
+    ELSE CASE
+        WHEN RIGHT(LCASE(`c`.`CustomerID`), CHAR_LENGTH(CONVERT(LCASE('nton') USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(LCASE('nton') USING utf8mb4) COLLATE utf8mb4_bin
+        THEN TRUE ELSE FALSE
+    END
+END = TRUE");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringEndsWith_ordinal()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.EndsWith("nton", StringComparison.Ordinal))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(0, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE RIGHT(`c`.`CustomerID`, CHAR_LENGTH(CONVERT('nton' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('nton' USING utf8mb4) COLLATE utf8mb4_bin");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringEndsWith_invariant()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.EndsWith("nton", StringComparison.CurrentCulture))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(0, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE RIGHT(`c`.`CustomerID`, CHAR_LENGTH(CONVERT('nton' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('nton' USING utf8mb4) COLLATE utf8mb4_bin");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringEndsWith_current()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.EndsWith("nton", StringComparison.InvariantCulture))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(0, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE RIGHT(`c`.`CustomerID`, CHAR_LENGTH(CONVERT('nton' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('nton' USING utf8mb4) COLLATE utf8mb4_bin");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringEndsWith_ordinal_ignore_case()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.EndsWith("nton", StringComparison.OrdinalIgnoreCase))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(1, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE RIGHT(LCASE(`c`.`CustomerID`), CHAR_LENGTH(CONVERT(LCASE('nton') USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(LCASE('nton') USING utf8mb4) COLLATE utf8mb4_bin");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringEndsWith_current_ignore_case()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.EndsWith("nton", StringComparison.CurrentCultureIgnoreCase))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(1, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE RIGHT(LCASE(`c`.`CustomerID`), CHAR_LENGTH(CONVERT(LCASE('nton') USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(LCASE('nton') USING utf8mb4) COLLATE utf8mb4_bin");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringEndsWith_invariant_ignore_case()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.EndsWith("nton", StringComparison.InvariantCultureIgnoreCase))
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(1, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE RIGHT(LCASE(`c`.`CustomerID`), CHAR_LENGTH(CONVERT(LCASE('nton') USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(LCASE('nton') USING utf8mb4) COLLATE utf8mb4_bin");
+                });
+        }
+
+        [ConditionalTheory]
+        [InlineData(StringComparison.OrdinalIgnoreCase, 1)]
+        [InlineData(StringComparison.CurrentCultureIgnoreCase, 1)]
+        [InlineData(StringComparison.InvariantCultureIgnoreCase, 1)]
+        [InlineData(StringComparison.Ordinal, 0)]
+        [InlineData(StringComparison.CurrentCulture, 0)]
+        [InlineData(StringComparison.InvariantCulture, 0)]
+        public void StringIndexOf_with_comparison(StringComparison comparison, int expected)
+        {
+            AssertSingleResult<Customer>(
+                customer => customer.Where(c => c.CustomerID.IndexOf("nt", comparison) == 1).Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(expected, (int)a);
+                    // When the comparison parameter is not a constant, we have to use a case
+                    // statement
+                    AssertSql($"@__comparison_0='{comparison:D}'" + @"
+
+SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE CASE
+    WHEN @__comparison_0 IN (4, 0, 2) THEN LOCATE(CONVERT('nt' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`CustomerID`) - 1
+    ELSE LOCATE(CONVERT(LCASE('nt') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`)) - 1
+END = 1");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringIndexOf_ordinal()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.IndexOf("nt", StringComparison.Ordinal) == 1)
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(0, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE LOCATE(CONVERT('nt' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`CustomerID`) - 1 = 1");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringIndexOf_invariant()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.IndexOf("nt", StringComparison.CurrentCulture) == 1)
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(0, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE LOCATE(CONVERT('nt' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`CustomerID`) - 1 = 1");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringIndexOf_current()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.IndexOf("nt", StringComparison.InvariantCulture) == 1)
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(0, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE LOCATE(CONVERT('nt' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`CustomerID`) - 1 = 1");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringIndexOf_ordinal_ignore_case()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.IndexOf("nt", StringComparison.OrdinalIgnoreCase) == 1)
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(1, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE LOCATE(CONVERT(LCASE('nt') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`)) - 1 = 1");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringIndexOf_current_ignore_case()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.IndexOf("nt", StringComparison.CurrentCultureIgnoreCase) == 1)
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(1, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE LOCATE(CONVERT(LCASE('nt') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`)) - 1 = 1");
+                });
+        }
+
+        [ConditionalFact]
+        public void StringIndexOf_invariant_ignore_case()
+        {
+            AssertSingleResult<Customer>(
+                customer =>
+                    customer.Where(c => c.CustomerID.IndexOf("nt", StringComparison.InvariantCultureIgnoreCase) == 1)
+                        .Count(),
+                asserter: (_, a) =>
+                {
+                    Assert.Equal(1, (int)a);
+                    AssertSql(@"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE LOCATE(CONVERT(LCASE('nt') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`)) - 1 = 1");
+                });
         }
 
         private void AssertSql(params string[] expected)
