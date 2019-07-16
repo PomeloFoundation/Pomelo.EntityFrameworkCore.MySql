@@ -344,7 +344,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata
         {
             var type = property.ClrType;
 
-            return (type.IsInteger() || type == typeof(decimal) || type == typeof(DateTime)) && !HasConverter(property);
+            return (type.IsInteger() || type == typeof(decimal) || type == typeof(DateTime) || type == typeof(DateTimeOffset)) && !HasConverter(property);
         }
 
         private static bool IsCompatibleComputedColumn(IProperty property)
