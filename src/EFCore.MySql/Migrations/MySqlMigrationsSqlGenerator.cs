@@ -912,7 +912,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             var autoIncrement = false;
             if ((identity || valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn) &&
-                string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
+                string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == clrType.GetDefaultValue())
             {
                 switch (matchType)
                 {
