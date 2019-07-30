@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
 using Xunit;
 using Xunit.Abstractions;
+using Pomelo.EntityFrameworkCore.MySql.Query;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -127,6 +128,116 @@ WHERE TIMESTAMPDIFF(SECOND, `c`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
                     @"SELECT COUNT(*)
 FROM `Orders` AS `c`
 WHERE TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(), DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 1.0 second)) = 0");
+            }
+        }
+
+        public override void Like_literal()
+        {
+            base.Like_literal();
+
+            AssertSql(
+                @"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE `c`.`ContactName` LIKE '%M%'");
+        }
+
+        public override void Like_identity()
+        {
+            base.Like_identity();
+
+            AssertSql(
+                @"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE `c`.`ContactName` LIKE `c`.`ContactName`");
+        }
+
+        public override void Like_literal_with_escape()
+        {
+            base.Like_literal_with_escape();
+
+            AssertSql(
+                @"SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE `c`.`ContactName` LIKE '!%' ESCAPE '!'");
+        }
+
+        [ConditionalFact]
+        public virtual void Like_Int_literal()
+        {
+            using (var context = CreateContext())
+            {
+                var count = context.Orders.Count(c => EF.Functions.Like(c.OrderID, "%M%"));
+
+                Assert.Equal(0, count);
+
+                AssertSql(
+                    @"SELECT COUNT(*)
+FROM `Orders` AS `c`
+WHERE `c`.`OrderID` LIKE '%M%'");
+            }
+        }
+
+        [ConditionalFact]
+        public virtual void Like_DateTime_literal()
+        {
+            using (var context = CreateContext())
+            {
+                var count = context.Orders.Count(c => EF.Functions.Like(c.OrderDate, "%M%"));
+
+                Assert.Equal(0, count);
+
+                AssertSql(
+                    @"SELECT COUNT(*)
+FROM `Orders` AS `c`
+WHERE `c`.`OrderDate` LIKE '%M%'");
+            }
+        }
+
+        [ConditionalFact]
+        public virtual void Like_Uint_literal()
+        {
+            using (var context = CreateContext())
+            {
+                var count = context.Orders.Count(c => EF.Functions.Like(c.EmployeeID, "%M%"));
+
+                Assert.Equal(0, count);
+
+                AssertSql(
+                    @"SELECT COUNT(*)
+FROM `Orders` AS `c`
+WHERE `c`.`EmployeeID` LIKE '%M%'");
+            }
+        }
+
+        [ConditionalFact]
+        public virtual void Like_Short_literal()
+        {
+            using (var context = CreateContext())
+            {
+                var count = context.OrderDetails.Count(c => EF.Functions.Like(c.Quantity, "%M%"));
+
+                Assert.Equal(0, count);
+
+                AssertSql(
+                    @"SELECT COUNT(*)
+FROM `Order Details` AS `c`
+WHERE `c`.`Quantity` LIKE '%M%'");
+            }
+        }
+
+        [ConditionalFact]
+        public virtual void Like_Int_literal_with_escape()
+        {
+            using (var context = CreateContext())
+            {
+                var count = context.Orders.Count(c => EF.Functions.Like(c.OrderID, "!%", "!"));
+
+                Assert.Equal(0, count);
+
+                AssertSql(
+                    @"SELECT COUNT(*)
+FROM `Orders` AS `c`
+WHERE `c`.`OrderID` LIKE '!%' ESCAPE '!'");
             }
         }
 
