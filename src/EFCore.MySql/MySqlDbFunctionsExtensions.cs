@@ -464,7 +464,7 @@ namespace Microsoft.EntityFrameworkCore
         ///     </para>
         /// </summary>
         /// <param name="_">The DbFunctions instance.</param>
-        /// <param name="matchExpression">The string that is to be matched.</param>
+        /// <param name="matchExpression">The property of entity that is to be matched.</param>
         /// <param name="pattern">The pattern which may involve wildcards %,_,[,],^.</param>
         /// <returns>true if there is a match.</returns>
         public static bool Like<T>(
@@ -486,7 +486,7 @@ namespace Microsoft.EntityFrameworkCore
         ///     </para>
         /// </summary>
         /// <param name="_">The DbFunctions instance.</param>
-        /// <param name="matchExpression">The string that is to be matched.</param>
+        /// <param name="matchExpression">The property of entity that is to be matched.</param>
         /// <param name="pattern">The pattern which may involve wildcards %,_,[,],^.</param>
         /// <param name="escapeCharacter">
         ///     The escape character (as a single character string) to use in front of %,_,[,],^
