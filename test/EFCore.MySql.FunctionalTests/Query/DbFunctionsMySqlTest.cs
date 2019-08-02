@@ -1,5 +1,7 @@
 using System;
+using System.Globalization;
 using System.Linq;
+using System.Threading;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -239,6 +241,21 @@ WHERE `c`.`Quantity` LIKE '%M%'");
 FROM `Orders` AS `c`
 WHERE `c`.`OrderID` LIKE '!%' ESCAPE '!'");
             }
+        }
+
+        [ConditionalFact]
+        public virtual void Like_Client_InvariantCulture()
+        {
+            Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("zh-CN");
+            DateTime? exampleDate = new DateTime(2019, 8, 1, 18, 32, 6);
+
+            Assert.True(EF.Functions.Like(exampleDate, "08/01/2019%"));
+
+            double? d = 12.34D;
+            Assert.True(EF.Functions.Like(d, "12.3%"));
+
+            byte[] b = { 0x30, 0x31 };
+            Assert.True(EF.Functions.Like(b, "30%"));
         }
 
         private void AssertSql(params string[] expected) => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);

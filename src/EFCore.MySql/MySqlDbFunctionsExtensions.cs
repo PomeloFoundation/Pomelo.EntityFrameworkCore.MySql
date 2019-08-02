@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Text;
 using JetBrains.Annotations;
 
@@ -469,9 +471,9 @@ namespace Microsoft.EntityFrameworkCore
         /// <returns>true if there is a match.</returns>
         public static bool Like<T>(
             [CanBeNull] this DbFunctions _,
-            T matchExpression,
+            [CanBeNull] T matchExpression,
             [CanBeNull] string pattern)
-            => _.Like(matchExpression.ToString(), pattern);
+            => LikeCore(matchExpression, pattern, null);
 
         /// <summary>
         ///     <para>
@@ -495,9 +497,41 @@ namespace Microsoft.EntityFrameworkCore
         /// <returns>true if there is a match.</returns>
         public static bool Like<T>(
             [CanBeNull] this DbFunctions _,
-            T matchExpression,
+            [CanBeNull] T matchExpression,
             [CanBeNull] string pattern,
             [CanBeNull] string escapeCharacter)
-            => _.Like(matchExpression.ToString(), pattern, escapeCharacter);
+            => LikeCore(matchExpression, pattern, escapeCharacter);
+
+        private static bool LikeCore<T>(T matchExpression, string pattern, string escapeCharacter)
+        {
+            if (matchExpression == null)
+            {
+                return false;
+            }
+
+            if (matchExpression is IConvertible convertible)
+            {
+                return Like(EF.Functions, convertible.ToString(CultureInfo.InvariantCulture), pattern, escapeCharacter);
+            }
+
+            if (typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
+                var genericArgument = typeof(T).GetGenericArguments().First();
+                var value = Convert.ChangeType(matchExpression, genericArgument);
+
+                return LikeCore(value, pattern, escapeCharacter);
+            }
+
+            if (typeof(T) == typeof(byte[]))
+            {
+                var value = (string)BitConverter.ToString((dynamic)matchExpression);
+                if (!string.IsNullOrEmpty(value))
+                {
+                    return EF.Functions.Like(value.Replace("-", ""), pattern, escapeCharacter);
+                }
+            }
+
+            return false;
+        }
     }
 }
