@@ -49,6 +49,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<ICompositeMethodCallTranslator, MySqlCompositeMethodCallTranslator>()
                 .TryAdd<IQuerySqlGeneratorFactory, MySqlQuerySqlGeneratorFactory>()
                 .TryAdd<ISingletonOptions, IMySqlOptions>(p => p.GetService<IMySqlOptions>())
+                .TryAdd<IMigrator, MySqlMigrator>()
                 .TryAddProviderSpecificServices(b => b
                     .TryAddSingleton<IMySqlOptions, MySqlOptions>()
                     .TryAddScoped<IMySqlUpdateSqlGenerator, MySqlUpdateSqlGenerator>()
