@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore.Query.Expressions;
 using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators;
-using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
@@ -23,15 +22,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             if (Equals(methodCallExpression.Method, _methodInfo))
             {
                 var patternExpression = methodCallExpression.Arguments[0];
-                var patternConstantExpression = patternExpression as ConstantExpression;
-                var binaryExpression = new MySqlBinaryExpression(patternExpression);
 
                 var charIndexExpression = Expression.GreaterThan(
-                    new SqlFunctionExpression("LOCATE", typeof(int), new[] { binaryExpression, methodCallExpression.Object }),
+                    new SqlFunctionExpression("LOCATE", typeof(int), new[] { patternExpression, methodCallExpression.Object }),
                     Expression.Constant(0));
 
                 return
-                    patternConstantExpression != null
+                    patternExpression is ConstantExpression patternConstantExpression
                         ? (string)patternConstantExpression.Value == string.Empty
                             ? (Expression)Expression.Constant(true)
                             : charIndexExpression

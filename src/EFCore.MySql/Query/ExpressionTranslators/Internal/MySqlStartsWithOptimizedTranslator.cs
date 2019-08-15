@@ -25,7 +25,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             if (Equals(methodCallExpression.Method, _methodInfo))
             {
                 var patternExpression = methodCallExpression.Arguments[0];
-                var patternConstantExpression = patternExpression as ConstantExpression;
 
                 var startsWithExpression = Expression.AndAlso(
                     new LikeExpression(
@@ -45,7 +44,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                                 }),
                             patternExpression)));
 
-                return patternConstantExpression != null
+                return patternExpression is ConstantExpression patternConstantExpression
                     ? (string)patternConstantExpression.Value == string.Empty
                         ? (Expression)Expression.Constant(true)
                         : startsWithExpression

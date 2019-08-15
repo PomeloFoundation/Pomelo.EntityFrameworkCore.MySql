@@ -51,7 +51,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         public override async Task<IDbContextTransaction> BeginTransactionAsync(
             System.Data.IsolationLevel isolationLevel,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default)
         {
             await OpenAsync(cancellationToken).ConfigureAwait(false);
 
@@ -74,7 +74,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         }
 
         private async Task<IDbContextTransaction> BeginTransactionWithNoPreconditionsAsync(
-            System.Data.IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken))
+            System.Data.IsolationLevel isolationLevel, CancellationToken cancellationToken = default)
         {
             var dbTransaction = await ((MySqlConnection)DbConnection).BeginTransactionAsync(isolationLevel, cancellationToken)
                 .ConfigureAwait(false);
@@ -94,7 +94,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             return CurrentTransaction;
         }
 
-        public virtual async Task CommitTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
         {
             if (CurrentTransaction == null)
             {
@@ -104,7 +104,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             await ((MySqlRelationalTransaction)CurrentTransaction).CommitAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public virtual async Task RollbackTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
         {
             if (CurrentTransaction == null)
             {

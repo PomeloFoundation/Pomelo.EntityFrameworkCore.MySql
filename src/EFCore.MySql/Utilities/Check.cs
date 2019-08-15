@@ -18,7 +18,7 @@ namespace Microsoft.EntityFrameworkCore.Utilities
         [ContractAnnotation("value:null => halt")]
         public static T NotNull<T>([NoEnumeration] T value, [InvokerParameterName] [NotNull] string parameterName)
         {
-            if (ReferenceEquals(value, null))
+            if (value == null)
             {
                 NotEmpty(parameterName, nameof(parameterName));
 
@@ -34,7 +34,7 @@ namespace Microsoft.EntityFrameworkCore.Utilities
             [InvokerParameterName] [NotNull] string parameterName,
             [NotNull] string propertyName)
         {
-            if (ReferenceEquals(value, null))
+            if (value == null)
             {
                 NotEmpty(parameterName, nameof(parameterName));
                 NotEmpty(propertyName, nameof(propertyName));
@@ -85,7 +85,7 @@ namespace Microsoft.EntityFrameworkCore.Utilities
 
         public static string NullButNotEmpty(string value, [InvokerParameterName] [NotNull] string parameterName)
         {
-            if (!ReferenceEquals(value, null)
+            if (value is object
                 && value.Length == 0)
             {
                 NotEmpty(parameterName, nameof(parameterName));
