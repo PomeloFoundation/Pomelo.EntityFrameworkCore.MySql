@@ -46,8 +46,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         /// </summary>
         public virtual Expression Translate(MethodCallExpression methodCallExpression)
         {
-            string storeType;
-
             if (methodCallExpression.Method.Name == nameof(ToString)
                 && methodCallExpression.Arguments.Count == 0
                 && methodCallExpression.Object != null
@@ -55,7 +53,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     methodCallExpression.Object.Type
                         .UnwrapNullableType()
                         .UnwrapEnumType(),
-                    out storeType))
+                    out var storeType))
             {
                 return new SqlFunctionExpression(
                     functionName: "CONVERT",

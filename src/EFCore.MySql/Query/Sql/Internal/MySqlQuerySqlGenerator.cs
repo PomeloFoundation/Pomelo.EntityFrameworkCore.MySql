@@ -137,8 +137,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
                 //(causing "parameterized" queries to fail with NO_BACKSLASH_ESCAPES),
                 //directly insert the value with only replacing ' with ''
                 Check.NotNull(parameterExpression, nameof(parameterExpression));
-                object value;
-                var isRegistered = ParameterValues.TryGetValue(parameterExpression.Name, out value);
+                var isRegistered = ParameterValues.TryGetValue(parameterExpression.Name, out var value);
                 if (isRegistered && value is string)
                 {
                     _isParameterReplaced = true;
@@ -160,7 +159,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
             return regexpExpression;
         }
 
-        private static readonly Dictionary<string, string[]> CastMappings = new Dictionary<string, string[]>
+        private static readonly Dictionary<string, string[]> _castMappings = new Dictionary<string, string[]>
         {
             { "signed", new []{ "tinyint", "smallint", "mediumint", "int", "bigint" }},
             { "decimal", new []{ "decimal", "double", "float" } },
@@ -183,7 +182,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
 
             var storeTypeLower = typeMapping.StoreType.ToLower();
             string castMapping = null;
-            foreach (var kvp in CastMappings)
+            foreach (var kvp in _castMappings)
             {
 
                 foreach (var storeType in kvp.Value)

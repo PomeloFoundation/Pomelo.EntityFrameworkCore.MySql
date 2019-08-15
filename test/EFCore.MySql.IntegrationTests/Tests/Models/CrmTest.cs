@@ -102,10 +102,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
 //					tasks.Add(db.Entry(adminMenu).Reference(m => m.Menu).LoadAsync());
 //				await Task.WhenAll(tasks);
 				foreach (var adminMenu in superUser.AdminMenus)
-					await db.Entry(adminMenu).Reference(m => m.Menu).LoadAsync();
+                {
+                    await db.Entry(adminMenu).Reference(m => m.Menu).LoadAsync();
+                }
 
-				// explicit load AdminRoles, eagerly loading Roles at the same time
-				await db.Entry(superUser).Collection(m => m.AdminRoles).Query().Include(m => m.Role).ToListAsync();
+                // explicit load AdminRoles, eagerly loading Roles at the same time
+                await db.Entry(superUser).Collection(m => m.AdminRoles).Query().Include(m => m.Role).ToListAsync();
 
 				Assert.NotNull(superUser);
 				Assert.Equal("test", superUser.Username);

@@ -40,7 +40,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         private DbTransaction DbTransaction => ((IInfrastructure<DbTransaction>)this).Instance;
 
-        public virtual async Task CommitAsync(CancellationToken cancellationToken=default(CancellationToken))
+        public virtual async Task CommitAsync(CancellationToken cancellationToken = default)
         {
             var startTime = DateTimeOffset.UtcNow;
             var stopwatch = Stopwatch.StartNew();
@@ -82,7 +82,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// <summary>
         ///     Discards all changes made to the database in the current transaction.
         /// </summary>
-        public virtual async Task RollbackAsync(CancellationToken cancellationToken=default(CancellationToken))
+        public virtual async Task RollbackAsync(CancellationToken cancellationToken = default)
         {
             var startTime = DateTimeOffset.UtcNow;
             var stopwatch = Stopwatch.StartNew();

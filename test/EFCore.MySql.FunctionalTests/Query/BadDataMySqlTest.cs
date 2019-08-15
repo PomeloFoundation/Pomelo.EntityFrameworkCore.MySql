@@ -359,7 +359,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             public void ResetState() { }
             public IDbContextTransaction BeginTransaction() => throw new NotImplementedException();
-            public Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken)) => throw new NotImplementedException();
+            public Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
             public void CommitTransaction() { }
             public void RollbackTransaction() { }
             public IDbContextTransaction CurrentTransaction => throw new NotImplementedException();
@@ -377,7 +377,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             public bool Close() => true;
             public bool IsMultipleActiveResultSetsEnabled { get; }
             public IDbContextTransaction BeginTransaction(IsolationLevel isolationLevel) => throw new NotImplementedException();
-            public Task<IDbContextTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken)) => throw new NotImplementedException();
+            public Task<IDbContextTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default) => throw new NotImplementedException();
             public IDbContextTransaction UseTransaction(DbTransaction transaction) => throw new NotImplementedException();
             public void Dispose() {}
         }

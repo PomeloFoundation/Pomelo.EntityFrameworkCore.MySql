@@ -22,14 +22,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             if (Equals(methodCallExpression.Method, _methodInfo))
             {
                 var patternExpression = methodCallExpression.Arguments[0];
-                var patternConstantExpression = patternExpression as ConstantExpression;
 
                 var charIndexExpression = Expression.GreaterThan(
                     new SqlFunctionExpression("LOCATE", typeof(int), new[] { patternExpression, methodCallExpression.Object }),
                     Expression.Constant(0));
 
                 return
-                    patternConstantExpression != null
+                    patternExpression is ConstantExpression patternConstantExpression
                         ? (string)patternConstantExpression.Value == string.Empty
                             ? (Expression)Expression.Constant(true)
                             : charIndexExpression

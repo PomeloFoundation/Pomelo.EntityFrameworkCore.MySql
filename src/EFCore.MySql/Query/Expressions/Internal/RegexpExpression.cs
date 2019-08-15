@@ -32,9 +32,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         {
             Check.NotNull(visitor, nameof(visitor));
 
-            var specificVisitor = visitor as IMySqlExpressionVisitor;
-
-            return specificVisitor != null
+            return visitor is IMySqlExpressionVisitor specificVisitor
                 ? specificVisitor.VisitRegexp(this)
                 : base.Accept(visitor);
         }

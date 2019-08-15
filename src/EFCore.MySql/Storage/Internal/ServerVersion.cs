@@ -10,7 +10,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     public class ServerVersion
     {
         public static Regex ReVersion = new Regex(@"\d+\.\d+\.?(?:\d+)?");
-        private static readonly Version DefaultVersion = new Version(8, 0, 0);
+        private static readonly Version _defaultVersion = new Version(8, 0, 0);
 
         public ServerVersion(string versionString)
         {
@@ -20,10 +20,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 var semanticVersion = ReVersion.Matches(versionString);
                 if (semanticVersion.Count > 0)
                 {
-                    if (Type == ServerType.MariaDb && semanticVersion.Count > 1)
-                        Version = Version.Parse(semanticVersion[1].Value);
-                    else
-                        Version = Version.Parse(semanticVersion[0].Value);
+                    Version = Type == ServerType.MariaDb && semanticVersion.Count > 1
+                        ? Version.Parse(semanticVersion[1].Value)
+                        : Version.Parse(semanticVersion[0].Value);
                 }
                 else
                 {
@@ -33,7 +32,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             }
             else
             {
-                Version = DefaultVersion;
+                Version = _defaultVersion;
             }
         }
 

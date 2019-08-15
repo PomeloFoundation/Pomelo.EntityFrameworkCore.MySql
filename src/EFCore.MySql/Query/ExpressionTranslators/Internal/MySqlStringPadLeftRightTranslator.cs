@@ -14,13 +14,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
     /// </summary>
     public class MySqlStringPadLeftRightTranslator : IMethodCallTranslator
     {
-        private static readonly Dictionary<MethodInfo, string> _withOneArgumentMethods = new Dictionary<MethodInfo, string>
+        private static readonly Dictionary<MethodInfo, string> withOneArgumentMethods = new Dictionary<MethodInfo, string>
         {
             { typeof(string).GetRuntimeMethod(nameof(string.PadLeft), new[] { typeof(int) }), "LPAD" },
             { typeof(string).GetRuntimeMethod(nameof(string.PadRight), new[] { typeof(int) }), "RPAD" }
         };
 
-        private static readonly Dictionary<MethodInfo, string> _withTwoArgumentsMethods = new Dictionary<MethodInfo, string>
+        private static readonly Dictionary<MethodInfo, string> withTwoArgumentsMethods = new Dictionary<MethodInfo, string>
         {
             { typeof(string).GetRuntimeMethod(nameof(string.PadLeft), new[] { typeof(int), typeof(char) }), "LPAD" },
             { typeof(string).GetRuntimeMethod(nameof(string.PadRight), new[] { typeof(int), typeof(char) }), "RPAD" }
@@ -37,13 +37,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             ConstantExpression padstr = null;
             ConstantExpression len = null;
 
-            if(_withOneArgumentMethods.TryGetValue(methodCallExpression.Method, out var sqlFunction)
+            if(withOneArgumentMethods.TryGetValue(methodCallExpression.Method, out var sqlFunction)
                 && methodCallExpression.Arguments[0].NodeType == ExpressionType.Constant)
             {
                 padstr = Expression.Constant(' ');
                 len = methodCallExpression.Arguments[0] as ConstantExpression;
             }
-            else if (_withTwoArgumentsMethods.TryGetValue(methodCallExpression.Method, out sqlFunction)
+            else if (withTwoArgumentsMethods.TryGetValue(methodCallExpression.Method, out sqlFunction)
                 && methodCallExpression.Arguments[0].NodeType == ExpressionType.Constant
                 && methodCallExpression.Arguments[1].NodeType == ExpressionType.Constant)
             {

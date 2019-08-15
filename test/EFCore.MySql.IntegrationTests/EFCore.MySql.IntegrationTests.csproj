@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="$(MicrosoftAspNetCoreAppVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,22 +26,10 @@
   </ItemGroup>
 
   <Target Name="CopyDirsAfterBuild" AfterTargets="Build">
-    <Copy 
-      SourceFiles="@(AppConfig)" 
-      DestinationFolder="$(OutDir)\%(RecursiveDir)" 
-      SkipUnchangedFiles="true" 
-      OverwriteReadOnlyFiles="true" 
-      Retries="3"
-      RetryDelayMilliseconds="300"/>
+    <Copy SourceFiles="@(AppConfig)" DestinationFolder="$(OutDir)\%(RecursiveDir)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" Retries="3" RetryDelayMilliseconds="300" />
   </Target>
   <Target Name="CopyDirsAfterPublish" AfterTargets="Publish">
-    <Copy 
-      SourceFiles="@(AppConfig)" 
-      DestinationFolder="$(PublishDir)\%(RecursiveDir)" 
-      SkipUnchangedFiles="true" 
-      OverwriteReadOnlyFiles="true" 
-      Retries="3"
-      RetryDelayMilliseconds="300"/>
+    <Copy SourceFiles="@(AppConfig)" DestinationFolder="$(PublishDir)\%(RecursiveDir)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" Retries="3" RetryDelayMilliseconds="300" />
   </Target>
 
 </Project>

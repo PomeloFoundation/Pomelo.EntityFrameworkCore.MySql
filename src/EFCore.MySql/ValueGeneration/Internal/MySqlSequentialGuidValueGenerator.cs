@@ -16,7 +16,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.ValueGeneration.Internal
             _options = options;
         }
 
-        private static readonly RandomNumberGenerator Rng = RandomNumberGenerator.Create();
+        private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
 
         /// <summary>
         ///     Gets a value to be assigned to a property.
@@ -29,7 +29,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.ValueGeneration.Internal
         public override Guid Next(EntityEntry entry)
         {
             var randomBytes = new byte[8];
-            Rng.GetBytes(randomBytes);
+            _rng.GetBytes(randomBytes);
             var ticks = (ulong) DateTime.UtcNow.Ticks;
 
             if (_options.ConnectionSettings.OldGuids)
@@ -37,7 +37,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.ValueGeneration.Internal
                 var guidBytes = new byte[16];
                 var tickBytes = BitConverter.GetBytes(ticks);
                 if (BitConverter.IsLittleEndian)
+                {
                     Array.Reverse(tickBytes);
+                }
 
                 Buffer.BlockCopy(tickBytes, 0, guidBytes, 0, 8);
                 Buffer.BlockCopy(randomBytes, 0, guidBytes, 8, 8);

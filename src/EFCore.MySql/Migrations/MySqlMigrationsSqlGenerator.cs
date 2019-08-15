@@ -91,12 +91,11 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
-            var dropDatabaseOperation = operation as MySqlDropDatabaseOperation;
             if (operation is MySqlCreateDatabaseOperation createDatabaseOperation)
             {
                 Generate(createDatabaseOperation, model, builder);
             }
-            else if (dropDatabaseOperation != null)
+            else if (operation is MySqlDropDatabaseOperation dropDatabaseOperation)
             {
                 Generate(dropDatabaseOperation, model, builder);
             }
@@ -903,11 +902,16 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             {
                 var generatedOnAddAnnotation = annotatable[MySqlAnnotationNames.LegacyValueGeneratedOnAdd];
                 if (generatedOnAddAnnotation != null && (bool)generatedOnAddAnnotation)
+                {
                     valueGenerationStrategy = MySqlValueGenerationStrategy.IdentityColumn;
+                }
+
                 var generatedOnAddOrUpdateAnnotation =
                     annotatable[MySqlAnnotationNames.LegacyValueGeneratedOnAddOrUpdate];
                 if (generatedOnAddOrUpdateAnnotation != null && (bool)generatedOnAddOrUpdateAnnotation)
+                {
                     valueGenerationStrategy = MySqlValueGenerationStrategy.ComputedColumn;
+                }
             }
 
             var autoIncrement = false;
@@ -925,9 +929,12 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                         break;
                     case "datetime":
                         if (!_options.ServerVersion.SupportsDateTime6)
+                        {
                             throw new InvalidOperationException(
                                 $"Error in {table}.{name}: DATETIME does not support values generated " +
                                 "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");
+                        }
+
                         goto case "timestamp";
                     case "timestamp":
                         defaultValueSql = $"CURRENT_TIMESTAMP({matchLen})";

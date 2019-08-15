@@ -15,7 +15,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         [Fact]
         public async Task TestDataTypesSimple()
         {
-            void TestEmpty(DataTypesSimple emptyDb)
+            void testEmpty(DataTypesSimple emptyDb)
             {
                 // bool
                 Assert.False(emptyDb.TypeBool);
@@ -23,12 +23,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
                 Assert.Null(emptyDb.TypeBoolN);
 
                 // integers
-                Assert.Equal(default(short), emptyDb.TypeShort);
-                Assert.Equal(default(ushort), emptyDb.TypeUshort);
-                Assert.Equal(default(int), emptyDb.TypeInt);
-                Assert.Equal(default(uint), emptyDb.TypeUint);
-                Assert.Equal(default(long), emptyDb.TypeLong);
-                Assert.Equal(default(ulong), emptyDb.TypeUlong);
+                Assert.Equal(default, emptyDb.TypeShort);
+                Assert.Equal(default, emptyDb.TypeUshort);
+                Assert.Equal(default, emptyDb.TypeInt);
+                Assert.Equal(default, emptyDb.TypeUint);
+                Assert.Equal(default, emptyDb.TypeLong);
+                Assert.Equal(default, emptyDb.TypeUlong);
                 // nullable integers
                 Assert.Null(emptyDb.TypeShortN);
                 Assert.Null(emptyDb.TypeUshortN);
@@ -38,41 +38,41 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
                 Assert.Null(emptyDb.TypeUlongN);
 
                 // decimals
-                Assert.Equal(default(decimal), emptyDb.TypeDecimal);
-                Assert.Equal(default(double), emptyDb.TypeDouble);
-                Assert.Equal(default(float), emptyDb.TypeFloat);
+                Assert.Equal(default, emptyDb.TypeDecimal);
+                Assert.Equal(default, emptyDb.TypeDouble);
+                Assert.Equal(default, emptyDb.TypeFloat);
                 // nullable decimals
                 Assert.Null(emptyDb.TypeDecimalN);
                 Assert.Null(emptyDb.TypeDoubleN);
                 Assert.Null(emptyDb.TypeFloatN);
 
                 // byte
-                Assert.Equal(default(sbyte), emptyDb.TypeSbyte);
-                Assert.Equal(default(byte), emptyDb.TypeByte);
-                Assert.Equal(default(char), emptyDb.TypeChar);
+                Assert.Equal(default, emptyDb.TypeSbyte);
+                Assert.Equal(default, emptyDb.TypeByte);
+                Assert.Equal(default, emptyDb.TypeChar);
                 // nullable byte
                 Assert.Null(emptyDb.TypeSbyteN);
                 Assert.Null(emptyDb.TypeByteN);
                 Assert.Null(emptyDb.TypeCharN);
 
                 // DateTime
-                Assert.Equal(default(DateTime), emptyDb.TypeDateTime);
-                Assert.Equal(default(DateTimeOffset), emptyDb.TypeDateTimeOffset);
-                Assert.Equal(default(TimeSpan), emptyDb.TypeTimeSpan);
+                Assert.Equal(default, emptyDb.TypeDateTime);
+                Assert.Equal(default, emptyDb.TypeDateTimeOffset);
+                Assert.Equal(default, emptyDb.TypeTimeSpan);
                 // nullable DateTime
                 Assert.Null(emptyDb.TypeDateTimeN);
                 Assert.Null(emptyDb.TypeDateTimeOffsetN);
                 Assert.Null(emptyDb.TypeTimeSpanN);
 
                 // Enum
-                Assert.Equal(default(TestEnum), emptyDb.TypeEnum);
-                Assert.Equal(default(TestEnumByte), emptyDb.TypeEnumByte);
+                Assert.Equal(default, emptyDb.TypeEnum);
+                Assert.Equal(default, emptyDb.TypeEnumByte);
                 // nullableEnum
                 Assert.Null(emptyDb.TypeEnumN);
                 Assert.Null(emptyDb.TypeEnumByteN);
 
                 // guid
-                Assert.Equal(default(Guid), emptyDb.TypeGuid);
+                Assert.Equal(default, emptyDb.TypeGuid);
                 // nullable guid
                 Assert.Null(emptyDb.TypeGuidN);
             }
@@ -91,7 +91,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
 
 	        // test each data type with a valid value
 	        // ReSharper disable once ObjectCreationAsStatement
-            DataTypesSimple NewValueMem() => new DataTypesSimple
+            DataTypesSimple newValueMem() => new DataTypesSimple
             {
                 // bool
                 TypeBool = true,
@@ -153,7 +153,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
                 TypeGuidN = guid,
             };
 
-            void TestValue(DataTypesSimple valueDb)
+            void testValue(DataTypesSimple valueDb)
             {
                 // bool
                 Assert.True(valueDb.TypeBool);
@@ -218,8 +218,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
             // create test data objects
 	        var emptyMemAsync = new DataTypesSimple();
 	        var emptyMemSync = new DataTypesSimple();
-	        var valueMemAsync = NewValueMem();
-	        var valueMemSync = NewValueMem();
+	        var valueMemAsync = newValueMem();
+	        var valueMemSync = newValueMem();
 
 	        // save them to the database
 	        using (var scope = new AppDbScope())
@@ -239,22 +239,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
 			{
 				var db = scope.AppDb;
 		        // ReSharper disable once AccessToDisposedClosure
-	            async Task<DataTypesSimple> FromDbAsync(DataTypesSimple dt) => await db.DataTypesSimple.FirstOrDefaultAsync(m => m.Id == dt.Id);
+	            async Task<DataTypesSimple> fromDbAsync(DataTypesSimple dt) => await db.DataTypesSimple.FirstOrDefaultAsync(m => m.Id == dt.Id);
 
 	            // ReSharper disable once AccessToDisposedClosure
-	            DataTypesSimple FromDbSync(DataTypesSimple dt) => db.DataTypesSimple.FirstOrDefault(m => m.Id == dt.Id);
+	            DataTypesSimple fromDbSync(DataTypesSimple dt) => db.DataTypesSimple.FirstOrDefault(m => m.Id == dt.Id);
 
-	            TestEmpty(await FromDbAsync(emptyMemAsync));
-		        TestEmpty(FromDbSync(emptyMemSync));
-		        TestValue(await FromDbAsync(valueMemAsync));
-		        TestValue(FromDbSync(valueMemSync));
+	            testEmpty(await fromDbAsync(emptyMemAsync));
+		        testEmpty(fromDbSync(emptyMemSync));
+		        testValue(await fromDbAsync(valueMemAsync));
+		        testValue(fromDbSync(valueMemSync));
 	        }
         }
 
 	    [Fact]
 	    public async Task TestDataTypesVariable()
 	    {
-	        void TestEmpty(DataTypesVariable valueDb)
+	        void testEmpty(DataTypesVariable valueDb)
 	        {
 	            // string not null
 	            Assert.Equal("", valueDb.TypeString);
@@ -286,7 +286,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
             for (var i = 0; i < byte10K.Length; i++)
             {
                 if (i < 255)
+                {
                     byte255[i] = (byte) 'a';
+                }
+
                 byte10K[i] = (byte) 'a';
             }
 
@@ -294,7 +297,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
             var jsonObject = new JsonObject<Dictionary<string, string>>(new Dictionary<string, string> {{"test", "test"}});
 
             // test each data type with a valid value
-	        DataTypesVariable NewValueMem() => new DataTypesVariable
+	        DataTypesVariable newValueMem() => new DataTypesVariable
 	        {
 	            // string not null
 	            TypeString = string10K,
@@ -318,7 +321,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
 	            TypeJsonObjectN = jsonObject,
 	        };
 
-	        void TestValue(DataTypesVariable valueDb)
+	        void testValue(DataTypesVariable valueDb)
 	        {
 	            // string not null
 	            Assert.Equal(string10K, valueDb.TypeString);
@@ -345,8 +348,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
 	        // create test data objects
 		    var emptyMemAsync = DataTypesVariable.CreateEmpty();
 		    var emptyMemSync = DataTypesVariable.CreateEmpty();
-		    var valueMemAsync = NewValueMem();
-		    var valueMemSync = NewValueMem();
+		    var valueMemAsync = newValueMem();
+		    var valueMemSync = newValueMem();
 
 		    // save them to the database
 		    using (var scope = new AppDbScope())
@@ -366,15 +369,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
 			{
 				var db = scope.AppDb;
 			    // ReSharper disable once AccessToDisposedClosure
-		        async Task<DataTypesVariable> FromDbAsync(DataTypesVariable dt) => await db.DataTypesVariable.FirstOrDefaultAsync(m => m.Id == dt.Id);
+		        async Task<DataTypesVariable> fromDbAsync(DataTypesVariable dt) => await db.DataTypesVariable.FirstOrDefaultAsync(m => m.Id == dt.Id);
 
 		        // ReSharper disable once AccessToDisposedClosure
-		        DataTypesVariable FromDbSync(DataTypesVariable dt) => db.DataTypesVariable.FirstOrDefault(m => m.Id == dt.Id);
+		        DataTypesVariable fromDbSync(DataTypesVariable dt) => db.DataTypesVariable.FirstOrDefault(m => m.Id == dt.Id);
 
-		        TestEmpty(await FromDbAsync(emptyMemAsync));
-			    TestEmpty(FromDbSync(emptyMemSync));
-			    TestValue(await FromDbAsync(valueMemAsync));
-			    TestValue(FromDbSync(valueMemSync));
+		        testEmpty(await fromDbAsync(emptyMemAsync));
+			    testEmpty(fromDbSync(emptyMemSync));
+			    testValue(await fromDbAsync(valueMemAsync));
+			    testValue(fromDbSync(valueMemSync));
 		    }
 
 	    }

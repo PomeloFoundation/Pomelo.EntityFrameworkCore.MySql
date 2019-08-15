@@ -20,8 +20,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     /// </summary>
     public class MySqlDatabaseCreator : RelationalDatabaseCreator
     {
-        private readonly IMySqlRelationalConnection _connection;
-	    private readonly IRawSqlCommandBuilder _rawSqlCommandBuilder;
+        private readonly IMySqlRelationalConnection connection;
+	    private readonly IRawSqlCommandBuilder rawSqlCommandBuilder;
 
 
 	    /// <summary>
@@ -34,8 +34,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             [NotNull] IRawSqlCommandBuilder rawSqlCommandBuilder)
             : base(dependencies)
         {
-            _connection = connection;
-            _rawSqlCommandBuilder = rawSqlCommandBuilder;
+            this.connection = connection;
+            this.rawSqlCommandBuilder = rawSqlCommandBuilder;
         }
 
         public virtual TimeSpan RetryDelay { get; set; } = TimeSpan.FromMilliseconds(500);
@@ -44,7 +44,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
 	    public override void Create()
         {
-            using (var masterConnection = _connection.CreateMasterConnection())
+            using (var masterConnection = connection.CreateMasterConnection())
             {
                 Dependencies.MigrationCommandExecutor
                     .ExecuteNonQuery(CreateCreateOperations(), masterConnection);
@@ -55,9 +55,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             Exists(retryOnNotExists: true);
         }
 
-        public override async Task CreateAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public override async Task CreateAsync(CancellationToken cancellationToken = default)
         {
-            using (var masterConnection = _connection.CreateMasterConnection())
+            using (var masterConnection = connection.CreateMasterConnection())
             {
                 await Dependencies.MigrationCommandExecutor.ExecuteNonQueryAsync(CreateCreateOperations(), masterConnection, cancellationToken).ConfigureAwait(false);
 
@@ -68,22 +68,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         }
 
         protected override bool HasTables()
-            => Dependencies.ExecutionStrategyFactory.Create().Execute(_connection, connection => Convert.ToInt64(CreateHasTablesCommand().ExecuteScalar(connection)) != 0);
+            => Dependencies.ExecutionStrategyFactory.Create().Execute(connection, connection => Convert.ToInt64(CreateHasTablesCommand().ExecuteScalar(connection)) != 0);
 
-        protected override Task<bool> HasTablesAsync(CancellationToken cancellationToken = default(CancellationToken))
-            => Dependencies.ExecutionStrategyFactory.Create().ExecuteAsync(_connection,
+        protected override Task<bool> HasTablesAsync(CancellationToken cancellationToken = default)
+            => Dependencies.ExecutionStrategyFactory.Create().ExecuteAsync(connection,
                 async (connection, ct) => Convert.ToInt64(await CreateHasTablesCommand().ExecuteScalarAsync(connection, cancellationToken: ct).ConfigureAwait(false)) != 0, cancellationToken);
 
         private IRelationalCommand CreateHasTablesCommand()
-            => _rawSqlCommandBuilder
+            => rawSqlCommandBuilder
                 .Build(@"
                     SELECT CASE WHEN COUNT(*) = 0 THEN FALSE ELSE TRUE END
                     FROM information_schema.tables
-                    WHERE table_type = 'BASE TABLE' AND table_schema = '" + _connection.DbConnection.Database + "'");
+                    WHERE table_type = 'BASE TABLE' AND table_schema = '" + connection.DbConnection.Database + "'");
 
         private IReadOnlyList<MigrationCommand> CreateCreateOperations()
         {
-            return Dependencies.MigrationsSqlGenerator.Generate((new[] { new MySqlCreateDatabaseOperation { Name = _connection.DbConnection.Database } }));
+            return Dependencies.MigrationsSqlGenerator.Generate((new[] { new MySqlCreateDatabaseOperation { Name = connection.DbConnection.Database } }));
         }
 
         public override bool Exists()
@@ -98,12 +98,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     {
                         try
                         {
-                            using (var masterConnection = _connection.CreateMasterConnection())
+                            using (var masterConnection = connection.CreateMasterConnection())
                             {
                                 masterConnection.Open();
                                 using (var cmd = masterConnection.DbConnection.CreateCommand())
                                 {
-                                    cmd.CommandText = $"USE `{_connection.DbConnection.Database}`";
+                                    cmd.CommandText = $"USE `{connection.DbConnection.Database}`";
                                     cmd.ExecuteNonQuery();
                                 }
                             }
@@ -115,26 +115,30 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                                 throw;
                             }
 
-                            _connection.Open(errorsExpected: true);
+                            connection.Open(errorsExpected: true);
 
-                            _connection.Close();
+                            connection.Close();
                         }
                         return true;
                     }
                     catch (MySqlException e)
                     {
                         if (!retryOnNotExists && IsDoesNotExist(e))
+                        {
                             return false;
+                        }
 
                         if (DateTime.UtcNow > giveUp || !RetryOnExistsFailure(e))
+                        {
                             throw;
+                        }
 
                         Thread.Sleep(RetryDelay);
                     }
                 }
             });
 
-        public override Task<bool> ExistsAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public override Task<bool> ExistsAsync(CancellationToken cancellationToken = default)
             => ExistsAsync(retryOnNotExists: false, cancellationToken: cancellationToken);
 
         private Task<bool> ExistsAsync(bool retryOnNotExists, CancellationToken cancellationToken)
@@ -146,12 +150,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     {
                         try
                         {
-                            using (var masterConnection = _connection.CreateMasterConnection())
+                            using (var masterConnection = connection.CreateMasterConnection())
                             {
                                 await masterConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
                                 using (var cmd = masterConnection.DbConnection.CreateCommand())
                                 {
-                                    cmd.CommandText = $"USE `{_connection.DbConnection.Database}`";
+                                    cmd.CommandText = $"USE `{connection.DbConnection.Database}`";
                                     await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
                                 }
                             }
@@ -163,19 +167,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                                 throw;
                             }
 
-                            await _connection.OpenAsync(ct, errorsExpected: true);
+                            await connection.OpenAsync(ct, errorsExpected: true);
 
-                            _connection.Close();
+                            connection.Close();
                         }
                         return true;
                     }
                     catch (MySqlException e)
                     {
                         if (!retryOnNotExists && IsDoesNotExist(e))
+                        {
                             return false;
+                        }
 
                         if (DateTime.UtcNow > giveUp || !RetryOnExistsFailure(e))
+                        {
                             throw;
+                        }
 
                         await Task.Delay(RetryDelay, ct).ConfigureAwait(false);
                     }
@@ -202,7 +210,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         {
             ClearAllPools();
 
-            using (var masterConnection = _connection.CreateMasterConnection())
+            using (var masterConnection = connection.CreateMasterConnection())
             {
                 Dependencies.MigrationCommandExecutor
                     .ExecuteNonQuery(CreateDropCommands(), masterConnection);
@@ -213,11 +221,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public override async Task DeleteAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public override async Task DeleteAsync(CancellationToken cancellationToken = default)
         {
             ClearAllPools();
 
-            using (var masterConnection = _connection.CreateMasterConnection())
+            using (var masterConnection = connection.CreateMasterConnection())
             {
                 await Dependencies.MigrationCommandExecutor.ExecuteNonQueryAsync(CreateDropCommands(), masterConnection, cancellationToken).ConfigureAwait(false);
             }
@@ -229,7 +237,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             {
                 // TODO Check DbConnection.Database always gives us what we want
                 // Issue #775
-                new MySqlDropDatabaseOperation { Name = _connection.DbConnection.Database }
+                new MySqlDropDatabaseOperation { Name = connection.DbConnection.Database }
             };
 
             var masterCommands = Dependencies.MigrationsSqlGenerator.Generate(operations);
@@ -241,6 +249,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         // Clear connection pool for the database connection since after the 'create database' call, a previously
         // invalid connection may now be valid.
-        private void ClearPool() => MySqlConnection.ClearPool(_connection.DbConnection as MySqlConnection);
+        private void ClearPool() => MySqlConnection.ClearPool(connection.DbConnection as MySqlConnection);
     }
 }
