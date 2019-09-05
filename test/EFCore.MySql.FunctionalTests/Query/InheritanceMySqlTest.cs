@@ -24,7 +24,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             using (var context = CreateContext())
             {
-                context.Set<Animal>().FromSql(@"select * from `Animal`").ToList();
+                context.Set<Animal>().FromSqlRaw(@"select * from `Animal`").ToList();
             }
         }
 
@@ -33,7 +33,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             using (var context = CreateContext())
             {
-                context.Set<Eagle>().FromSql(@"select * from `Animal`").ToList();
+                context.Set<Eagle>().FromSqlRaw(@"select * from `Animal`").ToList();
             }
         }
 

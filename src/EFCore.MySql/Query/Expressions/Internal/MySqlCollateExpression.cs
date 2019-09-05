@@ -2,23 +2,26 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Utilities;
-using Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 {
     /// <summary>
     ///     An expression that explicitly specifies the collation of a string value.
     /// </summary>
-    public class MySqlCollateExpression : Expression
+    public class MySqlCollateExpression : SqlExpression
     {
-        private readonly Expression _valueExpression;
+        private readonly SqlExpression _valueExpression;
         private readonly string _charset;
         private readonly string _collation;
         public MySqlCollateExpression(
-            [NotNull] Expression valueExpression,
+            [NotNull] SqlExpression valueExpression,
             [NotNull] string charset,
             [NotNull] string collation)
+            :base(typeof(string), null)
         {
             _valueExpression = valueExpression;
             _charset = charset;
@@ -39,18 +42,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         ///     The collation that the string is being converted to.
         /// </summary>
         public virtual string Collation => _collation;
-
-        /// <summary>
-        ///     Returns the node type of this <see cref="Expression" />. (Inherited from <see cref="Expression" />.)
-        /// </summary>
-        /// <returns>The <see cref="ExpressionType" /> that represents this expression.</returns>
-        public override ExpressionType NodeType => ExpressionType.Extension;
-
-        /// <summary>
-        ///     Gets the static type of the expression that this <see cref="Expression" /> represents. (Inherited from <see cref="Expression" />.)
-        /// </summary>
-        /// <returns>The <see cref="Type" /> that represents the static type of the expression.</returns>
-        public override Type Type => typeof(string);
 
         /// <summary>
         ///     Dispatches to the specific visit method for this node type.
@@ -140,5 +131,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         /// <returns>A <see cref="string" /> representation of the Expression.</returns>
         public override string ToString() =>
             $"{_valueExpression} COLLATE {_collation}";
+
+        public override void Print(ExpressionPrinter expressionPrinter)
+        {
+            expressionPrinter.Append(ToString()); // TODO: ist this correct?
+        }
     }
 }

@@ -11,18 +11,43 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Pomelo.EntityFrameworkCore.MySql.Extensions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
 {
+    /// <summary>
+    ///     <para>
+    ///         This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+    ///         the same compatibility standards as public APIs. It may be changed or removed without notice in
+    ///         any release. You should only use it directly in your code with extreme caution and knowing that
+    ///         doing so can result in application failures when updating to a new Entity Framework Core release.
+    ///     </para>
+    ///     <para>
+    ///         The service lifetime is <see cref="ServiceLifetime.Singleton"/>. This means a single instance
+    ///         is used by many <see cref="DbContext"/> instances. The implementation must be thread-safe.
+    ///         This service cannot depend on services registered as <see cref="ServiceLifetime.Scoped"/>.
+    ///     </para>
+    /// </summary>
     public class MySqlUpdateSqlGenerator : UpdateSqlGenerator, IMySqlUpdateSqlGenerator
     {
-
+        /// <summary>
+        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        ///     any release. You should only use it directly in your code with extreme caution and knowing that
+        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
+        /// </summary>
         public MySqlUpdateSqlGenerator(
-            [NotNull] UpdateSqlGeneratorDependencies dependencies
-        ) : base(dependencies)
+            [NotNull] UpdateSqlGeneratorDependencies dependencies)
+            : base(dependencies)
         {
         }
 
+        /// <summary>
+        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        ///     any release. You should only use it directly in your code with extreme caution and knowing that
+        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
+        /// </summary>
         public virtual ResultSetMapping AppendBulkInsertOperation(
             StringBuilder commandStringBuilder,
             IReadOnlyList<ModificationCommand> modificationCommands,
@@ -32,7 +57,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
                 && modificationCommands[0].ColumnModifications.All(o =>
                     !o.IsKey
                     || !o.IsRead
-                    || o.Property.MySql().ValueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn))
+                    || o.Property?.GetValueGenerationStrategy() == MySqlValueGenerationStrategy.IdentityColumn))
             {
                 return AppendInsertOperation(commandStringBuilder, modificationCommands[0], commandPosition);
             }
@@ -43,7 +68,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
 
             var defaultValuesOnly = writeOperations.Count == 0;
             var nonIdentityOperations = modificationCommands[0].ColumnModifications
-                .Where(o => o.Property.MySql().ValueGenerationStrategy != MySqlValueGenerationStrategy.IdentityColumn)
+                .Where(o => o.Property?.GetValueGenerationStrategy() != MySqlValueGenerationStrategy.IdentityColumn)
                 .ToList();
 
             if (defaultValuesOnly)

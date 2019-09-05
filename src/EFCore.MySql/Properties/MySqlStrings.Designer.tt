@@ -1,4 +1,5 @@
 <#
     Session["ResourceFile"] = "MySqlStrings.resx";
+    Session["LoggingDefinitionsClass"] = "Diagnostics.Internal.MySqlLoggingDefinitions";
 #>
 <#@ include file="..\..\..\tools\Resources.tt" #>

@@ -480,7 +480,7 @@ WHERE `e`.`TimeSpanAsTime` = @__timeSpan_0",
         }
 
         private string DumpParameters()
-            => Fixture.TestSqlLoggerFactory.Parameters.Single().Replace(", ", _eol);
+            => Fixture.TestSqlLoggerFactory.Parameters.Single().Replace(", ", eol);
 
         private static void AssertMappedDataTypes(MappedDataTypes entity, int id)
         {
@@ -1226,7 +1226,7 @@ unicodedatatypes.StringUnicode ---> [nullable longtext] [MaxLength = -1]
 
                 foreach (var property in context.Model.GetEntityTypes().SelectMany(e => e.GetDeclaredProperties()))
                 {
-                    var columnType = property.Relational().ColumnType;
+                    var columnType = property.GetColumnType();
                     Assert.NotNull(columnType);
 
                     if (property[RelationalAnnotationNames.ColumnType] == null)
@@ -1239,7 +1239,7 @@ unicodedatatypes.StringUnicode ---> [nullable longtext] [MaxLength = -1]
             }
         }
 
-        private static readonly string _eol = Environment.NewLine;
+        private static readonly string eol = Environment.NewLine;
         private string Sql => Fixture.TestSqlLoggerFactory.Sql;
 
         public class BuiltInDataTypesMySqlFixture : BuiltInDataTypesFixtureBase
@@ -1258,8 +1258,7 @@ unicodedatatypes.StringUnicode ---> [nullable longtext] [MaxLength = -1]
             public TestSqlLoggerFactory TestSqlLoggerFactory => (TestSqlLoggerFactory)ServiceProvider.GetRequiredService<ILoggerFactory>();
 
             public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
-                => base.AddOptions(builder).ConfigureWarnings(
-                    c => c.Log(RelationalEventId.QueryClientEvaluationWarning));
+                => base.AddOptions(builder);
 
             protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
             {
@@ -1283,6 +1282,8 @@ unicodedatatypes.StringUnicode ---> [nullable longtext] [MaxLength = -1]
             }
 
             public override DateTime DefaultDateTime => new DateTime();
+
+            public override bool SupportsDecimalComparisons => throw new NotImplementedException();
         }
 
         [Flags]

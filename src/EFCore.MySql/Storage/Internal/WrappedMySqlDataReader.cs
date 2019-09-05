@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Data;
 using System.Data.Common;
 using System.IO;
 using System.Linq.Expressions;
@@ -68,17 +69,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public override bool Read() => GetReader().Read();
         public override Task<bool> ReadAsync(CancellationToken cancellationToken) => GetReader().ReadAsync(cancellationToken);
 
-#if NET45
+
 		public override DataTable GetSchemaTable()
 		{
 			throw new NotSupportedException();
 		}
 
-		public override void Close()
-		{
-			CloseReader();
-		}
-#endif
+        public override void Close()
+        {
+            _reader.Close();
+        }
 
         public override T GetFieldValue<T>(int ordinal)
         {

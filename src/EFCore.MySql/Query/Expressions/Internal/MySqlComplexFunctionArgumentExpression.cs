@@ -8,17 +8,19 @@ using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Utilities;
 using JetBrains.Annotations;
-using Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 {
-    public class MySqlComplexFunctionArgumentExpression : Expression
+    public class MySqlComplexFunctionArgumentExpression : SqlExpression
     {
         private readonly ReadOnlyCollection<Expression> _argumentParts;
 
         public MySqlComplexFunctionArgumentExpression(
             [NotNull] IEnumerable<Expression> argumentParts,
             [NotNull] Type argumentType)
+            : base(argumentType, null)
         {
             _argumentParts = argumentParts.ToList().AsReadOnly();
             Type = argumentType;
@@ -28,12 +30,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         ///     The arguments parts.
         /// </summary>
         public virtual IReadOnlyList<Expression> ArgumentParts => _argumentParts;
-
-        /// <summary>
-        ///     Returns the node type of this <see cref="Expression" />. (Inherited from <see cref="Expression" />.)
-        /// </summary>
-        /// <returns>The <see cref="ExpressionType" /> that represents this expression.</returns>
-        public override ExpressionType NodeType => ExpressionType.Extension;
 
         /// <summary>
         ///     Gets the static type of the expression that this <see cref="Expression" /> represents. (Inherited from <see cref="Expression" />.)
@@ -53,19 +49,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
                 : base.Accept(visitor);
         }
 
-        /// <summary>
-        ///     Reduces the node and then calls the <see cref="ExpressionVisitor.Visit(Expression)" /> method passing the
-        ///     reduced expression.
-        ///     Throws an exception if the node isn't reducible.
-        /// </summary>
-        /// <param name="visitor"> An instance of <see cref="ExpressionVisitor" />. </param>
-        /// <returns> The expression being visited, or an expression which should replace it in the tree. </returns>
-        /// <remarks>
-        ///     Override this method to provide logic to walk the node's children.
-        ///     A typical implementation will call visitor.Visit on each of its
-        ///     children, and if any of them change, should return a new copy of
-        ///     itself with the modified children.
-        /// </remarks>
         protected override Expression VisitChildren(ExpressionVisitor visitor)
         {
             var newArgumentParts = visitor.VisitAndConvert(_argumentParts, nameof(VisitChildren));
@@ -75,27 +58,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
                 : this;
         }
 
-        /// <summary>
-        ///     Tests if this object is considered equal to another.
-        /// </summary>
-        /// <param name="obj"> The object to compare with the current object. </param>
-        /// <returns>
-        ///     true if the objects are considered equal, false if they are not.
-        /// </returns>
+        public override void Print(ExpressionPrinter expressionPrinter)
+            => expressionPrinter.Append(ToString());
+
         public override bool Equals(object obj)
-        {
-            if (obj is null)
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            return obj.GetType() == GetType() && Equals((MySqlComplexFunctionArgumentExpression)obj);
-        }
+            => obj != null
+            && (ReferenceEquals(this, obj)
+                || obj is MySqlComplexFunctionArgumentExpression sqlFragmentExpression
+                    && Equals(sqlFragmentExpression));
 
         private bool Equals(MySqlComplexFunctionArgumentExpression other)
             => Type == other.Type

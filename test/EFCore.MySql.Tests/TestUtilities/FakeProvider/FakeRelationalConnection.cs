@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Diagnostics;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -22,16 +23,11 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities.FakeProvider
             : base(
                 new RelationalConnectionDependencies(
                     options,
-                    new DiagnosticsLogger<DbLoggerCategory.Database.Transaction>(
-                        new LoggerFactory(),
-                        new LoggingOptions(),
-                        new DiagnosticListener("FakeDiagnosticListener")),
-                    new DiagnosticsLogger<DbLoggerCategory.Database.Connection>(
-                        new LoggerFactory(),
-                        new LoggingOptions(),
-                        new DiagnosticListener("FakeDiagnosticListener")),
+                    new FakeDiagnosticsLogger<DbLoggerCategory.Database.Transaction>(),
+                    new FakeDiagnosticsLogger<DbLoggerCategory.Database.Connection>(),
                     new NamedConnectionStringResolver(options),
-                    new RelationalTransactionFactory(new RelationalTransactionFactoryDependencies())))
+                    new RelationalTransactionFactory(new RelationalTransactionFactoryDependencies()),
+                    null))
         {
         }
 

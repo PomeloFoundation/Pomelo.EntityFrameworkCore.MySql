@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Internal;
 
 // ReSharper disable once CheckNamespace
@@ -54,7 +55,7 @@ namespace Microsoft.EntityFrameworkCore.Utilities
             {
                 NotEmpty(parameterName, nameof(parameterName));
 
-                throw new ArgumentException(CoreStrings.CollectionArgumentIsEmpty(parameterName));
+                throw new ArgumentException(CoreStrings.ArgumentPropertyNull(value, parameterName));
             }
 
             return value;
@@ -70,7 +71,7 @@ namespace Microsoft.EntityFrameworkCore.Utilities
             }
             else if (value.Trim().Length == 0)
             {
-                e = new ArgumentException(CoreStrings.ArgumentIsEmpty(parameterName));
+                e = new ArgumentException(CoreStrings.ArgumentPropertyNull(value, parameterName));
             }
 
             if (e != null)
@@ -90,7 +91,7 @@ namespace Microsoft.EntityFrameworkCore.Utilities
             {
                 NotEmpty(parameterName, nameof(parameterName));
 
-                throw new ArgumentException(CoreStrings.ArgumentIsEmpty(parameterName));
+                throw new ArgumentException(CoreStrings.ArgumentPropertyNull(value, parameterName));
             }
 
             return value;

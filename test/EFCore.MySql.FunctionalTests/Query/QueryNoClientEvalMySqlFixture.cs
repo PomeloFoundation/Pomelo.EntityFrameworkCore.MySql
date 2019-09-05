@@ -7,6 +7,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
     public class QueryNoClientEvalMySqlFixture : NorthwindQueryMySqlFixture<NoopModelCustomizer>
     {
         public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
-            => base.AddOptions(builder).ConfigureWarnings(c => c.Throw(RelationalEventId.QueryClientEvaluationWarning));
+            => base.AddOptions(builder);
     }
 }

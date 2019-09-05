@@ -17,6 +17,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     public class MySqlByteArrayTypeMapping : ByteArrayTypeMapping
     {
         private const int MaxSize = 8000;
+
         private readonly int _maxSpecificSize;
 
         /// <summary>

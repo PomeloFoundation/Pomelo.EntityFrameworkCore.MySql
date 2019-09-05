@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
+using System.Threading.Tasks;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -19,27 +20,63 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             fixture.TestSqlLoggerFactory.Clear();
         }
 
-        public override void From_sql_queryable_stored_procedure()
-        {
-            base.From_sql_queryable_stored_procedure();
+        public override async Task<Exception> From_sql_queryable_stored_procedure_with_include_throws(bool async)
+            => AssertSqlException(await base.From_sql_queryable_stored_procedure_with_include_throws(async));
 
-            Assert.Equal(
-                "CALL `Ten Most Expensive Products`()",
-                Sql);
+        private static Exception AssertSqlException(Exception exception)
+        {
+            Assert.IsType<Exception>(exception);
+            //Assert.Equal(102, ((SqlException)exception).Number);
+
+            return exception;
         }
 
-        public override void From_sql_queryable_stored_procedure_projection()
+        public override async Task From_sql_queryable_stored_procedure(bool async)
         {
-            base.From_sql_queryable_stored_procedure_projection();
+            await base.From_sql_queryable_stored_procedure(async);
 
-            Assert.Equal(
-                "CALL `Ten Most Expensive Products`()",
-                Sql);
+            AssertSql("CALL `Ten Most Expensive Products`()");
         }
 
-        public override void From_sql_queryable_stored_procedure_with_parameter()
+        public override async Task From_sql_queryable_stored_procedure_projection(bool async)
         {
-            base.From_sql_queryable_stored_procedure_with_parameter();
+            await base.From_sql_queryable_stored_procedure_projection(async);
+
+            AssertSql("CALL `Ten Most Expensive Products`()");
+        }
+
+        public override async Task From_sql_queryable_stored_procedure_with_parameter(bool async)
+        {
+            await base.From_sql_queryable_stored_procedure_with_parameter(async);
+
+            AssertSql(
+                @"@p0='ALFKI' (Size = 4000)
+
+CALL `CustOrderHist` (@p0)");
+        }
+
+        public override async Task From_sql_queryable_stored_procedure_re_projection_on_client(bool async)
+        {
+            await base.From_sql_queryable_stored_procedure_re_projection_on_client(async);
+
+            AssertSql("CALL `Ten Most Expensive Products`()");
+        }
+
+        public override async Task<Exception> From_sql_queryable_stored_procedure_re_projection(bool async)
+            => AssertSqlException(await base.From_sql_queryable_stored_procedure_re_projection(async));
+
+        public override Task<Exception> From_sql_queryable_stored_procedure_composed(bool async)
+        {
+            var result = base.From_sql_queryable_stored_procedure_composed(async);
+
+            AssertSql("CALL `Ten Most Expensive Products`()");
+
+            return result;
+        }
+
+        public override async Task From_sql_queryable_stored_procedure_composed_on_client(bool async)
+        {
+            await base.From_sql_queryable_stored_procedure_composed_on_client(async);
 
             Assert.Equal(
                 @"@p0='ALFKI' (Size = 4000)
@@ -49,57 +86,39 @@ CALL `CustOrderHist` (@p0)",
                 ignoreLineEndingDifferences: true);
         }
 
-        public override void From_sql_queryable_stored_procedure_reprojection()
+        public override async Task From_sql_queryable_stored_procedure_with_parameter_composed_on_client(bool async)
         {
-            base.From_sql_queryable_stored_procedure_reprojection();
+            await base.From_sql_queryable_stored_procedure_with_parameter_composed_on_client(async);
 
-            Assert.Equal(
-                "CALL `Ten Most Expensive Products`()",
-                Sql);
-        }
-
-        public override void From_sql_queryable_stored_procedure_composed()
-        {
-            base.From_sql_queryable_stored_procedure_composed();
-
-            Assert.Equal(
-                "CALL `Ten Most Expensive Products`()",
-                Sql);
-        }
-
-        public override void From_sql_queryable_stored_procedure_with_parameter_composed()
-        {
-            base.From_sql_queryable_stored_procedure_with_parameter_composed();
-
-            Assert.Equal(
+            AssertSql(
                 @"@p0='ALFKI' (Size = 4000)
 
-CALL `CustOrderHist` (@p0)",
-                Sql,
-                ignoreLineEndingDifferences: true);
+CALL `CustOrderHist` (@p0)");
         }
 
-        public override void From_sql_queryable_stored_procedure_take()
-        {
-            base.From_sql_queryable_stored_procedure_take();
+        public override async Task<Exception> From_sql_queryable_stored_procedure_with_parameter_composed(bool async)
+            => AssertSqlException(await base.From_sql_queryable_stored_procedure_with_parameter_composed(async));
 
-            Assert.Equal(
-                "CALL `Ten Most Expensive Products`()",
-                Sql);
+        public override async Task From_sql_queryable_stored_procedure_take_on_client(bool async)
+        {
+            await base.From_sql_queryable_stored_procedure_take_on_client(async);
+
+            AssertSql("CALL `Ten Most Expensive Products`()");
         }
 
-        public override void From_sql_queryable_stored_procedure_min()
-        {
-            base.From_sql_queryable_stored_procedure_min();
+        public override async Task<Exception> From_sql_queryable_stored_procedure_take(bool async)
+            => AssertSqlException(await base.From_sql_queryable_stored_procedure_take(async));
 
-            Assert.Equal(
-                "CALL `Ten Most Expensive Products`()",
-                Sql);
+        public override async Task From_sql_queryable_stored_procedure_min_on_client(bool async)
+        {
+            await base.From_sql_queryable_stored_procedure_min_on_client(async);
+
+            AssertSql("CALL `Ten Most Expensive Products`()");
         }
 
-        public override void From_sql_queryable_with_multiple_stored_procedures()
+        public override async Task From_sql_queryable_with_multiple_stored_procedures_on_client(bool async)
         {
-            base.From_sql_queryable_with_multiple_stored_procedures();
+            await base.From_sql_queryable_with_multiple_stored_procedures_on_client(async);
 
             Assert.StartsWith(
                 @"CALL `Ten Most Expensive Products`()" + _eol +
@@ -110,19 +129,22 @@ CALL `CustOrderHist` (@p0)",
                 Sql);
         }
 
-        public override void From_sql_queryable_stored_procedure_and_select()
+        public override async Task<Exception> From_sql_queryable_with_multiple_stored_procedures(bool async)
+            => AssertSqlException(await base.From_sql_queryable_with_multiple_stored_procedures(async));
+
+        public override async Task From_sql_queryable_stored_procedure_and_select_on_client(bool async)
         {
-            // base.From_sql_queryable_stored_procedure_and_select();
+            //await base.From_sql_queryable_stored_procedure_and_select_on_client(async);
 
             using (var context = CreateContext())
             {
                 var actual
-                    = (from mep in context.Set<MostExpensiveProduct>()
-                           .FromSql(TenMostExpensiveProductsSproc, GetTenMostExpensiveProductsParameters())
-                       from p in context.Set<Product>().FromSql("SELECT * FROM `Products`")
+                    = await (from mep in context.Set<MostExpensiveProduct>()
+                           .FromSqlRaw(TenMostExpensiveProductsSproc, GetTenMostExpensiveProductsParameters())
+                       from p in context.Set<Product>().FromSqlRaw("SELECT * FROM `Products`")
                        where mep.TenMostExpensiveProducts == p.ProductName
                        select new { mep, p })
-                    .ToArray();
+                    .ToArrayAsync();
 
                 Assert.Equal(10, actual.Length);
             }
@@ -141,19 +163,22 @@ CALL `CustOrderHist` (@p0)",
                 @") AS `p`",
                 Sql);
         }
+        public override async Task<Exception> From_sql_queryable_stored_procedure_and_select(bool async)
+            => AssertSqlException(await base.From_sql_queryable_stored_procedure_and_select(async));
 
-        public override void From_sql_queryable_select_and_stored_procedure()
+        public override async Task From_sql_queryable_select_and_stored_procedure_on_client(bool async)
         {
-            // base.From_sql_queryable_select_and_stored_procedure();
+            //await base.From_sql_queryable_select_and_stored_procedure_on_client(async);
+
             using (var context = CreateContext())
             {
                 var actual
-                    = (from p in context.Set<Product>().FromSql("SELECT * FROM `Products`")
+                    = await (from p in context.Set<Product>().FromSqlRaw("SELECT * FROM `Products`")
                        from mep in context.Set<MostExpensiveProduct>()
-                           .FromSql(TenMostExpensiveProductsSproc, GetTenMostExpensiveProductsParameters())
+                           .FromSqlRaw(TenMostExpensiveProductsSproc, GetTenMostExpensiveProductsParameters())
                        where mep.TenMostExpensiveProducts == p.ProductName
                        select new { mep, p })
-                    .ToArray();
+                    .ToArrayAsync();
 
                 Assert.Equal(10, actual.Length);
             }
@@ -169,6 +194,12 @@ CALL `CustOrderHist` (@p0)",
                 @"CALL `Ten Most Expensive Products`()",
                 Sql);
         }
+
+        public override async Task<Exception> From_sql_queryable_select_and_stored_procedure(bool async)
+            => AssertSqlException(await base.From_sql_queryable_select_and_stored_procedure(async));
+
+        private void AssertSql(params string[] expected)
+            => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
         protected override string TenMostExpensiveProductsSproc => "CALL `Ten Most Expensive Products`()";
         protected override string CustomerOrderHistorySproc => "CALL `CustOrderHist` ({0})";

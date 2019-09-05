@@ -33,7 +33,7 @@ namespace Pomelo.EntityFrameworkCore.TestUtilities
             BuildReference.ByName("System.Threading", true),
             BuildReference.ByName("System.Threading.Tasks", true),
             BuildReference.ByName("System.ValueTuple", true)
-#elif NETCOREAPP2_0 || NETCOREAPP2_2
+#else
             BuildReference.ByName("netstandard"),
             BuildReference.ByName("System.Collections"),
             BuildReference.ByName("System.ComponentModel.Annotations"),
@@ -41,8 +41,6 @@ namespace Pomelo.EntityFrameworkCore.TestUtilities
             BuildReference.ByName("System.Linq.Expressions"),
             BuildReference.ByName("System.Runtime"),
             BuildReference.ByName("System.Text.RegularExpressions")
-#else
-#error target frameworks need to be updated.
 #endif
         };
 

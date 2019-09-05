@@ -26,7 +26,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                     x =>
                     {
                         x.Property<string>("FullName");
-                        x.HasIndex("FullName").ForMySqlIsFullText();
+                        x.HasIndex("FullName");
                     }),
                 new RenameIndexOperation
                 {

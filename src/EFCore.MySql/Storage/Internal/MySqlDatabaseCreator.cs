@@ -11,40 +11,64 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
 using MySql.Data.MySqlClient;
+using Pomelo.EntityFrameworkCore.MySql.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     /// <summary>
-    ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-    ///     directly from your code. This API may change or be removed in future releases.
+    ///     <para>
+    ///         This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+    ///         the same compatibility standards as public APIs. It may be changed or removed without notice in
+    ///         any release. You should only use it directly in your code with extreme caution and knowing that
+    ///         doing so can result in application failures when updating to a new Entity Framework Core release.
+    ///     </para>
+    ///     <para>
+    ///         The service lifetime is <see cref="ServiceLifetime.Scoped"/>. This means that each
+    ///         <see cref="DbContext"/> instance will use its own instance of this service.
+    ///         The implementation may depend on other services registered with any lifetime.
+    ///         The implementation does not need to be thread-safe.
+    ///     </para>
     /// </summary>
     public class MySqlDatabaseCreator : RelationalDatabaseCreator
     {
-        private readonly IMySqlRelationalConnection connection;
-	    private readonly IRawSqlCommandBuilder rawSqlCommandBuilder;
+        private readonly IMySqlConnection _connection;
+        private readonly IRawSqlCommandBuilder _rawSqlCommandBuilder;
 
-
-	    /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
+        /// <summary>
+        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        ///     any release. You should only use it directly in your code with extreme caution and knowing that
+        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
         /// </summary>
-	    public MySqlDatabaseCreator(
+        public MySqlDatabaseCreator(
             [NotNull] RelationalDatabaseCreatorDependencies dependencies,
-            [NotNull] IMySqlRelationalConnection connection,
+            [NotNull] IMySqlConnection connection,
             [NotNull] IRawSqlCommandBuilder rawSqlCommandBuilder)
             : base(dependencies)
         {
-            this.connection = connection;
-            this.rawSqlCommandBuilder = rawSqlCommandBuilder;
+            _connection = connection;
+            _rawSqlCommandBuilder = rawSqlCommandBuilder;
         }
 
+        /// <summary>
+        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        ///     any release. You should only use it directly in your code with extreme caution and knowing that
+        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
+        /// </summary>
         public virtual TimeSpan RetryDelay { get; set; } = TimeSpan.FromMilliseconds(500);
 
+        /// <summary>
+        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        ///     any release. You should only use it directly in your code with extreme caution and knowing that
+        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
+        /// </summary>
         public virtual TimeSpan RetryTimeout { get; set; } = TimeSpan.FromMinutes(1);
 
-	    public override void Create()
+        public override void Create()
         {
-            using (var masterConnection = connection.CreateMasterConnection())
+            using (var masterConnection = _connection.CreateMasterConnection())
             {
                 Dependencies.MigrationCommandExecutor
                     .ExecuteNonQuery(CreateCreateOperations(), masterConnection);
@@ -55,9 +79,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             Exists(retryOnNotExists: true);
         }
 
+        /// <summary>
+        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        ///     any release. You should only use it directly in your code with extreme caution and knowing that
+        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
+        /// </summary>
         public override async Task CreateAsync(CancellationToken cancellationToken = default)
         {
-            using (var masterConnection = connection.CreateMasterConnection())
+            using (var masterConnection = _connection.CreateMasterConnection())
             {
                 await Dependencies.MigrationCommandExecutor.ExecuteNonQueryAsync(CreateCreateOperations(), masterConnection, cancellationToken).ConfigureAwait(false);
 
@@ -67,128 +97,174 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             await ExistsAsync(retryOnNotExists: true, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
-        protected override bool HasTables()
-            => Dependencies.ExecutionStrategyFactory.Create().Execute(connection, connection => Convert.ToInt64(CreateHasTablesCommand().ExecuteScalar(connection)) != 0);
+        /// <summary>
+        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        ///     any release. You should only use it directly in your code with extreme caution and knowing that
+        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
+        /// </summary>
+        public override bool HasTables()
+            => Dependencies.ExecutionStrategyFactory
+                .Create()
+                .Execute(
+                    _connection,
+                    connection => (int)CreateHasTablesCommand()
+                                      .ExecuteScalar(
+                                          new RelationalCommandParameterObject(
+                                              connection,
+                                              null,
+                                              Dependencies.CurrentContext.Context,
+                                              Dependencies.CommandLogger)) != 0);
 
-        protected override Task<bool> HasTablesAsync(CancellationToken cancellationToken = default)
-            => Dependencies.ExecutionStrategyFactory.Create().ExecuteAsync(connection,
-                async (connection, ct) => Convert.ToInt64(await CreateHasTablesCommand().ExecuteScalarAsync(connection, cancellationToken: ct).ConfigureAwait(false)) != 0, cancellationToken);
+        /// <summary>
+        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        ///     any release. You should only use it directly in your code with extreme caution and knowing that
+        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
+        /// </summary>
+        public override Task<bool> HasTablesAsync(CancellationToken cancellationToken = default)
+            => Dependencies.ExecutionStrategyFactory.Create().ExecuteAsync(
+                _connection,
+                async (connection, ct) => (int)await CreateHasTablesCommand()
+                                              .ExecuteScalarAsync(
+                                                  new RelationalCommandParameterObject(
+                                                      connection,
+                                                      null,
+                                                      Dependencies.CurrentContext.Context,
+                                                      Dependencies.CommandLogger),
+                                                  cancellationToken: ct) != 0, cancellationToken);
 
         private IRelationalCommand CreateHasTablesCommand()
-            => rawSqlCommandBuilder
+            => _rawSqlCommandBuilder
                 .Build(@"
                     SELECT CASE WHEN COUNT(*) = 0 THEN FALSE ELSE TRUE END
                     FROM information_schema.tables
-                    WHERE table_type = 'BASE TABLE' AND table_schema = '" + connection.DbConnection.Database + "'");
+                    WHERE table_type = 'BASE TABLE' AND table_schema = '" + _connection.DbConnection.Database + "'");
 
         private IReadOnlyList<MigrationCommand> CreateCreateOperations()
-        {
-            return Dependencies.MigrationsSqlGenerator.Generate((new[] { new MySqlCreateDatabaseOperation { Name = connection.DbConnection.Database } }));
-        }
+            => Dependencies.MigrationsSqlGenerator.Generate(new[] { new MySqlCreateDatabaseOperation { Name = _connection.DbConnection.Database } });
 
+        /// <summary>
+        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        ///     any release. You should only use it directly in your code with extreme caution and knowing that
+        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
+        /// </summary>
         public override bool Exists()
             => Exists(retryOnNotExists: false);
 
         private bool Exists(bool retryOnNotExists)
-            => Dependencies.ExecutionStrategyFactory.Create().Execute(DateTime.UtcNow + RetryTimeout, giveUp =>
-            {
-                while (true)
+            => Dependencies.ExecutionStrategyFactory.Create().Execute(
+                DateTime.UtcNow + RetryTimeout, giveUp =>
                 {
-                    try
+                    while (true)
                     {
                         try
                         {
-                            using (var masterConnection = connection.CreateMasterConnection())
+                            try
                             {
-                                masterConnection.Open();
-                                using (var cmd = masterConnection.DbConnection.CreateCommand())
+                                using (var masterConnection = _connection.CreateMasterConnection())
                                 {
-                                    cmd.CommandText = $"USE `{connection.DbConnection.Database}`";
-                                    cmd.ExecuteNonQuery();
+                                    masterConnection.Open();
+                                    using (var cmd = masterConnection.DbConnection.CreateCommand())
+                                    {
+                                        cmd.CommandText = $"USE `{_connection.DbConnection.Database}`";
+                                        cmd.ExecuteNonQuery();
+                                    }
                                 }
                             }
+                            catch (MySqlException e)
+                            {
+                                if (e.Number != 1045) // Access denied because credentials were lost
+                                {
+                                    throw;
+                                }
+
+                                _connection.Open(errorsExpected: true);
+
+                                _connection.Close();
+                            }
+                            return true;
                         }
                         catch (MySqlException e)
                         {
-                            if (e.Number != 1045) // Access denied because credentials were lost
+                            if (!retryOnNotExists
+                                && IsDoesNotExist(e))
+                            {
+                                return false;
+                            }
+
+                            if (DateTime.UtcNow > giveUp
+                                || !RetryOnExistsFailure(e))
                             {
                                 throw;
                             }
 
-                            connection.Open(errorsExpected: true);
-
-                            connection.Close();
+                            Thread.Sleep(RetryDelay);
                         }
-                        return true;
                     }
-                    catch (MySqlException e)
-                    {
-                        if (!retryOnNotExists && IsDoesNotExist(e))
-                        {
-                            return false;
-                        }
+                });
 
-                        if (DateTime.UtcNow > giveUp || !RetryOnExistsFailure(e))
-                        {
-                            throw;
-                        }
-
-                        Thread.Sleep(RetryDelay);
-                    }
-                }
-            });
-
+        /// <summary>
+        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        ///     any release. You should only use it directly in your code with extreme caution and knowing that
+        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
+        /// </summary>
         public override Task<bool> ExistsAsync(CancellationToken cancellationToken = default)
             => ExistsAsync(retryOnNotExists: false, cancellationToken: cancellationToken);
 
         private Task<bool> ExistsAsync(bool retryOnNotExists, CancellationToken cancellationToken)
-            => Dependencies.ExecutionStrategyFactory.Create().ExecuteAsync(DateTime.UtcNow + RetryTimeout, async (giveUp, ct) =>
-            {
-                while (true)
+            => Dependencies.ExecutionStrategyFactory.Create().ExecuteAsync(
+                DateTime.UtcNow + RetryTimeout, async (giveUp, ct) =>
                 {
-                    try
+                    while (true)
                     {
                         try
                         {
-                            using (var masterConnection = connection.CreateMasterConnection())
+                            try
                             {
-                                await masterConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
-                                using (var cmd = masterConnection.DbConnection.CreateCommand())
+                                using (var masterConnection = _connection.CreateMasterConnection())
                                 {
-                                    cmd.CommandText = $"USE `{connection.DbConnection.Database}`";
-                                    await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                                    await masterConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
+                                    using (var cmd = masterConnection.DbConnection.CreateCommand())
+                                    {
+                                        cmd.CommandText = $"USE `{_connection.DbConnection.Database}`";
+                                        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                                    }
                                 }
                             }
+                            catch (MySqlException e)
+                            {
+                                if (e.Number != 1045) // Access denied because credentials were lost
+                                {
+                                    throw;
+                                }
+
+                                await _connection.OpenAsync(ct, errorsExpected: true);
+
+                                _connection.Close();
+                            }
+                            return true;
                         }
                         catch (MySqlException e)
                         {
-                            if (e.Number != 1045) // Access denied because credentials were lost
+                            if (!retryOnNotExists
+                                && IsDoesNotExist(e))
+                            {
+                                return false;
+                            }
+
+                            if (DateTime.UtcNow > giveUp
+                                || !RetryOnExistsFailure(e))
                             {
                                 throw;
                             }
 
-                            await connection.OpenAsync(ct, errorsExpected: true);
-
-                            connection.Close();
+                            await Task.Delay(RetryDelay, ct).ConfigureAwait(false);
                         }
-                        return true;
                     }
-                    catch (MySqlException e)
-                    {
-                        if (!retryOnNotExists && IsDoesNotExist(e))
-                        {
-                            return false;
-                        }
-
-                        if (DateTime.UtcNow > giveUp || !RetryOnExistsFailure(e))
-                        {
-                            throw;
-                        }
-
-                        await Task.Delay(RetryDelay, ct).ConfigureAwait(false);
-                    }
-                }
-            }, cancellationToken);
+                }, cancellationToken);
 
         private static bool IsDoesNotExist(MySqlException exception) => exception.Number == 1049;
 
@@ -210,7 +286,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         {
             ClearAllPools();
 
-            using (var masterConnection = connection.CreateMasterConnection())
+            using (var masterConnection = _connection.CreateMasterConnection())
             {
                 Dependencies.MigrationCommandExecutor
                     .ExecuteNonQuery(CreateDropCommands(), masterConnection);
@@ -225,30 +301,36 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         {
             ClearAllPools();
 
-            using (var masterConnection = connection.CreateMasterConnection())
+            using (var masterConnection = _connection.CreateMasterConnection())
             {
-                await Dependencies.MigrationCommandExecutor.ExecuteNonQueryAsync(CreateDropCommands(), masterConnection, cancellationToken).ConfigureAwait(false);
+                await Dependencies.MigrationCommandExecutor
+                    .ExecuteNonQueryAsync(CreateDropCommands(), masterConnection, cancellationToken).ConfigureAwait(false);
             }
         }
 
         private IReadOnlyList<MigrationCommand> CreateDropCommands()
         {
+            var databaseName = _connection.DbConnection.Database;
+            if (string.IsNullOrEmpty(databaseName))
+            {
+                throw new InvalidOperationException(MySqlStrings.NoInitialCatalog);
+            }
+
             var operations = new MigrationOperation[]
             {
                 // TODO Check DbConnection.Database always gives us what we want
                 // Issue #775
-                new MySqlDropDatabaseOperation { Name = connection.DbConnection.Database }
+                new MySqlDropDatabaseOperation { Name = _connection.DbConnection.Database }
             };
 
-            var masterCommands = Dependencies.MigrationsSqlGenerator.Generate(operations);
-            return masterCommands;
+            return Dependencies.MigrationsSqlGenerator.Generate(operations);
         }
 
         // Clear connection pools in case there are active connections that are pooled
-        private static void ClearAllPools() => MySqlConnection.ClearAllPools();
+        private static void ClearAllPools() => global::MySql.Data.MySqlClient.MySqlConnection.ClearAllPools();
 
         // Clear connection pool for the database connection since after the 'create database' call, a previously
         // invalid connection may now be valid.
-        private void ClearPool() => MySqlConnection.ClearPool(connection.DbConnection as MySqlConnection);
+        private void ClearPool() => global::MySql.Data.MySqlClient.MySqlConnection.ClearPool((global::MySql.Data.MySqlClient.MySqlConnection)_connection.DbConnection);
     }
 }

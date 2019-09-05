@@ -26,9 +26,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
             var northwindContext = (NorthwindRelationalContext)context;
             modelBuilder
-                .Query<OrderQuery>()
+                .Entity<OrderQuery>()
+                .HasNoKey()
                 .ToQuery(() => northwindContext.Orders
-                    .FromSql("select * from `Orders`")
+                    .FromSqlRaw("select * from `Orders`")
                     .Select(
                         o => new OrderQuery
                         {
@@ -39,7 +40,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         protected override void Seed(NorthwindContext context)
         {
             base.Seed(context);
-            context.Database.ExecuteSqlCommand(@"DROP PROCEDURE IF EXISTS `Ten Most Expensive Products`;
+            context.Database.ExecuteSqlRaw(@"DROP PROCEDURE IF EXISTS `Ten Most Expensive Products`;
 CREATE PROCEDURE `Ten Most Expensive Products` ()
 BEGIN
   SELECT `ProductName` AS `TenMostExpensiveProducts`, `UnitPrice`
@@ -47,7 +48,7 @@ BEGIN
   ORDER BY `UnitPrice` DESC
   LIMIT 10;
 END;");
-            context.Database.ExecuteSqlCommand(@"DROP PROCEDURE IF EXISTS `CustOrderHist`;
+            context.Database.ExecuteSqlRaw(@"DROP PROCEDURE IF EXISTS `CustOrderHist`;
 CREATE PROCEDURE `CustOrderHist` (IN CustomerID VARCHAR(768))
 BEGIN
   SELECT `ProductName`, SUM(`Quantity`) AS `Total`

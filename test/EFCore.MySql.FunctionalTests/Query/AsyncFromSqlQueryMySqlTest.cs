@@ -19,12 +19,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         // Overrides can be removed when EF #11940 is fixed
 
         [Fact]
-        public override async Task From_sql_queryable_simple()
+        public override async Task FromSqlRaw_queryable_simple()
         {
             using (var context = CreateContext())
             {
                 var actual = await context.Set<Customer>()
-                    .FromSql(@"SELECT * FROM `Customers` WHERE `ContactName` LIKE '%z%'")
+                    .FromSqlRaw(@"SELECT * FROM `Customers` WHERE `ContactName` LIKE '%z%'")
                     .ToArrayAsync();
 
                 Assert.Equal(14, actual.Length);
@@ -33,12 +33,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [Fact]
-        public override async Task From_sql_queryable_simple_columns_out_of_order()
+        public override async Task FromSqlRaw_queryable_simple_columns_out_of_order()
         {
             using (var context = CreateContext())
             {
                 var actual = await context.Set<Customer>()
-                    .FromSql(@"SELECT `Region`, `PostalCode`, `Phone`, `Fax`, `CustomerID`, `Country`, `ContactTitle`, `ContactName`, `CompanyName`, `City`, `Address` FROM `Customers`")
+                    .FromSqlRaw(@"SELECT `Region`, `PostalCode`, `Phone`, `Fax`, `CustomerID`, `Country`, `ContactTitle`, `ContactName`, `CompanyName`, `City`, `Address` FROM `Customers`")
                     .ToArrayAsync();
 
                 Assert.Equal(91, actual.Length);
@@ -47,12 +47,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [Fact]
-        public override async Task From_sql_queryable_simple_columns_out_of_order_and_extra_columns()
+        public override async Task FromSqlRaw_queryable_simple_columns_out_of_order_and_extra_columns()
         {
             using (var context = CreateContext())
             {
                 var actual = await context.Set<Customer>()
-                    .FromSql(@"SELECT `Region`, `PostalCode`, `PostalCode` AS `Foo`, `Phone`, `Fax`, `CustomerID`, `Country`, `ContactTitle`, `ContactName`, `CompanyName`, `City`, `Address` FROM `Customers`")
+                    .FromSqlRaw(@"SELECT `Region`, `PostalCode`, `PostalCode` AS `Foo`, `Phone`, `Fax`, `CustomerID`, `Country`, `ContactTitle`, `ContactName`, `CompanyName`, `City`, `Address` FROM `Customers`")
                     .ToArrayAsync();
 
                 Assert.Equal(91, actual.Length);
@@ -61,12 +61,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [Fact]
-        public override async Task From_sql_queryable_composed()
+        public override async Task FromSqlRaw_queryable_composed()
         {
             using (var context = CreateContext())
             {
                 var actual = await context.Set<Customer>()
-                    .FromSql(@"SELECT * FROM `Customers`")
+                    .FromSqlRaw(@"SELECT * FROM `Customers`")
                     .Where(c => c.ContactName.Contains("z"))
                     .ToArrayAsync();
 
@@ -75,13 +75,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [Fact]
-        public override async Task From_sql_queryable_multiple_composed()
+        public override async Task FromSqlRaw_queryable_multiple_composed()
         {
             using (var context = CreateContext())
             {
                 var actual
-                    = await (from c in context.Set<Customer>().FromSql(@"SELECT * FROM `Customers`")
-                             from o in context.Set<Order>().FromSql(@"SELECT * FROM `Orders`")
+                    = await (from c in context.Set<Customer>().FromSqlRaw(@"SELECT * FROM `Customers`")
+                             from o in context.Set<Order>().FromSqlRaw(@"SELECT * FROM `Orders`")
                              where c.CustomerID == o.CustomerID
                              select new { c, o })
                         .ToArrayAsync();
@@ -91,7 +91,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [Fact]
-        public override async Task From_sql_queryable_multiple_composed_with_closure_parameters()
+        public override async Task FromSqlRaw_queryable_multiple_composed_with_closure_parameters()
         {
             var startDate = new DateTime(1997, 1, 1);
             var endDate = new DateTime(1998, 1, 1);
@@ -99,8 +99,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             using (var context = CreateContext())
             {
                 var actual
-                    = await (from c in context.Set<Customer>().FromSql(@"SELECT * FROM `Customers`")
-                             from o in context.Set<Order>().FromSql(
+                    = await (from c in context.Set<Customer>().FromSqlRaw(@"SELECT * FROM `Customers`")
+                             from o in context.Set<Order>().FromSqlRaw(
                                  @"SELECT * FROM `Orders` WHERE `OrderDate` BETWEEN {0} AND {1}",
                                  startDate,
                                  endDate)
@@ -113,7 +113,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [Fact]
-        public override async Task From_sql_queryable_multiple_composed_with_parameters_and_closure_parameters()
+        public override async Task FromSqlRaw_queryable_multiple_composed_with_parameters_and_closure_parameters()
         {
             var city = "London";
             var startDate = new DateTime(1997, 1, 1);
@@ -122,8 +122,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             using (var context = CreateContext())
             {
                 var actual
-                    = await (from c in context.Set<Customer>().FromSql(@"SELECT * FROM `Customers` WHERE `City` = {0}", city)
-                             from o in context.Set<Order>().FromSql(
+                    = await (from c in context.Set<Customer>().FromSqlRaw(@"SELECT * FROM `Customers` WHERE `City` = {0}", city)
+                             from o in context.Set<Order>().FromSqlRaw(
                                  @"SELECT * FROM `Orders` WHERE `OrderDate` BETWEEN {0} AND {1}",
                                  startDate,
                                  endDate)
@@ -136,12 +136,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [Fact]
-        public override async Task From_sql_queryable_multiple_line_query()
+        public override async Task FromSqlRaw_queryable_multiple_line_query()
         {
             using (var context = CreateContext())
             {
                 var actual = await context.Set<Customer>()
-                    .FromSql(
+                    .FromSqlRaw(
                         @"SELECT *
 FROM `Customers`
 WHERE `City` = 'London'")
@@ -153,12 +153,12 @@ WHERE `City` = 'London'")
         }
 
         [Fact]
-        public override async Task From_sql_queryable_composed_multiple_line_query()
+        public override async Task FromSqlRaw_queryable_composed_multiple_line_query()
         {
             using (var context = CreateContext())
             {
                 var actual = await context.Set<Customer>()
-                    .FromSql(
+                    .FromSqlRaw(
                         @"SELECT *
 FROM `Customers`")
                     .Where(c => c.City == "London")
@@ -170,7 +170,7 @@ FROM `Customers`")
         }
 
         [Fact]
-        public override async Task From_sql_queryable_with_parameters()
+        public override async Task FromSqlRaw_queryable_with_parameters()
         {
             var city = "London";
             var contactTitle = "Sales Representative";
@@ -178,7 +178,7 @@ FROM `Customers`")
             using (var context = CreateContext())
             {
                 var actual = await context.Set<Customer>()
-                    .FromSql(
+                    .FromSqlRaw(
                         @"SELECT * FROM `Customers` WHERE `City` = {0} AND `ContactTitle` = {1}",
                         city,
                         contactTitle)
@@ -191,7 +191,7 @@ FROM `Customers`")
         }
 
         [Fact]
-        public override async Task From_sql_queryable_with_parameters_and_closure()
+        public override async Task FromSqlRaw_queryable_with_parameters_and_closure()
         {
             var city = "London";
             var contactTitle = "Sales Representative";
@@ -199,7 +199,7 @@ FROM `Customers`")
             using (var context = CreateContext())
             {
                 var actual = await context.Set<Customer>()
-                    .FromSql(
+                    .FromSqlRaw(
                         @"SELECT * FROM `Customers` WHERE `City` = {0}",
                         city)
                     .Where(c => c.ContactTitle == contactTitle)
@@ -212,19 +212,19 @@ FROM `Customers`")
         }
 
         [Fact]
-        public override async Task From_sql_queryable_simple_cache_key_includes_query_string()
+        public override async Task FromSqlRaw_queryable_simple_cache_key_includes_query_string()
         {
             using (var context = CreateContext())
             {
                 var actual = await context.Set<Customer>()
-                    .FromSql(@"SELECT * FROM `Customers` WHERE `City` = 'London'")
+                    .FromSqlRaw(@"SELECT * FROM `Customers` WHERE `City` = 'London'")
                     .ToArrayAsync();
 
                 Assert.Equal(6, actual.Length);
                 Assert.True(actual.All(c => c.City == "London"));
 
                 actual = await context.Set<Customer>()
-                    .FromSql(@"SELECT * FROM `Customers` WHERE `City` = 'Seattle'")
+                    .FromSqlRaw(@"SELECT * FROM `Customers` WHERE `City` = 'Seattle'")
                     .ToArrayAsync();
 
                 Assert.Equal(1, actual.Length);
@@ -233,7 +233,7 @@ FROM `Customers`")
         }
 
         [Fact]
-        public override async Task From_sql_queryable_with_parameters_cache_key_includes_parameters()
+        public override async Task FromSqlRaw_queryable_with_parameters_cache_key_includes_parameters()
         {
             var city = "London";
             var contactTitle = "Sales Representative";
@@ -242,7 +242,7 @@ FROM `Customers`")
             using (var context = CreateContext())
             {
                 var actual = await context.Set<Customer>()
-                    .FromSql(sql, city, contactTitle)
+                    .FromSqlRaw(sql, city, contactTitle)
                     .ToArrayAsync();
 
                 Assert.Equal(3, actual.Length);
@@ -253,7 +253,7 @@ FROM `Customers`")
                 contactTitle = "Accounting Manager";
 
                 actual = await context.Set<Customer>()
-                    .FromSql(sql, city, contactTitle)
+                    .FromSqlRaw(sql, city, contactTitle)
                     .ToArrayAsync();
 
                 Assert.Equal(2, actual.Length);
@@ -263,12 +263,12 @@ FROM `Customers`")
         }
 
         [Fact]
-        public override async Task From_sql_queryable_simple_as_no_tracking_not_composed()
+        public override async Task FromSqlRaw_queryable_simple_as_no_tracking_not_composed()
         {
             using (var context = CreateContext())
             {
                 var actual = await context.Set<Customer>()
-                    .FromSql(@"SELECT * FROM `Customers`")
+                    .FromSqlRaw(@"SELECT * FROM `Customers`")
                     .AsNoTracking()
                     .ToArrayAsync();
 
@@ -278,12 +278,12 @@ FROM `Customers`")
         }
 
         [Fact]
-        public override async Task From_sql_queryable_simple_projection_not_composed()
+        public override async Task FromSqlRaw_queryable_simple_projection_not_composed()
         {
             using (var context = CreateContext())
             {
                 var actual = await context.Set<Customer>()
-                    .FromSql(@"SELECT * FROM `Customers`")
+                    .FromSqlRaw(@"SELECT * FROM `Customers`")
                     .Select(c => new { c.CustomerID, c.City })
                     .AsNoTracking()
                     .ToArrayAsync();
@@ -294,12 +294,12 @@ FROM `Customers`")
         }
 
         [Fact]
-        public override async Task From_sql_queryable_simple_include()
+        public override async Task FromSqlRaw_queryable_simple_include()
         {
             using (var context = CreateContext())
             {
                 var actual = await context.Set<Customer>()
-                    .FromSql(@"SELECT * FROM `Customers`")
+                    .FromSqlRaw(@"SELECT * FROM `Customers`")
                     .Include(c => c.Orders)
                     .ToArrayAsync();
 
@@ -308,12 +308,12 @@ FROM `Customers`")
         }
 
         [Fact]
-        public override async Task From_sql_queryable_simple_composed_include()
+        public override async Task FromSqlRaw_queryable_simple_composed_include()
         {
             using (var context = CreateContext())
             {
                 var actual = await context.Set<Customer>()
-                    .FromSql(@"SELECT * FROM `Customers`")
+                    .FromSqlRaw(@"SELECT * FROM `Customers`")
                     .Where(c => c.City == "London")
                     .Include(c => c.Orders)
                     .ToArrayAsync();
@@ -323,12 +323,12 @@ FROM `Customers`")
         }
 
         [Fact]
-        public override async Task From_sql_annotations_do_not_affect_successive_calls()
+        public override async Task FromSqlRaw_annotations_do_not_affect_successive_calls()
         {
             using (var context = CreateContext())
             {
                 var actual = await context.Customers
-                    .FromSql(@"SELECT * FROM `Customers` WHERE `ContactName` LIKE '%z%'")
+                    .FromSqlRaw(@"SELECT * FROM `Customers` WHERE `ContactName` LIKE '%z%'")
                     .ToArrayAsync();
 
                 Assert.Equal(14, actual.Length);
@@ -341,12 +341,12 @@ FROM `Customers`")
         }
 
         [Fact]
-        public override async Task From_sql_composed_with_nullable_predicate()
+        public override async Task FromSqlRaw_composed_with_nullable_predicate()
         {
             using (var context = CreateContext())
             {
                 var actual = await context.Set<Customer>()
-                    .FromSql(@"SELECT * FROM `Customers`")
+                    .FromSqlRaw(@"SELECT * FROM `Customers`")
                     .Where(c => c.ContactName == c.CompanyName)
                     .ToArrayAsync();
 

@@ -17,8 +17,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
 
             public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
-                => base.AddOptions(builder).ConfigureWarnings(
-                    c => c.Log(RelationalEventId.QueryClientEvaluationWarning));
+                => base.AddOptions(builder);
         }
     }
 }

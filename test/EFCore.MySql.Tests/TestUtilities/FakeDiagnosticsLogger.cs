@@ -19,6 +19,10 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
 
         public DiagnosticSource DiagnosticSource { get; } = new DiagnosticListener("Fake");
 
+        public IInterceptors Interceptors => null;
+
+        public LoggingDefinitions Definitions => null;
+
         public void Log<TState>(
             LogLevel logLevel,
             EventId eventId,
