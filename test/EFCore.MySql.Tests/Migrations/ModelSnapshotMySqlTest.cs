@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design.Internal;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -91,7 +92,7 @@ builder.Entity(""Pomelo.EntityFrameworkCore.MySql.Migrations.ModelSnapshotMySqlT
         b.ToTable(""DataTypesVariable"");
     });
 ",
-                o => { Assert.Null(o.GetEntityTypes().First().FindProperty("Id")[CoreAnnotationNames.ValueGeneratorFactoryAnnotation]); }
+                o => { Assert.Null(o.GetEntityTypes().First().FindProperty("Id")[CoreAnnotationNames.ValueGeneratorFactory]); }
                 );
         }
 
@@ -155,8 +156,8 @@ builder.Entity(""Pomelo.EntityFrameworkCore.MySql.Migrations.ModelSnapshotMySqlT
             modelBuilder.HasChangeTrackingStrategy(ChangeTrackingStrategy.Snapshot);
             buildModel(modelBuilder);
 
-            modelBuilder.GetInfrastructure().Metadata.Validate();
-            CreateModelValidator().Validate(modelBuilder.Model);
+            modelBuilder.GetInfrastructure();
+            CreateModelValidator().Validate(modelBuilder.Model, new FakeDiagnosticsLogger<DbLoggerCategory.Model.Validation>());
             var model = modelBuilder.Model;
 
             var codeHelper = new CSharpHelper(
@@ -165,8 +166,10 @@ builder.Entity(""Pomelo.EntityFrameworkCore.MySql.Migrations.ModelSnapshotMySqlT
                         TestServiceFactory.Instance.Create<RelationalTypeMappingSourceDependencies>(),
                         new MySqlOptions()));
 
+            IRelationalTypeMappingSource source = null; // TODO: fix?
+
             var generator = new CSharpMigrationsGenerator(
-                new MigrationsCodeGeneratorDependencies(),
+                new MigrationsCodeGeneratorDependencies(source),
                 new CSharpMigrationsGeneratorDependencies(
                     codeHelper,
                     new CSharpMigrationOperationGenerator(
@@ -174,7 +177,7 @@ builder.Entity(""Pomelo.EntityFrameworkCore.MySql.Migrations.ModelSnapshotMySqlT
                             codeHelper)),
                     new CSharpSnapshotGenerator(
                         new CSharpSnapshotGeneratorDependencies(
-                            codeHelper))));
+                            codeHelper, source))));
 
             var code = generator.GenerateSnapshot("RootNamespace", typeof(DbContext), "Snapshot", model);
 
@@ -227,18 +230,9 @@ builder.Entity(""Pomelo.EntityFrameworkCore.MySql.Migrations.ModelSnapshotMySqlT
         protected ModelValidator CreateModelValidator()
             => new RelationalModelValidator(
                 new ModelValidatorDependencies(
-                    new DiagnosticsLogger<DbLoggerCategory.Model.Validation>(
-                        new ListLoggerFactory(new List<(LogLevel, EventId, string)>(), l => l == DbLoggerCategory.Model.Validation.Name),
-                        new LoggingOptions(),
-                        new DiagnosticListener("Fake")),
-                    new DiagnosticsLogger<DbLoggerCategory.Model>(
-                        new ListLoggerFactory(new List<(LogLevel, EventId, string)>(), l => l == DbLoggerCategory.Model.Name),
-                        new LoggingOptions(),
-                        new DiagnosticListener("Fake"))),
+                    TestServiceFactory.Instance.Create<TypeMappingSource>(),
+                    TestServiceFactory.Instance.Create<MemberClassifier>()),
                 new RelationalModelValidatorDependencies(
-#pragma warning disable 618
-                    TestServiceFactory.Instance.Create<ObsoleteRelationalTypeMapper>(),
-#pragma warning restore 618
                     new MySqlTypeMappingSource(
                         TestServiceFactory.Instance.Create<TypeMappingSourceDependencies>(),
                         TestServiceFactory.Instance.Create<RelationalTypeMappingSourceDependencies>(),

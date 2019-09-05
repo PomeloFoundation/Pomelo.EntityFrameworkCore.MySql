@@ -31,6 +31,6 @@ SELECT ROW_COUNT();");
         }
 
         private void AssertContainsSql(params string[] expected)
-            => Fixture.TestSqlLoggerFactory.AssertBaseline(expected, assertOrder: false);
+            => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
     }
 }

@@ -38,11 +38,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
             public override DateTime DefaultDateTime => new DateTime();
 
+            public override bool SupportsDecimalComparisons => true; // TODO: does it?
+
             public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
                 => base
-                    .AddOptions(builder)
-                    .ConfigureWarnings(
-                        c => c.Log(RelationalEventId.QueryClientEvaluationWarning));
+                    .AddOptions(builder);
         }
     }
 }

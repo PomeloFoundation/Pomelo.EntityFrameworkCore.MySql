@@ -45,13 +45,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 }
             }
 
-            public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
-            {
-                return base.AddOptions(builder)
-                    .ConfigureWarnings(w
-                        => w.Log(RelationalEventId.QueryClientEvaluationWarning)
-                            .Log(CoreEventId.FirstWithoutOrderByAndFilterWarning));
-            }
+            public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder) => base.AddOptions(builder);
         }
     }
 }

@@ -76,8 +76,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 modelBuilder.Entity<MappedCustomer>(
                     e =>
                         {
-                            e.Property(c => c.CompanyName2).Metadata.Relational().ColumnName = "CompanyName";
-                            e.Metadata.Relational().TableName = "Customers";
+                            e.Property(c => c.CompanyName2).Metadata.SetColumnName("CompanyName");
+                            e.Metadata.SetTableName("Customers");
                         });
             }
         }

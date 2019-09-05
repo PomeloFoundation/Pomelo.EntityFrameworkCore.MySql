@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Pomelo.EntityFrameworkCore.MySql.Extensions;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
@@ -28,7 +29,8 @@ namespace Microsoft.EntityFrameworkCore
         {
             Check.NotNull(propertyBuilder, nameof(propertyBuilder));
 
-            GetMySqlInternalBuilder(propertyBuilder).ValueGenerationStrategy(MySqlValueGenerationStrategy.IdentityColumn);
+            var property = propertyBuilder.Metadata;
+            property.SetValueGenerationStrategy(MySqlValueGenerationStrategy.IdentityColumn);
 
             return propertyBuilder;
         }
@@ -55,7 +57,8 @@ namespace Microsoft.EntityFrameworkCore
         {
             Check.NotNull(propertyBuilder, nameof(propertyBuilder));
 
-            GetMySqlInternalBuilder(propertyBuilder).ValueGenerationStrategy(MySqlValueGenerationStrategy.ComputedColumn);
+            var property = propertyBuilder.Metadata;
+            property.SetValueGenerationStrategy(MySqlValueGenerationStrategy.ComputedColumn);
 
             return propertyBuilder;
         }
@@ -71,7 +74,57 @@ namespace Microsoft.EntityFrameworkCore
             [NotNull] this PropertyBuilder<TProperty> propertyBuilder)
             => (PropertyBuilder<TProperty>)UseMySqlComputedColumn((PropertyBuilder)propertyBuilder);
 
-        private static MySqlPropertyBuilderAnnotations GetMySqlInternalBuilder(PropertyBuilder propertyBuilder)
-            => propertyBuilder.GetInfrastructure<InternalPropertyBuilder>().MySql(ConfigurationSource.Explicit);
+        /// <summary>
+        ///     Configures the value generation strategy for the key property, when targeting SQL Server.
+        /// </summary>
+        /// <param name="propertyBuilder"> The builder for the property being configured. </param>
+        /// <param name="valueGenerationStrategy"> The value generation strategy. </param>
+        /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
+        /// <returns>
+        ///     The same builder instance if the configuration was applied,
+        ///     <c>null</c> otherwise.
+        /// </returns>
+        public static IConventionPropertyBuilder HasValueGenerationStrategy(
+            [NotNull] this IConventionPropertyBuilder propertyBuilder,
+            MySqlValueGenerationStrategy? valueGenerationStrategy,
+            bool fromDataAnnotation = false)
+        {
+            if (propertyBuilder.CanSetAnnotation(
+                MySqlAnnotationNames.ValueGenerationStrategy, valueGenerationStrategy, fromDataAnnotation))
+            {
+                propertyBuilder.Metadata.SetValueGenerationStrategy(valueGenerationStrategy, fromDataAnnotation);
+                if (valueGenerationStrategy != MySqlValueGenerationStrategy.IdentityColumn)
+                {
+                    // TODO: is there an equivalent?
+                    //propertyBuilder.HasIdentityColumnSeed(null, fromDataAnnotation);
+                    //propertyBuilder.HasIdentityColumnIncrement(null, fromDataAnnotation);
+                }
+
+                return propertyBuilder;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        ///     Returns a value indicating whether the given value can be set as the value generation strategy.
+        /// </summary>
+        /// <param name="propertyBuilder"> The builder for the property being configured. </param>
+        /// <param name="valueGenerationStrategy"> The value generation strategy. </param>
+        /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
+        /// <returns> <c>true</c> if the given value can be set as the default value generation strategy. </returns>
+        public static bool CanSetValueGenerationStrategy(
+            [NotNull] this IConventionPropertyBuilder propertyBuilder,
+            MySqlValueGenerationStrategy? valueGenerationStrategy,
+            bool fromDataAnnotation = false)
+        {
+            Check.NotNull(propertyBuilder, nameof(propertyBuilder));
+
+            return (valueGenerationStrategy == MySqlValueGenerationStrategy.None
+                    || MySqlPropertyExtensions.IsCompatibleIdentityColumn(propertyBuilder.Metadata)
+                    || MySqlPropertyExtensions.IsCompatibleComputedColumn(propertyBuilder.Metadata))
+                   && propertyBuilder.CanSetAnnotation(
+                       MySqlAnnotationNames.ValueGenerationStrategy, valueGenerationStrategy, fromDataAnnotation);
+        }
     }
 }

@@ -15,7 +15,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         protected override TEntity Find<TEntity>(DbContext context, params object[] keyValues)
             => context.Set<TEntity>().Find(keyValues);
 
-        protected override Task<TEntity> FindAsync<TEntity>(DbContext context, params object[] keyValues)
+        protected override ValueTask<TEntity> FindAsync<TEntity>(DbContext context, params object[] keyValues)
             => context.Set<TEntity>().FindAsync(keyValues);
 
         public class FindMySqlFixture : FindFixtureBase

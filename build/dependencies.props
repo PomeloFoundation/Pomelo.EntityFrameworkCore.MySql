@@ -5,26 +5,27 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
     <!-- EFCore.MySql Dependencies -->
-    <MicrosoftEntityFrameworkCoreRelationalVersion>3.0.0-preview8.19405.11</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MySqlConnectorVersion>0.57.0-beta8</MySqlConnectorVersion>
+    <MicrosoftEntityFrameworkCoreRelationalVersion>3.0.0-rc1.19452.2</MicrosoftEntityFrameworkCoreRelationalVersion>
+    <MySqlConnectorVersion>0.57.0-beta9</MySqlConnectorVersion>
     <PomeloJsonObjectVersion>2.2.0</PomeloJsonObjectVersion>
     <!-- Shared Test Dependencies -->
     <MicrosoftNETTestSdkPackageVersion>16.3.0-preview-20190808-03</MicrosoftNETTestSdkPackageVersion>
     <XunitAssertPackageVersion>2.4.1</XunitAssertPackageVersion>
     <XunitCorePackageVersion>2.4.1</XunitCorePackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.1</XunitRunnerVisualStudioPackageVersion>
-    <MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>3.0.0-preview8.19405.11</MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>
+    <MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>3.0.0-rc1.19452.2</MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>
     <!-- EFCoreMySqlFunctionalTests Dependencies -->
-    <MicrosoftExtensionsConfigurationFileExtensionsVersion>3.0.0-preview8.19405.4</MicrosoftExtensionsConfigurationFileExtensionsVersion>
-    <MicrosoftExtensionsConfigurationJsonVersion>3.0.0-preview8.19405.4</MicrosoftExtensionsConfigurationJsonVersion>
+    <MicrosoftExtensionsConfigurationFileExtensionsVersion>3.0.0-rc1.19452.2</MicrosoftExtensionsConfigurationFileExtensionsVersion>
+    <MicrosoftExtensionsConfigurationJsonVersion>3.0.0-rc1.19452.2</MicrosoftExtensionsConfigurationJsonVersion>
      <!-- EFCoreMySqlIntegrationTests Dependencies -->
-    <MicrosoftAspNetCoreAppVersion>2.2.6</MicrosoftAspNetCoreAppVersion>
+    <MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>3.0.0-rc1.19452.3</MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>
+    <MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>3.0.0-rc1.19452.3</MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>
     <!-- EFCoreMySqlTests Dependencies -->
-    <MicrosoftEntityFrameworkCoreDesignVersion>3.0.0-preview8.19405.11</MicrosoftEntityFrameworkCoreDesignVersion>
-    <MicrosoftCodeAnalysisCSharpPackageVersion>3.3.0-beta1-final</MicrosoftCodeAnalysisCSharpPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview8-28405-07</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MoqVersion>4.12.0</MoqVersion>
-    <NewtonsoftJsonPackageVersion>12.0.2</NewtonsoftJsonPackageVersion>
+    <MicrosoftEntityFrameworkCoreDesignVersion>3.0.0-rc1.19452.2</MicrosoftEntityFrameworkCoreDesignVersion>
+    <MicrosoftCodeAnalysisCSharpPackageVersion>9.9.0-beta3-19305-01</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-rc1-19430-09</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MoqVersion>4.13.0</MoqVersion>
+    <NewtonsoftJsonPackageVersion>12.0.3-beta1</NewtonsoftJsonPackageVersion>
   </PropertyGroup>
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
 </Project>

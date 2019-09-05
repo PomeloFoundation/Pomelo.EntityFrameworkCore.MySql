@@ -28,7 +28,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
                 protected virtual bool AutoDetectChanges => false;
 
-                public override DbContext CreateContext()
+                public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
+                {
+                    return base.AddOptions(builder);
+                }
+
+                public override PoolableDbContext CreateContext()
                 {
                     var context = base.CreateContext();
                     context.ChangeTracker.AutoDetectChangesEnabled = AutoDetectChanges;

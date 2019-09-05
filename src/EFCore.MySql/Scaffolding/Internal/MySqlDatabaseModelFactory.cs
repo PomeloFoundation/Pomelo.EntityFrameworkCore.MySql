@@ -6,150 +6,186 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
+using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
+using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
+using Pomelo.EntityFrameworkCore.MySql.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
 {
-    public class MySqlDatabaseModelFactory : IDatabaseModelFactory
+    public class MySqlDatabaseModelFactory : DatabaseModelFactory
     {
-        private MySqlConnection _connection;
-        private DatabaseModel _databaseModel;
-        private Dictionary<string, DatabaseTable> _tables;
+        private readonly IDiagnosticsLogger<DbLoggerCategory.Scaffolding> _logger;
 
-        public MySqlDatabaseModelFactory(ILoggerFactory loggerFactory)
+        public MySqlDatabaseModelFactory([NotNull]  IDiagnosticsLogger<DbLoggerCategory.Scaffolding> logger)
         {
-            Logger = loggerFactory.CreateCommandsLogger();
+            Check.NotNull(logger, nameof(logger));
+
+            _logger = logger;
         }
 
-        protected virtual ILogger Logger { get; }
-
-        private void ResetState()
+        public override DatabaseModel Create(string connectionString, DatabaseModelFactoryOptions options)
         {
-            _connection = null;
-            _databaseModel = new DatabaseModel();
-            _tables = new Dictionary<string, DatabaseTable>();
-        }
+            Check.NotEmpty(connectionString, nameof(connectionString));
+            Check.NotNull(options, nameof(options));
 
-        public DatabaseModel Create(string connectionString, IEnumerable<string> tables, IEnumerable<string> schemas)
-        {
             using (var connection = new MySqlConnection(connectionString))
             {
-                return Create(connection, tables, schemas);
+                return Create(connection, options);
             }
         }
 
-        public DatabaseModel Create(DbConnection connection, IEnumerable<string> tables, IEnumerable<string> schemas)
+        public override DatabaseModel Create(DbConnection connection, DatabaseModelFactoryOptions options)
         {
-            ResetState();
+            Check.NotNull(connection, nameof(connection));
+            Check.NotNull(options, nameof(options));
 
-            _connection = (MySqlConnection)connection;
+            var databaseModel = new DatabaseModel();
 
-            var connectionStartedOpen = _connection.State == ConnectionState.Open;
+            var connectionStartedOpen = connection.State == ConnectionState.Open;
             if (!connectionStartedOpen)
             {
-                _connection.Open();
+                connection.Open();
             }
 
             try
             {
-                _databaseModel.DatabaseName = _connection.Database;
-                _databaseModel.DefaultSchema = null;
+                databaseModel.DatabaseName = connection.Database;
+                databaseModel.DefaultSchema = GetDefaultSchema(connection);
 
-                GetTables(tables.ToList());
-                GetColumns();
-                GetPrimaryKeys();
-                GetIndexes();
-                GetConstraints();
+                var schemaList = options.Schemas.ToList();
+                var tableList = options.Tables.ToList();
+                var tableFilter = GenerateTableFilter(tableList, schemaList);
 
-                return _databaseModel;
+                var tables = GetTables(connection, tableFilter);
+                foreach (var table in tables)
+                {
+                    table.Database = databaseModel;
+                    databaseModel.Tables.Add(table);
+                }
+
+                return databaseModel;
             }
             finally
             {
                 if (!connectionStartedOpen)
                 {
-                    _connection.Close();
+                    connection.Close();
                 }
             }
         }
 
+        private string GetDefaultSchema(DbConnection connection)
+        {
+            return null;
+        }
+
+        private static Func<string, string, bool> GenerateTableFilter(
+            IReadOnlyList<string> tables,
+            IReadOnlyList<string> schemas)
+        {
+            return (s, t) => (tables.Count > 0) ? tables.Contains(t) : false;
+        }
+
         private const string GetTablesQuery = @"SHOW FULL TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
 
-        private void GetTables(List<string> allowedTables)
+        private IEnumerable<DatabaseTable> GetTables(
+            DbConnection connection,
+            Func<string, string, bool> filter)
         {
-            using (var command = new MySqlCommand(GetTablesQuery, _connection))
-            using (var reader = command.ExecuteReader())
+            using (var command = connection.CreateCommand())
             {
-                while (reader.Read())
+                var tables = new List<DatabaseTable>();
+                command.CommandText = GetTablesQuery;
+                using (var reader = command.ExecuteReader())
                 {
-                    var table = new DatabaseTable
+                    while (reader.Read())
                     {
-                        Schema = null,
-                        Name = reader.GetString(0).Replace("`", "")
-                    };
+                        var table = new DatabaseTable
+                        {
+                            Schema = null,
+                            Name = reader.GetString(0).Replace("`", "")
+                        };
 
-                    if (allowedTables.Count == 0
-                        || allowedTables.Contains(table.Name))
-                    {
-                        _databaseModel.Tables.Add(table);
-                        _tables[table.Name] = table;
+                        if (filter(table.Schema, table.Name))
+                        {
+                            tables.Add(table);
+                        }
                     }
                 }
+
+                // This is done separately due to MARS property may be turned off
+                GetColumns(connection, tables, filter);
+                GetPrimaryKeys(connection, tables);
+                GetIndexes(connection, tables, filter);
+                GetConstraints(connection, tables);
+
+                return tables;
             }
         }
 
         private const string GetColumnsQuery = @"SHOW COLUMNS FROM `{0}`";
 
-        private void GetColumns()
+        private void GetColumns(
+           DbConnection connection,
+           IReadOnlyList<DatabaseTable> tables,
+           Func<string, string, bool> tableFilter)
         {
-            foreach (var x in _tables)
+            foreach (var table in tables)
             {
-                using (var command = new MySqlCommand(string.Format(GetColumnsQuery, x.Key), _connection))
-                using (var reader = command.ExecuteReader())
+                using (var command = connection.CreateCommand())
                 {
-                    while (reader.Read())
+                    command.CommandText = string.Format(GetColumnsQuery, table.Name);
+                    using (var reader = command.ExecuteReader())
                     {
-                        var extra = reader.GetString(5);
-                        ValueGenerated valueGenerated;
-                        if (extra.IndexOf("auto_increment", StringComparison.Ordinal) >= 0)
+                        while (reader.Read())
                         {
-                            valueGenerated = ValueGenerated.OnAdd;
-                        }
-                        else if (extra.IndexOf("on update", StringComparison.Ordinal) >= 0)
-                        {
-                            if (reader[4] != DBNull.Value && extra.IndexOf(reader[4].ToString(), StringComparison.Ordinal) > 0)
+                            var extra = reader.GetString(5);
+                            ValueGenerated valueGenerated;
+                            if (extra.IndexOf("auto_increment", StringComparison.Ordinal) >= 0)
                             {
-                                valueGenerated = ValueGenerated.OnAddOrUpdate;
+                                valueGenerated = ValueGenerated.OnAdd;
+                            }
+                            else if (extra.IndexOf("on update", StringComparison.Ordinal) >= 0)
+                            {
+                                if (reader[4] != DBNull.Value && extra.IndexOf(reader[4].ToString(), StringComparison.Ordinal) > 0)
+                                {
+                                    valueGenerated = ValueGenerated.OnAddOrUpdate;
+                                }
+                                else
+                                {
+                                    valueGenerated = ValueGenerated.OnUpdate;
+                                }
                             }
                             else
                             {
-                                valueGenerated = ValueGenerated.OnUpdate;
+                                valueGenerated = ValueGenerated.Never;
                             }
-                        }
-                        else
-                        {
-                            valueGenerated = ValueGenerated.Never;
-                        }
 
 
-                        var column = new DatabaseColumn
-                        {
-                            Table = x.Value,
-                            Name = reader.GetString(0),
-                            StoreType = Regex.Replace(reader.GetString(1), @"(?<=int)\(\d+\)(?=\sunsigned)",
-                                string.Empty),
-                            IsNullable = reader.GetString(2) == "YES",
-                            DefaultValueSql = reader[4] == DBNull.Value
-                                ? null
-                                : '\'' + ParseToMySqlString(reader[4].ToString()) + '\'',
-                            ValueGenerated = valueGenerated
-                        };
-                        x.Value.Columns.Add(column);
+                            var column = new DatabaseColumn
+                            {
+                                Table = table,
+                                Name = reader.GetString(0),
+                                StoreType = Regex.Replace(reader.GetString(1), @"(?<=int)\(\d+\)(?=\sunsigned)",
+                                    string.Empty),
+                                IsNullable = reader.GetString(2) == "YES",
+                                DefaultValueSql = reader[4] == DBNull.Value
+                                    ? null
+                                    : '\'' + ParseToMySqlString(reader[4].ToString()) + '\'',
+                                ValueGenerated = valueGenerated
+                            };
+                            table.Columns.Add(column);
+                        }
                     }
                 }
             }
@@ -176,35 +212,38 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
         /// <remarks>
         /// Primary keys are handled as in <see cref="GetConstraints"/>, not here
         /// </remarks>
-        private void GetPrimaryKeys()
+        private void GetPrimaryKeys(
+           DbConnection connection,
+           IReadOnlyList<DatabaseTable> tables)
         {
-            foreach (var x in _tables)
+            foreach (var table in tables)
             {
-                using (var command =
-                    new MySqlCommand(string.Format(GetPrimaryQuery, _connection.Database, x.Key),
-                        _connection))
-                using (var reader = command.ExecuteReader())
+                using (var command = connection.CreateCommand())
                 {
-                    while (reader.Read())
+                    command.CommandText = string.Format(GetPrimaryQuery, connection.Database, table.Name);
+                    using (var reader = command.ExecuteReader())
                     {
-                        try
+                        while (reader.Read())
                         {
-                            var index = new DatabasePrimaryKey
+                            try
                             {
-                                Table = x.Value,
-                                Name = reader.GetString(0)
-                            };
+                                var index = new DatabasePrimaryKey
+                                {
+                                    Table = table,
+                                    Name = reader.GetString(0)
+                                };
 
-                            foreach (var column in reader.GetString(2).Split(','))
-                            {
-                                index.Columns.Add(x.Value.Columns.Single(y => y.Name == column));
+                                foreach (var column in reader.GetString(2).Split(','))
+                                {
+                                    index.Columns.Add(table.Columns.Single(y => y.Name == column));
+                                }
+
+                                table.PrimaryKey = index;
                             }
-
-                            x.Value.PrimaryKey = index;
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.LogError(ex, "Error assigning primary key for {table}.", x.Key);
+                            catch (Exception ex)
+                            {
+                                _logger.Logger.LogError(ex, "Error assigning primary key for {table}.", table.Name);
+                            }
                         }
                     }
                 }
@@ -223,38 +262,39 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
         /// <remarks>
         /// Primary keys are handled as in <see cref="GetConstraints"/>, not here
         /// </remarks>
-        private void GetIndexes()
+        private void GetIndexes(DbConnection connection, IReadOnlyList<DatabaseTable> tables, Func<string, string, bool> tableFilter)
         {
-            foreach (var x in _tables)
+            foreach (var table in tables)
             {
-                using (var command =
-                    new MySqlCommand(string.Format(GetIndexesQuery, _connection.Database, x.Key),
-                        _connection))
-                using (var reader = command.ExecuteReader())
+                using (var command = connection.CreateCommand())
                 {
-                    while (reader.Read())
+                    command.CommandText = string.Format(GetIndexesQuery, connection.Database, table.Name);
+                    using (var reader = command.ExecuteReader())
                     {
-                        try
+                        while (reader.Read())
                         {
-                            var index = new DatabaseIndex
+                            try
                             {
-                                Table = x.Value,
-                                Name = reader.GetString(0),
-                                IsUnique = reader.GetFieldType(1) == typeof(string)
-                                    ? reader.GetString(1) == "1"
-                                    : !reader.GetBoolean(1)
-                            };
+                                var index = new DatabaseIndex
+                                {
+                                    Table = table,
+                                    Name = reader.GetString(0),
+                                    IsUnique = reader.GetFieldType(1) == typeof(string)
+                                        ? reader.GetString(1) == "1"
+                                        : !reader.GetBoolean(1)
+                                };
 
-                            foreach (var column in reader.GetString(2).Split(','))
-                            {
-                                index.Columns.Add(x.Value.Columns.Single(y => y.Name == column));
+                                foreach (var column in reader.GetString(2).Split(','))
+                                {
+                                    index.Columns.Add(table.Columns.Single(y => y.Name == column));
+                                }
+
+                                table.Indexes.Add(index);
                             }
-
-                            x.Value.Indexes.Add(index);
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.LogError(ex, "Error assigning index for {table}.", x.Key);
+                            catch (Exception ex)
+                            {
+                                _logger.Logger.LogError(ex, "Error assigning index for {table}.", table.Name);
+                            }
                         }
                     }
                 }
@@ -277,40 +317,42 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
         `TABLE_NAME`,
         `REFERENCED_TABLE_NAME`;";
 
-        private void GetConstraints()
+        private void GetConstraints(DbConnection connection, IReadOnlyList<DatabaseTable> tables)
         {
-            foreach (var x in _tables)
+            foreach (var table in tables)
             {
-                using (var command =
-                    new MySqlCommand(string.Format(GetConstraintsQuery, _connection.Database, x.Key),
-                        _connection))
-                using (var reader = command.ExecuteReader())
+                using (var command = connection.CreateCommand())
                 {
-                    while (reader.Read())
+                    command.CommandText = string.Format(GetConstraintsQuery, connection.Database, table.Name);
+                    using (var reader = command.ExecuteReader())
                     {
-                        var referencedTableName = reader.GetString(2);
-                        if (_tables.TryGetValue(referencedTableName, out var referencedTable))
+                        while (reader.Read())
                         {
-                            var fkInfo = new DatabaseForeignKey
+                            var referencedTableName = reader.GetString(2);
+                            var referencedTable = tables.Where(t => t.Name == referencedTableName).FirstOrDefault();
+                            if (referencedTable != null)
                             {
-                                Name = reader.GetString(0),
-                                OnDelete = ConvertToReferentialAction(reader.GetString(4)),
-                                Table = x.Value,
-                                PrincipalTable = referencedTable
-                            };
-                            foreach (var pair in reader.GetString(3).Split(','))
-                            {
-                                fkInfo.Columns.Add(x.Value.Columns.Single(y =>
-                                    string.Equals(y.Name, pair.Split('|')[0], StringComparison.OrdinalIgnoreCase)));
-                                fkInfo.PrincipalColumns.Add(fkInfo.PrincipalTable.Columns.Single(y =>
-                                    string.Equals(y.Name, pair.Split('|')[1], StringComparison.OrdinalIgnoreCase)));
-                            }
+                                var fkInfo = new DatabaseForeignKey
+                                {
+                                    Name = reader.GetString(0),
+                                    OnDelete = ConvertToReferentialAction(reader.GetString(4)),
+                                    Table = table,
+                                    PrincipalTable = referencedTable
+                                };
+                                foreach (var pair in reader.GetString(3).Split(','))
+                                {
+                                    fkInfo.Columns.Add(table.Columns.Single(y =>
+                                        string.Equals(y.Name, pair.Split('|')[0], StringComparison.OrdinalIgnoreCase)));
+                                    fkInfo.PrincipalColumns.Add(fkInfo.PrincipalTable.Columns.Single(y =>
+                                        string.Equals(y.Name, pair.Split('|')[1], StringComparison.OrdinalIgnoreCase)));
+                                }
 
-                            x.Value.ForeignKeys.Add(fkInfo);
-                        }
-                        else
-                        {
-                            Logger.LogWarning($"Referenced table `{referencedTableName}` is not in dictionary.");
+                                table.ForeignKeys.Add(fkInfo);
+                            }
+                            else
+                            {
+                                _logger.Logger.LogWarning($"Referenced table `{referencedTableName}` is not in dictionary.");
+                            }
                         }
                     }
                 }

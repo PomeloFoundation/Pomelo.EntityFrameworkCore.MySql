@@ -78,7 +78,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands
             var sleepNum = 0;
             async Task sleepMillisecond(AppDb db)
             {
-                await db.Database.ExecuteSqlCommandAsync("SELECT SLEEP(0.001)");
+                await db.Database.ExecuteSqlRawAsync("SELECT SLEEP(0.001)");
                 db.Database.CloseConnection();
                 Interlocked.Increment(ref sleepNum);
             }
@@ -115,7 +115,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands
                 }
             }
 
-            _db.Database.ExecuteSqlCommand("DELETE FROM `" + _db.Model.FindEntityType(typeof(Blog)).Relational().TableName + "`");
+            _db.Database.ExecuteSqlRaw("DELETE FROM `" + _db.Model.FindEntityType(typeof(Blog)).GetTableName() + "`");
 
             PerfTest(insert1, "Insert 1", iterations, concurrency, ops).GetAwaiter().GetResult();
             var insertCount = _db.Blogs.Count();

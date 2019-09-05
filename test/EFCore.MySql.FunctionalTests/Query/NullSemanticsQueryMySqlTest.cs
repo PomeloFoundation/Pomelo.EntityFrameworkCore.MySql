@@ -20,7 +20,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             using (var context = CreateContext(useRelationalNulls: true))
             {
                 var actual = context.Entities1
-                    .FromSql(@"SELECT * FROM `Entities1`")
+                    .FromSqlRaw(@"SELECT * FROM `Entities1`")
                     .Where(c => c.StringA == c.StringB)
                     .ToArray();
 

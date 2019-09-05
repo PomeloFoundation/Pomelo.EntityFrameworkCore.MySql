@@ -4,8 +4,8 @@ using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 using System.Reflection;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Query.Expressions;
-using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 
@@ -26,78 +26,79 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         private static readonly MethodInfo _indexOfMethodInfo
             = typeof(string).GetRuntimeMethod(nameof(string.IndexOf), new[] { typeof(string), typeof(StringComparison) });
 
-        private static readonly IReadOnlyList<Expression> _caseSensitiveComparisons =
-            new ReadOnlyCollection<Expression>(
-                new Expression[] {
-                    Expression.Constant(StringComparison.Ordinal),
-                    Expression.Constant(StringComparison.CurrentCulture),
-                    Expression.Constant(StringComparison.InvariantCulture)
-                }
-            );
+        private readonly SqlExpression _caseSensitiveComparisons;            
 
-        public Expression Translate(MethodCallExpression methodCallExpression)
+        private readonly ISqlExpressionFactory _sqlExpressionFactory;
+
+        public MySqlStringComparisonTranslator(ISqlExpressionFactory sqlExpressionFactory)
         {
-            if (Equals(methodCallExpression.Method, _equalsMethodInfo) &&
-                methodCallExpression.Object != null)
+            _sqlExpressionFactory = sqlExpressionFactory;
+            _caseSensitiveComparisons = _sqlExpressionFactory.Constant(
+                new ReadOnlyCollection<SqlExpression>(new List<SqlExpression> {
+                    _sqlExpressionFactory.Constant(StringComparison.Ordinal),
+                    _sqlExpressionFactory.Constant(StringComparison.CurrentCulture),
+                    _sqlExpressionFactory.Constant(StringComparison.InvariantCulture)
+                }));
+        }
+
+        public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
+        {
+            if (Equals(method, _equalsMethodInfo) && instance != null)
             {
                 return MakeStringEqualsExpression(
-                    methodCallExpression.Object,
-                    methodCallExpression.Arguments[0],
-                    methodCallExpression.Arguments[1]
+                    instance,
+                    arguments[0],
+                    arguments[1]
                 );
             }
-            else if (Equals(methodCallExpression.Method, _staticEqualsMethodInfo))
+            else if (Equals(method, _staticEqualsMethodInfo))
             {
                 return MakeStringEqualsExpression(
-                    methodCallExpression.Arguments[0],
-                    methodCallExpression.Arguments[1],
-                    methodCallExpression.Arguments[2]
+                    arguments[0],
+                    arguments[1],
+                    arguments[2]
                 );
             }
-            else if (Equals(methodCallExpression.Method, _startsWithMethodInfo) &&
-                methodCallExpression.Object != null)
+            else if (Equals(method, _startsWithMethodInfo) && instance != null)
             {
                 return MakeStartsWithExpression(
-                    methodCallExpression.Object,
-                    methodCallExpression.Arguments[0],
-                    methodCallExpression.Arguments[1]
+                    instance,
+                    arguments[0],
+                    arguments[1]
                 );
             }
-            else if (Equals(methodCallExpression.Method, _endsWithMethodInfo) &&
-                methodCallExpression.Object != null)
+            else if (Equals(method, _endsWithMethodInfo) && instance != null)
             {
                 return MakeEndsWithExpression(
-                    methodCallExpression.Object,
-                    methodCallExpression.Arguments[0],
-                    methodCallExpression.Arguments[1]
+                    instance,
+                    arguments[0],
+                    arguments[1]
                 );
             }
-            else if (Equals(methodCallExpression.Method, _containsMethodInfo) &&
-                methodCallExpression.Object != null)
+            else if (Equals(method, _containsMethodInfo) && instance != null)
             {
                 return MakeContainsExpression(
-                    methodCallExpression.Object,
-                    methodCallExpression.Arguments[0],
-                    methodCallExpression.Arguments[1]
+                    instance,
+                    arguments[0],
+                    arguments[1]
                 );
             }
-            else if (Equals(methodCallExpression.Method, _indexOfMethodInfo) &&
-                methodCallExpression.Object != null)
+            else if (Equals(method, _indexOfMethodInfo) && instance != null)
             {
                 return MakeIndexOfExpression(
-                    methodCallExpression.Object,
-                    methodCallExpression.Arguments[0],
-                    methodCallExpression.Arguments[1]
+                    instance,
+                    arguments[0],
+                    arguments[1]
                 );
             }
 
             return null;
         }
 
-        private static Expression MakeStringEqualsExpression(
-            [NotNull] Expression leftValue,
-            [NotNull] Expression rightValue,
-            [NotNull] Expression stringComparison)
+        private SqlExpression MakeStringEqualsExpression(
+            [NotNull] SqlExpression leftValue,
+            [NotNull] SqlExpression rightValue,
+            [NotNull] SqlExpression stringComparison)
         {
             if (TryGetExpressionValue<StringComparison>(stringComparison, out var cmp))
             {
@@ -109,21 +110,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                         {
                             // Applying the binary operator to the non-column value enables SQL to
                             // utilize an index if one exists.
-                            return Expression.Equal(
+                            return _sqlExpressionFactory.Equal(
                                 leftValue,
                                 Utf8Bin(rightValue)
                             );
                         }
                         else
                         {
-                            return Expression.Equal(
+                            return _sqlExpressionFactory.Equal(
                                 Utf8Bin(leftValue),
                                 rightValue
                             );
                         }
                     },
                     () =>
-                        Expression.Equal(
+                        _sqlExpressionFactory.Equal(
                             LCase(leftValue),
                             Utf8Bin(LCase(rightValue))
                         )
@@ -135,16 +136,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     new[]
                     {
                         new CaseWhenClause(
-                            new InExpression(stringComparison, _caseSensitiveComparisons),
+                            _sqlExpressionFactory.In(stringComparison, _caseSensitiveComparisons, false),
                             // Case sensitive, accent sensitive
-                            Expression.Equal(
+                            _sqlExpressionFactory.Equal(
                                 leftValue,
                                 Utf8Bin(rightValue)
                             )
                         )
                     },
                     // Case insensitive, accent sensitive
-                    Expression.Equal(
+                    _sqlExpressionFactory.Equal(
                         LCase(leftValue),
                         Utf8Bin(LCase(rightValue))
                     )
@@ -152,10 +153,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             }
         }
 
-        private static Expression MakeStartsWithExpression(
-            [NotNull] Expression target,
-            [NotNull] Expression prefix,
-            [NotNull] Expression stringComparison)
+        private SqlExpression MakeStartsWithExpression(
+            [NotNull] SqlExpression target,
+            [NotNull] SqlExpression prefix,
+            [NotNull] SqlExpression stringComparison)
         {
             if (TryGetExpressionValue<StringComparison>(stringComparison, out var cmp))
             {
@@ -180,7 +181,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     new[]
                     {
                         new CaseWhenClause(
-                            new InExpression(stringComparison, _caseSensitiveComparisons),
+                            _sqlExpressionFactory.In(stringComparison, _caseSensitiveComparisons, false),
                             // Case sensitive, accent sensitive
                             MakeStartsWithExpressionImpl(
                                 target,
@@ -198,38 +199,39 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             }
         }
 
-        private static BinaryExpression MakeStartsWithExpressionImpl(
-            Expression target,
-            Expression prefix,
-            Expression originalPrefix = null) {
-            return Expression.AndAlso(
-                new LikeExpression(
+        private SqlBinaryExpression MakeStartsWithExpressionImpl(
+            SqlExpression target,
+            SqlExpression prefix,
+            SqlExpression originalPrefix = null) {
+            return _sqlExpressionFactory.AndAlso(
+                _sqlExpressionFactory.Like(
                     target,
-                    new SqlFunctionExpression(
+                    _sqlExpressionFactory.Function(
                         "CONCAT",
-                        typeof(string),
                         // when performing the like it is preferable to use the untransformed prefix
                         // value to ensure the index can be used
-                        new[] { originalPrefix ?? prefix, Expression.Constant("%") })
-                ),
-                new NullCompensatedExpression(Expression.Equal(
-                    new SqlFunctionExpression(
-                        "LEFT",
+                        new[] { originalPrefix ?? prefix, _sqlExpressionFactory.Constant("%") },
                         typeof(string),
+                        null)
+                ),
+                _sqlExpressionFactory.Equal(
+                    _sqlExpressionFactory.Function(
+                        "LEFT",
                         new[]
                         {
                             target,
                             CharLength(prefix)
-                        }),
+                        },
+                        typeof(string),
+                        null),
                     prefix
-                ))
-            );
+                ));
         }
 
-        private static Expression MakeEndsWithExpression(
-            [NotNull] Expression target,
-            [NotNull] Expression suffix,
-            [NotNull] Expression stringComparison)
+        private SqlExpression MakeEndsWithExpression(
+            [NotNull] SqlExpression target,
+            [NotNull] SqlExpression suffix,
+            [NotNull] SqlExpression stringComparison)
         {
             if (TryGetExpressionValue<StringComparison>(stringComparison, out var cmp))
             {
@@ -255,7 +257,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     new[]
                     {
                         new CaseWhenClause(
-                            new InExpression(stringComparison, _caseSensitiveComparisons),
+                            _sqlExpressionFactory.In(stringComparison, _caseSensitiveComparisons, false),
                             // Case sensitive, accent sensitive
                             MakeEndsWithExpressionImpl(
                                 target,
@@ -274,41 +276,42 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             }
         }
 
-        private static Expression MakeEndsWithExpressionImpl(
-            [NotNull] Expression target,
-            [NotNull] Expression suffix,
-            [NotNull] Expression originalSuffix)
+        private SqlExpression MakeEndsWithExpressionImpl(
+            [NotNull] SqlExpression target,
+            [NotNull] SqlExpression suffix,
+            [NotNull] SqlExpression originalSuffix)
         {
             var endsWithExpression =
-                new NullCompensatedExpression(Expression.Equal(
-                    new SqlFunctionExpression(
+                _sqlExpressionFactory.Equal(
+                    _sqlExpressionFactory.Function(
                         "RIGHT",
-                        target.Type,
                         new[]
                         {
                             target,
                             CharLength(suffix)
-                        }),
-                    suffix));
+                        },
+                        target.Type,
+                        null),
+                    suffix);
 
-            if (originalSuffix is ConstantExpression constantSuffix)
+            if (originalSuffix is SqlConstantExpression constantSuffix)
             {
                 return (string)constantSuffix.Value == string.Empty
-                    ? (Expression)Expression.Constant(true)
-                    : endsWithExpression;
+                    ? _sqlExpressionFactory.Constant(true)
+                    : (SqlExpression)endsWithExpression;
             }
             else
             {
-                return Expression.OrElse(
+                return _sqlExpressionFactory.OrElse(
                     endsWithExpression,
-                    Expression.Equal(originalSuffix, Expression.Constant(string.Empty)));
+                    _sqlExpressionFactory.Equal(originalSuffix, _sqlExpressionFactory.Constant(string.Empty)));
             }
         }
 
-        private static Expression MakeContainsExpression(
-            [NotNull] Expression target,
-            [NotNull] Expression search,
-            [NotNull] Expression stringComparison)
+        private SqlExpression MakeContainsExpression(
+            [NotNull] SqlExpression target,
+            [NotNull] SqlExpression search,
+            [NotNull] SqlExpression stringComparison)
         {
             if (TryGetExpressionValue<StringComparison>(stringComparison, out var cmp))
             {
@@ -334,7 +337,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     new[]
                     {
                         new CaseWhenClause(
-                            new InExpression(stringComparison, _caseSensitiveComparisons),
+                            _sqlExpressionFactory.In(stringComparison, _caseSensitiveComparisons, false),
                             // Case sensitive, accent sensitive
                             MakeContainsExpressionImpl(
                                 target,
@@ -353,35 +356,35 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             }
         }
 
-        private static Expression MakeContainsExpressionImpl(
-            [NotNull] Expression target,
-            [NotNull] Expression search,
-            [NotNull] Expression originalSearch)
+        private SqlExpression MakeContainsExpressionImpl(
+            [NotNull] SqlExpression target,
+            [NotNull] SqlExpression search,
+            [NotNull] SqlExpression originalSearch)
         {
 
-            var containsExpression = Expression.GreaterThan(
-                new SqlFunctionExpression("LOCATE", typeof(int), new[] { search, target }),
-                Expression.Constant(0)
+            var containsExpression = _sqlExpressionFactory.GreaterThan(
+                _sqlExpressionFactory.Function("LOCATE", new[] { search, target }, typeof(int), null),
+                _sqlExpressionFactory.Constant(0)
             );
 
-            if (originalSearch is ConstantExpression constantSuffix)
+            if (originalSearch is SqlConstantExpression constantSuffix)
             {
                 return (string)constantSuffix.Value == string.Empty
-                    ? (Expression)Expression.Constant(true)
-                    : containsExpression;
+                    ? _sqlExpressionFactory.Constant(true)
+                    : (SqlExpression)containsExpression;
             }
             else
             {
-                return Expression.OrElse(
+                return _sqlExpressionFactory.OrElse(
                     containsExpression,
-                    Expression.Equal(originalSearch, Expression.Constant(string.Empty)));
+                    _sqlExpressionFactory.Equal(originalSearch, _sqlExpressionFactory.Constant(string.Empty)));
             }
         }
 
-        private static Expression MakeIndexOfExpression(
-            [NotNull] Expression target,
-            [NotNull] Expression search,
-            [NotNull] Expression stringComparison)
+        private SqlExpression MakeIndexOfExpression(
+            [NotNull] SqlExpression target,
+            [NotNull] SqlExpression search,
+            [NotNull] SqlExpression stringComparison)
         {
             if (TryGetExpressionValue<StringComparison>(stringComparison, out var cmp))
             {
@@ -401,11 +404,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             }
             else
             {
-                return new CaseExpression(
+                return _sqlExpressionFactory.Case(
                     new[]
                     {
                         new CaseWhenClause(
-                            new InExpression(stringComparison, _caseSensitiveComparisons),
+                           _sqlExpressionFactory.In(stringComparison, _caseSensitiveComparisons, false),
                             // Case sensitive, accent sensitive
                             MakeIndexOfExpressionImpl(
                                 target,
@@ -422,20 +425,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             }
         }
 
-        private static Expression MakeIndexOfExpressionImpl(
-            [NotNull] Expression target,
-            [NotNull] Expression search)
+        private SqlExpression MakeIndexOfExpressionImpl(
+            [NotNull] SqlExpression target,
+            [NotNull] SqlExpression search)
         {
-            return Expression.Subtract(
-                new SqlFunctionExpression(
+            return _sqlExpressionFactory.Subtract(
+                _sqlExpressionFactory.Function(
                     "LOCATE",
+                    new SqlExpression[] { search, target },
                     typeof(int),
-                    new[] { search, target }),
-                Expression.Constant(1)
+                    null),
+                _sqlExpressionFactory.Constant(1)
             );
         }
 
-        private static bool TryGetExpressionValue<T>(Expression expression, out T value)
+        private static bool TryGetExpressionValue<T>(SqlExpression expression, out T value)
         {
             if (expression.Type != typeof(T))
             {
@@ -444,8 +448,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     nameof(expression)
                 );
             }
-
-            if (expression is ConstantExpression constant)
+            
+            if (expression is SqlConstantExpression constant)
             {
                 value = (T)constant.Value;
                 return true;
@@ -457,10 +461,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             }
         }
 
-        private static Expression CreateExpressionForCaseSensitivity(
+        private static SqlExpression CreateExpressionForCaseSensitivity(
             StringComparison cmp,
-            Func<Expression> ifCaseSensitive,
-            Func<Expression> ifCaseInsensitive)
+            Func<SqlExpression> ifCaseSensitive,
+            Func<SqlExpression> ifCaseInsensitive)
         {
             switch (cmp) {
                 case StringComparison.Ordinal:
@@ -476,12 +480,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             }
         }
 
-        private static Expression LCase(Expression value)
+        private SqlExpression LCase(SqlExpression value)
         {
-            return new SqlFunctionExpression("LCASE", value.Type, new[] { value });
+            return _sqlExpressionFactory.Function("LCASE", new[] { value }, value.Type, null);
         }
 
-        private static Expression Utf8Bin(Expression value)
+        private static SqlExpression Utf8Bin(SqlExpression value)
         {
             return new MySqlCollateExpression(
                 value,
@@ -490,10 +494,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             );
         }
 
-        private static Expression CharLength(Expression value)
+        private SqlExpression CharLength(SqlExpression value)
         {
-            return new SqlFunctionExpression("CHAR_LENGTH", typeof(int), new[] { value });
+            return _sqlExpressionFactory.Function("CHAR_LENGTH", new[] { value }, typeof(int), null);
         }
-
     }
 }

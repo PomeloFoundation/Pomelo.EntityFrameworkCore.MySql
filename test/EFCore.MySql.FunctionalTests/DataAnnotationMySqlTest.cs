@@ -29,9 +29,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
             var modelBuilder = base.Non_public_annotations_are_enabled();
 
-            var relational = GetProperty<PrivateMemberAnnotationClass>(modelBuilder, "PersonFirstName").Relational();
-            Assert.Equal("dsdsd", relational.ColumnName);
-            Assert.Equal("nvarchar(128)", relational.ColumnType);
+            var relational = GetProperty<PrivateMemberAnnotationClass>(modelBuilder, "PersonFirstName");
+            Assert.Equal("dsdsd", relational.GetColumnName());
+            Assert.Equal("nvarchar(128)", relational.GetColumnType());
 
             return modelBuilder;
         }
@@ -40,9 +40,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
             var modelBuilder = base.Field_annotations_are_enabled();
 
-            var relational = GetProperty<FieldAnnotationClass>(modelBuilder, "_personFirstName").Relational();
-            Assert.Equal("dsdsd", relational.ColumnName);
-            Assert.Equal("nvarchar(128)", relational.ColumnType);
+            var relational = GetProperty<FieldAnnotationClass>(modelBuilder, "_personFirstName");
+            Assert.Equal("dsdsd", relational.GetColumnName());
+            Assert.Equal("nvarchar(128)", relational.GetColumnType());
 
             return modelBuilder;
         }
@@ -51,9 +51,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
             var modelBuilder = base.Key_and_column_work_together();
 
-            var relational = GetProperty<ColumnKeyAnnotationClass1>(modelBuilder, "PersonFirstName").Relational();
-            Assert.Equal("dsdsd", relational.ColumnName);
-            Assert.Equal("nvarchar(128)", relational.ColumnType);
+            var relational = GetProperty<ColumnKeyAnnotationClass1>(modelBuilder, "PersonFirstName");
+            Assert.Equal("dsdsd", relational.GetColumnName());
+            Assert.Equal("nvarchar(128)", relational.GetColumnType());
 
             return modelBuilder;
         }
@@ -88,8 +88,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
             var modelBuilder = base.TableNameAttribute_affects_table_name_in_TPH();
 
-            var relational = modelBuilder.Model.FindEntityType(typeof(TNAttrBase)).Relational();
-            Assert.Equal("A", relational.TableName);
+            var relational = modelBuilder.Model.FindEntityType(typeof(TNAttrBase));
+            Assert.Equal("A", relational.GetTableName());
 
             return modelBuilder;
         }

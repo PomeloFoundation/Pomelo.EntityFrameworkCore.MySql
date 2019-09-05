@@ -28,6 +28,6 @@ WHERE (`c`.`CompanyName` LIKE CONCAT(@__ef_filter__TenantPrefix_0, '%') AND (LEF
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
         private void AssertContainsSql(params string[] expected)
-            => Fixture.TestSqlLoggerFactory.AssertBaseline(expected, assertOrder: false);
+            => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
     }
 }

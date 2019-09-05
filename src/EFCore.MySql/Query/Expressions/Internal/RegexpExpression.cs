@@ -3,15 +3,17 @@
 
 using System;
 using System.Linq.Expressions;
-using Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 {
-    public class RegexpExpression : Expression
+    public class RegexpExpression : SqlExpression
     {
-        public RegexpExpression([NotNull] Expression match, [NotNull] Expression pattern)
+        public RegexpExpression([NotNull] SqlExpression match, [NotNull] SqlExpression pattern)
+            : base(typeof(string), null)
         {
             Check.NotNull(match, nameof(match));
             Check.NotNull(pattern, nameof(pattern));
@@ -23,8 +25,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         public virtual Expression Match { get; }
 
         public virtual Expression Pattern { get; }
-
-        public override ExpressionType NodeType => ExpressionType.Extension;
 
         public override Type Type => typeof(bool);
 
@@ -39,8 +39,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 
         protected override Expression VisitChildren(ExpressionVisitor visitor)
         {
-            var newMatchExpression = visitor.Visit(Match);
-            var newPatternExpression = visitor.Visit(Pattern);
+            var newMatchExpression = (SqlExpression)visitor.Visit(Match);
+            var newPatternExpression = (SqlExpression)visitor.Visit(Pattern);
 
             return newMatchExpression != Match
                    || newPatternExpression != Pattern
@@ -79,5 +79,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         }
 
         public override string ToString() => $"{Match} REGEXP {Pattern}";
+
+        public override void Print(ExpressionPrinter expressionPrinter)
+        {
+            expressionPrinter.Append(ToString()); // TODO: is this correct?
+        }
     }
 }

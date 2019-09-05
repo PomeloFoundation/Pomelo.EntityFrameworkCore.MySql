@@ -32,22 +32,19 @@ namespace Pomelo.EntityFrameworkCore.TestUtilities
                 new[] { MetadataReference.CreateFromFile(assembly.Location) },
                 copyLocal,
                 new Uri(assembly.CodeBase).LocalPath);
-#elif NETCOREAPP2_0 || NETCOREAPP2_2
+#else
             var references = (from l in DependencyContext.Default.CompileLibraries
-                from r in l.ResolveReferencePaths()
-                where IOPath.GetFileNameWithoutExtension(r) == name
-                select MetadataReference.CreateFromFile(r)).ToList();
+                              from r in l.ResolveReferencePaths()
+                              where IOPath.GetFileNameWithoutExtension(r) == name
+                              select MetadataReference.CreateFromFile(r)).ToList();
             if (references.Count == 0)
             {
-                throw new InvalidOperationException(
-                    $"Assembly '{name}' not found.");
+                throw new InvalidOperationException($"Assembly '{name}' not found.");
             }
 
             return new BuildReference(
                 references,
                 copyLocal);
-#else
-#error target frameworks need to be updated.
 #endif
         }
 

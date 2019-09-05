@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {
-    public class MySqlTestStoreFactory : ITestStoreFactory
+    public class MySqlTestStoreFactory : RelationalTestStoreFactory
     {
         public static MySqlTestStoreFactory Instance { get; } = new MySqlTestStoreFactory();
         public static MySqlTestStoreFactory NoBackslashEscapesInstance { get; } = new MySqlTestStoreFactory(true);
@@ -16,13 +16,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             _noBackslashEscapes = noBackslashEscapes;
         }
 
-        public virtual TestStore Create(string storeName)
+        public override TestStore Create(string storeName)
             => MySqlTestStore.Create(storeName, noBackslashEscapes:_noBackslashEscapes);
 
-        public virtual TestStore GetOrCreate(string storeName)
+        public override TestStore GetOrCreate(string storeName)
             => MySqlTestStore.GetOrCreate(storeName, noBackslashEscapes: _noBackslashEscapes);
 
-        public IServiceCollection AddProviderServices(IServiceCollection serviceCollection)
+        public override IServiceCollection AddProviderServices(IServiceCollection serviceCollection)
             => serviceCollection.AddEntityFrameworkMySql()
                 .AddSingleton<ILoggerFactory>(new TestSqlLoggerFactory());
     }

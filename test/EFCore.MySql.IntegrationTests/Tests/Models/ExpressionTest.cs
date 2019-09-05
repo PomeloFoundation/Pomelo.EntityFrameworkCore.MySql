@@ -139,7 +139,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
             var utcOffsetStr = (utcOffset.TotalHours >= 0 ? "+" : "") + utcOffset.TotalHours.ToString("00") + ":" + utcOffset.Minutes.ToString("00");
 
             await _db.Database.OpenConnectionAsync();
-            await _db.Database.ExecuteSqlCommandAsync($"SET @@session.time_zone = {utcOffsetStr}");
+            await _db.Database.ExecuteSqlRawAsync($"SET @@session.time_zone = {utcOffsetStr}");
 
             var result = await _db.DataTypesSimple.Select(m =>
                 new {

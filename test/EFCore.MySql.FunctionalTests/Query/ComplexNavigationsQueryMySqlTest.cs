@@ -1,5 +1,7 @@
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
@@ -14,9 +16,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [ConditionalFact(Skip = "issue #571")]
-        public override void Result_operator_nav_prop_reference_optional_Average()
+        public override Task Result_operator_nav_prop_reference_optional_Average(bool isAsync)
         {
-            base.Result_operator_nav_prop_reference_optional_Average();
+            return base.Result_operator_nav_prop_reference_optional_Average(isAsync);
         }
     }
 }

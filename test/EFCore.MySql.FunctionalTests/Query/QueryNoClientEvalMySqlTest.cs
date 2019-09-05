@@ -19,7 +19,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             {
                 var customers
                     = context.Customers
-                        .FromSql(@"select * from `Customers`")
+                        .FromSqlRaw(@"select * from `Customers`")
                         .ToList();
 
                 Assert.Equal(91, customers.Count);

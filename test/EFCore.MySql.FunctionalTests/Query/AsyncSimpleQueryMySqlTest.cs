@@ -16,6 +16,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         public AsyncSimpleQueryMySqlTest(NorthwindQueryMySqlFixture<NoopModelCustomizer> fixture)
             : base(fixture)
         {
+            Fixture.TestSqlLoggerFactory.Clear();
+            //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
         public override async Task Query_backed_by_database_view()
@@ -23,9 +25,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             // Not present on SQLite
         }
 
-        public async Task Skip_when_no_order_by()
+        [Fact]
+        public async Task Skip_when_no_order_by(bool isAsync = true)
         {
-            await Assert.ThrowsAsync<Exception>(async () => await AssertQuery<Customer>(cs => cs.Skip(5).Take(10)));
+            await Assert.ThrowsAsync<Exception>(async () => await AssertQuery<Customer>(isAsync, cs => cs.Skip(5).Take(10)));
         }
 
         [Fact]
@@ -37,45 +40,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [Fact]
-        public override async Task String_Contains_Literal()
+        public async Task String_Contains_Literal(bool isAsync = true)
         {
             await AssertQuery<Customer>(
+                isAsync,
                 cs => cs.Where(c => c.ContactName.Contains("M")), // case-insensitive
                 cs => cs.Where(c => c.ContactName.Contains("M") || c.ContactName.Contains("m")), // case-sensitive
                 entryCount: 34);
-        }
-
-        [Fact]
-        public override async Task String_Contains_MethodCall()
-        {
-            await AssertQuery<Customer>(
-                cs => cs.Where(c => c.ContactName.Contains(LocalMethod1())), // case-insensitive
-                cs => cs.Where(c => c.ContactName.Contains(LocalMethod1().ToLower()) || c.ContactName.Contains(LocalMethod1().ToUpper())), // case-sensitive
-                entryCount: 34);
-        }
-
-        [ConditionalFact(Skip = "issue #571")]
-        public override Task Average_with_binary_expression()
-        {
-            return base.Average_with_binary_expression();
-        }
-
-        [ConditionalFact(Skip = "issue #571")]
-        public override Task Average_with_arg()
-        {
-            return base.Average_with_arg();
-        }
-
-        [ConditionalFact(Skip = "issue #571")]
-        public override Task Average_with_no_arg()
-        {
-            return base.Average_with_no_arg();
-        }
-
-        [ConditionalFact(Skip = "issue #571")]
-        public override Task Average_with_arg_expression()
-        {
-            return base.Average_with_arg_expression();
         }
     }
 }

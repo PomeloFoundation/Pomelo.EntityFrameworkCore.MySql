@@ -1,6 +1,8 @@
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
@@ -15,9 +17,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [ConditionalFact(Skip = "Issue #573")]
-        public override void Where_subquery_on_navigation2()
+        public override Task Where_subquery_on_navigation2(bool isAsync)
         {
-            base.Where_subquery_on_navigation2();
+            return base.Where_subquery_on_navigation2(isAsync);
         }
 
         [ConditionalFact(Skip = "Issue #573")]
@@ -27,9 +29,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [ConditionalFact(Skip = "Issue #573")]
-        public override void Where_subquery_on_navigation()
+        public override Task Where_subquery_on_navigation(bool isAsync)
         {
-            base.Where_subquery_on_navigation();
+            return base.Where_subquery_on_navigation(isAsync);
         }
     }
 }

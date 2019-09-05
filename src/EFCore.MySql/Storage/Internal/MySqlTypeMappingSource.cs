@@ -9,13 +9,14 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Newtonsoft.Json;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     public class MySqlTypeMappingSource : RelationalTypeMappingSource
     {
         // boolean
-        private readonly MySqlBoolTypeMapping _bit          = new MySqlBoolTypeMapping();
+        private readonly MySqlBoolTypeMapping _bit          = new MySqlBoolTypeMapping("tinyint(1)", DbType.Boolean);
 
         // integers
         private readonly SByteTypeMapping _tinyint          = new SByteTypeMapping("tinyint", DbType.SByte);
@@ -28,9 +29,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 	    private readonly ULongTypeMapping _ubigint          = new ULongTypeMapping("bigint unsigned", DbType.UInt64);
 
 	    // decimals
-	    private readonly MySqlDecimalTypeMapping _decimal   = new MySqlDecimalTypeMapping("decimal(65, 30)", 65, 30);
-	    private readonly MySqlDoubleTypeMapping _double     = new MySqlDoubleTypeMapping();
-        private readonly MySqlFloatTypeMapping _float       = new MySqlFloatTypeMapping();
+	    private readonly MySqlDecimalTypeMapping _decimal   = new MySqlDecimalTypeMapping("decimal(65, 30)", precision: 65, scale: 30);
+	    private readonly MySqlDoubleTypeMapping _double     = new MySqlDoubleTypeMapping("double", DbType.Double);
+        private readonly MySqlFloatTypeMapping _float       = new MySqlFloatTypeMapping("float");
 
 	    // binary
 	    private readonly RelationalTypeMapping _binary           = new MySqlByteArrayTypeMapping(fixedLength: true);
@@ -80,11 +81,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private readonly MySqlTimeSpanTypeMapping _time                   = new MySqlTimeSpanTypeMapping("time");
 
         private readonly RelationalTypeMapping _binaryRowVersion =
-            new MySqlDateTimeTypeMapping("timestamp",
-                new BytesToDateTimeConverter(), new ByteArrayComparer());
+            new MySqlDateTimeTypeMapping("timestamp");
         private readonly RelationalTypeMapping _binaryRowVersion6 =
-            new MySqlDateTimeTypeMapping("timestamp(6)",
-                new BytesToDateTimeConverter(), new ByteArrayComparer());
+            new MySqlDateTimeTypeMapping("timestamp(6)");
 
         // guid
 	    private readonly GuidTypeMapping _uniqueidentifier   = new GuidTypeMapping("char(36)", DbType.Guid);
