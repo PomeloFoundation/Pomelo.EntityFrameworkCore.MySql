@@ -25,7 +25,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
         protected override string TypedTrueLiteral => "TRUE";
         protected override string TypedFalseLiteral => "FALSE";
 
-        private readonly bool _noBackslashEscapes;
+        private readonly IMySqlOptions _options;
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -37,7 +37,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
                 IMySqlOptions options)
             : base(dependencies, selectExpression)
         {
-            _noBackslashEscapes = options?.NoBackslashEscapes ?? false;
+            _options = options;
         }
 
         protected override void GenerateTop(SelectExpression selectExpression)
@@ -131,14 +131,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
 
         protected override Expression VisitParameter(ParameterExpression parameterExpression)
         {
-            if (_noBackslashEscapes)
+            if (_options?.NoBackslashEscapes ?? false)
             {
                 //instead of having MySqlConnector replace parameter placeholders with escaped values
                 //(causing "parameterized" queries to fail with NO_BACKSLASH_ESCAPES),
                 //directly insert the value with only replacing ' with ''
                 Check.NotNull(parameterExpression, nameof(parameterExpression));
-                object value;
-                var isRegistered = ParameterValues.TryGetValue(parameterExpression.Name, out value);
+                var isRegistered = ParameterValues.TryGetValue(parameterExpression.Name, out var value);
                 if (isRegistered && value is string)
                 {
                     _isParameterReplaced = true;
@@ -160,30 +159,36 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
             return regexpExpression;
         }
 
-        private static readonly Dictionary<string, string[]> CastMappings = new Dictionary<string, string[]>
+        private static readonly Dictionary<string, string[]> _castMappings = new Dictionary<string, string[]>
         {
-            { "signed", new []{ "tinyint", "smallint", "mediumint", "int", "bigint" }},
-            { "decimal", new []{ "decimal", "double", "float" } },
+            { "signed", new []{ "tinyint", "smallint", "mediumint", "int", "bigint", "bit" }},
+            { "decimal(65,30)", new []{ "decimal" } },
+            { "double", new []{ "double" } },
+            { "float", new []{ "float" } },
             { "binary", new []{ "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob" } },
             { "datetime", new []{ "datetime", "timestamp" } },
+            { "date", new []{ "date" } },
             { "time", new []{ "time" } },
             { "json", new []{ "json" } },
+            { "char", new []{ "char", "varchar", "text", "tinytext", "mediumtext", "longtext" } },
+            { "nchar", new []{ "nchar", "nvarchar" } },
         };
 
         public override Expression VisitExplicitCast(ExplicitCastExpression explicitCastExpression)
         {
-            Sql.Append("CAST(");
-            Visit(explicitCastExpression.Operand);
-            Sql.Append(" AS ");
             var typeMapping = Dependencies.TypeMappingSource.FindMapping(explicitCastExpression.Type);
             if (typeMapping == null)
             {
                 throw new InvalidOperationException($"Cannot cast to type '{explicitCastExpression.Type.Name}'");
             }
 
+            //
+            // TODO: Build better mappings with TypeMappingSource.
+            //
+
             var storeTypeLower = typeMapping.StoreType.ToLower();
             string castMapping = null;
-            foreach (var kvp in CastMappings)
+            foreach (var kvp in _castMappings)
             {
 
                 foreach (var storeType in kvp.Value)
@@ -199,21 +204,55 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
                     break;
                 }
             }
+
+            if (castMapping == null)
+            {
+                throw new InvalidOperationException($"Cannot cast from type '{typeMapping.StoreType}'");
+            }
+
             if (castMapping == "signed" && storeTypeLower.Contains("unsigned"))
             {
                 castMapping = "unsigned";
             }
-            else if (castMapping == null)
+
+            // FLOAT and DOUBLE are supported by CAST() as of MySQL 8.0.17.
+            // For server versions before that, a workaround applied, that CAST() to a DECIMAL,
+            // that is then added to 0e0, which results in a DOUBLE.
+            // REF: https://stackoverflow.com/a/32991084/2618319
+
+            var useDecimalToDoubleFloatWorkaround = false;
+
+            if (castMapping.StartsWith("double") && (!_options?.ServerVersion.SupportsDoubleCast ?? false))
             {
-                castMapping = "char";
+                useDecimalToDoubleFloatWorkaround = true;
+                castMapping = "decimal(65,30)";
             }
 
+            if (castMapping.StartsWith("float") && (!_options?.ServerVersion.SupportsFloatCast ?? false))
+            {
+                useDecimalToDoubleFloatWorkaround = true;
+                castMapping = "decimal(65,30)";
+            }
+
+            if (useDecimalToDoubleFloatWorkaround)
+            {
+                Sql.Append("(");
+            }
+
+            Sql.Append("CAST(");
+            Visit(explicitCastExpression.Operand);
+            Sql.Append(" AS ");
             Sql.Append(castMapping);
             Sql.Append(")");
 
+            if (useDecimalToDoubleFloatWorkaround)
+            {
+                Sql.Append(" + 0e0)");
+            }
+
             return explicitCastExpression;
         }
-
+        
         public Expression VisitMySqlComplexFunctionArgumentExpression(
             [NotNull] MySqlComplexFunctionArgumentExpression mySqlComplexFunctionArgumentExpression)
         {
