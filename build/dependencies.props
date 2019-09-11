@@ -8,6 +8,7 @@
     <MicrosoftEntityFrameworkCoreRelationalVersion>2.2.6</MicrosoftEntityFrameworkCoreRelationalVersion>
     <MySqlConnectorVersion>0.51.1</MySqlConnectorVersion>
     <PomeloJsonObjectVersion>2.2.0</PomeloJsonObjectVersion>
+    <CastleCoreVersion>4.1.0</CastleCoreVersion>
     <!-- Shared Test Dependencies -->
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <XunitAssertPackageVersion>2.3.1</XunitAssertPackageVersion>
