@@ -15,11 +15,13 @@ using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators;
+using Microsoft.EntityFrameworkCore.Query.ExpressionVisitors;
 using Microsoft.EntityFrameworkCore.Query.Sql;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
+using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection
@@ -49,6 +51,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<IMemberTranslator, MySqlCompositeMemberTranslator>()
                 .TryAdd<ICompositeMethodCallTranslator, MySqlCompositeMethodCallTranslator>()
                 .TryAdd<IQuerySqlGeneratorFactory, MySqlQuerySqlGeneratorFactory>()
+                .TryAdd<ISqlTranslatingExpressionVisitorFactory, MySqlSqlTranslatingExpressionVisitorFactory>()
                 .TryAdd<ISingletonOptions, IMySqlOptions>(p => p.GetService<IMySqlOptions>())
                 .TryAddProviderSpecificServices(b => b
                     .TryAddSingleton<IMySqlOptions, MySqlOptions>()
