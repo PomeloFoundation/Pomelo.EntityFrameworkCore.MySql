@@ -20,8 +20,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         private static readonly Dictionary<string, string> _typeMapping = new Dictionary<string, string>
         {
             [nameof(Convert.ToByte)] = "signed",
-            [nameof(Convert.ToDecimal)] = "decimal",
-            [nameof(Convert.ToDouble)] = "decimal",
+            [nameof(Convert.ToDecimal)] = "decimal(65,30)",
+            [nameof(Convert.ToDouble)] = "decimal(65,30)",
             [nameof(Convert.ToInt16)] = "signed",
             [nameof(Convert.ToInt32)] = "signed",
             [nameof(Convert.ToInt64)] = "signed",
