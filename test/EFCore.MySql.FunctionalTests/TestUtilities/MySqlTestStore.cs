@@ -12,7 +12,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {
     public class MySqlTestStore : RelationalTestStore
     {
-        public const int CommandTimeout = 30;
+        private const int DefaultCommandTimeout = 600;
+
         private readonly bool _useConnectionString;
         private readonly bool _noBackslashEscapes;
 
@@ -38,16 +39,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             _useConnectionString = useConnectionString;
             _noBackslashEscapes = noBackslashEscapes;
 
-            ConnectionString = new MySqlConnectionStringBuilder(LazyConfig.Value["Data:ConnectionString"])
+            ConnectionString = new MySqlConnectionStringBuilder(_lazyConfig.Value["Data:ConnectionString"])
             {
-                Database = name
+                Database = name,
+                DefaultCommandTimeout = (uint)GetCommandTimeout(),
             }.ToString();
 
             Connection = new MySqlConnection(ConnectionString);
         }
 
-        private static readonly Lazy<IConfigurationRoot> LazyConfig = new Lazy<IConfigurationRoot>(() => new ConfigurationBuilder()
-            .SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
+        private static int GetCommandTimeout() => _lazyConfig.Value.GetValue<int>("Data:CommandTimeout", DefaultCommandTimeout);
+
+        private static readonly Lazy<IConfigurationRoot> _lazyConfig = new Lazy<IConfigurationRoot>(() => new ConfigurationBuilder()
             .SetBasePath(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath))
             .AddJsonFile("config.json")
             .Build());
@@ -59,7 +62,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 
         public static void AddOptions(MySqlDbContextOptionsBuilder builder)
         {
-            builder.CommandTimeout(CommandTimeout).ServerVersion(LazyConfig.Value["Data:ServerVersion"]);
+            builder
+                .CommandTimeout(GetCommandTimeout())
+                .ServerVersion(_lazyConfig.Value["Data:ServerVersion"]);
         }
 
         public static void AddOptions(MySqlDbContextOptionsBuilder builder, bool noBackslashEscapes)
@@ -115,7 +120,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             var command = connection.CreateCommand();
 
             command.CommandText = commandText;
-            command.CommandTimeout = CommandTimeout;
+            command.CommandTimeout = GetCommandTimeout();
 
             for (var i = 0; i < parameters.Length; i++)
             {
