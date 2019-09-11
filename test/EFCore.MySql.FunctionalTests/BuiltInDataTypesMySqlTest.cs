@@ -90,7 +90,7 @@ WHERE `e`.`TimeSpanAsTime` = '00:01:02'",
 
                 Assert.Empty(results);
                 Assert.Equal(
-                    @"@__timeSpan_0='02:01:00' (Size = 3)
+                    @"@__timeSpan_0='02:01:00'
 
 SELECT `e`.`Int`
 FROM `MappedNullableDataTypes` AS `e`
@@ -449,7 +449,7 @@ WHERE `e`.`TimeSpanAsTime` = @__timeSpan_0",
 @p18='83.3'
 @p19='Value4' (Nullable = false) (Size = 20)
 @p20='Value2' (Nullable = false) (Size = 20) (DbType = AnsiString)
-@p21='a8f9f951-145f-4545-ac60-b92ff57ada47' (Size = 36)
+@p21='a8f9f951-145f-4545-ac60-b92ff57ada47'
 @p22='78'
 @p23='-128'
 @p24='128'
@@ -600,8 +600,8 @@ WHERE `e`.`TimeSpanAsTime` = @__timeSpan_0",
 @p9='A' (Size = 1) (DbType = AnsiString)
 @p10='2015-01-02T10:11:12' (Nullable = true) (DbType = Date)
 @p11='2019-01-02T14:11:12' (Nullable = true) (DbType = DateTime)
-@p12='2016-01-02T11:11:12.0000000+00:00' (Nullable = true) (Size = 6)
-@p13='2017-01-02T12:11:12.0000000+06:00' (Nullable = true) (Size = 6)
+@p12='2016-01-02T11:11:12.0000000+00:00' (Nullable = true)
+@p13='2017-01-02T12:11:12.0000000+06:00' (Nullable = true)
 @p14='81.1' (Nullable = true)
 @p15='82.2' (Nullable = true)
 @p16='85.5' (Nullable = true)
@@ -609,7 +609,7 @@ WHERE `e`.`TimeSpanAsTime` = @__timeSpan_0",
 @p18='Value4' (Size = 20)
 @p19='Value2' (Size = 20) (DbType = AnsiString)
 @p20='84.4' (Nullable = true)
-@p21='a8f9f951-145f-4545-ac60-b92ff57ada47' (Nullable = true) (Size = 36)
+@p21='a8f9f951-145f-4545-ac60-b92ff57ada47' (Nullable = true)
 @p22='78' (Nullable = true)
 @p23='-128' (Nullable = true)
 @p24='-128' (Nullable = true)
@@ -622,7 +622,7 @@ WHERE `e`.`TimeSpanAsTime` = @__timeSpan_0",
 @p31='Gumball Rules!' (Size = 55) (DbType = AnsiString)
 @p32='help' (Size = 4000)
 @p33='strong' (Size = 55) (DbType = AnsiString)
-@p34='11:15:12' (Nullable = true) (Size = 3)
+@p34='11:15:12' (Nullable = true)
 @p35='65535' (Nullable = true)
 @p36='-1' (Nullable = true)
 @p37='4294967295' (Nullable = true)
@@ -755,8 +755,8 @@ WHERE `e`.`TimeSpanAsTime` = @__timeSpan_0",
 @p9='' (Size = 1) (DbType = AnsiString)
 @p10='' (DbType = Date)
 @p11='' (DbType = DateTime)
-@p12='' (Size = 6) (DbType = DateTimeOffset)
-@p13='' (Size = 6) (DbType = DateTimeOffset)
+@p12='' (DbType = DateTimeOffset)
+@p13='' (DbType = DateTimeOffset)
 @p14='' (DbType = Decimal)
 @p15='' (DbType = Decimal)
 @p16='' (DbType = Double)
@@ -764,7 +764,7 @@ WHERE `e`.`TimeSpanAsTime` = @__timeSpan_0",
 @p18='' (Size = 20)
 @p19='' (Size = 20) (DbType = AnsiString)
 @p20='' (DbType = Single)
-@p21='' (Size = 36) (DbType = Guid)
+@p21='' (DbType = Guid)
 @p22='' (DbType = Int64)
 @p23='' (DbType = Int16)
 @p24='' (DbType = SByte)
@@ -777,7 +777,7 @@ WHERE `e`.`TimeSpanAsTime` = @__timeSpan_0",
 @p31='' (Size = 55) (DbType = AnsiString)
 @p32='' (Size = 4000)
 @p33='' (Size = 55) (DbType = AnsiString)
-@p34='' (Size = 3) (DbType = Time)
+@p34='' (DbType = Time)
 @p35='' (DbType = Int32)
 @p36='' (DbType = Int16)
 @p37='' (DbType = Int64)
@@ -1113,7 +1113,7 @@ unicodedatatypes.StringDefault ---> [nullable longtext] [MaxLength = -1]
 unicodedatatypes.StringUnicode ---> [nullable longtext] [MaxLength = -1]
 ";
 
-            Assert.Equal(expected, actual, ignoreLineEndingDifferences: true);
+            Assert.Equal(expected, actual, ignoreLineEndingDifferences: true, ignoreCase: true);
         }
 
         public static string QueryForColumnTypes(DbContext context)

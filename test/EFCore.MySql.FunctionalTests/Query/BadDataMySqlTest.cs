@@ -384,6 +384,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
         public class BadDataMySqlFixture : NorthwindQueryMySqlFixture<NoopModelCustomizer>
         {
+            public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
+                => base.AddOptions(builder)
+                    .EnableDetailedErrors();
+
             protected override IServiceCollection AddServices(IServiceCollection serviceCollection)
                 => base.AddServices(serviceCollection)
                     .AddSingleton<IRelationalCommandBuilderFactory, BadDataCommandBuilderFactory>();
