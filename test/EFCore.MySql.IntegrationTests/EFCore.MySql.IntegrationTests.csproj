@@ -17,6 +17,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.EntityFrameworkCore">
+      <HintPath>..\..\..\EntityFrameworkCore-2.2.6\src\EFCore.Relational\bin\Debug\netstandard2.0\Microsoft.EntityFrameworkCore.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.EntityFrameworkCore.Abstractions">
+      <HintPath>..\..\..\EntityFrameworkCore-2.2.6\src\EFCore.Relational\bin\Debug\netstandard2.0\Microsoft.EntityFrameworkCore.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.EntityFrameworkCore.Analyzers">
+      <HintPath>..\..\..\EntityFrameworkCore-2.2.6\src\EFCore.Relational\bin\Debug\netstandard2.0\Microsoft.EntityFrameworkCore.Analyzers.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.EntityFrameworkCore.Relational">
+      <HintPath>..\..\..\EntityFrameworkCore-2.2.6\src\EFCore.Relational\bin\Debug\netstandard2.0\Microsoft.EntityFrameworkCore.Relational.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\EFCore.MySql\EFCore.MySql.csproj" />
   </ItemGroup>
 
@@ -26,22 +41,10 @@
   </ItemGroup>
 
   <Target Name="CopyDirsAfterBuild" AfterTargets="Build">
-    <Copy 
-      SourceFiles="@(AppConfig)" 
-      DestinationFolder="$(OutDir)\%(RecursiveDir)" 
-      SkipUnchangedFiles="true" 
-      OverwriteReadOnlyFiles="true" 
-      Retries="3"
-      RetryDelayMilliseconds="300"/>
+    <Copy SourceFiles="@(AppConfig)" DestinationFolder="$(OutDir)\%(RecursiveDir)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" Retries="3" RetryDelayMilliseconds="300" />
   </Target>
   <Target Name="CopyDirsAfterPublish" AfterTargets="Publish">
-    <Copy 
-      SourceFiles="@(AppConfig)" 
-      DestinationFolder="$(PublishDir)\%(RecursiveDir)" 
-      SkipUnchangedFiles="true" 
-      OverwriteReadOnlyFiles="true" 
-      Retries="3"
-      RetryDelayMilliseconds="300"/>
+    <Copy SourceFiles="@(AppConfig)" DestinationFolder="$(PublishDir)\%(RecursiveDir)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" Retries="3" RetryDelayMilliseconds="300" />
   </Target>
 
 </Project>
