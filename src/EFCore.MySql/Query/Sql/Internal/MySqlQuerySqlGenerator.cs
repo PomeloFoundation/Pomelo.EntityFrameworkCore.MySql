@@ -117,7 +117,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
                 Sql.Append("CONCAT(");
                 Visit(binaryExpression.Left);
                 Sql.Append(", ");
-                var exp = Visit(binaryExpression.Right);
+                Visit(binaryExpression.Right);
                 Sql.Append(")");
 
                 return binaryExpression;
@@ -288,6 +288,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
             Sql.Append($" USING {mySqlCollateExpression.Charset}) COLLATE {mySqlCollateExpression.Collation}");
 
             return mySqlCollateExpression;
+        }
+
+        public Expression VisitMySqlBinaryExpression(
+            [NotNull] MySqlBinaryExpression mySqlBinaryExpression)
+        {
+            Check.NotNull(mySqlBinaryExpression, nameof(mySqlBinaryExpression));
+
+            Sql.Append("BINARY ");
+
+            Visit(mySqlBinaryExpression.ValueExpression);
+
+            return mySqlBinaryExpression;
         }
     }
 }
