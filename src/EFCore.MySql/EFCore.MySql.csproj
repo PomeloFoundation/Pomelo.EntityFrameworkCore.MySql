@@ -20,6 +20,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Castle.Core" Version="4.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Properties\MySqlStrings.Designer.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>MySqlStrings.Designer.cs</LastGenOutput>

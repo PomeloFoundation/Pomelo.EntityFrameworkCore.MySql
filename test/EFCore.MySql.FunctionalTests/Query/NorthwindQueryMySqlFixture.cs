@@ -3,8 +3,10 @@ using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -13,6 +15,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
     {
         // TODO: Consider using an existing database/initialize from script
         protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
+
+        public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
+            => base.AddOptions(builder)
+                .EnableDetailedErrors();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
         {
@@ -52,6 +58,11 @@ BEGIN
   AND `od`.`ProductId` = `p`.`ProductId`
   GROUP BY `ProductName`;
 END;");
+            context.Database.ExecuteSqlCommand(@"drop view if exists `Alphabetical list of products`;
+create view `Alphabetical list of products` AS
+SELECT `p`.`ProductId`, `p`.`ProductName`, 'Food' as `CategoryName`
+FROM `Products` `p`
+WHERE `p`.`Discontinued` = 0");
         }
     }
 }
