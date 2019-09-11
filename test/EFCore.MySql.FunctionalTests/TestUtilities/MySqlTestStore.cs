@@ -16,6 +16,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         private readonly bool _useConnectionString;
         private readonly bool _noBackslashEscapes;
 
+        protected override string OpenDelimeter => "`";
+        protected override string CloseDelimeter => "`";
+
         public static MySqlTestStore GetOrCreate(string name, bool useConnectionString = false, bool noBackslashEscapes = false)
             => new MySqlTestStore(name, useConnectionString: useConnectionString, noBackslashEscapes: noBackslashEscapes);
 
@@ -28,6 +31,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         public static MySqlTestStore CreateInitialized(string name)
             => new MySqlTestStore(name, shared: false).InitializeMySql(null, (Func<DbContext>)null, null);
 
+        // ReSharper disable VirtualMemberCallInConstructor
         private MySqlTestStore(string name, bool useConnectionString = false, bool shared = true, bool noBackslashEscapes = false)
             : base(name, shared)
         {
