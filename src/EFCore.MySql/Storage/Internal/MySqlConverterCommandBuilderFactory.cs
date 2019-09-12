@@ -5,146 +5,115 @@ using System.Data.Common;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
+    //
+    // TODO: Remove entire class hierarchy once MySqlConnector adds additinal type casting for us.
+    //
+
     // ReSharper disable once ClassNeverInstantiated.Local
     public class MySqlConverterCommandBuilderFactory : RelationalCommandBuilderFactory
     {
         public MySqlConverterCommandBuilderFactory(
-            IDiagnosticsLogger<DbLoggerCategory.Database.Command> logger,
-            IRelationalTypeMappingSource typeMappingSource)
-            : base(logger, typeMappingSource)
+            [NotNull] RelationalCommandBuilderDependencies dependencies)
+            : base(dependencies)
         {
         }
 
-        protected override IRelationalCommandBuilder CreateCore(
-            IDiagnosticsLogger<DbLoggerCategory.Database.Command> logger,
-            IRelationalTypeMappingSource relationalTypeMappingSource)
-            => new MySqlConverterRelationalCommandBuilder(
-                logger, relationalTypeMappingSource);
+        public override IRelationalCommandBuilder Create()
+            => new MySqlConverterRelationalCommandBuilder(Dependencies);
 
         private class MySqlConverterRelationalCommandBuilder : RelationalCommandBuilder
         {
             public MySqlConverterRelationalCommandBuilder(
-                IDiagnosticsLogger<DbLoggerCategory.Database.Command> logger,
-                IRelationalTypeMappingSource typeMappingSource)
-                : base(logger, typeMappingSource)
+                [NotNull] RelationalCommandBuilderDependencies dependencies)
+                : base(dependencies)
             {
             }
 
-            protected override IRelationalCommand BuildCore(
-                IDiagnosticsLogger<DbLoggerCategory.Database.Command> logger,
-                string commandText,
-                IReadOnlyList<IRelationalParameter> parameters)
-                => new MySqlConverterRelationalCommand(logger, commandText, parameters);
+            public override IRelationalCommand Build()
+                => new MySqlConverterRelationalCommand(Dependencies, ToString(), Parameters);
 
             private class MySqlConverterRelationalCommand : RelationalCommand
             {
-                public MySqlConverterRelationalCommand(
-                    IDiagnosticsLogger<DbLoggerCategory.Database.Command> logger,
-                    string commandText,
-                    IReadOnlyList<IRelationalParameter> parameters)
-                    : base(logger, commandText, parameters)
+                public MySqlConverterRelationalCommand([NotNull] RelationalCommandBuilderDependencies dependencies, [NotNull] string commandText, [NotNull] IReadOnlyList<IRelationalParameter> parameters) : base(dependencies, commandText, parameters)
                 {
                 }
 
-                // TODO: Copy and paste base code again in 3.0.
-                //       Then replace "RelationalDataReader" with "MySqlConverterRelationalDataReader".
-                // TODO: Remove entire method in 3.1.
-                //       Replace with overridden implementation of "CreateRelationalDataReader".
+                // INFO: The entire method is copy paste inherited.
+                //       "RelationalDataReader" got replaced with "MySqlConverterRelationalDataReader".
+                //       The "CleanupCommand" call got copy paste inherited and inlined as well.
                 /// <summary>
                 /// Uses the same code as in it's base class, except for returning a
                 /// ConverterRelationalDataReader instead of a RelationalDataReader.
                 /// </summary>
-                protected override object Execute(
-                    IRelationalConnection connection,
-                    DbCommandMethod executeMethod,
-                    IReadOnlyDictionary<string, object> parameterValues)
+                public override RelationalDataReader ExecuteReader(RelationalCommandParameterObject parameterObject)
                 {
-                    if (connection == null)
-                    {
-                        throw new ArgumentNullException(nameof(connection));
-                    }
+                    var (connection, context, logger) = (parameterObject.Connection, parameterObject.Context, parameterObject.Logger);
 
-                    var dbCommand = CreateCommand(connection, parameterValues);
+                    var commandId = Guid.NewGuid();
+                    var command = CreateCommand(parameterObject, commandId, DbCommandMethod.ExecuteReader);
 
                     connection.Open();
 
-                    var commandId = Guid.NewGuid();
-
                     var startTime = DateTimeOffset.UtcNow;
                     var stopwatch = Stopwatch.StartNew();
 
-                    Logger.CommandExecuting(
-                        dbCommand,
-                        executeMethod,
-                        commandId,
-                        connection.ConnectionId,
-                        async: false,
-                        startTime: startTime);
-
-                    object result;
                     var readerOpen = false;
                     try
                     {
-                        switch (executeMethod)
+                        var interceptionResult = logger?.CommandReaderExecuting(
+                                                     connection,
+                                                     command,
+                                                     context,
+                                                     commandId,
+                                                     connection.ConnectionId,
+                                                     startTime)
+                                                 ?? default;
+
+                        var reader = interceptionResult.HasResult
+                            ? interceptionResult.Result
+                            : command.ExecuteReader();
+
+                        if (logger != null)
                         {
-                            case DbCommandMethod.ExecuteNonQuery:
-                                {
-                                    result = dbCommand.ExecuteNonQuery();
-
-                                    break;
-                                }
-                            case DbCommandMethod.ExecuteScalar:
-                                {
-                                    result = dbCommand.ExecuteScalar();
-
-                                    break;
-                                }
-                            case DbCommandMethod.ExecuteReader:
-                                {
-                                    result
-                                        = new MySqlConverterRelationalDataReader(
-                                            connection,
-                                            dbCommand,
-                                            dbCommand.ExecuteReader(),
-                                            commandId,
-                                            Logger);
-                                    readerOpen = true;
-
-                                    break;
-                                }
-                            default:
-                                {
-                                    throw new NotSupportedException();
-                                }
+                            reader = logger.CommandReaderExecuted(
+                                connection,
+                                command,
+                                context,
+                                commandId,
+                                connection.ConnectionId,
+                                reader,
+                                startTime,
+                                stopwatch.Elapsed);
                         }
 
-                        Logger.CommandExecuted(
-                            dbCommand,
-                            executeMethod,
+                        var result = new MySqlConverterRelationalDataReader(
+                            connection,
+                            command,
+                            reader,
                             commandId,
-                            connection.ConnectionId,
-                            result,
-                            false,
-                            startTime,
-                            stopwatch.Elapsed);
+                            logger);
+
+                        readerOpen = true;
+
+                        return result;
                     }
                     catch (Exception exception)
                     {
-                        Logger.CommandError(
-                            dbCommand,
-                            executeMethod,
+                        logger?.CommandError(
+                            connection,
+                            command,
+                            context,
+                            DbCommandMethod.ExecuteReader,
                             commandId,
                             connection.ConnectionId,
                             exception,
-                            false,
                             startTime,
                             stopwatch.Elapsed);
 
@@ -154,108 +123,96 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     {
                         if (!readerOpen)
                         {
-                            dbCommand.Parameters.Clear();
-                            dbCommand.Dispose();
+                            // CleanupCommand is private static, so another copy paste inheritance here.
+                            command.Parameters.Clear();
+                            command.Dispose();
                             connection.Close();
                         }
                     }
-
-                    return result;
                 }
 
-                // TODO: Copy and paste base code again in 3.0.
-                //       Then replace "RelationalDataReader" with "MySqlConverterRelationalDataReader".
+                // INFO: The entire method is copy paste inherited.
+                //       "RelationalDataReader" got replaced with "MySqlConverterRelationalDataReader".
+                //       The "CleanupCommandAsync" call got copy paste inherited and inlined as well.
                 // TODO: Remove entire method in 3.1.
                 //       Replace with overridden implementation of "CreateRelationalDataReader".
                 /// <summary>
                 /// Uses the same code as in it's base class, except for returning a
                 /// ConverterRelationalDataReader instead of a RelationalDataReader.
                 /// </summary>
-                protected override async Task<object> ExecuteAsync(
-                    IRelationalConnection connection,
-                    DbCommandMethod executeMethod,
-                    IReadOnlyDictionary<string, object> parameterValues,
+                public override async Task<RelationalDataReader> ExecuteReaderAsync(
+                    RelationalCommandParameterObject parameterObject,
                     CancellationToken cancellationToken = default)
                 {
-                    if (connection == null)
-                    {
-                        throw new ArgumentNullException(nameof(connection));
-                    }
-
-                    var dbCommand = CreateCommand(connection, parameterValues);
-
-                    await connection.OpenAsync(cancellationToken);
+                    var (connection, context, logger) = (parameterObject.Connection, parameterObject.Context, parameterObject.Logger);
 
                     var commandId = Guid.NewGuid();
+                    var command = CreateCommand(parameterObject, commandId, DbCommandMethod.ExecuteReader);
+
+                    await connection.OpenAsync(cancellationToken);
 
                     var startTime = DateTimeOffset.UtcNow;
                     var stopwatch = Stopwatch.StartNew();
 
-                    Logger.CommandExecuting(
-                        dbCommand,
-                        executeMethod,
-                        commandId,
-                        connection.ConnectionId,
-                        async: true,
-                        startTime: startTime);
-
-                    object result;
                     var readerOpen = false;
                     try
                     {
-                        switch (executeMethod)
+                        var interceptionResult = logger == null
+                            ? default
+                            : await logger.CommandReaderExecutingAsync(
+                                connection,
+                                command,
+                                context,
+                                commandId,
+                                connection.ConnectionId,
+                                startTime,
+                                cancellationToken);
+
+                        var reader = interceptionResult.HasResult
+                            ? interceptionResult.Result
+                            : await command.ExecuteReaderAsync(cancellationToken);
+
+                        if (logger != null)
                         {
-                            case DbCommandMethod.ExecuteNonQuery:
-                                {
-                                    result = await dbCommand.ExecuteNonQueryAsync(cancellationToken);
-
-                                    break;
-                                }
-                            case DbCommandMethod.ExecuteScalar:
-                                {
-                                    result = await dbCommand.ExecuteScalarAsync(cancellationToken);
-
-                                    break;
-                                }
-                            case DbCommandMethod.ExecuteReader:
-                                {
-                                    result = new MySqlConverterRelationalDataReader(
-                                        connection,
-                                        dbCommand,
-                                        await dbCommand.ExecuteReaderAsync(cancellationToken),
-                                        commandId,
-                                        Logger);
-                                    readerOpen = true;
-
-                                    break;
-                                }
-                            default:
-                                {
-                                    throw new NotSupportedException();
-                                }
+                            reader = await logger.CommandReaderExecutedAsync(
+                                connection,
+                                command,
+                                context,
+                                commandId,
+                                connection.ConnectionId,
+                                reader,
+                                startTime,
+                                stopwatch.Elapsed,
+                                cancellationToken);
                         }
 
-                        Logger.CommandExecuted(
-                            dbCommand,
-                            executeMethod,
+                        var result = new MySqlConverterRelationalDataReader(
+                            connection,
+                            command,
+                            reader,
                             commandId,
-                            connection.ConnectionId,
-                            result,
-                            true,
-                            startTime,
-                            stopwatch.Elapsed);
+                            logger);
+
+                        readerOpen = true;
+
+                        return result;
                     }
                     catch (Exception exception)
                     {
-                        Logger.CommandError(
-                            dbCommand,
-                            executeMethod,
-                            commandId,
-                            connection.ConnectionId,
-                            exception,
-                            true,
-                            startTime,
-                            stopwatch.Elapsed);
+                        if (logger != null)
+                        {
+                            await logger.CommandErrorAsync(
+                                connection,
+                                command,
+                                context,
+                                DbCommandMethod.ExecuteReader,
+                                commandId,
+                                connection.ConnectionId,
+                                exception,
+                                startTime,
+                                stopwatch.Elapsed,
+                                cancellationToken);
+                        }
 
                         throw;
                     }
@@ -263,16 +220,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     {
                         if (!readerOpen)
                         {
-                            dbCommand.Parameters.Clear();
-                            dbCommand.Dispose();
-                            connection.Close();
+                            // CleanupCommandAsync is private static, so another copy paste inheritance here.
+                            command.Parameters.Clear();
+                            await command.DisposeAsync();
+                            await connection.CloseAsync();
                         }
                     }
-
-                    return result;
                 }
 
-                // TODO: The test suit needs to be extended, to fully ensure expected CAST() behavior.
                 /// <summary>
                 /// This class can be used to inject behavior into the default DataReader.
                 /// The current implementation might not cover all possible cases yet, but just resolves
