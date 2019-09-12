@@ -1,10 +1,8 @@
-﻿using System.Linq.Expressions;
-using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Internal;
+﻿using System.Collections.Generic;
+using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.EntityFrameworkCore.Query.Expressions;
-using Microsoft.EntityFrameworkCore.Query.ExpressionVisitors;
-using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
@@ -12,19 +10,41 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public class MySqlSqlTranslatingExpressionVisitor : SqlTranslatingExpressionVisitor
+    public class MySqlSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExpressionVisitor
     {
+        private static readonly HashSet<string> _dateTimeDataTypes
+            = new HashSet<string>
+            {
+                "date",
+                "datetime(6)",
+                "datetime",
+                "timestamp(6)",
+                "datetime(6)",
+                "datetime",
+                "timestamp(6)",
+                "time(6)",
+                "time",
+            };
+
+        private static readonly HashSet<ExpressionType> _arithmaticOperatorTypes
+            = new HashSet<ExpressionType>
+            {
+                ExpressionType.Add,
+                ExpressionType.Subtract,
+                ExpressionType.Multiply,
+                ExpressionType.Divide,
+                ExpressionType.Modulo,
+            };
+
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public MySqlSqlTranslatingExpressionVisitor(
-            [NotNull] SqlTranslatingExpressionVisitorDependencies dependencies,
-            [NotNull] RelationalQueryModelVisitor queryModelVisitor,
-            [NotNull] SelectExpression targetSelectExpression = null,
-            [NotNull] Expression topLevelPredicate = null,
-            bool inProjection = false)
-            : base(dependencies, queryModelVisitor, targetSelectExpression, topLevelPredicate, inProjection)
+            RelationalSqlTranslatingExpressionVisitorDependencies dependencies,
+            IModel model,
+            QueryableMethodTranslatingExpressionVisitor queryableMethodTranslatingExpressionVisitor)
+            : base(dependencies, model, queryableMethodTranslatingExpressionVisitor)
         {
         }
 
@@ -34,47 +54,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         /// </summary>
         protected override Expression VisitBinary(BinaryExpression binaryExpression)
         {
-            var visitedExpression = base.VisitBinary(binaryExpression);
+            var visitedExpression = (SqlExpression)base.VisitBinary(binaryExpression);
 
             if (visitedExpression == null)
             {
                 return null;
             }
 
-            // Returning null forces client projection.
-            switch (visitedExpression.NodeType)
-            {
-                case ExpressionType.Add:
-                case ExpressionType.Subtract:
-                case ExpressionType.Multiply:
-                case ExpressionType.Divide:
-                case ExpressionType.Modulo:
-                    return IsDateTimeBasedOperation(visitedExpression)
-                        ? null
-                        : visitedExpression;
-            }
-
-            return visitedExpression;
+            return visitedExpression is SqlBinaryExpression sqlBinary
+                   && _arithmaticOperatorTypes.Contains(sqlBinary.OperatorType)
+                   && (_dateTimeDataTypes.Contains(GetProviderType(sqlBinary.Left))
+                       || _dateTimeDataTypes.Contains(GetProviderType(sqlBinary.Right)))
+                ? null
+                : visitedExpression;
         }
 
-        private static bool IsDateTimeBasedOperation(Expression expression)
+        private static string GetProviderType(SqlExpression expression)
         {
-            if (expression is BinaryExpression binaryExpression)
-            {
-                var typeMapping = InferTypeMappingFromColumn(binaryExpression.Left)
-                                  ?? InferTypeMappingFromColumn(binaryExpression.Right);
-
-                if (typeMapping != null
-                    && (typeMapping.StoreType.StartsWith("date") || typeMapping.StoreType.StartsWith("time")))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return expression.TypeMapping?.StoreType;
         }
-
-        private static RelationalTypeMapping InferTypeMappingFromColumn(Expression expression)
-            => expression.FindProperty(expression.Type)?.FindRelationalMapping();
     }
 }

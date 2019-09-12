@@ -5,6 +5,7 @@ using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Migrations.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Update.Internal;
 using Pomelo.EntityFrameworkCore.MySql.ValueGeneration.Internal;
@@ -13,7 +14,9 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators;
+using Microsoft.EntityFrameworkCore.Query.ExpressionVisitors;
+using Microsoft.EntityFrameworkCore.Query.Sql;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.EntityFrameworkCore.Utilities;
@@ -40,17 +43,23 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<IRelationalTransactionFactory, MySqlRelationalTransactionFactory>()
                 .TryAdd<ISqlGenerationHelper, MySqlSqlGenerationHelper>()
                 .TryAdd<IMigrationsAnnotationProvider, MySqlMigrationsAnnotationProvider>()
+                .TryAdd<IConventionSetBuilder, MySqlConventionSetBuilder>()
                 .TryAdd<IModelValidator, MySqlModelValidator>()
                 .TryAdd<IProviderConventionSetBuilder, MySqlConventionSetBuilder>()
                 .TryAdd<IUpdateSqlGenerator>(p => p.GetService<IMySqlUpdateSqlGenerator>())
                 .TryAdd<IModificationCommandBatchFactory, MySqlModificationCommandBatchFactory>()
                 .TryAdd<IValueGeneratorSelector, MySqlValueGeneratorSelector>()
-                .TryAdd<IRelationalConnection>(p => p.GetService<IMySqlConnection>())
+                .TryAdd<IRelationalConnection>(p => p.GetService<IMySqlRelationalConnection>())
+                .TryAdd<IRelationalCommandBuilderFactory, MySqlConverterCommandBuilderFactory>()
                 .TryAdd<IMigrationsSqlGenerator, MySqlMigrationsSqlGenerator>()
                 .TryAdd<IRelationalDatabaseCreator, MySqlDatabaseCreator>()
                 .TryAdd<IHistoryRepository, MySqlHistoryRepository>()
                 .TryAdd<ICompiledQueryCacheKeyGenerator, MySqlCompiledQueryCacheKeyGenerator>()
                 .TryAdd<IExecutionStrategyFactory, MySqlExecutionStrategyFactory>()
+                .TryAdd<IMemberTranslator, MySqlCompositeMemberTranslator>()
+                .TryAdd<ICompositeMethodCallTranslator, MySqlCompositeMethodCallTranslator>()
+                .TryAdd<IQuerySqlGeneratorFactory, MySqlQuerySqlGeneratorFactory>()
+                .TryAdd<IRelationalSqlTranslatingExpressionVisitorFactory, MySqlSqlTranslatingExpressionVisitorFactory>()
                 .TryAdd<ISingletonOptions, IMySqlOptions>(p => p.GetService<IMySqlOptions>())
 
                 // New Query Pipeline
@@ -63,9 +72,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 b => b
                     .TryAddSingleton<IMySqlOptions, MySqlOptions>()
                     .TryAddScoped<IMySqlUpdateSqlGenerator, MySqlUpdateSqlGenerator>()
-                    .TryAddScoped<IMySqlConnection, MySqlConnection>()
-                    .TryAddScoped<IMySqlConnection, MySqlConnection>())
-            ;
+                    .TryAddScoped<IMySqlRelationalConnection, MySqlRelationalConnection>());
 
             builder.TryAddCoreServices();
 
