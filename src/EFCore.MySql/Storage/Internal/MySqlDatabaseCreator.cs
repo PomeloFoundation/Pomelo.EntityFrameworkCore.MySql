@@ -31,7 +31,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     /// </summary>
     public class MySqlDatabaseCreator : RelationalDatabaseCreator
     {
-        private readonly IMySqlConnection _connection;
+        private readonly IMySqlRelationalConnection _relationalConnection;
         private readonly IRawSqlCommandBuilder _rawSqlCommandBuilder;
 
         /// <summary>
@@ -42,11 +42,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// </summary>
         public MySqlDatabaseCreator(
             [NotNull] RelationalDatabaseCreatorDependencies dependencies,
-            [NotNull] IMySqlConnection connection,
+            [NotNull] IMySqlRelationalConnection relationalConnection,
             [NotNull] IRawSqlCommandBuilder rawSqlCommandBuilder)
             : base(dependencies)
         {
-            _connection = connection;
+            _relationalConnection = relationalConnection;
             _rawSqlCommandBuilder = rawSqlCommandBuilder;
         }
 
@@ -68,7 +68,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         public override void Create()
         {
-            using (var masterConnection = _connection.CreateMasterConnection())
+            using (var masterConnection = _relationalConnection.CreateMasterConnection())
             {
                 Dependencies.MigrationCommandExecutor
                     .ExecuteNonQuery(CreateCreateOperations(), masterConnection);
@@ -87,7 +87,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// </summary>
         public override async Task CreateAsync(CancellationToken cancellationToken = default)
         {
-            using (var masterConnection = _connection.CreateMasterConnection())
+            using (var masterConnection = _relationalConnection.CreateMasterConnection())
             {
                 await Dependencies.MigrationCommandExecutor.ExecuteNonQueryAsync(CreateCreateOperations(), masterConnection, cancellationToken).ConfigureAwait(false);
 
@@ -107,7 +107,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             => Dependencies.ExecutionStrategyFactory
                 .Create()
                 .Execute(
-                    _connection,
+                    _relationalConnection,
                     connection => (int)CreateHasTablesCommand()
                                       .ExecuteScalar(
                                           new RelationalCommandParameterObject(
@@ -124,7 +124,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// </summary>
         public override Task<bool> HasTablesAsync(CancellationToken cancellationToken = default)
             => Dependencies.ExecutionStrategyFactory.Create().ExecuteAsync(
-                _connection,
+                _relationalConnection,
                 async (connection, ct) => (int)await CreateHasTablesCommand()
                                               .ExecuteScalarAsync(
                                                   new RelationalCommandParameterObject(
@@ -139,10 +139,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 .Build(@"
                     SELECT CASE WHEN COUNT(*) = 0 THEN FALSE ELSE TRUE END
                     FROM information_schema.tables
-                    WHERE table_type = 'BASE TABLE' AND table_schema = '" + _connection.DbConnection.Database + "'");
+                    WHERE table_type = 'BASE TABLE' AND table_schema = '" + _relationalConnection.DbConnection.Database + "'");
 
         private IReadOnlyList<MigrationCommand> CreateCreateOperations()
-            => Dependencies.MigrationsSqlGenerator.Generate(new[] { new MySqlCreateDatabaseOperation { Name = _connection.DbConnection.Database } });
+            => Dependencies.MigrationsSqlGenerator.Generate(new[] { new MySqlCreateDatabaseOperation { Name = _relationalConnection.DbConnection.Database } });
 
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -163,12 +163,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                         {
                             try
                             {
-                                using (var masterConnection = _connection.CreateMasterConnection())
+                                using (var masterConnection = _relationalConnection.CreateMasterConnection())
                                 {
                                     masterConnection.Open();
                                     using (var cmd = masterConnection.DbConnection.CreateCommand())
                                     {
-                                        cmd.CommandText = $"USE `{_connection.DbConnection.Database}`";
+                                        cmd.CommandText = $"USE `{_relationalConnection.DbConnection.Database}`";
                                         cmd.ExecuteNonQuery();
                                     }
                                 }
@@ -180,9 +180,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                                     throw;
                                 }
 
-                                _connection.Open(errorsExpected: true);
+                                _relationalConnection.Open(errorsExpected: true);
 
-                                _connection.Close();
+                                _relationalConnection.Close();
                             }
                             return true;
                         }
@@ -224,12 +224,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                         {
                             try
                             {
-                                using (var masterConnection = _connection.CreateMasterConnection())
+                                using (var masterConnection = _relationalConnection.CreateMasterConnection())
                                 {
                                     await masterConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
                                     using (var cmd = masterConnection.DbConnection.CreateCommand())
                                     {
-                                        cmd.CommandText = $"USE `{_connection.DbConnection.Database}`";
+                                        cmd.CommandText = $"USE `{_relationalConnection.DbConnection.Database}`";
                                         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
                                     }
                                 }
@@ -241,9 +241,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                                     throw;
                                 }
 
-                                await _connection.OpenAsync(ct, errorsExpected: true);
+                                await _relationalConnection.OpenAsync(ct, errorsExpected: true);
 
-                                _connection.Close();
+                                _relationalConnection.Close();
                             }
                             return true;
                         }
@@ -286,7 +286,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         {
             ClearAllPools();
 
-            using (var masterConnection = _connection.CreateMasterConnection())
+            using (var masterConnection = _relationalConnection.CreateMasterConnection())
             {
                 Dependencies.MigrationCommandExecutor
                     .ExecuteNonQuery(CreateDropCommands(), masterConnection);
@@ -301,7 +301,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         {
             ClearAllPools();
 
-            using (var masterConnection = _connection.CreateMasterConnection())
+            using (var masterConnection = _relationalConnection.CreateMasterConnection())
             {
                 await Dependencies.MigrationCommandExecutor
                     .ExecuteNonQueryAsync(CreateDropCommands(), masterConnection, cancellationToken).ConfigureAwait(false);
@@ -310,7 +310,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         private IReadOnlyList<MigrationCommand> CreateDropCommands()
         {
-            var databaseName = _connection.DbConnection.Database;
+            var databaseName = _relationalConnection.DbConnection.Database;
             if (string.IsNullOrEmpty(databaseName))
             {
                 throw new InvalidOperationException(MySqlStrings.NoInitialCatalog);
@@ -320,7 +320,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             {
                 // TODO Check DbConnection.Database always gives us what we want
                 // Issue #775
-                new MySqlDropDatabaseOperation { Name = _connection.DbConnection.Database }
+                new MySqlDropDatabaseOperation { Name = _relationalConnection.DbConnection.Database }
             };
 
             return Dependencies.MigrationsSqlGenerator.Generate(operations);
@@ -331,6 +331,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         // Clear connection pool for the database connection since after the 'create database' call, a previously
         // invalid connection may now be valid.
-        private void ClearPool() => global::MySql.Data.MySqlClient.MySqlConnection.ClearPool((global::MySql.Data.MySqlClient.MySqlConnection)_connection.DbConnection);
+        private void ClearPool() => global::MySql.Data.MySqlClient.MySqlConnection.ClearPool((global::MySql.Data.MySqlClient.MySqlConnection)_relationalConnection.DbConnection);
     }
 }

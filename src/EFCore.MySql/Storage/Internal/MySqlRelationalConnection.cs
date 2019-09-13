@@ -15,20 +15,15 @@ using MySql.Data.MySqlClient;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
-    public class MySqlConnection : RelationalConnection, IMySqlConnection
+    public class MySqlRelationalConnection : RelationalConnection, IMySqlRelationalConnection
     {
-        public MySqlConnection([NotNull] RelationalConnectionDependencies dependencies)
+        public MySqlRelationalConnection([NotNull] RelationalConnectionDependencies dependencies)
             : base(dependencies)
         {
         }
 
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        protected override DbConnection CreateDbConnection() => new global::MySql.Data.MySqlClient.MySqlConnection(base.ConnectionString);
+        protected override DbConnection CreateDbConnection()
+            => new MySqlConnection(AddConnectionStringOptions(new MySqlConnectionStringBuilder(ConnectionString)).ConnectionString);
 
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -36,19 +31,26 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         ///     any release. You should only use it directly in your code with extreme caution and knowing that
         ///     doing so can result in application failures when updating to a new Entity Framework Core release.
         /// </summary>
-        public virtual IMySqlConnection CreateMasterConnection()
+        public virtual IMySqlRelationalConnection CreateMasterConnection()
         {
-            var csb = new MySqlConnectionStringBuilder(ConnectionString)
+            var connectionStringBuilder = new MySqlConnectionStringBuilder(ConnectionString)
             {
                 Database = "",
                 Pooling = false
             };
 
-            var contextOptions = new DbContextOptionsBuilder()
-                .UseMySql(csb.ConnectionString)
-                .Options;
+            var optionsBuilder = new DbContextOptionsBuilder()
+                .UseMySql(AddConnectionStringOptions(connectionStringBuilder).ConnectionString, options => options.CommandTimeout(CommandTimeout));
 
-            return new MySqlConnection(Dependencies.With(contextOptions));
+            return new MySqlRelationalConnection(Dependencies.With(optionsBuilder.Options));
+        }
+
+        private MySqlConnectionStringBuilder AddConnectionStringOptions(MySqlConnectionStringBuilder builder)
+        {
+            if (CommandTimeout != null)
+                builder.DefaultCommandTimeout = (uint)CommandTimeout.Value;
+
+            return builder;
         }
 
         protected override bool SupportsAmbientTransactions => false;
