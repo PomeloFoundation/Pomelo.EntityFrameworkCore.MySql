@@ -30,7 +30,7 @@
     <PackageReference Include="MySqlConnector" Version="$(MySqlConnectorVersion)" />
     <PackageReference Include="Pomelo.JsonObject" Version="$(PomeloJsonObjectVersion)" />
     <PackageReference Include="Remotion.Linq" Version="2.2.0" />
-    <PackageReference Include="System.Interactive.Async" Version="3.2.0" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="4.6.0-preview9.19421.4" />
   </ItemGroup>
 
   <ItemGroup>
