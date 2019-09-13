@@ -2,11 +2,13 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Microsoft.EntityFrameworkCore.Query.Expressions;
-using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
@@ -16,6 +18,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
     /// </summary>
     public class MySqlConvertTranslator : IMethodCallTranslator
     {
+        private readonly ISqlExpressionFactory _sqlExpressionFactory;
+
         private static readonly MethodInfo[] _supportedMethods
             = new []
                 {
@@ -31,17 +35,25 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     .Where(m => m.GetParameters().Length == 1))
                 .ToArray();
 
+        public MySqlConvertTranslator(ISqlExpressionFactory sqlExpressionFactory)
+        {
+            _sqlExpressionFactory = sqlExpressionFactory;
+        }
+
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public virtual Expression Translate(MethodCallExpression methodCallExpression)
-           => methodCallExpression.Method.Name == nameof(ToString)
-               ? new MySqlObjectToStringTranslator().Translate(methodCallExpression)
-               : _supportedMethods.Contains(methodCallExpression.Method)
-                   ? new ExplicitCastExpression(
-                       methodCallExpression.Arguments[0],
-                       methodCallExpression.Method.ReturnType)
+        public SqlExpression Translate(
+            SqlExpression instance,
+            MethodInfo method,
+            IReadOnlyList<SqlExpression> arguments)
+           => method.Name == nameof(ToString)
+               ? new MySqlObjectToStringTranslator(_sqlExpressionFactory).Translate(instance, method, arguments)
+               : _supportedMethods.Contains(method)
+                   ? _sqlExpressionFactory.MakeUnary(ExpressionType.Convert,
+                       arguments[0],
+                       method.ReturnType)
                    : null;
     }
 }
