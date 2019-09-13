@@ -6,9 +6,8 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Query.Expressions;
-using Microsoft.EntityFrameworkCore.Query.Sql;
-using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
@@ -18,12 +17,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public class MySqlQuerySqlGenerator : DefaultQuerySqlGenerator, IMySqlExpressionVisitor
+    public class MySqlQuerySqlGenerator : QuerySqlGenerator, IMySqlExpressionVisitor
     {
         private const ulong LimitUpperBound = 18446744073709551610;
-
-        protected override string TypedTrueLiteral => "TRUE";
-        protected override string TypedFalseLiteral => "FALSE";
 
         private readonly IMySqlOptions _options;
 
@@ -33,15 +29,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
         /// </summary>
         public MySqlQuerySqlGenerator(
             [NotNull] QuerySqlGeneratorDependencies dependencies,
-            [NotNull] SelectExpression selectExpression,
-                IMySqlOptions options)
-            : base(dependencies, selectExpression)
+            [CanBeNull] IMySqlOptions options)
+            : base(dependencies)
         {
             _options = options;
-        }
-
-        protected override void GenerateTop(SelectExpression selectExpression)
-        {
         }
 
         /// <summary>
@@ -75,37 +66,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public override Expression VisitSqlFunction(SqlFunctionExpression sqlFunctionExpression)
+        protected override Expression VisitSqlFunction(SqlFunctionExpression sqlFunctionExpression)
         {
-            if (sqlFunctionExpression.FunctionName.StartsWith("@@", StringComparison.Ordinal))
+            if (sqlFunctionExpression.Name.StartsWith("@@", StringComparison.Ordinal))
             {
-                Sql.Append(sqlFunctionExpression.FunctionName);
+                Sql.Append(sqlFunctionExpression.Name);
 
                 return sqlFunctionExpression;
             }
 
             return base.VisitSqlFunction(sqlFunctionExpression);
-        }
-
-        protected override void GenerateProjection(Expression projection)
-        {
-            var aliasedProjection = projection as AliasExpression;
-            var expressionToProcess = aliasedProjection?.Expression ?? projection;
-            var updatedExperssion = ExplicitCastToBool(expressionToProcess);
-
-            expressionToProcess = aliasedProjection != null
-                ? new AliasExpression(aliasedProjection.Alias, updatedExperssion)
-                : updatedExperssion;
-
-            base.GenerateProjection(expressionToProcess);
-        }
-
-        private Expression ExplicitCastToBool(Expression expression)
-        {
-            return (expression as BinaryExpression)?.NodeType == ExpressionType.Coalesce
-                   && expression.Type.UnwrapNullableType() == typeof(bool)
-                ? new ExplicitCastExpression(expression, expression.Type)
-                : expression;
         }
 
         protected override Expression VisitBinary(BinaryExpression binaryExpression)
@@ -126,18 +96,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
             return base.VisitBinary(binaryExpression);
         }
 
-        private bool _isParameterReplaced = false;
-        public override bool IsCacheable => !_isParameterReplaced && base.IsCacheable;
-
-        protected override Expression VisitParameter(ParameterExpression parameterExpression)
+        /* TODO: Investigate further and enable again. (3.0)
+        protected override Expression VisitSqlParameter(SqlParameterExpression sqlParameterExpression)
         {
             if (_options?.NoBackslashEscapes ?? false)
             {
                 //instead of having MySqlConnector replace parameter placeholders with escaped values
                 //(causing "parameterized" queries to fail with NO_BACKSLASH_ESCAPES),
                 //directly insert the value with only replacing ' with ''
-                Check.NotNull(parameterExpression, nameof(parameterExpression));
-                var isRegistered = ParameterValues.TryGetValue(parameterExpression.Name, out var value);
+                var isRegistered = ParameterValues.TryGetValue(sqlParameterExpression.Name, out var value);
                 if (isRegistered && value is string)
                 {
                     _isParameterReplaced = true;
@@ -147,6 +114,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
 
             return base.VisitParameter(parameterExpression);
         }
+        */
 
         public virtual Expression VisitRegexp(RegexpExpression regexpExpression)
         {
@@ -174,13 +142,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
             { "nchar", new []{ "nchar", "nvarchar" } },
         };
 
-        public override Expression VisitExplicitCast(ExplicitCastExpression explicitCastExpression)
+        protected override Expression VisitSqlUnary(SqlUnaryExpression sqlUnaryExpression)
         {
-            var typeMapping = Dependencies.TypeMappingSource.FindMapping(explicitCastExpression.Type);
-            if (typeMapping == null)
+            if (sqlUnaryExpression.OperatorType != ExpressionType.Convert)
             {
-                throw new InvalidOperationException($"Cannot cast to type '{explicitCastExpression.Type.Name}'");
+                return base.VisitSqlUnary(sqlUnaryExpression);
             }
+
+            var typeMapping = sqlUnaryExpression.TypeMapping;
 
             //
             // TODO: Build better mappings with TypeMappingSource.
@@ -190,7 +159,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
             string castMapping = null;
             foreach (var kvp in _castMappings)
             {
-
                 foreach (var storeType in kvp.Value)
                 {
                     if (storeTypeLower.StartsWith(storeType))
@@ -240,7 +208,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
             }
 
             Sql.Append("CAST(");
-            Visit(explicitCastExpression.Operand);
+            Visit(sqlUnaryExpression.Operand);
             Sql.Append(" AS ");
             Sql.Append(castMapping);
             Sql.Append(")");
@@ -250,11 +218,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
                 Sql.Append(" + 0e0)");
             }
 
-            return explicitCastExpression;
+            return sqlUnaryExpression;
         }
         
-        public Expression VisitMySqlComplexFunctionArgumentExpression(
-            [NotNull] MySqlComplexFunctionArgumentExpression mySqlComplexFunctionArgumentExpression)
+        public Expression VisitMySqlComplexFunctionArgumentExpression(MySqlComplexFunctionArgumentExpression mySqlComplexFunctionArgumentExpression)
         {
             Check.NotNull(mySqlComplexFunctionArgumentExpression, nameof(mySqlComplexFunctionArgumentExpression));
 
@@ -276,8 +243,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
             return mySqlComplexFunctionArgumentExpression;
         }
 
-        public Expression VisitMySqlCollateExpression(
-            [NotNull] MySqlCollateExpression mySqlCollateExpression)
+        public Expression VisitMySqlCollateExpression(MySqlCollateExpression mySqlCollateExpression)
         {
             Check.NotNull(mySqlCollateExpression, nameof(mySqlCollateExpression));
 
