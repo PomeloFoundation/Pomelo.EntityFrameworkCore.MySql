@@ -290,7 +290,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
             return mySqlCollateExpression;
         }
 
-        public Expression VisitMySqlBinaryExpression(
+        public virtual Expression VisitMySqlBinaryExpression(
             [NotNull] MySqlBinaryExpression mySqlBinaryExpression)
         {
             Check.NotNull(mySqlBinaryExpression, nameof(mySqlBinaryExpression));
