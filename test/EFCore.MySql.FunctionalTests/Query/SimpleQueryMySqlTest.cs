@@ -395,16 +395,6 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
-        public override async Task Substring_with_client_eval(bool isAsync)
-        {
-            await base.Substring_with_client_eval(isAsync);
-
-            AssertSql(
-                @"SELECT `c`.`ContactName`
-FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` = 'ALFKI'");
-        }
-
         public override async Task Substring_with_zero_length(bool isAsync)
         {
             await base.Substring_with_zero_length(isAsync);

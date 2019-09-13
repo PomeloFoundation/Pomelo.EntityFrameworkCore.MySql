@@ -40,6 +40,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         protected override void Seed(NorthwindContext context)
         {
             base.Seed(context);
+
             context.Database.ExecuteSqlRaw(@"DROP PROCEDURE IF EXISTS `Ten Most Expensive Products`;
 CREATE PROCEDURE `Ten Most Expensive Products` ()
 BEGIN
@@ -59,7 +60,7 @@ BEGIN
   AND `od`.`ProductId` = `p`.`ProductId`
   GROUP BY `ProductName`;
 END;");
-            context.Database.ExecuteSqlCommand(@"drop view if exists `Alphabetical list of products`;
+            context.Database.ExecuteSqlRaw(@"drop view if exists `Alphabetical list of products`;
 create view `Alphabetical list of products` AS
 SELECT `p`.`ProductId`, `p`.`ProductName`, 'Food' as `CategoryName`
 FROM `Products` `p`
