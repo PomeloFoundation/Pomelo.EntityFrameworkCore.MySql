@@ -37,7 +37,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         ///     doing so can result in application failures when updating to a new Entity Framework Core release.
         /// </summary>
         public override DbContextOptionsExtensionInfo Info
-            => _info ??= new ExtensionInfo(this);
+            => _info = _info ?? new ExtensionInfo(this);
 
         protected override RelationalOptionsExtension Clone()
             => new MySqlOptionsExtension(this);

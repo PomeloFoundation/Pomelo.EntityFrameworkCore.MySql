@@ -14,9 +14,6 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators;
-using Microsoft.EntityFrameworkCore.Query.ExpressionVisitors;
-using Microsoft.EntityFrameworkCore.Query.Sql;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.EntityFrameworkCore.Utilities;
@@ -43,7 +40,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<IRelationalTransactionFactory, MySqlRelationalTransactionFactory>()
                 .TryAdd<ISqlGenerationHelper, MySqlSqlGenerationHelper>()
                 .TryAdd<IMigrationsAnnotationProvider, MySqlMigrationsAnnotationProvider>()
-                .TryAdd<IConventionSetBuilder, MySqlConventionSetBuilder>()
+                .TryAdd<IProviderConventionSetBuilder, MySqlConventionSetBuilder>()
                 .TryAdd<IModelValidator, MySqlModelValidator>()
                 .TryAdd<IProviderConventionSetBuilder, MySqlConventionSetBuilder>()
                 .TryAdd<IUpdateSqlGenerator>(p => p.GetService<IMySqlUpdateSqlGenerator>())
@@ -56,8 +53,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<IHistoryRepository, MySqlHistoryRepository>()
                 .TryAdd<ICompiledQueryCacheKeyGenerator, MySqlCompiledQueryCacheKeyGenerator>()
                 .TryAdd<IExecutionStrategyFactory, MySqlExecutionStrategyFactory>()
-                .TryAdd<IMemberTranslator, MySqlCompositeMemberTranslator>()
-                .TryAdd<ICompositeMethodCallTranslator, MySqlCompositeMethodCallTranslator>()
                 .TryAdd<IQuerySqlGeneratorFactory, MySqlQuerySqlGeneratorFactory>()
                 .TryAdd<IRelationalSqlTranslatingExpressionVisitorFactory, MySqlSqlTranslatingExpressionVisitorFactory>()
                 .TryAdd<ISingletonOptions, IMySqlOptions>(p => p.GetService<IMySqlOptions>())
