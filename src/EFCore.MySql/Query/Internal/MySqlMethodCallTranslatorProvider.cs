@@ -12,7 +12,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
             AddTranslators(new IMethodCallTranslator[]
             {
-                new MySqlContainsOptimizedTranslator(sqlExpressionFactory),
                 new MySqlConvertTranslator(sqlExpressionFactory),
                 new MySqlDateTimeMethodTranslator(sqlExpressionFactory),
                 new MySqlDateDiffFunctionsTranslator(sqlExpressionFactory),

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -27,10 +27,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         // Method defined in netcoreapp2.0 only
         private static readonly MethodInfo _trimStartMethodInfoWithoutArgs
             = typeof(string).GetRuntimeMethod(nameof(string.TrimStart), Array.Empty<Type>());
+        private static readonly MethodInfo _trimStartMethodInfoWithCharArg
+            = typeof(string).GetRuntimeMethod(nameof(string.TrimStart), new[] { typeof(char) });
         private static readonly MethodInfo _trimEndMethodInfoWithoutArgs
             = typeof(string).GetRuntimeMethod(nameof(string.TrimEnd), Array.Empty<Type>());
+        private static readonly MethodInfo _trimEndMethodInfoWithCharArg
+            = typeof(string).GetRuntimeMethod(nameof(string.TrimEnd), new[] { typeof(char) });
         private static readonly MethodInfo _trimMethodInfoWithoutArgs
             = typeof(string).GetRuntimeMethod(nameof(string.Trim), Array.Empty<Type>());
+        private static readonly MethodInfo _trimMethodInfoWithCharArg
+            = typeof(string).GetRuntimeMethod(nameof(string.Trim), new[] { typeof(char) });
 
         // Method defined in netstandard2.0
         private static readonly MethodInfo _trimStartMethodInfoWithCharArrayArg
@@ -61,15 +67,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             {
                 var argument = arguments[0];
                 var stringTypeMapping = ExpressionExtensions.InferTypeMapping(instance, argument);
-                argument = _sqlExpressionFactory.ApplyTypeMapping(argument, stringTypeMapping);
 
                 return _sqlExpressionFactory.Subtract(
                     _sqlExpressionFactory.Function(
                         "LOCATE",
                         new[]
                         {
-                            argument,
-                            _sqlExpressionFactory.ApplyTypeMapping(instance, stringTypeMapping)
+                            _sqlExpressionFactory.ApplyTypeMapping(instance, stringTypeMapping),
+                            _sqlExpressionFactory.ApplyTypeMapping(argument, stringTypeMapping)
                         },
                         method.ReturnType),
                     _sqlExpressionFactory.Constant(1));
@@ -81,17 +86,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 var secondArgument = arguments[1];
                 var stringTypeMapping = ExpressionExtensions.InferTypeMapping(instance, firstArgument, secondArgument);
 
-                instance = _sqlExpressionFactory.ApplyTypeMapping(instance, stringTypeMapping);
-                firstArgument = _sqlExpressionFactory.ApplyTypeMapping(firstArgument, stringTypeMapping);
-                secondArgument = _sqlExpressionFactory.ApplyTypeMapping(secondArgument, stringTypeMapping);
-
                 return _sqlExpressionFactory.Function(
                     "REPLACE",
                     new[]
                     {
-                        instance,
-                        firstArgument,
-                        secondArgument
+                        _sqlExpressionFactory.ApplyTypeMapping(instance, stringTypeMapping),
+                        _sqlExpressionFactory.ApplyTypeMapping(firstArgument, stringTypeMapping),
+                        _sqlExpressionFactory.ApplyTypeMapping(secondArgument, stringTypeMapping)
                     },
                     method.ReturnType,
                     stringTypeMapping);
@@ -127,84 +128,54 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             {
                 var argument = arguments[0];
 
-                return _sqlExpressionFactory.OrElse(
-                    _sqlExpressionFactory.IsNull(argument),
-                    _sqlExpressionFactory.Equal(
-                        _sqlExpressionFactory.Function(
-                            "LTRIM",
-                            new[] {
-                                _sqlExpressionFactory.Function(
-                                    "RTRIM",
-                                    new[]
-                                    {
-                                        argument
-                                    },
-                                    argument.Type,
-                                    argument.TypeMapping)
-                            },
-                            argument.Type,
-                            argument.TypeMapping),
-                        _sqlExpressionFactory.Constant(string.Empty, argument.TypeMapping)));
+                return ProcessTrimMethod(instance, arguments, null);
             }
 
             if (_trimStartMethodInfoWithoutArgs?.Equals(method) == true
-                || (_trimStartMethodInfoWithCharArrayArg.Equals(method)
-                    // MySql LTRIM does not take arguments
-                    && ((arguments[0] as SqlConstantExpression)?.Value as Array)?.Length == 0))
+                || _trimStartMethodInfoWithCharArg?.Equals(method) == true
+                || _trimStartMethodInfoWithCharArrayArg.Equals(method))
             {
-                return _sqlExpressionFactory.Function(
-                    "LTRIM",
-                    new[]
-                    {
-                        instance
-                    },
-                    instance.Type,
-                    instance.TypeMapping);
+                return ProcessTrimMethod(instance, arguments, "LEADING");
             }
 
             if (_trimEndMethodInfoWithoutArgs?.Equals(method) == true
-                || (_trimEndMethodInfoWithCharArrayArg.Equals(method)
-                    // MySql RTRIM does not take arguments
-                    && ((arguments[0] as SqlConstantExpression)?.Value as Array)?.Length == 0))
+                || _trimEndMethodInfoWithCharArg?.Equals(method) == true
+                || _trimEndMethodInfoWithCharArrayArg.Equals(method))
             {
-                return _sqlExpressionFactory.Function(
-                    "RTRIM",
-                    new[]
-                    {
-                        instance
-                    },
-                    instance.Type,
-                    instance.TypeMapping);
+                return ProcessTrimMethod(instance, arguments, "TRAILING");
             }
 
             if (_trimMethodInfoWithoutArgs?.Equals(method) == true
-                || (_trimMethodInfoWithCharArrayArg.Equals(method)
-                    // MySql LTRIM/RTRIM does not take arguments
-                    && ((arguments[0] as SqlConstantExpression)?.Value as Array)?.Length == 0))
+                || _trimMethodInfoWithCharArg?.Equals(method) == true
+                || _trimMethodInfoWithCharArrayArg.Equals(method))
             {
-                return _sqlExpressionFactory.Function(
-                    "LTRIM",
-                    new[]
-                    {
-                        _sqlExpressionFactory.Function(
-                            "RTRIM",
-                            new []
-                            {
-                                instance
-                            },
-                            instance.Type,
-                            instance.TypeMapping)
-                    },
-                    instance.Type,
-                    instance.TypeMapping);
+                return ProcessTrimMethod(instance, arguments, null);
             }
 
             if (_containsMethodInfo.Equals(method))
             {
                 var pattern = arguments[0];
                 var stringTypeMapping = ExpressionExtensions.InferTypeMapping(instance, pattern);
+
                 instance = _sqlExpressionFactory.ApplyTypeMapping(instance, stringTypeMapping);
                 pattern = _sqlExpressionFactory.ApplyTypeMapping(pattern, stringTypeMapping);
+
+                var locateCondition = _sqlExpressionFactory.GreaterThan(
+                    _sqlExpressionFactory.Function(
+                        "LOCATE",
+                        new[]
+                        {
+                            new MySqlComplexFunctionArgumentExpression(
+                                new[]
+                                {
+                                    _sqlExpressionFactory.Fragment("BINARY"), // for case sensitivity
+                                    pattern,
+                                },
+                                typeof(string)),
+                            instance,
+                        },
+                        typeof(int)),
+                    _sqlExpressionFactory.Constant(0));
 
                 if (pattern is SqlConstantExpression constantPattern)
                 {
@@ -213,32 +184,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         return _sqlExpressionFactory.Constant(true);
                     }
 
-                    return _sqlExpressionFactory.GreaterThan(
-                        _sqlExpressionFactory.Function(
-                            "CHARINDEX",
-                            new[]
-                            {
-                        pattern,
-                        instance
-                            },
-                            typeof(int)),
-                        _sqlExpressionFactory.Constant(0));
+                    return locateCondition;
                 }
 
                 return _sqlExpressionFactory.OrElse(
                     _sqlExpressionFactory.Equal(
                         pattern,
                         _sqlExpressionFactory.Constant(string.Empty, stringTypeMapping)),
-                    _sqlExpressionFactory.GreaterThan(
-                        _sqlExpressionFactory.Function(
-                            "CHARINDEX",
-                            new[]
-                            {
-                                pattern,
-                                instance
-                            },
-                            typeof(int)),
-                        _sqlExpressionFactory.Constant(0)));
+                    locateCondition);
             }
 
             if (_startsWithMethodInfo.Equals(method))
@@ -267,9 +220,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 // in C# and send a simple LIKE
                 if (!(constantExpression.Value is string constantString))
                 {
-                    return _sqlExpressionFactory.Like(
-                        instance,
-                        _sqlExpressionFactory.Constant(null, stringTypeMapping));
+                    return _sqlExpressionFactory.Like(instance, _sqlExpressionFactory.Constant(null, stringTypeMapping));
+                }
+                if (constantString.Length == 0)
+                {
+                    return _sqlExpressionFactory.Constant(true);
                 }
 
                 return constantString.Any(c => IsLikeWildChar(c))
@@ -279,7 +234,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                             startsWith
                                 ? EscapeLikePattern(constantString) + '%'
                                 : '%' + EscapeLikePattern(constantString)),
-                        _sqlExpressionFactory.Constant(LikeEscapeChar.ToString()))  // SQL Server has no char mapping, avoid value conversion warning)
+                        _sqlExpressionFactory.Constant(LikeEscapeChar.ToString()))
                     : _sqlExpressionFactory.Like(
                         instance,
                         _sqlExpressionFactory.Constant(startsWith ? constantString + '%' : '%' + constantString),
@@ -302,7 +257,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                             "LEFT",
                             new[] {
                                 instance,
-                                _sqlExpressionFactory.Function("LEN", new[] { pattern }, typeof(int))
+                                _sqlExpressionFactory.Function("CHAR_LENGTH", new[] { pattern }, typeof(int))
                             },
                             typeof(string),
                             stringTypeMapping),
@@ -314,15 +269,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     "RIGHT",
                     new[] {
                         instance,
-                        _sqlExpressionFactory.Function("LEN", new[] { pattern }, typeof(int))
+                        _sqlExpressionFactory.Function("CHAR_LENGTH", new[] { pattern }, typeof(int))
                     },
                     typeof(string),
                     stringTypeMapping),
                 pattern);
         }
 
-        // See https://docs.microsoft.com/en-us/sql/t-sql/language-elements/like-transact-sql
-        private bool IsLikeWildChar(char c) => c == '%' || c == '_' || c == '[';
+        // See https://dev.mysql.com/doc/refman/8.0/en/string-comparison-functions.html#operator_like
+        private bool IsLikeWildChar(char c) => c == '%' || c == '_';
 
         private string EscapeLikePattern(string pattern)
         {
@@ -334,11 +289,65 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 {
                     builder.Append(LikeEscapeChar);
                 }
-
                 builder.Append(c);
             }
-
             return builder.ToString();
+        }
+
+        private SqlExpression ProcessTrimMethod(SqlExpression instance, IReadOnlyList<SqlExpression> arguments, string locationSpecifier)
+        {
+            // Builds a TRIM({BOTH | LEADING | TRAILING} remstr FROM str) expression.
+
+            var typeMapping = instance.TypeMapping;
+            if (typeMapping == null)
+            {
+                return null;
+            }
+
+            var sqlArguments = new List<SqlExpression>();
+
+            if (locationSpecifier != null)
+            {
+                sqlArguments.Add(_sqlExpressionFactory.Fragment(locationSpecifier));
+            }
+
+            if (arguments.Count == 1)
+            {
+                var constantValue = (arguments[0] as SqlConstantExpression)?.Value;
+                var charactersToTrim = new List<char>();
+
+                if (constantValue is char singleChar)
+                {
+                    charactersToTrim.Add(singleChar);
+                }
+                else if (constantValue is char[] charArray)
+                {
+                    charactersToTrim.AddRange(charArray);
+                }
+                else
+                {
+                    return null;
+                }
+
+                if (charactersToTrim.Count > 0)
+                {
+                    sqlArguments.Add(_sqlExpressionFactory.Constant(new string(charactersToTrim.ToArray()), typeMapping));
+                }
+            }
+
+            if (sqlArguments.Count > 0)
+            {
+                sqlArguments.Add(_sqlExpressionFactory.Fragment("FROM"));
+            }
+
+            return _sqlExpressionFactory.Function(
+                "TRIM",
+                new[] { new MySqlComplexFunctionArgumentExpression(
+                    sqlArguments.ToArray(),
+                    typeof(string)),
+                },
+                typeof(string),
+                typeMapping);
         }
     }
 }
