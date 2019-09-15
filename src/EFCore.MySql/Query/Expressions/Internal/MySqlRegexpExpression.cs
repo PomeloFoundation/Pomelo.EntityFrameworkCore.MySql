@@ -7,13 +7,18 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Storage;
+using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 {
-    public class RegexpExpression : SqlExpression
+    public class MySqlRegexpExpression : SqlExpression
     {
-        public RegexpExpression([NotNull] SqlExpression match, [NotNull] SqlExpression pattern)
-            : base(typeof(string), null)
+        public MySqlRegexpExpression(
+            [NotNull] SqlExpression match,
+            [NotNull] SqlExpression pattern,
+            RelationalTypeMapping typeMapping)
+            : base(typeof(bool), typeMapping)
         {
             Check.NotNull(match, nameof(match));
             Check.NotNull(pattern, nameof(pattern));
@@ -22,18 +27,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
             Pattern = pattern;
         }
 
-        public virtual Expression Match { get; }
+        public virtual SqlExpression Match { get; }
 
-        public virtual Expression Pattern { get; }
-
-        public override Type Type => typeof(bool);
+        public virtual SqlExpression Pattern { get; }
 
         protected override Expression Accept(ExpressionVisitor visitor)
         {
             Check.NotNull(visitor, nameof(visitor));
 
-            return visitor is IMySqlExpressionVisitor specificVisitor
-                ? specificVisitor.VisitRegexp(this)
+            return visitor is MySqlQuerySqlGenerator mySqlQuerySqlGenerator
+                ? mySqlQuerySqlGenerator.VisitMySqlRegexp(this)
                 : base.Accept(visitor);
         }
 
@@ -44,7 +47,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 
             return newMatchExpression != Match
                    || newPatternExpression != Pattern
-                ? new RegexpExpression(newMatchExpression, newPatternExpression)
+                ? new MySqlRegexpExpression(newMatchExpression, newPatternExpression, TypeMapping)
                 : this;
         }
 
@@ -60,10 +63,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
                 return true;
             }
 
-            return obj.GetType() == GetType() && Equals((RegexpExpression)obj);
+            return obj.GetType() == GetType() && Equals((MySqlRegexpExpression)obj);
         }
 
-        private bool Equals(RegexpExpression other)
+        private bool Equals(MySqlRegexpExpression other)
             => Equals(Match, other.Match)
                && Equals(Pattern, other.Pattern);
 
@@ -81,8 +84,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         public override string ToString() => $"{Match} REGEXP {Pattern}";
 
         public override void Print(ExpressionPrinter expressionPrinter)
-        {
-            expressionPrinter.Append(ToString()); // TODO: is this correct?
-        }
+            => expressionPrinter.Append(ToString());
     }
 }

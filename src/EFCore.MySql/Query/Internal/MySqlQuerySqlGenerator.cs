@@ -122,19 +122,41 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             return base.VisitParameter(parameterExpression);
         }
 
-        public virtual Expression VisitRegexp(RegexpExpression regexpExpression)
+        public virtual Expression VisitMySqlRegexp(MySqlRegexpExpression mySqlRegexpExpression)
         {
-            Check.NotNull(regexpExpression, nameof(regexpExpression));
+            Check.NotNull(mySqlRegexpExpression, nameof(mySqlRegexpExpression));
 
-            Visit(regexpExpression.Match);
+            Visit(mySqlRegexpExpression.Match);
             Sql.Append(" REGEXP ");
-            Visit(regexpExpression.Pattern);
+            Visit(mySqlRegexpExpression.Pattern);
 
-            return regexpExpression;
+            return mySqlRegexpExpression;
         }
 
-        public Expression VisitMySqlCollateExpression(
-            [NotNull] MySqlCollateExpression mySqlCollateExpression)
+        
+        public Expression VisitMySqlComplexFunctionArgumentExpression(MySqlComplexFunctionArgumentExpression mySqlComplexFunctionArgumentExpression)
+        {
+            Check.NotNull(mySqlComplexFunctionArgumentExpression, nameof(mySqlComplexFunctionArgumentExpression));
+
+            var first = true;
+            foreach (var argument in mySqlComplexFunctionArgumentExpression.ArgumentParts)
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    Sql.Append(" ");
+                }
+
+                Visit(argument);
+            }
+
+            return mySqlComplexFunctionArgumentExpression;
+        }
+
+        public Expression VisitMySqlCollateExpression(MySqlCollateExpression mySqlCollateExpression)
         {
             Check.NotNull(mySqlCollateExpression, nameof(mySqlCollateExpression));
 

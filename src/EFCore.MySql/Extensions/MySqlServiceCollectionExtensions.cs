@@ -53,7 +53,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<IHistoryRepository, MySqlHistoryRepository>()
                 .TryAdd<ICompiledQueryCacheKeyGenerator, MySqlCompiledQueryCacheKeyGenerator>()
                 .TryAdd<IExecutionStrategyFactory, MySqlExecutionStrategyFactory>()
-                .TryAdd<IQuerySqlGeneratorFactory, MySqlQuerySqlGeneratorFactory>()
                 .TryAdd<IRelationalSqlTranslatingExpressionVisitorFactory, MySqlSqlTranslatingExpressionVisitorFactory>()
                 .TryAdd<ISingletonOptions, IMySqlOptions>(p => p.GetService<IMySqlOptions>())
 
@@ -63,6 +62,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<IQuerySqlGeneratorFactory, MySqlQuerySqlGeneratorFactory>()
                 .TryAdd<IRelationalSqlTranslatingExpressionVisitorFactory, MySqlSqlTranslatingExpressionVisitorFactory>()
 
+                .TryAdd<ISqlExpressionFactory, MySqlSqlExpressionFactory>()
                 .TryAddProviderSpecificServices(
                 b => b
                     .TryAddSingleton<IMySqlOptions, MySqlOptions>()
