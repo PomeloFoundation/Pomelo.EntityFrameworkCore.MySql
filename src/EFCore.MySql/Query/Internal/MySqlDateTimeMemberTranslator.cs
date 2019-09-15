@@ -7,22 +7,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
     public class MySqlDateTimeMemberTranslator : IMemberTranslator
     {
-        private static readonly Dictionary<string, string> _datePartMapping
-            = new Dictionary<string, string>
+        private static readonly Dictionary<string, (string Part, int Divisor)> _datePartMapping
+            = new Dictionary<string, (string, int)>
             {
-                { nameof(DateTime.Year), "year" },
-                { nameof(DateTime.Month), "month" },
-                { nameof(DateTime.Day), "day" },
-                { nameof(DateTime.Hour), "hour" },
-                { nameof(DateTime.Minute), "minute" },
-                { nameof(DateTime.Second), "second" },
-                { nameof(DateTime.Millisecond), "millisecond" },
+                { nameof(DateTime.Year), ("year", 1) },
+                { nameof(DateTime.Month), ("month", 1) },
+                { nameof(DateTime.Day), ("day", 1) },
+                { nameof(DateTime.Hour), ("hour", 1) },
+                { nameof(DateTime.Minute), ("minute", 1) },
+                { nameof(DateTime.Second), ("second", 1) },
+                { nameof(DateTime.Millisecond), ("microsecond", 1000) },
             };
-        private readonly ISqlExpressionFactory _sqlExpressionFactory;
+        private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
         public MySqlDateTimeMemberTranslator(ISqlExpressionFactory sqlExpressionFactory)
         {
-            _sqlExpressionFactory = sqlExpressionFactory;
+            _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
         }
 
         public virtual SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType)
@@ -36,14 +36,27 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
                 if (_datePartMapping.TryGetValue(memberName, out var datePart))
                 {
-                    return _sqlExpressionFactory.Function(
+                    var extract = _sqlExpressionFactory.Function(
                         "EXTRACT",
                         new[]
                         {
-                            _sqlExpressionFactory.Fragment($"{datePart} FROM"),
-                            instance
+                            _sqlExpressionFactory.ComplexFunctionArgument(
+                                new [] {
+                                    _sqlExpressionFactory.Fragment($"{datePart.Part} FROM"),
+                                    instance
+                                },
+                                typeof(string))
                         },
                         returnType);
+
+                    if (datePart.Divisor != 1)
+                    {
+                        return _sqlExpressionFactory.Divide(
+                            extract,
+                            _sqlExpressionFactory.Constant(datePart.Divisor));
+                    }
+
+                    return extract;
                 }
 
                 switch (memberName)
@@ -51,55 +64,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     case nameof(DateTime.DayOfYear):
                         return _sqlExpressionFactory.Function(
                         "DAYOFYEAR",
-                        new[]{
-                                _sqlExpressionFactory.Fragment("date"),
-                                instance
-                        },
+                        new[] { instance },
                         returnType,
                         instance.TypeMapping);
+
                     case nameof(DateTime.Date):
                         return _sqlExpressionFactory.Function(
-                        "CONVERT",
-                        new[]{
-                                _sqlExpressionFactory.Fragment("date"),
-                                instance
-                        },
-                        returnType,
-                        instance.TypeMapping);
+                            "CONVERT",
+                            new[]{
+                                instance,
+                                _sqlExpressionFactory.Fragment("date")
+                            },
+                            returnType,
+                            instance.TypeMapping);
 
                     case nameof(DateTime.TimeOfDay):
                         return _sqlExpressionFactory.Convert(instance, returnType);
 
-                        // TODO: Check MySQL functions
+                    case nameof(DateTime.Now) when declaringType == typeof(DateTime):
+                        return _sqlExpressionFactory.Function("CURRENT_TIMESTAMP", returnType);
 
-                        //case nameof(DateTime.Now):
-                        //    return _sqlExpressionFactory.Function(
-                        //        declaringType == typeof(DateTime) ? "GETDATE" : "SYSDATETIMEOFFSET",
-                        //        Array.Empty<SqlExpression>(),
-                        //        returnType);
+                    case nameof(DateTime.UtcNow) when declaringType == typeof(DateTime):
+                        return _sqlExpressionFactory.Function("UTC_TIMESTAMP", returnType);
 
-                        //case nameof(DateTime.UtcNow):
-                        //    var serverTranslation = _sqlExpressionFactory.Function(
-                        //        declaringType == typeof(DateTime) ? "GETUTCDATE" : "SYSUTCDATETIME",
-                        //        Array.Empty<SqlExpression>(),
-                        //        returnType);
-
-                        //    return declaringType == typeof(DateTime)
-                        //        ? (SqlExpression)serverTranslation
-                        //        : _sqlExpressionFactory.Convert(serverTranslation, returnType);
-
-                        //case nameof(DateTime.Today):
-                        //    return _sqlExpressionFactory.Function(
-                        //        "CONVERT",
-                        //        new SqlExpression[]
-                        //        {
-                        //            _sqlExpressionFactory.Fragment("date"),
-                        //            _sqlExpressionFactory.Function(
-                        //                "GETDATE",
-                        //                Array.Empty<SqlExpression>(),
-                        //                typeof(DateTime))
-                        //        },
-                        //        returnType);
+                    case nameof(DateTime.Today) when declaringType == typeof(DateTime):
+                        return _sqlExpressionFactory.Function("CURDATE", returnType);
                 }
             }
 
