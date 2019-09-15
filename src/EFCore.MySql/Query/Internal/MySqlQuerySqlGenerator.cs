@@ -32,17 +32,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
         private const ulong LimitUpperBound = 18446744073709551610;
 
-        private readonly bool _noBackslashEscapes;
+        private readonly IMySqlOptions _options;
 
-        public MySqlQuerySqlGenerator(QuerySqlGeneratorDependencies dependencies, IMySqlOptions options)
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public MySqlQuerySqlGenerator(
+            [NotNull] QuerySqlGeneratorDependencies dependencies,
+            [CanBeNull] IMySqlOptions options)
             : base(dependencies)
         {
-            _noBackslashEscapes = options?.NoBackslashEscapes ?? false;
-        }
-
-        protected override void GenerateTop(SelectExpression selectExpression)
-        {
-            return; // Not supported in MySql https://www.tutorialrepublic.com/sql-tutorial/sql-top-clause.php
+            _options = options;
         }
 
         /// <summary>
@@ -102,25 +103,25 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             return base.VisitBinary(binaryExpression);
         }
 
-        protected override Expression VisitParameter(ParameterExpression parameterExpression)
+        /* TODO: Investigate further and enable again. (3.0)
+        protected override Expression VisitSqlParameter(SqlParameterExpression sqlParameterExpression)
         {
-            // TODO: find a proper replacement
-
-            //if (_noBackslashEscapes)
-            //{
-            //    //instead of having MySqlConnector replace parameter placeholders with escaped values
-            //    //(causing "parameterized" queries to fail with NO_BACKSLASH_ESCAPES),
-            //    //directly insert the value with only replacing ' with ''
-            //    Check.NotNull(parameterExpression, nameof(parameterExpression));
-            //    var isRegistered = ParameterValues.TryGetValue(parameterExpression.Name, out var value);
-            //    if (isRegistered && value is string)
-            //    {
-            //        return VisitConstant(Expression.Constant(value));
-            //    }
-            //}
+            if (_options?.NoBackslashEscapes ?? false)
+            {
+                //instead of having MySqlConnector replace parameter placeholders with escaped values
+                //(causing "parameterized" queries to fail with NO_BACKSLASH_ESCAPES),
+                //directly insert the value with only replacing ' with ''
+                var isRegistered = ParameterValues.TryGetValue(sqlParameterExpression.Name, out var value);
+                if (isRegistered && value is string)
+                {
+                    _isParameterReplaced = true;
+                    return VisitConstant(Expression.Constant(value));
+                }
+            }
 
             return base.VisitParameter(parameterExpression);
         }
+        */
 
         public virtual Expression VisitMySqlRegexp(MySqlRegexpExpression mySqlRegexpExpression)
         {
