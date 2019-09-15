@@ -65,8 +65,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         return _sqlExpressionFactory.Function(
                         "DAYOFYEAR",
                         new[] { instance },
-                        returnType,
-                        instance.TypeMapping);
+                        returnType);
 
                     case nameof(DateTime.Date):
                         return _sqlExpressionFactory.Function(
@@ -75,8 +74,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                                 instance,
                                 _sqlExpressionFactory.Fragment("date")
                             },
-                            returnType,
-                            instance.TypeMapping);
+                            returnType);
 
                     case nameof(DateTime.TimeOfDay):
                         return _sqlExpressionFactory.Convert(instance, returnType);
