@@ -22,12 +22,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
     {
         private static readonly Dictionary<string, string[]> _castMappings = new Dictionary<string, string[]>
         {
-            { "signed", new []{ "tinyint", "smallint", "mediumint", "int", "bigint" }},
-            { "decimal", new []{ "decimal", "double", "float" } },
+            { "signed", new []{ "tinyint", "smallint", "mediumint", "int", "bigint", "bit" }},
+            { "decimal(65,30)", new []{ "decimal" } },
+            { "double", new []{ "double" } },
+            { "float", new []{ "float" } },
             { "binary", new []{ "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob" } },
             { "datetime", new []{ "datetime", "timestamp" } },
+            { "date", new []{ "date" } },
             { "time", new []{ "time" } },
             { "json", new []{ "json" } },
+            { "char", new []{ "char", "varchar", "text", "tinytext", "mediumtext", "longtext" } },
+            { "nchar", new []{ "nchar", "nvarchar" } },
         };
 
         private const ulong LimitUpperBound = 18446744073709551610;
@@ -135,6 +140,84 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             return mySqlRegexpExpression;
         }
 
+        protected override Expression VisitSqlUnary(SqlUnaryExpression sqlUnaryExpression)
+        {
+            if (sqlUnaryExpression.OperatorType != ExpressionType.Convert)
+            {
+                return base.VisitSqlUnary(sqlUnaryExpression);
+            }
+
+            var typeMapping = sqlUnaryExpression.TypeMapping;
+
+            //
+            // TODO: Build better mappings with TypeMappingSource.
+            //
+
+            var storeTypeLower = typeMapping.StoreType.ToLower();
+            string castMapping = null;
+            foreach (var kvp in _castMappings)
+            {
+                foreach (var storeType in kvp.Value)
+                {
+                    if (storeTypeLower.StartsWith(storeType))
+                    {
+                        castMapping = kvp.Key;
+                        break;
+                    }
+                }
+                if (castMapping != null)
+                {
+                    break;
+                }
+            }
+
+            if (castMapping == null)
+            {
+                throw new InvalidOperationException($"Cannot cast from type '{typeMapping.StoreType}'");
+            }
+
+            if (castMapping == "signed" && storeTypeLower.Contains("unsigned"))
+            {
+                castMapping = "unsigned";
+            }
+
+            // FLOAT and DOUBLE are supported by CAST() as of MySQL 8.0.17.
+            // For server versions before that, a workaround is applied, that casts to a DECIMAL,
+            // that is then added to 0e0, which results in a DOUBLE.
+            // REF: https://stackoverflow.com/a/32991084/2618319
+
+            var useDecimalToDoubleFloatWorkaround = false;
+
+            if (castMapping.StartsWith("double") && (!_options?.ServerVersion.SupportsDoubleCast ?? false))
+            {
+                useDecimalToDoubleFloatWorkaround = true;
+                castMapping = "decimal(65,30)";
+            }
+
+            if (castMapping.StartsWith("float") && (!_options?.ServerVersion.SupportsFloatCast ?? false))
+            {
+                useDecimalToDoubleFloatWorkaround = true;
+                castMapping = "decimal(65,30)";
+            }
+
+            if (useDecimalToDoubleFloatWorkaround)
+            {
+                Sql.Append("(");
+            }
+
+            Sql.Append("CAST(");
+            Visit(sqlUnaryExpression.Operand);
+            Sql.Append(" AS ");
+            Sql.Append(castMapping);
+            Sql.Append(")");
+
+            if (useDecimalToDoubleFloatWorkaround)
+            {
+                Sql.Append(" + 0e0)");
+            }
+
+            return sqlUnaryExpression;
+        }
         
         public Expression VisitMySqlComplexFunctionArgumentExpression(MySqlComplexFunctionArgumentExpression mySqlComplexFunctionArgumentExpression)
         {
