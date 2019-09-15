@@ -93,7 +93,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
             IReadOnlyList<string> tables,
             IReadOnlyList<string> schemas)
         {
-            return (s, t) => (tables.Count > 0) ? tables.Contains(t) : false;
+            return tables.Count > 0 ? (s, t) => tables.Contains(t) : (Func<string, string, bool>)null;
         }
 
         private const string GetTablesQuery = @"SHOW FULL TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
@@ -116,7 +116,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
                             Name = reader.GetString(0).Replace("`", "")
                         };
 
-                        if (filter(table.Schema, table.Name))
+                        if (filter?.Invoke(table.Schema, table.Name) ?? true)
                         {
                             tables.Add(table);
                         }

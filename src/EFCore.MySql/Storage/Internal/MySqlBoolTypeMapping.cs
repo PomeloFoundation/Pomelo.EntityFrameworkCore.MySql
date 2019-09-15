@@ -4,7 +4,6 @@
 using System.Data;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
@@ -53,6 +52,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         ///     doing so can result in application failures when updating to a new Entity Framework Core release.
         /// </summary>
         protected override string GenerateNonNullSqlLiteral(object value)
-            => $"CAST({base.GenerateNonNullSqlLiteral(value)} AS {StoreType})";
+            => (bool)value ? "TRUE" : "FALSE";
     }
 }

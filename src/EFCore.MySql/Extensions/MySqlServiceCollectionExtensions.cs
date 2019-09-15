@@ -4,15 +4,12 @@
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Migrations.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Update.Internal;
 using Pomelo.EntityFrameworkCore.MySql.ValueGeneration.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Update;
@@ -42,8 +39,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<IMigrationsAnnotationProvider, MySqlMigrationsAnnotationProvider>()
                 .TryAdd<IProviderConventionSetBuilder, MySqlConventionSetBuilder>()
                 .TryAdd<IModelValidator, MySqlModelValidator>()
-                .TryAdd<IProviderConventionSetBuilder, MySqlConventionSetBuilder>()
-                .TryAdd<IUpdateSqlGenerator>(p => p.GetService<IMySqlUpdateSqlGenerator>())
+                .TryAdd<IUpdateSqlGenerator, MySqlUpdateSqlGenerator>()
                 .TryAdd<IModificationCommandBatchFactory, MySqlModificationCommandBatchFactory>()
                 .TryAdd<IValueGeneratorSelector, MySqlValueGeneratorSelector>()
                 .TryAdd<IRelationalConnection>(p => p.GetService<IMySqlRelationalConnection>())
@@ -55,13 +51,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<IExecutionStrategyFactory, MySqlExecutionStrategyFactory>()
                 .TryAdd<IRelationalSqlTranslatingExpressionVisitorFactory, MySqlSqlTranslatingExpressionVisitorFactory>()
                 .TryAdd<ISingletonOptions, IMySqlOptions>(p => p.GetService<IMySqlOptions>())
-
-                // New Query Pipeline
                 .TryAdd<IMethodCallTranslatorProvider, MySqlMethodCallTranslatorProvider>()
                 .TryAdd<IMemberTranslatorProvider, MySqlMemberTranslatorProvider>()
                 .TryAdd<IQuerySqlGeneratorFactory, MySqlQuerySqlGeneratorFactory>()
                 .TryAdd<IRelationalSqlTranslatingExpressionVisitorFactory, MySqlSqlTranslatingExpressionVisitorFactory>()
-
                 .TryAdd<ISqlExpressionFactory, MySqlSqlExpressionFactory>()
                 .TryAddProviderSpecificServices(
                 b => b

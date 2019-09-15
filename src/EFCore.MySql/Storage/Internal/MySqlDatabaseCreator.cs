@@ -108,7 +108,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 .Create()
                 .Execute(
                     _relationalConnection,
-                    connection => (int)CreateHasTablesCommand()
+                    connection => (long)CreateHasTablesCommand()
                                       .ExecuteScalar(
                                           new RelationalCommandParameterObject(
                                               connection,
@@ -125,14 +125,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public override Task<bool> HasTablesAsync(CancellationToken cancellationToken = default)
             => Dependencies.ExecutionStrategyFactory.Create().ExecuteAsync(
                 _relationalConnection,
-                async (connection, ct) => (int)await CreateHasTablesCommand()
+                async (connection, ct) => (long)await CreateHasTablesCommand()
                                               .ExecuteScalarAsync(
                                                   new RelationalCommandParameterObject(
                                                       connection,
                                                       null,
                                                       Dependencies.CurrentContext.Context,
                                                       Dependencies.CommandLogger),
-                                                  cancellationToken: ct) != 0, cancellationToken);
+                                                  cancellationToken: ct) != 0,
+                cancellationToken);
 
         private IRelationalCommand CreateHasTablesCommand()
             => _rawSqlCommandBuilder

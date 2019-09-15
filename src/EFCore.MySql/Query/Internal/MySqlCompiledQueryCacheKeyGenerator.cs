@@ -49,10 +49,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             var extensions = RelationalDependencies.ContextOptions.FindExtension<MySqlOptionsExtension>();
             return new MySqlCompiledQueryCacheKey(
                 GenerateCacheKeyCore(query, async),
-                extensions?.ServerVersion ?? null,
-                extensions?.NullableCharSetBehavior ?? null,
-                extensions?.AnsiCharSetInfo ?? null,
-                extensions?.UnicodeCharSetInfo ?? null,
+                extensions?.ServerVersion,
+                extensions?.NullableCharSetBehavior,
+                extensions?.AnsiCharSetInfo,
+                extensions?.UnicodeCharSetInfo,
                 extensions?.NoBackslashEscapes ?? false);
         }
 
@@ -83,15 +83,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
             public override bool Equals(object obj)
                 => !(obj is null)
-                   && obj is MySqlCompiledQueryCacheKey
-                   && Equals((MySqlCompiledQueryCacheKey)obj);
+                   && obj is MySqlCompiledQueryCacheKey key
+                   && Equals(key);
 
             private bool Equals(MySqlCompiledQueryCacheKey other)
                 => _relationalCompiledQueryCacheKey.Equals(other._relationalCompiledQueryCacheKey)
-                   && _serverVersion == other._serverVersion
-                   && _nullableCharSetBehavior.Value == other._nullableCharSetBehavior.Value
-                   && _ansiCharSetInfo == other._ansiCharSetInfo
-                   && _unicodeCharSetInfo == other._unicodeCharSetInfo
+                   && Equals(_serverVersion, other._serverVersion)
+                   && _nullableCharSetBehavior.GetValueOrDefault() == other._nullableCharSetBehavior.GetValueOrDefault()
+                   && Equals(_ansiCharSetInfo, other._ansiCharSetInfo)
+                   && Equals(_unicodeCharSetInfo, other._unicodeCharSetInfo)
                    && _noBackslashEscapes == other._noBackslashEscapes
                 ;
 
