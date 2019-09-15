@@ -1,5 +1,6 @@
 ﻿using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query;
+using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -19,6 +20,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 new MySqlNewGuidTranslator(sqlExpressionFactory),
                 new MySqlObjectToStringTranslator(sqlExpressionFactory),
                 new MySqlStringMethodTranslator(sqlExpressionFactory),
+                new MySqlStringComparisonTranslator(sqlExpressionFactory),
             });
         }
     }

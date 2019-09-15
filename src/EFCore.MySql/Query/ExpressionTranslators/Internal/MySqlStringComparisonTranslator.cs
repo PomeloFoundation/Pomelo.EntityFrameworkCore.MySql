@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
@@ -26,13 +27,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         private static readonly MethodInfo _indexOfMethodInfo
             = typeof(string).GetRuntimeMethod(nameof(string.IndexOf), new[] { typeof(string), typeof(StringComparison) });
 
-        private readonly SqlExpression _caseSensitiveComparisons;            
+        private readonly SqlExpression _caseSensitiveComparisons;
 
-        private readonly ISqlExpressionFactory _sqlExpressionFactory;
+        private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
         public MySqlStringComparisonTranslator(ISqlExpressionFactory sqlExpressionFactory)
         {
-            _sqlExpressionFactory = sqlExpressionFactory;
+            _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
             _caseSensitiveComparisons = _sqlExpressionFactory.Constant(
                 new ReadOnlyCollection<SqlExpression>(new List<SqlExpression> {
                     _sqlExpressionFactory.Constant(StringComparison.Ordinal),
@@ -202,18 +203,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         private SqlBinaryExpression MakeStartsWithExpressionImpl(
             SqlExpression target,
             SqlExpression prefix,
-            SqlExpression originalPrefix = null) {
+            SqlExpression originalPrefix = null)
+        {
+            // BUG: EF Core #17389 will lead to a System.NullReferenceException, if SqlExpressionFactory.Like()
+            //      is being called with match and pattern as two expressions, that have not been applied a
+            //      TypeMapping yet and no escapeChar (null).
+            //      As a workaround, apply/infer the type mapping for the match expression manually for now.
             return _sqlExpressionFactory.AndAlso(
                 _sqlExpressionFactory.Like(
                     target,
-                    _sqlExpressionFactory.Function(
+                    _sqlExpressionFactory.ApplyDefaultTypeMapping(_sqlExpressionFactory.Function(
                         "CONCAT",
                         // when performing the like it is preferable to use the untransformed prefix
                         // value to ensure the index can be used
                         new[] { originalPrefix ?? prefix, _sqlExpressionFactory.Constant("%") },
-                        typeof(string),
-                        null)
-                ),
+                        typeof(string)))),
                 _sqlExpressionFactory.Equal(
                     _sqlExpressionFactory.Function(
                         "LEFT",
@@ -222,8 +226,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                             target,
                             CharLength(prefix)
                         },
-                        typeof(string),
-                        null),
+                        typeof(string)),
                     prefix
                 ));
         }
@@ -448,7 +451,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     nameof(expression)
                 );
             }
-            
+
             if (expression is SqlConstantExpression constant)
             {
                 value = (T)constant.Value;
@@ -466,7 +469,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             Func<SqlExpression> ifCaseSensitive,
             Func<SqlExpression> ifCaseInsensitive)
         {
-            switch (cmp) {
+            switch (cmp)
+            {
                 case StringComparison.Ordinal:
                 case StringComparison.CurrentCulture:
                 case StringComparison.InvariantCulture:
@@ -485,9 +489,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             return _sqlExpressionFactory.Function("LCASE", new[] { value }, value.Type, null);
         }
 
-        private static SqlExpression Utf8Bin(SqlExpression value)
+        private SqlExpression Utf8Bin(SqlExpression value)
         {
-            return new MySqlCollateExpression(
+            return _sqlExpressionFactory.Collate(
                 value,
                 "utf8mb4",
                 "utf8mb4_bin"
