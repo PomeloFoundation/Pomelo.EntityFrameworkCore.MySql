@@ -57,6 +57,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<IQuerySqlGeneratorFactory, MySqlQuerySqlGeneratorFactory>()
                 .TryAdd<IRelationalSqlTranslatingExpressionVisitorFactory, MySqlSqlTranslatingExpressionVisitorFactory>()
                 .TryAdd<ISqlExpressionFactory, MySqlSqlExpressionFactory>()
+                .TryAdd<IQueryableMethodTranslatingExpressionVisitorFactory, MySqlQueryableMethodTranslatingExpressionVisitorFactory>()
                 .TryAddProviderSpecificServices(
                 b => b
                     .TryAddSingleton<IMySqlOptions, MySqlOptions>()
