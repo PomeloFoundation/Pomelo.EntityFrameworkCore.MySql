@@ -51,7 +51,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
                     if (datePart.Divisor != 1)
                     {
-                        return _sqlExpressionFactory.Divide(
+                        return _sqlExpressionFactory.MySqlIntegerDivide(
                             extract,
                             _sqlExpressionFactory.Constant(datePart.Divisor));
                     }

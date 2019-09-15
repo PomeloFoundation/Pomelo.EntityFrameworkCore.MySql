@@ -659,7 +659,7 @@ FROM `Orders` AS `o`");
             await base.Select_datetime_millisecond_component(isAsync);
 
             AssertSql(
-                @"SELECT `o`.`OrderDate`
+                @"SELECT (EXTRACT(microsecond FROM `o`.`OrderDate`)) DIV (1000)
 FROM `Orders` AS `o`");
         }
 

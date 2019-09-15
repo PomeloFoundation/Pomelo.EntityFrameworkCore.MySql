@@ -253,5 +253,28 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
             return mySqlCollateExpression;
         }
+
+        public Expression VisitMySqlBinaryExpression(MySqlBinaryExpression mySqlBinaryExpression)
+        {
+            Sql.Append("(");
+            Visit(mySqlBinaryExpression.Left);
+            Sql.Append(")");
+
+            switch (mySqlBinaryExpression.OperatorType)
+            {
+                case MySqlBinaryExpressionOperatorType.IntegerDivision:
+                    Sql.Append(" DIV ");
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            Sql.Append("(");
+            Visit(mySqlBinaryExpression.Right);
+            Sql.Append(")");
+
+            return mySqlBinaryExpression;
+        }
     }
 }

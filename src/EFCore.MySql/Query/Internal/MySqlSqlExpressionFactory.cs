@@ -60,7 +60,35 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     pattern,
                     null));
 
+        public virtual MySqlBinaryExpression MySqlIntegerDivide(
+            SqlExpression left,
+            SqlExpression right,
+            RelationalTypeMapping typeMapping = null)
+            => MakeBinary(
+                MySqlBinaryExpressionOperatorType.IntegerDivision,
+                left,
+                right,
+                typeMapping);
+
         #endregion Expression factory methods
+
+        public virtual MySqlBinaryExpression MakeBinary(
+            MySqlBinaryExpressionOperatorType operatorType,
+            SqlExpression left,
+            SqlExpression right,
+            RelationalTypeMapping typeMapping)
+        {
+            var returnType = left.Type;
+
+            return (MySqlBinaryExpression)ApplyTypeMapping(
+                new MySqlBinaryExpression(
+                    operatorType,
+                    left,
+                    right,
+                    returnType,
+                    null),
+                typeMapping);
+        }
 
         public override SqlExpression ApplyTypeMapping(SqlExpression sqlExpression, RelationalTypeMapping typeMapping)
         {
@@ -80,6 +108,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
                 case MySqlRegexpExpression e:
                     return ApplyTypeMappingOnRegexp(e);
+
+                case MySqlBinaryExpression e:
+                    return ApplyTypeMappingOnMySqlBinary(e, typeMapping);
 
                 default:
                     return base.ApplyTypeMapping(sqlExpression, typeMapping);
@@ -118,6 +149,39 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 ApplyTypeMapping(regexpExpression.Match, inferredTypeMapping),
                 ApplyTypeMapping(regexpExpression.Pattern, inferredTypeMapping),
                 _boolTypeMapping);
+        }
+
+        private SqlExpression ApplyTypeMappingOnMySqlBinary(
+            MySqlBinaryExpression sqlBinaryExpression,
+            RelationalTypeMapping typeMapping)
+        {
+            var left = sqlBinaryExpression.Left;
+            var right = sqlBinaryExpression.Right;
+
+            Type resultType;
+            RelationalTypeMapping resultTypeMapping;
+            RelationalTypeMapping inferredTypeMapping;
+
+            switch (sqlBinaryExpression.OperatorType)
+            {
+                case MySqlBinaryExpressionOperatorType.IntegerDivision:
+                {
+                    inferredTypeMapping = typeMapping ?? ExpressionExtensions.InferTypeMapping(left, right);
+                    resultType = left.Type;
+                    resultTypeMapping = inferredTypeMapping;
+                }
+                break;
+
+                default:
+                    throw new InvalidOperationException("Incorrect OperatorType for MySqlBinaryExpression");
+            }
+
+            return new MySqlBinaryExpression(
+                sqlBinaryExpression.OperatorType,
+                ApplyTypeMapping(left, inferredTypeMapping),
+                ApplyTypeMapping(right, inferredTypeMapping),
+                resultType,
+                resultTypeMapping);
         }
     }
 }
