@@ -742,6 +742,60 @@ WHERE `t`.`c` < @__nextYear_0");
             return base.Where_multiple_contains_in_subquery_with_or(isAsync);
         }
 
+        public override Task Intersect(bool isAsync)
+        {
+            // INTERSECT is not natively supported by MySQL.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Intersect(isAsync));
+        }
+
+        public override Task Intersect_nested(bool isAsync)
+        {
+            // INTERSECT is not natively supported by MySQL.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Intersect_nested(isAsync));
+        }
+
+        public override Task Intersect_non_entity(bool isAsync)
+        {
+            // INTERSECT is not natively supported by MySQL.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Intersect_non_entity(isAsync));
+        }
+
+        public override Task Union_Intersect(bool isAsync)
+        {
+            // INTERSECT is not natively supported by MySQL.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Union_Intersect(isAsync));
+        }
+
+        public override Task Except(bool isAsync)
+        {
+            // EXCEPT is not natively supported by MySQL.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Except(isAsync));
+        }
+
+        public override Task Except_simple_followed_by_projecting_constant(bool isAsync)
+        {
+            // EXCEPT is not natively supported by MySQL.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Except_simple_followed_by_projecting_constant(isAsync));
+        }
+
+        public override Task Except_nested(bool isAsync)
+        {
+            // EXCEPT is not natively supported by MySQL.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Except_nested(isAsync));
+        }
+
+        public override Task Except_non_entity(bool isAsync)
+        {
+            // EXCEPT is not natively supported by MySQL.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Except_non_entity(isAsync));
+        }
+
+        public override Task Select_Except_reference_projection(bool isAsync)
+        {
+            // EXCEPT is not natively supported by MySQL.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Select_Except_reference_projection(isAsync));
+        }
+
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
     }
