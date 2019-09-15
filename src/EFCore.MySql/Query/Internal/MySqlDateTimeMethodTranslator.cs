@@ -26,11 +26,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddMinutes), new[] { typeof(double) }), "minute" },
             { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddSeconds), new[] { typeof(double) }), "second" },
         };
-        private readonly ISqlExpressionFactory _sqlExpressionFactory;
+
+        private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
         public MySqlDateTimeMethodTranslator(ISqlExpressionFactory sqlExpressionFactory)
         {
-            _sqlExpressionFactory = sqlExpressionFactory;
+            _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
         }
 
         public virtual SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
@@ -48,7 +49,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         new[]
                         {
                             instance,
-                            new MySqlComplexFunctionArgumentExpression(new SqlExpression[]
+                            _sqlExpressionFactory.ComplexFunctionArgument(new SqlExpression[]
                             {
                                 _sqlExpressionFactory.Fragment("INTERVAL"),
                                 _sqlExpressionFactory.Convert(arguments[0], typeof(int)),
