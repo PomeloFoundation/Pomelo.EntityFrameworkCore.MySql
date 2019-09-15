@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using Microsoft.EntityFrameworkCore.Query;
@@ -52,13 +53,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             = typeof(string).GetRuntimeMethod(nameof(string.Contains), new[] { typeof(string) });
         private static readonly MethodInfo _endsWithMethodInfo
             = typeof(string).GetRuntimeMethod(nameof(string.EndsWith), new[] { typeof(string) });
-        private readonly ISqlExpressionFactory _sqlExpressionFactory;
+
+        private static readonly MethodInfo _padLeftWithOneArg
+            = typeof(string).GetRuntimeMethod(nameof(string.PadLeft), new[] { typeof(int) });
+        private static readonly MethodInfo _padRightWithOneArg
+            = typeof(string).GetRuntimeMethod(nameof(string.PadRight), new[] { typeof(int) });
+
+        private static readonly MethodInfo _padLeftWithTwoArgs
+            = typeof(string).GetRuntimeMethod(nameof(string.PadLeft), new[] { typeof(int), typeof(char) });
+        private static readonly MethodInfo _padRightWithTwoArgs
+            = typeof(string).GetRuntimeMethod(nameof(string.PadRight), new[] { typeof(int), typeof(char) });
+
+        private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
         private const char LikeEscapeChar = '\\';
 
         public MySqlStringMethodTranslator(ISqlExpressionFactory sqlExpressionFactory)
         {
-            _sqlExpressionFactory = sqlExpressionFactory;
+            _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
         }
 
         public virtual SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
@@ -68,31 +80,35 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 var argument = arguments[0];
                 var stringTypeMapping = ExpressionExtensions.InferTypeMapping(instance, argument);
 
-                return _sqlExpressionFactory.Subtract(
-                    _sqlExpressionFactory.Function(
-                        "LOCATE",
-                        new[]
-                        {
-                            _sqlExpressionFactory.ApplyTypeMapping(instance, stringTypeMapping),
-                            _sqlExpressionFactory.ApplyTypeMapping(argument, stringTypeMapping)
-                        },
-                        method.ReturnType),
-                    _sqlExpressionFactory.Constant(1));
+                return _sqlExpressionFactory.Function(
+                    "GREATEST",
+                    new SqlExpression[] {
+                        _sqlExpressionFactory.Subtract(
+                            _sqlExpressionFactory.Function(
+                                "LOCATE",
+                                new[]
+                                {
+                                    _sqlExpressionFactory.ApplyTypeMapping(argument, stringTypeMapping),
+                                    _sqlExpressionFactory.ApplyTypeMapping(instance, stringTypeMapping)
+                                },
+                                method.ReturnType),
+                            _sqlExpressionFactory.Constant(1)),
+                        _sqlExpressionFactory.Constant(0)
+                    },
+                    method.ReturnType);
             }
 
             if (_replaceMethodInfo.Equals(method))
             {
-                var firstArgument = arguments[0];
-                var secondArgument = arguments[1];
-                var stringTypeMapping = ExpressionExtensions.InferTypeMapping(instance, firstArgument, secondArgument);
+                var stringTypeMapping = ExpressionExtensions.InferTypeMapping(instance, arguments[0], arguments[1]);
 
                 return _sqlExpressionFactory.Function(
                     "REPLACE",
                     new[]
                     {
                         _sqlExpressionFactory.ApplyTypeMapping(instance, stringTypeMapping),
-                        _sqlExpressionFactory.ApplyTypeMapping(firstArgument, stringTypeMapping),
-                        _sqlExpressionFactory.ApplyTypeMapping(secondArgument, stringTypeMapping)
+                        _sqlExpressionFactory.ApplyTypeMapping(arguments[0], stringTypeMapping),
+                        _sqlExpressionFactory.ApplyTypeMapping(arguments[1], stringTypeMapping)
                     },
                     method.ReturnType,
                     stringTypeMapping);
@@ -126,30 +142,32 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
             if (_isNullOrWhiteSpaceMethodInfo.Equals(method))
             {
-                var argument = arguments[0];
-
-                return ProcessTrimMethod(instance, arguments, null);
+                return _sqlExpressionFactory.OrElse(
+                    _sqlExpressionFactory.IsNull(arguments[0]),
+                    _sqlExpressionFactory.Equal(
+                        ProcessTrimMethod(arguments, null),
+                        _sqlExpressionFactory.Constant(string.Empty)));
             }
 
             if (_trimStartMethodInfoWithoutArgs?.Equals(method) == true
                 || _trimStartMethodInfoWithCharArg?.Equals(method) == true
                 || _trimStartMethodInfoWithCharArrayArg.Equals(method))
             {
-                return ProcessTrimMethod(instance, arguments, "LEADING");
+                return ProcessTrimMethod(arguments, "LEADING");
             }
 
             if (_trimEndMethodInfoWithoutArgs?.Equals(method) == true
                 || _trimEndMethodInfoWithCharArg?.Equals(method) == true
                 || _trimEndMethodInfoWithCharArrayArg.Equals(method))
             {
-                return ProcessTrimMethod(instance, arguments, "TRAILING");
+                return ProcessTrimMethod(arguments, "TRAILING");
             }
 
             if (_trimMethodInfoWithoutArgs?.Equals(method) == true
                 || _trimMethodInfoWithCharArg?.Equals(method) == true
                 || _trimMethodInfoWithCharArrayArg.Equals(method))
             {
-                return ProcessTrimMethod(instance, arguments, null);
+                return ProcessTrimMethod(arguments, null);
             }
 
             if (_containsMethodInfo.Equals(method))
@@ -165,7 +183,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         "LOCATE",
                         new[]
                         {
-                            new MySqlComplexFunctionArgumentExpression(
+                            _sqlExpressionFactory.ComplexFunctionArgument(
                                 new[]
                                 {
                                     _sqlExpressionFactory.Fragment("BINARY"), // for case sensitivity
@@ -204,8 +222,60 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 return TranslateStartsEndsWith(instance, arguments[0], false);
             }
 
+            if (_padLeftWithOneArg.Equals(method))
+            {
+                return TranslatePadLeftRight(
+                    true,
+                    instance,
+                    arguments[0],
+                    _sqlExpressionFactory.Constant(" "),
+                    method.ReturnType);
+            }
+
+            if (_padRightWithOneArg.Equals(method))
+            {
+                return TranslatePadLeftRight(
+                    false,
+                    instance,
+                    arguments[0],
+                    _sqlExpressionFactory.Constant(" "),
+                    method.ReturnType);
+            }
+
+            if (_padLeftWithTwoArgs.Equals(method))
+            {
+                return TranslatePadLeftRight(
+                    true,
+                    instance,
+                    arguments[0],
+                    arguments[1],
+                    method.ReturnType);
+            }
+
+            if (_padRightWithTwoArgs.Equals(method))
+            {
+                return TranslatePadLeftRight(
+                    false,
+                    instance,
+                    arguments[0],
+                    arguments[1],
+                    method.ReturnType);
+            }
+
             return null;
         }
+
+        private SqlExpression TranslatePadLeftRight(bool leftPad, SqlExpression instance, SqlExpression length, SqlExpression padString, Type returnType)
+            => length is SqlConstantExpression && padString is SqlConstantExpression
+                ? _sqlExpressionFactory.Function(
+                    leftPad ? "LPAD" : "RPAD",
+                    new[] {
+                        instance,
+                        length,
+                        padString
+                    },
+                    returnType)
+                : null;
 
         private SqlExpression TranslateStartsEndsWith(SqlExpression instance, SqlExpression pattern, bool startsWith)
         {
@@ -294,15 +364,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             return builder.ToString();
         }
 
-        private SqlExpression ProcessTrimMethod(SqlExpression instance, IReadOnlyList<SqlExpression> arguments, string locationSpecifier)
+        private SqlExpression ProcessTrimMethod(IReadOnlyList<SqlExpression> arguments, string locationSpecifier)
         {
             // Builds a TRIM({BOTH | LEADING | TRAILING} remstr FROM str) expression.
-
-            var typeMapping = instance.TypeMapping;
-            if (typeMapping == null)
-            {
-                return null;
-            }
 
             var sqlArguments = new List<SqlExpression>();
 
@@ -311,9 +375,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 sqlArguments.Add(_sqlExpressionFactory.Fragment(locationSpecifier));
             }
 
-            if (arguments.Count == 1)
+            if (arguments.Count == 2)
             {
-                var constantValue = (arguments[0] as SqlConstantExpression)?.Value;
+                var constantValue = (arguments[1] as SqlConstantExpression)?.Value;
                 var charactersToTrim = new List<char>();
 
                 if (constantValue is char singleChar)
@@ -331,7 +395,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
                 if (charactersToTrim.Count > 0)
                 {
-                    sqlArguments.Add(_sqlExpressionFactory.Constant(new string(charactersToTrim.ToArray()), typeMapping));
+                    sqlArguments.Add(_sqlExpressionFactory.Constant(new string(charactersToTrim.ToArray())));
                 }
             }
 
@@ -340,14 +404,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 sqlArguments.Add(_sqlExpressionFactory.Fragment("FROM"));
             }
 
+            sqlArguments.Add(arguments[0]);
+
             return _sqlExpressionFactory.Function(
                 "TRIM",
-                new[] { new MySqlComplexFunctionArgumentExpression(
+                new[] { _sqlExpressionFactory.ComplexFunctionArgument(
                     sqlArguments.ToArray(),
                     typeof(string)),
                 },
-                typeof(string),
-                typeMapping);
+                typeof(string));
         }
     }
 }
