@@ -8,7 +8,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
@@ -48,12 +47,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             SqlExpression instance,
             MethodInfo method,
             IReadOnlyList<SqlExpression> arguments)
-           => method.Name == nameof(ToString)
-               ? new MySqlObjectToStringTranslator(_sqlExpressionFactory).Translate(instance, method, arguments)
-               : _supportedMethods.Contains(method)
-                   ? _sqlExpressionFactory.MakeUnary(ExpressionType.Convert,
-                       arguments[0],
-                       method.ReturnType)
-                   : null;
+        {
+            // Delegate conversion to CAST() handling.
+            return _supportedMethods.Contains(method)
+                ? _sqlExpressionFactory.Convert(
+                    arguments[0],
+                    method.ReturnType)
+                : null;
+        }
     }
 }
