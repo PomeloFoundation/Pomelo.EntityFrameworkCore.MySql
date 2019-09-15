@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
+using Pomelo.EntityFrameworkCore.MySql.Extensions;
 using Xunit;
 using Xunit.Abstractions;
 

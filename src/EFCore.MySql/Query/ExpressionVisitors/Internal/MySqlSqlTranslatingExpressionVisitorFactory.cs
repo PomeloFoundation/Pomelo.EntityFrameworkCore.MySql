@@ -4,30 +4,17 @@ using Microsoft.EntityFrameworkCore.Query;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
-    /// <summary>
-    ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-    ///     directly from your code. This API may change or be removed in future releases.
-    /// </summary>
-    public class MySqlSqlTranslatingExpressionVisitorFactory : RelationalSqlTranslatingExpressionVisitorFactory
+    public class MySqlSqlTranslatingExpressionVisitorFactory : IRelationalSqlTranslatingExpressionVisitorFactory
     {
-        [NotNull] private readonly RelationalSqlTranslatingExpressionVisitorDependencies _dependencies;
+        private readonly RelationalSqlTranslatingExpressionVisitorDependencies _dependencies;
 
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public MySqlSqlTranslatingExpressionVisitorFactory(
             [NotNull] RelationalSqlTranslatingExpressionVisitorDependencies dependencies)
-            : base(dependencies)
         {
             _dependencies = dependencies;
         }
 
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public override RelationalSqlTranslatingExpressionVisitor Create(
+        public virtual RelationalSqlTranslatingExpressionVisitor Create(
             IModel model,
             QueryableMethodTranslatingExpressionVisitor queryableMethodTranslatingExpressionVisitor)
             => new MySqlSqlTranslatingExpressionVisitor(

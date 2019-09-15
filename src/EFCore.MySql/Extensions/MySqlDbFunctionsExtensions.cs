@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 
-namespace Microsoft.EntityFrameworkCore
+namespace Pomelo.EntityFrameworkCore.MySql.Extensions
 {
     /// <summary>
     ///     Provides CLR methods that get translated to database functions when used in LINQ to Entities queries.
