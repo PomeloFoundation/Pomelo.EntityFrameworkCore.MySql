@@ -85,22 +85,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             return base.VisitSqlFunction(sqlFunctionExpression);
         }
 
-        protected override Expression VisitBinary(BinaryExpression binaryExpression)
+        protected override Expression VisitSqlBinary(SqlBinaryExpression sqlBinaryExpression)
         {
-            if (binaryExpression.NodeType == ExpressionType.Add &&
-                binaryExpression.Left.Type == typeof(string) &&
-                binaryExpression.Right.Type == typeof(string))
+            if (sqlBinaryExpression.OperatorType == ExpressionType.Add &&
+                sqlBinaryExpression.Type == typeof(string) &&
+                sqlBinaryExpression.Left.TypeMapping?.ClrType == typeof(string) &&
+                sqlBinaryExpression.Right.TypeMapping?.ClrType == typeof(string))
             {
                 Sql.Append("CONCAT(");
-                Visit(binaryExpression.Left);
+                Visit(sqlBinaryExpression.Left);
                 Sql.Append(", ");
-                var exp = Visit(binaryExpression.Right);
+                Visit(sqlBinaryExpression.Right);
                 Sql.Append(")");
 
-                return binaryExpression;
+                return sqlBinaryExpression;
             }
 
-            return base.VisitBinary(binaryExpression);
+            return base.VisitSqlBinary(sqlBinaryExpression);
         }
 
         /* TODO: Investigate further and enable again. (3.0)
