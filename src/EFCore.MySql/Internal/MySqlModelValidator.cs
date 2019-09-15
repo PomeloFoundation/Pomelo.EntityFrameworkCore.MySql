@@ -52,54 +52,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         {
             base.Validate(model, logger);
 
-            ValidateDefaultDecimalMapping(model, logger);
-            ValidateByteIdentityMapping(model, logger);
             ValidateNonKeyValueGeneration(model, logger);
-            ValidateIndexIncludeProperties(model, logger);
-        }
-
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        protected virtual void ValidateDefaultDecimalMapping([NotNull] IModel model, [NotNull] IDiagnosticsLogger<DbLoggerCategory.Model.Validation> logger)
-        {
-            foreach (var property in model.GetEntityTypes()
-                .SelectMany(t => t.GetDeclaredProperties())
-                .Where(
-                    p => p.ClrType.UnwrapNullableType() == typeof(decimal)
-                         && !p.IsForeignKey()))
-            {
-                var typeConfigurationSource = (property as IConventionProperty)?.GetColumnTypeConfigurationSource();
-                var typeMappingConfigurationSource = (property as IConventionProperty)?.GetTypeMappingConfigurationSource(); // TODO: ?
-                if ((typeConfigurationSource == null
-                     && ConfigurationSource.Convention.Overrides(typeMappingConfigurationSource))
-                    || (typeConfigurationSource != null
-                     && ConfigurationSource.Convention.Overrides(typeConfigurationSource)))
-                {
-                    logger.DecimalTypeDefaultWarning(property);
-                }
-            }
-        }
-
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        protected virtual void ValidateByteIdentityMapping([NotNull] IModel model, [NotNull] IDiagnosticsLogger<DbLoggerCategory.Model.Validation> logger)
-        {
-            foreach (var property in model.GetEntityTypes()
-                .SelectMany(t => t.GetDeclaredProperties())
-                .Where(
-                    p => p.ClrType.UnwrapNullableType() == typeof(byte)
-                         && p.GetValueGenerationStrategy() == MySqlValueGenerationStrategy.IdentityColumn))
-            {
-                logger.ByteIdentityColumnWarning(property);
-            }
         }
 
         /// <summary>
@@ -122,30 +75,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                 throw new InvalidOperationException(
                     MySqlStrings.NonKeyValueGeneration(property.Name, property.DeclaringEntityType.DisplayName()));
             }
-        }
-
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        protected virtual void ValidateIndexIncludeProperties([NotNull] IModel model, [NotNull] IDiagnosticsLogger<DbLoggerCategory.Model.Validation> logger)
-        {
-            // TODO: ?
-        }
-
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        protected override void ValidateSharedTableCompatibility(
-            IReadOnlyList<IEntityType> mappedTypes, string tableName, IDiagnosticsLogger<DbLoggerCategory.Model.Validation> logger)
-        {
-            // TODO: ?
-            base.ValidateSharedTableCompatibility(mappedTypes, tableName, logger);
         }
 
         /// <summary>
@@ -198,45 +127,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                 var sb = new StringBuilder()
                     .AppendJoin(identityColumns.Select(p => "'" + p.DeclaringEntityType.DisplayName() + "." + p.Name + "'"));
                 throw new InvalidOperationException(MySqlStrings.MultipleIdentityColumns(sb, tableName));
-            }
-        }
-
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        protected override void ValidateSharedKeysCompatibility(
-            IReadOnlyList<IEntityType> mappedTypes, string tableName, IDiagnosticsLogger<DbLoggerCategory.Model.Validation> logger)
-        {
-            base.ValidateSharedKeysCompatibility(mappedTypes, tableName, logger);
-
-            var keyMappings = new Dictionary<string, IKey>();
-
-            foreach (var key in mappedTypes.SelectMany(et => et.GetDeclaredKeys()))
-            {
-                var keyName = key.GetName();
-
-                if (!keyMappings.TryGetValue(keyName, out var duplicateKey))
-                {
-                    keyMappings[keyName] = key;
-                    continue;
-                }
-
-                // TODO: ?
-                //if (key.IsClustered()
-                //    != duplicateKey.IsClustered())
-                //{
-                //    throw new InvalidOperationException(
-                //        MySqlStrings.DuplicateKeyMismatchedClustering(
-                //            key.Properties.Format(),
-                //            key.DeclaringEntityType.DisplayName(),
-                //            duplicateKey.Properties.Format(),
-                //            duplicateKey.DeclaringEntityType.DisplayName(),
-                //            tableName,
-                //            keyName));
-                //}
             }
         }
     }
