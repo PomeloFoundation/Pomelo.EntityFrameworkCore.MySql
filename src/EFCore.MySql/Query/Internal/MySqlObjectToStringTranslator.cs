@@ -48,18 +48,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
         public virtual SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
         {
+            // Translates parameterless Object.ToString() calls.
             return method.Name == nameof(ToString)
                    && arguments.Count == 0
                    && instance != null
                    && _typeMapping.TryGetValue(
-                       instance.Type.UnwrapNullableType(),
+                       instance.Type
+                           .UnwrapNullableType(),
                        out var storeType)
                 ? _sqlExpressionFactory.Function(
                     "CONVERT",
                     new[]
                     {
-                        _sqlExpressionFactory.Fragment(storeType),
-                        instance
+                        instance,
+                        _sqlExpressionFactory.Fragment(storeType)
                     },
                     typeof(string))
                 : null;
