@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -27,7 +28,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 ExpressionType.Divide,
                 ExpressionType.Modulo,
             };
-        // TODO: Possibly make this protected in base
+
         private readonly ISqlExpressionFactory _sqlExpressionFactory;
 
         public MySqlSqlTranslatingExpressionVisitor(
@@ -48,12 +49,35 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 return null;
             }
 
-            return visitedExpression is SqlBinaryExpression sqlBinary
-                && _arithmeticOperatorTypes.Contains(sqlBinary.OperatorType)
-                && (_dateTimeDataTypes.Contains(GetProviderType(sqlBinary.Left))
-                    || _dateTimeDataTypes.Contains(GetProviderType(sqlBinary.Right)))
-                ? null
-                : visitedExpression;
+            if (visitedExpression is SqlBinaryExpression visitedBinaryExpression)
+            {
+                // Returning null forces client projection.
+                switch (visitedBinaryExpression.OperatorType)
+                {
+                    case ExpressionType.Add:
+                    case ExpressionType.Subtract:
+                    case ExpressionType.Multiply:
+                    case ExpressionType.Divide:
+                    case ExpressionType.Modulo:
+                        return IsDateTimeBasedOperation(visitedBinaryExpression)
+                            ? null
+                            : visitedBinaryExpression;
+                }
+            }
+
+            return visitedExpression;
+        }
+
+
+        private static bool IsDateTimeBasedOperation(SqlBinaryExpression binaryExpression)
+        {
+            if (binaryExpression.TypeMapping != null
+                && (binaryExpression.TypeMapping.StoreType.StartsWith("date") || binaryExpression.TypeMapping.StoreType.StartsWith("time")))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public override SqlExpression TranslateLongCount(Expression expression = null)
