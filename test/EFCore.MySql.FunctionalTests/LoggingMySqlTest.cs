@@ -11,7 +11,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         protected override DbContextOptionsBuilder CreateOptionsBuilder(
             IServiceCollection services,
             Action<RelationalDbContextOptionsBuilder<MySqlDbContextOptionsBuilder, MySqlOptionsExtension>> relationalAction)
-            => new DbContextOptionsBuilder().UseMySql("Database=DummyDatabase", relationalAction);
+            => new DbContextOptionsBuilder()
+                .UseInternalServiceProvider(services.AddEntityFrameworkMySql().BuildServiceProvider())
+                .UseMySql("Database=DummyDatabase", relationalAction);
 
         protected override string ProviderName => "Pomelo.EntityFrameworkCore.MySql";
     }
