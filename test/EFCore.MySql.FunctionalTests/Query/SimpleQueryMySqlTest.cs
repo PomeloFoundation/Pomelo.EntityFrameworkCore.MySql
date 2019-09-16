@@ -504,7 +504,7 @@ WHERE UPPER(`c`.`CustomerID`) = 'ALFKI'");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE LTRIM(`c`.`ContactTitle`) = 'Owner'");
+WHERE (TRIM(LEADING FROM `c`.`ContactTitle`) = 'Owner') AND TRIM(LEADING FROM `c`.`ContactTitle`) IS NOT NULL");
         }
 
         public override async Task TrimStart_with_char_argument_in_predicate(bool isAsync)
@@ -513,16 +513,16 @@ WHERE LTRIM(`c`.`ContactTitle`) = 'Owner'");
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`");
+FROM `Customers` AS `c`
+WHERE (TRIM(LEADING 'O' FROM `c`.`ContactTitle`) = 'wner') AND TRIM(LEADING 'O' FROM `c`.`ContactTitle`) IS NOT NULL");
         }
 
-        public override async Task TrimStart_with_char_array_argument_in_predicate(bool isAsync)
+        public override Task TrimStart_with_char_array_argument_in_predicate(bool isAsync)
         {
-            await base.TrimStart_with_char_array_argument_in_predicate(isAsync);
-
-            AssertSql(
-                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`");
+            // MySQL only supports a string (characters in fixed order) as the parameter specifying what should be trimmed.
+            // String.TrimStart has a different behavior, where any single character in any order will be trimmed.
+            // Therefore, calling String.TrimStart with more than one char to trim, triggers client eval.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.TrimStart_with_char_array_argument_in_predicate(isAsync));
         }
 
         public override async Task TrimEnd_without_arguments_in_predicate(bool isAsync)
@@ -532,7 +532,7 @@ FROM `Customers` AS `c`");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE RTRIM(`c`.`ContactTitle`) = 'Owner'");
+WHERE (TRIM(TRAILING FROM `c`.`ContactTitle`) = 'Owner') AND TRIM(TRAILING FROM `c`.`ContactTitle`) IS NOT NULL");
         }
 
         public override async Task TrimEnd_with_char_argument_in_predicate(bool isAsync)
@@ -541,16 +541,16 @@ WHERE RTRIM(`c`.`ContactTitle`) = 'Owner'");
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`");
+FROM `Customers` AS `c`
+WHERE (TRIM(TRAILING 'r' FROM `c`.`ContactTitle`) = 'Owne') AND TRIM(TRAILING 'r' FROM `c`.`ContactTitle`) IS NOT NULL");
         }
 
-        public override async Task TrimEnd_with_char_array_argument_in_predicate(bool isAsync)
+        public override Task TrimEnd_with_char_array_argument_in_predicate(bool isAsync)
         {
-            await base.TrimEnd_with_char_array_argument_in_predicate(isAsync);
-
-            AssertSql(
-                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`");
+            // MySQL only supports a string (characters in fixed order) as the parameter specifying what should be trimmed.
+            // String.TrimEnd has a different behavior, where any single character in any order will be trimmed.
+            // Therefore, calling String.TrimEnd with more than one char to trim, triggers client eval.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.TrimEnd_with_char_array_argument_in_predicate(isAsync));
         }
 
         public override async Task Trim_without_argument_in_predicate(bool isAsync)
@@ -560,7 +560,7 @@ FROM `Customers` AS `c`");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE LTRIM(RTRIM(`c`.`ContactTitle`)) = 'Owner'");
+WHERE (TRIM(`c`.`ContactTitle`) = 'Owner') AND TRIM(`c`.`ContactTitle`) IS NOT NULL");
         }
 
         public override async Task Trim_with_char_argument_in_predicate(bool isAsync)
@@ -569,16 +569,16 @@ WHERE LTRIM(RTRIM(`c`.`ContactTitle`)) = 'Owner'");
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`");
+FROM `Customers` AS `c`
+WHERE (TRIM('O' FROM `c`.`ContactTitle`) = 'wner') AND TRIM('O' FROM `c`.`ContactTitle`) IS NOT NULL");
         }
 
-        public override async Task Trim_with_char_array_argument_in_predicate(bool isAsync)
+        public override Task Trim_with_char_array_argument_in_predicate(bool isAsync)
         {
-            await base.Trim_with_char_array_argument_in_predicate(isAsync);
-
-            AssertSql(
-                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`");
+            // MySQL only supports a string (characters in fixed order) as the parameter specifying what should be trimmed.
+            // String.Trim has a different behavior, where any single character in any order will be trimmed.
+            // Therefore, calling String.Trim with more than one char to trim, triggers client eval.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Trim_with_char_array_argument_in_predicate(isAsync));
         }
 
         public override async Task Sum_with_coalesce(bool isAsync)

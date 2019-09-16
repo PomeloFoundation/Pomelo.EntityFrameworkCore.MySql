@@ -145,7 +145,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 return _sqlExpressionFactory.OrElse(
                     _sqlExpressionFactory.IsNull(arguments[0]),
                     _sqlExpressionFactory.Equal(
-                        ProcessTrimMethod(arguments, null),
+                        ProcessTrimMethod(arguments[0], null, null),
                         _sqlExpressionFactory.Constant(string.Empty)));
             }
 
@@ -153,21 +153,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 || _trimStartMethodInfoWithCharArg?.Equals(method) == true
                 || _trimStartMethodInfoWithCharArrayArg.Equals(method))
             {
-                return ProcessTrimMethod(arguments, "LEADING");
+                return ProcessTrimMethod(instance, arguments.Count > 0 ? arguments[0] : null, "LEADING");
             }
 
             if (_trimEndMethodInfoWithoutArgs?.Equals(method) == true
                 || _trimEndMethodInfoWithCharArg?.Equals(method) == true
                 || _trimEndMethodInfoWithCharArrayArg.Equals(method))
             {
-                return ProcessTrimMethod(arguments, "TRAILING");
+                return ProcessTrimMethod(instance, arguments.Count > 0 ? arguments[0] : null, "TRAILING");
             }
 
             if (_trimMethodInfoWithoutArgs?.Equals(method) == true
                 || _trimMethodInfoWithCharArg?.Equals(method) == true
                 || _trimMethodInfoWithCharArrayArg.Equals(method))
             {
-                return ProcessTrimMethod(arguments, null);
+                return ProcessTrimMethod(instance, arguments.Count > 0 ? arguments[0] : null, null);
             }
 
             if (_containsMethodInfo.Equals(method))
@@ -364,7 +364,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             return builder.ToString();
         }
 
-        private SqlExpression ProcessTrimMethod(IReadOnlyList<SqlExpression> arguments, string locationSpecifier)
+        private SqlExpression ProcessTrimMethod(SqlExpression instance, SqlExpression trimChar, string locationSpecifier)
         {
             // Builds a TRIM({BOTH | LEADING | TRAILING} remstr FROM str) expression.
 
@@ -375,27 +375,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 sqlArguments.Add(_sqlExpressionFactory.Fragment(locationSpecifier));
             }
 
-            if (arguments.Count == 2)
+            if (trimChar != null)
             {
-                var constantValue = (arguments[1] as SqlConstantExpression)?.Value;
-                var charactersToTrim = new List<char>();
+                var constantValue = (trimChar as SqlConstantExpression)?.Value;
 
                 if (constantValue is char singleChar)
                 {
-                    charactersToTrim.Add(singleChar);
+                    sqlArguments.Add(_sqlExpressionFactory.Constant(singleChar));
                 }
-                else if (constantValue is char[] charArray)
+                else if (constantValue is char[] charArray && charArray.Length <= 1)
                 {
-                    charactersToTrim.AddRange(charArray);
+                    if (charArray.Length == 1)
+                    {
+                        sqlArguments.Add(_sqlExpressionFactory.Constant(charArray[0]));
+                    }
                 }
                 else
                 {
                     return null;
-                }
-
-                if (charactersToTrim.Count > 0)
-                {
-                    sqlArguments.Add(_sqlExpressionFactory.Constant(new string(charactersToTrim.ToArray())));
                 }
             }
 
@@ -404,7 +401,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 sqlArguments.Add(_sqlExpressionFactory.Fragment("FROM"));
             }
 
-            sqlArguments.Add(arguments[0]);
+            sqlArguments.Add(instance);
 
             return _sqlExpressionFactory.Function(
                 "TRIM",
