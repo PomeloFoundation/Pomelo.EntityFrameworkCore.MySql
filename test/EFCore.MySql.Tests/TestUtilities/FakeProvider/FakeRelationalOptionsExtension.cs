@@ -24,7 +24,7 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities.FakeProvider
         }
 
         public override DbContextOptionsExtensionInfo Info
-            => _info ??= new ExtensionInfo(this);
+            => _info = _info ?? new ExtensionInfo(this);
 
         protected override RelationalOptionsExtension Clone()
             => new FakeRelationalOptionsExtension(this);

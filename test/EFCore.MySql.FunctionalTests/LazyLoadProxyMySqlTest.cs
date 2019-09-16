@@ -16,8 +16,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
 
+            protected override bool ShouldLogCategory(string logCategory)
+                => logCategory == DbLoggerCategory.Query.Name || logCategory == DbLoggerCategory.Database.Command.Name;
+
             public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
-                => base.AddOptions(builder);
+                => base.AddOptions(builder)
+                    .EnableDetailedErrors();
         }
     }
 }

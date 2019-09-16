@@ -202,15 +202,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
 
             public override void PopulateDebugInfo(IDictionary<string, string> debugInfo)
             {
-                debugInfo["SqlServer:" + nameof(MySqlDbContextOptionsBuilder.ServerVersion)]
+                debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.ServerVersion)]
                     = (Extension.ServerVersion?.GetHashCode() ?? 0L).ToString(CultureInfo.InvariantCulture);
-                debugInfo["SqlServer:" + nameof(MySqlDbContextOptionsBuilder.CharSetBehavior)]
+                debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.CharSetBehavior)]
                     = (Extension.NullableCharSetBehavior?.GetHashCode() ?? 0L).ToString(CultureInfo.InvariantCulture);
-                debugInfo["SqlServer:" + nameof(MySqlDbContextOptionsBuilder.AnsiCharSet)]
+                debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.AnsiCharSet)]
                     = (Extension.AnsiCharSetInfo?.GetHashCode() ?? 0L).ToString(CultureInfo.InvariantCulture);
-                debugInfo["SqlServer:" + nameof(MySqlDbContextOptionsBuilder.UnicodeCharSet)]
+                debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.UnicodeCharSet)]
                     = (Extension.UnicodeCharSetInfo?.GetHashCode() ?? 0L).ToString(CultureInfo.InvariantCulture);
-                debugInfo["SqlServer:" + nameof(MySqlDbContextOptionsBuilder.DisableBackslashEscaping)]
+                debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.DisableBackslashEscaping)]
                     = Extension.NoBackslashEscapes.GetHashCode().ToString(CultureInfo.InvariantCulture);
             }
         }
