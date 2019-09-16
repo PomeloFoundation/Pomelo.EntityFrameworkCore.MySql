@@ -1,24 +1,27 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Transactions;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
-    public class TransactionMySqlTest : TransactionTestBase<TransactionMySqlTest.TransactionMySqlFixture>
+    public class TransactionMySqlTest : TransactionTestBase<TransactionMySqlTest.TransactionMySqlFixture>, IDisposable
     {
         public TransactionMySqlTest(TransactionMySqlFixture fixture)
             : base(fixture)
         {
+            TestMySqlRetryingExecutionStrategy.Suspended = true;
         }
 
+        public void Dispose()
+        {
+            TestMySqlRetryingExecutionStrategy.Suspended = false;
+        }
+        
         protected override bool SnapshotSupported => false;
-        protected override bool AmbientTransactionsSupported => false;
+        protected override bool AmbientTransactionsSupported => true;
+        protected override bool DirtyReadsOccur => false;
 
         protected override DbContext CreateContextWithConnectionString()
         {
@@ -45,7 +48,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 }
             }
 
-            public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder) => base.AddOptions(builder);
+            public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
+            {
+                new MySqlDbContextOptionsBuilder(base.AddOptions(builder))
+                    .MaxBatchSize(1);
+                return builder;
+            }
         }
     }
 }

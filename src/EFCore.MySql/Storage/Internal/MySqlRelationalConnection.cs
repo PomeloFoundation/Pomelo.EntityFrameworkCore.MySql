@@ -53,7 +53,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             return builder;
         }
 
-        protected override bool SupportsAmbientTransactions => false;
+        protected override bool SupportsAmbientTransactions => true;
 
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -63,73 +63,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// </summary>
         public override bool IsMultipleActiveResultSetsEnabled => false;
 
-        public override async Task<IDbContextTransaction> BeginTransactionAsync(
-            System.Data.IsolationLevel isolationLevel,
-            CancellationToken cancellationToken = default)
+        public override void EnlistTransaction(Transaction transaction)
         {
-            await OpenAsync(cancellationToken).ConfigureAwait(false);
-
-            if (CurrentTransaction != null)
+            try
             {
-                throw new InvalidOperationException(RelationalStrings.TransactionAlreadyStarted);
+                base.EnlistTransaction(transaction);
             }
-
-            if (Transaction.Current != null)
+            catch (MySqlException e)
             {
-                throw new InvalidOperationException(RelationalStrings.ConflictingAmbientTransaction);
+                if (e.Message == "Already enlisted in a Transaction.")
+                {
+                    throw new InvalidOperationException(e.Message, e);
+                }
+
+                throw;
             }
-
-            if (EnlistedTransaction != null)
-            {
-                throw new InvalidOperationException(RelationalStrings.ConflictingEnlistedTransaction);
-            }
-
-            return await BeginTransactionWithNoPreconditionsAsync(isolationLevel, cancellationToken).ConfigureAwait(false);
-        }
-
-        private async Task<IDbContextTransaction> BeginTransactionWithNoPreconditionsAsync(
-            System.Data.IsolationLevel isolationLevel, CancellationToken cancellationToken = default)
-        {
-            var dbTransaction = await ((global::MySql.Data.MySqlClient.MySqlConnection)base.DbConnection).BeginTransactionAsync(isolationLevel, cancellationToken)
-                .ConfigureAwait(false);
-
-            var guid = new Guid();
-
-            CurrentTransaction = Dependencies.RelationalTransactionFactory.Create(
-                this,
-                dbTransaction,
-                guid,
-                Dependencies.TransactionLogger,
-                transactionOwned: true);
-
-            Dependencies.TransactionLogger.TransactionStarted(
-                this,
-                dbTransaction,
-                CurrentTransaction.TransactionId,
-                DateTimeOffset.UtcNow,
-                new TimeSpan());
-
-            return CurrentTransaction;
-        }
-
-        public virtual async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
-        {
-            if (CurrentTransaction == null)
-            {
-                throw new InvalidOperationException(RelationalStrings.NoActiveTransaction);
-            }
-
-            await ((MySqlRelationalTransaction)CurrentTransaction).CommitAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        public virtual async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
-        {
-            if (CurrentTransaction == null)
-            {
-                throw new InvalidOperationException(RelationalStrings.NoActiveTransaction);
-            }
-
-            await ((MySqlRelationalTransaction)CurrentTransaction).RollbackAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 }
