@@ -27,7 +27,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             { "double", new []{ "double" } },
             { "float", new []{ "float" } },
             { "binary", new []{ "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob" } },
-            { "datetime", new []{ "datetime", "timestamp" } },
+            { "datetime", new []{ "datetime" } },
             { "date", new []{ "date" } },
             { "time", new []{ "time" } },
             { "json", new []{ "json" } },

@@ -31,7 +31,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 	    // decimals
 	    private readonly MySqlDecimalTypeMapping _decimal   = new MySqlDecimalTypeMapping("decimal(65, 30)", precision: 65, scale: 30);
 	    private readonly MySqlDoubleTypeMapping _double     = new MySqlDoubleTypeMapping("double", DbType.Double);
-        private readonly MySqlFloatTypeMapping _float       = new MySqlFloatTypeMapping("float");
+        private readonly MySqlFloatTypeMapping _float       = new MySqlFloatTypeMapping("float", DbType.Single);
 
 	    // binary
 	    private readonly RelationalTypeMapping _binary           = new MySqlByteArrayTypeMapping(fixedLength: true);
@@ -80,10 +80,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private readonly MySqlTimeSpanTypeMapping _time6                  = new MySqlTimeSpanTypeMapping("time(6)", precision: 6);
         private readonly MySqlTimeSpanTypeMapping _time                   = new MySqlTimeSpanTypeMapping("time");
 
-        private readonly RelationalTypeMapping _binaryRowVersion =
-            new MySqlDateTimeTypeMapping("timestamp");
-        private readonly RelationalTypeMapping _binaryRowVersion6 =
-            new MySqlDateTimeTypeMapping("timestamp(6)");
+        private readonly RelationalTypeMapping _binaryRowVersion
+            = new MySqlDateTimeTypeMapping("timestamp",
+                new BytesToDateTimeConverter(), new ByteArrayComparer());
+        private readonly RelationalTypeMapping _binaryRowVersion6
+            = new MySqlDateTimeTypeMapping("timestamp(6)",
+                new BytesToDateTimeConverter(), new ByteArrayComparer());
 
         // guid
 	    private readonly GuidTypeMapping _uniqueidentifier   = new GuidTypeMapping("char(36)", DbType.Guid);
