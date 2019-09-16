@@ -4,10 +4,10 @@
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions;
 
 namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
 {
@@ -39,7 +39,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
 
             conventionSet.ModelInitializedConventions.Add(new RelationalMaxIdentifierLengthConvention(64, Dependencies, RelationalDependencies));
 
-            var valueGeneratorConvention = new MySqlValueGeneratorConvention(Dependencies, RelationalDependencies);
+            var valueGeneratorConvention = new MySqlValueGenerationConvention(Dependencies, RelationalDependencies);
             ReplaceConvention(conventionSet.EntityTypeBaseTypeChangedConventions, valueGeneratorConvention);
 
             ReplaceConvention(conventionSet.EntityTypePrimaryKeyChangedConventions, valueGeneratorConvention);
@@ -48,7 +48,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
 
             ReplaceConvention(conventionSet.ForeignKeyRemovedConventions, valueGeneratorConvention);
 
-            conventionSet.PropertyAnnotationChangedConventions.Add((MySqlValueGeneratorConvention)valueGeneratorConvention);
+            conventionSet.PropertyAnnotationChangedConventions.Add((MySqlValueGenerationConvention)valueGeneratorConvention);
 
             return conventionSet;
         }

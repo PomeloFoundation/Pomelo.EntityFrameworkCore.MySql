@@ -2,18 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Extensions;
+using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions
 {
     /// <summary>
     ///     A convention that configures store value generation as <see cref="ValueGenerated.OnAdd"/> on properties that are
@@ -21,14 +17,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions.Internal
     ///     or were configured to use a <see cref="SqlServerValueGenerationStrategy"/>.
     ///     It also configures properties as <see cref="ValueGenerated.OnAddOrUpdate"/> if they were configured as computed columns.
     /// </summary>
-    public class MySqlValueGeneratorConvention : RelationalValueGenerationConvention
+    public class MySqlValueGenerationConvention : RelationalValueGenerationConvention
     {
         /// <summary>
-        ///     Creates a new instance of <see cref="MySqlValueGeneratorConvention" />.
+        ///     Creates a new instance of <see cref="MySqlValueGenerationConvention" />.
         /// </summary>
         /// <param name="dependencies"> Parameter object containing dependencies for this convention. </param>
         /// <param name="relationalDependencies">  Parameter object containing relational dependencies for this convention. </param>
-        public MySqlValueGeneratorConvention(
+        public MySqlValueGenerationConvention(
             [NotNull] ProviderConventionSetBuilderDependencies dependencies,
             [NotNull] RelationalConventionSetBuilderDependencies relationalDependencies)
             : base(dependencies, relationalDependencies)
@@ -64,14 +60,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions.Internal
         /// </summary>
         /// <param name="property"> The property. </param>
         /// <returns> The store value generation strategy to set for the given property. </returns>
-        protected override ValueGenerated? GetValueGenerated(IConventionProperty property)
-            => GetValueGenerated((IProperty)property);
-
-        /// <summary>
-        ///     Returns the store value generation strategy to set for the given property.
-        /// </summary>
-        /// <param name="property"> The property. </param>
-        /// <returns> The store value generation strategy to set for the given property. </returns>
         public static new ValueGenerated? GetValueGenerated([NotNull] IProperty property)
         {
             var valueGenerated = RelationalValueGenerationConvention.GetValueGenerated(property);
@@ -81,16 +69,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions.Internal
             }
 
             var valueGenerationStrategy = property.GetValueGenerationStrategy();
-            switch (valueGenerationStrategy)
+            if (valueGenerationStrategy.HasValue)
             {
-                case MySqlValueGenerationStrategy.IdentityColumn:
-                    return ValueGenerated.OnAdd;
-                case MySqlValueGenerationStrategy.ComputedColumn:
-                    return ValueGenerated.OnAddOrUpdate;
-                default:
-                case MySqlValueGenerationStrategy.None:
-                    return null;
+                switch (valueGenerationStrategy.Value)
+                {
+                    case MySqlValueGenerationStrategy.IdentityColumn:
+                        return ValueGenerated.OnAdd;
+                    case MySqlValueGenerationStrategy.ComputedColumn:
+                        return ValueGenerated.OnAddOrUpdate;
+                }
             }
+
+            return null;
         }
     }
 }

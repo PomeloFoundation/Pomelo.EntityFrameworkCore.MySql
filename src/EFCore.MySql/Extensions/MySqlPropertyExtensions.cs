@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -14,41 +12,35 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
     ///     Extension methods for <see cref="IProperty" /> for SQL Server-specific metadata.
     /// </summary>
     public static class MySqlPropertyExtensions
-    {/// <summary>
-     ///     <para>
-     ///         Returns the <see cref="SqlServerValueGenerationStrategy" /> to use for the property.
-     ///     </para>
-     ///     <para>
-     ///         If no strategy is set for the property, then the strategy to use will be taken from the <see cref="IModel" />.
-     ///     </para>
-     /// </summary>
-     /// <returns> The strategy, or <see cref="SqlServerValueGenerationStrategy.None"/> if none was set. </returns>
-        public static MySqlValueGenerationStrategy GetValueGenerationStrategy([NotNull] this IProperty property)
+    {
+        /// <summary>
+        ///     <para>
+        ///         Returns the <see cref="SqlServerValueGenerationStrategy" /> to use for the property.
+        ///     </para>
+        ///     <para>
+        ///         If no strategy is set for the property, then the strategy to use will be taken from the <see cref="IModel" />.
+        ///     </para>
+        /// </summary>
+        /// <returns> The strategy, or <see cref="SqlServerValueGenerationStrategy.None"/> if none was set. </returns>
+        public static MySqlValueGenerationStrategy? GetValueGenerationStrategy([NotNull] this IProperty property)
         {
             var annotation = property[MySqlAnnotationNames.ValueGenerationStrategy];
             if (annotation != null)
             {
-                return (MySqlValueGenerationStrategy)annotation;
+                return (MySqlValueGenerationStrategy?)annotation;
             }
 
-            if (property.ValueGenerated != ValueGenerated.OnAdd
-                || property.GetDefaultValue() != null
+            if (property.GetDefaultValue() != null
                 || property.GetDefaultValueSql() != null
                 || property.GetComputedColumnSql() != null)
             {
-                return MySqlValueGenerationStrategy.None;
+                return null;
             }
 
             if (property.ValueGenerated == ValueGenerated.Never)
             {
                 var sharedTablePrincipalPrimaryKeyProperty = property.FindSharedTableRootPrimaryKeyProperty();
-                if (sharedTablePrincipalPrimaryKeyProperty != null)
-                {
-                    return sharedTablePrincipalPrimaryKeyProperty.GetValueGenerationStrategy()
-                           == MySqlValueGenerationStrategy.IdentityColumn
-                        ? MySqlValueGenerationStrategy.IdentityColumn
-                        : MySqlValueGenerationStrategy.None;
-                }
+                return sharedTablePrincipalPrimaryKeyProperty?.GetValueGenerationStrategy();
             }
 
             if (IsCompatibleIdentityColumn(property) && property.ValueGenerated == ValueGenerated.OnAdd)
@@ -61,7 +53,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
                 return MySqlValueGenerationStrategy.ComputedColumn;
             }
 
-            return MySqlValueGenerationStrategy.None;
+            return null;
         }
 
         /// <summary>
@@ -75,20 +67,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
             CheckValueGenerationStrategy(property, value);
 
             property.SetOrRemoveAnnotation(MySqlAnnotationNames.ValueGenerationStrategy, value);
-        }
-
-        /// <summary>
-        ///     Sets the <see cref="SqlServerValueGenerationStrategy" /> to use for the property.
-        /// </summary>
-        /// <param name="property"> The property. </param>
-        /// <param name="value"> The strategy to use. </param>
-        /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
-        public static void SetValueGenerationStrategy(
-            [NotNull] this IConventionProperty property, MySqlValueGenerationStrategy? value, bool fromDataAnnotation = false)
-        {
-            CheckValueGenerationStrategy(property, value);
-
-            property.SetOrRemoveAnnotation(MySqlAnnotationNames.ValueGenerationStrategy, value, fromDataAnnotation);
         }
 
         private static void CheckValueGenerationStrategy(IProperty property, MySqlValueGenerationStrategy? value)
@@ -114,15 +92,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
                 }
             }
         }
-
-        /// <summary>
-        ///     Returns the <see cref="ConfigurationSource" /> for the <see cref="SqlServerValueGenerationStrategy" />.
-        /// </summary>
-        /// <param name="property"> The property. </param>
-        /// <returns> The <see cref="ConfigurationSource" /> for the <see cref="SqlServerValueGenerationStrategy" />. </returns>
-        public static ConfigurationSource? GetValueGenerationStrategyConfigurationSource(
-            [NotNull] this IConventionProperty property)
-            => property.FindAnnotation(MySqlAnnotationNames.ValueGenerationStrategy)?.GetConfigurationSource();
 
         /// <summary>
         ///     Returns a value indicating whether the property is compatible with <see cref="MySqlValueGenerationStrategy.IdentityColumn"/>.
