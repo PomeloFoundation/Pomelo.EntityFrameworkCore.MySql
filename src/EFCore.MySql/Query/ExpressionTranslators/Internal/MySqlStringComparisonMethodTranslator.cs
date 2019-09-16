@@ -12,7 +12,7 @@ using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
-    public class MySqlStringComparisonTranslator : IMethodCallTranslator
+    public class MySqlStringComparisonMethodTranslator : IMethodCallTranslator
     {
         private static readonly MethodInfo _equalsMethodInfo
             = typeof(string).GetRuntimeMethod(nameof(string.Equals), new[] { typeof(string), typeof(StringComparison) });
@@ -31,15 +31,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
-        public MySqlStringComparisonTranslator(ISqlExpressionFactory sqlExpressionFactory)
+        public MySqlStringComparisonMethodTranslator(ISqlExpressionFactory sqlExpressionFactory)
         {
             _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
             _caseSensitiveComparisons = _sqlExpressionFactory.Constant(
-                new ReadOnlyCollection<SqlExpression>(new List<SqlExpression> {
-                    _sqlExpressionFactory.Constant(StringComparison.Ordinal),
-                    _sqlExpressionFactory.Constant(StringComparison.CurrentCulture),
-                    _sqlExpressionFactory.Constant(StringComparison.InvariantCulture)
-                }));
+                new []
+                {
+                    StringComparison.Ordinal,
+                    StringComparison.CurrentCulture,
+                    StringComparison.InvariantCulture
+                });
         }
 
         public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
@@ -435,9 +436,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             return _sqlExpressionFactory.Subtract(
                 _sqlExpressionFactory.Function(
                     "LOCATE",
-                    new SqlExpression[] { search, target },
-                    typeof(int),
-                    null),
+                    new[] { search, target },
+                    typeof(int)),
                 _sqlExpressionFactory.Constant(1)
             );
         }
