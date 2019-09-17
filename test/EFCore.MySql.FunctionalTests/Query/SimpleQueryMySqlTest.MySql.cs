@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
@@ -96,7 +97,7 @@ WHERE RPAD(`c`.`CustomerID`, 4, 'c') = 'AL'");
         [InlineData(StringComparison.CurrentCulture, 0, true)]
         [InlineData(StringComparison.InvariantCulture, 0, false)]
         [InlineData(StringComparison.InvariantCulture, 0, true)]
-        public async Task StringEquals_with_comparison(StringComparison comparison, int expected, bool isAsync)
+        public async Task StringEquals_with_comparison_parameter(StringComparison comparison, int expected, bool isAsync)
         {
             await AssertSingleResult<Customer>(isAsync,
                 customer => customer.Where(c => c.CustomerID.Equals("anton", comparison)).Count(),
@@ -106,20 +107,15 @@ WHERE RPAD(`c`.`CustomerID`, 4, 'c') = 'AL'");
                     Assert.Equal(expected, (int)a);
                     // When the comparison parameter is not a constant, we have to use a case
                     // statement
-                    AssertSql($"@__comparison_0='{comparison:D}'" + @"
+                    AssertSql(
+                        $@"@__comparison_0='{comparison:D}'
 
 SELECT COUNT(*)
 FROM `Customers` AS `c`
 WHERE CASE
-    WHEN @__comparison_0 IN (4, 0, 2) THEN CASE
-        WHEN `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin
-        THEN TRUE ELSE FALSE
-    END
-    ELSE CASE
-        WHEN LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin
-        THEN TRUE ELSE FALSE
-    END
-END = TRUE");
+    WHEN @__comparison_0 IN (4, 0, 2) THEN `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin
+    ELSE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin
+END");
                 });
         }
 
@@ -266,20 +262,15 @@ WHERE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE ut
                     Assert.Equal(expected, (int)a);
                     // When the comparison parameter is not a constant, we have to use a case
                     // statement
-                    AssertSql($"@__comparison_0='{comparison:D}'" + @"
+                    AssertSql(
+                        $@"@__comparison_0='{comparison:D}'
 
 SELECT COUNT(*)
 FROM `Customers` AS `c`
 WHERE CASE
-    WHEN @__comparison_0 IN (4, 0, 2) THEN CASE
-        WHEN `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin
-        THEN TRUE ELSE FALSE
-    END
-    ELSE CASE
-        WHEN LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin
-        THEN TRUE ELSE FALSE
-    END
-END = TRUE");
+    WHEN @__comparison_0 IN (4, 0, 2) THEN `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin
+    ELSE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin
+END");
                 });
         }
 
@@ -426,20 +417,15 @@ WHERE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE ut
                     Assert.Equal(expected, (int)a);
                     // When the comparison parameter is not a constant, we have to use a case
                     // statement
-                    AssertSql($"@__comparison_0='{comparison:D}'" + @"
+                    AssertSql(
+                        $@"@__comparison_0='{comparison:D}'
 
 SELECT COUNT(*)
 FROM `Customers` AS `c`
 WHERE CASE
-    WHEN @__comparison_0 IN (4, 0, 2) THEN CASE
-        WHEN LOCATE(CONVERT('nto' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`CustomerID`) > 0
-        THEN TRUE ELSE FALSE
-    END
-    ELSE CASE
-        WHEN LOCATE(CONVERT(LCASE('nto') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`)) > 0
-        THEN TRUE ELSE FALSE
-    END
-END = TRUE");
+    WHEN @__comparison_0 IN (4, 0, 2) THEN LOCATE(CONVERT('nto' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`CustomerID`) > 0
+    ELSE LOCATE(CONVERT(LCASE('nto') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`)) > 0
+END");
                 });
         }
 
@@ -586,20 +572,15 @@ WHERE LOCATE(CONVERT(LCASE('nto') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.
                     Assert.Equal(expected, (int)a);
                     // When the comparison parameter is not a constant, we have to use a case
                     // statement
-                    AssertSql($"@__comparison_0='{comparison:D}'" + @"
+                    AssertSql(
+                        $@"@__comparison_0='{comparison:D}'
 
 SELECT COUNT(*)
 FROM `Customers` AS `c`
 WHERE CASE
-    WHEN @__comparison_0 IN (4, 0, 2) THEN CASE
-        WHEN `c`.`CustomerID` LIKE CONCAT('anto', '%') AND (LEFT(`c`.`CustomerID`, CHAR_LENGTH(CONVERT('anto' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('anto' USING utf8mb4) COLLATE utf8mb4_bin)
-        THEN TRUE ELSE FALSE
-    END
-    ELSE CASE
-        WHEN LCASE(`c`.`CustomerID`) LIKE CONCAT(CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin, '%') AND (LEFT(LCASE(`c`.`CustomerID`), CHAR_LENGTH(CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin)
-        THEN TRUE ELSE FALSE
-    END
-END = TRUE");
+    WHEN @__comparison_0 IN (4, 0, 2) THEN (`c`.`CustomerID` LIKE CONCAT('anto', '%')) AND (LEFT(`c`.`CustomerID`, CHAR_LENGTH(CONVERT('anto' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('anto' USING utf8mb4) COLLATE utf8mb4_bin)
+    ELSE (LCASE(`c`.`CustomerID`) LIKE CONCAT(CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin, '%')) AND (LEFT(LCASE(`c`.`CustomerID`), CHAR_LENGTH(CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin)
+END");
                 });
         }
 
