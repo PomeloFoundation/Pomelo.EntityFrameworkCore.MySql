@@ -306,11 +306,10 @@ WHERE `c`.`Region` IS NULL OR ((TRIM(`c`.`Region`) = '') AND TRIM(`c`.`Region`) 
         public override async Task Where_string_length(bool isAsync)
         {
             await base.Where_string_length(isAsync);
-
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE CHAR_LENGTH(`c`.`City`) = 6");
+WHERE (CHAR_LENGTH(`c`.`City`) = 6) AND CHAR_LENGTH(`c`.`City`) IS NOT NULL");
         }
 
         public override async Task Where_string_indexof(bool isAsync)

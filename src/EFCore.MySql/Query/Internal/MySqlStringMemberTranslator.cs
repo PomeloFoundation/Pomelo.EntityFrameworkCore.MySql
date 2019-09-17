@@ -19,8 +19,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             if (member.Name == nameof(string.Length)
                 && instance?.Type == typeof(string))
             {
-                return _sqlExpressionFactory.Convert(
-                    _sqlExpressionFactory.Function("CHAR_LENGTH", new[] { instance }, typeof(long)),
+                return _sqlExpressionFactory.Function(
+                    "CHAR_LENGTH",
+                    new[] { instance },
                     returnType);
             }
 
