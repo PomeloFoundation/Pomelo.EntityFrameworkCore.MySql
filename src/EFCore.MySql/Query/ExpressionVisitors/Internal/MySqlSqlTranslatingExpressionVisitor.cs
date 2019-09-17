@@ -57,17 +57,5 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
             return false;
         }
-
-        public override SqlExpression TranslateLongCount(Expression expression = null)
-        {
-            // TODO: Translate Count with predicate for GroupBy
-            return _sqlExpressionFactory.ApplyDefaultTypeMapping(
-                _sqlExpressionFactory.Function("COUNT_BIG", new[] { _sqlExpressionFactory.Fragment("*") }, typeof(long)));
-        }
-
-        private static string GetProviderType(SqlExpression expression)
-        {
-            return expression.TypeMapping?.StoreType;
-        }
     }
 }
