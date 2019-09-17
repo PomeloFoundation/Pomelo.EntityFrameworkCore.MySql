@@ -51,7 +51,7 @@ LIMIT 18446744073709551610 OFFSET @__p_1");
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE CURRENT_TIMESTAMP() <> @__myDatetime_0");
+WHERE (CURRENT_TIMESTAMP() <> @__myDatetime_0) OR @__myDatetime_0 IS NULL");
         }
 
         public override async Task Where_datetime_utcnow(bool isAsync)
@@ -63,7 +63,7 @@ WHERE CURRENT_TIMESTAMP() <> @__myDatetime_0");
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE UTC_TIMESTAMP() <> @__myDatetime_0");
+WHERE (UTC_TIMESTAMP() <> @__myDatetime_0) OR @__myDatetime_0 IS NULL");
         }
 
         public override async Task Where_datetime_today(bool isAsync)
