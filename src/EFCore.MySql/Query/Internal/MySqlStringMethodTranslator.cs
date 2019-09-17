@@ -80,22 +80,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 var argument = arguments[0];
                 var stringTypeMapping = ExpressionExtensions.InferTypeMapping(instance, argument);
 
-                return _sqlExpressionFactory.Function(
-                    "GREATEST",
-                    new SqlExpression[] {
-                        _sqlExpressionFactory.Subtract(
-                            _sqlExpressionFactory.Function(
-                                "LOCATE",
-                                new[]
-                                {
-                                    _sqlExpressionFactory.ApplyTypeMapping(argument, stringTypeMapping),
-                                    _sqlExpressionFactory.ApplyTypeMapping(instance, stringTypeMapping)
-                                },
-                                method.ReturnType),
-                            _sqlExpressionFactory.Constant(1)),
-                        _sqlExpressionFactory.Constant(0)
-                    },
-                    method.ReturnType);
+                return _sqlExpressionFactory.Subtract(
+                    _sqlExpressionFactory.Function(
+                        "LOCATE",
+                        new[]
+                        {
+                            _sqlExpressionFactory.ApplyTypeMapping(argument, stringTypeMapping),
+                            _sqlExpressionFactory.ApplyTypeMapping(instance, stringTypeMapping)
+                        },
+                        method.ReturnType),
+                    _sqlExpressionFactory.Constant(1));
             }
 
             if (_replaceMethodInfo.Equals(method))

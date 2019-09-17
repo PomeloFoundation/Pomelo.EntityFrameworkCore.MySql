@@ -319,7 +319,7 @@ WHERE (CHAR_LENGTH(`c`.`City`) = 6) AND CHAR_LENGTH(`c`.`City`) IS NOT NULL");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LOCATE('Sea', `c`.`City`) - 1) <> -1");
+WHERE ((LOCATE('Sea', `c`.`City`) - 1) <> -1) OR LOCATE('Sea', `c`.`City`) - 1 IS NULL");
         }
 
         public override async Task Indexof_with_emptystring(bool isAsync)
@@ -339,7 +339,7 @@ WHERE `c`.`CustomerID` = 'ALFKI'");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE REPLACE(`c`.`City`, 'Sea', 'Rea') = 'Reattle'");
+WHERE (REPLACE(`c`.`City`, 'Sea', 'Rea') = 'Reattle') AND REPLACE(`c`.`City`, 'Sea', 'Rea') IS NOT NULL");
         }
 
         public override async Task Replace_with_emptystring(bool isAsync)
@@ -359,7 +359,7 @@ WHERE `c`.`CustomerID` = 'ALFKI'");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE SUBSTRING(`c`.`City`, 2, 2) = 'ea'");
+WHERE (SUBSTRING(`c`.`City`, 1 + 1, 2) = 'ea') AND SUBSTRING(`c`.`City`, 1 + 1, 2) IS NOT NULL");
         }
 
         public override async Task Substring_with_zero_startindex(bool isAsync)
