@@ -2,11 +2,6 @@
   <Import Project="..\Directory.Build.props" />
 
   <PropertyGroup>
-    <DeveloperBuildTestTfms>netcoreapp3.0</DeveloperBuildTestTfms>
-    <StandardTestTfms>$(DeveloperBuildTestTfms)</StandardTestTfms>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <NoWarn>$(NoWarn);CA1822;xUnit1004;EF1001</NoWarn>
   </PropertyGroup>
 
