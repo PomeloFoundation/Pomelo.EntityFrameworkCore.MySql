@@ -560,7 +560,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                                && property.IsConcurrencyToken
                                && property.ValueGenerated == ValueGenerated.OnAddOrUpdate;
 
-            
+
             var addColumnOperation = new AddColumnOperation
             {
                 Schema = operation.Schema,
@@ -822,6 +822,60 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 builder
                     .Append(" DEFAULT ")
                     .Append(typeMapping.GenerateSqlLiteral(defaultValue));
+            }
+        }
+
+        /// <summary>
+        ///     Generates a SQL fragment for the primary key constraint of a <see cref="CreateTableOperation" />.
+        /// </summary>
+        /// <param name="operation"> The operation. </param>
+        /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
+        /// <param name="builder"> The command builder to use to add the SQL fragment. </param>
+        protected override void CreateTablePrimaryKeyConstraint(
+            [NotNull] CreateTableOperation operation,
+            [CanBeNull] IModel model,
+            [NotNull] MigrationCommandListBuilder builder)
+        {
+            Check.NotNull(operation, nameof(operation));
+            Check.NotNull(builder, nameof(builder));
+
+            var primaryKey = operation.PrimaryKey;
+            if (primaryKey != null)
+            {
+                builder.AppendLine(",");
+
+                // MySQL InnoDB has the requirement, that an AUTO_INCREMENT column has to be the first
+                // column participating in an index.
+
+                var sortedColumnNames = primaryKey.Columns.Length > 1
+                    ? primaryKey.Columns
+                        .Select(columnName => operation.Columns.First(co => co.Name == columnName))
+                        .OrderBy(co => co[MySqlAnnotationNames.ValueGenerationStrategy] is MySqlValueGenerationStrategy generationStrategy
+                                       && generationStrategy == MySqlValueGenerationStrategy.IdentityColumn
+                            ? 0
+                            : 1)
+                        .Select(co => co.Name)
+                        .ToArray()
+                    : primaryKey.Columns;
+
+                var sortedPrimaryKey = new AddPrimaryKeyOperation()
+                {
+                    Schema = primaryKey.Schema,
+                    Table = primaryKey.Table,
+                    Name = primaryKey.Name,
+                    Columns = sortedColumnNames,
+                    IsDestructiveChange = primaryKey.IsDestructiveChange,
+                };
+
+                foreach (var annotation in primaryKey.GetAnnotations())
+                {
+                    sortedPrimaryKey[annotation.Name] = annotation.Value;
+                }
+
+                PrimaryKeyConstraint(
+                    sortedPrimaryKey,
+                    model,
+                    builder);
             }
         }
 
