@@ -16,6 +16,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.Logging;
+using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Pomelo.EntityFrameworkCore.TestUtilities;
@@ -91,7 +92,7 @@ builder.Entity(""Pomelo.EntityFrameworkCore.MySql.Migrations.ModelSnapshotMySqlT
         b.ToTable(""DataTypesVariable"");
     });
 ",
-                o => { Assert.Null(o.GetEntityTypes().First().FindProperty("Id")[CoreAnnotationNames.ValueGeneratorFactoryAnnotation]); }
+                o => { Assert.Null(o.GetEntityTypes().First().FindProperty("Id")[CoreAnnotationNames.ValueGeneratorFactory]); }
                 );
         }
 
@@ -155,18 +156,27 @@ builder.Entity(""Pomelo.EntityFrameworkCore.MySql.Migrations.ModelSnapshotMySqlT
             modelBuilder.HasChangeTrackingStrategy(ChangeTrackingStrategy.Snapshot);
             buildModel(modelBuilder);
 
-            modelBuilder.GetInfrastructure().Metadata.Validate();
-            CreateModelValidator().Validate(modelBuilder.Model);
+            var typeMappingSource = new MySqlTypeMappingSource(
+                TestServiceFactory.Instance.Create<TypeMappingSourceDependencies>(),
+                TestServiceFactory.Instance.Create<RelationalTypeMappingSourceDependencies>(),
+                new MySqlOptions());
+
+            var modelValidator = CreateModelValidator(typeMappingSource);
+            modelValidator.Validate(
+                modelBuilder.Model,
+                new DiagnosticsLogger<DbLoggerCategory.Model.Validation>(
+                    new ListLoggerFactory(category => category == DbLoggerCategory.Model.Validation.Name),
+                    new LoggingOptions(),
+                    new DiagnosticListener("Fake"),
+                    new MySqlLoggingDefinitions()));
+
             var model = modelBuilder.Model;
 
             var codeHelper = new CSharpHelper(
-                new MySqlTypeMappingSource(
-                        TestServiceFactory.Instance.Create<TypeMappingSourceDependencies>(),
-                        TestServiceFactory.Instance.Create<RelationalTypeMappingSourceDependencies>(),
-                        new MySqlOptions()));
+                typeMappingSource);
 
             var generator = new CSharpMigrationsGenerator(
-                new MigrationsCodeGeneratorDependencies(),
+                new MigrationsCodeGeneratorDependencies(typeMappingSource),
                 new CSharpMigrationsGeneratorDependencies(
                     codeHelper,
                     new CSharpMigrationOperationGenerator(
@@ -174,7 +184,8 @@ builder.Entity(""Pomelo.EntityFrameworkCore.MySql.Migrations.ModelSnapshotMySqlT
                             codeHelper)),
                     new CSharpSnapshotGenerator(
                         new CSharpSnapshotGeneratorDependencies(
-                            codeHelper))));
+                            codeHelper,
+                            typeMappingSource))));
 
             var code = generator.GenerateSnapshot("RootNamespace", typeof(DbContext), "Snapshot", model);
 
@@ -224,24 +235,15 @@ builder.Entity(""Pomelo.EntityFrameworkCore.MySql.Migrations.ModelSnapshotMySqlT
 
         protected ModelBuilder CreateConventionalModelBuilder() => new ModelBuilder(MySqlConventionSetBuilder.Build());
 
-        protected ModelValidator CreateModelValidator()
-            => new RelationalModelValidator(
+        protected ModelValidator CreateModelValidator(IRelationalTypeMappingSource typeMappingSource)
+        {
+            return new RelationalModelValidator(
                 new ModelValidatorDependencies(
-                    new DiagnosticsLogger<DbLoggerCategory.Model.Validation>(
-                        new ListLoggerFactory(category => category == DbLoggerCategory.Model.Validation.Name),
-                        new LoggingOptions(),
-                        new DiagnosticListener("Fake")),
-                    new DiagnosticsLogger<DbLoggerCategory.Model>(
-                        new ListLoggerFactory(category => category == DbLoggerCategory.Model.Name),
-                        new LoggingOptions(),
-                        new DiagnosticListener("Fake"))),
-                new RelationalModelValidatorDependencies(
-#pragma warning disable 618
-                    TestServiceFactory.Instance.Create<ObsoleteRelationalTypeMapper>(),
-#pragma warning restore 618
-                    new MySqlTypeMappingSource(
-                        TestServiceFactory.Instance.Create<TypeMappingSourceDependencies>(),
-                        TestServiceFactory.Instance.Create<RelationalTypeMappingSourceDependencies>(),
-                        new MySqlOptions())));
+                    typeMappingSource,
+                    new MemberClassifier(
+                        typeMappingSource,
+                        TestServiceFactory.Instance.Create<IParameterBindingFactories>())),
+                new RelationalModelValidatorDependencies(typeMappingSource));
+        }
     }
 }

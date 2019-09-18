@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <AssemblyName>Pomelo.EntityFrameworkCore.MySql.Tests</AssemblyName>
     <RootNamespace>Pomelo.EntityFrameworkCore.MySql</RootNamespace>
