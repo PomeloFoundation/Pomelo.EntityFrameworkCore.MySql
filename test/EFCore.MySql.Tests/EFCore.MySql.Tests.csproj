@@ -28,19 +28,4 @@
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Microsoft.EntityFrameworkCore">
-      <HintPath>..\..\..\EntityFrameworkCore-2.2.6\src\EFCore.Relational\bin\Debug\netstandard2.0\Microsoft.EntityFrameworkCore.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.Design">
-      <HintPath>..\..\..\EntityFrameworkCore-2.2.6\src\EFCore.Design\bin\Debug\netstandard2.0\Microsoft.EntityFrameworkCore.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.Relational">
-      <HintPath>..\..\..\EntityFrameworkCore-2.2.6\src\EFCore.Relational.Specification.Tests\bin\Debug\netcoreapp2.2\Microsoft.EntityFrameworkCore.Relational.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests">
-      <HintPath>..\..\..\EntityFrameworkCore-2.2.6\src\EFCore.Relational.Specification.Tests\bin\Debug\netcoreapp2.2\Microsoft.EntityFrameworkCore.Relational.Specification.Tests.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>

@@ -7,87 +7,11 @@
     <RootNamespace>Pomelo.EntityFrameworkCore.MySql.FunctionalTests</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
-
-  <!--
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(MicrosoftExtensionsConfigurationEnvironmentVariablesVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="$(MicrosoftExtensionsConfigurationFileExtensionsVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfigurationJsonVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" Version="$(MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.2.0" />
-    <PackageReference Include="xunit.runner.console" Version="2.4.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
-  -->
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.2.4" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.2.0" />
-    <PackageReference Include="xunit.runner.console" Version="2.4.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="XunitXml.TestLogger" Version="2.1.26" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
-    <Reference Include="Microsoft.EntityFrameworkCore">
-      <HintPath>..\..\..\EntityFrameworkCore-3.0\artifacts\bin\EFCore.Relational.Specification.Tests\Debug\netcoreapp3.0\Microsoft.EntityFrameworkCore.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.Abstractions">
-      <HintPath>..\..\..\EntityFrameworkCore-3.0\artifacts\bin\EFCore.Relational.Specification.Tests\Debug\netcoreapp3.0\Microsoft.EntityFrameworkCore.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.Analyzers">
-      <HintPath>..\..\..\EntityFrameworkCore-3.0\artifacts\bin\EFCore.Relational.Specification.Tests\Debug\netcoreapp3.0\Microsoft.EntityFrameworkCore.Analyzers.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.Proxies">
-      <HintPath>..\..\..\EntityFrameworkCore-3.0\artifacts\bin\EFCore.Relational.Specification.Tests\Debug\netcoreapp3.0\Microsoft.EntityFrameworkCore.Proxies.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.Relational">
-      <HintPath>..\..\..\EntityFrameworkCore-3.0\artifacts\bin\EFCore.Relational.Specification.Tests\Debug\netcoreapp3.0\Microsoft.EntityFrameworkCore.Relational.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests">
-      <HintPath>..\..\..\EntityFrameworkCore-3.0\artifacts\bin\EFCore.Relational.Specification.Tests\Debug\netcoreapp3.0\Microsoft.EntityFrameworkCore.Relational.Specification.Tests.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.Specification.Tests">
-      <HintPath>..\..\..\EntityFrameworkCore-3.0\artifacts\bin\EFCore.Relational.Specification.Tests\Debug\netcoreapp3.0\Microsoft.EntityFrameworkCore.Specification.Tests.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <!--
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
-    <Reference Include="Microsoft.EntityFrameworkCore">
-      <HintPath>..\..\..\EntityFrameworkCore-3.0\src\EFCore.Relational.Specification.Tests\bin\Debug\netcoreapp2.0\Microsoft.EntityFrameworkCore.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.Abstractions">
-      <HintPath>..\..\..\EntityFrameworkCore-3.0\src\EFCore.Relational.Specification.Tests\bin\Debug\netcoreapp2.0\Microsoft.EntityFrameworkCore.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.Analyzers">
-      <HintPath>..\..\..\EntityFrameworkCore-3.0\src\EFCore.Relational.Specification.Tests\bin\Debug\netcoreapp2.0\Microsoft.EntityFrameworkCore.Analyzers.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.Proxies">
-      <HintPath>..\..\..\EntityFrameworkCore-3.0\src\EFCore.Relational.Specification.Tests\bin\Debug\netcoreapp2.0\Microsoft.EntityFrameworkCore.Proxies.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.Relational">
-      <HintPath>..\..\..\EntityFrameworkCore-3.0\src\EFCore.Relational.Specification.Tests\bin\Debug\netcoreapp2.0\Microsoft.EntityFrameworkCore.Relational.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests">
-      <HintPath>..\..\..\EntityFrameworkCore-3.0\src\EFCore.Relational.Specification.Tests\bin\Debug\netcoreapp2.0\Microsoft.EntityFrameworkCore.Relational.Specification.Tests.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.Specification.Tests">
-      <HintPath>..\..\..\EntityFrameworkCore-3.0\src\EFCore.Relational.Specification.Tests\bin\Debug\netcoreapp2.0\Microsoft.EntityFrameworkCore.Specification.Tests.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  -->
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
   </ItemGroup>
 
   <ItemGroup>
@@ -98,16 +22,6 @@
     <None Update="config.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.2.0" />
-    <PackageReference Update="xunit.assert" Version="2.4.1" />
-    <PackageReference Update="xunit.core" Version="2.4.1" />
-    <PackageReference Update="xunit.runner.visualstudio" Version="2.4.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
 
 </Project>

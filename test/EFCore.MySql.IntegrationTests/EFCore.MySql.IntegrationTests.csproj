@@ -18,21 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.EntityFrameworkCore">
-      <HintPath>..\..\..\EntityFrameworkCore-2.2.6\src\EFCore.Relational\bin\Debug\netstandard2.0\Microsoft.EntityFrameworkCore.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.Abstractions">
-      <HintPath>..\..\..\EntityFrameworkCore-2.2.6\src\EFCore.Relational\bin\Debug\netstandard2.0\Microsoft.EntityFrameworkCore.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.Analyzers">
-      <HintPath>..\..\..\EntityFrameworkCore-2.2.6\src\EFCore.Relational\bin\Debug\netstandard2.0\Microsoft.EntityFrameworkCore.Analyzers.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.Relational">
-      <HintPath>..\..\..\EntityFrameworkCore-2.2.6\src\EFCore.Relational\bin\Debug\netstandard2.0\Microsoft.EntityFrameworkCore.Relational.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\src\EFCore.MySql\EFCore.MySql.csproj" />
   </ItemGroup>
 

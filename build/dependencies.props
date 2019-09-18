@@ -6,17 +6,24 @@
   <PropertyGroup Label="Package Versions">
     <!-- EFCore.MySql Dependencies -->
     <MicrosoftEntityFrameworkCoreRelationalVersion>3.0.0-rc1.19452.2</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MySqlConnectorVersion>0.57.0-beta9</MySqlConnectorVersion>
+    <MySqlConnectorVersion>0.57.0-rc1</MySqlConnectorVersion>
     <PomeloJsonObjectVersion>2.2.0</PomeloJsonObjectVersion>
+    <CastleCoreVersion>4.4.0</CastleCoreVersion>
+    <MicrosoftExtensionsCachingMemoryVersion>3.0.0-preview9.19423.4</MicrosoftExtensionsCachingMemoryVersion>
+    <MicrosoftExtensionsDependencyInjection>3.0.0-preview9.19423.4</MicrosoftExtensionsDependencyInjection>
+    <SystemDiagnosticsDiagnosticSource>4.6.0-preview9.19421.4</SystemDiagnosticsDiagnosticSource>
     <!-- Shared Test Dependencies -->
     <MicrosoftNETTestSdkPackageVersion>16.3.0-preview-20190808-03</MicrosoftNETTestSdkPackageVersion>
     <XunitAssertPackageVersion>2.4.1</XunitAssertPackageVersion>
     <XunitCorePackageVersion>2.4.1</XunitCorePackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.1</XunitRunnerVisualStudioPackageVersion>
+    <XunitRunnerConsolePackageVersion>2.4.1</XunitRunnerConsolePackageVersion>
+    <XunitXmlTestLoggerPackageVersion>2.1.26</XunitXmlTestLoggerPackageVersion>
     <MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>3.0.0-rc1.19452.2</MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>
     <!-- EFCoreMySqlFunctionalTests Dependencies -->
-    <MicrosoftExtensionsConfigurationFileExtensionsVersion>3.0.0-rc1.19452.2</MicrosoftExtensionsConfigurationFileExtensionsVersion>
-    <MicrosoftExtensionsConfigurationJsonVersion>3.0.0-rc1.19452.2</MicrosoftExtensionsConfigurationJsonVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>2.2.4</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
+    <MicrosoftExtensionsConfigurationFileExtensionsVersion>2.2.0</MicrosoftExtensionsConfigurationFileExtensionsVersion>
+    <MicrosoftExtensionsConfigurationJsonVersion>2.2.0</MicrosoftExtensionsConfigurationJsonVersion>
      <!-- EFCoreMySqlIntegrationTests Dependencies -->
     <MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>3.0.0-rc1.19452.3</MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>
     <MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>3.0.0-rc1.19452.3</MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>

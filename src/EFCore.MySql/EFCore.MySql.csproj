@@ -13,39 +13,11 @@
       <RepositoryUrl>git://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql</RepositoryUrl>
   </PropertyGroup>
 
-  <!--
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(MicrosoftEntityFrameworkCoreRelationalVersion)" />
     <PackageReference Include="MySqlConnector" Version="$(MySqlConnectorVersion)" />
     <PackageReference Include="Pomelo.JsonObject" Version="$(PomeloJsonObjectVersion)" />
     <PackageReference Include="Castle.Core" Version="$(CastleCoreVersion)" />
-  </ItemGroup>
-  -->
-
-  <ItemGroup>
-    <PackageReference Include="Castle.Core" Version="4.4.0" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.0.0-preview9.19423.4" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.0.0-preview9.19423.4" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="3.0.0-preview9.19423.4" />
-    <PackageReference Include="MySqlConnector" Version="0.57.0-rc1" />
-    <PackageReference Include="Pomelo.JsonObject" Version="$(PomeloJsonObjectVersion)" />
-    <PackageReference Include="Remotion.Linq" Version="2.2.0" />
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="4.6.0-preview9.19421.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Microsoft.EntityFrameworkCore">
-      <HintPath>..\..\..\EntityFrameworkCore-3.0\artifacts\bin\EFCore.Relational\Debug\netstandard2.1\Microsoft.EntityFrameworkCore.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.Abstractions">
-      <HintPath>..\..\..\EntityFrameworkCore-3.0\artifacts\bin\EFCore.Relational\Debug\netstandard2.1\Microsoft.EntityFrameworkCore.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.Analyzers">
-      <HintPath>..\..\..\EntityFrameworkCore-3.0\artifacts\bin\EFCore.Relational\Debug\netstandard2.1\Microsoft.EntityFrameworkCore.Analyzers.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.Relational">
-      <HintPath>..\..\..\EntityFrameworkCore-3.0\artifacts\bin\EFCore.Relational\Debug\netstandard2.1\Microsoft.EntityFrameworkCore.Relational.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>
