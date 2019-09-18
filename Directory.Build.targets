@@ -1,9 +1,7 @@
 ﻿<Project>
   <PropertyGroup>
     <!-- Assign these values at the end of the project after TargetFramework has been assigned. TargetFramework is not assigned yet in Directory.Build.props. -->
-    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">$(MicrosoftNETCoreApp20PackageVersion)</RuntimeFrameworkVersion>
-    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.2' ">$(MicrosoftNETCoreApp22PackageVersion)</RuntimeFrameworkVersion>
     <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">$(MicrosoftNETCoreApp30PackageVersion)</RuntimeFrameworkVersion>
-    <NETStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard2.0' ">$(NETStandardLibrary20PackageVersion)</NETStandardImplicitPackageVersion>
+    <NETStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard2.1' ">$(NETStandardLibrary21PackageVersion)</NETStandardImplicitPackageVersion>
   </PropertyGroup>
 </Project>

@@ -12,9 +12,6 @@ function Insert-Content ($file) {
     }
 }
 
-# https://docs.microsoft.com/de-de/ef/core/miscellaneous/cli/dotnet
-dotnet tool install --global dotnet-ef --version 3.0.0-*
-
 Push-Location (Join-Path (Split-Path $MyInvocation.MyCommand.Path) "../")
 
 Remove-Item (Join-Path "Migrations" "*.cs")

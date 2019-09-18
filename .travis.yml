@@ -16,11 +16,14 @@ before_install:
   - sudo service mysql stop
   - docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -p 3306:3306 -d mysql:5.7
   - sudo apt-get update && sudo apt-get install libunwind8
+
+install:
+  - curl -sSL https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.sh | bash /dev/stdin --version 3.0.100-rc1-014190
+
+before_script:
   - cp test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
   - cp test/EFCore.MySql.IntegrationTests/appsettings.ci.json test/EFCore.MySql.IntegrationTests/appsettings.json
   - cp test/EFCore.MySql.IntegrationTests/config.json.example test/EFCore.MySql.IntegrationTests/config.json
-  - ./run.sh install-tools
-  - ./dotnet-run.sh ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.sh
 
 script:
   # Travis CI hangs and stops when running full test suite, see #581
@@ -31,9 +34,9 @@ script:
     if [ ! -z "$TRAVIS_TAG" ]; then
       export IS_FINAL_BUILD=true
     fi
-    ./build.sh "/p:SkipTests=true" "/p:BuildNumber=${BUILD_NUMBER}" "/p:IsFinalBuild=${IS_FINAL_BUILD}"
+    # ./build.sh "/p:SkipTests=true" "/p:BuildNumber=${BUILD_NUMBER}" "/p:IsFinalBuild=${IS_FINAL_BUILD}"
   - echo "Tests" && ./dotnet-run.sh dotnet test test/EFCore.MySql.Tests
-  - echo "Functional Migration Tests" && ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.FunctionalTests --filter "FullyQualifiedName~Pomelo.EntityFrameworkCore.MySql.FunctionalTests.MigrationSqlGeneratorMySqlTest|FullyQualifiedName~Pomelo.EntityFrameworkCore.MySql.FunctionalTests.MigrationSqlGeneratorMySql55Test"
+  - echo "Functional Migration Tests" && ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.FunctionalTests
   - echo "Integration Tests applying migrations" && ./dotnet-run.sh dotnet run --project test/EFCore.MySql.IntegrationTests -c Release testMigrate
   - echo "Integration Tests scaffolding" && ./dotnet-run.sh ./test/EFCore.MySql.IntegrationTests/scripts/scaffold.sh
   - echo "Remove scaffolding files" && rm -rf ./test/EFCore.MySql.IntegrationTests/Scaffold
@@ -41,20 +44,20 @@ script:
   - echo "Integration Tests with EF_BATCH_SIZE=10" && export EF_BATCH_SIZE="10" && ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.IntegrationTests
   - echo "Integration Tests with EF_RETRY_ON_FAILURE=3" && export EF_RETRY_ON_FAILURE="3" && ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.IntegrationTests
   - echo "Integration Tests legacy migrations" && ./dotnet-run.sh ./test/EFCore.MySql.IntegrationTests/scripts/legacy.sh
-  - echo "Integration Tests Building migrations with EF_DATABASE=pomelo_test2" && export EF_SCHEMA="pomelo_test2" && ./dotnet-run.sh ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.sh
+  - echo "Integration Tests Building migrations with EF_DATABASE=pomelo_test2" && export EF_SCHEMA="pomelo_test2" && ./dotnet-run.sh dotnet build .\test\EFCore.MySql.IntegrationTests\EFCore.MySql.IntegrationTests.csproj -c Release
   - echo "Integration Tests with EF_SCHEMA=pomelo_test2" && export EF_SCHEMA="pomelo_test2" && ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.IntegrationTests
 
-deploy:
-  - provider: script
-    skip_cleanup: true
-    script: ./dotnet-run.sh dotnet nuget push "./artifacts/build/*.nupkg" --api-key "$MYGET_KEY" --source "https://www.myget.org/F/pomelo/api/v3/index.json"
-    on:
-      branch: master
-  - provider: script
-    skip_cleanup: true
-    script: ./dotnet-run.sh dotnet nuget push "./artifacts/build/*.nupkg" --api-key "$MYGET_KEY" --source "https://www.myget.org/F/pomelo/api/v3/index.json"
-    on:
-      tags: true
+#deploy:
+#  - provider: script
+#    skip_cleanup: true
+#    script: ./dotnet-run.sh dotnet nuget push "./artifacts/build/*.nupkg" --api-key "$MYGET_KEY" --source "https://www.myget.org/F/pomelo/api/v3/index.json"
+#    on:
+#      branch: master
+#  - provider: script
+#    skip_cleanup: true
+#    script: ./dotnet-run.sh dotnet nuget push "./artifacts/build/*.nupkg" --api-key "$MYGET_KEY" --source "https://www.myget.org/F/pomelo/api/v3/index.json"
+#    on:
+#      tags: true
 
 notifications:
   email: false
