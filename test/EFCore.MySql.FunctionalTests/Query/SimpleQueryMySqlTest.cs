@@ -409,9 +409,9 @@ WHERE `c`.`CustomerID` = 'ALFKI'");
             await base.Where_math_abs1(isAsync);
 
             AssertSql(
-                @"SELECT `od`.`OrderID`, `od`.`ProductID`, `od`.`Discount`, `od`.`Quantity`, `od`.`UnitPrice`
-FROM `Order Details` AS `od`
-WHERE ABS(`od`.`ProductID`) > 10");
+                @"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE ABS(`o`.`ProductID`) > 10");
         }
 
         public override async Task Where_math_abs2(bool isAsync)
@@ -419,9 +419,9 @@ WHERE ABS(`od`.`ProductID`) > 10");
             await base.Where_math_abs2(isAsync);
 
             AssertSql(
-                @"SELECT `od`.`OrderID`, `od`.`ProductID`, `od`.`Discount`, `od`.`Quantity`, `od`.`UnitPrice`
-FROM `Order Details` AS `od`
-WHERE ABS(`od`.`Quantity`) > 10");
+                @"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE ABS(`o`.`Quantity`) > 10");
         }
 
         public override async Task Where_math_abs_uncorrelated(bool isAsync)
@@ -429,11 +429,9 @@ WHERE ABS(`od`.`Quantity`) > 10");
             await base.Where_math_abs_uncorrelated(isAsync);
 
             AssertSql(
-                @"@__Abs_0='10'
-
-SELECT `od`.`OrderID`, `od`.`ProductID`, `od`.`Discount`, `od`.`Quantity`, `od`.`UnitPrice`
-FROM `Order Details` AS `od`
-WHERE @__Abs_0 < `od`.`ProductID`");
+                @"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE 10 < `o`.`ProductID`");
         }
 
         public override async Task Select_math_round_int(bool isAsync)
@@ -450,7 +448,7 @@ WHERE `o`.`OrderID` < 10250");
             else
             {
                 AssertSql(
-                    @"SELECT ROUND((CAST(`o`.`OrderID` AS decimal(65,30)) + 0e0), 0) AS `A`
+                    @"SELECT ROUND((CAST(`o`.`OrderID` AS decimal(65,30)) + 0e0)) AS `A`
 FROM `Orders` AS `o`
 WHERE `o`.`OrderID` < 10250");
             }
@@ -461,9 +459,9 @@ WHERE `o`.`OrderID` < 10250");
             await base.Where_math_min(isAsync);
 
             AssertSql(
-                @"SELECT `od`.`OrderID`, `od`.`ProductID`, `od`.`Discount`, `od`.`Quantity`, `od`.`UnitPrice`
-FROM `Order Details` AS `od`
-WHERE `od`.`OrderID` = 11077");
+                @"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`OrderID` = 11077) AND (LEAST(`o`.`OrderID`, `o`.`ProductID`) = `o`.`ProductID`)");
         }
 
         public override async Task Where_math_max(bool isAsync)
@@ -471,9 +469,9 @@ WHERE `od`.`OrderID` = 11077");
             await base.Where_math_max(isAsync);
 
             AssertSql(
-                @"SELECT `od`.`OrderID`, `od`.`ProductID`, `od`.`Discount`, `od`.`Quantity`, `od`.`UnitPrice`
-FROM `Order Details` AS `od`
-WHERE `od`.`OrderID` = 11077");
+                @"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`OrderID` = 11077) AND (GREATEST(`o`.`OrderID`, `o`.`ProductID`) = `o`.`OrderID`)");
         }
 
         public override async Task Where_string_to_lower(bool isAsync)

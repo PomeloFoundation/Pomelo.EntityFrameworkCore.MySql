@@ -16,7 +16,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 new MySqlConvertTranslator(sqlExpressionFactory),
                 new MySqlDateTimeMethodTranslator(sqlExpressionFactory),
                 new MySqlDateDiffFunctionsTranslator(sqlExpressionFactory),
-                new MySqlMathTranslator(sqlExpressionFactory),
+                new MySqlMathMethodTranslator(sqlExpressionFactory), 
                 new MySqlNewGuidTranslator(sqlExpressionFactory),
                 new MySqlObjectToStringTranslator(sqlExpressionFactory),
                 new MySqlStringMethodTranslator(sqlExpressionFactory),
