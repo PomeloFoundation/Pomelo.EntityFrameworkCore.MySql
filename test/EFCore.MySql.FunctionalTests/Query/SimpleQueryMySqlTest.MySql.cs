@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
@@ -1017,6 +1019,20 @@ WHERE (LOCATE(CONVERT(LCASE('nt') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.
 FROM `Customers` AS `c`
 WHERE (LOCATE(CONVERT(LCASE('nt') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`)) - 1) = 1");
                 });
+        }
+
+        [SupportedServerVersionLessThanTheory(ServerVersion.CrossApplySupportVersionString)]
+        [MemberData("IsAsyncData")]
+        public virtual Task CrossApply_not_supported_throws(bool isAsync)
+        {
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.SelectMany_correlated_with_outer_1(isAsync));
+        }
+
+        [SupportedServerVersionLessThanTheory(ServerVersion.OuterApplySupportVersionString)]
+        [MemberData("IsAsyncData")]
+        public virtual Task OuterApply_not_supported_throws(bool isAsync)
+        {
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.SelectMany_correlated_with_outer_3(isAsync));
         }
     }
 }

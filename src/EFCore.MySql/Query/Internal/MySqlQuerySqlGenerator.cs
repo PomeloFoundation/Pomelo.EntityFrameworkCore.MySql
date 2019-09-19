@@ -92,6 +92,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         
         protected override Expression VisitCrossApply(CrossApplyExpression crossApplyExpression)
         {
+            // BUG: MySQL 8.0.17 does not recognize references from derived table join conditions
+            // to preceding table columns.
+            // See https://bugs.mysql.com/bug.php?id=96946
+
             Sql.Append("JOIN LATERAL ");
 
             Visit(crossApplyExpression.Table);
@@ -103,6 +107,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
         protected override Expression VisitOuterApply(OuterApplyExpression outerApplyExpression)
         {
+            // BUG: MySQL 8.0.17 does not recognize references from derived table join conditions
+            // to preceding table columns.
+            // See https://bugs.mysql.com/bug.php?id=96946
+
             Sql.Append("LEFT JOIN LATERAL ");
 
             Visit(outerApplyExpression.Table);
