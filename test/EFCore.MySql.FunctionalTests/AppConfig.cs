@@ -3,7 +3,7 @@ using System.IO;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 
-namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
     public static class AppConfig
     {
@@ -21,8 +21,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
         public static IConfigurationRoot Config => _lazyConfig.Value;
 
         private static readonly Lazy<IConfigurationRoot> _lazyConfig = new Lazy<IConfigurationRoot>(() => new ConfigurationBuilder()
-            .SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
-            .AddJsonFile("appsettings.json")
+            .SetBasePath(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath))
             .AddJsonFile("config.json")
             .Build());
     }
