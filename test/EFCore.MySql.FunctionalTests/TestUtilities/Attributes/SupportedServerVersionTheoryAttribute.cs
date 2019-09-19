@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using Microsoft.Extensions.Configuration;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Xunit;
 
