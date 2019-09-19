@@ -79,14 +79,26 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     case nameof(DateTime.TimeOfDay):
                         return _sqlExpressionFactory.Convert(instance, returnType);
 
-                    case nameof(DateTime.Now) when declaringType == typeof(DateTime):
-                        return _sqlExpressionFactory.Function("CURRENT_TIMESTAMP", Array.Empty<SqlExpression>(), returnType);
+                    case nameof(DateTime.Now):
+                        return _sqlExpressionFactory.Function(
+                            declaringType == typeof(DateTimeOffset)
+                                ? "UTC_TIMESTAMP"
+                                : "CURRENT_TIMESTAMP",
+                            Array.Empty<SqlExpression>(), returnType);
 
-                    case nameof(DateTime.UtcNow) when declaringType == typeof(DateTime):
-                        return _sqlExpressionFactory.Function("UTC_TIMESTAMP", Array.Empty<SqlExpression>(), returnType);
+                    case nameof(DateTime.UtcNow):
+                        return _sqlExpressionFactory.Function(
+                            "UTC_TIMESTAMP",
+                            Array.Empty<SqlExpression>(),
+                            returnType);
 
-                    case nameof(DateTime.Today) when declaringType == typeof(DateTime):
-                        return _sqlExpressionFactory.Function("CURDATE", Array.Empty<SqlExpression>(), returnType);
+                    case nameof(DateTime.Today):
+                        return _sqlExpressionFactory.Function(
+                            declaringType == typeof(DateTimeOffset)
+                                ? "UTC_DATE"
+                                : "CURDATE",
+                            Array.Empty<SqlExpression>(),
+                            returnType);
                 }
             }
 
