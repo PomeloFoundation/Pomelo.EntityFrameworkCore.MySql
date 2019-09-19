@@ -511,8 +511,20 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(builder, nameof(builder));
 
             builder.Append("ALTER TABLE ")
-                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
-                .Append(" CHANGE ")
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema));
+
+            if (_options.ServerVersion.SupportsRenameColumn)
+            {
+                builder.Append(" RENAME COLUMN ")
+                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
+                    .Append(" ")
+                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName));
+
+                EndStatement(builder);
+                return;
+            }
+
+            builder.Append(" CHANGE ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
                 .Append(" ");
 
