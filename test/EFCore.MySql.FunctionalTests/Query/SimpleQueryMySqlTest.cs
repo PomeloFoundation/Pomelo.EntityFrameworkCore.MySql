@@ -85,7 +85,7 @@ WHERE CONVERT(CURRENT_TIMESTAMP(), date) = CURDATE()");
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE CONVERT(`o`.`OrderDate`, date) = @__myDatetime_0");
+WHERE ((CONVERT(`o`.`OrderDate`, date) = @__myDatetime_0) AND (CONVERT(`o`.`OrderDate`, date) IS NOT NULL AND @__myDatetime_0 IS NOT NULL)) OR (CONVERT(`o`.`OrderDate`, date) IS NULL AND @__myDatetime_0 IS NULL)");
         }
 
         public override async Task Where_datetime_year_component(bool isAsync)
@@ -95,7 +95,7 @@ WHERE CONVERT(`o`.`OrderDate`, date) = @__myDatetime_0");
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE EXTRACT(year FROM `o`.`OrderDate`) = 1998");
+WHERE (EXTRACT(year FROM `o`.`OrderDate`) = 1998) AND EXTRACT(year FROM `o`.`OrderDate`) IS NOT NULL");
         }
 
         public override async Task Where_datetime_month_component(bool isAsync)
@@ -105,7 +105,7 @@ WHERE EXTRACT(year FROM `o`.`OrderDate`) = 1998");
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE EXTRACT(month FROM `o`.`OrderDate`) = 4");
+WHERE (EXTRACT(month FROM `o`.`OrderDate`) = 4) AND EXTRACT(month FROM `o`.`OrderDate`) IS NOT NULL");
         }
 
         public override async Task Where_datetime_dayOfYear_component(bool isAsync)
@@ -115,7 +115,7 @@ WHERE EXTRACT(month FROM `o`.`OrderDate`) = 4");
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE DAYOFYEAR(`o`.`OrderDate`) = 68");
+WHERE (DAYOFYEAR(`o`.`OrderDate`) = 68) AND DAYOFYEAR(`o`.`OrderDate`) IS NOT NULL");
         }
 
         public override async Task Where_datetime_day_component(bool isAsync)
@@ -125,7 +125,7 @@ WHERE DAYOFYEAR(`o`.`OrderDate`) = 68");
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE EXTRACT(day FROM `o`.`OrderDate`) = 4");
+WHERE (EXTRACT(day FROM `o`.`OrderDate`) = 4) AND EXTRACT(day FROM `o`.`OrderDate`) IS NOT NULL");
         }
 
         public override async Task Where_datetime_hour_component(bool isAsync)
@@ -135,7 +135,7 @@ WHERE EXTRACT(day FROM `o`.`OrderDate`) = 4");
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE EXTRACT(hour FROM `o`.`OrderDate`) = 14");
+WHERE (EXTRACT(hour FROM `o`.`OrderDate`) = 14) AND EXTRACT(hour FROM `o`.`OrderDate`) IS NOT NULL");
         }
 
         public override async Task Where_datetime_minute_component(bool isAsync)
@@ -145,7 +145,7 @@ WHERE EXTRACT(hour FROM `o`.`OrderDate`) = 14");
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE EXTRACT(minute FROM `o`.`OrderDate`) = 23");
+WHERE (EXTRACT(minute FROM `o`.`OrderDate`) = 23) AND EXTRACT(minute FROM `o`.`OrderDate`) IS NOT NULL");
         }
 
         public override async Task Where_datetime_second_component(bool isAsync)
@@ -155,7 +155,7 @@ WHERE EXTRACT(minute FROM `o`.`OrderDate`) = 23");
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE EXTRACT(second FROM `o`.`OrderDate`) = 44");
+WHERE (EXTRACT(second FROM `o`.`OrderDate`) = 44) AND EXTRACT(second FROM `o`.`OrderDate`) IS NOT NULL");
         }
 
         public override async Task Where_datetime_millisecond_component(bool isAsync)
@@ -164,7 +164,8 @@ WHERE EXTRACT(second FROM `o`.`OrderDate`) = 44");
 
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
-FROM `Orders` AS `o`");
+FROM `Orders` AS `o`
+WHERE (EXTRACT(microsecond FROM `o`.`OrderDate`)) DIV (1000) = 88");
         }
 
         public override async Task String_StartsWith_Literal(bool isAsync)
