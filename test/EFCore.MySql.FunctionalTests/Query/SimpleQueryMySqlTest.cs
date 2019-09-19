@@ -7,7 +7,9 @@ using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
 using Microsoft.Extensions.DependencyInjection;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -792,6 +794,48 @@ WHERE `t`.`c` < @__nextYear_0");
         {
             // EXCEPT is not natively supported by MySQL.
             return Assert.ThrowsAsync<InvalidOperationException>(() => base.Select_Except_reference_projection(isAsync));
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportVersionString)]
+        [MemberData("IsAsyncData")]
+        public override Task SelectMany_correlated_with_outer_1(bool isAsync)
+        {
+            return base.SelectMany_correlated_with_outer_1(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportVersionString)]
+        [MemberData("IsAsyncData")]
+        public override Task SelectMany_correlated_with_outer_2(bool isAsync)
+        {
+            return base.SelectMany_correlated_with_outer_2(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString)]
+        [MemberData("IsAsyncData")]
+        public override Task SelectMany_correlated_with_outer_3(bool isAsync)
+        {
+            return base.SelectMany_correlated_with_outer_3(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString)]
+        [MemberData("IsAsyncData")]
+        public override Task SelectMany_correlated_with_outer_4(bool isAsync)
+        {
+            return base.SelectMany_correlated_with_outer_4(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString)]
+        [MemberData("IsAsyncData")]
+        public override Task Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault_2(bool isAsync)
+        {
+            return base.Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault_2(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString)]
+        [MemberData("IsAsyncData")]
+        public override void Select_nested_collection_multi_level()
+        {
+            base.Select_nested_collection_multi_level();
         }
 
         private void AssertSql(params string[] expected)

@@ -89,7 +89,29 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
             return base.VisitSqlFunction(sqlFunctionExpression);
         }
+        
+        protected override Expression VisitCrossApply(CrossApplyExpression crossApplyExpression)
+        {
+            Sql.Append("JOIN LATERAL ");
 
+            Visit(crossApplyExpression.Table);
+
+            Sql.Append(" ON TRUE");
+
+            return crossApplyExpression;
+        }
+
+        protected override Expression VisitOuterApply(OuterApplyExpression outerApplyExpression)
+        {
+            Sql.Append("LEFT JOIN LATERAL ");
+
+            Visit(outerApplyExpression.Table);
+
+            Sql.Append(" ON TRUE");
+
+            return outerApplyExpression;
+        }
+        
         protected override Expression VisitSqlBinary(SqlBinaryExpression sqlBinaryExpression)
         {
             if (sqlBinaryExpression.OperatorType == ExpressionType.Add &&

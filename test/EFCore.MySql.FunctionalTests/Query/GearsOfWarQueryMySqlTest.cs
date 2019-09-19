@@ -1,6 +1,10 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
+using Microsoft.Extensions.DependencyInjection;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -188,6 +192,41 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         public override Task Select_subquery_distinct_firstordefault(bool isAsync)
         {
             return base.Select_subquery_distinct_firstordefault(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString)]
+        [MemberData("IsAsyncData")]
+        public override Task Correlated_collections_inner_subquery_predicate_references_outer_qsre(bool isAsync)
+        {
+            return base.Correlated_collections_inner_subquery_predicate_references_outer_qsre(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString)]
+        [MemberData("IsAsyncData")]
+        public override Task Correlated_collections_inner_subquery_selector_references_outer_qsre(bool isAsync)
+        {
+            return base.Correlated_collections_inner_subquery_selector_references_outer_qsre(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString)]
+        [MemberData("IsAsyncData")]
+        public override Task Outer_parameter_in_join_key_inner_and_outer(bool isAsync)
+        {
+            return base.Outer_parameter_in_join_key_inner_and_outer(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString)]
+        [MemberData("IsAsyncData")]
+        public override Task Outer_parameter_in_group_join_with_DefaultIfEmpty(bool isAsync)
+        {
+            return base.Outer_parameter_in_group_join_with_DefaultIfEmpty(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString)]
+        [MemberData("IsAsyncData")]
+        public override Task Correlated_collections_nested_inner_subquery_references_outer_qsre_two_levels_up(bool isAsync)
+        {
+            return base.Correlated_collections_nested_inner_subquery_references_outer_qsre_two_levels_up(isAsync);
         }
     }
 }
