@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.EntityFrameworkCore.TestModels.FunkyDataModel;
@@ -21,38 +21,35 @@ namespace Microsoft.EntityFrameworkCore.Query
         {
             base.String_ends_with_equals_nullable_column();
 
-            Assert.Equal(
-                @"SELECT [c].[Id], [c].[FirstName], [c].[LastName], [c].[NullableBool], [c2].[Id], [c2].[FirstName], [c2].[LastName], [c2].[NullableBool]
-FROM [FunkyCustomers] AS [c]
-CROSS JOIN [FunkyCustomers] AS [c2]
-WHERE CASE
-    WHEN (RIGHT([c].[FirstName], LEN([c2].[LastName])) = [c2].[LastName]) OR ([c2].[LastName] = N'')
-    THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT)
-END = [c].[NullableBool]",
-                Sql,
-                ignoreLineEndingDifferences: true);
+            AssertSql(
+                @"SELECT [f].[Id], [f].[FirstName], [f].[LastName], [f].[NullableBool], [f0].[Id], [f0].[FirstName], [f0].[LastName], [f0].[NullableBool]
+FROM [FunkyCustomers] AS [f]
+CROSS JOIN [FunkyCustomers] AS [f0]
+WHERE (CASE
+    WHEN (([f0].[LastName] = N'') AND [f0].[LastName] IS NOT NULL) OR ([f].[FirstName] IS NOT NULL AND ([f0].[LastName] IS NOT NULL AND (((RIGHT([f].[FirstName], LEN([f0].[LastName])) = [f0].[LastName]) AND (RIGHT([f].[FirstName], LEN([f0].[LastName])) IS NOT NULL AND [f0].[LastName] IS NOT NULL)) OR (RIGHT([f].[FirstName], LEN([f0].[LastName])) IS NULL AND [f0].[LastName] IS NULL)))) THEN CAST(1 AS bit)
+    ELSE CAST(0 AS bit)
+END = [f].[NullableBool]) AND [f].[NullableBool] IS NOT NULL");
         }
 
         public override void String_ends_with_not_equals_nullable_column()
         {
             base.String_ends_with_not_equals_nullable_column();
 
-            Assert.Equal(
-                @"SELECT [c].[Id], [c].[FirstName], [c].[LastName], [c].[NullableBool], [c2].[Id], [c2].[FirstName], [c2].[LastName], [c2].[NullableBool]
-FROM [FunkyCustomers] AS [c]
-CROSS JOIN [FunkyCustomers] AS [c2]
+            AssertSql(
+                @"SELECT [f].[Id], [f].[FirstName], [f].[LastName], [f].[NullableBool], [f0].[Id], [f0].[FirstName], [f0].[LastName], [f0].[NullableBool]
+FROM [FunkyCustomers] AS [f]
+CROSS JOIN [FunkyCustomers] AS [f0]
 WHERE (CASE
-    WHEN (RIGHT([c].[FirstName], LEN([c2].[LastName])) = [c2].[LastName]) OR ([c2].[LastName] = N'')
-    THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT)
-END <> [c].[NullableBool]) OR [c].[NullableBool] IS NULL",
-                Sql,
-                ignoreLineEndingDifferences: true);
+    WHEN (([f0].[LastName] = N'') AND [f0].[LastName] IS NOT NULL) OR ([f].[FirstName] IS NOT NULL AND ([f0].[LastName] IS NOT NULL AND (((RIGHT([f].[FirstName], LEN([f0].[LastName])) = [f0].[LastName]) AND (RIGHT([f].[FirstName], LEN([f0].[LastName])) IS NOT NULL AND [f0].[LastName] IS NOT NULL)) OR (RIGHT([f].[FirstName], LEN([f0].[LastName])) IS NULL AND [f0].[LastName] IS NULL)))) THEN CAST(1 AS bit)
+    ELSE CAST(0 AS bit)
+END <> [f].[NullableBool]) OR [f].[NullableBool] IS NULL");
         }
 
         protected override void ClearLog()
             => Fixture.TestSqlLoggerFactory.Clear();
 
-        private string Sql => Fixture.TestSqlLoggerFactory.Sql;
+        private void AssertSql(params string[] expected)
+            => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
         public class FunkyDataQueryMySqlFixture : FunkyDataQueryFixtureBase
         {

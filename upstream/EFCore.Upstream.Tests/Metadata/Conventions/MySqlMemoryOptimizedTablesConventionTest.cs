@@ -9,17 +9,29 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
 {
     public class MySqlMemoryOptimizedTablesConventionTest
     {
-        [Fact]
-        public void Keys_and_indexes_are_nonclustered_for_memory_optimized_tables()
+        [ConditionalTheory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Keys_and_indexes_are_nonclustered_for_memory_optimized_tables(bool obsolete)
         {
             var modelBuilder = MySqlTestHelpers.Instance.CreateConventionBuilder();
 
             modelBuilder.Entity<Order>();
 
-            Assert.True(modelBuilder.Model.FindEntityType(typeof(Order)).GetKeys().All(k => k.MySql().IsClustered == null));
-            Assert.True(modelBuilder.Model.FindEntityType(typeof(Order)).GetIndexes().All(k => k.MySql().IsClustered == null));
+            Assert.True(modelBuilder.Model.FindEntityType(typeof(Order)).GetKeys().All(k => k.IsClustered() == null));
+            Assert.True(modelBuilder.Model.FindEntityType(typeof(Order)).GetIndexes().All(k => k.IsClustered() == null));
 
-            modelBuilder.Entity<Order>().ForMySqlIsMemoryOptimized();
+            if (obsolete)
+            {
+#pragma warning disable 618
+                modelBuilder.Entity<Order>().ForMySqlIsMemoryOptimized();
+#pragma warning restore 618
+            }
+            else
+            {
+                modelBuilder.Entity<Order>().IsMemoryOptimized();
+            }
+
             modelBuilder.Entity<Order>().HasKey(
                 o => new
                 {
@@ -28,13 +40,22 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
                 });
             modelBuilder.Entity<Order>().HasIndex(o => o.CustomerId);
 
-            Assert.True(modelBuilder.Model.FindEntityType(typeof(Order)).GetKeys().All(k => k.MySql().IsClustered == false));
-            Assert.True(modelBuilder.Model.FindEntityType(typeof(Order)).GetIndexes().All(k => k.MySql().IsClustered == false));
+            Assert.True(modelBuilder.Model.FindEntityType(typeof(Order)).GetKeys().All(k => k.IsClustered() == false));
+            Assert.True(modelBuilder.Model.FindEntityType(typeof(Order)).GetIndexes().All(k => k.IsClustered() == false));
 
-            modelBuilder.Entity<Order>().ForMySqlIsMemoryOptimized(false);
+            if (obsolete)
+            {
+#pragma warning disable 618
+                modelBuilder.Entity<Order>().ForMySqlIsMemoryOptimized(false);
+#pragma warning restore 618
+            }
+            else
+            {
+                modelBuilder.Entity<Order>().IsMemoryOptimized(false);
+            }
 
-            Assert.True(modelBuilder.Model.FindEntityType(typeof(Order)).GetKeys().All(k => k.MySql().IsClustered == null));
-            Assert.True(modelBuilder.Model.FindEntityType(typeof(Order)).GetIndexes().All(k => k.MySql().IsClustered == null));
+            Assert.True(modelBuilder.Model.FindEntityType(typeof(Order)).GetKeys().All(k => k.IsClustered() == null));
+            Assert.True(modelBuilder.Model.FindEntityType(typeof(Order)).GetIndexes().All(k => k.IsClustered() == null));
         }
 
         private class Order

@@ -21,7 +21,8 @@ DROP DATABASE TransactionSuppressed");
         {
             var options = AddOptions(
                     new DbContextOptionsBuilder()
-                        .UseMySql(TestStore.ConnectionString, b => b.ApplyConfiguration().CommandTimeout(MySqlTestStore.CommandTimeout)))
+                        .UseMySql(
+                            TestStore.ConnectionString, b => b.ApplyConfiguration().CommandTimeout(MySqlTestStore.CommandTimeout)))
                 .UseInternalServiceProvider(ServiceProvider)
                 .Options;
             return new MigrationsContext(options);

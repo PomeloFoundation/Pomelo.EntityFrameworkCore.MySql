@@ -4,11 +4,11 @@
 using System;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -19,7 +19,7 @@ namespace Microsoft.EntityFrameworkCore.Storage
 {
     public class MySqlTypeMappingTest : RelationalTypeMappingTest
     {
-        [Theory]
+        [ConditionalTheory]
         [InlineData(nameof(ChangeTracker.DetectChanges), false)]
         [InlineData(nameof(PropertyEntry.CurrentValue), false)]
         [InlineData(nameof(PropertyEntry.OriginalValue), false)]
@@ -79,7 +79,9 @@ namespace Microsoft.EntityFrameworkCore.Storage
             public DbSet<WithRowVersion> _ { get; set; }
 
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-                => optionsBuilder.UseMySql("Data Source=Branston");
+                => optionsBuilder
+                    .UseInternalServiceProvider(MySqlFixture.DefaultServiceProvider)
+                    .UseMySql("Data Source=Branston");
 
             protected override void OnModelCreating(ModelBuilder modelBuilder)
             {
@@ -103,19 +105,25 @@ namespace Microsoft.EntityFrameworkCore.Storage
             base.Create_and_clone_with_converter(mappingType, clrType);
         }
 
-        [InlineData(typeof(MySqlByteArrayTypeMapping), typeof(byte[]))]
-        public override void Create_and_clone_sized_mappings_with_converter(Type mappingType, Type clrType)
+        [ConditionalFact]
+        public virtual void Create_and_clone_SQL_Server_sized_mappings_with_converter()
         {
-            base.Create_and_clone_sized_mappings_with_converter(mappingType, clrType);
+            ConversionCloneTest(
+                typeof(MySqlByteArrayTypeMapping),
+                typeof(byte[]),
+                SqlDbType.Image);
         }
 
-        [InlineData(typeof(MySqlStringTypeMapping), typeof(string))]
-        public override void Create_and_clone_unicode_sized_mappings_with_converter(Type mappingType, Type clrType)
+        [ConditionalFact]
+        public virtual void Create_and_clone_SQL_Server_unicode_sized_mappings_with_converter()
         {
-            base.Create_and_clone_unicode_sized_mappings_with_converter(mappingType, clrType);
+            UnicodeConversionCloneTest(
+                typeof(MySqlStringTypeMapping),
+                typeof(string),
+                SqlDbType.Text);
         }
 
-        [Fact]
+        [ConditionalFact]
         public virtual void Create_and_clone_UDT_mapping_with_converter()
         {
             Func<object, Expression> literalGenerator = Expression.Constant;
@@ -203,7 +211,7 @@ namespace Microsoft.EntityFrameworkCore.Storage
             Test_GenerateSqlLiteral_helper(
                 GetMapping(typeof(DateTimeOffset)),
                 new DateTimeOffset(2015, 3, 12, 13, 36, 37, 371, new TimeSpan(-7, 0, 0)),
-                "'2015-03-12T13:36:37.371-07:00'");
+                "'2015-03-12T13:36:37.3710000-07:00'");
         }
 
         public override void DateTime_literal_generated_correctly()
@@ -226,7 +234,7 @@ namespace Microsoft.EntityFrameworkCore.Storage
             Test_GenerateSqlLiteral_helper(
                 GetMapping("smalldatetime"),
                 new DateTime(2015, 3, 12, 13, 36, 37, 371, DateTimeKind.Utc),
-                "'2015-03-12T13:36:37.371'");
+                "'2015-03-12T13:36:37'");
 
             Test_GenerateSqlLiteral_helper(
                 GetMapping("datetime2"),
@@ -241,8 +249,8 @@ namespace Microsoft.EntityFrameworkCore.Storage
             Test_GenerateSqlLiteral_helper(typeMapping, float.NaN, "CAST(NaN AS real)");
             Test_GenerateSqlLiteral_helper(typeMapping, float.PositiveInfinity, "CAST(Infinity AS real)");
             Test_GenerateSqlLiteral_helper(typeMapping, float.NegativeInfinity, "CAST(-Infinity AS real)");
-            Test_GenerateSqlLiteral_helper(typeMapping, float.MinValue, "CAST(-3.40282347E+38 AS real)");
-            Test_GenerateSqlLiteral_helper(typeMapping, float.MaxValue, "CAST(3.40282347E+38 AS real)");
+            Test_GenerateSqlLiteral_helper(typeMapping, float.MinValue, "CAST(-3.4028235E+38 AS real)");
+            Test_GenerateSqlLiteral_helper(typeMapping, float.MaxValue, "CAST(3.4028235E+38 AS real)");
         }
 
         public override void Long_literal_generated_correctly()
@@ -261,7 +269,7 @@ namespace Microsoft.EntityFrameworkCore.Storage
             Test_GenerateSqlLiteral_helper(typeMapping, short.MaxValue, "CAST(32767 AS smallint)");
         }
 
-        [Fact]
+        [ConditionalFact]
         public virtual void SqlVariant_literal_generated_correctly()
         {
             var typeMapping = GetMapping("sql_variant");
@@ -281,7 +289,7 @@ namespace Microsoft.EntityFrameworkCore.Storage
                     TestServiceFactory.Instance.Create<RelationalTypeMappingSourceDependencies>())
                 .FindMapping(type);
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("Microsoft.MySql.Types.SqlHierarchyId", "hierarchyid")]
         [InlineData("Microsoft.MySql.Types.SqlGeography", "geography")]
         [InlineData("Microsoft.MySql.Types.SqlGeometry", "geometry")]
@@ -314,9 +322,17 @@ namespace Microsoft.EntityFrameworkCore.Storage
             public override Type GetNestedType(string name, BindingFlags bindingAttr) => throw new NotImplementedException();
             public override Type GetElementType() => throw new NotImplementedException();
             protected override bool HasElementTypeImpl() => throw new NotImplementedException();
-            protected override PropertyInfo GetPropertyImpl(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers) => throw new NotImplementedException();
+
+            protected override PropertyInfo GetPropertyImpl(
+                string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers) =>
+                throw new NotImplementedException();
+
             public override PropertyInfo[] GetProperties(BindingFlags bindingAttr) => throw new NotImplementedException();
-            protected override MethodInfo GetMethodImpl(string name, BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers) => throw new NotImplementedException();
+
+            protected override MethodInfo GetMethodImpl(
+                string name, BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types,
+                ParameterModifier[] modifiers) => throw new NotImplementedException();
+
             public override MethodInfo[] GetMethods(BindingFlags bindingAttr) => throw new NotImplementedException();
             public override FieldInfo GetField(string name, BindingFlags bindingAttr) => throw new NotImplementedException();
             public override FieldInfo[] GetFields(BindingFlags bindingAttr) => throw new NotImplementedException();
@@ -327,9 +343,17 @@ namespace Microsoft.EntityFrameworkCore.Storage
             protected override bool IsPointerImpl() => throw new NotImplementedException();
             protected override bool IsPrimitiveImpl() => throw new NotImplementedException();
             protected override bool IsCOMObjectImpl() => throw new NotImplementedException();
-            public override object InvokeMember(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, ParameterModifier[] modifiers, CultureInfo culture, string[] namedParameters) => throw new NotImplementedException();
+
+            public override object InvokeMember(
+                string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, ParameterModifier[] modifiers,
+                CultureInfo culture, string[] namedParameters) => throw new NotImplementedException();
+
             public override Type UnderlyingSystemType { get; }
-            protected override ConstructorInfo GetConstructorImpl(BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers) => throw new NotImplementedException();
+
+            protected override ConstructorInfo GetConstructorImpl(
+                BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers) =>
+                throw new NotImplementedException();
+
             public override string Name => throw new NotImplementedException();
             public override Guid GUID => throw new NotImplementedException();
             public override Module Module => throw new NotImplementedException();
@@ -347,6 +371,8 @@ namespace Microsoft.EntityFrameworkCore.Storage
         }
 
         protected override DbContextOptions ContextOptions { get; }
-            = new DbContextOptionsBuilder().UseMySql("Server=Dummy").Options;
+            = new DbContextOptionsBuilder()
+                .UseInternalServiceProvider(MySqlFixture.DefaultServiceProvider)
+                .UseMySql("Server=Dummy").Options;
     }
 }

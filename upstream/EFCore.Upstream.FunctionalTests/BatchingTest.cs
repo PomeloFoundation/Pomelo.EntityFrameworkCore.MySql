@@ -4,8 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore.Diagnostics.Internal;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Xunit;
@@ -23,7 +24,7 @@ namespace Microsoft.EntityFrameworkCore
 
         protected BatchingTestFixture Fixture { get; }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(true, true, true)]
         [InlineData(false, true, true)]
         [InlineData(true, false, true)]
@@ -37,109 +38,109 @@ namespace Microsoft.EntityFrameworkCore
             var expectedBlogs = new List<Blog>();
             ExecuteWithStrategyInTransaction(
                 context =>
+                {
+                    var owner1 = new Owner();
+                    var owner2 = new Owner();
+                    context.Owners.Add(owner1);
+                    context.Owners.Add(owner2);
+
+                    for (var i = 1; i < 500; i++)
                     {
-                        var owner1 = new Owner();
-                        var owner2 = new Owner();
-                        context.Owners.Add(owner1);
-                        context.Owners.Add(owner2);
-
-                        for (var i = 1; i < 500; i++)
+                        var blog = new Blog();
+                        if (clientPk)
                         {
-                            var blog = new Blog();
-                            if (clientPk)
-                            {
-                                blog.Id = Guid.NewGuid();
-                            }
-
-                            if (clientFk)
-                            {
-                                blog.Owner = i % 2 == 0 ? owner1 : owner2;
-                            }
-
-                            if (clientOrder)
-                            {
-                                blog.Order = i;
-                            }
-
-                            context.Set<Blog>().Add(blog);
-                            expectedBlogs.Add(blog);
+                            blog.Id = Guid.NewGuid();
                         }
 
-                        context.SaveChanges();
-                    },
+                        if (clientFk)
+                        {
+                            blog.Owner = i % 2 == 0 ? owner1 : owner2;
+                        }
+
+                        if (clientOrder)
+                        {
+                            blog.Order = i;
+                        }
+
+                        context.Set<Blog>().Add(blog);
+                        expectedBlogs.Add(blog);
+                    }
+
+                    context.SaveChanges();
+                },
                 context => AssertDatabaseState(context, clientOrder, expectedBlogs));
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Inserts_and_updates_are_batched_correctly()
         {
             var expectedBlogs = new List<Blog>();
 
             ExecuteWithStrategyInTransaction(
                 context =>
+                {
+                    var owner1 = new Owner { Name = "0" };
+                    var owner2 = new Owner { Name = "1" };
+                    context.Owners.Add(owner1);
+                    context.Owners.Add(owner2);
+
+                    var blog1 = new Blog
                     {
-                        var owner1 = new Owner { Name = "0" };
-                        var owner2 = new Owner { Name = "1" };
-                        context.Owners.Add(owner1);
-                        context.Owners.Add(owner2);
+                        Id = Guid.NewGuid(),
+                        Owner = owner1,
+                        Order = 1
+                    };
 
-                        var blog1 = new Blog
-                        {
-                            Id = Guid.NewGuid(),
-                            Owner = owner1,
-                            Order = 1
-                        };
+                    context.Set<Blog>().Add(blog1);
+                    expectedBlogs.Add(blog1);
 
-                        context.Set<Blog>().Add(blog1);
-                        expectedBlogs.Add(blog1);
+                    context.SaveChanges();
 
-                        context.SaveChanges();
+                    owner2.Name = "2";
 
-                        owner2.Name = "2";
+                    blog1.Order = 0;
+                    var blog2 = new Blog
+                    {
+                        Id = Guid.NewGuid(),
+                        Owner = owner1,
+                        Order = 1
+                    };
 
-                        blog1.Order = 0;
-                        var blog2 = new Blog
-                        {
-                            Id = Guid.NewGuid(),
-                            Owner = owner1,
-                            Order = 1
-                        };
+                    context.Set<Blog>().Add(blog2);
+                    expectedBlogs.Add(blog2);
 
-                        context.Set<Blog>().Add(blog2);
-                        expectedBlogs.Add(blog2);
+                    var blog3 = new Blog
+                    {
+                        Id = Guid.NewGuid(),
+                        Owner = owner2,
+                        Order = 2
+                    };
 
-                        var blog3 = new Blog
-                        {
-                            Id = Guid.NewGuid(),
-                            Owner = owner2,
-                            Order = 2
-                        };
+                    context.Set<Blog>().Add(blog3);
+                    expectedBlogs.Add(blog3);
 
-                        context.Set<Blog>().Add(blog3);
-                        expectedBlogs.Add(blog3);
-
-                        context.SaveChanges();
-                    },
+                    context.SaveChanges();
+                },
                 context => AssertDatabaseState(context, true, expectedBlogs));
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Inserts_when_database_type_is_different()
         {
             ExecuteWithStrategyInTransaction(
                 context =>
-                    {
-                        var owner1 = new Owner { Id = "0", Name = "Zero" };
-                        var owner2 = new Owner { Id = "A", Name = string.Join("", Enumerable.Repeat('A', 900)) };
-                        context.Owners.Add(owner1);
-                        context.Owners.Add(owner2);
+                {
+                    var owner1 = new Owner { Id = "0", Name = "Zero" };
+                    var owner2 = new Owner { Id = "A", Name = string.Join("", Enumerable.Repeat('A', 900)) };
+                    context.Owners.Add(owner1);
+                    context.Owners.Add(owner2);
 
-                        context.SaveChanges();
-                    },
+                    context.SaveChanges();
+                },
                 context => Assert.Equal(2, context.Owners.Count()));
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(3)]
         [InlineData(4)]
         public void Inserts_are_batched_only_when_necessary(int minBatchSize)
@@ -149,33 +150,34 @@ namespace Microsoft.EntityFrameworkCore
                 () => (BloggingContext)Fixture.CreateContext(minBatchSize),
                 UseTransaction,
                 context =>
+                {
+                    var owner = new Owner();
+                    context.Owners.Add(owner);
+
+                    for (var i = 1; i < 4; i++)
                     {
-                        var owner = new Owner();
-                        context.Owners.Add(owner);
-
-                        for (var i = 1; i < 4; i++)
+                        var blog = new Blog
                         {
-                            var blog = new Blog
-                            {
-                                Id = Guid.NewGuid(),
-                                Owner = owner
-                            };
+                            Id = Guid.NewGuid(),
+                            Owner = owner
+                        };
 
-                            context.Set<Blog>().Add(blog);
-                            expectedBlogs.Add(blog);
-                        }
+                        context.Set<Blog>().Add(blog);
+                        expectedBlogs.Add(blog);
+                    }
 
-                        Fixture.TestSqlLoggerFactory.Clear();
+                    Fixture.TestSqlLoggerFactory.Clear();
 
-                        context.SaveChanges();
+                    context.SaveChanges();
 
-                        Assert.Contains(minBatchSize == 3
-                            ? RelationalStrings.LogBatchReadyForExecution.GenerateMessage(3)
-                            : RelationalStrings.LogBatchSmallerThanMinBatchSize.GenerateMessage(3, 4),
-                            Fixture.TestSqlLoggerFactory.Log.Select(l => l.Message));
+                    Assert.Contains(
+                        minBatchSize == 3
+                            ? RelationalResources.LogBatchReadyForExecution(new TestLogger<MySqlLoggingDefinitions>()).GenerateMessage(3)
+                            : RelationalResources.LogBatchSmallerThanMinBatchSize(new TestLogger<MySqlLoggingDefinitions>()).GenerateMessage(3, 4),
+                        Fixture.TestSqlLoggerFactory.Log.Select(l => l.Message));
 
-                        Assert.Equal(minBatchSize <= 3 ? 2 : 4, Fixture.TestSqlLoggerFactory.SqlStatements.Count);
-                    }, context => AssertDatabaseState(context, false, expectedBlogs));
+                    Assert.Equal(minBatchSize <= 3 ? 2 : 4, Fixture.TestSqlLoggerFactory.SqlStatements.Count);
+                }, context => AssertDatabaseState(context, false, expectedBlogs));
         }
 
         private void AssertDatabaseState(DbContext context, bool clientOrder, List<Blog> expectedBlogs)
@@ -221,16 +223,17 @@ namespace Microsoft.EntityFrameworkCore
             {
                 modelBuilder.Entity<Owner>(
                     b =>
-                        {
-                            b.Property(e => e.Version).IsConcurrencyToken().ValueGeneratedOnAddOrUpdate();
-                            b.Property(e => e.Name).HasColumnType("nvarchar(450)");
-                        });
+                    {
+                        b.Property(e => e.Id).ValueGeneratedOnAdd();
+                        b.Property(e => e.Version).IsConcurrencyToken().ValueGeneratedOnAddOrUpdate();
+                        b.Property(e => e.Name).HasColumnType("nvarchar(450)");
+                    });
                 modelBuilder.Entity<Blog>(
                     b =>
-                        {
-                            b.Property(e => e.Id).HasDefaultValueSql("NEWID()");
-                            b.Property(e => e.Version).IsConcurrencyToken().ValueGeneratedOnAddOrUpdate();
-                        });
+                    {
+                        b.Property(e => e.Id).HasDefaultValueSql("NEWID()");
+                        b.Property(e => e.Version).IsConcurrencyToken().ValueGeneratedOnAddOrUpdate();
+                    });
             }
 
             // ReSharper disable once UnusedMember.Local
@@ -267,7 +270,7 @@ namespace Microsoft.EntityFrameworkCore
             protected override void Seed(PoolableDbContext context)
             {
                 context.Database.EnsureCreatedResiliently();
-                context.Database.ExecuteSqlCommand(
+                context.Database.ExecuteSqlRaw(
                     @"
 ALTER TABLE dbo.Owners
     ALTER COLUMN Name nvarchar(MAX);");

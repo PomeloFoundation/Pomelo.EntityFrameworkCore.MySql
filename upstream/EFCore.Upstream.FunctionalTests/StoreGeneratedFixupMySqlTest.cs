@@ -9,14 +9,15 @@ using Xunit;
 // ReSharper disable InconsistentNaming
 namespace Microsoft.EntityFrameworkCore
 {
-    public class StoreGeneratedFixupMySqlTest : StoreGeneratedFixupRelationalTestBase<StoreGeneratedFixupMySqlTest.StoreGeneratedFixupMySqlFixture>
+    public class StoreGeneratedFixupMySqlTest : StoreGeneratedFixupRelationalTestBase<
+        StoreGeneratedFixupMySqlTest.StoreGeneratedFixupMySqlFixture>
     {
         public StoreGeneratedFixupMySqlTest(StoreGeneratedFixupMySqlFixture fixture)
             : base(fixture)
         {
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Temp_values_are_replaced_on_save()
         {
             ExecuteWithStrategyInTransaction(
@@ -41,6 +42,14 @@ namespace Microsoft.EntityFrameworkCore
             var entry = context.Entry(dependent);
             entry.Property("Id1").IsTemporary = true;
             entry.Property("Id2").IsTemporary = true;
+
+            foreach (var property in entry.Properties)
+            {
+                if (property.Metadata.IsForeignKey())
+                {
+                    property.IsTemporary = true;
+                }
+            }
 
             entry = context.Entry(principal);
             entry.Property("Id1").IsTemporary = true;

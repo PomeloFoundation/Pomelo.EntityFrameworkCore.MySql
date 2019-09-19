@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -16,7 +15,8 @@ using Xunit;
 namespace Microsoft.EntityFrameworkCore
 {
     [MySqlCondition(MySqlCondition.IsNotSqlAzure)]
-    public class EverythingIsStringsMySqlTest : BuiltInDataTypesTestBase<EverythingIsStringsMySqlTest.EverythingIsStringsMySqlFixture>
+    public class EverythingIsStringsMySqlTest : BuiltInDataTypesTestBase<
+        EverythingIsStringsMySqlTest.EverythingIsStringsMySqlFixture>
     {
         public EverythingIsStringsMySqlTest(EverythingIsStringsMySqlFixture fixture)
             : base(fixture)
@@ -26,10 +26,13 @@ namespace Microsoft.EntityFrameworkCore
         [ConditionalFact]
         public virtual void Columns_have_expected_data_types()
         {
-            var actual = BuiltInDataTypesMySqlTest.QueryForColumnTypes(CreateContext());
+            var actual = BuiltInDataTypesMySqlTest.QueryForColumnTypes(
+                CreateContext(),
+                nameof(ObjectBackedDataTypes), nameof(NullableBackedDataTypes), nameof(NonNullableBackedDataTypes));
 
             const string expected = @"BinaryForeignKeyDataType.BinaryKeyDataTypeId ---> [nullable nvarchar] [MaxLength = 450]
 BinaryForeignKeyDataType.Id ---> [nvarchar] [MaxLength = 64]
+BinaryKeyDataType.Ex ---> [nullable nvarchar] [MaxLength = -1]
 BinaryKeyDataType.Id ---> [nvarchar] [MaxLength = 450]
 BuiltInDataTypes.Enum16 ---> [nvarchar] [MaxLength = -1]
 BuiltInDataTypes.Enum32 ---> [nvarchar] [MaxLength = -1]
@@ -176,14 +179,15 @@ UnicodeDataTypes.StringUnicode ---> [nullable nvarchar] [MaxLength = -1]
 
             public override bool SupportsBinaryKeys => true;
 
+            public override bool SupportsDecimalComparisons => true;
+
             public override DateTime DefaultDateTime => new DateTime();
 
             public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
                 => base
                     .AddOptions(builder)
                     .ConfigureWarnings(
-                        c => c.Log(RelationalEventId.QueryClientEvaluationWarning)
-                            .Log(MySqlEventId.DecimalTypeDefaultWarning));
+                        c => c.Log(MySqlEventId.DecimalTypeDefaultWarning));
 
             protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
             {
@@ -204,19 +208,6 @@ UnicodeDataTypes.StringUnicode ---> [nullable nvarchar] [MaxLength = -1]
 
         public class MySqlStringsTypeMappingSource : RelationalTypeMappingSource
         {
-#if Test21
-            private readonly MySqlStringTypeMapping _fixedLengthUnicodeString
-                = new MySqlStringTypeMapping("nchar", dbType: DbType.String, unicode: true);
-
-            private readonly MySqlStringTypeMapping _variableLengthUnicodeString
-                = new MySqlStringTypeMapping("nvarchar", dbType: null, unicode: true);
-
-            private readonly MySqlStringTypeMapping _fixedLengthAnsiString
-                = new MySqlStringTypeMapping("char", dbType: DbType.AnsiString);
-
-            private readonly MySqlStringTypeMapping _variableLengthAnsiString
-                = new MySqlStringTypeMapping("varchar", dbType: DbType.AnsiString);
-#else
             private readonly MySqlStringTypeMapping _fixedLengthUnicodeString
                 = new MySqlStringTypeMapping(unicode: true, fixedLength: true);
 
@@ -228,14 +219,9 @@ UnicodeDataTypes.StringUnicode ---> [nullable nvarchar] [MaxLength = -1]
 
             private readonly MySqlStringTypeMapping _variableLengthAnsiString
                 = new MySqlStringTypeMapping();
-#endif
 
             private readonly Dictionary<string, RelationalTypeMapping> _storeTypeMappings;
 
-            /// <summary>
-            ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
             public MySqlStringsTypeMappingSource(
                 TypeMappingSourceDependencies dependencies,
                 RelationalTypeMappingSourceDependencies relationalDependencies)
@@ -280,36 +266,25 @@ UnicodeDataTypes.StringUnicode ---> [nullable nvarchar] [MaxLength = -1]
                     }
                 }
 
-                if (clrType != null)
+                if (clrType == typeof(string))
                 {
-                    if (clrType == typeof(string))
+                    var isAnsi = mappingInfo.IsUnicode == false;
+                    var isFixedLength = mappingInfo.IsFixedLength == true;
+                    var baseName = isAnsi ? "varchar" : "nvarchar";
+                    var maxSize = isAnsi ? 8000 : 4000;
+
+                    var size = mappingInfo.Size ?? (mappingInfo.IsKeyOrIndex ? (int?)(isAnsi ? 900 : 450) : null);
+                    if (size > maxSize)
                     {
-                        var isAnsi = mappingInfo.IsUnicode == false;
-                        var isFixedLength = mappingInfo.IsFixedLength == true;
-                        var baseName = isAnsi ? "varchar" : "nvarchar";
-                        var maxSize = isAnsi ? 8000 : 4000;
-
-                        var size = mappingInfo.Size ?? (mappingInfo.IsKeyOrIndex ? (int?)(isAnsi ? 900 : 450) : null);
-                        if (size > maxSize)
-                        {
-                            size = isFixedLength ? maxSize : (int?)null;
-                        }
-
-#if Test21
-                        return new MySqlStringTypeMapping(
-                            baseName + "(" + (size == null ? "max" : size.ToString()) + ")",
-                            isAnsi ? DbType.AnsiString : (DbType?)null,
-                            !isAnsi,
-                            size);
-#else
-                        return new MySqlStringTypeMapping(
-                            baseName + "(" + (size == null ? "max" : size.ToString()) + ")",
-                            !isAnsi,
-                            size,
-                            isFixedLength,
-                            storeTypePostfix: size == null ? StoreTypePostfix.None : (StoreTypePostfix?)null);
-#endif
+                        size = isFixedLength ? maxSize : (int?)null;
                     }
+
+                    return new MySqlStringTypeMapping(
+                        baseName + "(" + (size == null ? "max" : size.ToString()) + ")",
+                        !isAnsi,
+                        size,
+                        isFixedLength,
+                        storeTypePostfix: size == null ? StoreTypePostfix.None : (StoreTypePostfix?)null);
                 }
 
                 return null;

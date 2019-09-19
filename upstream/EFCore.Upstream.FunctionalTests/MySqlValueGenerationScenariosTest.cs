@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -21,7 +21,7 @@ namespace Microsoft.EntityFrameworkCore
 
         // Positive cases
 
-        [Fact]
+        [ConditionalFact]
         public void Insert_with_Identity_column()
         {
             using (var testStore = MySqlTestStore.CreateInitialized(DatabaseName))
@@ -103,7 +103,7 @@ namespace Microsoft.EntityFrameworkCore
 
             protected override void OnModelCreating(ModelBuilder modelBuilder)
             {
-                modelBuilder.ForMySqlUseSequenceHiLo();
+                modelBuilder.UseHiLo();
 
                 modelBuilder.Entity<Blog>(
                     eb =>
@@ -144,8 +144,8 @@ namespace Microsoft.EntityFrameworkCore
                 {
                     var blogs = context.Blogs.OrderBy(e => e.Id).ToList();
 
-                    Assert.Equal(77, blogs[0].Id);
-                    Assert.Equal(78, blogs[1].Id);
+                    Assert.Equal(0, blogs[0].Id);
+                    Assert.Equal(1, blogs[1].Id);
                 }
 
                 using (var context = new BlogContextDefaultValueNoMigrations(testStore.Name))
@@ -166,10 +166,10 @@ namespace Microsoft.EntityFrameworkCore
                 {
                     var blogs = context.Blogs.OrderBy(e => e.Id).ToList();
 
-                    Assert.Equal(77, blogs[0].Id);
-                    Assert.Equal(78, blogs[1].Id);
-                    Assert.Equal(79, blogs[2].Id);
-                    Assert.Equal(80, blogs[3].Id);
+                    Assert.Equal(0, blogs[0].Id);
+                    Assert.Equal(1, blogs[1].Id);
+                    Assert.Equal(2, blogs[2].Id);
+                    Assert.Equal(3, blogs[3].Id);
                 }
             }
         }
@@ -185,7 +185,7 @@ namespace Microsoft.EntityFrameworkCore
             {
                 modelBuilder
                     .HasSequence("MySequence")
-                    .StartsAt(77);
+                    .StartsAt(0);
 
                 modelBuilder
                     .Entity<Blog>()
@@ -256,13 +256,13 @@ namespace Microsoft.EntityFrameworkCore
                 base.OnModelCreating(modelBuilder);
 
                 modelBuilder
-                    .HasSequence("MyStrinySequence")
+                    .HasSequence("MyStringSequence")
                     .StartsAt(77);
 
                 modelBuilder
                     .Entity<BlogWithStringKey>()
                     .Property(e => e.Id)
-                    .HasDefaultValueSql("'i' + CAST((NEXT VALUE FOR MyStrinySequence) AS VARCHAR(20))");
+                    .HasDefaultValueSql("'i' + CAST((NEXT VALUE FOR MyStringSequence) AS VARCHAR(20))");
             }
         }
 
@@ -321,11 +321,11 @@ namespace Microsoft.EntityFrameworkCore
                     .Entity<Blog>()
                     .Property(e => e.Id)
                     .HasDefaultValueSql("next value for MySequence")
-                    .Metadata.BeforeSaveBehavior = PropertySaveBehavior.Throw;
+                    .Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Throw);
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Insert_with_explicit_non_default_keys()
         {
             using (var testStore = MySqlTestStore.CreateInitialized(DatabaseName))
@@ -374,7 +374,7 @@ namespace Microsoft.EntityFrameworkCore
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Insert_with_explicit_with_default_keys()
         {
             using (var testStore = MySqlTestStore.CreateInitialized(DatabaseName))
@@ -424,7 +424,7 @@ namespace Microsoft.EntityFrameworkCore
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Insert_with_non_key_default_value()
         {
             using (var testStore = MySqlTestStore.CreateInitialized(DatabaseName))
@@ -500,7 +500,7 @@ namespace Microsoft.EntityFrameworkCore
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Insert_with_non_key_default_value_readonly()
         {
             using (var testStore = MySqlTestStore.CreateInitialized(DatabaseName))
@@ -563,11 +563,11 @@ namespace Microsoft.EntityFrameworkCore
                 modelBuilder.Entity<Blog>()
                     .Property(e => e.CreatedOn)
                     .HasDefaultValueSql("getdate()")
-                    .Metadata.BeforeSaveBehavior = PropertySaveBehavior.Throw;
+                    .Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Throw);
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Insert_and_update_with_computed_column()
         {
             using (var testStore = MySqlTestStore.CreateInitialized(DatabaseName))
@@ -617,20 +617,20 @@ namespace Microsoft.EntityFrameworkCore
                     .HasComputedColumnSql("FirstName + ' ' + LastName")
                     .Metadata;
 
-                property.BeforeSaveBehavior = PropertySaveBehavior.Throw;
-                property.AfterSaveBehavior = PropertySaveBehavior.Throw;
+                property.SetBeforeSaveBehavior(PropertySaveBehavior.Throw);
+                property.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
             }
         }
 
         // #6044
-        [Fact]
+        [ConditionalFact]
         public void Insert_and_update_with_computed_column_with_function()
         {
             using (var testStore = MySqlTestStore.CreateInitialized(DatabaseName))
             {
                 using (var context = new BlogContextComputedColumnWithFunction(testStore.Name))
                 {
-                    context.Database.ExecuteSqlCommand
+                    context.Database.ExecuteSqlRaw
                     (
                         @"CREATE FUNCTION
 [dbo].[GetFullName](@First NVARCHAR(MAX), @Second NVARCHAR(MAX))
@@ -680,12 +680,12 @@ RETURNS NVARCHAR(MAX) WITH SCHEMABINDING AS BEGIN RETURN @First + @Second END");
                 modelBuilder.Entity<FullNameBlog>()
                     .Property(e => e.FullName)
                     .HasComputedColumnSql("[dbo].[GetFullName]([FirstName], [LastName])")
-                    .Metadata.AfterSaveBehavior = PropertySaveBehavior.Throw;
+                    .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
             }
         }
 
         // #6044
-        [Fact]
+        [ConditionalFact]
         public void Insert_and_update_with_computed_column_with_querying_function()
         {
             using (var testStore = MySqlTestStore.CreateInitialized(DatabaseName))
@@ -694,9 +694,9 @@ RETURNS NVARCHAR(MAX) WITH SCHEMABINDING AS BEGIN RETURN @First + @Second END");
                 {
                     context.GetService<IRelationalDatabaseCreator>().CreateTables();
 
-                    context.Database.ExecuteSqlCommand("ALTER TABLE dbo.FullNameBlogs DROP COLUMN FullName;");
+                    context.Database.ExecuteSqlRaw("ALTER TABLE dbo.FullNameBlogs DROP COLUMN FullName;");
 
-                    context.Database.ExecuteSqlCommand(
+                    context.Database.ExecuteSqlRaw(
                         @"CREATE FUNCTION [dbo].[GetFullName](@Id int)
 RETURNS NVARCHAR(MAX) WITH SCHEMABINDING AS
 BEGIN
@@ -705,7 +705,7 @@ BEGIN
     RETURN @FullName
 END");
 
-                    context.Database.ExecuteSqlCommand("ALTER TABLE dbo.FullNameBlogs ADD FullName AS [dbo].[GetFullName]([Id]); ");
+                    context.Database.ExecuteSqlRaw("ALTER TABLE dbo.FullNameBlogs ADD FullName AS [dbo].[GetFullName]([Id]); ");
                 }
 
                 try
@@ -762,14 +762,14 @@ END");
                 {
                     using (var context = new BlogContextComputedColumn(testStore.Name))
                     {
-                        context.Database.ExecuteSqlCommand("ALTER TABLE dbo.FullNameBlogs DROP COLUMN FullName;");
-                        context.Database.ExecuteSqlCommand("DROP FUNCTION [dbo].[GetFullName];");
+                        context.Database.ExecuteSqlRaw("ALTER TABLE dbo.FullNameBlogs DROP COLUMN FullName;");
+                        context.Database.ExecuteSqlRaw("DROP FUNCTION [dbo].[GetFullName];");
                     }
                 }
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Insert_with_client_generated_GUID_key()
         {
             using (var testStore = MySqlTestStore.CreateInitialized(DatabaseName))
@@ -858,7 +858,7 @@ END");
                 => modelBuilder.Entity<GuidBlog>().Property(e => e.NotId).ValueGeneratedOnAdd();
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Insert_with_server_generated_GUID_key()
         {
             using (var testStore = MySqlTestStore.CreateInitialized(DatabaseName))
@@ -877,7 +877,7 @@ END");
                     var beforeSave = blog.Id;
                     var beforeSaveNotId = blog.NotId;
 
-                    Assert.NotEqual(default, beforeSave);
+                    Assert.Equal(default, beforeSave);
                     Assert.Equal(default, beforeSaveNotId);
 
                     context.SaveChanges();
@@ -920,7 +920,7 @@ END");
         }
 
         // Negative cases
-        [Fact]
+        [ConditionalFact]
         public void Insert_with_explicit_non_default_keys_by_default()
         {
             using (var testStore = MySqlTestStore.CreateInitialized(DatabaseName))
@@ -951,7 +951,7 @@ END");
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Insert_with_explicit_default_keys()
         {
             using (var testStore = MySqlTestStore.CreateInitialized(DatabaseName))
@@ -988,7 +988,7 @@ END");
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Insert_with_implicit_default_keys()
         {
             using (var testStore = MySqlTestStore.CreateInitialized(DatabaseName))
@@ -1081,11 +1081,11 @@ END");
                     .Entity<Blog>()
                     .Property(e => e.Id)
                     .HasDefaultValueSql("next value for MySequence")
-                    .Metadata.BeforeSaveBehavior = PropertySaveBehavior.Throw;
+                    .Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Throw);
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Insert_explicit_value_throws_when_readonly_before_save()
         {
             using (var testStore = MySqlTestStore.CreateInitialized(DatabaseName))
@@ -1114,7 +1114,7 @@ END");
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Insert_explicit_value_into_computed_column()
         {
             using (var testStore = MySqlTestStore.CreateInitialized(DatabaseName))
@@ -1140,7 +1140,7 @@ END");
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Update_explicit_value_in_computed_column()
         {
             using (var testStore = MySqlTestStore.CreateInitialized(DatabaseName))
@@ -1175,8 +1175,8 @@ END");
         }
 
         // Concurrency
-        [Fact]
-        public void Resolve_concurreny()
+        [ConditionalFact]
+        public void Resolve_concurrency()
         {
             using (var testStore = MySqlTestStore.CreateInitialized(DatabaseName))
             {
@@ -1206,7 +1206,7 @@ END");
                         }
                         catch (DbUpdateConcurrencyException)
                         {
-                            // Update origianal values (and optionally any current values)
+                            // Update original values (and optionally any current values)
                             // Would normally do this with just one method call
                             context.Entry(blog).Property(e => e.Id).OriginalValue = updatedBlog.Id;
                             context.Entry(blog).Property(e => e.Name).OriginalValue = updatedBlog.Name;
@@ -1290,7 +1290,11 @@ END");
             public DbSet<ConcurrentBlog> ConcurrentBlogs { get; set; }
 
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-                => optionsBuilder.UseMySql(MySqlTestStore.CreateConnectionString(_databaseName), b => b.ApplyConfiguration());
+                => optionsBuilder
+                    .EnableServiceProviderCaching(false)
+                    .UseMySql(
+                        MySqlTestStore.CreateConnectionString(_databaseName),
+                        b => b.ApplyConfiguration());
         }
     }
 }

@@ -1,24 +1,22 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading;
-using GeoAPI;
-using GeoAPI.Geometries;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestModels.SpatialModel;
 using Microsoft.Extensions.DependencyInjection;
 using NetTopologySuite;
+using NetTopologySuite.Geometries;
 
 namespace Microsoft.EntityFrameworkCore.Query
 {
-#if !Test21
     public class SpatialQueryMySqlGeographyFixture : SpatialQueryMySqlFixture
     {
-        private IGeometryServices _geometryServices;
-        private IGeometryFactory _geometryFactory;
+        private NtsGeometryServices _geometryServices;
+        private GeometryFactory _geometryFactory;
 
-        public IGeometryServices GeometryServices
+        public NtsGeometryServices GeometryServices
             => LazyInitializer.EnsureInitialized(
                 ref _geometryServices,
                 () => CreateGeometryServices());
@@ -29,7 +27,7 @@ namespace Microsoft.EntityFrameworkCore.Query
                 NtsGeometryServices.Instance.DefaultPrecisionModel,
                 4326);
 
-        public override IGeometryFactory GeometryFactory
+        public override GeometryFactory GeometryFactory
             => LazyInitializer.EnsureInitialized(
                 ref _geometryFactory,
                 () => GeometryServices.CreateGeometryFactory());
@@ -52,11 +50,10 @@ namespace Microsoft.EntityFrameworkCore.Query
 
             protected override RelationalTypeMapping FindMapping(in RelationalTypeMappingInfo mappingInfo)
                 => mappingInfo.ClrType == typeof(GeoPoint)
-                    ? ((RelationalTypeMapping)base.FindMapping(typeof(IPoint))
+                    ? ((RelationalTypeMapping)base.FindMapping(typeof(Point))
                         .Clone(new GeoPointConverter(CreateGeometryServices().CreateGeometryFactory())))
                     .Clone("geography", null)
                     : base.FindMapping(mappingInfo);
         }
     }
-#endif
 }

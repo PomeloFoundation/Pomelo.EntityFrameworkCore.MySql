@@ -8,44 +8,27 @@ namespace Microsoft.EntityFrameworkCore.ModelBuilding
 {
     public static class MySqlTestModelBuilderExtensions
     {
-        public static ModelBuilderTest.TestIndexBuilder ForMySqlIsClustered(
+        public static ModelBuilderTest.TestIndexBuilder IsClustered(
             this ModelBuilderTest.TestIndexBuilder builder, bool clustered = true)
         {
             var indexBuilder = builder.GetInfrastructure();
-            indexBuilder.ForMySqlIsClustered(clustered);
+            indexBuilder.IsClustered(clustered);
             return builder;
         }
 
-        public static ModelBuilderTest.TestReferenceOwnershipBuilder<TEntity, TRelatedEntity> ForMySqlIsMemoryOptimized<TEntity, TRelatedEntity>(
-            this ModelBuilderTest.TestReferenceOwnershipBuilder<TEntity, TRelatedEntity> builder, bool memoryOptimized = true)
-            where TEntity : class
-            where TRelatedEntity : class
-        {
-            switch (builder)
-            {
-                case IInfrastructure<ReferenceOwnershipBuilder<TEntity, TRelatedEntity>> genericBuilder:
-                    genericBuilder.Instance.ForMySqlIsMemoryOptimized(memoryOptimized);
-                    break;
-                case IInfrastructure<ReferenceOwnershipBuilder> nongenericBuilder:
-                    nongenericBuilder.Instance.ForMySqlIsMemoryOptimized(memoryOptimized);
-                    break;
-            }
-
-            return builder;
-        }
-
-        public static ModelBuilderTest.TestCollectionOwnershipBuilder<TEntity, TDependentEntity> ForMySqlIsMemoryOptimized<TEntity, TDependentEntity>(
-            this ModelBuilderTest.TestCollectionOwnershipBuilder<TEntity, TDependentEntity> builder, bool memoryOptimized = true)
+        public static ModelBuilderTest.TestOwnedNavigationBuilder<TEntity, TDependentEntity> IsMemoryOptimized<TEntity,
+            TDependentEntity>(
+            this ModelBuilderTest.TestOwnedNavigationBuilder<TEntity, TDependentEntity> builder, bool memoryOptimized = true)
             where TEntity : class
             where TDependentEntity : class
         {
             switch (builder)
             {
-                case IInfrastructure<CollectionOwnershipBuilder<TEntity, TDependentEntity>> genericBuilder:
-                    genericBuilder.Instance.ForMySqlIsMemoryOptimized(memoryOptimized);
+                case IInfrastructure<OwnedNavigationBuilder<TEntity, TDependentEntity>> genericBuilder:
+                    genericBuilder.Instance.IsMemoryOptimized(memoryOptimized);
                     break;
-                case IInfrastructure<CollectionOwnershipBuilder> nongenericBuilder:
-                    nongenericBuilder.Instance.ForMySqlIsMemoryOptimized(memoryOptimized);
+                case IInfrastructure<OwnedNavigationBuilder> nongenericBuilder:
+                    nongenericBuilder.Instance.IsMemoryOptimized(memoryOptimized);
                     break;
             }
 

@@ -6,7 +6,7 @@ namespace Microsoft.EntityFrameworkCore
     public class DbSetAsTableNameMySqlTest : DbSetAsTableNameTest
     {
         protected override string GetTableName<TEntity>(DbContext context)
-            => context.Model.FindEntityType(typeof(TEntity)).MySql().TableName;
+            => context.Model.FindEntityType(typeof(TEntity)).GetTableName();
 
         protected override SetsContext CreateContext() => new MySqlSetsContext();
 
@@ -15,13 +15,17 @@ namespace Microsoft.EntityFrameworkCore
         protected class MySqlSetsContext : SetsContext
         {
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-                => optionsBuilder.UseMySql("Database = Dummy");
+                => optionsBuilder
+                    .UseInternalServiceProvider(MySqlFixture.DefaultServiceProvider)
+                    .UseMySql("Database = Dummy");
         }
 
         protected class MySqlNamedTablesContextContext : NamedTablesContext
         {
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-                => optionsBuilder.UseMySql("Database = Dummy");
+                => optionsBuilder
+                    .UseInternalServiceProvider(MySqlFixture.DefaultServiceProvider)
+                    .UseMySql("Database = Dummy");
         }
     }
 }

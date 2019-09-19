@@ -16,7 +16,7 @@ namespace Microsoft.EntityFrameworkCore
 
         private MySqlTriggersFixture Fixture { get; }
 
-        [Fact]
+        [ConditionalFact]
         public void Triggers_run_on_insert_update_and_delete()
         {
             using (var context = CreateContext())
@@ -47,7 +47,7 @@ namespace Microsoft.EntityFrameworkCore
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Triggers_work_with_batch_operations()
         {
             using (var context = CreateContext())
@@ -169,7 +169,7 @@ namespace Microsoft.EntityFrameworkCore
             {
                 context.Database.EnsureCreatedResiliently();
 
-                context.Database.ExecuteSqlCommand(
+                context.Database.ExecuteSqlRaw(
                     @"
 CREATE TRIGGER TRG_InsertProduct
 ON Products
@@ -183,7 +183,7 @@ BEGIN
     SELECT * FROM INSERTED;
 END");
 
-                context.Database.ExecuteSqlCommand(
+                context.Database.ExecuteSqlRaw(
                     @"
 CREATE TRIGGER TRG_UpdateProduct
 ON Products
@@ -201,7 +201,7 @@ BEGIN
     WHERE p.Id IN(SELECT INSERTED.Id FROM INSERTED);
 END");
 
-                context.Database.ExecuteSqlCommand(
+                context.Database.ExecuteSqlRaw(
                     @"
 CREATE TRIGGER TRG_DeleteProduct
 ON Products

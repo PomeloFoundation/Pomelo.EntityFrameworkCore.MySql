@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -26,10 +25,13 @@ namespace Microsoft.EntityFrameworkCore
         [ConditionalFact]
         public virtual void Columns_have_expected_data_types()
         {
-            var actual = BuiltInDataTypesMySqlTest.QueryForColumnTypes(CreateContext());
+            var actual = BuiltInDataTypesMySqlTest.QueryForColumnTypes(
+                CreateContext(),
+                nameof(ObjectBackedDataTypes), nameof(NullableBackedDataTypes), nameof(NonNullableBackedDataTypes));
 
             const string expected = @"BinaryForeignKeyDataType.BinaryKeyDataTypeId ---> [nullable varbinary] [MaxLength = 900]
 BinaryForeignKeyDataType.Id ---> [varbinary] [MaxLength = 4]
+BinaryKeyDataType.Ex ---> [nullable varbinary] [MaxLength = -1]
 BinaryKeyDataType.Id ---> [varbinary] [MaxLength = 900]
 BuiltInDataTypes.Enum16 ---> [varbinary] [MaxLength = 2]
 BuiltInDataTypes.Enum32 ---> [varbinary] [MaxLength = 4]
@@ -176,14 +178,15 @@ UnicodeDataTypes.StringUnicode ---> [nullable varbinary] [MaxLength = -1]
 
             public override bool SupportsBinaryKeys => true;
 
+            public override bool SupportsDecimalComparisons => true;
+
             public override DateTime DefaultDateTime => new DateTime();
 
             public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
                 => base
                     .AddOptions(builder)
                     .ConfigureWarnings(
-                        c => c.Log(RelationalEventId.QueryClientEvaluationWarning)
-                            .Log(MySqlEventId.DecimalTypeDefaultWarning));
+                        c => c.Log(MySqlEventId.DecimalTypeDefaultWarning));
         }
 
         public class MySqlBytesTestStoreFactory : MySqlTestStoreFactory
@@ -197,16 +200,6 @@ UnicodeDataTypes.StringUnicode ---> [nullable varbinary] [MaxLength = -1]
 
         public class MySqlBytesTypeMappingSource : RelationalTypeMappingSource
         {
-#if Test21
-            private readonly MySqlByteArrayTypeMapping _rowversion
-                = new MySqlByteArrayTypeMapping("rowversion", dbType: DbType.Binary, size: 8);
-
-            private readonly MySqlByteArrayTypeMapping _variableLengthBinary
-                = new MySqlByteArrayTypeMapping("varbinary");
-
-            private readonly MySqlByteArrayTypeMapping _fixedLengthBinary
-                = new MySqlByteArrayTypeMapping("binary");
-#else
             private readonly MySqlByteArrayTypeMapping _rowversion
                 = new MySqlByteArrayTypeMapping("rowversion", size: 8);
 
@@ -215,7 +208,6 @@ UnicodeDataTypes.StringUnicode ---> [nullable varbinary] [MaxLength = -1]
 
             private readonly MySqlByteArrayTypeMapping _fixedLengthBinary
                 = new MySqlByteArrayTypeMapping(fixedLength: true);
-#endif
 
             private readonly Dictionary<string, RelationalTypeMapping> _storeTypeMappings;
 
@@ -256,36 +248,26 @@ UnicodeDataTypes.StringUnicode ---> [nullable varbinary] [MaxLength = -1]
                     }
                 }
 
-                if (clrType != null)
+                if (clrType == typeof(byte[]))
                 {
-                    if (clrType == typeof(byte[]))
+                    if (mappingInfo.IsRowVersion == true)
                     {
-                        if (mappingInfo.IsRowVersion == true)
-                        {
-                            return _rowversion;
-                        }
-
-                        var isFixedLength = mappingInfo.IsFixedLength == true;
-
-                        var size = mappingInfo.Size ?? (mappingInfo.IsKeyOrIndex ? (int?)900 : null);
-                        if (size > 8000)
-                        {
-                            size = isFixedLength ? 8000 : (int?)null;
-                        }
-
-#if Test21
-                        return new MySqlByteArrayTypeMapping(
-                            "varbinary(" + (size == null ? "max" : size.ToString()) + ")",
-                            DbType.Binary,
-                            size);
-#else
-                        return new MySqlByteArrayTypeMapping(
-                            "varbinary(" + (size == null ? "max" : size.ToString()) + ")",
-                            size,
-                            isFixedLength,
-                            storeTypePostfix: size == null ? StoreTypePostfix.None : (StoreTypePostfix?)null);
-#endif
+                        return _rowversion;
                     }
+
+                    var isFixedLength = mappingInfo.IsFixedLength == true;
+
+                    var size = mappingInfo.Size ?? (mappingInfo.IsKeyOrIndex ? (int?)900 : null);
+                    if (size > 8000)
+                    {
+                        size = isFixedLength ? 8000 : (int?)null;
+                    }
+
+                    return new MySqlByteArrayTypeMapping(
+                        "varbinary(" + (size == null ? "max" : size.ToString()) + ")",
+                        size,
+                        isFixedLength,
+                        storeTypePostfix: size == null ? StoreTypePostfix.None : (StoreTypePostfix?)null);
                 }
 
                 return null;

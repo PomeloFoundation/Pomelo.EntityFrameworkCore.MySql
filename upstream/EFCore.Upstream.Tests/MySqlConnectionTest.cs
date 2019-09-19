@@ -1,9 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Data.SqlClient;
 using System.Diagnostics;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
@@ -14,7 +15,7 @@ namespace Microsoft.EntityFrameworkCore
 {
     public class MySqlConnectionTest
     {
-        [Fact]
+        [ConditionalFact]
         public void Creates_SQL_Server_connection_string()
         {
             using (var connection = new MySqlConnection(CreateDependencies()))
@@ -23,7 +24,7 @@ namespace Microsoft.EntityFrameworkCore
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Can_create_master_connection()
         {
             using (var connection = new MySqlConnection(CreateDependencies()))
@@ -36,7 +37,7 @@ namespace Microsoft.EntityFrameworkCore
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Master_connection_string_contains_filename()
         {
             var options = new DbContextOptionsBuilder()
@@ -54,7 +55,7 @@ namespace Microsoft.EntityFrameworkCore
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Master_connection_string_none_default_command_timeout()
         {
             var options = new DbContextOptionsBuilder()
@@ -74,23 +75,29 @@ namespace Microsoft.EntityFrameworkCore
 
         public static RelationalConnectionDependencies CreateDependencies(DbContextOptions options = null)
         {
-            options = options
-                      ?? new DbContextOptionsBuilder()
-                          .UseMySql(@"Server=(localdb)\MSSQLLocalDB;Database=MySqlConnectionTest")
-                          .Options;
+            options ??= new DbContextOptionsBuilder()
+                .UseMySql(@"Server=(localdb)\MSSQLLocalDB;Database=MySqlConnectionTest")
+                .Options;
 
             return new RelationalConnectionDependencies(
                 options,
                 new DiagnosticsLogger<DbLoggerCategory.Database.Transaction>(
                     new LoggerFactory(),
                     new LoggingOptions(),
-                    new DiagnosticListener("FakeDiagnosticListener")),
+                    new DiagnosticListener("FakeDiagnosticListener"),
+                    new MySqlLoggingDefinitions()),
                 new DiagnosticsLogger<DbLoggerCategory.Database.Connection>(
                     new LoggerFactory(),
                     new LoggingOptions(),
-                    new DiagnosticListener("FakeDiagnosticListener")),
+                    new DiagnosticListener("FakeDiagnosticListener"),
+                    new MySqlLoggingDefinitions()),
                 new NamedConnectionStringResolver(options),
-                new RelationalTransactionFactory(new RelationalTransactionFactoryDependencies()));
+                new RelationalTransactionFactory(new RelationalTransactionFactoryDependencies()),
+                new CurrentDbContext(new FakeDbContext()));
+        }
+
+        private class FakeDbContext : DbContext
+        {
         }
     }
 }
