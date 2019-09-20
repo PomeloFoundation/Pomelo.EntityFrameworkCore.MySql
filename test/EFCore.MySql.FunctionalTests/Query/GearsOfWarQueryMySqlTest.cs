@@ -1,5 +1,7 @@
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.TestModels.GearsOfWarModel;
 using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
@@ -96,6 +98,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Where_datetimeoffset_millisecond_component(isAsync);
         }
 
+        [ConditionalFact(Skip = "Issue #819")]
+        [MemberData("IsAsyncData")]
+        public override void Where_datetimeoffset_milliseconds_parameter_and_constant()
+        {
+            base.Where_datetimeoffset_milliseconds_parameter_and_constant();
+        }
+
         [ConditionalTheory(Skip = "Issue #819")]
         [MemberData("IsAsyncData")]
         public override Task DateTimeOffset_DateAdd_AddYears(bool isAsync)
@@ -159,41 +168,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.GetValueOrDefault_on_DateTimeOffset(isAsync);
         }
 
-        [ConditionalTheory(Skip = "Issue #573")]
-        [MemberData("IsAsyncData")]
-        public override Task Where_subquery_distinct_firstordefault_boolean(bool isAsync)
-        {
-            return base.Where_subquery_distinct_firstordefault_boolean(isAsync);
-        }
-
-        [ConditionalTheory(Skip = "Issue #573")]
-        [MemberData("IsAsyncData")]
-        public override Task Where_subquery_distinct_firstordefault_boolean_with_pushdown(bool isAsync)
-        {
-            return base.Where_subquery_distinct_firstordefault_boolean_with_pushdown(isAsync);
-        }
-
-        [ConditionalTheory(Skip = "Issue #573")]
-        [MemberData("IsAsyncData")]
-        public override Task Where_subquery_distinct_orderby_firstordefault_boolean(bool isAsync)
-        {
-            return base.Where_subquery_distinct_orderby_firstordefault_boolean(isAsync);
-        }
-
-        [ConditionalTheory(Skip = "Issue #573")]
-        [MemberData("IsAsyncData")]
-        public override Task Where_subquery_distinct_orderby_firstordefault_boolean_with_pushdown(bool isAsync)
-        {
-            return base.Where_subquery_distinct_orderby_firstordefault_boolean_with_pushdown(isAsync);
-        }
-
-        [ConditionalTheory(Skip = "Issue #573")]
-        [MemberData("IsAsyncData")]
-        public override Task Select_subquery_distinct_firstordefault(bool isAsync)
-        {
-            return base.Select_subquery_distinct_firstordefault(isAsync);
-        }
-
         [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString)]
         [MemberData("IsAsyncData")]
         public override Task Correlated_collections_inner_subquery_predicate_references_outer_qsre(bool isAsync)
@@ -208,7 +182,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Correlated_collections_inner_subquery_selector_references_outer_qsre(isAsync);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString)]
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString, Skip = "https://bugs.mysql.com/bug.php?id=96946")]
         [MemberData("IsAsyncData")]
         public override Task Outer_parameter_in_join_key_inner_and_outer(bool isAsync)
         {
@@ -227,6 +201,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         public override Task Correlated_collections_nested_inner_subquery_references_outer_qsre_two_levels_up(bool isAsync)
         {
             return base.Correlated_collections_nested_inner_subquery_references_outer_qsre_two_levels_up(isAsync);
+        }
+
+        [SupportedServerVersionLessThanTheory("8.0.0", Skip = "https://bugs.mysql.com/bug.php?id=96947")]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Correlated_collections_basic_projecting_constant(bool isAsync)
+        {
+            return base.Correlated_collections_basic_projecting_constant(isAsync);
         }
     }
 }
