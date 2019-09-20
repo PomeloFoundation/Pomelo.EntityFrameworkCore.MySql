@@ -13,11 +13,15 @@ stages:
         set -e
         sudo systemctl stop mysql
         docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -p 3306:3306 -d mysql:8.0.17
+
         cp test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
         cp test/EFCore.MySql.IntegrationTests/appsettings.ci.json test/EFCore.MySql.IntegrationTests/appsettings.json
         cp test/EFCore.MySql.IntegrationTests/config.json.example test/EFCore.MySql.IntegrationTests/config.json
-        ./run.sh install-tools
-        ./dotnet-run.sh ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.sh
+
+        curl -sSL https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.sh | bash /dev/stdin --version 3.0.100-rc1-014190
+
+        # ./run.sh install-tools
+        # ./dotnet-run.sh ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.sh
       displayName: Setup
     - bash: |
         export BUILD_NUMBER=$(TZ=":US/Eastern" date '+%Y%m%d%H%M%S')
@@ -25,7 +29,7 @@ stages:
         if [ ! -z "$TRAVIS_TAG" ]; then
           export IS_FINAL_BUILD=true
         fi
-        ./build.sh "/p:SkipTests=true" "/p:BuildNumber=${BUILD_NUMBER}" "/p:IsFinalBuild=${IS_FINAL_BUILD}"
+        # ./build.sh "/p:SkipTests=true" "/p:BuildNumber=${BUILD_NUMBER}" "/p:IsFinalBuild=${IS_FINAL_BUILD}"
       displayName: Set Build Number
     - bash: ./dotnet-run.sh dotnet test test/EFCore.MySql.Tests
       displayName: Tests
@@ -45,11 +49,10 @@ stages:
       displayName: Integration Tests with EF_RETRY_ON_FAILURE=3
     - bash: ./dotnet-run.sh ./test/EFCore.MySql.IntegrationTests/scripts/legacy.sh
       displayName: Integration Tests legacy migrations
-    - bash: export EF_SCHEMA="pomelo_test2" && ./dotnet-run.sh ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.sh
+    - bash: export EF_SCHEMA="pomelo_test2" && ./dotnet-run.sh dotnet build .\test\EFCore.MySql.IntegrationTests -c Release
       displayName: Integration Tests Building migrations with EF_DATABASE=pomelo_test2
     - bash: export EF_SCHEMA="pomelo_test2" && ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.IntegrationTests
       displayName: Integration Tests with EF_SCHEMA=pomelo_test2
-
   - job: Windows
     pool:
       vmImage: 'windows-2019'
@@ -61,11 +64,15 @@ stages:
         choco install mysql
         C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
 
+        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1" -OutFile "install-dotnet.ps1"
+        ./install-dotnet.ps1 -Version 3.0.100-rc1-014190
+
         cp test\EFCore.MySql.FunctionalTests\config.json.example test\EFCore.MySql.FunctionalTests\config.json
         cp test\EFCore.MySql.IntegrationTests\appsettings.ci.json test\EFCore.MySql.IntegrationTests\appsettings.json
         cp test\EFCore.MySql.IntegrationTests\config.json.example test\EFCore.MySql.IntegrationTests\config.json
-        .\run.ps1 install-tools
-        .\dotnet-run.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
+        
+        #.\run.ps1 install-tools
+        #.\dotnet-run.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
       displayName: Setup
     - pwsh: .\build.cmd "/p:SkipTests=true"
       displayName: Build Project
@@ -81,7 +88,7 @@ stages:
       displayName: Integration Tests with EF_BATCH_SIZE=10
     - pwsh: $env:EF_RETRY_ON_FAILURE="3"; .\dotnet-run.ps1 dotnet test -c Release test\EFCore.MySql.IntegrationTests
       displayName: Integration Tests with EF_RETRY_ON_FAILURE=3
-    - pwsh: $env:EF_SCHEMA="pomelo_test2"; .\dotnet-run.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
+    - pwsh: $env:EF_SCHEMA="pomelo_test2"; .\dotnet-run.ps1 dotnet build .\test\EFCore.MySql.IntegrationTests -c Release
       displayName: Integration Tests Building migrations with EF_DATABASE=pomelo_test2
     - pwsh: $env:EF_SCHEMA="pomelo_test2"; .\dotnet-run.ps1 dotnet test -c Release test\EFCore.MySql.IntegrationTests
       displayName: Integration Tests with EF_SCHEMA=pomelo_test2
