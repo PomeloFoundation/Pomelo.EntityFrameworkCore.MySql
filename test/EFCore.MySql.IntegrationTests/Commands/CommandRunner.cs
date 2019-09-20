@@ -46,8 +46,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands{
 			            break;
 	                case "testPerformance":
 	                    if (args.Length != 4)
-	                        goto default;
-	                    _testPerformanceCommand.Run(int.Parse(args[1]), int.Parse(args[2]), int.Parse(args[3]));
+                        {
+                            goto default;
+                        }
+
+                        _testPerformanceCommand.Run(int.Parse(args[1]), int.Parse(args[2]), int.Parse(args[3]));
 	                    break;
 		            case "-h":
 		            case "--help":

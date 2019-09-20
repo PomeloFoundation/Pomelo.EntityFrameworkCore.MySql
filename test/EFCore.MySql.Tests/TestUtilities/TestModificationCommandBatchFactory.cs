@@ -32,10 +32,14 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
             CreateCount++;
 
             return new SingularModificationCommandBatch(
+                new ModificationCommandBatchFactoryDependencies(
                 _commandBuilderFactory,
                 _sqlGenerationHelper,
                 _updateSqlGenerator,
-                _valueBufferFactoryFactory);
+                _valueBufferFactoryFactory,
+                null,
+                new FakeDiagnosticsLogger<DbLoggerCategory.Database.Command>()
+                ));
         }
     }
 }

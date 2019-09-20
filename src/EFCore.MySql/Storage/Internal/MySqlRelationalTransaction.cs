@@ -25,9 +25,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public MySqlRelationalTransaction(
             [NotNull] IRelationalConnection connection,
             [NotNull] DbTransaction transaction,
+            [NotNull] Guid transactionId,
             [NotNull] IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger,
             bool transactionOwned)
-            : base(connection, transaction, logger, transactionOwned)
+            : base(connection, transaction, transactionId, logger, transactionOwned)
         {
             if (connection.DbConnection != transaction.Connection)
             {
@@ -40,7 +41,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         private DbTransaction DbTransaction => ((IInfrastructure<DbTransaction>)this).Instance;
 
-        public virtual async Task CommitAsync(CancellationToken cancellationToken=default(CancellationToken))
+        public override async Task CommitAsync(CancellationToken cancellationToken = default)
         {
             var startTime = DateTimeOffset.UtcNow;
             var stopwatch = Stopwatch.StartNew();
@@ -82,7 +83,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// <summary>
         ///     Discards all changes made to the database in the current transaction.
         /// </summary>
-        public virtual async Task RollbackAsync(CancellationToken cancellationToken=default(CancellationToken))
+        public override async Task RollbackAsync(CancellationToken cancellationToken = default)
         {
             var startTime = DateTimeOffset.UtcNow;
             var stopwatch = Stopwatch.StartNew();

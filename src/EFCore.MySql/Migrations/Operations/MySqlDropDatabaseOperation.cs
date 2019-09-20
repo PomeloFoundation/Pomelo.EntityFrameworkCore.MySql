@@ -6,8 +6,14 @@ using JetBrains.Annotations;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Migrations.Operations
 {
+    /// <summary>
+    ///     A MySql Server-specific <see cref="MigrationOperation" /> to drop a database.
+    /// </summary>
     public class MySqlDropDatabaseOperation : MigrationOperation
     {
-        public virtual string Name { get;[param: NotNull] set; }
+        /// <summary>
+        ///     The name of the database.
+        /// </summary>
+        public virtual string Name { get; [param: NotNull] set; }
     }
 }

@@ -24,7 +24,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             {
                 base.OnModelCreating(modelBuilder, context);
 
-                modelBuilder.Query<BlogQuery>().ToView("Blog");
+                modelBuilder.Entity<BlogQuery>().HasNoKey().ToView("Blog");
             }
         }
     }

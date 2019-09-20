@@ -19,7 +19,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             using (var context = CreateContext())
             {
                 var actual = context.Set<Weapon>()
-                    .FromSql(@"SELECT `Id`, `Name`, `IsAutomatic`, `AmmunitionType`, `OwnerFullName`, `SynergyWithId` FROM `Weapons` ORDER BY `Name`")
+                    .FromSqlRaw(@"SELECT `Id`, `Name`, `IsAutomatic`, `AmmunitionType`, `OwnerFullName`, `SynergyWithId` FROM `Weapons` ORDER BY `Name`")
                     .ToArray();
 
                 Assert.Equal(10, actual.Length);

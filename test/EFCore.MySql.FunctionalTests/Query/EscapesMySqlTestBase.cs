@@ -62,7 +62,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         
         protected void SetSqlMode(string modes)
         {
-            _context.Database.ExecuteSqlCommand("SET SESSION sql_mode = @p0", new MySqlParameter("@p0", modes) );
+            _context.Database.ExecuteSqlRaw("SET SESSION sql_mode = @p0", new MySqlParameter("@p0", modes) );
         }
 
         protected void AssertBaseline(params string[] expected)

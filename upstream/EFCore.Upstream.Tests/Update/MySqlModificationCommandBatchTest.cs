@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Update.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Xunit;
 
@@ -14,27 +13,32 @@ namespace Microsoft.EntityFrameworkCore.Update
 {
     public class MySqlModificationCommandBatchTest
     {
-        [Fact]
+        [ConditionalFact]
         public void AddCommand_returns_false_when_max_batch_size_is_reached()
         {
             var typeMapper = new MySqlTypeMappingSource(
                 TestServiceFactory.Instance.Create<TypeMappingSourceDependencies>(),
                 TestServiceFactory.Instance.Create<RelationalTypeMappingSourceDependencies>());
 
+            var logger = new FakeDiagnosticsLogger<DbLoggerCategory.Database.Command>();
+
             var batch = new MySqlModificationCommandBatch(
-                new RelationalCommandBuilderFactory(
-                    new FakeDiagnosticsLogger<DbLoggerCategory.Database.Command>(),
-                    typeMapper),
-                new MySqlSqlGenerationHelper(
-                    new RelationalSqlGenerationHelperDependencies()),
-                new MySqlUpdateSqlGenerator(
-                    new UpdateSqlGeneratorDependencies(
-                        new MySqlSqlGenerationHelper(
-                            new RelationalSqlGenerationHelperDependencies()),
-                        typeMapper)),
-                new TypedRelationalValueBufferFactoryFactory(
-                    new RelationalValueBufferFactoryDependencies(
-                        typeMapper, new CoreSingletonOptions())),
+                new ModificationCommandBatchFactoryDependencies(
+                    new RelationalCommandBuilderFactory(
+                        new RelationalCommandBuilderDependencies(
+                            typeMapper)),
+                    new MySqlSqlGenerationHelper(
+                        new RelationalSqlGenerationHelperDependencies()),
+                    new MySqlUpdateSqlGenerator(
+                        new UpdateSqlGeneratorDependencies(
+                            new MySqlSqlGenerationHelper(
+                                new RelationalSqlGenerationHelperDependencies()),
+                            typeMapper)),
+                    new TypedRelationalValueBufferFactoryFactory(
+                        new RelationalValueBufferFactoryDependencies(
+                            typeMapper, new CoreSingletonOptions())),
+                    new CurrentDbContext(new FakeDbContext()),
+                    logger),
                 1);
 
             Assert.True(
@@ -43,6 +47,10 @@ namespace Microsoft.EntityFrameworkCore.Update
             Assert.False(
                 batch.AddCommand(
                     new ModificationCommand("T1", null, new ParameterNameGenerator().GenerateNext, false, null)));
+        }
+
+        private class FakeDbContext : DbContext
+        {
         }
     }
 }

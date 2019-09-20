@@ -312,15 +312,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        public override void AddColumnOperation_with_computed_column_SQL()
-        {
-            base.AddColumnOperation_with_computed_column_SQL();
-
-            Assert.Equal(
-                @"ALTER TABLE `People` ADD `Birthday` date AS (CURRENT_TIMESTAMP) NULL;" + EOL,
-                Sql);
-        }
-
         [Fact]
         public virtual void AddColumnOperation_with_computed_column()
         {
@@ -424,7 +415,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 {
                     Table = "People",
                     Name = "IsLeader",
-                    ClrType = typeof(Boolean),
+                    ClrType = typeof(bool),
                     ColumnType = "bit",
                     IsNullable = true,
                     DefaultValue = true

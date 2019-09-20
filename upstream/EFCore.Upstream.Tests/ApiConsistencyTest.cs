@@ -18,10 +18,8 @@ namespace Microsoft.EntityFrameworkCore
             typeof(MySqlDbContextOptionsExtensions),
             typeof(MySqlIndexBuilderExtensions),
             typeof(MySqlKeyBuilderExtensions),
-            typeof(MySqlMetadataExtensions),
             typeof(MySqlModelBuilderExtensions),
             typeof(MySqlPropertyBuilderExtensions),
-            typeof(MySqlReferenceOwnershipBuilderExtensions),
             typeof(MySqlServiceCollectionExtensions),
             typeof(MySqlEntityTypeBuilderExtensions)
         };

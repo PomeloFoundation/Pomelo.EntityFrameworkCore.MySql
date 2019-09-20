@@ -10,7 +10,8 @@ using Xunit;
 
 namespace Microsoft.EntityFrameworkCore
 {
-    public class ConcurrencyDetectorMySqlTest : ConcurrencyDetectorRelationalTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>
+    public class ConcurrencyDetectorMySqlTest : ConcurrencyDetectorRelationalTestBase<
+        NorthwindQueryMySqlFixture<NoopModelCustomizer>>
     {
         public ConcurrencyDetectorMySqlTest(NorthwindQueryMySqlFixture<NoopModelCustomizer> fixture)
             : base(fixture)

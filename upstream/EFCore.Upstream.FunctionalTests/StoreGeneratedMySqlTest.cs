@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -22,64 +23,97 @@ namespace Microsoft.EntityFrameworkCore
         protected override void UseTransaction(DatabaseFacade facade, IDbContextTransaction transaction)
             => facade.UseTransaction(transaction.GetDbTransaction());
 
-        [Fact]
+        [ConditionalFact]
         public virtual void Exception_in_SaveChanges_causes_store_values_to_be_reverted()
         {
-            ExecuteWithStrategyInTransaction(
-                context =>
+            var entities = new List<Darwin>();
+            for (var i = 0; i < 100; i++)
+            {
+                entities.Add(new Darwin());
+            }
+
+            entities.Add(
+                new Darwin
                 {
-                    var entities = new List<Darwin>();
-                    for (var i = 0; i < 1000; i++)
-                    {
-                        entities.Add(new Darwin());
-                    }
-
-                    entities.Add(
-                        new Darwin
-                        {
-                            Id = 1777
-                        });
-
-                    context.AddRange(entities);
-
-                    var identityMap = entities.ToDictionary(e => e.Id, e => e);
-
-                    var stateManager = context.GetService<IStateManager>();
-                    var key = context.Model.FindEntityType(typeof(Darwin)).FindPrimaryKey();
-
-                    foreach (var entity in entities)
-                    {
-                        Assert.Same(
-                            entity,
-                            stateManager.TryGetEntry(key, new object[] { entity.Id }).Entity);
-                    }
-
-                    Assert.Throws<DbUpdateException>(() => context.SaveChanges());
-
-                    foreach (var entity in entities)
-                    {
-                        Assert.Same(entity, identityMap[entity.Id]);
-                    }
-
-                    foreach (var entity in entities)
-                    {
-                        Assert.Same(
-                            entity,
-                            stateManager.TryGetEntry(key, new object[] { entity.Id }).Entity);
-                    }
+                    Id = 1777
                 });
+
+            for (var i = 0; i < 2; i++)
+            {
+                ExecuteWithStrategyInTransaction(
+                    context =>
+                    {
+                        context.AddRange(entities);
+
+                        foreach (var entity in entities.Take(100))
+                        {
+                            Assert.Equal(0, entity.Id);
+                        }
+
+                        Assert.Equal(1777, entities[100].Id);
+
+                        var tempValueIdentityMap = entities.ToDictionary(
+                            e => context.Entry(e).Property(p => p.Id).CurrentValue,
+                            e => e);
+
+                        var stateManager = context.GetService<IStateManager>();
+                        var key = context.Model.FindEntityType(typeof(Darwin)).FindPrimaryKey();
+
+                        foreach (var entity in entities)
+                        {
+                            Assert.Same(
+                                entity,
+                                stateManager.TryGetEntry(
+                                    key,
+                                    new object[] { context.Entry(entity).Property(p => p.Id).CurrentValue }).Entity);
+                        }
+
+                        Assert.Throws<DbUpdateException>(() => context.SaveChanges());
+
+                        foreach (var entity in entities.Take(100))
+                        {
+                            Assert.Equal(0, entity.Id);
+                        }
+
+                        Assert.Equal(1777, entities[100].Id);
+
+                        foreach (var entity in entities)
+                        {
+                            Assert.Same(
+                                entity,
+                                tempValueIdentityMap[context.Entry(entity).Property(p => p.Id).CurrentValue]);
+                        }
+
+                        foreach (var entity in entities)
+                        {
+                            Assert.Same(
+                                entity,
+                                stateManager.TryGetEntry(
+                                    key,
+                                    new object[] { context.Entry(entity).Property(p => p.Id).CurrentValue }).Entity);
+                        }
+                    });
+            }
         }
 
         public class StoreGeneratedMySqlFixture : StoreGeneratedFixtureBase
         {
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
 
+            public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
+                => builder
+                    .EnableSensitiveDataLogging()
+                    .ConfigureWarnings(
+                        b => b.Default(WarningBehavior.Throw)
+                            .Ignore(CoreEventId.SensitiveDataLoggingEnabledWarning)
+                            .Ignore(RelationalEventId.BoolWithDefaultWarning));
+
             protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
             {
                 modelBuilder.Entity<Gumball>(
                     b =>
                     {
-                        b.Property(e => e.Id).UseMySqlIdentityColumn();
+                        b.Property(e => e.Id).UseIdentityColumn();
                         b.Property(e => e.Identity).HasDefaultValue("Banana Joe");
                         b.Property(e => e.IdentityReadOnlyBeforeSave).HasDefaultValue("Doughnut Sheriff");
                         b.Property(e => e.IdentityReadOnlyAfterSave).HasDefaultValue("Anton");
@@ -131,11 +165,19 @@ namespace Microsoft.EntityFrameworkCore
                         b.Property(e => e.OnUpdateThrowBeforeThrowAfter).HasDefaultValue("Rabbit");
                     });
 
-                modelBuilder.Entity<WithBackingFields>(b =>
-                {
-                    b.Property(e => e.NullableAsNonNullable).HasComputedColumnSql("1");
-                    b.Property(e => e.NonNullableAsNullable).HasComputedColumnSql("1");
-                });
+                modelBuilder.Entity<WithBackingFields>(
+                    b =>
+                    {
+                        b.Property(e => e.NullableAsNonNullable).HasComputedColumnSql("1");
+                        b.Property(e => e.NonNullableAsNullable).HasComputedColumnSql("1");
+                    });
+
+                modelBuilder.Entity<WithNullableBackingFields>(
+                    b =>
+                    {
+                        b.Property(e => e.NullableBackedBool).HasDefaultValue(true);
+                        b.Property(e => e.NullableBackedInt).HasDefaultValue(-1);
+                    });
 
                 base.OnModelCreating(modelBuilder, context);
             }

@@ -87,12 +87,12 @@ namespace Microsoft.EntityFrameworkCore
                     .Entity<FastUn>(
                         eb =>
                         {
-                            eb.ForMySqlIsMemoryOptimized();
+                            eb.IsMemoryOptimized();
                             eb.HasIndex(e => e.Name).IsUnique();
                             eb.HasOne(e => e.BigUn).WithMany(e => e.FastUns).IsRequired().OnDelete(DeleteBehavior.Restrict);
                         });
 
-                modelBuilder.Entity<BigUn>().ForMySqlIsMemoryOptimized();
+                modelBuilder.Entity<BigUn>().IsMemoryOptimized();
             }
         }
 

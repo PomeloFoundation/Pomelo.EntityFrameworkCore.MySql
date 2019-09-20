@@ -11,10 +11,8 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
 {
     public class FakeDatabaseModelFactory : IDatabaseModelFactory
     {
-        public virtual DatabaseModel Create(string connectionString, IEnumerable<string> tables, IEnumerable<string> schemas)
-            => throw new NotImplementedException();
+        public DatabaseModel Create(string connectionString, DatabaseModelFactoryOptions options) => throw new NotImplementedException();
 
-        public virtual DatabaseModel Create(DbConnection connectio, IEnumerable<string> tables, IEnumerable<string> schemas)
-            => throw new NotImplementedException();
+        public DatabaseModel Create(DbConnection connection, DatabaseModelFactoryOptions options) => throw new NotImplementedException();
     }
 }

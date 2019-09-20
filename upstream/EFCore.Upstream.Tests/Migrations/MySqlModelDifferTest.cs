@@ -13,6 +13,7 @@ using Pomelo.EntityFrameworkCore.MySql.Migrations.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.EntityFrameworkCore.Update.Internal;
 using Xunit;
 
@@ -21,7 +22,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 {
     public class MySqlModelDifferTest : MigrationsModelDifferTestBase
     {
-        [Fact]
+        [ConditionalFact]
         public void Alter_table_to_MemoryOptimized()
         {
             Execute(
@@ -30,15 +31,15 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     x =>
                     {
                         x.Property<int>("Id");
-                        x.HasKey("Id").ForMySqlIsClustered(false);
+                        x.HasKey("Id").IsClustered(false);
                     }),
                 target => target.Entity(
                     "Person",
                     x =>
                     {
                         x.Property<int>("Id");
-                        x.HasKey("Id").ForMySqlIsClustered(false);
-                        x.ForMySqlIsMemoryOptimized();
+                        x.HasKey("Id").IsClustered(false);
+                        x.IsMemoryOptimized();
                     }),
                 operations =>
                 {
@@ -55,7 +56,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 });
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Alter_table_from_MemoryOptimized()
         {
             Execute(
@@ -64,15 +65,15 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     x =>
                     {
                         x.Property<int>("Id");
-                        x.HasKey("Id").ForMySqlIsClustered(false);
-                        x.ForMySqlIsMemoryOptimized();
+                        x.HasKey("Id").IsClustered(false);
+                        x.IsMemoryOptimized();
                     }),
                 target => target.Entity(
                     "Person",
                     x =>
                     {
                         x.Property<int>("Id");
-                        x.HasKey("Id").ForMySqlIsClustered(false);
+                        x.HasKey("Id").IsClustered(false);
                     }),
                 operations =>
                 {
@@ -89,7 +90,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 });
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Add_column_with_dependencies()
         {
             Execute(
@@ -121,7 +122,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 });
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Alter_column_identity()
         {
             Execute(
@@ -135,11 +136,11 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     Assert.Equal("bah", operation.Schema);
                     Assert.Equal("Lamb", operation.Table);
                     Assert.Equal("Id", operation.Name);
-                    Assert.Equal(MySqlValueGenerationStrategy.IdentityColumn, operation["MySql:ValueGenerationStrategy"]);
+                    Assert.Equal("1, 1", operation["MySql:Identity"]);
                 });
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Alter_column_non_key_identity()
         {
             Execute(
@@ -167,11 +168,11 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     Assert.Equal("bah", operation.Schema);
                     Assert.Equal("Lamb", operation.Table);
                     Assert.Equal("Num", operation.Name);
-                    Assert.Equal(MySqlValueGenerationStrategy.IdentityColumn, operation["MySql:ValueGenerationStrategy"]);
+                    Assert.Equal("1, 1", operation["MySql:Identity"]);
                 });
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Alter_column_computation()
         {
             Execute(
@@ -203,7 +204,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 });
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Alter_primary_key_clustering()
         {
             Execute(
@@ -213,7 +214,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     {
                         x.ToTable("Ram", "bah");
                         x.Property<int>("Id");
-                        x.HasKey("Id").ForMySqlIsClustered(false);
+                        x.HasKey("Id").IsClustered(false);
                     }),
                 target => target.Entity(
                     "Ram",
@@ -221,7 +222,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     {
                         x.ToTable("Ram", "bah");
                         x.Property<int>("Id");
-                        x.HasKey("Id").ForMySqlIsClustered();
+                        x.HasKey("Id").IsClustered();
                     }),
                 operations =>
                 {
@@ -240,7 +241,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 });
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Add_non_clustered_primary_key_with_owned()
         {
             Execute(
@@ -250,7 +251,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     x =>
                     {
                         x.Property<int>("Id");
-                        x.HasKey("Id").ForMySqlIsClustered(false);
+                        x.HasKey("Id").IsClustered(false);
                         x.OwnsOne("Address", "Address");
                     }),
                 operations =>
@@ -264,7 +265,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 });
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Alter_unique_constraint_clustering()
         {
             Execute(
@@ -275,7 +276,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                         x.ToTable("Ewe", "bah");
                         x.Property<int>("Id");
                         x.Property<int>("AlternateId");
-                        x.HasAlternateKey("AlternateId").ForMySqlIsClustered(false);
+                        x.HasAlternateKey("AlternateId").IsClustered(false);
                     }),
                 target => target.Entity(
                     "Ewe",
@@ -284,7 +285,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                         x.ToTable("Ewe", "bah");
                         x.Property<int>("Id");
                         x.Property<int>("AlternateId");
-                        x.HasAlternateKey("AlternateId").ForMySqlIsClustered();
+                        x.HasAlternateKey("AlternateId").IsClustered();
                     }),
                 operations =>
                 {
@@ -303,7 +304,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 });
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Create_shared_table_with_two_entity_types()
         {
             Execute(
@@ -333,14 +334,14 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     Assert.Equal(2, createTableOperation.Columns.Count);
                     var idColumn = createTableOperation.Columns[0];
                     Assert.Equal("Id", idColumn.Name);
-                    Assert.Equal(MySqlValueGenerationStrategy.IdentityColumn, idColumn["MySql:ValueGenerationStrategy"]);
+                    Assert.Equal("1, 1", idColumn["MySql:Identity"]);
                     var timeColumn = createTableOperation.Columns[1];
                     Assert.Equal("Time", timeColumn.Name);
-                    Assert.False(timeColumn.IsNullable);
+                    Assert.True(timeColumn.IsNullable);
                 });
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Add_SequenceHiLo_with_seed_data()
         {
             Execute(
@@ -363,7 +364,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     x =>
                     {
                         x.ToTable("Firefly", "dbo");
-                        x.Property<int>("SequenceId").ForMySqlUseSequenceHiLo(schema: "dbo");
+                        x.Property<int>("SequenceId").UseHiLo(schema: "dbo");
                         x.HasData(
                             new
                             {
@@ -402,7 +403,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     }));
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Alter_index_clustering()
         {
             Execute(
@@ -413,7 +414,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                         x.ToTable("Mutton", "bah");
                         x.Property<int>("Id");
                         x.Property<int>("Value");
-                        x.HasIndex("Value").ForMySqlIsClustered(false);
+                        x.HasIndex("Value").IsClustered(false);
                     }),
                 target => target.Entity(
                     "Mutton",
@@ -422,7 +423,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                         x.ToTable("Mutton", "bah");
                         x.Property<int>("Id");
                         x.Property<int>("Value");
-                        x.HasIndex("Value").ForMySqlIsClustered();
+                        x.HasIndex("Value").IsClustered();
                     }),
                 operations =>
                 {
@@ -446,7 +447,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             return default;
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Add_dbfunction_ignore()
         {
             var mi = typeof(MySqlModelDifferTest).GetRuntimeMethod(nameof(Function), Array.Empty<Type>());
@@ -457,7 +458,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 operations => Assert.Equal(0, operations.Count));
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Alter_column_rowversion()
         {
             Execute(
@@ -489,7 +490,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 });
         }
 
-        [Fact]
+        [ConditionalFact]
         public void SeedData_all_operations()
         {
             Execute(
@@ -663,7 +664,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     }));
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Dont_rebuild_index_with_equal_include()
         {
             Execute(
@@ -676,7 +677,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                             x.Property<string>("Zip");
                             x.Property<string>("City");
                             x.HasIndex("Zip")
-                                .ForMySqlInclude("City");
+                                .IncludeProperties("City");
                         }),
                 target => target
                     .Entity(
@@ -687,12 +688,12 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                             x.Property<string>("Zip");
                             x.Property<string>("City");
                             x.HasIndex("Zip")
-                                .ForMySqlInclude("City");
+                                .IncludeProperties("City");
                         }),
                 operations => Assert.Equal(0, operations.Count));
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Rebuild_index_with_different_include()
         {
             Execute(
@@ -706,7 +707,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                             x.Property<string>("City");
                             x.Property<string>("Street");
                             x.HasIndex("Zip")
-                                .ForMySqlInclude("City");
+                                .IncludeProperties("City");
                         }),
                 target => target
                     .Entity(
@@ -718,7 +719,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                             x.Property<string>("City");
                             x.Property<string>("Street");
                             x.HasIndex("Zip")
-                                .ForMySqlInclude("Street");
+                                .IncludeProperties("Street");
                         }),
                 operations =>
                 {
@@ -741,6 +742,82 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 });
         }
 
+        [ConditionalFact]
+        public void Dont_rebuild_index_with_unchanged_online_option()
+        {
+            Execute(
+                source => source
+                    .Entity(
+                        "Address",
+                        x =>
+                        {
+                            x.Property<int>("Id");
+                            x.Property<string>("Zip");
+                            x.Property<string>("City");
+                            x.HasIndex("Zip")
+                                .IsCreatedOnline();
+                        }),
+                target => target
+                    .Entity(
+                        "Address",
+                        x =>
+                        {
+                            x.Property<int>("Id");
+                            x.Property<string>("Zip");
+                            x.Property<string>("City");
+                            x.HasIndex("Zip")
+                                .IsCreatedOnline();
+                        }),
+                operations => Assert.Equal(0, operations.Count));
+        }
+
+        [ConditionalFact]
+        public void Rebuild_index_when_changing_online_option()
+        {
+            Execute(
+                source => source
+                    .Entity(
+                        "Address",
+                        x =>
+                        {
+                            x.Property<int>("Id");
+                            x.Property<string>("Zip");
+                            x.Property<string>("City");
+                            x.Property<string>("Street");
+                            x.HasIndex("Zip");
+                        }),
+                target => target
+                    .Entity(
+                        "Address",
+                        x =>
+                        {
+                            x.Property<int>("Id");
+                            x.Property<string>("Zip");
+                            x.Property<string>("City");
+                            x.Property<string>("Street");
+                            x.HasIndex("Zip")
+                                .IsCreatedOnline();
+                        }),
+                operations =>
+                {
+                    Assert.Equal(2, operations.Count);
+
+                    var operation1 = Assert.IsType<DropIndexOperation>(operations[0]);
+                    Assert.Equal("Address", operation1.Table);
+                    Assert.Equal("IX_Address_Zip", operation1.Name);
+
+                    var operation2 = Assert.IsType<CreateIndexOperation>(operations[1]);
+                    Assert.Equal("Address", operation1.Table);
+                    Assert.Equal("IX_Address_Zip", operation1.Name);
+
+                    var annotation = operation2.GetAnnotation(MySqlAnnotationNames.CreatedOnline);
+                    Assert.NotNull(annotation);
+
+                    var annotationValue = Assert.IsType<bool>(annotation.Value);
+                    Assert.True(annotationValue);
+                });
+        }
+
         protected override TestHelpers TestHelpers => MySqlTestHelpers.Instance;
 
         protected override MigrationsModelDiffer CreateModelDiffer(IModel model)
@@ -755,7 +832,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 new MySqlMigrationsAnnotationProvider(
                     new MigrationsAnnotationProviderDependencies()),
                 ctx.GetService<IChangeDetector>(),
-                ctx.GetService<StateManagerDependencies>(),
+                ctx.GetService<IUpdateAdapterFactory>(),
                 ctx.GetService<CommandBatchPreparerDependencies>());
         }
 

@@ -5,26 +5,34 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
     <!-- EFCore.MySql Dependencies -->
-    <MicrosoftEntityFrameworkCoreRelationalVersion>2.2.0</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MySqlConnectorVersion>0.51.1</MySqlConnectorVersion>
+    <MicrosoftEntityFrameworkCoreRelationalVersion>3.0.0-rc1.19452.2</MicrosoftEntityFrameworkCoreRelationalVersion>
+    <MySqlConnectorVersion>0.57.0-rc1</MySqlConnectorVersion>
     <PomeloJsonObjectVersion>2.2.0</PomeloJsonObjectVersion>
+    <CastleCoreVersion>4.4.0</CastleCoreVersion>
+    <MicrosoftExtensionsCachingMemoryVersion>3.0.0-preview9.19423.4</MicrosoftExtensionsCachingMemoryVersion>
+    <MicrosoftExtensionsDependencyInjection>3.0.0-preview9.19423.4</MicrosoftExtensionsDependencyInjection>
+    <SystemDiagnosticsDiagnosticSource>4.6.0-preview9.19421.4</SystemDiagnosticsDiagnosticSource>
     <!-- Shared Test Dependencies -->
-    <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
-    <XunitAssertPackageVersion>2.3.1</XunitAssertPackageVersion>
-    <XunitCorePackageVersion>2.3.1</XunitCorePackageVersion>
-    <XunitRunnerVisualStudioPackageVersion>2.4.0</XunitRunnerVisualStudioPackageVersion>
-    <MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>2.1.4</MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>
+    <MicrosoftNETTestSdkPackageVersion>16.3.0-preview-20190808-03</MicrosoftNETTestSdkPackageVersion>
+    <XunitAssertPackageVersion>2.4.1</XunitAssertPackageVersion>
+    <XunitCorePackageVersion>2.4.1</XunitCorePackageVersion>
+    <XunitRunnerVisualStudioPackageVersion>2.4.1</XunitRunnerVisualStudioPackageVersion>
+    <XunitRunnerConsolePackageVersion>2.4.1</XunitRunnerConsolePackageVersion>
+    <XunitXmlTestLoggerPackageVersion>2.1.26</XunitXmlTestLoggerPackageVersion>
+    <MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>3.0.0-rc1.19452.2</MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>
     <!-- EFCoreMySqlFunctionalTests Dependencies -->
-    <MicrosoftExtensionsConfigurationFileExtensionsVersion>2.1.1</MicrosoftExtensionsConfigurationFileExtensionsVersion>
-    <MicrosoftExtensionsConfigurationJsonVersion>2.1.1</MicrosoftExtensionsConfigurationJsonVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>2.2.4</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
+    <MicrosoftExtensionsConfigurationFileExtensionsVersion>2.2.0</MicrosoftExtensionsConfigurationFileExtensionsVersion>
+    <MicrosoftExtensionsConfigurationJsonVersion>2.2.0</MicrosoftExtensionsConfigurationJsonVersion>
      <!-- EFCoreMySqlIntegrationTests Dependencies -->
-    <MicrosoftAspNetCoreAppVersion>2.2.0</MicrosoftAspNetCoreAppVersion>
+    <MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>3.0.0-rc1.19452.3</MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>
+    <MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>3.0.0-rc1.19452.3</MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>
     <!-- EFCoreMySqlTests Dependencies -->
-    <MicrosoftEntityFrameworkCoreDesignVersion>2.2.0</MicrosoftEntityFrameworkCoreDesignVersion>
-    <MicrosoftCodeAnalysisCSharpPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MoqVersion>4.8.2</MoqVersion>
-    <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
+    <MicrosoftEntityFrameworkCoreDesignVersion>3.0.0-rc1.19452.2</MicrosoftEntityFrameworkCoreDesignVersion>
+    <MicrosoftCodeAnalysisCSharpPackageVersion>9.9.0-beta3-19305-01</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-rc1-19430-09</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MoqVersion>4.13.0</MoqVersion>
+    <NewtonsoftJsonPackageVersion>12.0.3-beta1</NewtonsoftJsonPackageVersion>
   </PropertyGroup>
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
 </Project>

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
 
 //ReSharper disable once CheckNamespace
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
@@ -33,10 +34,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 
         public ModelBuilder CreateConventionBuilder(IServiceProvider contextServices)
         {
-            var conventionSetBuilder = new CompositeConventionSetBuilder(
-                contextServices.GetRequiredService<IEnumerable<IConventionSetBuilder>>().ToList());
-            var conventionSet = contextServices.GetRequiredService<ICoreConventionSetBuilder>().CreateConventionSet();
-            conventionSet = conventionSetBuilder.AddConventions(conventionSet);
+            var conventionSet = contextServices.GetRequiredService<IConventionSetBuilder>()
+                .CreateConventionSet();
+
             return new ModelBuilder(conventionSet);
         }
 

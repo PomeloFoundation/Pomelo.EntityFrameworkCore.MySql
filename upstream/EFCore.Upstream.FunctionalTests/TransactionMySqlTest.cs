@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 
@@ -18,9 +17,7 @@ namespace Microsoft.EntityFrameworkCore
 
         protected override bool SnapshotSupported => true;
 
-#if NET461
         protected override bool AmbientTransactionsSupported => true;
-#endif
 
         public virtual void Dispose()
         {
@@ -31,7 +28,8 @@ namespace Microsoft.EntityFrameworkCore
         {
             var options = Fixture.AddOptions(
                     new DbContextOptionsBuilder()
-                        .UseMySql(TestStore.ConnectionString, b => b.ApplyConfiguration().CommandTimeout(MySqlTestStore.CommandTimeout)))
+                        .UseMySql(
+                            TestStore.ConnectionString, b => b.ApplyConfiguration().CommandTimeout(MySqlTestStore.CommandTimeout)))
                 .UseInternalServiceProvider(Fixture.ServiceProvider);
 
             return new DbContext(options.Options);
@@ -45,8 +43,8 @@ namespace Microsoft.EntityFrameworkCore
             {
                 base.Seed(context);
 
-                context.Database.ExecuteSqlCommand("ALTER DATABASE [" + StoreName + "] SET ALLOW_SNAPSHOT_ISOLATION ON");
-                context.Database.ExecuteSqlCommand("ALTER DATABASE [" + StoreName + "] SET READ_COMMITTED_SNAPSHOT ON");
+                context.Database.ExecuteSqlRaw("ALTER DATABASE [" + StoreName + "] SET ALLOW_SNAPSHOT_ISOLATION ON");
+                context.Database.ExecuteSqlRaw("ALTER DATABASE [" + StoreName + "] SET READ_COMMITTED_SNAPSHOT ON");
             }
 
             public override void Reseed()
@@ -63,10 +61,7 @@ namespace Microsoft.EntityFrameworkCore
             public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
             {
                 new MySqlDbContextOptionsBuilder(
-                        base.AddOptions(builder)
-                            .ConfigureWarnings(
-                                w => w.Log(RelationalEventId.QueryClientEvaluationWarning)
-                                    .Log(CoreEventId.FirstWithoutOrderByAndFilterWarning)))
+                        base.AddOptions(builder))
                     .MaxBatchSize(1);
                 return builder;
             }

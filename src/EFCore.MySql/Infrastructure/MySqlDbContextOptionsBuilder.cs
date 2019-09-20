@@ -23,7 +23,7 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
         ///     Configures the target server version and type.
         /// </summary>
         public virtual MySqlDbContextOptionsBuilder ServerVersion(Version version, ServerType type)
-        => WithOption(e => e.WithServerVersion(new ServerVersion(version, type)));
+            => WithOption(e => e.WithServerVersion(new ServerVersion(version, type)));
 
         /// <summary>
         ///     Configures the target server version and type.

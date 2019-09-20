@@ -18,9 +18,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
         public static readonly string EfSchema = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("EF_SCHEMA"))
             ? Environment.GetEnvironmentVariable("EF_SCHEMA") : null;
 
-        public static IConfigurationRoot Config => LazyConfig.Value;
+        public static IConfigurationRoot Config => _lazyConfig.Value;
 
-        private static readonly Lazy<IConfigurationRoot> LazyConfig = new Lazy<IConfigurationRoot>(() => new ConfigurationBuilder()
+        private static readonly Lazy<IConfigurationRoot> _lazyConfig = new Lazy<IConfigurationRoot>(() => new ConfigurationBuilder()
             .SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
             .AddJsonFile("appsettings.json")
             .AddJsonFile("config.json")

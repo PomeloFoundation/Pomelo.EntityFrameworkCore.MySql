@@ -4,7 +4,9 @@
 using System;
 using System.Linq;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.EntityFrameworkCore.Diagnostics.Internal;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
@@ -13,7 +15,8 @@ using Xunit;
 namespace Microsoft.EntityFrameworkCore
 {
     [MySqlCondition(MySqlCondition.IsNotSqlAzure)]
-    public class ConvertToProviderTypesMySqlTest : ConvertToProviderTypesTestBase<ConvertToProviderTypesMySqlTest.ConvertToProviderTypesMySqlFixture>
+    public class ConvertToProviderTypesMySqlTest : ConvertToProviderTypesTestBase<
+        ConvertToProviderTypesMySqlTest.ConvertToProviderTypesMySqlFixture>
     {
         public ConvertToProviderTypesMySqlTest(ConvertToProviderTypesMySqlFixture fixture)
             : base(fixture)
@@ -21,28 +24,15 @@ namespace Microsoft.EntityFrameworkCore
         }
 
         [ConditionalFact]
-        public virtual void Warning_when_suspicious_conversion_in_sql()
-        {
-            using (var context = CreateContext())
-            {
-                Assert.Contains(
-                    RelationalStrings.LogValueConversionSqlLiteralWarning
-                        .GenerateMessage(
-                            typeof(decimal).ShortDisplayName(),
-                            new NumberToBytesConverter<decimal>().GetType().ShortDisplayName()),
-                    Assert.Throws<InvalidOperationException>(
-                        () =>
-                            context.Set<BuiltInDataTypes>().Where(b => b.TestDecimal > 123.0m).ToList()).Message);
-            }
-        }
-
-        [ConditionalFact]
         public virtual void Columns_have_expected_data_types()
         {
-            var actual = BuiltInDataTypesMySqlTest.QueryForColumnTypes(CreateContext());
+            var actual = BuiltInDataTypesMySqlTest.QueryForColumnTypes(
+                CreateContext(),
+                nameof(ObjectBackedDataTypes), nameof(NullableBackedDataTypes), nameof(NonNullableBackedDataTypes));
 
             const string expected = @"BinaryForeignKeyDataType.BinaryKeyDataTypeId ---> [nullable nvarchar] [MaxLength = 450]
 BinaryForeignKeyDataType.Id ---> [int] [Precision = 10 Scale = 0]
+BinaryKeyDataType.Ex ---> [nullable nvarchar] [MaxLength = -1]
 BinaryKeyDataType.Id ---> [nvarchar] [MaxLength = 450]
 BuiltInDataTypes.Enum16 ---> [bigint] [Precision = 19 Scale = 0]
 BuiltInDataTypes.Enum32 ---> [bigint] [Precision = 19 Scale = 0]
@@ -187,14 +177,15 @@ UnicodeDataTypes.StringUnicode ---> [nullable nvarchar] [MaxLength = -1]
 
             public override bool SupportsBinaryKeys => true;
 
+            public override bool SupportsDecimalComparisons => true;
+
             public override DateTime DefaultDateTime => new DateTime();
 
             public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
                 => base
                     .AddOptions(builder)
                     .ConfigureWarnings(
-                        c => c.Log(RelationalEventId.QueryClientEvaluationWarning)
-                            .Log(MySqlEventId.DecimalTypeDefaultWarning));
+                        c => c.Log(MySqlEventId.DecimalTypeDefaultWarning));
 
             protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
             {

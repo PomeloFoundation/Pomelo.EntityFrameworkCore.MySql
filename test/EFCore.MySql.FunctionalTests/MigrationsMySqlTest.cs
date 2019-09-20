@@ -339,6 +339,30 @@ DROP PROCEDURE MigrationsScript;
         protected override void AssertSecondMigration(DbConnection connection) 
         { 
             // TODO: Add assert 
-        } 
+        }
+
+        public override void Can_diff_against_2_2_model()
+        {
+            // TODO: Add diff
+            throw new NotImplementedException();
+        }
+
+        public override void Can_diff_against_3_0_ASP_NET_Identity_model()
+        {
+            // TODO: Add diff
+            throw new NotImplementedException();
+        }
+
+        public override void Can_diff_against_2_2_ASP_NET_Identity_model()
+        {
+            // TODO: Add diff
+            throw new NotImplementedException();
+        }
+
+        public override void Can_diff_against_2_1_ASP_NET_Identity_model()
+        {
+            // TODO: Add diff 
+            throw new NotImplementedException();
+        }
     } 
 } 

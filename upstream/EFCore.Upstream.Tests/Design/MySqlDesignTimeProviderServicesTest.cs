@@ -3,11 +3,10 @@
 
 using System;
 using System.Reflection;
-using Microsoft.EntityFrameworkCore.Design;
 using Pomelo.EntityFrameworkCore.MySql.Design.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
-namespace Microsoft.EntityFrameworkCore
+namespace Microsoft.EntityFrameworkCore.Design
 {
     public class MySqlDesignTimeProviderServicesTest : DesignTimeProviderServicesTest
     {

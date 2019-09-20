@@ -5,5 +5,7 @@ if (!$DotNetHome) {
         else { Join-Path $PSScriptRoot '.dotnet'}
 }
 
+Write-Host "DotNetHome = $DotNetHome"
+
 $env:Path = "$DotNetHome;$env:Path"
 & ($ARGS | Select-Object -First 1) @($ARGS | Select-Object -Skip 1)

@@ -1,5 +1,13 @@
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.TestModels.GearsOfWarModel;
 using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
+using Microsoft.Extensions.DependencyInjection;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
@@ -13,94 +21,193 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        [ConditionalFact(Skip = "issue #552")]
-        public override void Enum_ToString_is_client_eval()
+        [ConditionalTheory(Skip = "Issue #819")]
+        [MemberData("IsAsyncData")]
+        public override Task Where_datetimeoffset_now(bool isAsync)
         {
-            base.Enum_ToString_is_client_eval();
+            return base.Where_datetimeoffset_now(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Optional_Navigation_Null_Coalesce_To_Clr_Type()
+        [ConditionalTheory(Skip = "Issue #819")]
+        [MemberData("IsAsyncData")]
+        public override Task Where_datetimeoffset_utcnow(bool isAsync)
         {
-            base.Optional_Navigation_Null_Coalesce_To_Clr_Type();
+            return base.Where_datetimeoffset_utcnow(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Projecting_nullable_bool_in_conditional_works()
+        [ConditionalTheory(Skip = "Issue #819")]
+        [MemberData("IsAsyncData")]
+        public override Task Where_datetimeoffset_date_component(bool isAsync)
         {
-            base.Projecting_nullable_bool_in_conditional_works();
+            return base.Where_datetimeoffset_date_component(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #573")]
-        public override void Where_subquery_distinct_firstordefault_boolean()
+        [ConditionalTheory(Skip = "Issue #819")]
+        [MemberData("IsAsyncData")]
+        public override Task Where_datetimeoffset_year_component(bool isAsync)
         {
-            base.Where_subquery_distinct_firstordefault_boolean();
+            return base.Where_datetimeoffset_year_component(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #573")]
-        public override void Where_subquery_distinct_firstordefault_boolean_with_pushdown()
+        [ConditionalTheory(Skip = "Issue #819")]
+        [MemberData("IsAsyncData")]
+        public override Task Where_datetimeoffset_month_component(bool isAsync)
         {
-            base.Where_subquery_distinct_firstordefault_boolean_with_pushdown();
+            return base.Where_datetimeoffset_month_component(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #573")]
-        public override void Where_subquery_distinct_orderby_firstordefault_boolean()
+        [ConditionalTheory(Skip = "Issue #819")]
+        [MemberData("IsAsyncData")]
+        public override Task Where_datetimeoffset_dayofyear_component(bool isAsync)
         {
-            base.Where_subquery_distinct_orderby_firstordefault_boolean();
+            return base.Where_datetimeoffset_dayofyear_component(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #573")]
-        public override void Where_subquery_distinct_orderby_firstordefault_boolean_with_pushdown()
+        [ConditionalTheory(Skip = "Issue #819")]
+        [MemberData("IsAsyncData")]
+        public override Task Where_datetimeoffset_day_component(bool isAsync)
         {
-            base.Where_subquery_distinct_orderby_firstordefault_boolean_with_pushdown();
+            return base.Where_datetimeoffset_day_component(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #573")]
-        public override void Select_subquery_distinct_firstordefault()
+        [ConditionalTheory(Skip = "Issue #819")]
+        [MemberData("IsAsyncData")]
+        public override Task Where_datetimeoffset_hour_component(bool isAsync)
         {
-            base.Select_subquery_distinct_firstordefault();
+            return base.Where_datetimeoffset_hour_component(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Select_subquery_boolean()
+        [ConditionalTheory(Skip = "Issue #819")]
+        [MemberData("IsAsyncData")]
+        public override Task Where_datetimeoffset_minute_component(bool isAsync)
         {
-            base.Select_subquery_boolean();
+            return base.Where_datetimeoffset_minute_component(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Select_subquery_boolean_with_pushdown()
+        [ConditionalTheory(Skip = "Issue #819")]
+        [MemberData("IsAsyncData")]
+        public override Task Where_datetimeoffset_second_component(bool isAsync)
         {
-            base.Select_subquery_boolean_with_pushdown();
+            return base.Where_datetimeoffset_second_component(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Select_subquery_boolean_empty()
+        [ConditionalTheory(Skip = "Issue #819")]
+        [MemberData("IsAsyncData")]
+        public override Task Where_datetimeoffset_millisecond_component(bool isAsync)
         {
-            base.Select_subquery_boolean_empty();
+            return base.Where_datetimeoffset_millisecond_component(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Select_subquery_boolean_empty_with_pushdown()
+        [ConditionalFact(Skip = "Issue #819")]
+        [MemberData("IsAsyncData")]
+        public override void Where_datetimeoffset_milliseconds_parameter_and_constant()
         {
-            base.Select_subquery_boolean_empty_with_pushdown();
+            base.Where_datetimeoffset_milliseconds_parameter_and_constant();
         }
 
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Select_subquery_projecting_single_constant_bool()
+        [ConditionalTheory(Skip = "Issue #819")]
+        [MemberData("IsAsyncData")]
+        public override Task DateTimeOffset_DateAdd_AddYears(bool isAsync)
         {
-            base.Select_subquery_projecting_single_constant_bool();
+            return base.DateTimeOffset_DateAdd_AddYears(isAsync);
         }
 
-        [ConditionalFact(Skip = "DateTimeOffset is mapped to DateTime, which gives different results than Linq To Objects if Offset term is non-zero")]
-        public override void Where_datetimeoffset_hour_component()
+        [ConditionalTheory(Skip = "Issue #819")]
+        [MemberData("IsAsyncData")]
+        public override Task DateTimeOffset_DateAdd_AddMonths(bool isAsync)
         {
-            base.Where_datetimeoffset_hour_component();
+            return base.DateTimeOffset_DateAdd_AddMonths(isAsync);
         }
 
-        [ConditionalFact(Skip = "DateTimeOffset is mapped to DateTime, which gives different results than Linq To Objects if Offset term is non-zero")]
-        public override void Where_datetimeoffset_minute_component()
+        [ConditionalTheory(Skip = "Issue #819")]
+        [MemberData("IsAsyncData")]
+        public override Task DateTimeOffset_DateAdd_AddDays(bool isAsync)
         {
-            base.Where_datetimeoffset_minute_component();
+            return base.DateTimeOffset_DateAdd_AddDays(isAsync);
+        }
+
+        [ConditionalTheory(Skip = "Issue #819")]
+        [MemberData("IsAsyncData")]
+        public override Task DateTimeOffset_DateAdd_AddHours(bool isAsync)
+        {
+            return base.DateTimeOffset_DateAdd_AddHours(isAsync);
+        }
+
+        [ConditionalTheory(Skip = "Issue #819")]
+        [MemberData("IsAsyncData")]
+        public override Task DateTimeOffset_DateAdd_AddMinutes(bool isAsync)
+        {
+            return base.DateTimeOffset_DateAdd_AddMinutes(isAsync);
+        }
+
+        [ConditionalTheory(Skip = "Issue #819")]
+        [MemberData("IsAsyncData")]
+        public override Task DateTimeOffset_DateAdd_AddSeconds(bool isAsync)
+        {
+            return base.DateTimeOffset_DateAdd_AddSeconds(isAsync);
+        }
+
+        [ConditionalTheory(Skip = "Issue #819")]
+        [MemberData("IsAsyncData")]
+        public override Task DateTimeOffset_DateAdd_AddMilliseconds(bool isAsync)
+        {
+            return base.DateTimeOffset_DateAdd_AddMilliseconds(isAsync);
+        }
+
+        [ConditionalTheory(Skip = "Issue #819")]
+        [MemberData("IsAsyncData")]
+        public override Task Time_of_day_datetimeoffset(bool isAsync)
+        {
+            return base.Time_of_day_datetimeoffset(isAsync);
+        }
+
+        [ConditionalTheory(Skip = "Issue #819")]
+        [MemberData("IsAsyncData")]
+        public override Task GetValueOrDefault_on_DateTimeOffset(bool isAsync)
+        {
+            return base.GetValueOrDefault_on_DateTimeOffset(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString)]
+        [MemberData("IsAsyncData")]
+        public override Task Correlated_collections_inner_subquery_predicate_references_outer_qsre(bool isAsync)
+        {
+            return base.Correlated_collections_inner_subquery_predicate_references_outer_qsre(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString)]
+        [MemberData("IsAsyncData")]
+        public override Task Correlated_collections_inner_subquery_selector_references_outer_qsre(bool isAsync)
+        {
+            return base.Correlated_collections_inner_subquery_selector_references_outer_qsre(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString, Skip = "https://bugs.mysql.com/bug.php?id=96946")]
+        [MemberData("IsAsyncData")]
+        public override Task Outer_parameter_in_join_key_inner_and_outer(bool isAsync)
+        {
+            return base.Outer_parameter_in_join_key_inner_and_outer(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString)]
+        [MemberData("IsAsyncData")]
+        public override Task Outer_parameter_in_group_join_with_DefaultIfEmpty(bool isAsync)
+        {
+            return base.Outer_parameter_in_group_join_with_DefaultIfEmpty(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString)]
+        [MemberData("IsAsyncData")]
+        public override Task Correlated_collections_nested_inner_subquery_references_outer_qsre_two_levels_up(bool isAsync)
+        {
+            return base.Correlated_collections_nested_inner_subquery_references_outer_qsre_two_levels_up(isAsync);
+        }
+
+        [SupportedServerVersionLessThanTheory("8.0.0", Skip = "https://bugs.mysql.com/bug.php?id=96947")]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Correlated_collections_basic_projecting_constant(bool isAsync)
+        {
+            return base.Correlated_collections_basic_projecting_constant(isAsync);
         }
     }
 }

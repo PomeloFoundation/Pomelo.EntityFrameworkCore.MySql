@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Microsoft.EntityFrameworkCore.Query.Expressions;
-using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
@@ -17,53 +17,43 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
     /// </summary>
     public class MySqlConvertTranslator : IMethodCallTranslator
     {
-        private static readonly Dictionary<string, string> _typeMapping = new Dictionary<string, string>
-        {
-            [nameof(Convert.ToByte)] = "signed",
-            [nameof(Convert.ToDecimal)] = "decimal",
-            [nameof(Convert.ToDouble)] = "decimal",
-            [nameof(Convert.ToInt16)] = "signed",
-            [nameof(Convert.ToInt32)] = "signed",
-            [nameof(Convert.ToInt64)] = "signed",
-            [nameof(Convert.ToString)] = "char"
-        };
+        private readonly ISqlExpressionFactory _sqlExpressionFactory;
 
-        private static readonly List<Type> _supportedTypes = new List<Type>
-        {
-            typeof(bool),
-            typeof(byte),
-            typeof(decimal),
-            typeof(double),
-            typeof(float),
-            typeof(int),
-            typeof(long),
-            typeof(short),
-            typeof(string)
-        };
-
-        private static readonly IEnumerable<MethodInfo> _supportedMethods
-            = _typeMapping.Keys
+        private static readonly MethodInfo[] _supportedMethods
+            = new []
+                {
+                    nameof(Convert.ToByte),
+                    nameof(Convert.ToDecimal),
+                    nameof(Convert.ToDouble),
+                    nameof(Convert.ToInt16),
+                    nameof(Convert.ToInt32),
+                    nameof(Convert.ToInt64),
+                    nameof(Convert.ToString),
+                }
                 .SelectMany(t => typeof(Convert).GetTypeInfo().GetDeclaredMethods(t)
-                    .Where(m => m.GetParameters().Length == 1
-                        && _supportedTypes.Contains(m.GetParameters().First().ParameterType)));
+                    .Where(m => m.GetParameters().Length == 1))
+                .ToArray();
+
+        public MySqlConvertTranslator(ISqlExpressionFactory sqlExpressionFactory)
+        {
+            _sqlExpressionFactory = sqlExpressionFactory;
+        }
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public virtual Expression Translate(MethodCallExpression methodCallExpression)
-           => (methodCallExpression.Method.Name == nameof(ToString)) ?
-           new MySqlObjectToStringTranslator().Translate(methodCallExpression) :
-           (_supportedMethods.Contains(methodCallExpression.Method)
-               ? new SqlFunctionExpression(
-                   "CONVERT",
-                   methodCallExpression.Type,
-                   new[]
-                   {
-                        methodCallExpression.Arguments[0],
-                        new SqlFragmentExpression(
-                            _typeMapping[methodCallExpression.Method.Name])
-                   })
-               : null);
+        public SqlExpression Translate(
+            SqlExpression instance,
+            MethodInfo method,
+            IReadOnlyList<SqlExpression> arguments)
+        {
+            // Delegate conversion to CAST() handling.
+            return _supportedMethods.Contains(method)
+                ? _sqlExpressionFactory.Convert(
+                    arguments[0],
+                    method.ReturnType)
+                : null;
+        }
     }
 }

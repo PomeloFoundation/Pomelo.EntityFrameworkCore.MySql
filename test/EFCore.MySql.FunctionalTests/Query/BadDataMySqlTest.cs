@@ -146,59 +146,51 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         private class BadDataCommandBuilderFactory : RelationalCommandBuilderFactory
         {
             public BadDataCommandBuilderFactory(
-                IDiagnosticsLogger<DbLoggerCategory.Database.Command> logger,
-                IRelationalTypeMappingSource typeMappingSource)
-                : base(logger, typeMappingSource)
+                RelationalCommandBuilderDependencies dependencies)
+                : base(dependencies)
             {
             }
 
             public object[] Values { private get; set; }
 
-            protected override IRelationalCommandBuilder CreateCore(
-                IDiagnosticsLogger<DbLoggerCategory.Database.Command> logger,
-                IRelationalTypeMappingSource relationalTypeMappingSource)
+            public override IRelationalCommandBuilder Create()
                 => new BadDataRelationalCommandBuilder(
-                    logger, relationalTypeMappingSource, Values);
+                    Dependencies, Values);
 
             private class BadDataRelationalCommandBuilder : RelationalCommandBuilder
             {
                 private readonly object[] _values;
 
                 public BadDataRelationalCommandBuilder(
-                    IDiagnosticsLogger<DbLoggerCategory.Database.Command> logger,
-                    IRelationalTypeMappingSource typeMappingSource,
+                RelationalCommandBuilderDependencies dependencies,
                     object[] values)
-                    : base(logger, typeMappingSource)
+                    : base(dependencies)
                 {
                     _values = values;
                 }
 
-                protected override IRelationalCommand BuildCore(
-                    IDiagnosticsLogger<DbLoggerCategory.Database.Command> logger,
-                    string commandText,
-                    IReadOnlyList<IRelationalParameter> parameters)
-                    => new BadDataRelationalCommand(logger, commandText, parameters, _values);
+                public  override IRelationalCommand Build()
+                    => new BadDataRelationalCommand(Dependencies, string.Empty, new List<IRelationalParameter>(), _values);
 
                 private class BadDataRelationalCommand : RelationalCommand
                 {
                     private readonly object[] _values;
 
                     public BadDataRelationalCommand(
-                        IDiagnosticsLogger<DbLoggerCategory.Database.Command> logger,
+                        RelationalCommandBuilderDependencies dependencies,
                         string commandText,
                         IReadOnlyList<IRelationalParameter> parameters,
                         object[] values)
-                        : base(logger, commandText, parameters)
+                        : base(dependencies, commandText, parameters)
                     {
                         _values = values;
                     }
 
-                    public override RelationalDataReader ExecuteReader(
-                        IRelationalConnection connection, IReadOnlyDictionary<string, object> parameterValues)
+                    public override RelationalDataReader ExecuteReader(RelationalCommandParameterObject parameterObject)
                     {
-                        var command = connection.DbConnection.CreateCommand();
+                        var command = parameterObject.Connection.DbConnection.CreateCommand();
                         command.CommandText = CommandText;
-                        return new BadDataRelationalDataReader(command, _values, Logger);
+                        return new BadDataRelationalDataReader(command, _values, parameterObject.Logger);
                     }
 
                     private class BadDataRelationalDataReader : RelationalDataReader
@@ -359,15 +351,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             public void ResetState() { }
             public IDbContextTransaction BeginTransaction() => throw new NotImplementedException();
-            public Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken)) => throw new NotImplementedException();
+            public Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
             public void CommitTransaction() { }
             public void RollbackTransaction() { }
             public IDbContextTransaction CurrentTransaction => throw new NotImplementedException();
             public System.Transactions.Transaction EnlistedTransaction { get; }
             public void EnlistTransaction(System.Transactions.Transaction transaction) => throw new NotImplementedException();
             public SemaphoreSlim Semaphore { get; }
-            public void RegisterBufferable(IBufferable bufferable) { }
-            public Task RegisterBufferableAsync(IBufferable bufferable, CancellationToken cancellationToken) => throw new NotImplementedException();
             public string ConnectionString { get; }
             public DbConnection DbConnection { get; }
             public Guid ConnectionId { get; }
@@ -376,14 +366,29 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             public Task<bool> OpenAsync(CancellationToken cancellationToken, bool errorsExpected = false) => throw new NotImplementedException();
             public bool Close() => true;
             public bool IsMultipleActiveResultSetsEnabled { get; }
+
+            public DbContext Context => throw new NotImplementedException();
+
             public IDbContextTransaction BeginTransaction(IsolationLevel isolationLevel) => throw new NotImplementedException();
-            public Task<IDbContextTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken)) => throw new NotImplementedException();
+            public Task<IDbContextTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default) => throw new NotImplementedException();
             public IDbContextTransaction UseTransaction(DbTransaction transaction) => throw new NotImplementedException();
             public void Dispose() {}
+
+            public Task<bool> CloseAsync() => throw new NotImplementedException();
+
+            public Task<IDbContextTransaction> UseTransactionAsync(DbTransaction transaction, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+            public Task ResetStateAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+            public ValueTask DisposeAsync() => throw new NotImplementedException();
         }
 
         public class BadDataMySqlFixture : NorthwindQueryMySqlFixture<NoopModelCustomizer>
         {
+            public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
+                => base.AddOptions(builder)
+                    .EnableDetailedErrors();
+
             protected override IServiceCollection AddServices(IServiceCollection serviceCollection)
                 => base.AddServices(serviceCollection)
                     .AddSingleton<IRelationalCommandBuilderFactory, BadDataCommandBuilderFactory>();

@@ -5,13 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 #pragma warning disable IDE0022 // Use block body for methods
 // ReSharper disable SuggestBaseTypeForParameter
@@ -24,7 +25,7 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
 
         public static MySqlTestStore GetNorthwindStore()
             => (MySqlTestStore)MySqlNorthwindTestStoreFactory.Instance
-                .GetOrCreate(MySqlNorthwindTestStoreFactory.Name).Initialize(null, (Func<DbContext>)null, null);
+                .GetOrCreate(MySqlNorthwindTestStoreFactory.Name).Initialize(null, (Func<DbContext>)null, null, null);
 
         public static MySqlTestStore GetOrCreate(string name)
             => new MySqlTestStore(name);
@@ -69,15 +70,15 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
 
         public MySqlTestStore InitializeMySql(
             IServiceProvider serviceProvider, Func<DbContext> createContext, Action<DbContext> seed)
-            => (MySqlTestStore)Initialize(serviceProvider, createContext, seed);
+            => (MySqlTestStore)Initialize(serviceProvider, createContext, seed, null);
 
         public MySqlTestStore InitializeMySql(
             IServiceProvider serviceProvider, Func<MySqlTestStore, DbContext> createContext, Action<DbContext> seed)
             => InitializeMySql(serviceProvider, () => createContext(this), seed);
 
-        protected override void Initialize(Func<DbContext> createContext, Action<DbContext> seed)
+        protected override void Initialize(Func<DbContext> createContext, Action<DbContext> seed, Action<DbContext> clean)
         {
-            if (CreateDatabase())
+            if (CreateDatabase(clean))
             {
                 if (_scriptPath != null)
                 {
@@ -88,16 +89,21 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
                     using (var context = createContext())
                     {
                         context.Database.EnsureCreatedResiliently();
-                        seed(context);
+                        seed?.Invoke(context);
                     }
                 }
             }
         }
 
-        public override DbContextOptionsBuilder AddProviderOptions(DbContextOptionsBuilder builder)
-            => builder.UseMySql(Connection, b => b.ApplyConfiguration().CommandTimeout(CommandTimeout));
+        public virtual DbContextOptionsBuilder AddProviderOptions(
+            DbContextOptionsBuilder builder,
+            Action<MySqlDbContextOptionsBuilder> configureMySql)
+            => builder.UseMySql(Connection, b => configureMySql?.Invoke(b));
 
-        private bool CreateDatabase()
+        public override DbContextOptionsBuilder AddProviderOptions(DbContextOptionsBuilder builder)
+            => AddProviderOptions(builder, configureMySql: null);
+
+        private bool CreateDatabase(Action<DbContext> clean)
         {
             using (var master = new SqlConnection(CreateConnectionString("master", fileName: null, multipleActiveResultSets: false)))
             {
@@ -110,8 +116,13 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
 
                     if (_fileName == null)
                     {
-                        using (var context = new DbContext(AddProviderOptions(new DbContextOptionsBuilder()).Options))
+                        using (var context = new DbContext(
+                            AddProviderOptions(
+                                    new DbContextOptionsBuilder()
+                                        .EnableServiceProviderCaching(false))
+                                .Options))
                         {
+                            clean?.Invoke(context);
                             Clean(context);
                             return true;
                         }
@@ -316,8 +327,7 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
         private static T Execute<T>(
             DbConnection connection, Func<DbCommand, T> execute, string sql,
             bool useTransaction = false, object[] parameters = null)
-            => TestEnvironment.IsSqlAzure
-                ? new TestMySqlRetryingExecutionStrategy().Execute(
+            => new TestMySqlRetryingExecutionStrategy().Execute(
                     new
                     {
                         connection,
@@ -326,8 +336,7 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
                         useTransaction,
                         parameters
                     },
-                    state => ExecuteCommand(state.connection, state.execute, state.sql, state.useTransaction, state.parameters))
-                : ExecuteCommand(connection, execute, sql, useTransaction, parameters);
+                    state => ExecuteCommand(state.connection, state.execute, state.sql, state.useTransaction, state.parameters));
 
         private static T ExecuteCommand<T>(
             DbConnection connection, Func<DbCommand, T> execute, string sql, bool useTransaction, object[] parameters)
@@ -380,17 +389,18 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
                 : ExecuteCommandAsync(connection, executeAsync, sql, useTransaction, parameters);
 
         private static async Task<T> ExecuteCommandAsync<T>(
-            DbConnection connection, Func<DbCommand, Task<T>> executeAsync, string sql, bool useTransaction, IReadOnlyList<object> parameters)
+            DbConnection connection, Func<DbCommand, Task<T>> executeAsync, string sql, bool useTransaction,
+            IReadOnlyList<object> parameters)
         {
             if (connection.State != ConnectionState.Closed)
             {
-                connection.Close();
+                await connection.CloseAsync();
             }
 
             await connection.OpenAsync();
             try
             {
-                using (var transaction = useTransaction ? connection.BeginTransaction() : null)
+                using (var transaction = useTransaction ? await connection.BeginTransactionAsync() : null)
                 {
                     T result;
                     using (var command = CreateCommand(connection, sql, parameters))
@@ -398,7 +408,10 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
                         result = await executeAsync(command);
                     }
 
-                    transaction?.Commit();
+                    if (transaction != null)
+                    {
+                        await transaction.CommitAsync();
+                    }
 
                     return result;
                 }
@@ -407,7 +420,7 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
             {
                 if (connection.State != ConnectionState.Closed)
                 {
-                    connection.Close();
+                    await connection.CloseAsync();
                 }
             }
         }

@@ -4,8 +4,8 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -19,7 +19,7 @@ namespace Microsoft.EntityFrameworkCore
     {
         public class ImplicitServicesAndConfig
         {
-            [Fact]
+            [ConditionalFact]
             public async Task Can_query_with_implicit_services_and_OnConfiguring()
             {
                 using (MySqlTestStore.GetNorthwindStore())
@@ -36,7 +36,11 @@ namespace Microsoft.EntityFrameworkCore
                 public DbSet<Customer> Customers { get; set; }
 
                 protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-                    => optionsBuilder.UseMySql(MySqlNorthwindTestStoreFactory.NorthwindConnectionString, b => b.ApplyConfiguration());
+                    => optionsBuilder
+                        .EnableServiceProviderCaching(false)
+                        .UseMySql(
+                            MySqlNorthwindTestStoreFactory.NorthwindConnectionString,
+                            b => b.ApplyConfiguration());
 
                 protected override void OnModelCreating(ModelBuilder modelBuilder)
                     => ConfigureModel(modelBuilder);
@@ -45,14 +49,16 @@ namespace Microsoft.EntityFrameworkCore
 
         public class ImplicitServicesExplicitConfig
         {
-            [Fact]
+            [ConditionalFact]
             public async Task Can_query_with_implicit_services_and_explicit_config()
             {
                 using (MySqlTestStore.GetNorthwindStore())
                 {
                     using (var context = new NorthwindContext(
                         new DbContextOptionsBuilder()
-                            .UseMySql(MySqlNorthwindTestStoreFactory.NorthwindConnectionString, b => b.ApplyConfiguration()).Options))
+                            .EnableServiceProviderCaching(false)
+                            .UseMySql(MySqlNorthwindTestStoreFactory.NorthwindConnectionString, b => b.ApplyConfiguration())
+                            .Options))
                     {
                         Assert.Equal(91, await context.Customers.CountAsync());
                     }
@@ -75,7 +81,7 @@ namespace Microsoft.EntityFrameworkCore
 
         public class ExplicitServicesImplicitConfig
         {
-            [Fact]
+            [ConditionalFact]
             public async Task Can_query_with_explicit_services_and_OnConfiguring()
             {
                 using (MySqlTestStore.GetNorthwindStore())
@@ -101,7 +107,8 @@ namespace Microsoft.EntityFrameworkCore
                 public DbSet<Customer> Customers { get; set; }
 
                 protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-                    => optionsBuilder.UseMySql(MySqlNorthwindTestStoreFactory.NorthwindConnectionString, b => b.ApplyConfiguration());
+                    => optionsBuilder.UseMySql(
+                        MySqlNorthwindTestStoreFactory.NorthwindConnectionString, b => b.ApplyConfiguration());
 
                 protected override void OnModelCreating(ModelBuilder modelBuilder)
                     => ConfigureModel(modelBuilder);
@@ -110,7 +117,7 @@ namespace Microsoft.EntityFrameworkCore
 
         public class ExplicitServicesAndConfig
         {
-            [Fact]
+            [ConditionalFact]
             public async Task Can_query_with_explicit_services_and_explicit_config()
             {
                 using (MySqlTestStore.GetNorthwindStore())
@@ -144,7 +151,7 @@ namespace Microsoft.EntityFrameworkCore
 
         public class ExplicitServicesAndNoConfig
         {
-            [Fact]
+            [ConditionalFact]
             public void Throws_on_attempt_to_use_SQL_Server_without_providing_connection_string()
             {
                 using (MySqlTestStore.GetNorthwindStore())
@@ -182,7 +189,7 @@ namespace Microsoft.EntityFrameworkCore
 
         public class NoServicesAndNoConfig
         {
-            [Fact]
+            [ConditionalFact]
             public void Throws_on_attempt_to_use_context_with_no_store()
             {
                 using (MySqlTestStore.GetNorthwindStore())
@@ -206,12 +213,15 @@ namespace Microsoft.EntityFrameworkCore
 
                 protected override void OnModelCreating(ModelBuilder modelBuilder)
                     => ConfigureModel(modelBuilder);
+
+                protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+                    => optionsBuilder.EnableServiceProviderCaching(false);
             }
         }
 
         public class ImplicitConfigButNoServices
         {
-            [Fact]
+            [ConditionalFact]
             public void Throws_on_attempt_to_use_store_with_no_store_services()
             {
                 var serviceCollection = new ServiceCollection();
@@ -254,7 +264,7 @@ namespace Microsoft.EntityFrameworkCore
 
         public class InjectContext
         {
-            [Fact]
+            [ConditionalFact]
             public async Task Can_register_context_with_DI_container_and_have_it_injected()
             {
                 var serviceProvider = new ServiceCollection()
@@ -296,7 +306,8 @@ namespace Microsoft.EntityFrameworkCore
                 public DbSet<Customer> Customers { get; set; }
 
                 protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-                    => optionsBuilder.UseMySql(MySqlNorthwindTestStoreFactory.NorthwindConnectionString, b => b.ApplyConfiguration());
+                    => optionsBuilder.UseMySql(
+                        MySqlNorthwindTestStoreFactory.NorthwindConnectionString, b => b.ApplyConfiguration());
 
                 protected override void OnModelCreating(ModelBuilder modelBuilder)
                     => ConfigureModel(modelBuilder);
@@ -305,7 +316,7 @@ namespace Microsoft.EntityFrameworkCore
 
         public class InjectContextAndConfiguration
         {
-            [Fact]
+            [ConditionalFact]
             public async Task Can_register_context_and_configuration_with_DI_container_and_have_both_injected()
             {
                 var serviceProvider = new ServiceCollection()
@@ -313,7 +324,9 @@ namespace Microsoft.EntityFrameworkCore
                     .AddTransient<NorthwindContext>()
                     .AddSingleton(
                         new DbContextOptionsBuilder()
-                            .UseMySql(MySqlNorthwindTestStoreFactory.NorthwindConnectionString, b => b.ApplyConfiguration()).Options).BuildServiceProvider();
+                            .EnableServiceProviderCaching(false)
+                            .UseMySql(MySqlNorthwindTestStoreFactory.NorthwindConnectionString, b => b.ApplyConfiguration())
+                            .Options).BuildServiceProvider();
 
                 using (MySqlTestStore.GetNorthwindStore())
                 {
@@ -353,14 +366,16 @@ namespace Microsoft.EntityFrameworkCore
 
         public class ConstructorArgsToBuilder
         {
-            [Fact]
+            [ConditionalFact]
             public async Task Can_pass_context_options_to_constructor_and_use_in_builder()
             {
                 using (MySqlTestStore.GetNorthwindStore())
                 {
                     using (var context = new NorthwindContext(
                         new DbContextOptionsBuilder()
-                            .UseMySql(MySqlNorthwindTestStoreFactory.NorthwindConnectionString, b => b.ApplyConfiguration()).Options))
+                            .EnableServiceProviderCaching(false)
+                            .UseMySql(MySqlNorthwindTestStoreFactory.NorthwindConnectionString, b => b.ApplyConfiguration())
+                            .Options))
                     {
                         Assert.Equal(91, await context.Customers.CountAsync());
                     }
@@ -383,7 +398,7 @@ namespace Microsoft.EntityFrameworkCore
 
         public class ConstructorArgsToOnConfiguring
         {
-            [Fact]
+            [ConditionalFact]
             public async Task Can_pass_connection_string_to_constructor_and_use_in_OnConfiguring()
             {
                 using (MySqlTestStore.GetNorthwindStore())
@@ -407,7 +422,9 @@ namespace Microsoft.EntityFrameworkCore
                 public DbSet<Customer> Customers { get; set; }
 
                 protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-                    => optionsBuilder.UseMySql(_connectionString, b => b.ApplyConfiguration());
+                    => optionsBuilder
+                        .EnableServiceProviderCaching(false)
+                        .UseMySql(_connectionString, b => b.ApplyConfiguration());
 
                 protected override void OnModelCreating(ModelBuilder modelBuilder)
                     => ConfigureModel(modelBuilder);
@@ -416,7 +433,7 @@ namespace Microsoft.EntityFrameworkCore
 
         public class NestedContext
         {
-            [Fact]
+            [ConditionalFact]
             public async Task Can_use_one_context_nested_inside_another_of_the_same_type()
             {
                 using (MySqlTestStore.GetNorthwindStore())

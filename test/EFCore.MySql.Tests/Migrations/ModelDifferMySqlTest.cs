@@ -70,12 +70,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             var sourceModelBuilder = CreateModelBuilder();
             buildCommonAction(sourceModelBuilder);
             buildSourceAction(sourceModelBuilder);
-            sourceModelBuilder.GetInfrastructure().Metadata.Validate();
+            sourceModelBuilder.GetInfrastructure();
 
             var targetModelBuilder = CreateModelBuilder();
             buildCommonAction(targetModelBuilder);
             buildTargetAction(targetModelBuilder);
-            targetModelBuilder.GetInfrastructure().Metadata.Validate();
+            targetModelBuilder.GetInfrastructure();
 
             var modelDiffer = CreateModelDiffer(targetModelBuilder.Model);
 

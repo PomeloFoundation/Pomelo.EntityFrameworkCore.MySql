@@ -29,9 +29,10 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             RegexOptions.IgnoreCase);
 
         private readonly IMigrationsAnnotationProvider _migrationsAnnotations;
-        private readonly IMySqlOptions _options;
 
         private IReadOnlyList<MigrationOperation> _operations;
+
+        private readonly IMySqlOptions _options;
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -85,24 +86,22 @@ namespace Microsoft.EntityFrameworkCore.Migrations
         /// <param name="operation"> The operation. </param>
         /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
         /// <param name="builder"> The command builder to use to build the commands. </param>
-        protected override void Generate(MigrationOperation operation, IModel model,
-            MigrationCommandListBuilder builder)
+        protected override void Generate(MigrationOperation operation, IModel model, MigrationCommandListBuilder builder)
         {
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
-            var dropDatabaseOperation = operation as MySqlDropDatabaseOperation;
-            if (operation is MySqlCreateDatabaseOperation createDatabaseOperation)
+            switch (operation)
             {
-                Generate(createDatabaseOperation, model, builder);
-            }
-            else if (dropDatabaseOperation != null)
-            {
-                Generate(dropDatabaseOperation, model, builder);
-            }
-            else
-            {
-                base.Generate(operation, model, builder);
+                case MySqlCreateDatabaseOperation createDatabaseOperation:
+                    Generate(createDatabaseOperation, model, builder);
+                    break;
+                case MySqlDropDatabaseOperation dropDatabaseOperation:
+                    Generate(dropDatabaseOperation, model, builder);
+                    break;
+                default:
+                    base.Generate(operation, model, builder);
+                    break;
             }
         }
 
@@ -130,17 +129,6 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 operation.Schema,
                 operation.Table,
                 operation.Name,
-                operation.ClrType,
-                operation.ColumnType,
-                operation.IsUnicode,
-                operation.MaxLength,
-                operation.IsFixedLength,
-                operation.IsRowVersion,
-                operation.IsNullable,
-                operation.DefaultValue,
-                operation.DefaultValueSql,
-                operation.ComputedColumnSql,
-                /*identity:*/ false,
                 operation,
                 model,
                 builder);
@@ -182,7 +170,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 {
                     var index = FindEntityTypes(model, operation.Schema, operation.Table)
                         ?.SelectMany(e => e.GetDeclaredIndexes())
-                        .FirstOrDefault(i => i.Relational().Name == operation.NewName);
+                        .FirstOrDefault(i => i.GetName() == operation.NewName);
                     if (index == null)
                     {
                         throw new InvalidOperationException(
@@ -201,9 +189,9 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                         Schema = operation.Schema,
                         Table = operation.Table,
                         Name = operation.NewName,
-                        Columns = index.Properties.Select(p => p.Relational().ColumnName).ToArray(),
+                        Columns = index.Properties.Select(p => p.GetColumnName()).ToArray(),
                         IsUnique = index.IsUnique,
-                        Filter = index.Relational().Filter
+                        Filter = index.GetFilter()
                     };
                     createIndexOperation.AddAnnotations(_migrationsAnnotations.For(index));
                     createIndexOperation.AddAnnotations(operation.GetAnnotations());
@@ -265,19 +253,6 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
         /// <summary>
         ///     Builds commands for the given <see cref="CreateIndexOperation" /> by making calls on the given
-        ///     <see cref="MigrationCommandListBuilder" />, and then terminates the final command.
-        /// </summary>
-        /// <param name="operation"> The operation. </param>
-        /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
-        /// <param name="builder"> The command builder to use to build the commands. </param>
-        protected override void Generate(
-            CreateIndexOperation operation,
-            IModel model,
-            MigrationCommandListBuilder builder)
-            => Generate(operation, model, builder, terminate: true);
-
-        /// <summary>
-        ///     Builds commands for the given <see cref="CreateIndexOperation" /> by making calls on the given
         ///     <see cref="MigrationCommandListBuilder" />.
         /// </summary>
         /// <param name="operation"> The operation. </param>
@@ -288,7 +263,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             CreateIndexOperation operation,
             IModel model,
             MigrationCommandListBuilder builder,
-            bool terminate)
+            bool terminate = true)
         {
             operation.Filter = null;
             operation.Name = Truncate(operation.Name, 64);
@@ -427,24 +402,10 @@ namespace Microsoft.EntityFrameworkCore.Migrations
         /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
         /// <param name="builder"> The command builder to use to build the commands. </param>
         protected override void Generate(
-            DropIndexOperation operation,
-            IModel model,
-            MigrationCommandListBuilder builder)
-            => Generate(operation, model, builder, terminate: true);
-
-        /// <summary>
-        ///     Builds commands for the given <see cref="DropIndexOperation" />
-        ///     by making calls on the given <see cref="MigrationCommandListBuilder" />.
-        /// </summary>
-        /// <param name="operation"> The operation. </param>
-        /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
-        /// <param name="builder"> The command builder to use to build the commands. </param>
-        /// <param name="terminate"> Indicates whether or not to terminate the command after generating SQL for the operation. </param>
-        protected virtual void Generate(
             [NotNull] DropIndexOperation operation,
             [CanBeNull] IModel model,
             [NotNull] MigrationCommandListBuilder builder,
-            bool terminate)
+            bool terminate = true)
         {
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
@@ -463,19 +424,6 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             }
         }
 
-        /// <summary>
-        ///     Builds commands for the given <see cref="DropColumnOperation" /> by making calls on the given
-        ///     <see cref="MigrationCommandListBuilder" />, and then terminates the final command.
-        /// </summary>
-        /// <param name="operation"> The operation. </param>
-        /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
-        /// <param name="builder"> The command builder to use to build the commands. </param>
-        protected override void Generate(
-            DropColumnOperation operation,
-            IModel model,
-            MigrationCommandListBuilder builder)
-            => Generate(operation, model, builder, terminate: true);
-            
         /// <summary>
         ///     Builds commands for the given <see cref="DropUniqueConstraintOperation" /> by making calls on the given
         ///     <see cref="MigrationCommandListBuilder" />, and then terminates the final command.
@@ -516,18 +464,6 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 EndStatement(builder);
             }
         }
-        /// <summary>
-        ///     Builds commands for the given <see cref="DropForeignKeyOperation" /> by making calls on the given
-        ///     <see cref="MigrationCommandListBuilder" />, and then terminates the final command.
-        /// </summary>
-        /// <param name="operation"> The operation. </param>
-        /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
-        /// <param name="builder"> The command builder to use to build the commands. </param>
-        protected override void Generate(
-            [NotNull] DropForeignKeyOperation operation,
-            [CanBeNull] IModel model,
-            [NotNull] MigrationCommandListBuilder builder)
-            => Generate(operation, model, builder, terminate: true);
 
         /// <summary>
         ///     Builds commands for the given <see cref="DropForeignKeyOperation" /> by making calls on the given
@@ -575,8 +511,20 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(builder, nameof(builder));
 
             builder.Append("ALTER TABLE ")
-                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
-                .Append(" CHANGE ")
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema));
+
+            if (_options.ServerVersion.SupportsRenameColumn)
+            {
+                builder.Append(" RENAME COLUMN ")
+                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
+                    .Append(" ")
+                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName));
+
+                EndStatement(builder);
+                return;
+            }
+
+            builder.Append(" CHANGE ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
                 .Append(" ");
 
@@ -605,10 +553,9 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             var clrType = (converter?.ProviderClrType ?? typeMapping.ClrType).UnwrapNullableType();
             var columnType = (string)(operation[RelationalAnnotationNames.ColumnType]
                                       ?? property[RelationalAnnotationNames.ColumnType]);
-            var annotations = property.Relational();
             var isNullable = property.IsColumnNullable();
 
-            var defaultValue = annotations.DefaultValue;
+            var defaultValue = property.GetDefaultValue();
             defaultValue = converter != null
                 ? converter.ConvertToProvider(defaultValue)
                 : defaultValue;
@@ -624,21 +571,27 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             var isRowVersion = property.ClrType == typeof(byte[])
                                && property.IsConcurrencyToken
                                && property.ValueGenerated == ValueGenerated.OnAddOrUpdate;
+
+
+            var addColumnOperation = new AddColumnOperation
+            {
+                Schema = operation.Schema,
+                Table = operation.Table,
+                Name = operation.NewName,
+                ClrType = clrType,
+                ColumnType = columnType,
+                IsUnicode = property.IsUnicode(),
+                MaxLength = property.GetMaxLength(),
+                IsFixedLength = property.IsFixedLength(),
+                IsRowVersion = isRowVersion,
+                IsNullable = isNullable,
+                DefaultValue = defaultValue,
+                DefaultValueSql = property.GetDefaultValueSql(),
+                ComputedColumnSql = property.GetComputedColumnSql(),
+            };
+
             ColumnDefinition(
-                operation.Schema,
-                operation.Table,
-                operation.NewName,
-                clrType,
-                columnType,
-                property.IsUnicode(),
-                property.GetMaxLength(),
-                annotations.IsFixedLength,
-                isRowVersion,
-                isNullable,
-                defaultValue,
-                annotations.DefaultValueSql,
-                annotations.ComputedColumnSql,
-                operation,
+                addColumnOperation,
                 model,
                 builder);
             builder.AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
@@ -650,54 +603,47 @@ namespace Microsoft.EntityFrameworkCore.Migrations
         /// </summary>
         /// <param name="schema"> The schema that contains the sequence, or <c>null</c> to use the default schema. </param>
         /// <param name="name"> The sequence name. </param>
-        /// <param name="increment"> The amount to increment by to generate the next value in the sequence. </param>
-        /// <param name="minimumValue"> The minimum value supported by the sequence, or <c>null</c> if none was specified. </param>
-        /// <param name="maximumValue"> The maximum value supported by the sequence, or <c>null</c> if none was specified. </param>
-        /// <param name="cycle"> Indicates whether or not the sequence will start again once the maximum value is reached. </param>
+        /// <param name="operation"> The sequence options. </param>
         /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
         /// <param name="builder"> The command builder to use to add the SQL fragment. </param>
         protected override void SequenceOptions(
             string schema,
             string name,
-            int increment,
-            long? minimumValue,
-            long? maximumValue,
-            bool cycle,
+            SequenceOperation operation,
             IModel model,
             MigrationCommandListBuilder builder)
         {
             Check.NotEmpty(name, nameof(name));
-            Check.NotNull(increment, nameof(increment));
-            Check.NotNull(cycle, nameof(cycle));
+            Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
             builder
                 .Append(" INCREMENT BY ")
-                .Append(IntegerConstant(increment));
+                .Append(IntegerConstant(operation.IncrementBy));
 
-            if (minimumValue.HasValue)
+            if (operation.MinValue.HasValue)
             {
                 builder
                     .Append(" MINVALUE ")
-                    .Append(IntegerConstant(minimumValue.Value));
+                    .Append(IntegerConstant(operation.MinValue.Value));
             }
             else
             {
                 builder.Append(" NO MINVALUE");
             }
 
-            if (maximumValue.HasValue)
+            if (operation.MaxValue.HasValue)
             {
                 builder
                     .Append(" MAXVALUE ")
-                    .Append(IntegerConstant(maximumValue.Value));
+                    .Append(IntegerConstant(operation.MaxValue.Value));
             }
             else
             {
                 builder.Append(" NO MAXVALUE");
             }
 
-            builder.Append(cycle ? " CYCLE" : " NO CYCLE");
+            builder.Append(operation.IsCyclic ? " CYCLE" : " NO CYCLE");
         }
 
         /// <summary>
@@ -706,22 +652,13 @@ namespace Microsoft.EntityFrameworkCore.Migrations
         /// <param name="operation"> The operation. </param>
         /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
         /// <param name="builder"> The command builder to use to add the SQL fragment. </param>
+
         protected override void ColumnDefinition(AddColumnOperation operation, IModel model,
             MigrationCommandListBuilder builder)
             => ColumnDefinition(
                 operation.Schema,
                 operation.Table,
                 operation.Name,
-                operation.ClrType,
-                operation.ColumnType,
-                operation.IsUnicode,
-                operation.MaxLength,
-                operation.IsFixedLength,
-                operation.IsRowVersion,
-                operation.IsNullable,
-                operation.DefaultValue,
-                operation.DefaultValueSql,
-                operation.ComputedColumnSql,
                 operation,
                 model,
                 builder);
@@ -732,160 +669,22 @@ namespace Microsoft.EntityFrameworkCore.Migrations
         /// <param name="schema"> The schema that contains the table, or <c>null</c> to use the default schema. </param>
         /// <param name="table"> The table that contains the column. </param>
         /// <param name="name"> The column name. </param>
-        /// <param name="clrType"> The CLR <see cref="Type" /> that the column is mapped to. </param>
-        /// <param name="type"> The database/store type for the column, or <c>null</c> if none has been specified. </param>
-        /// <param name="unicode">
-        ///     Indicates whether or not the column can contain Unicode data, or <c>null</c> if this is not applicable or not specified.
-        /// </param>
-        /// <param name="maxLength">
-        ///     The maximum amount of data that the column can contain, or <c>null</c> if this is not applicable or not specified.
-        /// </param>
-        /// <param name="fixedLength"> Indicates whether or not the column is constrained to fixed-length data. </param>
-        /// <param name="rowVersion">
-        ///     Indicates whether or not this column is an automatic concurrency token, such as a MySql timestamp/rowversion.
-        /// </param>
-        /// <param name="nullable"> Indicates whether or not the column can store <c>NULL</c> values. </param>
-        /// <param name="defaultValue"> The default value for the column. </param>
-        /// <param name="defaultValueSql"> The SQL expression to use for the column's default constraint. </param>
-        /// <param name="computedColumnSql"> The SQL expression to use to compute the column value. </param>
-        /// <param name="annotatable"> The <see cref="MigrationOperation" /> to use to find any custom annotations. </param>
+        /// <param name="operation"> The column metadata. </param>
         /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
         /// <param name="builder"> The command builder to use to add the SQL fragment. </param>
         protected override void ColumnDefinition(
-            string schema,
-            string table,
-            string name,
-            Type clrType,
-            string type,
-            bool? unicode,
-            int? maxLength,
-            bool? fixedLength,
-            bool rowVersion,
-            bool nullable,
-            object defaultValue,
-            string defaultValueSql,
-            string computedColumnSql,
-            IAnnotatable annotatable,
-            IModel model,
-            MigrationCommandListBuilder builder)
-        {
-            var valueGenerationStrategy = annotatable[
-                MySqlAnnotationNames.ValueGenerationStrategy] as MySqlValueGenerationStrategy?;
-
-            ColumnDefinition(
-                schema,
-                table,
-                name,
-                clrType,
-                type,
-                unicode,
-                maxLength,
-                fixedLength,
-                rowVersion,
-                nullable,
-                defaultValue,
-                defaultValueSql,
-                computedColumnSql,
-                valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn,
-                annotatable,
-                model,
-                builder);
-        }
-
-        /// <summary>
-        ///     Generates a SQL fragment for a column definition for the given column metadata.
-        /// </summary>
-        /// <param name="schema"> The schema that contains the table, or <c>null</c> to use the default schema. </param>
-        /// <param name="table"> The table that contains the column. </param>
-        /// <param name="name"> The column name. </param>
-        /// <param name="clrType"> The CLR <see cref="Type" /> that the column is mapped to. </param>
-        /// <param name="type"> The database/store type for the column, or <c>null</c> if none has been specified. </param>
-        /// <param name="unicode">
-        ///     Indicates whether or not the column can contain Unicode data, or <c>null</c> if this is not applicable or not specified.
-        /// </param>
-        /// <param name="maxLength">
-        ///     The maximum amount of data that the column can contain, or <c>null</c> if this is not applicable or not specified.
-        /// </param>
-        /// <param name="rowVersion">
-        ///     Indicates whether or not this column is an automatic concurrency token, such as a MySql timestamp/rowversion.
-        /// </param>
-        /// <param name="nullable"> Indicates whether or not the column can store <c>NULL</c> values. </param>
-        /// <param name="defaultValue"> The default value for the column. </param>
-        /// <param name="defaultValueSql"> The SQL expression to use for the column's default constraint. </param>
-        /// <param name="computedColumnSql"> The SQL expression to use to compute the column value. </param>
-        /// <param name="annotatable"> The <see cref="MigrationOperation" /> to use to find any custom annotations. </param>
-        /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
-        /// <param name="builder"> The command builder to use to add the SQL fragment. </param>
-        protected override void ColumnDefinition(
-            string schema,
-            string table,
-            string name,
-            Type clrType,
-            string type,
-            bool? unicode,
-            int? maxLength,
-            bool rowVersion,
-            bool nullable,
-            object defaultValue,
-            string defaultValueSql,
-            string computedColumnSql,
-            IAnnotatable annotatable,
-            IModel model,
-            MigrationCommandListBuilder builder)
-            => ColumnDefinition(schema, table, name, clrType, type, unicode, maxLength, null,
-                rowVersion, nullable, defaultValue, defaultValueSql, computedColumnSql, annotatable, model, builder);
-
-        /// <summary>
-        ///     Generates a SQL fragment for a column definition for the given column metadata.
-        /// </summary>
-        /// <param name="schema"> The schema that contains the table, or <c>null</c> to use the default schema. </param>
-        /// <param name="table"> The table that contains the column. </param>
-        /// <param name="name"> The column name. </param>
-        /// <param name="clrType"> The CLR <see cref="Type" /> that the column is mapped to. </param>
-        /// <param name="type"> The database/store type for the column, or <c>null</c> if none has been specified. </param>
-        /// <param name="unicode">
-        ///     Indicates whether or not the column can contain Unicode data, or <c>null</c> if this is not applicable or not specified.
-        /// </param>
-        /// <param name="maxLength">
-        ///     The maximum amount of data that the column can contain, or <c>null</c> if this is not applicable or not specified.
-        /// </param>
-        /// <param name="fixedLength"> Indicates whether or not the column is constrained to fixed-length data. </param>
-        /// <param name="rowVersion">
-        ///     Indicates whether or not this column is an automatic concurrency token, such as a MySql timestamp/rowversion.
-        /// </param>
-        /// <param name="nullable"> Indicates whether or not the column can store <c>NULL</c> values. </param>
-        /// <param name="defaultValue"> The default value for the column. </param>
-        /// <param name="defaultValueSql"> The SQL expression to use for the column's default constraint. </param>
-        /// <param name="computedColumnSql"> The SQL expression to use to compute the column value. </param>
-        /// <param name="identity"> Indicates whether or not the column is an Identity column. </param>
-        /// <param name="annotatable"> The <see cref="MigrationOperation" /> to use to find any custom annotations. </param>
-        /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
-        /// <param name="builder"> The command builder to use to add the SQL fragment. </param>
-        protected virtual void ColumnDefinition(
             [CanBeNull] string schema,
             [NotNull] string table,
             [NotNull] string name,
-            [NotNull] Type clrType,
-            [CanBeNull] string type,
-            bool? unicode,
-            int? maxLength,
-            bool? fixedLength,
-            bool rowVersion,
-            bool nullable,
-            [CanBeNull] object defaultValue,
-            [CanBeNull] string defaultValueSql,
-            [CanBeNull] string computedColumnSql,
-            bool identity,
-            [NotNull] IAnnotatable annotatable,
+            [NotNull] ColumnOperation operation,
             [CanBeNull] IModel model,
             [NotNull] MigrationCommandListBuilder builder)
         {
             Check.NotEmpty(name, nameof(name));
-            Check.NotNull(clrType, nameof(clrType));
-            Check.NotNull(annotatable, nameof(annotatable));
+            Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
-            var matchType = type ?? GetColumnType(schema, table, name, clrType, unicode, maxLength, fixedLength, rowVersion, model);
+            var matchType = operation.ColumnType ?? GetColumnType(schema, table, name, operation, model);
             var matchLen = "";
             var match = _typeRe.Match(matchType ?? "-");
             if (match.Success)
@@ -897,22 +696,29 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 }
             }
 
-            var valueGenerationStrategy = annotatable[
-                MySqlAnnotationNames.ValueGenerationStrategy] as MySqlValueGenerationStrategy?;
-            if (!valueGenerationStrategy.HasValue)
+            var annotatable = (IAnnotatable)operation;
+            var valueGenerationStrategy = annotatable[MySqlAnnotationNames.ValueGenerationStrategy] as MySqlValueGenerationStrategy?;
+
+            if (!valueGenerationStrategy.HasValue ||
+                valueGenerationStrategy == MySqlValueGenerationStrategy.None)
             {
                 var generatedOnAddAnnotation = annotatable[MySqlAnnotationNames.LegacyValueGeneratedOnAdd];
                 if (generatedOnAddAnnotation != null && (bool)generatedOnAddAnnotation)
+                {
                     valueGenerationStrategy = MySqlValueGenerationStrategy.IdentityColumn;
+                }
+
                 var generatedOnAddOrUpdateAnnotation =
                     annotatable[MySqlAnnotationNames.LegacyValueGeneratedOnAddOrUpdate];
                 if (generatedOnAddOrUpdateAnnotation != null && (bool)generatedOnAddOrUpdateAnnotation)
+                {
                     valueGenerationStrategy = MySqlValueGenerationStrategy.ComputedColumn;
+                }
             }
 
             var autoIncrement = false;
-            if ((identity || valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn) &&
-                string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
+            if (valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn &&
+                string.IsNullOrWhiteSpace(operation.DefaultValueSql) && operation.DefaultValue == null)
             {
                 switch (matchType)
                 {
@@ -925,18 +731,21 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                         break;
                     case "datetime":
                         if (!_options.ServerVersion.SupportsDateTime6)
+                        {
                             throw new InvalidOperationException(
                                 $"Error in {table}.{name}: DATETIME does not support values generated " +
                                 "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");
+                        }
+
                         goto case "timestamp";
                     case "timestamp":
-                        defaultValueSql = $"CURRENT_TIMESTAMP({matchLen})";
+                        operation.DefaultValueSql = $"CURRENT_TIMESTAMP({matchLen})";
                         break;
                 }
             }
 
             string onUpdateSql = null;
-            if (rowVersion || valueGenerationStrategy == MySqlValueGenerationStrategy.ComputedColumn)
+            if (operation.IsRowVersion || valueGenerationStrategy == MySqlValueGenerationStrategy.ComputedColumn)
             {
                 switch (matchType)
                 {
@@ -950,9 +759,9 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
                         goto case "timestamp";
                     case "timestamp":
-                        if (string.IsNullOrWhiteSpace(defaultValueSql) && defaultValue == null)
+                        if (string.IsNullOrWhiteSpace(operation.DefaultValueSql) && operation.DefaultValue == null)
                         {
-                            defaultValueSql = $"CURRENT_TIMESTAMP({matchLen})";
+                            operation.DefaultValueSql = $"CURRENT_TIMESTAMP({matchLen})";
                         }
 
                         onUpdateSql = $"CURRENT_TIMESTAMP({matchLen})";
@@ -960,25 +769,13 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 }
             }
 
-            if (computedColumnSql == null)
+            if (operation.ComputedColumnSql == null)
             {
                 base.ColumnDefinition(
                     schema,
                     table,
                     name,
-                    clrType,
-                    type,
-                    unicode,
-                    maxLength,
-                    fixedLength,
-                    rowVersion,
-                    nullable,
-                    identity
-                        ? null
-                        : defaultValue,
-                    defaultValueSql,
-                    computedColumnSql,
-                    annotatable,
+                    operation,
                     model,
                     builder);
 
@@ -1001,11 +798,11 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 builder
                     .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(name))
                     .Append(" ")
-                    .Append(type ?? GetColumnType(schema, table, name, clrType, unicode, maxLength, fixedLength, rowVersion, model));
+                    .Append(operation.ColumnType ?? GetColumnType(schema, table, name, operation, model));
                 builder
                     .Append(" AS ")
-                    .Append($"({computedColumnSql})");
-                if (nullable)
+                    .Append($"({operation.ComputedColumnSql})");
+                if (operation.IsNullable)
                 {
                     builder.Append(" NULL");
                 }
@@ -1019,10 +816,8 @@ namespace Microsoft.EntityFrameworkCore.Migrations
         /// <param name="defaultValue"> The default value for the column. </param>
         /// <param name="defaultValueSql"> The SQL expression to use for the column's default constraint. </param>
         /// <param name="builder"> The command builder to use to add the SQL fragment. </param>
-        protected override void DefaultValue(
-            object defaultValue,
-            string defaultValueSql,
-            MigrationCommandListBuilder builder)
+
+        protected override void DefaultValue(object defaultValue, string defaultValueSql, string columnType, MigrationCommandListBuilder builder)
         {
             Check.NotNull(builder, nameof(builder));
 
@@ -1042,10 +837,61 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             }
         }
 
-        protected override void Generate(
-            AddPrimaryKeyOperation operation,
-            IModel model,
-            MigrationCommandListBuilder builder)
+        /// <summary>
+        ///     Generates a SQL fragment for the primary key constraint of a <see cref="CreateTableOperation" />.
+        /// </summary>
+        /// <param name="operation"> The operation. </param>
+        /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
+        /// <param name="builder"> The command builder to use to add the SQL fragment. </param>
+        protected override void CreateTablePrimaryKeyConstraint(
+            [NotNull] CreateTableOperation operation,
+            [CanBeNull] IModel model,
+            [NotNull] MigrationCommandListBuilder builder)
+        {
+            Check.NotNull(operation, nameof(operation));
+            Check.NotNull(builder, nameof(builder));
+
+            var primaryKey = operation.PrimaryKey;
+            if (primaryKey != null)
+            {
+                builder.AppendLine(",");
+
+                // MySQL InnoDB has the requirement, that an AUTO_INCREMENT column has to be the first
+                // column participating in an index.
+
+                var sortedColumnNames = primaryKey.Columns.Length > 1
+                    ? primaryKey.Columns
+                        .Select(columnName => operation.Columns.First(co => co.Name == columnName))
+                        .OrderBy(co => co[MySqlAnnotationNames.ValueGenerationStrategy] is MySqlValueGenerationStrategy generationStrategy
+                                       && generationStrategy == MySqlValueGenerationStrategy.IdentityColumn
+                            ? 0
+                            : 1)
+                        .Select(co => co.Name)
+                        .ToArray()
+                    : primaryKey.Columns;
+
+                var sortedPrimaryKey = new AddPrimaryKeyOperation()
+                {
+                    Schema = primaryKey.Schema,
+                    Table = primaryKey.Table,
+                    Name = primaryKey.Name,
+                    Columns = sortedColumnNames,
+                    IsDestructiveChange = primaryKey.IsDestructiveChange,
+                };
+
+                foreach (var annotation in primaryKey.GetAnnotations())
+                {
+                    sortedPrimaryKey[annotation.Name] = annotation.Value;
+                }
+
+                PrimaryKeyConstraint(
+                    sortedPrimaryKey,
+                    model,
+                    builder);
+            }
+        }
+
+        protected override void Generate(AddPrimaryKeyOperation operation, IModel model, MigrationCommandListBuilder builder, bool terminate = true)
         {
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
@@ -1119,10 +965,7 @@ END;".Replace("\r", string.Empty).Replace("\n", Environment.NewLine));
             EndStatement(builder);
         }
 
-        protected override void Generate(
-            DropPrimaryKeyOperation operation,
-            IModel model,
-            MigrationCommandListBuilder builder)
+        protected override void Generate(DropPrimaryKeyOperation operation, IModel model, MigrationCommandListBuilder builder, bool terminate = true)
         {
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));

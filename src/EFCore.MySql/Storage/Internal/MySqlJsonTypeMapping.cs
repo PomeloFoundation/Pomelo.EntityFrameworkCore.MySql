@@ -108,7 +108,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             where T : class
         {
             public JsonComparer()
-                : base((l, r) => Object.Equals(l, r), v => v.GetHashCode())
+                : base((l, r) => object.Equals(l, r), v => v.GetHashCode())
             {
             }
         }

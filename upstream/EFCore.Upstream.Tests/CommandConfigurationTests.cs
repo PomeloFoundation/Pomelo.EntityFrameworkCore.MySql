@@ -12,7 +12,7 @@ namespace Microsoft.EntityFrameworkCore
     {
         public class CommandTimeout
         {
-            [Fact]
+            [ConditionalFact]
             public void Default_value_for_CommandTimeout_is_null_and_can_be_changed_including_setting_to_null()
             {
                 using (var context = new TimeoutContext())
@@ -30,7 +30,7 @@ namespace Microsoft.EntityFrameworkCore
                 }
             }
 
-            [Fact]
+            [ConditionalFact]
             public void Setting_CommandTimeout_to_negative_value_throws()
             {
                 Assert.Throws<InvalidOperationException>(
@@ -67,7 +67,9 @@ namespace Microsoft.EntityFrameworkCore
                     => Database.SetCommandTimeout(commandTimeout);
 
                 protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-                    => optionsBuilder.UseMySql(new FakeDbConnection("A=B"));
+                    => optionsBuilder
+                        .UseInternalServiceProvider(MySqlFixture.DefaultServiceProvider)
+                        .UseMySql(new FakeDbConnection("A=B"));
             }
         }
     }

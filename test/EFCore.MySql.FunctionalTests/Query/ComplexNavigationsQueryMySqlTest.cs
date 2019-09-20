@@ -12,11 +12,5 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             Fixture.TestSqlLoggerFactory.Clear();
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
-
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Result_operator_nav_prop_reference_optional_Average()
-        {
-            base.Result_operator_nav_prop_reference_optional_Average();
-        }
     }
 }

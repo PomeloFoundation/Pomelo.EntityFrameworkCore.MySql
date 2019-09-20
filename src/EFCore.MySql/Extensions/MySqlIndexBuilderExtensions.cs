@@ -4,6 +4,7 @@
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Pomelo.EntityFrameworkCore.MySql.Extensions;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
@@ -15,16 +16,16 @@ namespace Microsoft.EntityFrameworkCore
         {
             Check.NotNull(indexBuilder, nameof(indexBuilder));
 
-            indexBuilder.Metadata.MySql().IsFullText = fullText;
+            indexBuilder.Metadata.SetIsFullText(fullText);
 
             return indexBuilder;
         }
 
-        public static IndexBuilder ForMySqlIsSpatial([NotNull] this IndexBuilder indexBuilder, bool Spatial = true)
+        public static IndexBuilder ForMySqlIsSpatial([NotNull] this IndexBuilder indexBuilder, bool spatial = true)
         {
             Check.NotNull(indexBuilder, nameof(indexBuilder));
 
-            indexBuilder.Metadata.MySql().IsSpatial = Spatial;
+            indexBuilder.Metadata.SetIsSpatial(spatial);
 
             return indexBuilder;
         }
