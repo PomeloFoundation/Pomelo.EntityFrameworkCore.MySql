@@ -8,6 +8,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
@@ -60,7 +61,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         private static readonly MethodInfo[] _methodInfos
             = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethods()
                 .Where(method => method.Name == nameof(MySqlDbFunctionsExtensions.Like)
-                                 && method.IsGenericMethod)
+                                 && method.IsGenericMethod
+                                 && method.GetParameters().Length >= 3 && method.GetParameters().Length <= 4)
                 .SelectMany(method => _supportedTypes.Select(type => method.MakeGenericMethod(type))).ToArray();
 
         public MySqlDbFunctionsExtensionsMethodTranslator(ISqlExpressionFactory sqlExpressionFactory)
@@ -74,11 +76,47 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         /// </summary>
         public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
         {
-            return _methodInfos.Any(m => Equals(method, m))
-                       ? method.GetParameters().Length == 3
-                           ? _sqlExpressionFactory.Like(arguments[1], arguments[2])
-                           : _sqlExpressionFactory.Like(arguments[1], arguments[2], arguments[3])
-                       : null;
+            if (_methodInfos.Any(m => Equals(method, m)))
+            {
+                var match = _sqlExpressionFactory.ApplyDefaultTypeMapping(arguments[1]);
+
+                var pattern = InferStringTypeMappingOrApplyDefault(
+                    arguments[2],
+                    match.TypeMapping);
+
+                var excapeChar = arguments.Count == 4
+                    ? InferStringTypeMappingOrApplyDefault(
+                        arguments[3],
+                        match.TypeMapping)
+                    : null;
+
+                return _sqlExpressionFactory.Like(
+                    match,
+                    pattern,
+                    excapeChar);
+            }
+
+            return null;
+        }
+
+        private SqlExpression InferStringTypeMappingOrApplyDefault(SqlExpression expression, RelationalTypeMapping inferenceSourceTypeMapping)
+        {
+            if (expression == null)
+            {
+                return null;
+            }
+
+            if (expression.TypeMapping != null)
+            {
+                return expression;
+            }
+
+            if (expression.Type == typeof(string) && inferenceSourceTypeMapping?.ClrType == typeof(string))
+            {
+                return _sqlExpressionFactory.ApplyTypeMapping(expression, inferenceSourceTypeMapping);
+            }
+            
+            return _sqlExpressionFactory.ApplyDefaultTypeMapping(expression);
         }
     }
 }
