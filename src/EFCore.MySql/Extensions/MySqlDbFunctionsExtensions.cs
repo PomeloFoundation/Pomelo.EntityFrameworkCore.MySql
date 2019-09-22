@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Extensions
+namespace Microsoft.EntityFrameworkCore
 {
     /// <summary>
     ///     Provides CLR methods that get translated to database functions when used in LINQ to Entities queries.
@@ -449,5 +452,86 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
             => (startDate.HasValue && endDate.HasValue)
                 ? (int?)DateDiffMicrosecond(_, startDate.Value, endDate.Value)
                 : null;
+
+        /// <summary>
+        ///     <para>
+        ///         An implementation of the SQL LIKE operation. On relational databases this is usually directly
+        ///         translated to SQL.
+        ///     </para>
+        ///     <para>
+        ///         Note that if this function is translated into SQL, then the semantics of the comparison will
+        ///         depend on the database configuration. In particular, it may be either case-sensitive or
+        ///         case-insensitive. If this function is evaluated on the client, then it will always use
+        ///         a case-insensitive comparison.
+        ///     </para>
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="matchExpression">The property of entity that is to be matched.</param>
+        /// <param name="pattern">The pattern which may involve wildcards %,_,[,],^.</param>
+        /// <returns>true if there is a match.</returns>
+        public static bool Like<T>(
+            [CanBeNull] this DbFunctions _,
+            [CanBeNull] T matchExpression,
+            [CanBeNull] string pattern)
+            => LikeCore(matchExpression, pattern, null);
+
+        /// <summary>
+        ///     <para>
+        ///         An implementation of the SQL LIKE operation. On relational databases this is usually directly
+        ///         translated to SQL.
+        ///     </para>
+        ///     <para>
+        ///         Note that if this function is translated into SQL, then the semantics of the comparison will
+        ///         depend on the database configuration. In particular, it may be either case-sensitive or
+        ///         case-insensitive. If this function is evaluated on the client, then it will always use
+        ///         a case-insensitive comparison.
+        ///     </para>
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="matchExpression">The property of entity that is to be matched.</param>
+        /// <param name="pattern">The pattern which may involve wildcards %,_,[,],^.</param>
+        /// <param name="escapeCharacter">
+        ///     The escape character (as a single character string) to use in front of %,_,[,],^
+        ///     if they are not used as wildcards.
+        /// </param>
+        /// <returns>true if there is a match.</returns>
+        public static bool Like<T>(
+            [CanBeNull] this DbFunctions _,
+            [CanBeNull] T matchExpression,
+            [CanBeNull] string pattern,
+            [CanBeNull] string escapeCharacter)
+            => LikeCore(matchExpression, pattern, escapeCharacter);
+
+        private static bool LikeCore<T>(T matchExpression, string pattern, string escapeCharacter)
+        {
+            if (matchExpression == null)
+            {
+                return false;
+            }
+
+            if (matchExpression is IConvertible convertible)
+            {
+                return Like(EF.Functions, convertible.ToString(CultureInfo.InvariantCulture), pattern, escapeCharacter);
+            }
+
+            if (typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
+                var genericArgument = typeof(T).GetGenericArguments().First();
+                var value = Convert.ChangeType(matchExpression, genericArgument);
+
+                return LikeCore(value, pattern, escapeCharacter);
+            }
+
+            if (typeof(T) == typeof(byte[]))
+            {
+                var value = (string)BitConverter.ToString((dynamic)matchExpression);
+                if (!string.IsNullOrEmpty(value))
+                {
+                    return EF.Functions.Like(value.Replace("-", ""), pattern, escapeCharacter);
+                }
+            }
+
+            return false;
+        }
     }
 }
