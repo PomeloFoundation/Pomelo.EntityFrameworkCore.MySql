@@ -2,13 +2,12 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query.Expressions;
-using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators;
-using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
@@ -16,8 +15,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public class MySqlLikeTranslator : LikeTranslator, IMethodCallTranslator
+    public class MySqlDbFunctionsExtensionsMethodTranslator : IMethodCallTranslator
     {
+        private readonly ISqlExpressionFactory _sqlExpressionFactory;
+
         private static readonly Type[] _supportedTypes = {
             typeof(int),
             typeof(long),
@@ -62,17 +63,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                                  && method.IsGenericMethod)
                 .SelectMany(method => _supportedTypes.Select(type => method.MakeGenericMethod(type))).ToArray();
 
+        public MySqlDbFunctionsExtensionsMethodTranslator(ISqlExpressionFactory sqlExpressionFactory)
+        {
+            _sqlExpressionFactory = sqlExpressionFactory;
+        }
+
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public override Expression Translate(MethodCallExpression methodCallExpression)
+        public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
         {
-            return _methodInfos.Any(method => Equals(methodCallExpression.Method, method))
-                       ? methodCallExpression.Method.GetParameters().Length == 3
-                           ? new LikeExpression(methodCallExpression.Arguments[1], methodCallExpression.Arguments[2])
-                           : new LikeExpression(methodCallExpression.Arguments[1], methodCallExpression.Arguments[2], methodCallExpression.Arguments[3])
-                       : base.Translate(methodCallExpression);
+            return _methodInfos.Any(m => Equals(method, m))
+                       ? method.GetParameters().Length == 3
+                           ? _sqlExpressionFactory.Like(arguments[1], arguments[2])
+                           : _sqlExpressionFactory.Like(arguments[1], arguments[2], arguments[3])
+                       : null;
         }
     }
 }
