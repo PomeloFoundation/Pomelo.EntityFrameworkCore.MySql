@@ -504,31 +504,15 @@ namespace Microsoft.EntityFrameworkCore
 
         private static bool LikeCore<T>(T matchExpression, string pattern, string escapeCharacter)
         {
-            if (matchExpression == null)
-            {
-                return false;
-            }
-
             if (matchExpression is IConvertible convertible)
             {
-                return Like(EF.Functions, convertible.ToString(CultureInfo.InvariantCulture), pattern, escapeCharacter);
+                return EF.Functions.Like(convertible.ToString(CultureInfo.InvariantCulture), pattern, escapeCharacter);
             }
 
-            if (typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(Nullable<>))
+            if (matchExpression is byte[] byteArray)
             {
-                var genericArgument = typeof(T).GetGenericArguments().First();
-                var value = Convert.ChangeType(matchExpression, genericArgument);
-
-                return LikeCore(value, pattern, escapeCharacter);
-            }
-
-            if (typeof(T) == typeof(byte[]))
-            {
-                var value = (string)BitConverter.ToString((dynamic)matchExpression);
-                if (!string.IsNullOrEmpty(value))
-                {
-                    return EF.Functions.Like(value.Replace("-", ""), pattern, escapeCharacter);
-                }
+                var value = BitConverter.ToString(byteArray);
+                return EF.Functions.Like(value.Replace("-", string.Empty), pattern, escapeCharacter);
             }
 
             return false;
