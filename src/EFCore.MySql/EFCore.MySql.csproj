@@ -14,13 +14,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MySqlConnector" Version="$(MySqlConnectorVersion)" />
     <PackageReference Include="Pomelo.JsonObject" Version="$(PomeloJsonObjectVersion)" />
     <PackageReference Include="Castle.Core" Version="$(CastleCoreVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(LocalEFCoreRepository)' == ''">
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(MicrosoftEntityFrameworkCoreRelationalVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(LocalMySqlConnectorRepository)' == ''">
+    <PackageReference Include="MySqlConnector" Version="$(MySqlConnectorVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(LocalEFCoreRepository)' != ''">
@@ -38,6 +41,12 @@
     </Reference>
     <PackageReference Include="Microsoft.Extensions.Logging" Version="3.0.0-preview9.19423.4" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="4.6.0-preview9.19421.4" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(LocalMySqlConnectorRepository)' != ''">
+    <Reference Include="MySqlConnector">
+      <HintPath>$(LocalMySqlConnectorRepository)\src\MySqlConnector\bin\Debug\netstandard2.1\MySqlConnector.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

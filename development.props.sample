@@ -1,9 +1,9 @@
 <Project>
   <PropertyGroup>
     <!--
-      Specify the absolute path to the EntityFrameworkCore base directory,
-      to compile against that version for better development and local
-      debugging support.
+      Specify the absolute path to the EntityFrameworkCore and MySqlConnector
+      base directories, to compile against that version for better development
+      and local debugging support.
       
       Rename this file "development.props".
 
@@ -22,5 +22,6 @@
       dotnet build "/p:AssemblyVersion=3.0.0.0"
     -->
     <LocalEFCoreRepository>C:\Repositories\EntityFrameworkCore</LocalEFCoreRepository>
+    <LocalMySqlConnectorRepository>C:\Repositories\MySqlConnector</LocalMySqlConnectorRepository>
   </PropertyGroup>
 </Project>
