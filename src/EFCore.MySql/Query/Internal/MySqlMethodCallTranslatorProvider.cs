@@ -21,6 +21,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 new MySqlObjectToStringTranslator(sqlExpressionFactory),
                 new MySqlStringMethodTranslator(sqlExpressionFactory),
                 new MySqlStringComparisonMethodTranslator(sqlExpressionFactory),
+                new MySqlRegexIsMatchTranslator(sqlExpressionFactory),
+                new MySqlDbFunctionsExtensionsMethodTranslator(sqlExpressionFactory),
             });
         }
     }
