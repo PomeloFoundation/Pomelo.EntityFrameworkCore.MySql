@@ -73,6 +73,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             {
                 if (e.Message == "Already enlisted in a Transaction.")
                 {
+                    // Return expected exception type.
                     throw new InvalidOperationException(e.Message, e);
                 }
 
