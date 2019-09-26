@@ -6,7 +6,6 @@ using System.Data;
 using System.Data.Common;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
@@ -41,19 +40,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     dbType,
                     unicode,
                     size,
-                    fixedLength))
+                    fixedLength),
+                noBackslashEscapes)
         {
-            _noBackslashEscapes = noBackslashEscapes;
         }
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        protected MySqlStringTypeMapping(RelationalTypeMappingParameters parameters)
+        protected MySqlStringTypeMapping(RelationalTypeMappingParameters parameters, bool noBackslashEscapes)
             : base(parameters)
         {
             _maxSpecificSize = CalculateSize(parameters.Unicode, parameters.Size);
+            _noBackslashEscapes = noBackslashEscapes;
         }
 
         private static int CalculateSize(bool unicode, int? size)
@@ -67,7 +67,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// <param name="parameters"> The parameters for this mapping. </param>
         /// <returns> The newly created mapping. </returns>
         protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
-            => new MySqlStringTypeMapping(parameters);
+            => new MySqlStringTypeMapping(parameters, _noBackslashEscapes);
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -81,8 +81,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             // -1 (unbounded) to avoid size inference.
 
             var value = parameter.Value;
-            var length = (value as string)?.Length ?? (value as byte[])?.Length;
+            int? length;
 
+            if (value is string stringValue)
+            {
+                length = stringValue.Length;
+            }
+            else if (value is byte[] byteArray)
+            {
+                length = byteArray.Length;
+            }
+            else
+            {
+                length = null;
+            }
+            
+            parameter.Value = value;
             parameter.Size = value == null || value == DBNull.Value || length != null && length <= _maxSpecificSize
                 ? _maxSpecificSize
                 : -1;
@@ -104,10 +118,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 : $"'{EscapeSqlLiteral((string)value)}'";
 
         protected override string EscapeSqlLiteral(string literal)
+            => EscapeBackslashes(base.EscapeSqlLiteral(literal));
+
+        private string EscapeBackslashes(string literal)
         {
             return _noBackslashEscapes
-                ? base.EscapeSqlLiteral(literal)
-                : base.EscapeSqlLiteral(literal).Replace("\\", "\\\\");
+                ? literal
+                : literal.Replace(@"\", @"\\");
         }
     }
 }

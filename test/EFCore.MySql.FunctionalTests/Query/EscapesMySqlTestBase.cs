@@ -1,76 +1,154 @@
 ﻿using System;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
+using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySql.Data.MySqlClient;
 using Xunit;
+using Expression = System.Linq.Expressions.Expression;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public abstract class EscapesMySqlTestBase<TFixture> : IClassFixture<TFixture>, IDisposable where TFixture : NorthwindQueryMySqlFixture<NoopModelCustomizer>
+    public abstract class EscapesMySqlTestBase<TFixture> : QueryTestBase<TFixture>
+        where TFixture : NorthwindQueryFixtureBase<NoopModelCustomizer>, new()
     {
-        private readonly NorthwindContext _context;
         protected EscapesMySqlTestBase(TFixture fixture)
+            : base(fixture)
         {
-            Fixture = fixture;
-            _context = CreateContext();
         }
 
-        protected TFixture Fixture;
+        protected virtual string Mode => null;
 
-        protected NorthwindContext CreateContext() => Fixture.CreateContext();
-
-        protected void PerfomInTransaction(Action<NorthwindContext> action)
+        public virtual void Input_query_escapes_parameter(string expected)
         {
-            using (var transaction = _context.Database.BeginTransaction())
-            {
-                action.Invoke(_context);
-            }
-        }
-
-        public virtual void Input_query_escapes_parameter()
-        {
-            using (var transaction = _context.Database.BeginTransaction())
-            {
-                var companyName = @"Back\slash's Operation";
-                _context.Customers.Add(new Customer
+            ExecuteWithStrategyInTransaction(
+                context =>
                 {
-                    CustomerID = "ESCAPETEST",
-                    CompanyName = companyName
+                    context.Customers.Add(new Customer
+                    {
+                        CustomerID = "ESCBCKSLINS",
+                        CompanyName = @"Back\\slash's Insert Operation"
+                    });
+                    
+                    context.SaveChanges();
+                },
+                context =>
+                {
+                    var customers = context.Customers.Where(x => x.CustomerID == "ESCBCKSLINS").ToList();
+                    Assert.Equal(1, customers.Count);
+                    Assert.True(customers[0].CompanyName == expected);
                 });
-                _context.SaveChanges();
-                var count = _context.Customers.Count(x => x.CompanyName == companyName);
-                Assert.Equal(1, count);
-            }
-        }
-
-        public virtual void Where_query_escapes_literal()
-        {
-            _context.Customers.Count(x => x.CompanyName == "B's Beverages");
-        }
-
-        public virtual void Where_query_escapes_parameter(string companyName)
-        {
-            _context.Customers.Count(x => x.CompanyName == companyName);
-        }
-
-        public virtual void Where_contains_query_escapes(params string[] companyNames)
-        {
-            _context.Customers.Count(x => companyNames.Contains(x.CompanyName));
         }
         
-        protected void SetSqlMode(string modes)
+        public virtual async Task Where_query_escapes_literal(bool isAsync, string expected)
         {
-            _context.Database.ExecuteSqlRaw("SET SESSION sql_mode = @p0", new MySqlParameter("@p0", modes) );
+            using (var context = CreateContext())
+            {
+                var customerParameterExpression = Expression.Parameter(typeof(Customer), "c");
+                var predicateExpression = Expression.Lambda<Func<Customer, bool>>(
+                    Expression.Equal(
+                        Expression.Property(
+                            customerParameterExpression,
+                            nameof(Customer.CompanyName)),
+                        Expression.Constant(expected)),
+                    customerParameterExpression);
+                
+                var query = context.Set<Customer>().Where(predicateExpression);
+
+                var customers = isAsync
+                    ? await query.ToListAsync()
+                    : query.ToList();
+
+                Assert.Equal(1, customers.Count);
+            }
+        }
+        /*
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual async Task Where_query_escapes_parameter(bool isAsync)
+        {
+            using (var context = CreateContext())
+            {
+                var companyName = @"Back\slash's Operation";
+
+                var query = context.Set<Customer>().Where(c => c.CompanyName == companyName);
+
+                var customers = isAsync
+                    ? await query.ToListAsync()
+                    : query.ToList();
+
+                Assert.Equal(1, customers.Count);
+            }
         }
 
-        protected void AssertBaseline(params string[] expected)
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual async Task Where_contains_query_escapes(bool isAsync)
         {
-            Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
+            using (var context = CreateContext())
+            {
+                var companyNames = new[]
+                {
+                    @"Back\slash's Operation",
+                    @"B's Beverages"
+                };
+
+                var query = context.Set<Customer>().Where(c => companyNames.Contains(c.CompanyName));
+
+                var customers = isAsync
+                    ? await query.ToListAsync()
+                    : query.ToList();
+
+                Assert.Equal(2, customers.Count);
+            }
+        }
+        */
+        protected void SetSqlMode(DbContext context, string mode)
+        {
+            context.Database.ExecuteSqlRaw("SET SESSION sql_mode = CONCAT(@@sql_mode, ',', @p0)", new MySqlParameter("@p0", mode));
         }
 
-        public void Dispose() => _context.Dispose();
+        protected NorthwindContext CreateContext() => CreateContext(Mode);
 
+        protected NorthwindContext CreateContext(string mode)
+        {
+            var context = Fixture.CreateContext();
+
+            if (mode != null)
+            {
+                SetSqlMode(context, mode);
+            }
+
+            return context;
+        }
+
+        protected virtual void ExecuteWithStrategyInTransaction(
+            Action<NorthwindContext> testOperation,
+            Action<NorthwindContext> nestedTestOperation1 = null,
+            Action<NorthwindContext> nestedTestOperation2 = null)
+        {
+            // Defer setting sql_mode to the point, where we enlisted in the current transaction.
+            void SetModeAndCallOperation(NorthwindContext context, Action<NorthwindContext> operation)
+            {
+                SetSqlMode(context, Mode);
+                operation?.Invoke(context);
+            }
+
+            TestHelpers.ExecuteWithStrategyInTransaction(
+                () => CreateContext(null),
+                UseTransaction,
+                c => SetModeAndCallOperation(c, testOperation),
+                c => SetModeAndCallOperation(c, nestedTestOperation1),
+                c => SetModeAndCallOperation(c, nestedTestOperation2));
+        }
+
+        protected virtual void UseTransaction(DatabaseFacade facade, IDbContextTransaction transaction)
+            => facade.UseTransaction(transaction.GetDbTransaction());
     }
 }

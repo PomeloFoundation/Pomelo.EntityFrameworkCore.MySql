@@ -131,26 +131,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             return base.VisitSqlBinary(sqlBinaryExpression);
         }
 
-        /* TODO: Investigate further and enable again. (3.0)
-        protected override Expression VisitSqlParameter(SqlParameterExpression sqlParameterExpression)
-        {
-            if (_options?.NoBackslashEscapes ?? false)
-            {
-                //instead of having MySqlConnector replace parameter placeholders with escaped values
-                //(causing "parameterized" queries to fail with NO_BACKSLASH_ESCAPES),
-                //directly insert the value with only replacing ' with ''
-                var isRegistered = ParameterValues.TryGetValue(sqlParameterExpression.Name, out var value);
-                if (isRegistered && value is string)
-                {
-                    _isParameterReplaced = true;
-                    return VisitConstant(Expression.Constant(value));
-                }
-            }
-
-            return base.VisitParameter(parameterExpression);
-        }
-        */
-
         public virtual Expression VisitMySqlRegexp(MySqlRegexpExpression mySqlRegexpExpression)
         {
             Check.NotNull(mySqlRegexpExpression, nameof(mySqlRegexpExpression));
