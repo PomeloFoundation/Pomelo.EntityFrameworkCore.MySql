@@ -28,6 +28,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
             AnsiCharSetInfo = copyFrom.AnsiCharSetInfo;
             UnicodeCharSetInfo = copyFrom.UnicodeCharSetInfo;
             NoBackslashEscapes = copyFrom.NoBackslashEscapes;
+            UpdateSqlModeOnOpen = copyFrom.UpdateSqlModeOnOpen;
         }
 
         /// <summary>
