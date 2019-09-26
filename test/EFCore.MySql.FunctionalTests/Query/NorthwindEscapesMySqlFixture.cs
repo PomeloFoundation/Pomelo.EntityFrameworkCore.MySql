@@ -6,6 +6,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
     public class NorthwindEscapesMySqlFixture<TModelCustomizer> : NorthwindQueryMySqlFixture<TModelCustomizer>
         where TModelCustomizer : IModelCustomizer, new()
     {
+        protected override string StoreName => base.StoreName + "Escapes";
+
         protected override void Seed(NorthwindContext context)
         {
             context.Set<Customer>()
