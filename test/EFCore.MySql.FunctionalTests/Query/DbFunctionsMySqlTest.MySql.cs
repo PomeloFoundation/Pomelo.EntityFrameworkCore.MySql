@@ -22,7 +22,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(YEAR, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
+WHERE (TIMESTAMPDIFF(YEAR, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0) AND TIMESTAMPDIFF(YEAR, `o`.`OrderDate`, CURRENT_TIMESTAMP()) IS NOT NULL");
             }
         }
 
@@ -35,10 +35,11 @@ WHERE TIMESTAMPDIFF(YEAR, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
                     .Count(c => EF.Functions.DateDiffMonth(c.OrderDate, DateTime.Now) == 0);
 
                 Assert.Equal(0, count);
+
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(MONTH, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
+WHERE (TIMESTAMPDIFF(MONTH, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0) AND TIMESTAMPDIFF(MONTH, `o`.`OrderDate`, CURRENT_TIMESTAMP()) IS NOT NULL");
             }
         }
 
@@ -51,10 +52,11 @@ WHERE TIMESTAMPDIFF(MONTH, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
                     .Count(c => EF.Functions.DateDiffDay(c.OrderDate, DateTime.Now) == 0);
 
                 Assert.Equal(0, count);
+
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(DAY, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
+WHERE (TIMESTAMPDIFF(DAY, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0) AND TIMESTAMPDIFF(DAY, `o`.`OrderDate`, CURRENT_TIMESTAMP()) IS NOT NULL");
             }
         }
 
@@ -67,10 +69,11 @@ WHERE TIMESTAMPDIFF(DAY, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
                     .Count(o => EF.Functions.DateDiffHour(o.OrderDate, DateTime.Now) == 0);
 
                 Assert.Equal(0, count);
+
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(HOUR, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
+WHERE (TIMESTAMPDIFF(HOUR, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0) AND TIMESTAMPDIFF(HOUR, `o`.`OrderDate`, CURRENT_TIMESTAMP()) IS NOT NULL");
             }
         }
 
@@ -83,10 +86,11 @@ WHERE TIMESTAMPDIFF(HOUR, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
                     .Count(c => EF.Functions.DateDiffMinute(c.OrderDate, DateTime.Now) == 0);
 
                 Assert.Equal(0, count);
+
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(MINUTE, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
+WHERE (TIMESTAMPDIFF(MINUTE, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0) AND TIMESTAMPDIFF(MINUTE, `o`.`OrderDate`, CURRENT_TIMESTAMP()) IS NOT NULL");
             }
         }
 
@@ -99,10 +103,11 @@ WHERE TIMESTAMPDIFF(MINUTE, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
                     .Count(o => EF.Functions.DateDiffSecond(o.OrderDate, DateTime.Now) == 0);
 
                 Assert.Equal(0, count);
+
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(SECOND, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
+WHERE (TIMESTAMPDIFF(SECOND, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0) AND TIMESTAMPDIFF(SECOND, `o`.`OrderDate`, CURRENT_TIMESTAMP()) IS NOT NULL");
             }
         }
 
@@ -115,10 +120,11 @@ WHERE TIMESTAMPDIFF(SECOND, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
                     .Count(o => EF.Functions.DateDiffMicrosecond(DateTime.Now, DateTime.Now.AddSeconds(1)) == 0);
 
                 Assert.Equal(0, count);
+
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(), DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 1.0 second)) = 0");
+WHERE TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(), DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL CAST(1.0 AS signed) second)) = 0");
             }
         }
 
