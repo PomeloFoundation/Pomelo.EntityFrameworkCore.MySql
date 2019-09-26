@@ -8,7 +8,7 @@
       Rename this file "development.props".
 
       The EFCore assemblies are being compiled with an AssemblyVersion of
-      "42.42.42.424242" by default. To not get any compilation errors
+      "42.42.42.42" by default. To not get any compilation errors
       for the EFCore.MySql.IntegrationTests project, which uses
       Microsoft.AspNetCore.Identity.EntityFrameworkCore, which references
       it's own version of EFCore, you have to make sure, that your local
