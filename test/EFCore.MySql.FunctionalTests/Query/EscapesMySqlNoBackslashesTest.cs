@@ -20,10 +20,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
         }
 
-        [ConditionalFact]
-        public virtual void Input_query_escapes_parameter()
+        public override void Input_query_escapes_parameter()
         {
-            base.Input_query_escapes_parameter(@"Back\\slash's Insert Operation");
+            base.Input_query_escapes_parameter();
  
             AssertSql(
                 @"@p0='NO_BACKSLASH_ESCAPES' (Nullable = false)
@@ -43,7 +42,7 @@ SET SESSION sql_mode = CONCAT(@@sql_mode, ',', @p0)",
 @p10='' (Size = 4000)
 
 INSERT INTO `Customers` (`CustomerID`, `Address`, `City`, `CompanyName`, `ContactName`, `ContactTitle`, `Country`, `Fax`, `Phone`, `PostalCode`, `Region`)
-VALUES ('ESCBCKSLINS', NULL, NULL, 'Back\slash''s Insert Operation', NULL, NULL, NULL, NULL, NULL, NULL, NULL);",
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10);",
                 //
                 @"@p0='NO_BACKSLASH_ESCAPES' (Nullable = false)
 
@@ -51,31 +50,35 @@ SET SESSION sql_mode = CONCAT(@@sql_mode, ',', @p0)",
                 //
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`CompanyName` = 'Back\slash''s Insert Operation') AND `c`.`CompanyName` IS NOT NULL",
-                //
-                @"@p0='NO_BACKSLASH_ESCAPES' (Nullable = false)
-
-SET SESSION sql_mode = CONCAT(@@sql_mode, ',', @p0)");
+WHERE `c`.`CustomerID` = 'ESCBCKSLINS'");
         }
         
-        public virtual async Task Where_query_escapes_literal(bool isAsync)
+        public override async Task Where_query_escapes_literal(bool isAsync)
         {
-            await base.Where_query_escapes_literal(isAsync, @"Back\slash's Operation");
+            await base.Where_query_escapes_literal(isAsync);
  
             AssertSql(
-                @"SELECT COUNT(*)
-FROM `Customers` AS `x`
-WHERE `x`.`CompanyName` = 'B''s Beverages'");
+                @"@p0='NO_BACKSLASH_ESCAPES' (Nullable = false)
+
+SET SESSION sql_mode = CONCAT(@@sql_mode, ',', @p0)",
+                //
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE (`c`.`CompanyName` = 'Back\\slash''s Operation') AND `c`.`CompanyName` IS NOT NULL");
         }
-        /*
+        
         public override async Task Where_query_escapes_parameter(bool isAsync)
         {
             await base.Where_query_escapes_parameter(isAsync);
 
             AssertSql(
+                @"@p0='NO_BACKSLASH_ESCAPES' (Nullable = false)
+
+SET SESSION sql_mode = CONCAT(@@sql_mode, ',', @p0)",
+                //
                 @"@__companyName_0='Back\slash's Operation' (Size = 4000)
 
-SELECT COUNT(*)
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE ((`c`.`CompanyName` = @__companyName_0) AND (`c`.`CompanyName` IS NOT NULL AND @__companyName_0 IS NOT NULL)) OR (`c`.`CompanyName` IS NULL AND @__companyName_0 IS NULL)");
         }
@@ -85,10 +88,13 @@ WHERE ((`c`.`CompanyName` = @__companyName_0) AND (`c`.`CompanyName` IS NOT NULL
             await base.Where_contains_query_escapes(isAsync);
 
             AssertSql(
-                @"SELECT COUNT(*)
-FROM `Customers` AS `x`
-WHERE `x`.`CompanyName` IN ('Back\slash''s Operation', 'B''s Beverages')");
+                @"@p0='NO_BACKSLASH_ESCAPES' (Nullable = false)
+
+SET SESSION sql_mode = CONCAT(@@sql_mode, ',', @p0)",
+                //
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE `c`.`CompanyName` IN ('Back\\slash''s Operation', 'B''s Beverages')");
         }
-        */
     }
 }

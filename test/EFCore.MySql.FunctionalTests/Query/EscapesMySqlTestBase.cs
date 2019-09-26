@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
@@ -11,7 +9,6 @@ using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySql.Data.MySqlClient;
 using Xunit;
-using Expression = System.Linq.Expressions.Expression;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -25,7 +22,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
         protected virtual string Mode => null;
 
-        public virtual void Input_query_escapes_parameter(string expected)
+        [ConditionalFact]
+        public virtual void Input_query_escapes_parameter()
         {
             ExecuteWithStrategyInTransaction(
                 context =>
@@ -33,7 +31,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     context.Customers.Add(new Customer
                     {
                         CustomerID = "ESCBCKSLINS",
-                        CompanyName = @"Back\\slash's Insert Operation"
+                        CompanyName = @"Back\slash's Insert Operation"
                     });
                     
                     context.SaveChanges();
@@ -42,24 +40,30 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 {
                     var customers = context.Customers.Where(x => x.CustomerID == "ESCBCKSLINS").ToList();
                     Assert.Equal(1, customers.Count);
-                    Assert.True(customers[0].CompanyName == expected);
+                    Assert.True(customers[0].CompanyName == @"Back\slash's Insert Operation");
                 });
         }
-        
-        public virtual async Task Where_query_escapes_literal(bool isAsync, string expected)
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual async Task Where_query_escapes_literal(bool isAsync)
         {
             using (var context = CreateContext())
             {
+                /*
                 var customerParameterExpression = Expression.Parameter(typeof(Customer), "c");
                 var predicateExpression = Expression.Lambda<Func<Customer, bool>>(
                     Expression.Equal(
                         Expression.Property(
                             customerParameterExpression,
                             nameof(Customer.CompanyName)),
-                        Expression.Constant(expected)),
+                        Expression.Constant(@"Back\slash's Insert Operation")),
                     customerParameterExpression);
                 
                 var query = context.Set<Customer>().Where(predicateExpression);
+                */
+
+                var query = context.Set<Customer>().Where(c => c.CompanyName == @"Back\slash's Operation");
 
                 var customers = isAsync
                     ? await query.ToListAsync()
@@ -68,7 +72,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 Assert.Equal(1, customers.Count);
             }
         }
-        /*
+        
         [ConditionalTheory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_query_escapes_parameter(bool isAsync)
@@ -108,8 +112,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 Assert.Equal(2, customers.Count);
             }
         }
-        */
-        protected void SetSqlMode(DbContext context, string mode)
+        
+        protected void AddSqlMode(DbContext context, string mode)
         {
             context.Database.ExecuteSqlRaw("SET SESSION sql_mode = CONCAT(@@sql_mode, ',', @p0)", new MySqlParameter("@p0", mode));
         }
@@ -122,7 +126,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
             if (mode != null)
             {
-                SetSqlMode(context, mode);
+                AddSqlMode(context, mode);
             }
 
             return context;
@@ -136,7 +140,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             // Defer setting sql_mode to the point, where we enlisted in the current transaction.
             void SetModeAndCallOperation(NorthwindContext context, Action<NorthwindContext> operation)
             {
-                SetSqlMode(context, Mode);
+                if (Mode != null)
+                {
+                    AddSqlMode(context, Mode);
+                }
+
                 operation?.Invoke(context);
             }
 
