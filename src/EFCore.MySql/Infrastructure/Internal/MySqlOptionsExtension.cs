@@ -77,6 +77,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
+        public bool UpdateSqlModeOnOpen { get; private set; }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public MySqlOptionsExtension WithServerVersion(ServerVersion serverVersion)
         {
             var clone = (MySqlOptionsExtension)Clone();
@@ -133,6 +139,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         {
             var clone = (MySqlOptionsExtension)Clone();
             clone.NoBackslashEscapes = true;
+            return clone;
+        }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public MySqlOptionsExtension SetSqlModeOnOpen(bool enabled)
+        {
+            var clone = (MySqlOptionsExtension)Clone();
+            clone.UpdateSqlModeOnOpen = enabled;
             return clone;
         }
 

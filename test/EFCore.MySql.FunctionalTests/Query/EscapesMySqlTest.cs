@@ -7,7 +7,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class EscapesMySqlTest : EscapesMySqlTestBase<NorthwindEscapesMySqlFixture<NoopModelCustomizer>>
     {
-        public EscapesMySqlTest(NorthwindEscapesMySqlFixture<NoopModelCustomizer> fixture, ITestOutputHelper testOutputHelper) : base(fixture)
+        public EscapesMySqlTest(NorthwindEscapesMySqlFixture<NoopModelCustomizer> fixture, ITestOutputHelper testOutputHelper)
+            : base(fixture)
         {
             fixture.TestSqlLoggerFactory.Clear();
             //fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
@@ -18,6 +19,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
         }
 
+        [ConditionalFact]
         public override void Input_query_escapes_parameter()
         {
             base.Input_query_escapes_parameter();
@@ -43,6 +45,7 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'ESCBCKSLINS'");
         }
 
+        [ConditionalTheory]
         public override async Task Where_query_escapes_literal(bool isAsync)
         {
             await base.Where_query_escapes_literal(isAsync);
@@ -53,6 +56,7 @@ FROM `Customers` AS `c`
 WHERE (`c`.`CompanyName` = 'Back\\slash''s Operation') AND `c`.`CompanyName` IS NOT NULL");
         }
         
+        [ConditionalTheory]
         public override async Task Where_query_escapes_parameter(bool isAsync)
         {
             await base.Where_query_escapes_parameter(isAsync);
@@ -65,6 +69,7 @@ FROM `Customers` AS `c`
 WHERE ((`c`.`CompanyName` = @__companyName_0) AND (`c`.`CompanyName` IS NOT NULL AND @__companyName_0 IS NOT NULL)) OR (`c`.`CompanyName` IS NULL AND @__companyName_0 IS NULL)");
         }
 
+        [ConditionalTheory]
         public override async Task Where_contains_query_escapes(bool isAsync)
         {
             await base.Where_contains_query_escapes(isAsync);

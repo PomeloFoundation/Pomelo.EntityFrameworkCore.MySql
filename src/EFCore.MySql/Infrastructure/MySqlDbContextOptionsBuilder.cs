@@ -66,8 +66,23 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
         ///     This applies to both constant and parameter values (i. e. user input, potentially).
         ///     Use this option if SQL mode NO_BACKSLASH_ESCAPES is guaranteed to be active.
         /// </summary>
-        public virtual MySqlDbContextOptionsBuilder DisableBackslashEscaping() =>
-            WithOption(e => e.DisableBackslashEscaping());
+        public virtual MySqlDbContextOptionsBuilder DisableBackslashEscaping(bool? setSqlModeOnOpen = true)
+        {
+            var builder = WithOption(e => e.DisableBackslashEscaping());
+
+            if (setSqlModeOnOpen.HasValue)
+            {
+                builder = builder.WithOption(e => e.SetSqlModeOnOpen(setSqlModeOnOpen.Value));
+            }
+
+            return builder;
+        }
+
+        /// <summary>
+        ///     Configures the context to use the default retrying <see cref="IExecutionStrategy" />.
+        /// </summary>
+        public virtual MySqlDbContextOptionsBuilder SetSqlModeOnOpen(bool enabled)
+            => WithOption(e => e.SetSqlModeOnOpen(enabled));
 
         /// <summary>
         ///     Configures the context to use the default retrying <see cref="IExecutionStrategy" />.

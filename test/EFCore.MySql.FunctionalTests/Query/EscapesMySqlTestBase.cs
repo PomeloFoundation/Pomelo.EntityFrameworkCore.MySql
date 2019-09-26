@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using MySql.Data.MySqlClient;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
@@ -50,19 +49,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             using (var context = CreateContext())
             {
-                /*
-                var customerParameterExpression = Expression.Parameter(typeof(Customer), "c");
-                var predicateExpression = Expression.Lambda<Func<Customer, bool>>(
-                    Expression.Equal(
-                        Expression.Property(
-                            customerParameterExpression,
-                            nameof(Customer.CompanyName)),
-                        Expression.Constant(@"Back\slash's Insert Operation")),
-                    customerParameterExpression);
-                
-                var query = context.Set<Customer>().Where(predicateExpression);
-                */
-
                 var query = context.Set<Customer>().Where(c => c.CompanyName == @"Back\slash's Operation");
 
                 var customers = isAsync
@@ -112,48 +98,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 Assert.Equal(2, customers.Count);
             }
         }
-        
-        protected void AddSqlMode(DbContext context, string mode)
-        {
-            context.Database.ExecuteSqlRaw("SET SESSION sql_mode = CONCAT(@@sql_mode, ',', @p0)", new MySqlParameter("@p0", mode));
-        }
 
-        protected NorthwindContext CreateContext() => CreateContext(Mode);
-
-        protected NorthwindContext CreateContext(string mode)
-        {
-            var context = Fixture.CreateContext();
-
-            if (mode != null)
-            {
-                AddSqlMode(context, mode);
-            }
-
-            return context;
-        }
+        protected NorthwindContext CreateContext() => Fixture.CreateContext();
 
         protected virtual void ExecuteWithStrategyInTransaction(
             Action<NorthwindContext> testOperation,
             Action<NorthwindContext> nestedTestOperation1 = null,
             Action<NorthwindContext> nestedTestOperation2 = null)
         {
-            // Defer setting sql_mode to the point, where we enlisted in the current transaction.
-            void SetModeAndCallOperation(NorthwindContext context, Action<NorthwindContext> operation)
-            {
-                if (Mode != null)
-                {
-                    AddSqlMode(context, Mode);
-                }
-
-                operation?.Invoke(context);
-            }
-
             TestHelpers.ExecuteWithStrategyInTransaction(
-                () => CreateContext(null),
+                CreateContext,
                 UseTransaction,
-                c => SetModeAndCallOperation(c, testOperation),
-                c => SetModeAndCallOperation(c, nestedTestOperation1),
-                c => SetModeAndCallOperation(c, nestedTestOperation2));
+                testOperation,
+                nestedTestOperation1,
+                nestedTestOperation2);
         }
 
         protected virtual void UseTransaction(DatabaseFacade facade, IDbContextTransaction transaction)

@@ -2,6 +2,7 @@
 using System.Data.Common;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -13,6 +14,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
     public class MySqlTestStore : RelationalTestStore
     {
         private const int DefaultCommandTimeout = 600;
+        private const string NoBackslashEscapes = "NO_BACKSLASH_ESCAPES";
 
         private readonly bool _useConnectionString;
         private readonly bool _noBackslashEscapes;
@@ -21,10 +23,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         protected override string CloseDelimeter => "`";
 
         public static MySqlTestStore GetOrCreate(string name, bool useConnectionString = false, bool noBackslashEscapes = false)
-            => new MySqlTestStore(name, useConnectionString: useConnectionString, noBackslashEscapes: noBackslashEscapes);
+            => new MySqlTestStore(name, useConnectionString: useConnectionString, shared: true, noBackslashEscapes: noBackslashEscapes);
 
         public static MySqlTestStore GetOrCreateInitialized(string name)
-            => new MySqlTestStore(name).InitializeMySql(null, (Func<DbContext>)null, null);
+            => new MySqlTestStore(name, shared: true).InitializeMySql(null, (Func<DbContext>)null, null);
 
         public static MySqlTestStore Create(string name, bool useConnectionString = false, bool noBackslashEscapes = false)
             => new MySqlTestStore(name, useConnectionString: useConnectionString, shared: false, noBackslashEscapes: noBackslashEscapes);
@@ -39,12 +41,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             _useConnectionString = useConnectionString;
             _noBackslashEscapes = noBackslashEscapes;
 
-            ConnectionString = new MySqlConnectionStringBuilder(_lazyConfig.Value["Data:ConnectionString"])
+            var builder = new MySqlConnectionStringBuilder(_lazyConfig.Value["Data:ConnectionString"])
             {
                 Database = name,
                 DefaultCommandTimeout = (uint)GetCommandTimeout(),
-            }.ToString();
+            };
 
+            if (_noBackslashEscapes)
+            {
+                builder.NoBackslashEscapes = _noBackslashEscapes;
+            }
+
+            ConnectionString = builder.ToString();
             Connection = new MySqlConnection(ConnectionString);
         }
 
@@ -57,7 +65,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 
         public override DbContextOptionsBuilder AddProviderOptions(DbContextOptionsBuilder builder)
             => _useConnectionString
-                ? builder.UseMySql(ConnectionString,x => AddOptions(x, _noBackslashEscapes))
+                ? builder.UseMySql(ConnectionString, x => AddOptions(x, _noBackslashEscapes))
                 : builder.UseMySql(Connection, x => AddOptions(x, _noBackslashEscapes));
 
         public static void AddOptions(MySqlDbContextOptionsBuilder builder)
@@ -115,6 +123,26 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             }
         }
 
+        public override void OpenConnection()
+        {
+            base.OpenConnection();
+
+            if (_noBackslashEscapes)
+            {
+                AppendToSqlMode(NoBackslashEscapes, (MySqlConnection)Connection);
+            }
+        }
+
+        public override async Task OpenConnectionAsync()
+        {
+            await base.OpenConnectionAsync();
+
+            if (_noBackslashEscapes)
+            {
+                await AppendToSqlModeAsync(NoBackslashEscapes, (MySqlConnection)Connection);
+            }
+        }
+
         private DbCommand CreateCommand(MySqlConnection connection, string commandText, object[] parameters)
         {
             var command = connection.CreateCommand();
@@ -128,6 +156,26 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             }
 
             return command;
+        }
+        
+        public virtual void AppendToSqlMode(string mode, MySqlConnection connection)
+        {
+            var command = connection.CreateCommand();
+
+            command.CommandText = @"SET SESSION sql_mode = CONCAT(@@sql_mode, ',', @p0)";
+            command.Parameters.Add(new MySqlParameter("@p0", mode));
+
+            command.ExecuteNonQuery();
+        }
+
+        public virtual Task AppendToSqlModeAsync(string mode, MySqlConnection connection)
+        {
+            var command = connection.CreateCommand();
+
+            command.CommandText = @"SET SESSION sql_mode = CONCAT(@@sql_mode, ',', @p0)";
+            command.Parameters.Add(new MySqlParameter("@p0", mode));
+
+            return command.ExecuteNonQueryAsync();
         }
     }
 }
