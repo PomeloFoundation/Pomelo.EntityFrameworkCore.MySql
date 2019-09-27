@@ -4,8 +4,8 @@ cd ../
 
 set -e
 rm -f Migrations/*.cs
-dotnet ef database drop -f
-dotnet ef migrations add initial
+./scripts/dotnet-ef.sh database drop -f
+./scripts/dotnet-ef.sh migrations add initial
 
 set +e
 # add using System.Collections.Generic to the migration files
@@ -17,4 +17,4 @@ find ./Migrations -name "*.cs" -type f | while read -r file; do
 done
 
 set -e
-dotnet ef database update
+./scripts/dotnet-ef.sh database update
