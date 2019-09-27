@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>MySQL provider for Entity Framework Core</Description>
@@ -6,11 +6,8 @@
     <MinClientVersion>3.6</MinClientVersion>
     <AssemblyName>Pomelo.EntityFrameworkCore.MySql</AssemblyName>
     <RootNamespace>Pomelo.EntityFrameworkCore.MySql</RootNamespace>
-    <PackageTags>Entity Framework Core;entity-framework-core;MySQL;EF;ORM;Data</PackageTags>
-    <PackageIconUrl>https://avatars2.githubusercontent.com/u/19828814?v=3</PackageIconUrl>
-    <PackageProjectUrl>https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql</PackageProjectUrl>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>git://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql</RepositoryUrl>
+    <IsPackable>true</IsPackable>
+    <DeterministicSourcePaths>false</DeterministicSourcePaths>
   </PropertyGroup>
 
   <ItemGroup>

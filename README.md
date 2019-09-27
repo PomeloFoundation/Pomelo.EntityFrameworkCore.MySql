@@ -17,7 +17,7 @@ To use nightly builds from our MyGet feed, add a `NuGet.config` file in your sol
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
   <packageSources>
-    <add key="Pomelo" value="https://www.myget.org/F/pomelo/api/v3/index.json" />
+    <add key="Pomelo" value="https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-public/nuget/v3/index.json" />
     <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
   </packageSources>
 </configuration>
