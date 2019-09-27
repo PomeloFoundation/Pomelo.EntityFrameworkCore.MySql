@@ -147,10 +147,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public MySqlOptionsExtension SetSqlModeOnOpen(bool enabled)
+        public MySqlOptionsExtension SetSqlModeOnOpen()
         {
             var clone = (MySqlOptionsExtension)Clone();
-            clone.UpdateSqlModeOnOpen = enabled;
+            clone.UpdateSqlModeOnOpen = true;
             return clone;
         }
 

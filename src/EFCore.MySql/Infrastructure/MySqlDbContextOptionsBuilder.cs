@@ -62,27 +62,34 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
             => ExecutionStrategy(c => new MySqlRetryingExecutionStrategy(c, maxRetryCount));
 
         /// <summary>
-        ///     Configures string escaping in SQL query generation to ignore backslashes.
+        ///     Configures string escaping in SQL query generation to ignore backslashes, and assumes
+        ///     that `sql_mode` has been set to `NO_BACKSLASH_ESCAPES`.
         ///     This applies to both constant and parameter values (i. e. user input, potentially).
-        ///     Use this option if SQL mode NO_BACKSLASH_ESCAPES is guaranteed to be active.
         /// </summary>
-        public virtual MySqlDbContextOptionsBuilder DisableBackslashEscaping(bool? setSqlModeOnOpen = true)
+        /// <param name="setSqlModeOnOpen">When `true`, enables the <see cref="SetSqlModeOnOpen" /> option,
+        /// which sets `sql_mode` to `NO_BACKSLASH_ESCAPES` automatically, when a connection has been
+        /// opened. This is the default.
+        /// When `false`, does not change the <see cref="SetSqlModeOnOpen" /> option, when calling this method.</param>
+        public virtual MySqlDbContextOptionsBuilder DisableBackslashEscaping(bool setSqlModeOnOpen = true)
         {
             var builder = WithOption(e => e.DisableBackslashEscaping());
 
-            if (setSqlModeOnOpen.HasValue)
+            if (setSqlModeOnOpen)
             {
-                builder = builder.WithOption(e => e.SetSqlModeOnOpen(setSqlModeOnOpen.Value));
+                builder = builder.WithOption(e => e.SetSqlModeOnOpen());
             }
 
             return builder;
         }
 
         /// <summary>
-        ///     Configures the context to use the default retrying <see cref="IExecutionStrategy" />.
+        ///     When `true`, implicitly executes a `SET SESSION sql_mode` statement after opening
+        ///     a connection to the database server, adding the modes enabled by other options.
+        ///     When `false`, the `sql_mode` is not being set by the provider and has to be manually
+        ///     handled by the caller, to synchronize it with other options that have been set.
         /// </summary>
-        public virtual MySqlDbContextOptionsBuilder SetSqlModeOnOpen(bool enabled)
-            => WithOption(e => e.SetSqlModeOnOpen(enabled));
+        public virtual MySqlDbContextOptionsBuilder SetSqlModeOnOpen()
+            => WithOption(e => e.SetSqlModeOnOpen());
 
         /// <summary>
         ///     Configures the context to use the default retrying <see cref="IExecutionStrategy" />.
