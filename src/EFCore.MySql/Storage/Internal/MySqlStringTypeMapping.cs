@@ -102,20 +102,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 : -1;
         }
 
-        // eventually Unicode strings can be escaped with U'string'
-        // see https://dev.mysql.com/worklog/task/?id=3529
-        // until this change is made in MySQL, there is no way to escape unicode strings
-        /// <summary>
-        ///     Generates the SQL representation of a literal value.
-        /// </summary>
-        /// <param name="value">The literal value.</param>
-        /// <returns>
-        ///     The generated string.
-        /// </returns>
         protected override string GenerateNonNullSqlLiteral(object value)
-            => IsUnicode
-                ? $"'{EscapeSqlLiteral((string)value)}'" // Interpolation okay; strings
-                : $"'{EscapeSqlLiteral((string)value)}'";
+            => $"'{EscapeSqlLiteral((string)value)}'";
 
         protected override string EscapeSqlLiteral(string literal)
             => EscapeBackslashes(base.EscapeSqlLiteral(literal));

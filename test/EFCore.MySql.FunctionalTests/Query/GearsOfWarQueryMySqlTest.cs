@@ -1,11 +1,6 @@
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.EntityFrameworkCore.TestModels.GearsOfWarModel;
-using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
-using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Xunit;
 using Xunit.Abstractions;
@@ -168,6 +163,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.GetValueOrDefault_on_DateTimeOffset(isAsync);
         }
 
+        [ConditionalTheory(Skip = "Issue #819")]
+        [MemberData("IsAsyncData")]
+        public override Task DateTimeOffset_Contains_Less_than_Greater_than(bool isAsync)
+        {
+            return base.DateTimeOffset_Contains_Less_than_Greater_than(isAsync);
+        }
+
         [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString)]
         [MemberData("IsAsyncData")]
         public override Task Correlated_collections_inner_subquery_predicate_references_outer_qsre(bool isAsync)
@@ -189,11 +191,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Outer_parameter_in_join_key_inner_and_outer(isAsync);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString)]
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString, Skip = "https://bugs.mysql.com/bug.php?id=96946")]
         [MemberData("IsAsyncData")]
         public override Task Outer_parameter_in_group_join_with_DefaultIfEmpty(bool isAsync)
         {
             return base.Outer_parameter_in_group_join_with_DefaultIfEmpty(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString, Skip = "https://bugs.mysql.com/bug.php?id=96946")]
+        [MemberData("IsAsyncData")]
+        public override Task Outer_parameter_in_join_key(bool isAsync)
+        {
+            return base.Outer_parameter_in_join_key(isAsync);
         }
 
         [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString)]
@@ -208,6 +217,48 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         public override Task Correlated_collections_basic_projecting_constant(bool isAsync)
         {
             return base.Correlated_collections_basic_projecting_constant(isAsync);
+        }
+
+        [ConditionalTheory(Skip = "https://github.com/mysql-net/MySqlConnector/pull/707")]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Optional_Navigation_Null_Coalesce_To_Clr_Type(bool isAsync)
+        {
+            return base.Optional_Navigation_Null_Coalesce_To_Clr_Type(isAsync);
+        }
+
+        [ConditionalTheory(Skip = "https://github.com/mysql-net/MySqlConnector/pull/707")]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Projecting_nullable_bool_in_conditional_works(bool isAsync)
+        {
+            return base.Projecting_nullable_bool_in_conditional_works(isAsync);
+        }
+
+        [ConditionalTheory(Skip = "https://github.com/mysql-net/MySqlConnector/issues/708")]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Select_subquery_boolean(bool isAsync)
+        {
+            return base.Select_subquery_boolean(isAsync);
+        }
+
+        [ConditionalTheory(Skip = "https://github.com/mysql-net/MySqlConnector/issues/708")]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Select_subquery_boolean_with_pushdown(bool isAsync)
+        {
+            return base.Select_subquery_boolean_with_pushdown(isAsync);
+        }
+
+        [ConditionalTheory(Skip = "MySQL does not support LIMIT with a parameterized argument, unless the statement was prepared. The argument needs to be a numeric constant")]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Take_without_orderby_followed_by_orderBy_is_pushed_down1(bool isAsync)
+        {
+            return base.Take_without_orderby_followed_by_orderBy_is_pushed_down1(isAsync);
+        }
+
+        [ConditionalTheory(Skip = "MySQL does not support LIMIT with a parameterized argument, unless the statement was prepared. The argument needs to be a numeric constant")]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Take_without_orderby_followed_by_orderBy_is_pushed_down2(bool isAsync)
+        {
+            return base.Take_without_orderby_followed_by_orderBy_is_pushed_down2(isAsync);
         }
     }
 }

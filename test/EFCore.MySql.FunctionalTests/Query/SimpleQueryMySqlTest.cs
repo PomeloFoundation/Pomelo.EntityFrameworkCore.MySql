@@ -33,7 +33,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 @"@__p_0='10'
 @__p_1='5'
 
-SELECT `t`.*
+SELECT `t`.`CustomerID`, `t`.`Address`, `t`.`City`, `t`.`CompanyName`, `t`.`ContactName`, `t`.`ContactTitle`, `t`.`Country`, `t`.`Fax`, `t`.`Phone`, `t`.`PostalCode`, `t`.`Region`
 FROM (
     SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
     FROM `Customers` AS `c`
@@ -177,7 +177,7 @@ WHERE (EXTRACT(microsecond FROM `o`.`OrderDate`)) DIV (1000) = 88");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` LIKE CONCAT('M', '%') AND (LEFT(`c`.`ContactName`, CHAR_LENGTH('M')) = 'M')");
+WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE 'M%')");
         }
 
         public override async Task String_StartsWith_Identity(bool isAsync)
@@ -187,7 +187,7 @@ WHERE `c`.`ContactName` LIKE CONCAT('M', '%') AND (LEFT(`c`.`ContactName`, CHAR_
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, '%') AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`)) OR (`c`.`ContactName` = '')");
+WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, '%')) AND (((LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`) AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NOT NULL AND `c`.`ContactName` IS NOT NULL)) OR (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NULL AND `c`.`ContactName` IS NULL)))))");
         }
 
         public override async Task String_StartsWith_Column(bool isAsync)
@@ -197,7 +197,7 @@ WHERE (`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, '%') AND (LEFT(`c`.`Cont
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, '%') AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`)) OR (`c`.`ContactName` = '')");
+WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, '%')) AND (((LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`) AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NOT NULL AND `c`.`ContactName` IS NOT NULL)) OR (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NULL AND `c`.`ContactName` IS NULL)))))");
         }
 
         public override async Task String_StartsWith_MethodCall(bool isAsync)
@@ -205,11 +205,9 @@ WHERE (`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, '%') AND (LEFT(`c`.`Cont
             await base.String_StartsWith_MethodCall(isAsync);
 
             AssertSql(
-                @"@__LocalMethod1_0='M' (Size = 4000)
-
-SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` LIKE CONCAT(@__LocalMethod1_0, '%') AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(@__LocalMethod1_0)) = @__LocalMethod1_0)) OR (@__LocalMethod1_0 = '')");
+WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE 'M%')");
         }
 
         public override async Task String_EndsWith_Literal(bool isAsync)
@@ -219,7 +217,7 @@ WHERE (`c`.`ContactName` LIKE CONCAT(@__LocalMethod1_0, '%') AND (LEFT(`c`.`Cont
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE RIGHT(`c`.`ContactName`, CHAR_LENGTH('b')) = 'b'");
+WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE '%b')");
         }
 
         public override async Task String_EndsWith_Identity(bool isAsync)
@@ -229,7 +227,7 @@ WHERE RIGHT(`c`.`ContactName`, CHAR_LENGTH('b')) = 'b'");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`) OR (`c`.`ContactName` = '')");
+WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND (((RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`) AND (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NOT NULL AND `c`.`ContactName` IS NOT NULL)) OR (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NULL AND `c`.`ContactName` IS NULL))))");
         }
 
         public override async Task String_EndsWith_Column(bool isAsync)
@@ -239,7 +237,7 @@ WHERE (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactNa
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`) OR (`c`.`ContactName` = '')");
+WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND (((RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`) AND (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NOT NULL AND `c`.`ContactName` IS NOT NULL)) OR (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NULL AND `c`.`ContactName` IS NULL))))");
         }
 
         public override async Task String_EndsWith_MethodCall(bool isAsync)
@@ -247,11 +245,9 @@ WHERE (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactNa
             await base.String_EndsWith_MethodCall(isAsync);
 
             AssertSql(
-                @"@__LocalMethod2_0='m' (Size = 4000)
-
-SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (RIGHT(`c`.`ContactName`, CHAR_LENGTH(@__LocalMethod2_0)) = @__LocalMethod2_0) OR (@__LocalMethod2_0 = '')");
+WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE '%m')");
         }
 
         public override async Task String_Contains_Literal(bool isAsync)
@@ -271,7 +267,7 @@ WHERE LOCATE(BINARY 'M', `c`.`ContactName`) > 0");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LOCATE(BINARY `c`.`ContactName`, `c`.`ContactName`) > 0) OR (`c`.`ContactName` = '')");
+WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (LOCATE(BINARY `c`.`ContactName`, `c`.`ContactName`) > 0)");
         }
 
         public override async Task String_Contains_Column(bool isAsync)
@@ -281,7 +277,7 @@ WHERE (LOCATE(BINARY `c`.`ContactName`, `c`.`ContactName`) > 0) OR (`c`.`Contact
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LOCATE(BINARY `c`.`ContactName`, `c`.`ContactName`) > 0) OR (`c`.`ContactName` = '')");
+WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (LOCATE(BINARY `c`.`ContactName`, `c`.`ContactName`) > 0)");
         }
 
         public override async Task String_Contains_MethodCall(bool isAsync)
@@ -289,11 +285,9 @@ WHERE (LOCATE(BINARY `c`.`ContactName`, `c`.`ContactName`) > 0) OR (`c`.`Contact
             await base.String_Contains_MethodCall(isAsync);
 
             AssertSql(
-                @"@__LocalMethod1_0='M' (Size = 4000)
-
-SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LOCATE(BINARY @__LocalMethod1_0, `c`.`ContactName`) > 0) OR (@__LocalMethod1_0 = '')");
+WHERE LOCATE(BINARY 'M', `c`.`ContactName`) > 0");
         }
 
         public override async Task IsNullOrWhiteSpace_in_predicate(bool isAsync)
@@ -330,7 +324,7 @@ WHERE ((LOCATE('Sea', `c`.`City`) - 1) <> -1) OR LOCATE('Sea', `c`.`City`) - 1 I
             await base.Indexof_with_emptystring(isAsync);
 
             AssertSql(
-                @"SELECT GREATEST(LOCATE('', `c`.`ContactName`) - 1, 0)
+                @"SELECT LOCATE('', `c`.`ContactName`) - 1
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'ALFKI'");
         }
@@ -370,7 +364,7 @@ WHERE (SUBSTRING(`c`.`City`, 1 + 1, 2) = 'ea') AND SUBSTRING(`c`.`City`, 1 + 1, 
             await base.Substring_with_zero_startindex(isAsync);
 
             AssertSql(
-                @"SELECT SUBSTRING(`c`.`ContactName`, 1, 3)
+                @"SELECT SUBSTRING(`c`.`ContactName`, 0 + 1, 3)
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'ALFKI'");
         }
@@ -380,7 +374,7 @@ WHERE `c`.`CustomerID` = 'ALFKI'");
             await base.Substring_with_constant(isAsync);
 
             AssertSql(
-                @"SELECT SUBSTRING(`c`.`ContactName`, 2, 3)
+                @"SELECT SUBSTRING(`c`.`ContactName`, 1 + 1, 3)
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'ALFKI'");
         }
@@ -402,7 +396,7 @@ WHERE `c`.`CustomerID` = 'ALFKI'");
             await base.Substring_with_zero_length(isAsync);
 
             AssertSql(
-                @"SELECT SUBSTRING(`c`.`ContactName`, 3, 0)
+                @"SELECT SUBSTRING(`c`.`ContactName`, 2 + 1, 0)
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'ALFKI'");
         }
@@ -444,7 +438,7 @@ WHERE 10 < `o`.`ProductID`");
             if (Fixture.TestStore.ServiceProvider.GetService<IMySqlOptions>()?.ServerVersion.SupportsDoubleCast ?? false)
             {
                 AssertSql(
-                    @"SELECT ROUND(CAST(`o`.`OrderID` AS double), 0) AS `A`
+                    @"SELECT ROUND(CAST(`o`.`OrderID` AS double)) AS `A`
 FROM `Orders` AS `o`
 WHERE `o`.`OrderID` < 10250");
             }
@@ -670,13 +664,9 @@ FROM `Orders` AS `o`");
             AssertSql(
                 @"@__nextYear_0='2017'
 
-SELECT `t`.`c`
-FROM (
-    SELECT DISTINCT EXTRACT(year FROM `o`.`OrderDate`) AS `c`
-    FROM `Orders` AS `o`
-    WHERE `o`.`OrderDate` IS NOT NULL
-) AS `t`
-WHERE `t`.`c` < @__nextYear_0");
+SELECT DISTINCT EXTRACT(year FROM `o`.`OrderDate`)
+FROM `Orders` AS `o`
+WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__nextYear_0)");
         }
 
         [ConditionalTheory(Skip = "issue #573")]
@@ -831,11 +821,19 @@ WHERE `t`.`c` < @__nextYear_0");
             return base.Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault_2(isAsync);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString)]
-        [MemberData("IsAsyncData")]
+        [SupportedServerVersionFact(ServerVersion.OuterApplySupportVersionString)]
         public override void Select_nested_collection_multi_level()
         {
             base.Select_nested_collection_multi_level();
+        }
+
+        [ConditionalTheory(Skip = "TODO: MySQL does not seem to allow an ORDER BY or LIMIT clause directly in a SELECT statement that is part of a UNION.")]
+        public override Task Union_Take_Union_Take(bool isAsync)
+        {
+            // TODO: MySQL does not seem to allow an ORDER BY or LIMIT clause directly in a SELECT statement that is part of a UNION.
+            //       To make this work, the SELECT statement containing the ORDER BY and/or LIMIT clause needs to be wrapped by another
+            //       SELECT statement.
+            return base.Union_Take_Union_Take(isAsync);
         }
 
         private void AssertSql(params string[] expected)

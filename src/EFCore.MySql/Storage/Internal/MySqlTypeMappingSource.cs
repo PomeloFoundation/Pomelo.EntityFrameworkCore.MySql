@@ -16,7 +16,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     public class MySqlTypeMappingSource : RelationalTypeMappingSource
     {
         // boolean
-        private readonly MySqlBoolTypeMapping _bit = new MySqlBoolTypeMapping("tinyint(1)", DbType.Boolean);
+        private readonly MySqlBoolTypeMapping _bit = new MySqlBoolTypeMapping("bit");
 
         // integers
         private readonly SByteTypeMapping _tinyint = new SByteTypeMapping("tinyint", DbType.SByte);
@@ -47,7 +47,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private readonly MySqlStringTypeMapping _enum;
 
         // DateTime
-        private readonly MySqlDateTypeMapping _date = new MySqlDateTypeMapping("date");
+        private readonly MySqlDateTypeMapping _date = new MySqlDateTypeMapping("date", DbType.Date);
         private readonly MySqlDateTimeTypeMapping _dateTime6 = new MySqlDateTimeTypeMapping("datetime(6)", precision: 6);
         private readonly MySqlDateTimeTypeMapping _dateTime = new MySqlDateTimeTypeMapping("datetime");
         private readonly MySqlDateTimeTypeMapping _timeStamp6 = new MySqlDateTimeTypeMapping("timestamp(6)", precision: 6);

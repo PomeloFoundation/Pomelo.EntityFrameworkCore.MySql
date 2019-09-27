@@ -3,6 +3,7 @@ using System.Linq;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -110,15 +111,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.CreateTableOperation();
 
             Assert.Equal(
-                "CREATE TABLE `dbo`.`People` (" + EOL +
-                "    `Id` int NOT NULL," + EOL +
-                "    `EmployerId` int NULL," + EOL +
-                "    `SSN` char(11) NULL," + EOL +
-                "    PRIMARY KEY (`Id`)," + EOL +
-                "    UNIQUE (`SSN`)," + EOL +
-                "    FOREIGN KEY (`EmployerId`) REFERENCES `Companies` (`Id`)" + EOL +
-                ");" + EOL,
-                Sql);
+                @"CREATE TABLE `dbo`.`People` (
+    `Id` int NOT NULL,
+    `EmployerId` int NULL,
+    `SSN` char(11) NULL,
+    PRIMARY KEY (`Id`),
+    UNIQUE (`SSN`),
+    CHECK (SSN > 0),
+    FOREIGN KEY (`EmployerId`) REFERENCES `Companies` (`Id`)
+);
+", Sql);
         }
 
         [Fact]
@@ -803,15 +805,14 @@ DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;".Replace("\r", string.Emp
             var migrationBuilder = new MigrationBuilder("MySql");
 
             migrationBuilder.RenameColumn(
-                    table: "Person",
-                    name: "Name",
-                    newName: "FullName")
-                .Annotation(RelationalAnnotationNames.ColumnType, "VARCHAR(4000)");
+                table: "Person",
+                name: "Name",
+                newName: "FullName");
 
             Generate(migrationBuilder.Operations.ToArray());
 
             Assert.Equal(
-                "ALTER TABLE `Person` CHANGE `Name` `FullName` VARCHAR(4000);" + EOL,
+                "ALTER TABLE `Person` RENAME COLUMN `Name` `FullName`",
                 Sql);
         }
 
@@ -832,7 +833,7 @@ DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;".Replace("\r", string.Emp
                 migrationBuilder.Operations.ToArray());
 
             Assert.Equal(
-                "ALTER TABLE `Person` CHANGE `Name` `FullName` longtext NULL;" + EOL,
+                "ALTER TABLE `Person` RENAME COLUMN `Name` `FullName`",
                 Sql);
         }
 

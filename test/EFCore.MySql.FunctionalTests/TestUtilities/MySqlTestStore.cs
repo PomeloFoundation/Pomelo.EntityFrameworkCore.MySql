@@ -41,20 +41,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             _useConnectionString = useConnectionString;
             _noBackslashEscapes = noBackslashEscapes;
 
-            var builder = new MySqlConnectionStringBuilder(_lazyConfig.Value["Data:ConnectionString"])
+            ConnectionString = CreateConnectionString(name, _noBackslashEscapes);
+            Connection = new MySqlConnection(ConnectionString);
+        }
+
+        public static string CreateConnectionString(string name, bool noBackslashEscapes)
+            => new MySqlConnectionStringBuilder(_lazyConfig.Value["Data:ConnectionString"])
             {
                 Database = name,
                 DefaultCommandTimeout = (uint)GetCommandTimeout(),
-            };
-
-            if (_noBackslashEscapes)
-            {
-                builder.NoBackslashEscapes = _noBackslashEscapes;
-            }
-
-            ConnectionString = builder.ToString();
-            Connection = new MySqlConnection(ConnectionString);
-        }
+                NoBackslashEscapes = noBackslashEscapes,
+            }.ConnectionString;
 
         private static int GetCommandTimeout() => _lazyConfig.Value.GetValue<int>("Data:CommandTimeout", DefaultCommandTimeout);
 
@@ -157,7 +154,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 
             return command;
         }
-        
+
         public virtual void AppendToSqlMode(string mode, MySqlConnection connection)
         {
             var command = connection.CreateCommand();
