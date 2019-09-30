@@ -5,7 +5,7 @@ using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class
-        NorthwindQueryMySqlNoBackslashesFixture<TModelCustomizer> : NorthwindQueryMySqlFixture<TModelCustomizer> where TModelCustomizer : IModelCustomizer, new()
+        NorthwindEscapesNoBackslashesMySqlFixture<TModelCustomizer> : NorthwindEscapesMySqlFixture<TModelCustomizer> where TModelCustomizer : IModelCustomizer, new()
     {
         protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.NoBackslashEscapesInstance;
     }

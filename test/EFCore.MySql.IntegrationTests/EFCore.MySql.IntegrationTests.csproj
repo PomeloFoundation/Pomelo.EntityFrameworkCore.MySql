@@ -27,16 +27,16 @@
 
   <ItemGroup Condition="'$(LocalEFCoreRepository)' != ''">
     <Reference Include="Microsoft.EntityFrameworkCore">
-      <HintPath>$(LocalEFCoreRepository)\artifacts\bin\EFCore.Design\Debug\$(TargetFramework)\Microsoft.EntityFrameworkCore.dll</HintPath>
+      <HintPath>$(LocalEFCoreRepository)\artifacts\bin\EFCore.Relational.Specification.Tests\Debug\$(TargetFramework)\Microsoft.EntityFrameworkCore.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.EntityFrameworkCore.Abstractions">
-      <HintPath>$(LocalEFCoreRepository)\artifacts\bin\EFCore.Design\Debug\$(TargetFramework)\Microsoft.EntityFrameworkCore.Abstractions.dll</HintPath>
+      <HintPath>$(LocalEFCoreRepository)\artifacts\bin\EFCore.Relational.Specification.Tests\Debug\$(TargetFramework)\Microsoft.EntityFrameworkCore.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.EntityFrameworkCore.Analyzers">
-      <HintPath>$(LocalEFCoreRepository)\artifacts\bin\EFCore.Design\Debug\$(TargetFramework)\Microsoft.EntityFrameworkCore.Analyzers.dll</HintPath>
+      <HintPath>$(LocalEFCoreRepository)\artifacts\bin\EFCore.Relational.Specification.Tests\Debug\$(TargetFramework)\Microsoft.EntityFrameworkCore.Analyzers.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.EntityFrameworkCore.Relational">
-      <HintPath>$(LocalEFCoreRepository)\artifacts\bin\EFCore.Design\Debug\$(TargetFramework)\Microsoft.EntityFrameworkCore.Relational.dll</HintPath>
+      <HintPath>$(LocalEFCoreRepository)\artifacts\bin\EFCore.Relational.Specification.Tests\Debug\$(TargetFramework)\Microsoft.EntityFrameworkCore.Relational.dll</HintPath>
     </Reference>
   </ItemGroup>
 

@@ -28,6 +28,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
             AnsiCharSetInfo = copyFrom.AnsiCharSetInfo;
             UnicodeCharSetInfo = copyFrom.UnicodeCharSetInfo;
             NoBackslashEscapes = copyFrom.NoBackslashEscapes;
+            UpdateSqlModeOnOpen = copyFrom.UpdateSqlModeOnOpen;
         }
 
         /// <summary>
@@ -72,6 +73,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public bool NoBackslashEscapes { get; private set; }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public bool UpdateSqlModeOnOpen { get; private set; }
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -133,6 +140,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         {
             var clone = (MySqlOptionsExtension)Clone();
             clone.NoBackslashEscapes = true;
+            return clone;
+        }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public MySqlOptionsExtension SetSqlModeOnOpen()
+        {
+            var clone = (MySqlOptionsExtension)Clone();
+            clone.UpdateSqlModeOnOpen = true;
             return clone;
         }
 
