@@ -51,6 +51,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 Database = name,
                 DefaultCommandTimeout = (uint)GetCommandTimeout(),
                 NoBackslashEscapes = noBackslashEscapes,
+                PersistSecurityInfo = true, // needed by some tests to not leak a broken connection into the following tests
             }.ConnectionString;
 
         private static int GetCommandTimeout() => _lazyConfig.Value.GetValue<int>("Data:CommandTimeout", DefaultCommandTimeout);
