@@ -1196,7 +1196,7 @@ UnicodeDataTypes.StringDefault ---> [nullable longtext] [MaxLength = -1]
 UnicodeDataTypes.StringUnicode ---> [nullable longtext] [MaxLength = -1]
 ";
 
-            Assert.Equal(expected, actual, ignoreLineEndingDifferences: true, ignoreCase: true);
+            Assert.Equal(expected, actual, ignoreLineEndingDifferences: true, ignoreCase: true, ignoreWhiteSpaceDifferences: true);
         }
 
         public static string QueryForColumnTypes(DbContext context)
