@@ -22,11 +22,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
     public class BuiltInDataTypesMySqlTest :
         BuiltInDataTypesTestBase<BuiltInDataTypesMySqlTest.BuiltInDataTypesMySqlFixture>
     {
+        private readonly ITestOutputHelper _testOutputHelper;
+
         public BuiltInDataTypesMySqlTest(BuiltInDataTypesMySqlFixture fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
         {
+            _testOutputHelper = testOutputHelper;
             fixture.TestSqlLoggerFactory.Clear();
-            //fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
+            fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
         // Blocked by EF #11929
@@ -901,7 +904,7 @@ WHERE ((`m`.`TimeSpanAsTime` = @__timeSpan_0) AND (`m`.`TimeSpanAsTime` IS NOT N
         [ConditionalFact]
         public virtual void Columns_have_expected_data_types()
         {
-            var actual = QueryForColumnTypes(CreateContext());
+            var actual = QueryForColumnTypes(CreateContext(), _testOutputHelper);
 
             const string expected = @"BinaryForeignKeyDataType.BinaryKeyDataTypeId ---> [nullable varbinary] [MaxLength = 3072]
 BinaryForeignKeyDataType.Id ---> [int] [Precision = 10 Scale = 0]
@@ -1199,7 +1202,7 @@ UnicodeDataTypes.StringUnicode ---> [nullable longtext] [MaxLength = -1]
             Assert.Equal(expected, actual, ignoreLineEndingDifferences: true, ignoreCase: true, ignoreWhiteSpaceDifferences: true);
         }
 
-        public static string QueryForColumnTypes(DbContext context)
+        public static string QueryForColumnTypes(DbContext context, ITestOutputHelper testOutputHelper = null)
         {
             const string query
                 = @"SELECT
@@ -1212,14 +1215,14 @@ UnicodeDataTypes.StringUnicode ---> [nullable longtext] [MaxLength = -1]
                         NUMERIC_SCALE,
                         DATETIME_PRECISION
                     FROM INFORMATION_SCHEMA.COLUMNS
- WHERE `TABLE_SCHEMA` = 'builtindatatypes'";
+ WHERE `TABLE_SCHEMA` like '%uilt%ata%'";
 
             var columns = new List<ColumnInfo>();
 
             using (context)
             {
                 var connection = context.Database.GetDbConnection();
-
+                
                 var command = connection.CreateCommand();
                 command.CommandText = query;
 

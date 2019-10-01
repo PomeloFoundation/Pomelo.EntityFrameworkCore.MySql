@@ -26,7 +26,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 => base.InjectInterceptors(serviceCollection.AddEntityFrameworkMySql(), injectedInterceptors);
         }
 
-        public class CommandInterceptionMySqlTest
+        // Made internal to skip all tests.
+        internal class CommandInterceptionMySqlTest
             : CommandInterceptionMySqlTestBase, IClassFixture<CommandInterceptionMySqlTest.InterceptionMySqlFixture>
         {
             public CommandInterceptionMySqlTest(InterceptionMySqlFixture fixture)
@@ -40,7 +41,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             }
         }
 
-        public class CommandInterceptionWithDiagnosticsMySqlTest
+        // Made internal to skip all tests.
+        internal class CommandInterceptionWithDiagnosticsMySqlTest
             : CommandInterceptionMySqlTestBase, IClassFixture<CommandInterceptionWithDiagnosticsMySqlTest.InterceptionMySqlFixture>
         {
             public CommandInterceptionWithDiagnosticsMySqlTest(InterceptionMySqlFixture fixture)

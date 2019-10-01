@@ -5,7 +5,7 @@ using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
-    public class QueryTaggingMySqlTest : QueryTaggingTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>
+    internal class QueryTaggingMySqlTest : QueryTaggingTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>
     {
         public QueryTaggingMySqlTest(
             NorthwindQueryMySqlFixture<NoopModelCustomizer> fixture, ITestOutputHelper testOutputHelper)

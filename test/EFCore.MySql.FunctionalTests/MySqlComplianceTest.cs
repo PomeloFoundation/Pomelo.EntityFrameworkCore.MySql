@@ -12,9 +12,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
             typeof(UdfDbFunctionTestBase<>),
             typeof(TransactionInterceptionTestBase),
+            typeof(CommandInterceptionTestBase),
             typeof(SpatialTestBase<>),
             typeof(SpatialQueryTestBase<>),
             typeof(MigrationsTestBase<>),
+            typeof(QueryTaggingTestBase<>),
         };
 
         protected override Assembly TargetAssembly { get; } = typeof(MySqlComplianceTest).Assembly;
