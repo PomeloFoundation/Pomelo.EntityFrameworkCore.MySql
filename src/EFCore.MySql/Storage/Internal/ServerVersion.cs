@@ -2,6 +2,7 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
@@ -43,43 +44,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         }
 
         public readonly ServerType Type;
-
         public readonly Version Version;
 
-        public bool SupportsDateTime6 => Version >= DateTime6SupportVersion;
-        public bool SupportsFloatCast => Version >= FloatCastSupportVersion;
-        public bool SupportsDoubleCast => Version >= DoubleCastSupportVersion;
-        public bool SupportsOuterApply => Version >= OuterApplySupportVersion;
-        public bool SupportsCrossApply => Version >= CrossApplySupportVersion;
-        public bool SupportsRenameColumn => Version >= RenameColumnSupportVersion;
+        public bool SupportsDateTime6 => DateTime6VersionSupport.IsSupported(this);
+        public bool SupportsRenameIndex => RenameIndexVersionSupport.IsSupported(this);
+        public bool SupportsFloatCast => FloatCastVersionSupport.IsSupported(this);
+        public bool SupportsDoubleCast => DoubleCastVersionSupport.IsSupported(this);
+        public bool SupportsOuterApply => OuterApplyVersionSupport.IsSupported(this);
+        public bool SupportsCrossApply => CrossApplyVersionSupport.IsSupported(this);
+        public bool SupportsRenameColumn => RenameColumnVersionSupport.IsSupported(this);
 
-        public static readonly Version DateTime6SupportVersion = new Version(DateTime6SupportVersionString);
-        public static readonly Version FloatCastSupportVersion = new Version(FloatCastSupportVersionString);
-        public static readonly Version DoubleCastSupportVersion = new Version(DoubleCastSupportVersionString);
-        public static readonly Version OuterApplySupportVersion = new Version(OuterApplySupportVersionString);
-        public static readonly Version CrossApplySupportVersion = new Version(CrossApplySupportVersionString);
-        public static readonly Version RenameColumnSupportVersion = new Version(RenameColumnSupportVersionString);
+        protected static readonly ServerVersionSupport DateTime6VersionSupport = new ServerVersionSupport(new ServerVersion(DateTime6SupportVersionString));
+        protected static readonly ServerVersionSupport RenameIndexVersionSupport = new ServerVersionSupport(new ServerVersion(RenameIndexSupportVersionString));
+        protected static readonly ServerVersionSupport RenameColumnVersionSupport = new ServerVersionSupport(new ServerVersion(RenameColumnSupportVersionString));
+        protected static readonly ServerVersionSupport OuterApplyVersionSupport = new ServerVersionSupport(new ServerVersion(OuterApplySupportVersionString));
+        protected static readonly ServerVersionSupport CrossApplyVersionSupport = new ServerVersionSupport(new ServerVersion(CrossApplySupportVersionString));
+        protected static readonly ServerVersionSupport FloatCastVersionSupport = new ServerVersionSupport(new ServerVersion(FloatCastSupportVersionString));
+        protected static readonly ServerVersionSupport DoubleCastVersionSupport = new ServerVersionSupport(new ServerVersion(DoubleCastSupportVersionString));
 
-        public const string DateTime6SupportVersionString = "5.6";
-        public const string FloatCastSupportVersionString = "8.0.17";
-        public const string DoubleCastSupportVersionString = "8.0.17";
-        public const string OuterApplySupportVersionString = "8.0.14";
-        public const string CrossApplySupportVersionString = "8.0.14";
-        public const string RenameColumnSupportVersionString = "8.0.0";
-
-        public bool SupportsRenameIndex
-        {
-            get
-            {
-                if (Type == ServerType.MySql)
-                {
-                    return Version >= new Version(5, 7);
-                }
-
-                // TODO Awaiting feedback from Mariadb on when they will support rename index!
-                return false;
-            }
-        }
+        public const string DateTime6SupportVersionString = "5.6.0-mysql";
+        public const string RenameIndexSupportVersionString = "5.7.0-mysql";
+        public const string RenameColumnSupportVersionString = "8.0.0-mysql";
+        public const string OuterApplySupportVersionString = "8.0.14-mysql";
+        public const string CrossApplySupportVersionString = "8.0.14-mysql";
+        public const string FloatCastSupportVersionString = "8.0.17-mysql";
+        public const string DoubleCastSupportVersionString = "8.0.17-mysql";
 
         public int IndexMaxBytes =>
             (Type == ServerType.MySql && Version >= new Version(5, 7, 7))
@@ -98,5 +87,25 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         public override int GetHashCode()
             => (Version.GetHashCode() * 397) ^ Type.GetHashCode();
+        
+        protected class ServerVersionSupport
+        {
+            public ServerVersion[] SupportedServerVersions { get; }
+
+            public ServerVersionSupport(params ServerVersion[] supportedServerVersions)
+            {
+                SupportedServerVersions = supportedServerVersions;
+            }
+
+            public bool IsSupported(ServerVersion serverVersion)
+            {
+                if (SupportedServerVersions.Length <= 0)
+                {
+                    return false;
+                }
+
+                return SupportedServerVersions.Any(s => serverVersion.Type == s.Type && serverVersion.Version >= s.Version);
+            }
+        }
     }
 }
