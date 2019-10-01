@@ -11,7 +11,14 @@ stages:
         sudo systemctl stop mysql
         docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -p 3306:3306 -d mysql:8.0.17
       displayName: Start Database
+    - task: UseDotNet@2
+      displayName: 'Use .NET Core sdk'
+      inputs:
+        packageType: sdk
+        version: 3.0.100
+        installationPath: $(Agent.ToolsDirectory)/dotnet
     - bash: |
+        dotnet --info
         set -e
         cp test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
         cp test/EFCore.MySql.IntegrationTests/appsettings.ci.json test/EFCore.MySql.IntegrationTests/appsettings.json
@@ -19,7 +26,7 @@ stages:
         ./build.sh
       displayName: Build Solution
     - bash: |
-        ./dotnet-env.sh dotnet tool install --global dotnet-ef --version 3.0.0
+        ./dotnet-env.sh dotnet tool install --global dotnet-ef
         export PATH="$PATH:$HOME/.dotnet/tools"
         ./dotnet-env.sh ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.sh
       displayName: Setup Database
@@ -32,7 +39,8 @@ stages:
     - bash: ./dotnet-env.sh dotnet run --project test/EFCore.MySql.IntegrationTests -c Release testMigrate
       displayName: Integration Tests applying migrations
       continueOnError: true
-    - bash: ./dotnet-env.sh ./test/EFCore.MySql.IntegrationTests/scripts/scaffold.sh
+    - bash: |
+        ./dotnet-env.sh ./test/EFCore.MySql.IntegrationTests/scripts/scaffold.sh
       displayName: Integration Tests scaffolding
       continueOnError: true
     - bash: rm -rf ./test/EFCore.MySql.IntegrationTests/Scaffold
@@ -52,6 +60,9 @@ stages:
       continueOnError: true
     - bash: export EF_SCHEMA="pomelo_test2" && ./dotnet-env.sh dotnet build ./test/EFCore.MySql.IntegrationTests -c Release
       displayName: Integration Tests Building migrations with EF_DATABASE=pomelo_test2
+      continueOnError: true
+    - bash: export EF_SCHEMA="pomelo_test2" && ./dotnet-env.sh ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.sh
+      displayName: Integration Tests Setup migrations with EF_DATABASE=pomelo_test2
       continueOnError: true
     - bash: export EF_SCHEMA="pomelo_test2" && ./dotnet-env.sh dotnet test -c Release --logger trx test/EFCore.MySql.IntegrationTests
       displayName: Integration Tests with EF_SCHEMA=pomelo_test2
@@ -119,7 +130,14 @@ stages:
     steps:
     - pwsh: choco install mysql
       displayName: Start Database
+    - task: UseDotNet@2
+      displayName: 'Use .NET Core sdk'
+      inputs:
+        packageType: sdk
+        version: 3.0.100
+        installationPath: $(Agent.ToolsDirectory)/dotnet
     - pwsh: |
+        dotnet --info
         $ErrorActionPreference = "Stop"
         cp test\EFCore.MySql.FunctionalTests\config.json.example test\EFCore.MySql.FunctionalTests\config.json
         cp test\EFCore.MySql.IntegrationTests\appsettings.ci.json test\EFCore.MySql.IntegrationTests\appsettings.json
@@ -129,7 +147,7 @@ stages:
     - pwsh: |
         $ErrorActionPreference = "Stop"
         C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
-        .\dotnet-env.ps1 dotnet tool install --global dotnet-ef --version 3.0.0
+        .\dotnet-env.ps1 dotnet tool install --global dotnet-ef
         .\dotnet-env.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
       displayName: Setup Database
     - pwsh: .\dotnet-env.ps1 dotnet test --logger trx test\EFCore.MySql.Tests
@@ -152,6 +170,9 @@ stages:
       continueOnError: true
     - pwsh: $env:EF_SCHEMA="pomelo_test2"; .\dotnet-env.ps1 dotnet build .\test\EFCore.MySql.IntegrationTests -c Release
       displayName: Integration Tests Building migrations with EF_DATABASE=pomelo_test2
+      continueOnError: true
+    - pwsh: $env:EF_SCHEMA="pomelo_test2"; .\dotnet-env.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
+      displayName: Integration Tests Setup migrations with EF_DATABASE=pomelo_test2
       continueOnError: true
     - pwsh: $env:EF_SCHEMA="pomelo_test2"; .\dotnet-env.ps1 dotnet test -c Release --logger trx test\EFCore.MySql.IntegrationTests
       displayName: Integration Tests with EF_SCHEMA=pomelo_test2

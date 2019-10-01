@@ -15,7 +15,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
         }
 
-        [Fact]
+        [ConditionalFact]
         public override void Query_with_parameters()
         {
             var city = "London";
@@ -110,14 +110,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             using (var context = CreateContext())
             {
                 var actual = context.Database
-                    .ExecuteSqlRaw(
+                    .ExecuteSqlInterpolated(
                         $@"SELECT COUNT(*) FROM `Customers` WHERE `City` = {city} AND `ContactTitle` = {contactTitle}");
 
                 Assert.Equal(-1, actual);
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public override async Task Query_with_parameters_async()
         {
             var city = "London";
@@ -142,7 +142,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             using (var context = CreateContext())
             {
                 var actual = await context.Database
-                    .ExecuteSqlRawAsync(
+                    .ExecuteSqlInterpolatedAsync(
                         $@"SELECT COUNT(*) FROM `Customers` WHERE `City` = {city} AND `ContactTitle` = {contactTitle}");
 
                 Assert.Equal(-1, actual);

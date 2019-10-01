@@ -98,16 +98,42 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
             base.ConcurrencyCheckAttribute_throws_if_value_in_database_changed();
 
-            AssertSql(@"SELECT `r`.`UniqueNo`, `r`.`MaxLengthProperty`, `r`.`Name`, `r`.`RowVersion`, `r`.`UniqueNo`, `r`.`Details_Name`, `r`.`UniqueNo`, `r`.`AdditionalDetails_Name`
-FROM `Sample` AS `r`
-WHERE `r`.`UniqueNo` = 1
+            AssertSql(
+                @"SELECT `s`.`UniqueNo`, `s`.`MaxLengthProperty`, `s`.`Name`, `s`.`RowVersion`, `t`.`UniqueNo`, `t`.`AdditionalDetails_Name`, `t0`.`UniqueNo`, `t0`.`Details_Name`
+FROM `Sample` AS `s`
+LEFT JOIN (
+    SELECT `s0`.`UniqueNo`, `s0`.`AdditionalDetails_Name`, `s1`.`UniqueNo` AS `UniqueNo0`
+    FROM `Sample` AS `s0`
+    INNER JOIN `Sample` AS `s1` ON `s0`.`UniqueNo` = `s1`.`UniqueNo`
+    WHERE `s0`.`AdditionalDetails_Name` IS NOT NULL
+) AS `t` ON `s`.`UniqueNo` = `t`.`UniqueNo`
+LEFT JOIN (
+    SELECT `s2`.`UniqueNo`, `s2`.`Details_Name`, `s3`.`UniqueNo` AS `UniqueNo0`
+    FROM `Sample` AS `s2`
+    INNER JOIN `Sample` AS `s3` ON `s2`.`UniqueNo` = `s3`.`UniqueNo`
+    WHERE `s2`.`Details_Name` IS NOT NULL
+) AS `t0` ON `s`.`UniqueNo` = `t0`.`UniqueNo`
+WHERE `s`.`UniqueNo` = 1
 LIMIT 1",
-                @"SELECT `r`.`UniqueNo`, `r`.`MaxLengthProperty`, `r`.`Name`, `r`.`RowVersion`, `r`.`UniqueNo`, `r`.`Details_Name`, `r`.`UniqueNo`, `r`.`AdditionalDetails_Name`
-FROM `Sample` AS `r`
-WHERE `r`.`UniqueNo` = 1
+                //
+                @"SELECT `s`.`UniqueNo`, `s`.`MaxLengthProperty`, `s`.`Name`, `s`.`RowVersion`, `t`.`UniqueNo`, `t`.`AdditionalDetails_Name`, `t0`.`UniqueNo`, `t0`.`Details_Name`
+FROM `Sample` AS `s`
+LEFT JOIN (
+    SELECT `s0`.`UniqueNo`, `s0`.`AdditionalDetails_Name`, `s1`.`UniqueNo` AS `UniqueNo0`
+    FROM `Sample` AS `s0`
+    INNER JOIN `Sample` AS `s1` ON `s0`.`UniqueNo` = `s1`.`UniqueNo`
+    WHERE `s0`.`AdditionalDetails_Name` IS NOT NULL
+) AS `t` ON `s`.`UniqueNo` = `t`.`UniqueNo`
+LEFT JOIN (
+    SELECT `s2`.`UniqueNo`, `s2`.`Details_Name`, `s3`.`UniqueNo` AS `UniqueNo0`
+    FROM `Sample` AS `s2`
+    INNER JOIN `Sample` AS `s3` ON `s2`.`UniqueNo` = `s3`.`UniqueNo`
+    WHERE `s2`.`Details_Name` IS NOT NULL
+) AS `t0` ON `s`.`UniqueNo` = `t0`.`UniqueNo`
+WHERE `s`.`UniqueNo` = 1
 LIMIT 1",
-                /////////////////////////////
-@"@p2='1'
+                //
+                @"@p2='1'
 @p0='ModifiedData' (Nullable = false) (Size = 4000)
 @p1='00000000-0000-0000-0003-000000000001'
 @p3='00000001-0000-0000-0000-000000000001'
@@ -115,8 +141,8 @@ LIMIT 1",
 UPDATE `Sample` SET `Name` = @p0, `RowVersion` = @p1
 WHERE `UniqueNo` = @p2 AND `RowVersion` = @p3;
 SELECT ROW_COUNT();",
-                /////////////////////////////
-@"@p2='1'
+                //
+                @"@p2='1'
 @p0='ChangedData' (Nullable = false) (Size = 4000)
 @p1='00000000-0000-0000-0002-000000000001'
 @p3='00000001-0000-0000-0000-000000000001'
