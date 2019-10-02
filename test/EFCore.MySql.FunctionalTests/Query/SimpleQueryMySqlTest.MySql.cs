@@ -1021,14 +1021,14 @@ WHERE (LOCATE(CONVERT(LCASE('nt') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.
                 });
         }
 
-        [SupportedServerVersionLessThanTheory(ServerVersion.CrossApplySupportVersionString)]
+        [SupportedServerVersionLessThanTheory(ServerVersion.CrossApplyMySqlSupportVersionString)]
         [MemberData("IsAsyncData")]
         public virtual Task CrossApply_not_supported_throws(bool isAsync)
         {
             return Assert.ThrowsAsync<InvalidOperationException>(() => base.SelectMany_correlated_with_outer_1(isAsync));
         }
 
-        [SupportedServerVersionLessThanTheory(ServerVersion.OuterApplySupportVersionString)]
+        [SupportedServerVersionLessThanTheory(ServerVersion.OuterApplyMySqlSupportVersionString)]
         [MemberData("IsAsyncData")]
         public virtual Task OuterApply_not_supported_throws(bool isAsync)
         {

@@ -6,23 +6,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attribu
 {
     public sealed class SupportedServerVersionLessThanTheoryAttribute : TheoryAttribute
     {
-        public SupportedServerVersionLessThanTheoryAttribute(string version)
-            : this(new ServerVersion(version))
+        public SupportedServerVersionLessThanTheoryAttribute(params string[] versions)
+            : this(new ServerVersionSupport(versions))
         {
         }
 
-        public SupportedServerVersionLessThanTheoryAttribute(Version version)
-            : this(new ServerVersion(version))
-        {
-        }
-
-        private SupportedServerVersionLessThanTheoryAttribute(ServerVersion supportedVersion)
+        private SupportedServerVersionLessThanTheoryAttribute(ServerVersionSupport serverVersionSupport)
         {
             var currentVersion = new ServerVersion(AppConfig.Config.GetSection("Data")["ServerVersion"]);
 
-            if (currentVersion.Version >= supportedVersion.Version && string.IsNullOrEmpty(Skip))
+            if (!serverVersionSupport.IsSupported(currentVersion) && string.IsNullOrEmpty(Skip))
             {
-                Skip = $"Test is supported only on server versions lower than {supportedVersion.Version}.";
+                Skip = $"Test is supported only on versions lower than {serverVersionSupport}.";
             }
         }
     }

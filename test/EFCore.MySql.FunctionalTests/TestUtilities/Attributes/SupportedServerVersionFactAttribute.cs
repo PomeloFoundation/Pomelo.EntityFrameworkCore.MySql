@@ -1,28 +1,22 @@
-﻿using System;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+﻿using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes
 {
     public sealed class SupportedServerVersionFactAttribute : FactAttribute
     {
-        public SupportedServerVersionFactAttribute(string version)
-            : this(new ServerVersion(version))
+        public SupportedServerVersionFactAttribute(params string[] versions)
+            : this(new ServerVersionSupport(versions))
         {
         }
 
-        public SupportedServerVersionFactAttribute(Version version)
-            : this(new ServerVersion(version))
-        {
-        }
-
-        private SupportedServerVersionFactAttribute(ServerVersion supportedVersion)
+        private SupportedServerVersionFactAttribute(ServerVersionSupport serverVersionSupport)
         {
             var currentVersion = new ServerVersion(AppConfig.Config.GetSection("Data")["ServerVersion"]);
 
-            if (currentVersion.Version < supportedVersion.Version && string.IsNullOrEmpty(Skip))
+            if (!serverVersionSupport.IsSupported(currentVersion) && string.IsNullOrEmpty(Skip))
             {
-                Skip = $"Test is supported only on {supportedVersion.Version} and higher.";
+                Skip = $"Test is supported on {serverVersionSupport.SupportedServerVersions} and higher.";
             }
         }
     }
