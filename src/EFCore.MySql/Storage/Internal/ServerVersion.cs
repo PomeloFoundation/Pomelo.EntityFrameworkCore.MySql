@@ -7,7 +7,7 @@ using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
-    public class ServerVersion
+    public partial class ServerVersion
     {
         public static Regex ReVersion = new Regex(@"\d+\.\d+\.?(?:\d+)?");
         private static readonly Version _defaultVersion = new Version(8, 0, 0);
@@ -44,34 +44,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         public readonly ServerType Type;
         public readonly Version Version;
-
-        public bool SupportsDateTime6 => DateTime6VersionSupport.IsSupported(this);
-        public bool SupportsRenameIndex => RenameIndexVersionSupport.IsSupported(this);
-        public bool SupportsRenameColumn => RenameColumnVersionSupport.IsSupported(this);
-        public bool SupportsWindowFunctions => WindowFunctionsVersionSupport.IsSupported(this);
-        public bool SupportsFloatCast => FloatCastVersionSupport.IsSupported(this);
-        public bool SupportsDoubleCast => DoubleCastVersionSupport.IsSupported(this);
-        public bool SupportsOuterApply => OuterApplyVersionSupport.IsSupported(this);
-        public bool SupportsCrossApply => CrossApplyVersionSupport.IsSupported(this);
-
-        public static readonly ServerVersionSupport DateTime6VersionSupport = new ServerVersionSupport(new ServerVersion(DateTime6MySqlSupportVersionString), new ServerVersion(DateTime6MariaDbSupportVersionString));
-        public static readonly ServerVersionSupport RenameIndexVersionSupport = new ServerVersionSupport(new ServerVersion(RenameIndexMySqlSupportVersionString));
-        public static readonly ServerVersionSupport RenameColumnVersionSupport = new ServerVersionSupport(new ServerVersion(RenameColumnMySqlSupportVersionString));
-        public static readonly ServerVersionSupport WindowFunctionsVersionSupport = new ServerVersionSupport(new ServerVersion(WindowFunctionsMySqlSupportVersionString));
-        public static readonly ServerVersionSupport OuterApplyVersionSupport = new ServerVersionSupport(new ServerVersion(OuterApplyMySqlSupportVersionString));
-        public static readonly ServerVersionSupport CrossApplyVersionSupport = new ServerVersionSupport(new ServerVersion(CrossApplyMySqlSupportVersionString));
-        public static readonly ServerVersionSupport FloatCastVersionSupport = new ServerVersionSupport(new ServerVersion(FloatCastMySqlSupportVersionString));
-        public static readonly ServerVersionSupport DoubleCastVersionSupport = new ServerVersionSupport(new ServerVersion(DoubleCastMySqlSupportVersionString));
-
-        public const string DateTime6MySqlSupportVersionString = "5.6.0-mysql";
-        public const string DateTime6MariaDbSupportVersionString = "10.1.2-mariadb";
-        public const string RenameIndexMySqlSupportVersionString = "5.7.0-mysql";
-        public const string RenameColumnMySqlSupportVersionString = "8.0.0-mysql";
-        public const string WindowFunctionsMySqlSupportVersionString = "8.0.0-mysql";
-        public const string OuterApplyMySqlSupportVersionString = "8.0.14-mysql";
-        public const string CrossApplyMySqlSupportVersionString = "8.0.14-mysql";
-        public const string FloatCastMySqlSupportVersionString = "8.0.17-mysql";
-        public const string DoubleCastMySqlSupportVersionString = "8.0.17-mysql";
 
         public int IndexMaxBytes =>
             (Type == ServerType.MySql && Version >= new Version(5, 7, 7))

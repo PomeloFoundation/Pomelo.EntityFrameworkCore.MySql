@@ -2,7 +2,7 @@ using System.Linq;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
-    public class ServerVersionSupport
+    public partial class ServerVersionSupport
     {
         public ServerVersion[] SupportedServerVersions { get; }
 

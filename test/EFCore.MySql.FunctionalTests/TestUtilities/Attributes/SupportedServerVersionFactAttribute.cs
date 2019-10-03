@@ -5,8 +5,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attribu
 {
     public sealed class SupportedServerVersionFactAttribute : FactAttribute
     {
-        public SupportedServerVersionFactAttribute(params string[] versions)
-            : this(new ServerVersionSupport(versions))
+        public SupportedServerVersionFactAttribute(params string[] versionsOrKeys)
+            : this(ServerVersion.GetSupport(versionsOrKeys))
         {
         }
 

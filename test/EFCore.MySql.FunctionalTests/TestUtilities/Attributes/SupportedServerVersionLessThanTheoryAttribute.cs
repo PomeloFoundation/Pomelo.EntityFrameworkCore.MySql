@@ -6,8 +6,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attribu
 {
     public sealed class SupportedServerVersionLessThanTheoryAttribute : TheoryAttribute
     {
-        public SupportedServerVersionLessThanTheoryAttribute(params string[] versions)
-            : this(new ServerVersionSupport(versions))
+        public SupportedServerVersionLessThanTheoryAttribute(params string[] versionsOrKeys)
+            : this(ServerVersion.GetSupport(versionsOrKeys))
         {
         }
 

@@ -17,7 +17,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsMySqlSupportVersionString)]
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task SelectMany_with_navigation_filter_paging_and_explicit_DefaultIfEmpty(bool isAsync)
         {

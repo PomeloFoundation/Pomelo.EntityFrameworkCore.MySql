@@ -5,11 +5,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attribu
 {
     public sealed class SupportedServerVersionTheoryAttribute : TheoryAttribute
     {
-        public SupportedServerVersionTheoryAttribute(params string[] versions)
-            : this(new ServerVersionSupport(versions))
+        public SupportedServerVersionTheoryAttribute(params string[] versionsOrKeys)
+            : this(ServerVersion.GetSupport(versionsOrKeys))
         {
         }
-        
+
         private SupportedServerVersionTheoryAttribute(ServerVersionSupport serverVersionSupport)
         {
             var currentVersion = new ServerVersion(AppConfig.Config.GetSection("Data")["ServerVersion"]);
