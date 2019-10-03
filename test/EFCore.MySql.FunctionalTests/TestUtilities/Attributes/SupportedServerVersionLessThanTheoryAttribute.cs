@@ -15,9 +15,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attribu
         {
             var currentVersion = new ServerVersion(AppConfig.Config.GetSection("Data")["ServerVersion"]);
 
-            if (!serverVersionSupport.IsSupported(currentVersion) && string.IsNullOrEmpty(Skip))
+            if (serverVersionSupport.IsSupported(currentVersion) && string.IsNullOrEmpty(Skip))
             {
-                Skip = $"Test is supported only on versions lower than {serverVersionSupport}.";
+                Skip = $"Test is supported only on server versions lower than {serverVersionSupport}.";
             }
         }
     }

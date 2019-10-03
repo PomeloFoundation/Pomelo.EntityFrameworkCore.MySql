@@ -16,7 +16,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attribu
 
             if (!serverVersionSupport.IsSupported(currentVersion) && string.IsNullOrEmpty(Skip))
             {
-                Skip = $"Test is supported on {serverVersionSupport.SupportedServerVersions} and higher.";
+                Skip = $"Test is supported only on {serverVersionSupport.SupportedServerVersions} and higher.";
             }
         }
     }

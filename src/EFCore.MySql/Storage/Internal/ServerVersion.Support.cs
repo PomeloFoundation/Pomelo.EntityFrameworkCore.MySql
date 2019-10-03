@@ -76,7 +76,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// referenced by the provided version strings and/or support keys.
         /// </summary>
         /// <param name="supportKeysOrVersionStrings">A mix of server version strings and/or support keys.</param>
-        /// <returns></returns>
+        /// <returns>Returns the constructed <see cref="ServerVersionSupport"/> object.</returns>
         /// <remarks>Used by test attributes. Provider code should use the `Supports` instance methods instead.</remarks>
         public static ServerVersionSupport GetSupport(params string[] supportKeysOrVersionStrings)
             => new ServerVersionSupport(supportKeysOrVersionStrings
