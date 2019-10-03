@@ -20,6 +20,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
     /// </summary>
     public class MySqlQuerySqlGenerator : QuerySqlGenerator
     {
+        // The order in which the types are specified matters, because types get matched by using StartsWith.
         private static readonly Dictionary<string, string[]> _castMappings = new Dictionary<string, string[]>
         {
             { "signed", new []{ "tinyint", "smallint", "mediumint", "int", "bigint", "bit" }},
@@ -27,8 +28,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             { "double", new []{ "double" } },
             { "float", new []{ "float" } },
             { "binary", new []{ "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob" } },
+            { "datetime(6)", new []{ "datetime(6)" } },
             { "datetime", new []{ "datetime" } },
             { "date", new []{ "date" } },
+            { "timestamp(6)", new []{ "timestamp(6)" } },
+            { "timestamp", new []{ "timestamp" } },
+            { "time(6)", new []{ "time(6)" } },
             { "time", new []{ "time" } },
             { "json", new []{ "json" } },
             { "char", new []{ "char", "varchar", "text", "tinytext", "mediumtext", "longtext" } },
@@ -150,10 +155,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             }
 
             var typeMapping = sqlUnaryExpression.TypeMapping;
-
-            //
-            // TODO: Build better mappings with TypeMappingSource.
-            //
 
             var storeTypeLower = typeMapping.StoreType.ToLower();
             string castMapping = null;
