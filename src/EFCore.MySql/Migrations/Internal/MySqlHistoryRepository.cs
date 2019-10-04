@@ -58,73 +58,43 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         }
 
         /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
+        ///     Overridden by database providers to generate a SQL Script that will <c>BEGIN</c> a block
+        ///     of SQL if and only if the migration with the given identifier does not already exist in the history table.
         /// </summary>
-        public override string GetBeginIfNotExistsScript(string migrationId)
-        {
-            Check.NotEmpty(migrationId, nameof(migrationId));
-
-            var stringTypeMapping = Dependencies.TypeMappingSource.GetMapping(typeof(string));
-
-            return new StringBuilder()
-                //.AppendLine($"DROP PROCEDURE IF EXISTS {MigrationsScript};")
-                //.AppendLine(@"DELIMITER //")
-                //.AppendLine($"CREATE PROCEDURE {MigrationsScript}()")
-                //.AppendLine("BEGIN")
-                .Append("IF NOT EXISTS(SELECT * FROM ")
-                .Append(SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema))
-                .Append(" WHERE ")
-                .Append(SqlGenerationHelper.DelimitIdentifier(MigrationIdColumnName))
-                .Append(" = ")
-                .Append(stringTypeMapping.GenerateSqlLiteral(migrationId))
-                .AppendLine(")")
-                .Append("BEGIN")
-                .ToString();
-        }
+        /// <param name="migrationId"> The migration identifier. </param>
+        /// <returns> The generated SQL. </returns>
+        public override string GetBeginIfNotExistsScript(string migrationId) => $@"
+DROP PROCEDURE IF EXISTS {MigrationsScript};
+DELIMITER //
+CREATE PROCEDURE {MigrationsScript}()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM {SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema)} WHERE {SqlGenerationHelper.DelimitIdentifier(MigrationIdColumnName)} = '{migrationId}') THEN
+";
 
         /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
+        ///     Overridden by database providers to generate a SQL Script that will <c>BEGIN</c> a block
+        ///     of SQL if and only if the migration with the given identifier already exists in the history table.
         /// </summary>
-        public override string GetBeginIfExistsScript(string migrationId)
-        {
-            Check.NotEmpty(migrationId, nameof(migrationId));
-
-            var stringTypeMapping = Dependencies.TypeMappingSource.GetMapping(typeof(string));
-
-            return new StringBuilder()
-                //.AppendLine($"DROP PROCEDURE IF EXISTS {MigrationsScript};")
-                //.AppendLine(@"DELIMITER //")
-                //.AppendLine($"CREATE PROCEDURE {MigrationsScript}()")
-                //.AppendLine("BEGIN")
-                .Append("IF EXISTS(SELECT * FROM ")
-                .Append(SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema))
-                .Append(" WHERE ")
-                .Append(SqlGenerationHelper.DelimitIdentifier(MigrationIdColumnName))
-                .Append(" = ")
-                .Append(stringTypeMapping.GenerateSqlLiteral(migrationId))
-                .AppendLine(")")
-                .Append("BEGIN")
-                .ToString();
-        }
+        /// <param name="migrationId"> The migration identifier. </param>
+        /// <returns> The generated SQL. </returns>
+        public override string GetBeginIfExistsScript(string migrationId) => $@"
+DROP PROCEDURE IF EXISTS {MigrationsScript};
+DELIMITER //
+CREATE PROCEDURE {MigrationsScript}()
+BEGIN
+    IF EXISTS(SELECT 1 FROM {SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema)} WHERE {SqlGenerationHelper.DelimitIdentifier(MigrationIdColumnName)} = '{migrationId}') THEN
+";
 
         /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
+        ///     Overridden by database providers to generate a SQL script to <c>END</c> the SQL block.
         /// </summary>
-        public override string GetEndIfScript()
-            => new StringBuilder()
-                .Append("END")
-                .AppendLine(SqlGenerationHelper.StatementTerminator)
-                //.AppendLine($"CALL {MigrationsScript}();")
-                //.AppendLine($"DROP PROCEDURE {MigrationsScript};")
-                .ToString();
+        /// <returns> The generated SQL. </returns>
+        public override string GetEndIfScript() => $@"
+    END IF;
+END //
+DELIMITER ;
+CALL {MigrationsScript}();
+DROP PROCEDURE {MigrationsScript};
+";
     }
 }
