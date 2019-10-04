@@ -46,7 +46,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         }
 
         public static string CreateConnectionString(string name, bool noBackslashEscapes)
-            => new MySqlConnectionStringBuilder(_lazyConfig.Value["Data:ConnectionString"])
+            => new MySqlConnectionStringBuilder(AppConfig.Config["Data:ConnectionString"])
             {
                 Database = name,
                 DefaultCommandTimeout = (uint)GetCommandTimeout(),
@@ -54,12 +54,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 PersistSecurityInfo = true, // needed by some tests to not leak a broken connection into the following tests
             }.ConnectionString;
 
-        private static int GetCommandTimeout() => _lazyConfig.Value.GetValue<int>("Data:CommandTimeout", DefaultCommandTimeout);
-
-        private static readonly Lazy<IConfigurationRoot> _lazyConfig = new Lazy<IConfigurationRoot>(() => new ConfigurationBuilder()
-            .SetBasePath(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath))
-            .AddJsonFile("config.json")
-            .Build());
+        private static int GetCommandTimeout() => AppConfig.Config.GetValue<int>("Data:CommandTimeout", DefaultCommandTimeout);
 
         public override DbContextOptionsBuilder AddProviderOptions(DbContextOptionsBuilder builder)
             => _useConnectionString
@@ -70,7 +65,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         {
             builder
                 .CommandTimeout(GetCommandTimeout())
-                .ServerVersion(_lazyConfig.Value["Data:ServerVersion"]);
+                .ServerVersion(AppConfig.ServerVersion.Version, AppConfig.ServerVersion.Type);
         }
 
         public static void AddOptions(MySqlDbContextOptionsBuilder builder, bool noBackslashEscapes)

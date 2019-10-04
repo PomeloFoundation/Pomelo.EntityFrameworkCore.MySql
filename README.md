@@ -9,6 +9,15 @@
 
 **Pomelo.EntityFrameworkCore.MySql is currently [looking for core contributors](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/522)**
 
+## Supported DBMS and Versions
+
+`Pomelo.EntityFrameworkCore.MySql` is tested against the latest 2 minor versions of `MySQL` and `MariaDB`.  Older versions _may_ be compatible but are not officially supported or tested.  Currently supported versions are:
+
+- MySQL 8.0
+- MySQL 5.7
+- MariaDB 10.4
+- MariaDB 10.3
+
 ## Nightly Builds
 
 To use nightly builds from our MyGet feed, add a `NuGet.config` file in your solution root with the following contents:

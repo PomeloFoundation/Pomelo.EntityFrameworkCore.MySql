@@ -6,13 +6,14 @@ using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models;
 using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
 using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Attributes;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
 {
 	public class GeneratedTypesTest
 	{
-		[SkipAppVeyorAndMariaDbFact]
+        [SupportedServerVersionFact(ServerVersion.JsonSupportKey, Skip = "Version of MySQL/MariaDB does not support JSON")]
 		public async Task TestGeneratedContact()
 		{
 			const string email = "bob@example.com";
