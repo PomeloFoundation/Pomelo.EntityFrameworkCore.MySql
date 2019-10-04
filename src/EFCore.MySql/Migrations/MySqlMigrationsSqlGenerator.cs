@@ -17,6 +17,7 @@ using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Microsoft.EntityFrameworkCore.Migrations
 {
@@ -29,26 +30,18 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             RegexOptions.IgnoreCase);
 
         private readonly IMigrationsAnnotationProvider _migrationsAnnotations;
+        private readonly IMySqlConnectionInfo _connectionInfo;
 
         private IReadOnlyList<MigrationOperation> _operations;
-
-        private readonly IMySqlOptions _options;
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        /// <param name="dependencies"> Parameter object containing dependencies for this service. </param>
-        /// <param name="migrationsAnnotations"> Provider-specific Migrations annotations to use. </param>
-        /// <param name="options">IMySqlOptions</param>
+        
         public MySqlMigrationsSqlGenerator(
             [NotNull] MigrationsSqlGeneratorDependencies dependencies,
             [NotNull] IMigrationsAnnotationProvider migrationsAnnotations,
-            [NotNull] IMySqlOptions options)
+            [NotNull] IMySqlConnectionInfo connectionInfo)
             : base(dependencies)
         {
             _migrationsAnnotations = migrationsAnnotations;
-            _options = options;
+            _connectionInfo = connectionInfo;
         }
 
         /// <summary>
@@ -154,7 +147,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             if (operation.NewName != null)
             {
-                if (_options.ServerVersion.SupportsRenameIndex)
+                if (_connectionInfo.ServerVersion.SupportsRenameIndex)
                 {
                     builder.Append("ALTER TABLE ")
                         .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
@@ -513,7 +506,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             builder.Append("ALTER TABLE ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema));
 
-            if (_options.ServerVersion.SupportsRenameColumn)
+            if (_connectionInfo.ServerVersion.SupportsRenameColumn)
             {
                 builder.Append(" RENAME COLUMN ")
                     .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
@@ -730,7 +723,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                         autoIncrement = true;
                         break;
                     case "datetime":
-                        if (!_options.ServerVersion.SupportsDateTime6)
+                        if (!_connectionInfo.ServerVersion.SupportsDateTime6)
                         {
                             throw new InvalidOperationException(
                                 $"Error in {table}.{name}: DATETIME does not support values generated " +
@@ -750,7 +743,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 switch (matchType)
                 {
                     case "datetime":
-                        if (!_options.ServerVersion.SupportsDateTime6)
+                        if (!_connectionInfo.ServerVersion.SupportsDateTime6)
                         {
                             throw new InvalidOperationException(
                                 $"Error in {table}.{name}: DATETIME does not support values generated " +

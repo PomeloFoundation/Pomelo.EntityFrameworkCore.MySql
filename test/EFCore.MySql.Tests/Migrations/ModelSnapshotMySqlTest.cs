@@ -159,7 +159,8 @@ builder.Entity(""Pomelo.EntityFrameworkCore.MySql.Migrations.ModelSnapshotMySqlT
             var typeMappingSource = new MySqlTypeMappingSource(
                 TestServiceFactory.Instance.Create<TypeMappingSourceDependencies>(),
                 TestServiceFactory.Instance.Create<RelationalTypeMappingSourceDependencies>(),
-                new MySqlOptions());
+                TestServiceFactory.Instance.Create<MySqlOptions>(),
+                TestServiceFactory.Instance.Create<MySqlConnectionInfo>());
 
             var modelValidator = CreateModelValidator(typeMappingSource);
             modelValidator.Validate(

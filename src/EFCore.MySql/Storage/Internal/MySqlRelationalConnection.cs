@@ -8,7 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.DependencyInjection;
 using MySql.Data.MySqlClient;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
@@ -18,13 +21,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     {
         private const string NoBackslashEscapes = "NO_BACKSLASH_ESCAPES";
 
+        private readonly IServiceProvider _serviceProvider;
         private readonly MySqlOptionsExtension _mySqlOptionsExtension;
 
         // ReSharper disable once VirtualMemberCallInConstructor
         public MySqlRelationalConnection(
-            [NotNull] RelationalConnectionDependencies dependencies)
+            [NotNull] RelationalConnectionDependencies dependencies,
+            IServiceProvider serviceProvider)
             : base(dependencies)
         {
+            _serviceProvider = serviceProvider;
             _mySqlOptionsExtension = Dependencies.ContextOptions.FindExtension<MySqlOptionsExtension>();
         }
 
@@ -50,7 +56,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             var optionsBuilder = new DbContextOptionsBuilder()
                 .UseMySql(AddConnectionStringOptions(connectionStringBuilder).ConnectionString, options => options.CommandTimeout(CommandTimeout));
 
-            return new MySqlRelationalConnection(Dependencies.With(optionsBuilder.Options))
+            return new MySqlRelationalConnection(Dependencies.With(optionsBuilder.Options), _serviceProvider)
             {
                 IsMasterConnection = true
             };
@@ -98,6 +104,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
             if (result)
             {
+                SetServerVersion();
+
                 if (_mySqlOptionsExtension.UpdateSqlModeOnOpen && _mySqlOptionsExtension.NoBackslashEscapes)
                 {
                     AppendToSqlMode(NoBackslashEscapes);
@@ -113,6 +121,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
             if (result)
             {
+                SetServerVersion();
+
                 if (_mySqlOptionsExtension.UpdateSqlModeOnOpen && _mySqlOptionsExtension.NoBackslashEscapes)
                 {
                     await AppendToSqlModeAsync(NoBackslashEscapes);
@@ -120,6 +130,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             }
 
             return result;
+        }
+
+        private void SetServerVersion()
+        {
+            var connectionInfo = (MySqlConnectionInfo)_serviceProvider.GetRequiredService<IMySqlConnectionInfo>();
+            var options = _serviceProvider.GetRequiredService<IMySqlOptions>();
+
+            if (options.ServerVersion.IsDefault)
+            {
+                var connection = (MySqlConnection)DbConnection;
+                connectionInfo.ServerVersion = new ServerVersion(connection.ServerVersion);
+            }
+            else
+            {
+                connectionInfo.ServerVersion = options.ServerVersion;
+            }
         }
 
         public virtual void AppendToSqlMode(string mode)

@@ -3,22 +3,24 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
     public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQueryableMethodTranslatingExpressionVisitor
     {
-        private readonly IMySqlOptions _options;
+        private readonly IMySqlConnectionInfo _connectionInfo;
 
         public MySqlQueryableMethodTranslatingExpressionVisitor(
             QueryableMethodTranslatingExpressionVisitorDependencies dependencies,
             RelationalQueryableMethodTranslatingExpressionVisitorDependencies relationalDependencies,
-            IMySqlOptions options,
+            IMySqlConnectionInfo connectionInfo,
             IModel model)
             : base(dependencies, relationalDependencies, model)
         {
-            _options = options;
+            _connectionInfo = connectionInfo;
         }
 
         // There is no native support for EXCEPT in MySQL.
@@ -32,8 +34,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             // Trigger client eval, if there is no LATERAL support.
             // TODO: Check why this does not catch all OuterApply statements.
             if (((SelectExpression)source.QueryExpression).Tables
-                .Any(t => t is CrossApplyExpression && !_options.ServerVersion.SupportsCrossApply
-                          || t is OuterApplyExpression && !_options.ServerVersion.SupportsOuterApply))
+                .Any(t => t is CrossApplyExpression && !_connectionInfo.ServerVersion.SupportsCrossApply
+                          || t is OuterApplyExpression && !_connectionInfo.ServerVersion.SupportsOuterApply))
             {
                 return null;
             }
