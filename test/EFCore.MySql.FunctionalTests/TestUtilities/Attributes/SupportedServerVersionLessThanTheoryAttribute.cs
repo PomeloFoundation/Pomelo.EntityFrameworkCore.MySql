@@ -13,7 +13,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attribu
 
         private SupportedServerVersionLessThanTheoryAttribute(ServerVersionSupport serverVersionSupport)
         {
-            var currentVersion = new ServerVersion(AppConfig.Config.GetSection("Data")["ServerVersion"]);
+            var currentVersion = AppConfig.ServerVersion;
 
             if (serverVersionSupport.IsSupported(currentVersion) && string.IsNullOrEmpty(Skip))
             {

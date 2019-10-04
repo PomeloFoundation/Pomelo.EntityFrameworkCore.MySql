@@ -31,6 +31,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public const string DoubleCastMySqlSupportVersionString = "8.0.17-mysql";
         public const string DoubleCastMariaDbSupportVersionString = "10.4.0-mariadb";
 
+        public const string JsonMySqlSupportVersionString = "5.7.8-mysql";
+        // public const string JsonMariaDbSupportVersionString = "?.?.?-mariadb";
+
         #endregion
 
         #region SupportMap keys for test attributes
@@ -43,6 +46,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public const string CrossApplySupportKey = nameof(CrossApplySupportKey);
         public const string FloatCastSupportKey = nameof(FloatCastSupportKey);
         public const string DoubleCastSupportKey = nameof(DoubleCastSupportKey);
+        public const string JsonSupportKey = nameof(JsonSupportKey);
 
         #endregion
 
@@ -56,6 +60,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             { CrossApplySupportKey, new ServerVersionSupport(CrossApplyMySqlSupportVersionString/*, CrossApplyMariaDbSupportVersionString*/) },
             { FloatCastSupportKey, new ServerVersionSupport(FloatCastMySqlSupportVersionString, FloatCastMariaDbSupportVersionString) },
             { DoubleCastSupportKey, new ServerVersionSupport(DoubleCastMySqlSupportVersionString, DoubleCastMariaDbSupportVersionString) },
+            { JsonSupportKey, new ServerVersionSupport(JsonMySqlSupportVersionString/*, JsonMariaDbSupportVersionString*/) },
         };
 
         #region Support checks for provider code
@@ -68,6 +73,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public bool SupportsDoubleCast => SupportMap[DoubleCastSupportKey].IsSupported(this);
         public bool SupportsOuterApply => SupportMap[OuterApplySupportKey].IsSupported(this);
         public bool SupportsCrossApply => SupportMap[CrossApplySupportKey].IsSupported(this);
+        public bool SupportsJson => SupportMap[JsonSupportKey].IsSupported(this);
 
         #endregion
 

@@ -1,7 +1,7 @@
 ﻿using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes
+namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Attributes
 {
     public sealed class SupportedServerVersionFactAttribute : FactAttribute
     {
