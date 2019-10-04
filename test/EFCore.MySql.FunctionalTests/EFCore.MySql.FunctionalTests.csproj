@@ -4,6 +4,7 @@
     <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
     <AssemblyName>Pomelo.EntityFrameworkCore.MySql.FunctionalTests</AssemblyName>
     <RootNamespace>Pomelo.EntityFrameworkCore.MySql.FunctionalTests</RootNamespace>
+    <DefaultItemExcludes>$(DefaultItemExcludes);*.trx</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>

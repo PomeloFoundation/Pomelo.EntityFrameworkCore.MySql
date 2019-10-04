@@ -436,20 +436,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Projecting_nullable_bool_in_conditional_works(isAsync);
         }
 
-        [ConditionalTheory(Skip = "https://github.com/mysql-net/MySqlConnector/issues/708")]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task Select_subquery_boolean(bool isAsync)
-        {
-            return base.Select_subquery_boolean(isAsync);
-        }
-
-        [ConditionalTheory(Skip = "https://github.com/mysql-net/MySqlConnector/issues/708")]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task Select_subquery_boolean_with_pushdown(bool isAsync)
-        {
-            return base.Select_subquery_boolean_with_pushdown(isAsync);
-        }
-
         [ConditionalTheory(Skip = "MySQL does not support LIMIT with a parameterized argument, unless the statement was prepared. The argument needs to be a numeric constant.")]
         [MemberData(nameof(IsAsyncData))]
         public override Task Take_without_orderby_followed_by_orderBy_is_pushed_down1(bool isAsync)
