@@ -786,42 +786,42 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
             return Assert.ThrowsAsync<InvalidOperationException>(() => base.Select_Except_reference_projection(isAsync));
         }
 
-        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportVersionString)]
+        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
         [MemberData("IsAsyncData")]
         public override Task SelectMany_correlated_with_outer_1(bool isAsync)
         {
             return base.SelectMany_correlated_with_outer_1(isAsync);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportVersionString)]
+        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
         [MemberData("IsAsyncData")]
         public override Task SelectMany_correlated_with_outer_2(bool isAsync)
         {
             return base.SelectMany_correlated_with_outer_2(isAsync);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString)]
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
         [MemberData("IsAsyncData")]
         public override Task SelectMany_correlated_with_outer_3(bool isAsync)
         {
             return base.SelectMany_correlated_with_outer_3(isAsync);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString)]
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
         [MemberData("IsAsyncData")]
         public override Task SelectMany_correlated_with_outer_4(bool isAsync)
         {
             return base.SelectMany_correlated_with_outer_4(isAsync);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportVersionString)]
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
         [MemberData("IsAsyncData")]
         public override Task Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault_2(bool isAsync)
         {
             return base.Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault_2(isAsync);
         }
 
-        [SupportedServerVersionFact(ServerVersion.OuterApplySupportVersionString)]
+        [SupportedServerVersionFact(ServerVersion.OuterApplySupportKey)]
         public override void Select_nested_collection_multi_level()
         {
             base.Select_nested_collection_multi_level();
@@ -834,6 +834,27 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
             //       To make this work, the SELECT statement containing the ORDER BY and/or LIMIT clause needs to be wrapped by another
             //       SELECT statement.
             return base.Union_Take_Union_Take(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        [MemberData("IsAsyncData")]
+        public override Task SelectMany_Joined_Take(bool isAsync)
+        {
+            return base.SelectMany_Joined_Take(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [MemberData("IsAsyncData")]
+        public override Task Project_single_element_from_collection_with_OrderBy_Take_and_SingleOrDefault(bool isAsync)
+        {
+            return base.Project_single_element_from_collection_with_OrderBy_Take_and_SingleOrDefault(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [MemberData("IsAsyncData")]
+        public override Task Project_single_element_from_collection_with_OrderBy_Distinct_and_FirstOrDefault_followed_by_projecting_length(bool isAsync)
+        {
+            return base.Project_single_element_from_collection_with_OrderBy_Distinct_and_FirstOrDefault_followed_by_projecting_length(isAsync);
         }
 
         private void AssertSql(params string[] expected)
