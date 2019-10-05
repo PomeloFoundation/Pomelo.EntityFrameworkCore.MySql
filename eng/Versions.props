@@ -31,6 +31,7 @@
     <DotnetRuntimeVersion>5.0.0-rc.2.20475.5</DotnetRuntimeVersion>
   </PropertyGroup>
   <PropertyGroup Label="Dependencies">
+    <MicrosoftSourceLinkGitHubVersion>1.0.0</MicrosoftSourceLinkGitHubVersion>
     <!-- EFCore.MySql Dependencies -->
     <MicrosoftEntityFrameworkCoreVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreVersion>
     <MicrosoftEntityFrameworkCoreRelationalVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreRelationalVersion>

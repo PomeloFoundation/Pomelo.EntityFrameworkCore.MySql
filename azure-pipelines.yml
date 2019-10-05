@@ -381,6 +381,11 @@ jobs:
       publishFeedCredentials: PomeloEFCoreNuget
       packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
     condition: and( succeededOrFailed(), eq(variables['Pack.Pack'],'true'), or( eq(variables['Pack.Wip'],'true'), variables['BuildSucceeded'], eq(variables['Pack.BuildFailedOverride'],'true') ) )
+  - task: PublishSymbols@2 # AZDO still has no snupkg support, so we need to publish the PDB files to a symbol server
+    displayName: "Publish Symbols to Azure Artifacts Symbol Server"
+    inputs:
+      symbolServerType: 'TeamServices'
+    condition: and( succeededOrFailed(), eq(variables['Pack.Pack'],'true'), or( eq(variables['Pack.Wip'],'true'), variables['BuildSucceeded'], eq(variables['Pack.BuildFailedOverride'],'true') ) )
   - task: NuGetCommand@2
     displayName: "Nuget Push nuget.org"
     inputs:
