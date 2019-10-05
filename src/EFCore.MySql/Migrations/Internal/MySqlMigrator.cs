@@ -4,12 +4,17 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Internal;
+using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
 {
     public class MySqlMigrator : Migrator
     {
+        private readonly IMigrationsAssembly _migrationsAssembly;
+
         public MySqlMigrator(
             [NotNull] IMigrationsAssembly migrationsAssembly,
             [NotNull] IHistoryRepository historyRepository,
@@ -33,6 +38,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                 logger,
                 databaseProvider)
         {
+            _migrationsAssembly = migrationsAssembly;
         }
 
         public override string GenerateScript(
@@ -40,10 +46,55 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
             string toMigration = null,
             bool idempotent = false)
         {
-            return Header() + base.GenerateScript(fromMigration, toMigration, idempotent) + Footer();
+            IEnumerable<string> appliedMigrations;
+            if (string.IsNullOrEmpty(fromMigration)
+                || fromMigration == Migration.InitialDatabase)
+            {
+                appliedMigrations = Enumerable.Empty<string>();
+            }
+            else
+            {
+                var fromMigrationId = _migrationsAssembly.GetMigrationId(fromMigration);
+                appliedMigrations = _migrationsAssembly.Migrations
+                    .Where(t => string.Compare(t.Key, fromMigrationId, StringComparison.OrdinalIgnoreCase) <= 0)
+                    .Select(t => t.Key);
+            }
+
+            PopulateMigrations(
+                appliedMigrations,
+                toMigration,
+                out var migrationsToApply,
+                out var migrationsToRevert,
+                out var actualTargetMigration);
+
+            var operations = migrationsToApply.SelectMany(x => x.UpOperations).Concat(migrationsToRevert.SelectMany(x => x.DownOperations)).ToList();
+            var dropPrimaryKeyExists = operations.Any(x => x is DropPrimaryKeyOperation);
+            var addPrimaryKeyExists = operations.Any(x => x is AddPrimaryKeyOperation);
+
+            List<string> parts = new List<string>();
+            if (dropPrimaryKeyExists)
+            {
+                parts.Add(PrepareString(BeforeDropPrimaryKeyHeader));
+            }
+            if (addPrimaryKeyExists)
+            {
+                parts.Add(PrepareString(AfterAddPrimaryKeyHeader));
+            }
+
+            parts.Add(base.GenerateScript(fromMigration, toMigration, idempotent) + Environment.NewLine);
+
+            if (dropPrimaryKeyExists)
+            {
+                parts.Add(PrepareString(BeforeDropPrimaryKeyFooter));
+            }
+            if (addPrimaryKeyExists)
+            {
+                parts.Add(PrepareString(AfterAddPrimaryKeyFooter));
+            }
+            return string.Join("", parts);
         }
 
-        private string Header() => @"DROP PROCEDURE IF EXISTS POMELO_BEFORE_DROP_PRIMARY_KEY;
+        private const string BeforeDropPrimaryKeyHeader = @"DROP PROCEDURE IF EXISTS POMELO_BEFORE_DROP_PRIMARY_KEY;
 DELIMITER //
 CREATE PROCEDURE POMELO_BEFORE_DROP_PRIMARY_KEY(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255))
 BEGIN
@@ -81,9 +132,9 @@ BEGIN
 		DEALLOCATE PREPARE SQL_EXP_EXECUTE;
 	END IF;
 END //
-DELIMITER ;
+DELIMITER ;";
 
-DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;
+        private const string AfterAddPrimaryKeyHeader = @"DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;
 DELIMITER //
 CREATE PROCEDURE POMELO_AFTER_ADD_PRIMARY_KEY(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255), IN `COLUMN_NAME_ARGUMENT` VARCHAR(255))
 BEGIN
@@ -123,16 +174,19 @@ BEGIN
 		DEALLOCATE PREPARE SQL_EXP_EXECUTE;
 	END IF;
 END //
-DELIMITER ;
+DELIMITER ;";
 
-"
-            .Replace("\r", string.Empty)
-            .Replace("\n", Environment.NewLine);
+        private const string BeforeDropPrimaryKeyFooter = @"DROP PROCEDURE POMELO_BEFORE_DROP_PRIMARY_KEY;";
+        private const string AfterAddPrimaryKeyFooter = @"DROP PROCEDURE POMELO_AFTER_ADD_PRIMARY_KEY;";
 
-        private string Footer() => @"
-DROP PROCEDURE IF EXISTS POMELO_BEFORE_DROP_PRIMARY_KEY;
-DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;"
-            .Replace("\r", string.Empty)
-            .Replace("\n", Environment.NewLine);
+        private static string PrepareString(string str)
+        {
+            return str
+                .Replace("\r", string.Empty)
+                .Replace("\n", Environment.NewLine)
+                + Environment.NewLine
+                + Environment.NewLine;
+        }
     }
 }
+
