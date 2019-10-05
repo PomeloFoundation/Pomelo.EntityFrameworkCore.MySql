@@ -47,7 +47,7 @@ jobs:
 
       started="false"
       for i in $(seq 0 180); do
-        if docker exec mysql mysqladmin -hlocalhost -P3306 -uroot -pPassword12! status; then
+        if docker exec mysql mysqladmin -h localhost -P 3306 -u root -pPassword12! status; then
           started="true"
           break
         fi
@@ -57,6 +57,8 @@ jobs:
       if [ "$started" = "false" ]; then
         echo "$DOCKER_IMAGE container failed to start in 180 seconds" >&2
       fi
+
+      docker exec mysql mysql -h localhost -P 3308 -u root -pPassword12! -e "SELECT @@GLOBAL.sql_mode;"
 
       if [ "$(INTEGRATION_TESTS)" = "true" ]; then
         ./dotnet-env.sh ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.sh
