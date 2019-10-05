@@ -108,13 +108,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 .Create()
                 .Execute(
                     _relationalConnection,
-                    connection => (long)CreateHasTablesCommand()
+                    connection => Convert.ToInt64(CreateHasTablesCommand() // MySQL returns a Int64, MariaDb returns a Int32
                                       .ExecuteScalar(
                                           new RelationalCommandParameterObject(
                                               connection,
                                               null,
                                               Dependencies.CurrentContext.Context,
-                                              Dependencies.CommandLogger)) != 0);
+                                              Dependencies.CommandLogger))) != 0);
 
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -125,14 +125,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public override Task<bool> HasTablesAsync(CancellationToken cancellationToken = default)
             => Dependencies.ExecutionStrategyFactory.Create().ExecuteAsync(
                 _relationalConnection,
-                async (connection, ct) => (long)await CreateHasTablesCommand()
+                async (connection, ct) => Convert.ToInt64(await CreateHasTablesCommand() // MySQL returns a Int64, MariaDb returns a Int32
                                               .ExecuteScalarAsync(
                                                   new RelationalCommandParameterObject(
                                                       connection,
                                                       null,
                                                       Dependencies.CurrentContext.Context,
                                                       Dependencies.CommandLogger),
-                                                  cancellationToken: ct) != 0,
+                                                  cancellationToken: ct)) != 0,
                 cancellationToken);
 
         private IRelationalCommand CreateHasTablesCommand()

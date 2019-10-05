@@ -13,6 +13,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public const string RenameIndexMySqlSupportVersionString = "5.7.0-mysql";
         // public const string RenameIndexMariaDbSupportVersionString = "?.?.?-mariadb";
 
+        public const string NullableGeneratedColumnsMySqlSupportVersionString = "5.7.0-mysql";
+        // public const string NullableGeneratedColumnMariaDbSupportVersionString = "?.?.?-mariadb";
+
+        public const string JsonMySqlSupportVersionString = "5.7.8-mysql";
+        // public const string JsonMariaDbSupportVersionString = "?.?.?-mariadb";
+
         public const string RenameColumnMySqlSupportVersionString = "8.0.0-mysql";
         // public const string RenameColumnMariaDbSupportVersionString = "?.?.?-mariadb";
 
@@ -26,13 +32,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         // public const string CrossApplyMariaDbSupportVersionString = "?.?.?-mariadb"; // MDEV-19078, MDEV-6373
 
         public const string FloatCastMySqlSupportVersionString = "8.0.17-mysql";
-        public const string FloatCastMariaDbSupportVersionString = "10.4.5-mariadb";
+        // public const string FloatCastMariaDbSupportVersionString = "10.4.5-mariadb"; // The implemented support is wrong, because it drops a decimal place and rounds.
 
         public const string DoubleCastMySqlSupportVersionString = "8.0.17-mysql";
         public const string DoubleCastMariaDbSupportVersionString = "10.4.0-mariadb";
-
-        public const string JsonMySqlSupportVersionString = "5.7.8-mysql";
-        // public const string JsonMariaDbSupportVersionString = "?.?.?-mariadb";
 
         #endregion
 
@@ -47,6 +50,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public const string FloatCastSupportKey = nameof(FloatCastSupportKey);
         public const string DoubleCastSupportKey = nameof(DoubleCastSupportKey);
         public const string JsonSupportKey = nameof(JsonSupportKey);
+        public const string NullableGeneratedColumnsSupportKey = nameof(NullableGeneratedColumnsSupportKey);
 
         #endregion
 
@@ -58,9 +62,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             { WindowFunctionsSupportKey, new ServerVersionSupport(WindowFunctionsMySqlSupportVersionString, WindowFunctionsMariaDbSupportVersionString) },
             { OuterApplySupportKey, new ServerVersionSupport(OuterApplyMySqlSupportVersionString/*, OuterApplyMariaDbSupportVersionString*/) },
             { CrossApplySupportKey, new ServerVersionSupport(CrossApplyMySqlSupportVersionString/*, CrossApplyMariaDbSupportVersionString*/) },
-            { FloatCastSupportKey, new ServerVersionSupport(FloatCastMySqlSupportVersionString, FloatCastMariaDbSupportVersionString) },
+            { FloatCastSupportKey, new ServerVersionSupport(FloatCastMySqlSupportVersionString/*, FloatCastMariaDbSupportVersionString*/) },
             { DoubleCastSupportKey, new ServerVersionSupport(DoubleCastMySqlSupportVersionString, DoubleCastMariaDbSupportVersionString) },
             { JsonSupportKey, new ServerVersionSupport(JsonMySqlSupportVersionString/*, JsonMariaDbSupportVersionString*/) },
+            { NullableGeneratedColumnsSupportKey, new ServerVersionSupport(NullableGeneratedColumnsMySqlSupportVersionString/*, NullableGeneratedColumnsMariaDbSupportVersionString*/) },
         };
 
         #region Support checks for provider code
@@ -74,6 +79,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public bool SupportsOuterApply => SupportMap[OuterApplySupportKey].IsSupported(this);
         public bool SupportsCrossApply => SupportMap[CrossApplySupportKey].IsSupported(this);
         public bool SupportsJson => SupportMap[JsonSupportKey].IsSupported(this);
+        public bool SupportsNullableGeneratedColumns => SupportMap[NullableGeneratedColumnsSupportKey].IsSupported(this);
 
         #endregion
 

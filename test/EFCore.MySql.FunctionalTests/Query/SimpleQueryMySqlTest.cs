@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -855,6 +856,12 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
         public override Task SelectMany_Joined_Take(bool isAsync)
         {
             return base.SelectMany_Joined_Take(isAsync);
+        }
+
+        public override Task Average_on_float_column(bool isAsync)
+        {
+
+            return base.Average_on_float_column(isAsync);
         }
 
         private void AssertSql(params string[] expected)
