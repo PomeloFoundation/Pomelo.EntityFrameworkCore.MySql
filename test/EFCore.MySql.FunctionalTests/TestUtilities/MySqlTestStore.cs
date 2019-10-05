@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {
@@ -65,7 +66,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         {
             builder
                 .CommandTimeout(GetCommandTimeout())
-                .ServerVersion(AppConfig.ServerVersion.Version, AppConfig.ServerVersion.Type);
+                .ServerVersion(AppConfig.ServerVersion.Version, AppConfig.ServerVersion.Type)
+                .CharSetBehavior(CharSetBehavior.AppendToAllColumns)
+                .AnsiCharSet(CharSet.Utf8mb4)
+                .UnicodeCharSet(CharSet.Utf8mb4);
         }
 
         public static void AddOptions(MySqlDbContextOptionsBuilder builder, bool noBackslashEscapes)

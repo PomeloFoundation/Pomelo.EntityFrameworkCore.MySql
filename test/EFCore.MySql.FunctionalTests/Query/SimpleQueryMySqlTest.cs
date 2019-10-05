@@ -827,6 +827,20 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
             base.Select_nested_collection_multi_level();
         }
 
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [MemberData("IsAsyncData")]
+        public override Task Project_single_element_from_collection_with_OrderBy_Distinct_and_FirstOrDefault_followed_by_projecting_length(bool isAsync)
+        {
+            return base.Project_single_element_from_collection_with_OrderBy_Distinct_and_FirstOrDefault_followed_by_projecting_length(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [MemberData("IsAsyncData")]
+        public override Task Project_single_element_from_collection_with_OrderBy_Take_and_SingleOrDefault(bool isAsync)
+        {
+            return base.Project_single_element_from_collection_with_OrderBy_Take_and_SingleOrDefault(isAsync);
+        }
+
         [ConditionalTheory(Skip = "TODO: MySQL does not seem to allow an ORDER BY or LIMIT clause directly in a SELECT statement that is part of a UNION.")]
         public override Task Union_Take_Union_Take(bool isAsync)
         {
@@ -841,20 +855,6 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
         public override Task SelectMany_Joined_Take(bool isAsync)
         {
             return base.SelectMany_Joined_Take(isAsync);
-        }
-
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
-        [MemberData("IsAsyncData")]
-        public override Task Project_single_element_from_collection_with_OrderBy_Take_and_SingleOrDefault(bool isAsync)
-        {
-            return base.Project_single_element_from_collection_with_OrderBy_Take_and_SingleOrDefault(isAsync);
-        }
-
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
-        [MemberData("IsAsyncData")]
-        public override Task Project_single_element_from_collection_with_OrderBy_Distinct_and_FirstOrDefault_followed_by_projecting_length(bool isAsync)
-        {
-            return base.Project_single_element_from_collection_with_OrderBy_Distinct_and_FirstOrDefault_followed_by_projecting_length(isAsync);
         }
 
         private void AssertSql(params string[] expected)

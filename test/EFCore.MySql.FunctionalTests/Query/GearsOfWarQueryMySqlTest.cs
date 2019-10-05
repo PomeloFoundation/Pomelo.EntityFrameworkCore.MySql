@@ -415,11 +415,81 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Correlated_collections_nested_inner_subquery_references_outer_qsre_two_levels_up(isAsync);
         }
 
-        [SupportedServerVersionLessThanTheory("8.0.0", Skip = "https://bugs.mysql.com/bug.php?id=96947")]
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [MemberData("IsAsyncData")]
+        public override Task Select_subquery_distinct_firstordefault(bool isAsync)
+        {
+            return base.Select_subquery_distinct_firstordefault(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [MemberData("IsAsyncData")]
+        public override Task Select_subquery_distinct_singleordefault_boolean1(bool isAsync)
+        {
+            return base.Select_subquery_distinct_singleordefault_boolean1(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [MemberData("IsAsyncData")]
+        public override Task Select_subquery_distinct_singleordefault_boolean_empty1(bool isAsync)
+        {
+            return base.Select_subquery_distinct_singleordefault_boolean_empty1(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [MemberData("IsAsyncData")]
+        public override Task Select_subquery_distinct_singleordefault_boolean_with_pushdown(bool isAsync)
+        {
+            return base.Select_subquery_distinct_singleordefault_boolean_with_pushdown(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [MemberData("IsAsyncData")]
+        public override Task Select_subquery_distinct_singleordefault_boolean_empty_with_pushdown(bool isAsync)
+        {
+            return base.Select_subquery_distinct_singleordefault_boolean_empty_with_pushdown(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [MemberData("IsAsyncData")]
+        public override Task Where_subquery_distinct_first_boolean(bool isAsync)
+        {
+            return base.Where_subquery_distinct_first_boolean(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [MemberData("IsAsyncData")]
+        public override Task Where_subquery_distinct_singleordefault_boolean1(bool isAsync)
+        {
+            return base.Where_subquery_distinct_singleordefault_boolean1(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [MemberData("IsAsyncData")]
+        public override Task Where_subquery_distinct_singleordefault_boolean_with_pushdown(bool isAsync)
+        {
+            return base.Where_subquery_distinct_singleordefault_boolean_with_pushdown(isAsync);
+        }
+        
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [MemberData("IsAsyncData")]
+        public override Task Correlated_collections_nested_inner_subquery_references_outer_qsre_one_level_up(bool isAsync)
+        {
+            return base.Correlated_collections_nested_inner_subquery_references_outer_qsre_one_level_up(isAsync);
+        }
+        
+        [SupportedServerVersionLessThanTheory("5.6.0", Skip = "https://bugs.mysql.com/bug.php?id=96947")]
         [MemberData(nameof(IsAsyncData))]
         public override Task Correlated_collections_basic_projecting_constant(bool isAsync)
         {
             return base.Correlated_collections_basic_projecting_constant(isAsync);
+        }
+
+        [SupportedServerVersionLessThanTheory("5.6.0", Skip = "https://bugs.mysql.com/bug.php?id=96947")]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Correlated_collections_basic_projecting_constant_bool(bool isAsync)
+        {
+            return base.Correlated_collections_basic_projecting_constant_bool(isAsync);
         }
 
         [ConditionalTheory(Skip = "https://github.com/mysql-net/MySqlConnector/pull/707")]
