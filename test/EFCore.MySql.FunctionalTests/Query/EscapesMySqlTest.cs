@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
@@ -25,7 +26,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             base.Input_query_escapes_parameter();
 
             AssertSql(
-                @"@p0='ESCBCKSLINS' (Nullable = false) (Size = 255)
+                $@"@p0='ESCBCKSLINS' (Nullable = false) (Size = {Math.Min(AppConfig.ServerVersion.MaxKeyLength / (2 * 4), 255)})
 @p1='' (Size = 4000)
 @p2='' (Size = 4000)
 @p3='Back\slash's Insert Operation' (Size = 4000)

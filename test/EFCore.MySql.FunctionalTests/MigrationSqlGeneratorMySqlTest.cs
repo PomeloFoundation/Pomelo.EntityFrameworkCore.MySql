@@ -213,7 +213,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             {
                 var serverVersion = new ServerVersion(null);
                 var charSetInfo = isUnicode ? new CharSetInfo(unicodeCharSet) : new CharSetInfo(ansiCharSet);
-                var columnSize = Math.Min(serverVersion.IndexMaxBytes / (charSetInfo.BytesPerChar * 2), 255);
+                var columnSize = Math.Min(serverVersion.MaxKeyLength / (charSetInfo.BytesPerChar * 2), 255);
                 columnType = $"varchar({columnSize})";
             }
 

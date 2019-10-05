@@ -436,7 +436,7 @@ WHERE 10 < `o`.`ProductID`");
         {
             await base.Select_math_round_int(isAsync);
 
-            if (Fixture.TestStore.ServiceProvider.GetService<IMySqlOptions>()?.ServerVersion.SupportsDoubleCast ?? false)
+            if (AppConfig.ServerVersion.SupportsDoubleCast)
             {
                 AssertSql(
                     @"SELECT ROUND(CAST(`o`.`OrderID` AS double)) AS `A`
@@ -808,7 +808,7 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
             return base.SelectMany_correlated_with_outer_3(isAsync);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
         [MemberData("IsAsyncData")]
         public override Task SelectMany_correlated_with_outer_4(bool isAsync)
         {

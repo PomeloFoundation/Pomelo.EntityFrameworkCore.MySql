@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Microsoft.Extensions.DependencyInjection;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
@@ -89,8 +91,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 modelBuilder.Entity<WithBackingFields>(
                     b =>
                     {
-                        b.Property(e => e.NullableAsNonNullable).HasComputedColumnSql("1");
-                        b.Property(e => e.NonNullableAsNullable).HasComputedColumnSql("1");
+                        if (AppConfig.ServerVersion.SupportsGeneratedColumns)
+                        {
+                            b.Property(e => e.NullableAsNonNullable).HasComputedColumnSql("1");
+                            b.Property(e => e.NonNullableAsNullable).HasComputedColumnSql("1");
+                        }
+                        else
+                        {
+                            b.Property(e => e.NullableAsNonNullable).HasDefaultValue(1);
+                            b.Property(e => e.NonNullableAsNullable).HasDefaultValue(1);
+                        }
                     });
                 
                 modelBuilder.Entity<WithNullableBackingFields>(
