@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Pomelo.EntityFrameworkCore.MySql.Extensions;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
@@ -44,7 +45,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         /// </summary>
         public override IEnumerable<IAnnotation> For(IIndex index)
         {
-            var isFullText = index.MySql().IsFullText;
+            var isFullText = index.IsFullText();
             if (isFullText.HasValue)
             {
                 yield return new Annotation(
@@ -52,7 +53,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                     isFullText.Value);
             }
 
-            var isSpatial = index.MySql().IsSpatial;
+            var isSpatial = index.IsSpatial();
             if (isSpatial.HasValue)
             {
                 yield return new Annotation(
@@ -67,14 +68,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         /// </summary>
         public override IEnumerable<IAnnotation> For(IProperty property)
         {
-            if (property.MySql().ValueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn)
+            if (property.GetValueGenerationStrategy() == MySqlValueGenerationStrategy.IdentityColumn)
             {
                 yield return new Annotation(
                     MySqlAnnotationNames.ValueGenerationStrategy,
                     MySqlValueGenerationStrategy.IdentityColumn);
             }
 
-            if (property.MySql().ValueGenerationStrategy == MySqlValueGenerationStrategy.ComputedColumn)
+            if (property.GetValueGenerationStrategy() == MySqlValueGenerationStrategy.ComputedColumn)
             {
                 yield return new Annotation(
                     MySqlAnnotationNames.ValueGenerationStrategy,

@@ -3,6 +3,7 @@ using System.Linq;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,7 +27,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                     x =>
                     {
                         x.Property<string>("FullName");
-                        x.HasIndex("FullName").ForMySqlIsFullText();
+                        x.HasIndex("FullName");
                     }),
                 new RenameIndexOperation
                 {
@@ -38,7 +39,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             Assert.Equal(
                 @"ALTER TABLE `Person` DROP INDEX `IX_Person_Name`;" + EOL +
                 EOL +
-                @"CREATE FULLTEXT INDEX `IX_Person_FullName` ON `Person` (`FullName`);" + EOL,
+                @"CREATE INDEX `IX_Person_FullName` ON `Person` (`FullName`);" + EOL,
                 Sql);
         }
 
@@ -85,6 +86,45 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 ",
                 Sql,
                 ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public override void RenameColumnOperation()
+        {
+            var migrationBuilder = new MigrationBuilder("MySql");
+
+            migrationBuilder.RenameColumn(
+                    table: "Person",
+                    name: "Name",
+                    newName: "FullName")
+                .Annotation(RelationalAnnotationNames.ColumnType, "VARCHAR(4000)");
+
+            Generate(migrationBuilder.Operations.ToArray());
+
+            Assert.Equal(
+                "ALTER TABLE `Person` CHANGE `Name` `FullName` VARCHAR(4000);" + EOL,
+                Sql);
+        }
+
+        [Fact]
+        public override void RenameColumnOperation_with_model()
+        {
+            var migrationBuilder = new MigrationBuilder("MySql");
+
+            migrationBuilder.RenameColumn(
+                table: "Person",
+                name: "Name",
+                newName: "FullName");
+
+            Generate(
+                modelBuilder => modelBuilder.Entity(
+                    "Person",
+                    x => { x.Property<string>("FullName"); }),
+                migrationBuilder.Operations.ToArray());
+
+            Assert.Equal(
+                "ALTER TABLE `Person` CHANGE `Name` `FullName` longtext NULL;" + EOL,
+                Sql);
         }
 
         protected override void Generate(Action<ModelBuilder> buildAction, params MigrationOperation[] operation)

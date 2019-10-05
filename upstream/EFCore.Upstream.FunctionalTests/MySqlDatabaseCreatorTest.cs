@@ -3,26 +3,26 @@
 
 using System;
 using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 // ReSharper disable InconsistentNaming
 namespace Microsoft.EntityFrameworkCore
 {
     // Tests are split into classes to enable parallel execution
     // Some combinations are skipped to reduce run time
-    [MySqlCondition(MySqlCondition.IsNotTeamCity)]
+    [MySqlCondition(MySqlCondition.IsNotCI)]
     public class MySqlDatabaseCreatorExistsTest : MySqlDatabaseCreatorTest
     {
         [ConditionalTheory]
@@ -46,7 +46,8 @@ namespace Microsoft.EntityFrameworkCore
             return Returns_false_when_database_does_not_exist_test(async, ambientTransaction, useCanConnect, file: true);
         }
 
-        private static async Task Returns_false_when_database_does_not_exist_test(bool async, bool ambientTransaction, bool useCanConnect, bool file)
+        private static async Task Returns_false_when_database_does_not_exist_test(
+            bool async, bool ambientTransaction, bool useCanConnect, bool file)
         {
             using (var testDatabase = MySqlTestStore.Create("NonExisting", file))
             {
@@ -119,7 +120,7 @@ namespace Microsoft.EntityFrameworkCore
         }
     }
 
-    [MySqlCondition(MySqlCondition.IsNotTeamCity)]
+    [MySqlCondition(MySqlCondition.IsNotCI)]
     public class MySqlDatabaseCreatorEnsureDeletedTest : MySqlDatabaseCreatorTest
     {
         [ConditionalTheory]
@@ -225,7 +226,7 @@ namespace Microsoft.EntityFrameworkCore
         }
     }
 
-    [MySqlCondition(MySqlCondition.IsNotTeamCity)]
+    [MySqlCondition(MySqlCondition.IsNotCI)]
     public class MySqlDatabaseCreatorEnsureCreatedTest : MySqlDatabaseCreatorTest
     {
         [ConditionalTheory]
@@ -289,7 +290,7 @@ namespace Microsoft.EntityFrameworkCore
                 {
                     if (createDatabase)
                     {
-                        testDatabase.Initialize(null, (Func<DbContext>)null, null);
+                        testDatabase.Initialize(null, (Func<DbContext>)null, null, null);
                     }
                     else
                     {
@@ -325,7 +326,8 @@ namespace Microsoft.EntityFrameworkCore
                     Assert.Equal("Blogs", tables.Single());
 
                     var columns = testDatabase.Query<string>(
-                        "SELECT TABLE_NAME + '.' + COLUMN_NAME + ' (' + DATA_TYPE + ')' FROM INFORMATION_SCHEMA.COLUMNS  WHERE TABLE_NAME = 'Blogs' ORDER BY TABLE_NAME, COLUMN_NAME").ToArray();
+                            "SELECT TABLE_NAME + '.' + COLUMN_NAME + ' (' + DATA_TYPE + ')' FROM INFORMATION_SCHEMA.COLUMNS  WHERE TABLE_NAME = 'Blogs' ORDER BY TABLE_NAME, COLUMN_NAME")
+                        .ToArray();
                     Assert.Equal(14, columns.Length);
 
                     Assert.Equal(
@@ -391,7 +393,7 @@ namespace Microsoft.EntityFrameworkCore
         }
     }
 
-    [MySqlCondition(MySqlCondition.IsNotTeamCity)]
+    [MySqlCondition(MySqlCondition.IsNotCI)]
     public class MySqlDatabaseCreatorHasTablesTest : MySqlDatabaseCreatorTest
     {
         [ConditionalTheory]
@@ -452,7 +454,7 @@ namespace Microsoft.EntityFrameworkCore
         }
     }
 
-    [MySqlCondition(MySqlCondition.IsNotTeamCity)]
+    [MySqlCondition(MySqlCondition.IsNotCI)]
     public class MySqlDatabaseCreatorDeleteTest : MySqlDatabaseCreatorTest
     {
         [ConditionalTheory]
@@ -518,7 +520,7 @@ namespace Microsoft.EntityFrameworkCore
         }
     }
 
-    [MySqlCondition(MySqlCondition.IsNotTeamCity)]
+    [MySqlCondition(MySqlCondition.IsNotCI)]
     public class MySqlDatabaseCreatorCreateTablesTest : MySqlDatabaseCreatorTest
     {
         [ConditionalTheory]
@@ -598,7 +600,7 @@ namespace Microsoft.EntityFrameworkCore
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void GenerateCreateScript_works()
         {
             using (var context = new BloggingContext("Data Source=foo"))
@@ -630,7 +632,7 @@ namespace Microsoft.EntityFrameworkCore
         private static readonly string _eol = Environment.NewLine;
     }
 
-    [MySqlCondition(MySqlCondition.IsNotTeamCity)]
+    [MySqlCondition(MySqlCondition.IsNotCI)]
     public class MySqlDatabaseCreatorCreateTest : MySqlDatabaseCreatorTest
     {
         [ConditionalTheory]
@@ -695,33 +697,21 @@ namespace Microsoft.EntityFrameworkCore
         }
     }
 
-    #pragma warning disable RCS1102 // Make class static.
-    [MySqlCondition(MySqlCondition.IsNotSqlAzure | MySqlCondition.IsNotTeamCity)]
+#pragma warning disable RCS1102 // Make class static.
+    [MySqlCondition(MySqlCondition.IsNotSqlAzure | MySqlCondition.IsNotCI)]
     public class MySqlDatabaseCreatorTest
     {
         public static IDisposable CreateTransactionScope(bool useTransaction)
-        {
-#if NET461
-            return TestStore.CreateTransactionScope(useTransaction);
-#else
-            return TestStore.CreateTransactionScope(useTransaction: false);
-#endif
-        }
+            => TestStore.CreateTransactionScope(useTransaction);
 
         public static TestDatabaseCreator GetDatabaseCreator(MySqlTestStore testStore)
-        {
-            return GetDatabaseCreator(testStore.ConnectionString);
-        }
+            => GetDatabaseCreator(testStore.ConnectionString);
 
         public static TestDatabaseCreator GetDatabaseCreator(string connectionString)
-        {
-            return GetDatabaseCreator(new BloggingContext(connectionString));
-        }
+            => GetDatabaseCreator(new BloggingContext(connectionString));
 
         public static TestDatabaseCreator GetDatabaseCreator(BloggingContext context)
-        {
-            return (TestDatabaseCreator)context.GetService<IRelationalDatabaseCreator>();
-        }
+            => (TestDatabaseCreator)context.GetService<IRelationalDatabaseCreator>();
 
         // ReSharper disable once ClassNeverInstantiated.Local
         private class TestMySqlExecutionStrategyFactory : MySqlExecutionStrategyFactory

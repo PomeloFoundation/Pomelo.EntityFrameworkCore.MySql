@@ -67,7 +67,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         {
             var result = await _db.DataTypesVariable.Select(m =>
                 new {
-                    Id = m.Id,
+                    m.Id,
                     Contains = m.TypeString.Contains("Fram"),
                     NotContains = m.TypeString.Contains("asdf")
                 }).FirstOrDefaultAsync(m => m.Id == _variable.Id);
@@ -81,7 +81,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         {
             var result = await _db.DataTypesSimple.Select(m =>
                 new {
-                    Id = m.Id,
+                    m.Id,
                     FutureYear = m.TypeDateTime.AddYears(1),
                     FutureMonth = m.TypeDateTime.AddMonths(1),
                     FutureDay = m.TypeDateTime.AddDays(1),
@@ -115,13 +115,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         {
             var result = await _db.DataTypesSimple.Select(m =>
                 new {
-                    Id = m.Id,
-                    Year = m.TypeDateTime.Year,
-                    Month = m.TypeDateTime.Month,
-                    Day = m.TypeDateTime.Day,
-                    Hour = m.TypeDateTime.Hour,
-                    Minute = m.TypeDateTime.Minute,
-                    Second = m.TypeDateTime.Second,
+                    m.Id,
+                    m.TypeDateTime.Year,
+                    m.TypeDateTime.Month,
+                    m.TypeDateTime.Day,
+                    m.TypeDateTime.Hour,
+                    m.TypeDateTime.Minute,
+                    m.TypeDateTime.Second,
                 }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
 
             Assert.Equal(_simple.TypeDateTime.Year, result.Year);
@@ -139,13 +139,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
             var utcOffsetStr = (utcOffset.TotalHours >= 0 ? "+" : "") + utcOffset.TotalHours.ToString("00") + ":" + utcOffset.Minutes.ToString("00");
 
             await _db.Database.OpenConnectionAsync();
-            await _db.Database.ExecuteSqlCommandAsync($"SET @@session.time_zone = {utcOffsetStr}");
+            await _db.Database.ExecuteSqlRawAsync($"SET @@session.time_zone = '{utcOffsetStr}'");
 
             var result = await _db.DataTypesSimple.Select(m =>
                 new {
-                    Id = m.Id,
-                    Now = DateTime.Now,
-                    UtcNow = DateTime.UtcNow
+                    m.Id,
+                    DateTime.Now,
+                    DateTime.UtcNow
                 }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
 
             _db.Database.CloseConnection();
@@ -159,7 +159,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         {
             var result = await _db.DataTypesVariable.Select(m =>
                 new {
-                    Id = m.Id,
+                    m.Id,
                     EndsWith = m.TypeString.EndsWith("Framework"),
                     NotEndsWith = m.TypeString.EndsWith("Entity")
                 }).FirstOrDefaultAsync(m => m.Id == _variable.Id);
@@ -173,7 +173,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         {
             var result = await _db.DataTypesSimple.Select(m =>
                 new {
-                    Id = m.Id,
+                    m.Id,
                     Abs = Math.Abs(m.TypeDoubleN.Value),
                 }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
 
@@ -185,7 +185,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         {
             var result = await _db.DataTypesSimple.Select(m =>
                 new {
-                    Id = m.Id,
+                    m.Id,
                     Ceiling = Math.Ceiling(m.TypeDouble),
                 }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
 
@@ -197,7 +197,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         {
             var result = await _db.DataTypesSimple.Select(m =>
                 new {
-                    Id = m.Id,
+                    m.Id,
                     Floor = Math.Floor(m.TypeDouble),
                 }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
 
@@ -209,7 +209,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         {
             var result = await _db.DataTypesSimple.Select(m =>
                 new {
-                    Id = m.Id,
+                    m.Id,
                     Pow = Math.Pow(m.TypeDouble, m.TypeDouble),
                 }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
 
@@ -221,7 +221,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         {
             var result = await _db.DataTypesSimple.Select(m =>
                 new {
-                    Id = m.Id,
+                    m.Id,
                     Round = Math.Round(m.TypeDouble),
                 }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
 
@@ -233,7 +233,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         {
             var result = await _db.DataTypesSimple.Select(m =>
                 new {
-                    Id = m.Id,
+                    m.Id,
                     Truncate = Math.Truncate(m.TypeDouble),
                 }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
 
@@ -245,7 +245,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         {
             var result = await _db.DataTypesSimple.Select(m =>
                 new {
-                    Id = m.Id,
+                    m.Id,
                     Guid = Guid.NewGuid(),
                 }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
 
@@ -257,7 +257,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         {
             var result = await _db.DataTypesVariable.Select(m =>
                 new {
-                    Id = m.Id,
+                    m.Id,
                     Match = Regex.IsMatch(m.TypeString, @"^Entity[a-zA-Z]{9}$"),
                     NotMatch = Regex.IsMatch(m.TypeString, @"^Entity[a-zA-Z]{8}$")
                 }).FirstOrDefaultAsync(m => m.Id == _variable.Id);
@@ -271,7 +271,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         {
             var result = await _db.DataTypesVariable.Select(m =>
                 new {
-                    Id = m.Id,
+                    m.Id,
                     StringEquals = m.TypeString.Equals("EntityFramework"),
                     StringNotEquals = m.TypeString.Equals("asdf")
                 }).FirstOrDefaultAsync(m => m.Id == _variable.Id);
@@ -285,7 +285,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         {
             var result = await _db.DataTypesVariable.Select(m =>
                 new {
-                    Id = m.Id,
+                    m.Id,
                     StartsWith = m.TypeString.StartsWith("Entity"),
                     NotStartsWith = m.TypeString.StartsWith("Framework")
                 }).FirstOrDefaultAsync(m => m.Id == _variable.Id);
@@ -299,8 +299,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         {
             var result = await _db.DataTypesVariable.Select(m =>
                 new {
-                    Id = m.Id,
-                    Length = m.TypeString.Length,
+                    m.Id,
+                    m.TypeString.Length,
                 }).FirstOrDefaultAsync(m => m.Id == _variable.Id);
             Assert.Equal(_variable.TypeString.Length, result.Length);
         }
@@ -310,7 +310,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         {
             var result = await _db.DataTypesVariable.Select(m =>
                 new {
-                    Id = m.Id,
+                    m.Id,
                     Replaced = m.TypeString.Replace("Entity", "Pomelo.Entity")
                 }).FirstOrDefaultAsync(m => m.Id == _variable.Id);
 
@@ -322,7 +322,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         {
             var result = await _db.DataTypesVariable.Select(m =>
                 new {
-                    Id = m.Id,
+                    m.Id,
                     First3Chars = m.TypeString.Substring(0, 3),
                     Last3Chars = m.TypeString.Substring(m.TypeString.Length - 4, 3),
                     MiddleChars = m.TypeString.Substring(1, m.TypeString.Length - 2)
@@ -338,7 +338,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         {
             var result = await _db.DataTypesVariable.Select(m =>
                 new {
-                    Id = m.Id,
+                    m.Id,
                     Lower = m.TypeString.ToLower()
                 }).FirstOrDefaultAsync(m => m.Id == _variable.Id);
 
@@ -350,7 +350,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         {
             var result = await _db.DataTypesVariable.Select(m =>
                 new {
-                    Id = m.Id,
+                    m.Id,
                     Upper = m.TypeString.ToUpper()
                 }).FirstOrDefaultAsync(m => m.Id == _variable.Id);
 
@@ -362,7 +362,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         {
             var result = await _db.DataTypesSimple.Select(m =>
                 new {
-                    Id = m.Id,
+                    m.Id,
                     Acos = Math.Acos(m.TypeDoubleN.Value),
                 }).FirstOrDefaultAsync(m => m.Id == _simple2.Id);
 
@@ -374,7 +374,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         {
             var result = await _db.DataTypesSimple.Select(m =>
                 new {
-                    Id = m.Id,
+                    m.Id,
                     Cos = Math.Cos(m.TypeDouble),
                 }).FirstOrDefaultAsync(m => m.Id == _simple2.Id);
 
@@ -386,7 +386,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         {
             var result = await _db.DataTypesSimple.Select(m =>
                 new {
-                    Id = m.Id,
+                    m.Id,
                     Sin = Math.Sin(m.TypeDouble),
                 }).FirstOrDefaultAsync(m => m.Id == _simple2.Id);
 

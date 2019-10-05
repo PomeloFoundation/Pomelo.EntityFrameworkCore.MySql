@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Utilities;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
 {
@@ -15,8 +16,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
     {
         private const string MigrationsScript = nameof(MigrationsScript);
 
-        public MySqlHistoryRepository(
-            [NotNull] HistoryRepositoryDependencies dependencies)
+        public MySqlHistoryRepository([NotNull] HistoryRepositoryDependencies dependencies)
             : base(dependencies)
         {
         }
@@ -57,6 +57,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
             return script.Insert(script.IndexOf("CREATE TABLE", StringComparison.Ordinal) + 12, " IF NOT EXISTS");
         }
 
+        /// <summary>
+        ///     Overridden by database providers to generate a SQL Script that will <c>BEGIN</c> a block
+        ///     of SQL if and only if the migration with the given identifier does not already exist in the history table.
+        /// </summary>
+        /// <param name="migrationId"> The migration identifier. </param>
+        /// <returns> The generated SQL. </returns>
         public override string GetBeginIfNotExistsScript(string migrationId) => $@"
 DROP PROCEDURE IF EXISTS {MigrationsScript};
 DELIMITER //
@@ -65,6 +71,12 @@ BEGIN
     IF NOT EXISTS(SELECT 1 FROM {SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema)} WHERE {SqlGenerationHelper.DelimitIdentifier(MigrationIdColumnName)} = '{migrationId}') THEN
 ";
 
+        /// <summary>
+        ///     Overridden by database providers to generate a SQL Script that will <c>BEGIN</c> a block
+        ///     of SQL if and only if the migration with the given identifier already exists in the history table.
+        /// </summary>
+        /// <param name="migrationId"> The migration identifier. </param>
+        /// <returns> The generated SQL. </returns>
         public override string GetBeginIfExistsScript(string migrationId) => $@"
 DROP PROCEDURE IF EXISTS {MigrationsScript};
 DELIMITER //
@@ -73,6 +85,10 @@ BEGIN
     IF EXISTS(SELECT 1 FROM {SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema)} WHERE {SqlGenerationHelper.DelimitIdentifier(MigrationIdColumnName)} = '{migrationId}') THEN
 ";
 
+        /// <summary>
+        ///     Overridden by database providers to generate a SQL script to <c>END</c> the SQL block.
+        /// </summary>
+        /// <returns> The generated SQL. </returns>
         public override string GetEndIfScript() => $@"
     END IF;
 END //

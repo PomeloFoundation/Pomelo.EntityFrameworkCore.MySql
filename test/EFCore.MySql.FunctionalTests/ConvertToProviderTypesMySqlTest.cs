@@ -36,12 +36,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             public TestSqlLoggerFactory TestSqlLoggerFactory => (TestSqlLoggerFactory)ServiceProvider.GetRequiredService<ILoggerFactory>();
 
             public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
-                => base.AddOptions(builder).ConfigureWarnings(
-                    c => c.Log(RelationalEventId.QueryClientEvaluationWarning));
+                => base.AddOptions(builder);
 
             public override bool SupportsBinaryKeys => true;
 
             public override DateTime DefaultDateTime => new DateTime();
+
+            public override bool SupportsDecimalComparisons => true;
         }
     }
 }

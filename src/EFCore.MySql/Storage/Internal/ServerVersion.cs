@@ -7,10 +7,10 @@ using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
-    public class ServerVersion
+    public partial class ServerVersion
     {
         public static Regex ReVersion = new Regex(@"\d+\.\d+\.?(?:\d+)?");
-        private static readonly Version DefaultVersion = new Version(8, 0, 0);
+        private static readonly Version _defaultVersion = new Version(8, 0, 0);
 
         public ServerVersion(string versionString)
         {
@@ -20,10 +20,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 var semanticVersion = ReVersion.Matches(versionString);
                 if (semanticVersion.Count > 0)
                 {
-                    if (Type == ServerType.MariaDb && semanticVersion.Count > 1)
-                        Version = Version.Parse(semanticVersion[1].Value);
-                    else
-                        Version = Version.Parse(semanticVersion[0].Value);
+                    Version = Type == ServerType.MariaDb && semanticVersion.Count > 1
+                        ? Version.Parse(semanticVersion[1].Value)
+                        : Version.Parse(semanticVersion[0].Value);
                 }
                 else
                 {
@@ -33,35 +32,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             }
             else
             {
-                Version = DefaultVersion;
+                Version = _defaultVersion;
             }
         }
 
-        public ServerVersion(Version version, ServerType type)
+        public ServerVersion(Version version, ServerType type = ServerType.MySql)
         {
             Version = version;
             Type = type;
         }
 
         public readonly ServerType Type;
-
         public readonly Version Version;
-
-        public bool SupportsDateTime6 => Version >= new Version(5, 6);
-
-        public bool SupportsRenameIndex
-        {
-            get
-            {
-                if (Type == ServerType.MySql)
-                {
-                    return Version >= new Version(5, 7);
-                }
-
-                // TODO Awaiting feedback from Mariadb on when they will support rename index!
-                return false;
-            }
-        }
 
         public int IndexMaxBytes =>
             (Type == ServerType.MySql && Version >= new Version(5, 7, 7))
@@ -80,5 +62,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         public override int GetHashCode()
             => (Version.GetHashCode() * 397) ^ Type.GetHashCode();
+
+        public override string ToString()
+            => Version + "-" + (Type == ServerType.MariaDb ? "mariadb" : "mysql");
     }
 }

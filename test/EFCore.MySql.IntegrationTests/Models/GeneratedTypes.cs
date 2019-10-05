@@ -11,8 +11,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models
     {
         public static void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // AppVeyor's MySQL version and MariaDb's MySQL don't support these functions
-            if (AppConfig.AppVeyor || new ServerVersion(AppConfig.Config["Data:ServerVersion"]).Type == Infrastructure.ServerType.MariaDb)
+            if (!AppConfig.ServerVersion.SupportsJson)
             {
                 return;
             }

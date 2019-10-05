@@ -16,7 +16,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        public Startup(IWebHostEnvironment env)
         {
             Configuration = AppConfig.Config;
         }
@@ -30,14 +30,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
             services.AddMvc(options =>
             {
                 options.OutputFormatters.Clear();
-                options.OutputFormatters.Add(new JsonOutputFormatter(new JsonSerializerSettings()
+                options.OutputFormatters.Add(new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings()
                 {
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                }, ArrayPool<char>.Shared));
+                }, ArrayPool<char>.Shared, options));
             });
+
             ConfigureEntityFramework(services);
 
-	        services
+            services
                 .AddLogging(builder =>
                     builder
                         .AddConfiguration(AppConfig.Config.GetSection("Logging"))
@@ -45,8 +46,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
                         .AddDebug()
                 )
                 .AddIdentity<AppIdentityUser, IdentityRole>()
-		        .AddEntityFrameworkStores<AppDb>()
-		        .AddDefaultTokenProviders();
+                .AddEntityFrameworkStores<AppDb>()
+                .AddDefaultTokenProviders();
+
+            services.AddControllers();
         }
 
         public static void ConfigureEntityFramework(IServiceCollection services, DbConnection connection = null)
@@ -60,7 +63,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
                             mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize);
                             mysqlOptions.ServerVersion(AppConfig.Config["Data:ServerVersion"]);
                             if (AppConfig.EfRetryOnFailure > 0)
+                            {
                                 mysqlOptions.EnableRetryOnFailure(AppConfig.EfRetryOnFailure, TimeSpan.FromSeconds(5), null);
+                            }
                         }
                 ));
             }
@@ -73,16 +78,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
                             mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize);
                             mysqlOptions.ServerVersion(AppConfig.Config["Data:ServerVersion"]);
                             if (AppConfig.EfRetryOnFailure > 0)
+                            {
                                 mysqlOptions.EnableRetryOnFailure(AppConfig.EfRetryOnFailure, TimeSpan.FromSeconds(5), null);
+                            }
                         }
                 ));
             }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseMvc();
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapDefaultControllerRoute();
+            });
         }
     }
 }

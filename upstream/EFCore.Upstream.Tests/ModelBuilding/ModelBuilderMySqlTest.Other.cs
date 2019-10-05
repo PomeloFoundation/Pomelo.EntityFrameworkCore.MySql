@@ -3,6 +3,7 @@
 
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.EntityFrameworkCore.ModelBuilding
 {
@@ -10,6 +11,11 @@ namespace Microsoft.EntityFrameworkCore.ModelBuilding
     {
         protected override DbContextOptions Configure()
             => new DbContextOptionsBuilder()
+                .UseInternalServiceProvider(
+                    new ServiceCollection()
+                        .AddEntityFrameworkMySql()
+                        .AddSingleton<IModelCacheKeyFactory, TestModelCacheKeyFactory>()
+                        .BuildServiceProvider())
                 .UseMySql("Database = None")
                 .Options;
 

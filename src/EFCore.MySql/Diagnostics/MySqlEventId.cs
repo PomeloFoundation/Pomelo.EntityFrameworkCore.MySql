@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.EntityFrameworkCore.Diagnostics
@@ -57,7 +56,8 @@ namespace Microsoft.EntityFrameworkCore.Diagnostics
             UniqueConstraintFound,
             IndexFound,
             ForeignKeyFound,
-            ForeignKeyPrincipalColumnMissingWarning
+            ForeignKeyPrincipalColumnMissingWarning,
+            ReflexiveConstraintIgnored
         }
 
         private static readonly string _validationPrefix = DbLoggerCategory.Model.Validation.Name + ".";
@@ -281,5 +281,11 @@ namespace Microsoft.EntityFrameworkCore.Diagnostics
         ///     This event is in the <see cref="DbLoggerCategory.Scaffolding" /> category.
         /// </summary>
         public static readonly EventId ForeignKeyPrincipalColumnMissingWarning = MakeScaffoldingId(Id.ForeignKeyPrincipalColumnMissingWarning);
+
+        /// <summary>
+        ///     A reflexive foreign key constraint was skipped.
+        ///     This event is in the <see cref="DbLoggerCategory.Scaffolding" /> category.
+        /// </summary>
+        public static readonly EventId ReflexiveConstraintIgnored = MakeScaffoldingId(Id.ReflexiveConstraintIgnored);
     }
 }

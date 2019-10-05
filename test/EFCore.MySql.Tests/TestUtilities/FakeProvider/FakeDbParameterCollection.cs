@@ -27,10 +27,7 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities.FakeProvider
         public override IEnumerator GetEnumerator()
             => _parameters.GetEnumerator();
 
-        public override object SyncRoot
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public override object SyncRoot => throw new NotImplementedException();
 
         public override void AddRange(Array values)
         {

@@ -6,6 +6,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata
 {
     public enum MySqlValueGenerationStrategy
     {
+        None,
         IdentityColumn,
         ComputedColumn
     }

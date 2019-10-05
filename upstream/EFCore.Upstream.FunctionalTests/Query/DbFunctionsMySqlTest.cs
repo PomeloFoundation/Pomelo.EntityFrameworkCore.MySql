@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Data.SqlClient;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -55,7 +55,7 @@ WHERE [c].[ContactName] LIKE N'!%' ESCAPE N'!'");
 
         [ConditionalFact]
         [MySqlCondition(MySqlCondition.SupportsFullTextSearch)]
-        public async void FreeText_literal()
+        public async Task FreeText_literal()
         {
             using (var context = CreateContext())
             {
@@ -214,7 +214,7 @@ WHERE ((FREETEXT([c.Manager].[Title], N'President', LANGUAGE 1033)) AND (FREETEX
 
         [ConditionalFact]
         [MySqlCondition(MySqlCondition.SupportsFullTextSearch)]
-        public async void FreeText_throws_when_using_non_parameter_or_constant_for_freetext_string()
+        public async Task FreeText_throws_when_using_non_parameter_or_constant_for_freetext_string()
         {
             using (var context = CreateContext())
             {
@@ -234,7 +234,7 @@ WHERE ((FREETEXT([c.Manager].[Title], N'President', LANGUAGE 1033)) AND (FREETEX
 
         [ConditionalFact]
         [MySqlCondition(MySqlCondition.SupportsFullTextSearch)]
-        public async void FreeText_throws_when_using_non_column_for_proeprty_reference()
+        public async Task FreeText_throws_when_using_non_column_for_property_reference()
         {
             using (var context = CreateContext())
             {
@@ -255,19 +255,23 @@ WHERE ((FREETEXT([c.Manager].[Title], N'President', LANGUAGE 1033)) AND (FREETEX
             }
         }
 
-#if !Test21
         [ConditionalFact]
         public void Contains_should_throw_on_client_eval()
         {
             var exNoLang = Assert.Throws<InvalidOperationException>(() => EF.Functions.Contains("teststring", "teststring"));
-            Assert.Equal(MySqlStrings.ContainsFunctionOnClient, exNoLang.Message);
+            Assert.Equal(
+                MySqlStrings.FunctionOnClient(nameof(MySqlDbFunctionsExtensions.Contains)),
+                exNoLang.Message);
+
             var exLang = Assert.Throws<InvalidOperationException>(() => EF.Functions.Contains("teststring", "teststring", 1033));
-            Assert.Equal(MySqlStrings.ContainsFunctionOnClient, exLang.Message);
+            Assert.Equal(
+                MySqlStrings.FunctionOnClient(nameof(MySqlDbFunctionsExtensions.Contains)),
+                exLang.Message);
         }
 
         [ConditionalFact]
         [MySqlCondition(MySqlCondition.SupportsFullTextSearch)]
-        public async void Contains_should_throw_when_using_non_parameter_or_constant_for_contains_string()
+        public async Task Contains_should_throw_when_using_non_parameter_or_constant_for_contains_string()
         {
             using (var context = CreateContext())
             {
@@ -298,7 +302,7 @@ WHERE ((FREETEXT([c.Manager].[Title], N'President', LANGUAGE 1033)) AND (FREETEX
 
         [ConditionalFact]
         [MySqlCondition(MySqlCondition.SupportsFullTextSearch)]
-        public async void Contains_literal()
+        public async Task Contains_literal()
         {
             using (var context = CreateContext())
             {
@@ -334,7 +338,7 @@ WHERE CONTAINS([c].[Title], N'President', LANGUAGE 1033)");
 
         [ConditionalFact]
         [MySqlCondition(MySqlCondition.SupportsFullTextSearch)]
-        public async void Contains_with_logical_operator()
+        public async Task Contains_with_logical_operator()
         {
             using (var context = CreateContext())
             {
@@ -354,7 +358,7 @@ WHERE CONTAINS([c].[Title], N'Vice OR Inside')");
 
         [ConditionalFact]
         [MySqlCondition(MySqlCondition.SupportsFullTextSearch)]
-        public async void Contains_with_prefix_term_and_language_term()
+        public async Task Contains_with_prefix_term_and_language_term()
         {
             using (var context = CreateContext())
             {
@@ -372,7 +376,7 @@ WHERE CONTAINS([c].[Title], N'""Mana*""', LANGUAGE 1033)");
 
         [ConditionalFact]
         [MySqlCondition(MySqlCondition.SupportsFullTextSearch)]
-        public async void Contains_with_proximity_term_and_language_term()
+        public async Task Contains_with_proximity_term_and_language_term()
         {
             using (var context = CreateContext())
             {
@@ -410,7 +414,6 @@ LEFT JOIN [Employees] AS [c.Manager] ON [c].[ReportsTo] = [c.Manager].[EmployeeI
 WHERE (CONTAINS([c.Manager].[Title], N'President')) AND (CONTAINS([c].[Title], N'""Ins*""'))");
             }
         }
-#endif
 
         [ConditionalFact]
         public virtual void DateDiff_Year()
@@ -424,8 +427,8 @@ WHERE (CONTAINS([c.Manager].[Title], N'President')) AND (CONTAINS([c].[Title], N
 
                 AssertSql(
                     @"SELECT COUNT(*)
-FROM [Orders] AS [c]
-WHERE DATEDIFF(YEAR, [c].[OrderDate], GETDATE()) = 0");
+FROM [Orders] AS [o]
+WHERE (DATEDIFF(YEAR, [o].[OrderDate], GETDATE()) = 0) AND DATEDIFF(YEAR, [o].[OrderDate], GETDATE()) IS NOT NULL");
             }
         }
 
@@ -440,8 +443,8 @@ WHERE DATEDIFF(YEAR, [c].[OrderDate], GETDATE()) = 0");
                 Assert.Equal(0, count);
                 AssertSql(
                     @"SELECT COUNT(*)
-FROM [Orders] AS [c]
-WHERE DATEDIFF(MONTH, [c].[OrderDate], GETDATE()) = 0");
+FROM [Orders] AS [o]
+WHERE (DATEDIFF(MONTH, [o].[OrderDate], GETDATE()) = 0) AND DATEDIFF(MONTH, [o].[OrderDate], GETDATE()) IS NOT NULL");
             }
         }
 
@@ -456,8 +459,8 @@ WHERE DATEDIFF(MONTH, [c].[OrderDate], GETDATE()) = 0");
                 Assert.Equal(0, count);
                 AssertSql(
                     @"SELECT COUNT(*)
-FROM [Orders] AS [c]
-WHERE DATEDIFF(DAY, [c].[OrderDate], GETDATE()) = 0");
+FROM [Orders] AS [o]
+WHERE (DATEDIFF(DAY, [o].[OrderDate], GETDATE()) = 0) AND DATEDIFF(DAY, [o].[OrderDate], GETDATE()) IS NOT NULL");
             }
         }
 
@@ -472,8 +475,8 @@ WHERE DATEDIFF(DAY, [c].[OrderDate], GETDATE()) = 0");
                 Assert.Equal(0, count);
                 AssertSql(
                     @"SELECT COUNT(*)
-FROM [Orders] AS [c]
-WHERE DATEDIFF(HOUR, [c].[OrderDate], GETDATE()) = 0");
+FROM [Orders] AS [o]
+WHERE (DATEDIFF(HOUR, [o].[OrderDate], GETDATE()) = 0) AND DATEDIFF(HOUR, [o].[OrderDate], GETDATE()) IS NOT NULL");
             }
         }
 
@@ -488,8 +491,8 @@ WHERE DATEDIFF(HOUR, [c].[OrderDate], GETDATE()) = 0");
                 Assert.Equal(0, count);
                 AssertSql(
                     @"SELECT COUNT(*)
-FROM [Orders] AS [c]
-WHERE DATEDIFF(MINUTE, [c].[OrderDate], GETDATE()) = 0");
+FROM [Orders] AS [o]
+WHERE (DATEDIFF(MINUTE, [o].[OrderDate], GETDATE()) = 0) AND DATEDIFF(MINUTE, [o].[OrderDate], GETDATE()) IS NOT NULL");
             }
         }
 
@@ -504,8 +507,8 @@ WHERE DATEDIFF(MINUTE, [c].[OrderDate], GETDATE()) = 0");
                 Assert.Equal(0, count);
                 AssertSql(
                     @"SELECT COUNT(*)
-FROM [Orders] AS [c]
-WHERE DATEDIFF(SECOND, [c].[OrderDate], GETDATE()) = 0");
+FROM [Orders] AS [o]
+WHERE (DATEDIFF(SECOND, [o].[OrderDate], GETDATE()) = 0) AND DATEDIFF(SECOND, [o].[OrderDate], GETDATE()) IS NOT NULL");
             }
         }
 
@@ -520,8 +523,8 @@ WHERE DATEDIFF(SECOND, [c].[OrderDate], GETDATE()) = 0");
                 Assert.Equal(0, count);
                 AssertSql(
                     @"SELECT COUNT(*)
-FROM [Orders] AS [c]
-WHERE DATEDIFF(MILLISECOND, GETDATE(), DATEADD(day, 1.0E0, GETDATE())) = 0");
+FROM [Orders] AS [o]
+WHERE DATEDIFF(MILLISECOND, GETDATE(), DATEADD(day, CAST(1.0E0 AS int), GETDATE())) = 0");
             }
         }
 
@@ -536,8 +539,8 @@ WHERE DATEDIFF(MILLISECOND, GETDATE(), DATEADD(day, 1.0E0, GETDATE())) = 0");
                 Assert.Equal(0, count);
                 AssertSql(
                     @"SELECT COUNT(*)
-FROM [Orders] AS [c]
-WHERE DATEDIFF(MICROSECOND, GETDATE(), DATEADD(second, 1.0E0, GETDATE())) = 0");
+FROM [Orders] AS [o]
+WHERE DATEDIFF(MICROSECOND, GETDATE(), DATEADD(second, CAST(1.0E0 AS int), GETDATE())) = 0");
             }
         }
 
@@ -552,9 +555,76 @@ WHERE DATEDIFF(MICROSECOND, GETDATE(), DATEADD(second, 1.0E0, GETDATE())) = 0");
                 Assert.Equal(0, count);
                 AssertSql(
                     @"SELECT COUNT(*)
-FROM [Orders] AS [c]
-WHERE DATEDIFF(NANOSECOND, GETDATE(), DATEADD(second, 1.0E0, GETDATE())) = 0");
+FROM [Orders] AS [o]
+WHERE DATEDIFF(NANOSECOND, GETDATE(), DATEADD(second, CAST(1.0E0 AS int), GETDATE())) = 0");
             }
+        }
+
+        [ConditionalFact]
+        public virtual void IsDate_not_valid()
+        {
+            using (var context = CreateContext())
+            {
+                var actual = context
+                    .Orders
+                    .Where(c => !EF.Functions.IsDate(c.CustomerID))
+                    .Select(c => EF.Functions.IsDate(c.CustomerID))
+                    .FirstOrDefault();
+
+                Assert.Equal(actual, false);
+
+                AssertSql(
+                    @"SELECT TOP(1) CAST(ISDATE([o].[CustomerID]) AS bit)
+FROM [Orders] AS [o]
+WHERE CAST(ISDATE([o].[CustomerID]) AS bit) <> CAST(1 AS bit)");
+            }
+        }
+
+        [ConditionalFact]
+        public virtual void IsDate_valid()
+        {
+            using (var context = CreateContext())
+            {
+                var actual = context
+                    .Orders
+                    .Where(c => EF.Functions.IsDate(c.OrderDate.Value.ToString()))
+                    .Select(c => EF.Functions.IsDate(c.OrderDate.Value.ToString()))
+                    .FirstOrDefault();
+
+                Assert.Equal(actual, true);
+
+                AssertSql(
+                    @"SELECT TOP(1) CAST(ISDATE(CONVERT(VARCHAR(100), [o].[OrderDate])) AS bit)
+FROM [Orders] AS [o]
+WHERE CAST(ISDATE(CONVERT(VARCHAR(100), [o].[OrderDate])) AS bit) = CAST(1 AS bit)");
+
+            }
+        }
+
+        [ConditionalFact]
+        public virtual void IsDate_join_fields()
+        {
+            using (var context = CreateContext())
+            {
+                var count = context.Orders.Count(c => EF.Functions.IsDate(c.CustomerID + c.OrderID));
+
+                Assert.Equal(0, count);
+
+                AssertSql(
+                    @"SELECT COUNT(*)
+FROM [Orders] AS [o]
+WHERE CAST(ISDATE([o].[CustomerID] + CAST([o].[OrderID] AS nchar(5))) AS bit) = CAST(1 AS bit)");
+            }
+        }
+
+        [ConditionalFact]
+        public void IsDate_should_throw_on_client_eval()
+        {
+            var exIsDate = Assert.Throws<InvalidOperationException>(() => EF.Functions.IsDate("#ISDATE#"));
+
+            Assert.Equal(
+                MySqlStrings.FunctionOnClient(nameof(MySqlDbFunctionsExtensions.IsDate)),
+                exIsDate.Message);
         }
 
         private void AssertSql(params string[] expected)

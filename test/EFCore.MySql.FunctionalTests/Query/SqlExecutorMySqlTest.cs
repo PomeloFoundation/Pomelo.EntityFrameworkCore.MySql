@@ -15,7 +15,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
         }
 
-        [Fact]
+        [ConditionalFact]
         public override void Query_with_parameters()
         {
             var city = "London";
@@ -24,7 +24,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             using (var context = CreateContext())
             {
                 var actual = context.Database
-                    .ExecuteSqlCommand(
+                    .ExecuteSqlRaw(
                         @"SELECT COUNT(*) FROM `Customers` WHERE `City` = {0} AND `ContactTitle` = {1}", city, contactTitle);
 
                 Assert.Equal(-1, actual);
@@ -39,7 +39,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             using (var context = CreateContext())
             {
                 var actual = context.Database
-                    .ExecuteSqlCommand(
+                    .ExecuteSqlRaw(
                         @"SELECT COUNT(*) FROM `Customers` WHERE `City` = @city", city);
 
                 Assert.Equal(-1, actual);
@@ -54,7 +54,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             using (var context = CreateContext())
             {
                 var actual = context.Database
-                    .ExecuteSqlCommand(
+                    .ExecuteSqlRaw(
                         @"SELECT COUNT(*) FROM `Customers` WHERE `City` = {0}", city);
 
                 Assert.Equal(-1, actual);
@@ -69,7 +69,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             using (var context = CreateContext())
             {
                 var actual = context.Database
-                    .ExecuteSqlCommand(
+                    .ExecuteSqlRaw(
                         @"SELECT COUNT(*) FROM `Customers` WHERE `City` = {0}", city);
 
                 Assert.Equal(-1, actual);
@@ -88,13 +88,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             using (var context = CreateContext())
             {
                 var actual = context.Database
-                    .ExecuteSqlCommand(
+                    .ExecuteSqlRaw(
                         @"SELECT COUNT(*) FROM `Customers` WHERE `City` = {0} AND `ContactTitle` = @contactTitle", city, contactTitleParameter);
 
                 Assert.Equal(-1, actual);
 
                 actual = context.Database
-                    .ExecuteSqlCommand(
+                    .ExecuteSqlRaw(
                         @"SELECT COUNT(*) FROM `Customers` WHERE `City` = @city AND `ContactTitle` = {1}", cityParameter, contactTitle);
 
                 Assert.Equal(-1, actual);
@@ -110,14 +110,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             using (var context = CreateContext())
             {
                 var actual = context.Database
-                    .ExecuteSqlCommand(
+                    .ExecuteSqlInterpolated(
                         $@"SELECT COUNT(*) FROM `Customers` WHERE `City` = {city} AND `ContactTitle` = {contactTitle}");
 
                 Assert.Equal(-1, actual);
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public override async Task Query_with_parameters_async()
         {
             var city = "London";
@@ -126,7 +126,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             using (var context = CreateContext())
             {
                 var actual = await context.Database
-                    .ExecuteSqlCommandAsync(
+                    .ExecuteSqlRawAsync(
                         @"SELECT COUNT(*) FROM `Customers` WHERE `City` = {0} AND `ContactTitle` = {1}", city, contactTitle);
 
                 Assert.Equal(-1, actual);
@@ -142,7 +142,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             using (var context = CreateContext())
             {
                 var actual = await context.Database
-                    .ExecuteSqlCommandAsync(
+                    .ExecuteSqlInterpolatedAsync(
                         $@"SELECT COUNT(*) FROM `Customers` WHERE `City` = {city} AND `ContactTitle` = {contactTitle}");
 
                 Assert.Equal(-1, actual);

@@ -1,4 +1,5 @@
-﻿using System.Data.Common;
+﻿using System;
+using System.Data.Common;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -16,8 +17,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public override RelationalTransaction Create(
             IRelationalConnection connection,
             DbTransaction transaction,
+            Guid transactionId,
             IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger,
             bool transactionOwned)
-            => new MySqlRelationalTransaction(connection, transaction, logger, transactionOwned);
+            => new MySqlRelationalTransaction(connection, transaction, transactionId, logger, transactionOwned);
     }
 }

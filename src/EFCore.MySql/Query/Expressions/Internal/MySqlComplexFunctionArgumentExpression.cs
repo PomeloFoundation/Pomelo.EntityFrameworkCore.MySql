@@ -8,98 +8,69 @@ using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Utilities;
 using JetBrains.Annotations;
-using Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Storage;
+using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 {
-    public class MySqlComplexFunctionArgumentExpression : Expression
+    public class MySqlComplexFunctionArgumentExpression : SqlExpression
     {
-        private readonly ReadOnlyCollection<Expression> _argumentParts;
-
         public MySqlComplexFunctionArgumentExpression(
-            [NotNull] IEnumerable<Expression> argumentParts,
-            [NotNull] Type argumentType)
+            IEnumerable<SqlExpression> argumentParts,
+            Type type,
+            RelationalTypeMapping typeMapping)
+            : base(type, typeMapping)
         {
-            _argumentParts = argumentParts.ToList().AsReadOnly();
-            Type = argumentType;
+            ArgumentParts = argumentParts.ToList().AsReadOnly();
         }
 
         /// <summary>
         ///     The arguments parts.
         /// </summary>
-        public virtual IReadOnlyList<Expression> ArgumentParts => _argumentParts;
-
-        /// <summary>
-        ///     Returns the node type of this <see cref="Expression" />. (Inherited from <see cref="Expression" />.)
-        /// </summary>
-        /// <returns>The <see cref="ExpressionType" /> that represents this expression.</returns>
-        public override ExpressionType NodeType => ExpressionType.Extension;
-
-        /// <summary>
-        ///     Gets the static type of the expression that this <see cref="Expression" /> represents. (Inherited from <see cref="Expression" />.)
-        /// </summary>
-        /// <returns>The <see cref="Type" /> that represents the static type of the expression.</returns>
-        public override Type Type { get; }
+        public virtual IReadOnlyList<SqlExpression> ArgumentParts { get; }
 
         /// <summary>
         ///     Dispatches to the specific visit method for this node type.
         /// </summary>
-        protected override Expression Accept(ExpressionVisitor visitor)
-        {
-            Check.NotNull(visitor, nameof(visitor));
-
-            return visitor is IMySqlExpressionVisitor specificVisitor
-                ? specificVisitor.VisitMySqlComplexFunctionArgumentExpression(this)
+        protected override Expression Accept(ExpressionVisitor visitor) =>
+            visitor is MySqlQuerySqlGenerator mySqlQuerySqlGenerator
+                ? mySqlQuerySqlGenerator.VisitMySqlComplexFunctionArgumentExpression(this)
                 : base.Accept(visitor);
-        }
 
-        /// <summary>
-        ///     Reduces the node and then calls the <see cref="ExpressionVisitor.Visit(Expression)" /> method passing the
-        ///     reduced expression.
-        ///     Throws an exception if the node isn't reducible.
-        /// </summary>
-        /// <param name="visitor"> An instance of <see cref="ExpressionVisitor" />. </param>
-        /// <returns> The expression being visited, or an expression which should replace it in the tree. </returns>
-        /// <remarks>
-        ///     Override this method to provide logic to walk the node's children.
-        ///     A typical implementation will call visitor.Visit on each of its
-        ///     children, and if any of them change, should return a new copy of
-        ///     itself with the modified children.
-        /// </remarks>
         protected override Expression VisitChildren(ExpressionVisitor visitor)
         {
-            var newArgumentParts = visitor.VisitAndConvert(_argumentParts, nameof(VisitChildren));
+            var changed = false;
+            var newArgumentParts = new SqlExpression[ArgumentParts.Count];
 
-            return newArgumentParts != _argumentParts
-                ? new MySqlComplexFunctionArgumentExpression(newArgumentParts, Type)
+            for (var i = 0; i < newArgumentParts.Length; i++)
+            {
+                newArgumentParts[i] = (SqlExpression) visitor.Visit(ArgumentParts[i]);
+                changed |= newArgumentParts[i] != ArgumentParts[i];
+            }
+            
+            return changed
+                ? new MySqlComplexFunctionArgumentExpression(
+                    newArgumentParts,
+                    Type,
+                    TypeMapping)
                 : this;
         }
 
-        /// <summary>
-        ///     Tests if this object is considered equal to another.
-        /// </summary>
-        /// <param name="obj"> The object to compare with the current object. </param>
-        /// <returns>
-        ///     true if the objects are considered equal, false if they are not.
-        /// </returns>
+        public override void Print(ExpressionPrinter expressionPrinter)
+            => expressionPrinter.Append(ToString());
+
         public override bool Equals(object obj)
-        {
-            if (obj is null)
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            return obj.GetType() == GetType() && Equals((MySqlComplexFunctionArgumentExpression)obj);
-        }
+            => obj != null
+            && (ReferenceEquals(this, obj)
+                || obj is MySqlComplexFunctionArgumentExpression sqlFragmentExpression
+                    && Equals(sqlFragmentExpression));
 
         private bool Equals(MySqlComplexFunctionArgumentExpression other)
-            => Type == other.Type
-               && _argumentParts.SequenceEqual(other._argumentParts);
+            => base.Equals(other)
+               && Type == other.Type
+               && ArgumentParts.SequenceEqual(other.ArgumentParts);
 
         /// <summary>
         ///     Returns a hash code for this object.
@@ -111,7 +82,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         {
             unchecked
             {
-                var hashCode = _argumentParts.Aggregate(0, (current, argument) => current + ((current * 397) ^ argument.GetHashCode()));
+                var hashCode = ArgumentParts.Aggregate(0, (current, argument) => current + ((current * 397) ^ argument.GetHashCode()));
                 hashCode = (hashCode * 397) ^ Type.GetHashCode();
                 return hashCode;
             }

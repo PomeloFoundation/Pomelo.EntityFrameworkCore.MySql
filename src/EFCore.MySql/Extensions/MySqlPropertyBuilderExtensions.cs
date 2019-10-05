@@ -1,13 +1,11 @@
 // Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
-using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Pomelo.EntityFrameworkCore.MySql.Extensions;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
@@ -28,8 +26,9 @@ namespace Microsoft.EntityFrameworkCore
         {
             Check.NotNull(propertyBuilder, nameof(propertyBuilder));
 
-            GetMySqlInternalBuilder(propertyBuilder).ValueGenerationStrategy(MySqlValueGenerationStrategy.IdentityColumn);
-
+            var property = propertyBuilder.Metadata;
+            property.SetValueGenerationStrategy(MySqlValueGenerationStrategy.IdentityColumn);
+            
             return propertyBuilder;
         }
 
@@ -54,8 +53,9 @@ namespace Microsoft.EntityFrameworkCore
             [NotNull] this PropertyBuilder propertyBuilder)
         {
             Check.NotNull(propertyBuilder, nameof(propertyBuilder));
-
-            GetMySqlInternalBuilder(propertyBuilder).ValueGenerationStrategy(MySqlValueGenerationStrategy.ComputedColumn);
+            
+            var property = propertyBuilder.Metadata;
+            property.SetValueGenerationStrategy(MySqlValueGenerationStrategy.ComputedColumn);
 
             return propertyBuilder;
         }
@@ -70,8 +70,5 @@ namespace Microsoft.EntityFrameworkCore
         public static PropertyBuilder<TProperty> UseMySqlComputedColumn<TProperty>(
             [NotNull] this PropertyBuilder<TProperty> propertyBuilder)
             => (PropertyBuilder<TProperty>)UseMySqlComputedColumn((PropertyBuilder)propertyBuilder);
-
-        private static MySqlPropertyBuilderAnnotations GetMySqlInternalBuilder(PropertyBuilder propertyBuilder)
-            => propertyBuilder.GetInfrastructure<InternalPropertyBuilder>().MySql(ConfigurationSource.Explicit);
     }
 }

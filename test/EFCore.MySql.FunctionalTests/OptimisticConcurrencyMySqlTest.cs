@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestModels.ConcurrencyModel;
-using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
+using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
@@ -21,7 +21,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
         protected override Task ConcurrencyTestAsync(
             Action<F1Context> storeChange, Action<F1Context> clientChange,
-            Action<F1Context, DbUpdateException> resolver, Action<F1Context> validator)
+            Action<F1Context, DbUpdateConcurrencyException> resolver, Action<F1Context> validator)
         {
             return base.ConcurrencyTestAsync(c =>
             {

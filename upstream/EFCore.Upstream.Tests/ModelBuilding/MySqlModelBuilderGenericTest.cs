@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Xunit;
 
@@ -14,7 +13,7 @@ namespace Microsoft.EntityFrameworkCore.ModelBuilding
     {
         public class MySqlGenericNonRelationship : GenericNonRelationship
         {
-            [Fact]
+            [ConditionalFact]
             public virtual void Index_has_a_filter_if_nonclustered_unique_with_nullable_properties()
             {
                 var modelBuilder = CreateModelBuilder();
@@ -26,51 +25,51 @@ namespace Microsoft.EntityFrameworkCore.ModelBuilding
 
                 var entityType = modelBuilder.Model.FindEntityType(typeof(Customer));
                 var index = entityType.GetIndexes().Single();
-                Assert.Equal("[Name] IS NOT NULL", index.MySql().Filter);
+                Assert.Equal("[Name] IS NOT NULL", index.GetFilter());
 
                 indexBuilder.IsUnique(false);
 
-                Assert.Null(index.MySql().Filter);
+                Assert.Null(index.GetFilter());
 
                 indexBuilder.IsUnique();
 
-                Assert.Equal("[Name] IS NOT NULL", index.MySql().Filter);
+                Assert.Equal("[Name] IS NOT NULL", index.GetFilter());
 
-                indexBuilder.ForMySqlIsClustered();
+                indexBuilder.IsClustered();
 
-                Assert.Null(index.MySql().Filter);
+                Assert.Null(index.GetFilter());
 
-                indexBuilder.ForMySqlIsClustered(false);
+                indexBuilder.IsClustered(false);
 
-                Assert.Equal("[Name] IS NOT NULL", index.MySql().Filter);
+                Assert.Equal("[Name] IS NOT NULL", index.GetFilter());
 
                 entityTypeBuilder.Property(e => e.Name).IsRequired();
 
-                Assert.Null(index.MySql().Filter);
+                Assert.Null(index.GetFilter());
 
                 entityTypeBuilder.Property(e => e.Name).IsRequired(false);
 
-                Assert.Equal("[Name] IS NOT NULL", index.MySql().Filter);
+                Assert.Equal("[Name] IS NOT NULL", index.GetFilter());
 
                 entityTypeBuilder.Property(e => e.Name).HasColumnName("RelationalName");
 
-                Assert.Equal("[RelationalName] IS NOT NULL", index.MySql().Filter);
+                Assert.Equal("[RelationalName] IS NOT NULL", index.GetFilter());
 
                 entityTypeBuilder.Property(e => e.Name).HasColumnName("MySqlName");
 
-                Assert.Equal("[MySqlName] IS NOT NULL", index.MySql().Filter);
+                Assert.Equal("[MySqlName] IS NOT NULL", index.GetFilter());
 
                 entityTypeBuilder.Property(e => e.Name).HasColumnName(null);
 
-                Assert.Equal("[Name] IS NOT NULL", index.MySql().Filter);
+                Assert.Equal("[Name] IS NOT NULL", index.GetFilter());
 
                 indexBuilder.HasFilter("Foo");
 
-                Assert.Equal("Foo", index.MySql().Filter);
+                Assert.Equal("Foo", index.GetFilter());
 
                 indexBuilder.HasFilter(null);
 
-                Assert.Null(index.MySql().Filter);
+                Assert.Null(index.GetFilter());
             }
 
             protected override TestModelBuilder CreateModelBuilder()
@@ -79,7 +78,7 @@ namespace Microsoft.EntityFrameworkCore.ModelBuilding
 
         public class MySqlGenericInheritance : GenericInheritance
         {
-            [Fact] // #7240
+            [ConditionalFact] // #7240
             public void Can_use_shadow_FK_that_collides_with_convention_shadow_FK_on_other_derived_type()
             {
                 var modelBuilder = CreateModelBuilder();
@@ -89,17 +88,34 @@ namespace Microsoft.EntityFrameworkCore.ModelBuilding
                     .WithOne()
                     .HasForeignKey<DisjointChildSubclass1>("ParentId");
 
-                modelBuilder.Validate();
+                modelBuilder.FinalizeModel();
 
                 var property1 = modelBuilder.Model.FindEntityType(typeof(DisjointChildSubclass1)).FindProperty("ParentId");
                 Assert.True(property1.IsForeignKey());
-                Assert.Equal("ParentId", property1.MySql().ColumnName);
+                Assert.Equal("ParentId", property1.GetColumnName());
                 var property2 = modelBuilder.Model.FindEntityType(typeof(DisjointChildSubclass2)).FindProperty("ParentId");
                 Assert.True(property2.IsForeignKey());
-                Assert.Equal("DisjointChildSubclass2_ParentId", property2.MySql().ColumnName);
+                Assert.Equal("DisjointChildSubclass2_ParentId", property2.GetColumnName());
             }
 
-            [Fact] //Issue#10659
+            [ConditionalFact]
+            public void Inherited_clr_properties_are_mapped_to_the_same_column()
+            {
+                var modelBuilder = CreateModelBuilder();
+                modelBuilder.Entity<ChildBase>();
+                modelBuilder.Ignore<Child>();
+                modelBuilder.Entity<DisjointChildSubclass1>();
+                modelBuilder.Entity<DisjointChildSubclass2>();
+
+                modelBuilder.FinalizeModel();
+
+                var property1 = modelBuilder.Model.FindEntityType(typeof(DisjointChildSubclass1)).FindProperty(nameof(Child.Name));
+                Assert.Equal(nameof(Child.Name), property1.GetColumnName());
+                var property2 = modelBuilder.Model.FindEntityType(typeof(DisjointChildSubclass2)).FindProperty(nameof(Child.Name));
+                Assert.Equal(nameof(Child.Name), property2.GetColumnName());
+            }
+
+            [ConditionalFact] //Issue#10659
             public void Index_convention_run_for_fk_when_derived_type_discovered_before_base_type()
             {
                 var modelBuilder = CreateModelBuilder();
@@ -109,10 +125,10 @@ namespace Microsoft.EntityFrameworkCore.ModelBuilding
 
                 var index = modelBuilder.Model.FindEntityType(typeof(CustomerDetails)).GetIndexes().Single();
 
-                Assert.Equal("[CustomerId] IS NOT NULL", index.MySql().Filter);
+                Assert.Equal("[CustomerId] IS NOT NULL", index.GetFilter());
             }
 
-            [Fact]
+            [ConditionalFact]
             public void Index_convention_sets_filter_for_unique_index_when_base_type_changed()
             {
                 var modelBuilder = CreateModelBuilder();
@@ -125,11 +141,11 @@ namespace Microsoft.EntityFrameworkCore.ModelBuilding
 
                 var index = modelBuilder.Model.FindEntityType(typeof(CustomerDetails)).GetIndexes().Single();
 
-                Assert.Equal("[CustomerId] IS NOT NULL", index.MySql().Filter);
+                Assert.Equal("[CustomerId] IS NOT NULL", index.GetFilter());
 
                 modelBuilder.Ignore<DetailsBase>();
 
-                Assert.Null(index.MySql().Filter);
+                Assert.Null(index.GetFilter());
             }
 
             public class Parent
@@ -139,9 +155,14 @@ namespace Microsoft.EntityFrameworkCore.ModelBuilding
                 public IList<DisjointChildSubclass2> B { get; set; }
             }
 
-            public abstract class Child
+            public abstract class ChildBase
             {
                 public int Id { get; set; }
+            }
+
+            public abstract class Child : ChildBase
+            {
+                public string Name { get; set; }
             }
 
             public class DisjointChildSubclass1 : Child
@@ -176,7 +197,7 @@ namespace Microsoft.EntityFrameworkCore.ModelBuilding
 
         public class MySqlGenericOwnedTypes : GenericOwnedTypes
         {
-            [Fact]
+            [ConditionalFact]
             public virtual void Owned_types_use_table_splitting_by_default()
             {
                 var modelBuilder = CreateModelBuilder();
@@ -210,8 +231,6 @@ namespace Microsoft.EntityFrameworkCore.ModelBuilding
                     .OwnsOne(s => s.AnotherBookLabel)
                     .Ignore(l => l.Book);
 
-                modelBuilder.Validate();
-
                 var book = model.FindEntityType(typeof(Book));
                 var bookOwnership1 = book.FindNavigation(nameof(Book.Label)).ForeignKey;
                 var bookOwnership2 = book.FindNavigation(nameof(Book.AlternateLabel)).ForeignKey;
@@ -220,12 +239,12 @@ namespace Microsoft.EntityFrameworkCore.ModelBuilding
                 var bookLabel2Ownership1 = bookOwnership2.DeclaringEntityType.FindNavigation(nameof(BookLabel.AnotherBookLabel)).ForeignKey;
                 var bookLabel2Ownership2 = bookOwnership2.DeclaringEntityType.FindNavigation(nameof(BookLabel.SpecialBookLabel)).ForeignKey;
 
-                Assert.Equal(book.MySql().TableName, bookOwnership1.DeclaringEntityType.MySql().TableName);
-                Assert.Equal(book.MySql().TableName, bookOwnership2.DeclaringEntityType.MySql().TableName);
-                Assert.Equal(book.MySql().TableName, bookLabel1Ownership1.DeclaringEntityType.MySql().TableName);
-                Assert.Equal(book.MySql().TableName, bookLabel1Ownership2.DeclaringEntityType.MySql().TableName);
-                Assert.Equal(book.MySql().TableName, bookLabel2Ownership1.DeclaringEntityType.MySql().TableName);
-                Assert.Equal(book.MySql().TableName, bookLabel2Ownership2.DeclaringEntityType.MySql().TableName);
+                Assert.Equal(book.GetTableName(), bookOwnership1.DeclaringEntityType.GetTableName());
+                Assert.Equal(book.GetTableName(), bookOwnership2.DeclaringEntityType.GetTableName());
+                Assert.Equal(book.GetTableName(), bookLabel1Ownership1.DeclaringEntityType.GetTableName());
+                Assert.Equal(book.GetTableName(), bookLabel1Ownership2.DeclaringEntityType.GetTableName());
+                Assert.Equal(book.GetTableName(), bookLabel2Ownership1.DeclaringEntityType.GetTableName());
+                Assert.Equal(book.GetTableName(), bookLabel2Ownership2.DeclaringEntityType.GetTableName());
 
                 Assert.NotSame(bookOwnership1.DeclaringEntityType, bookOwnership2.DeclaringEntityType);
                 Assert.Equal(1, bookOwnership1.DeclaringEntityType.GetForeignKeys().Count());
@@ -244,23 +263,25 @@ namespace Microsoft.EntityFrameworkCore.ModelBuilding
 
                 Assert.Equal(
                     nameof(Book.Label) + "_" + nameof(BookLabel.Id),
-                    bookOwnership1.DeclaringEntityType.FindProperty(nameof(BookLabel.Id)).MySql().ColumnName);
+                    bookOwnership1.DeclaringEntityType.FindProperty(nameof(BookLabel.Id)).GetColumnName());
                 Assert.Equal(
                     nameof(Book.AlternateLabel) + "_" + nameof(BookLabel.AnotherBookLabel) + "_" + nameof(BookLabel.Id),
-                    bookLabel2Ownership1.DeclaringEntityType.FindProperty(nameof(BookLabel.Id)).MySql().ColumnName);
+                    bookLabel2Ownership1.DeclaringEntityType.FindProperty(nameof(BookLabel.Id)).GetColumnName());
 
                 modelBuilder.Entity<Book>().OwnsOne(b => b.Label).ToTable("Label");
                 modelBuilder.Entity<Book>().OwnsOne(b => b.AlternateLabel).ToTable("AlternateLabel");
 
+                modelBuilder.FinalizeModel();
+
                 Assert.Equal(
                     nameof(BookLabel.Id),
-                    bookOwnership1.DeclaringEntityType.FindProperty(nameof(BookLabel.Id)).MySql().ColumnName);
+                    bookOwnership1.DeclaringEntityType.FindProperty(nameof(BookLabel.Id)).GetColumnName());
                 Assert.Equal(
                     nameof(BookLabel.AnotherBookLabel) + "_" + nameof(BookLabel.Id),
-                    bookLabel2Ownership1.DeclaringEntityType.FindProperty(nameof(BookLabel.Id)).MySql().ColumnName);
+                    bookLabel2Ownership1.DeclaringEntityType.FindProperty(nameof(BookLabel.Id)).GetColumnName());
             }
 
-            [Fact]
+            [ConditionalFact]
             public virtual void Owned_types_can_be_mapped_to_different_tables()
             {
                 var modelBuilder = CreateModelBuilder();
@@ -274,9 +295,10 @@ namespace Microsoft.EntityFrameworkCore.ModelBuilding
                             b => b.AlternateLabel, tb =>
                             {
                                 tb.Ignore(l => l.Book);
-                                tb.HasConstraintName("AlternateLabelFK");
+                                tb.WithOwner()
+                                  .HasConstraintName("AlternateLabelFK");
                                 tb.ToTable("TT", "TS");
-                                tb.ForMySqlIsMemoryOptimized();
+                                tb.IsMemoryOptimized();
                                 tb.OwnsOne(
                                     l => l.AnotherBookLabel, ab =>
                                     {
@@ -287,7 +309,7 @@ namespace Microsoft.EntityFrameworkCore.ModelBuilding
                                             .Ignore(l => l.Book)
                                             .Ignore(l => l.BookLabel);
 
-                                        ((Navigation)ab.OwnedEntityType.FindNavigation(nameof(BookLabel.SpecialBookLabel)))
+                                        ab.OwnedEntityType.FindNavigation(nameof(BookLabel.SpecialBookLabel))
                                             .AddAnnotation("Foo", "Bar");
                                     });
                                 tb.OwnsOne(
@@ -327,7 +349,7 @@ namespace Microsoft.EntityFrameworkCore.ModelBuilding
                             });
                     });
 
-                modelBuilder.Validate();
+                modelBuilder.FinalizeModel();
 
                 var book = model.FindEntityType(typeof(Book));
                 var bookOwnership1 = book.FindNavigation(nameof(Book.Label)).ForeignKey;
@@ -336,37 +358,41 @@ namespace Microsoft.EntityFrameworkCore.ModelBuilding
                 var bookLabel1Ownership2 = bookOwnership1.DeclaringEntityType.FindNavigation(nameof(BookLabel.SpecialBookLabel)).ForeignKey;
                 var bookLabel2Ownership1 = bookOwnership2.DeclaringEntityType.FindNavigation(nameof(BookLabel.AnotherBookLabel)).ForeignKey;
                 var bookLabel2Ownership2 = bookOwnership2.DeclaringEntityType.FindNavigation(nameof(BookLabel.SpecialBookLabel)).ForeignKey;
-                var bookLabel1Ownership11 = bookLabel1Ownership1.DeclaringEntityType.FindNavigation(nameof(BookLabel.SpecialBookLabel)).ForeignKey;
-                var bookLabel1Ownership21 = bookLabel1Ownership2.DeclaringEntityType.FindNavigation(nameof(BookLabel.AnotherBookLabel)).ForeignKey;
-                var bookLabel2Ownership11 = bookLabel2Ownership1.DeclaringEntityType.FindNavigation(nameof(BookLabel.SpecialBookLabel)).ForeignKey;
-                var bookLabel2Ownership21 = bookLabel2Ownership2.DeclaringEntityType.FindNavigation(nameof(BookLabel.AnotherBookLabel)).ForeignKey;
+                var bookLabel1Ownership11 = bookLabel1Ownership1.DeclaringEntityType.FindNavigation(nameof(BookLabel.SpecialBookLabel))
+                    .ForeignKey;
+                var bookLabel1Ownership21 = bookLabel1Ownership2.DeclaringEntityType.FindNavigation(nameof(BookLabel.AnotherBookLabel))
+                    .ForeignKey;
+                var bookLabel2Ownership11 = bookLabel2Ownership1.DeclaringEntityType.FindNavigation(nameof(BookLabel.SpecialBookLabel))
+                    .ForeignKey;
+                var bookLabel2Ownership21 = bookLabel2Ownership2.DeclaringEntityType.FindNavigation(nameof(BookLabel.AnotherBookLabel))
+                    .ForeignKey;
 
-                Assert.Equal("AlternateLabelFK", bookOwnership2.Relational().Name);
+                Assert.Equal("AlternateLabelFK", bookOwnership2.GetConstraintName());
 
-                Assert.Equal("BS", book.MySql().Schema);
-                Assert.Equal("BT", book.MySql().TableName);
-                Assert.Equal("LS", bookOwnership1.DeclaringEntityType.MySql().Schema);
-                Assert.Equal("LT", bookOwnership1.DeclaringEntityType.MySql().TableName);
-                Assert.False(bookOwnership1.DeclaringEntityType.MySql().IsMemoryOptimized);
-                Assert.Equal("TS", bookOwnership2.DeclaringEntityType.MySql().Schema);
-                Assert.Equal("TT", bookOwnership2.DeclaringEntityType.MySql().TableName);
-                Assert.True(bookOwnership2.DeclaringEntityType.MySql().IsMemoryOptimized);
-                Assert.Equal("AS2", bookLabel1Ownership1.DeclaringEntityType.MySql().Schema);
-                Assert.Equal("AT2", bookLabel1Ownership1.DeclaringEntityType.MySql().TableName);
-                Assert.Equal("SS1", bookLabel1Ownership2.DeclaringEntityType.MySql().Schema);
-                Assert.Equal("ST1", bookLabel1Ownership2.DeclaringEntityType.MySql().TableName);
-                Assert.Equal("AS1", bookLabel2Ownership1.DeclaringEntityType.MySql().Schema);
-                Assert.Equal("AT1", bookLabel2Ownership1.DeclaringEntityType.MySql().TableName);
-                Assert.Equal("SS2", bookLabel2Ownership2.DeclaringEntityType.MySql().Schema);
-                Assert.Equal("ST2", bookLabel2Ownership2.DeclaringEntityType.MySql().TableName);
-                Assert.Equal("SS21", bookLabel1Ownership11.DeclaringEntityType.MySql().Schema);
-                Assert.Equal("ST21", bookLabel1Ownership11.DeclaringEntityType.MySql().TableName);
-                Assert.Equal("AS11", bookLabel1Ownership21.DeclaringEntityType.MySql().Schema);
-                Assert.Equal("AT11", bookLabel1Ownership21.DeclaringEntityType.MySql().TableName);
-                Assert.Equal("SS11", bookLabel2Ownership11.DeclaringEntityType.MySql().Schema);
-                Assert.Equal("ST11", bookLabel2Ownership11.DeclaringEntityType.MySql().TableName);
-                Assert.Equal("AS21", bookLabel2Ownership21.DeclaringEntityType.MySql().Schema);
-                Assert.Equal("AT21", bookLabel2Ownership21.DeclaringEntityType.MySql().TableName);
+                Assert.Equal("BS", book.GetSchema());
+                Assert.Equal("BT", book.GetTableName());
+                Assert.Equal("LS", bookOwnership1.DeclaringEntityType.GetSchema());
+                Assert.Equal("LT", bookOwnership1.DeclaringEntityType.GetTableName());
+                Assert.False(bookOwnership1.DeclaringEntityType.IsMemoryOptimized());
+                Assert.Equal("TS", bookOwnership2.DeclaringEntityType.GetSchema());
+                Assert.Equal("TT", bookOwnership2.DeclaringEntityType.GetTableName());
+                Assert.True(bookOwnership2.DeclaringEntityType.IsMemoryOptimized());
+                Assert.Equal("AS2", bookLabel1Ownership1.DeclaringEntityType.GetSchema());
+                Assert.Equal("AT2", bookLabel1Ownership1.DeclaringEntityType.GetTableName());
+                Assert.Equal("SS1", bookLabel1Ownership2.DeclaringEntityType.GetSchema());
+                Assert.Equal("ST1", bookLabel1Ownership2.DeclaringEntityType.GetTableName());
+                Assert.Equal("AS1", bookLabel2Ownership1.DeclaringEntityType.GetSchema());
+                Assert.Equal("AT1", bookLabel2Ownership1.DeclaringEntityType.GetTableName());
+                Assert.Equal("SS2", bookLabel2Ownership2.DeclaringEntityType.GetSchema());
+                Assert.Equal("ST2", bookLabel2Ownership2.DeclaringEntityType.GetTableName());
+                Assert.Equal("SS21", bookLabel1Ownership11.DeclaringEntityType.GetSchema());
+                Assert.Equal("ST21", bookLabel1Ownership11.DeclaringEntityType.GetTableName());
+                Assert.Equal("AS11", bookLabel1Ownership21.DeclaringEntityType.GetSchema());
+                Assert.Equal("AT11", bookLabel1Ownership21.DeclaringEntityType.GetTableName());
+                Assert.Equal("SS11", bookLabel2Ownership11.DeclaringEntityType.GetSchema());
+                Assert.Equal("ST11", bookLabel2Ownership11.DeclaringEntityType.GetTableName());
+                Assert.Equal("AS21", bookLabel2Ownership21.DeclaringEntityType.GetSchema());
+                Assert.Equal("AT21", bookLabel2Ownership21.DeclaringEntityType.GetTableName());
 
                 Assert.Equal("Bar", bookLabel2Ownership11.PrincipalToDependent["Foo"]);
 
@@ -390,7 +416,7 @@ namespace Microsoft.EntityFrameworkCore.ModelBuilding
                 Assert.Equal(4, model.GetEntityTypes().Count(e => e.ClrType == typeof(SpecialBookLabel)));
             }
 
-            [Fact]
+            [ConditionalFact]
             public virtual void Owned_type_collections_can_be_mapped_to_different_tables()
             {
                 var modelBuilder = CreateModelBuilder();
@@ -401,52 +427,106 @@ namespace Microsoft.EntityFrameworkCore.ModelBuilding
                     r =>
                     {
                         r.HasKey(o => o.OrderId);
-                        r.ForMySqlIsMemoryOptimized();
+                        r.IsMemoryOptimized();
                         r.Ignore(o => o.OrderCombination);
                         r.Ignore(o => o.Details);
                     });
-
-                modelBuilder.Validate();
 
                 var ownership = model.FindEntityType(typeof(Customer)).FindNavigation(nameof(Customer.Orders)).ForeignKey;
                 var owned = ownership.DeclaringEntityType;
                 Assert.True(ownership.IsOwnership);
                 Assert.Equal(nameof(Order.Customer), ownership.DependentToPrincipal.Name);
-                Assert.Equal("FK_Order_Customer_CustomerId", ownership.Relational().Name);
+                Assert.Equal("FK_Order_Customer_CustomerId", ownership.GetConstraintName());
 
                 Assert.Equal(1, owned.GetForeignKeys().Count());
                 Assert.Equal(1, owned.GetIndexes().Count());
-                Assert.Equal(new[] { nameof(Order.OrderId), nameof(Order.AnotherCustomerId), nameof(Order.CustomerId) },
-                    owned.GetProperties().Select(p => p.MySql().ColumnName));
-                Assert.Equal(nameof(Order), owned.MySql().TableName);
-                Assert.Null(owned.MySql().Schema);
-                Assert.True(owned.MySql().IsMemoryOptimized);
+                Assert.Equal(
+                    new[] { nameof(Order.OrderId), nameof(Order.AnotherCustomerId), nameof(Order.CustomerId) },
+                    owned.GetProperties().Select(p => p.GetColumnName()));
+                Assert.Equal(nameof(Order), owned.GetTableName());
+                Assert.Null(owned.GetSchema());
+                Assert.True(owned.IsMemoryOptimized());
 
                 modelBuilder.Entity<Customer>().OwnsMany(
                     c => c.Orders,
                     r =>
                     {
-                        r.HasConstraintName("Owned");
+                        r.WithOwner(o => o.Customer).HasConstraintName("Owned");
                         r.ToTable("bar", "foo");
                     });
 
-                Assert.Equal("bar", owned.MySql().TableName);
-                Assert.Equal("foo", owned.MySql().Schema);
-                Assert.Equal("Owned", ownership.Relational().Name);
+                Assert.Equal("bar", owned.GetTableName());
+                Assert.Equal("foo", owned.GetSchema());
+                Assert.Equal("Owned", ownership.GetConstraintName());
 
                 modelBuilder.Entity<Customer>().OwnsMany(
                     c => c.Orders,
                     r => r.ToTable("blah"));
 
-                Assert.Equal("blah", owned.MySql().TableName);
-                Assert.Equal("foo", owned.MySql().Schema);
+                modelBuilder.FinalizeModel();
+
+                Assert.Equal("blah", owned.GetTableName());
+                Assert.Equal("foo", owned.GetSchema());
+            }
+
+            [ConditionalFact]
+            public override void Can_configure_owned_type()
+            {
+                var modelBuilder = CreateModelBuilder();
+                var model = modelBuilder.Model;
+
+                var entityBuilder = modelBuilder.Entity<Customer>().OwnsOne(c => c.Details)
+                    .ToTable("CustomerDetails");
+                entityBuilder.Property(d => d.CustomerId);
+                entityBuilder.HasIndex(d => d.CustomerId);
+                entityBuilder.WithOwner(d => d.Customer)
+                             .HasPrincipalKey(c => c.AlternateKey);
+
+                modelBuilder.FinalizeModel();
+
+                var owner = model.FindEntityType(typeof(Customer));
+                Assert.Equal(typeof(Customer).FullName, owner.Name);
+                var ownership = owner.FindNavigation(nameof(Customer.Details)).ForeignKey;
+                Assert.True(ownership.IsOwnership);
+                Assert.Equal(nameof(Customer.Details), ownership.PrincipalToDependent.Name);
+                Assert.Equal("CustomerAlternateKey", ownership.Properties.Single().Name);
+                Assert.Equal(nameof(Customer.AlternateKey), ownership.PrincipalKey.Properties.Single().Name);
+                var owned = ownership.DeclaringEntityType;
+                Assert.Same(entityBuilder.OwnedEntityType, owned);
+                Assert.Equal(1, owned.GetForeignKeys().Count());
+                Assert.Equal(nameof(CustomerDetails.CustomerId), owned.GetIndexes().Single().Properties.Single().Name);
+                Assert.Equal(
+                    new[] { "CustomerAlternateKey", nameof(CustomerDetails.CustomerId), nameof(CustomerDetails.Id) },
+                    owned.GetProperties().Select(p => p.Name));
+                Assert.NotNull(model.FindEntityType(typeof(CustomerDetails)));
+                Assert.Equal(1, model.GetEntityTypes().Count(e => e.ClrType == typeof(CustomerDetails)));
+            }
+
+            [ConditionalFact]
+            public override void Can_configure_owned_type_key()
+            {
+                var modelBuilder = CreateModelBuilder();
+                var model = modelBuilder.Model;
+
+                modelBuilder.Entity<Customer>().OwnsOne(c => c.Details)
+                    .ToTable("Details")
+                    .HasKey(c => c.Id);
+
+                modelBuilder.FinalizeModel();
+
+                var owner = model.FindEntityType(typeof(Customer));
+                var owned = owner.FindNavigation(nameof(Customer.Details)).ForeignKey.DeclaringEntityType;
+                Assert.Equal(
+                    new[] { nameof(CustomerDetails.Id), nameof(CustomerDetails.CustomerId) },
+                    owned.GetProperties().Select(p => p.Name).ToArray());
+                Assert.Equal(nameof(CustomerDetails.Id), owned.FindPrimaryKey().Properties.Single().Name);
             }
 
             protected override TestModelBuilder CreateModelBuilder()
                 => CreateTestModelBuilder(MySqlTestHelpers.Instance);
         }
 
-        public class MySqlGenericQueryTypes : GenericQueryTypes
+        public class MySqlGenericKeylessEntities : GenericKeylessEntities
         {
             protected override TestModelBuilder CreateModelBuilder()
                 => CreateTestModelBuilder(MySqlTestHelpers.Instance);

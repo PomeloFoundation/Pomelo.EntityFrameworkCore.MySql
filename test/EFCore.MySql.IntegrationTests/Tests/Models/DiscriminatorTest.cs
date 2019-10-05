@@ -113,20 +113,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
 				Assert.Equal(3, frizzle.Students.Count);
 				var students = new HashSet<string> {"Arnold", "Phoebe", "Wanda"};
 				foreach (var student in frizzle.Students)
-					Assert.Contains(student.Name, students);
+                {
+                    Assert.Contains(student.Name, students);
+                }
 
-				// southpark
-				var garrison = teachers[1];
+                // southpark
+                var garrison = teachers[1];
 				var hat = teachers[2];
 
 				// mr. garrison has 4 student
 				Assert.Equal(4, garrison.Students.Count);
 				students = new HashSet<string> {"Eric Cartman", "Kenny McCormick", "Kyle Broflovski", "Stan Marsh"};
 				foreach (var student in garrison.Students)
-					Assert.Contains(student.Name + " " + (student.Family?.LastName ?? ""), students);
+                {
+                    Assert.Contains(student.Name + " " + (student.Family?.LastName ?? ""), students);
+                }
 
-				// everyone's parents are on the PTA except for Kenny's
-				var pta = new HashSet<string> {"Liane Cartman", "Sheila Broflovski", "Gerald Broflovski", "Randy Marsh", "Sharon Marsh"};
+                // everyone's parents are on the PTA except for Kenny's
+                var pta = new HashSet<string> {"Liane Cartman", "Sheila Broflovski", "Gerald Broflovski", "Randy Marsh", "Sharon Marsh"};
 				var ptaSize = 0;
 				foreach (var student in garrison.Students)
 				{

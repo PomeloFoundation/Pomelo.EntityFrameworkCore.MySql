@@ -69,6 +69,9 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
 
             public override CoreTypeMapping Clone(ValueConverter converter)
                 => new IntArrayTypeMapping(Parameters.WithComposedConverter(converter));
+
+            protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
+                => new IntArrayTypeMapping(parameters);
         }
 
         private static readonly RelationalTypeMapping _intArray

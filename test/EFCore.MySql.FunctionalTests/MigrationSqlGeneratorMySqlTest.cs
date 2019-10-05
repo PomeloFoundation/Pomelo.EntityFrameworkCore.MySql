@@ -3,6 +3,7 @@ using System.Linq;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -110,15 +111,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.CreateTableOperation();
 
             Assert.Equal(
-                "CREATE TABLE `dbo`.`People` (" + EOL +
-                "    `Id` int NOT NULL," + EOL +
-                "    `EmployerId` int NULL," + EOL +
-                "    `SSN` char(11) NULL," + EOL +
-                "    PRIMARY KEY (`Id`)," + EOL +
-                "    UNIQUE (`SSN`)," + EOL +
-                "    FOREIGN KEY (`EmployerId`) REFERENCES `Companies` (`Id`)" + EOL +
-                ");" + EOL,
-                Sql);
+                @"CREATE TABLE `dbo`.`People` (
+    `Id` int NOT NULL,
+    `EmployerId` int NULL,
+    `SSN` char(11) NULL,
+    PRIMARY KEY (`Id`),
+    UNIQUE (`SSN`),
+    CHECK (SSN > 0),
+    FOREIGN KEY (`EmployerId`) REFERENCES `Companies` (`Id`)
+);
+", Sql);
         }
 
         [Fact]
@@ -312,15 +314,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        public override void AddColumnOperation_with_computed_column_SQL()
-        {
-            base.AddColumnOperation_with_computed_column_SQL();
-
-            Assert.Equal(
-                @"ALTER TABLE `People` ADD `Birthday` date AS (CURRENT_TIMESTAMP) NULL;" + EOL,
-                Sql);
-        }
-
         [Fact]
         public virtual void AddColumnOperation_with_computed_column()
         {
@@ -424,7 +417,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 {
                     Table = "People",
                     Name = "IsLeader",
-                    ClrType = typeof(Boolean),
+                    ClrType = typeof(bool),
                     ColumnType = "bit",
                     IsNullable = true,
                     DefaultValue = true
@@ -772,15 +765,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             var migrationBuilder = new MigrationBuilder("MySql");
 
             migrationBuilder.RenameColumn(
-                    table: "Person",
-                    name: "Name",
-                    newName: "FullName")
-                .Annotation(RelationalAnnotationNames.ColumnType, "VARCHAR(4000)");
+                table: "Person",
+                name: "Name",
+                newName: "FullName");
 
             Generate(migrationBuilder.Operations.ToArray());
 
             Assert.Equal(
-                "ALTER TABLE `Person` CHANGE `Name` `FullName` VARCHAR(4000);" + EOL,
+                "ALTER TABLE `Person` RENAME COLUMN `Name` `FullName`",
                 Sql);
         }
 
@@ -801,7 +793,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 migrationBuilder.Operations.ToArray());
 
             Assert.Equal(
-                "ALTER TABLE `Person` CHANGE `Name` `FullName` longtext NULL;" + EOL,
+                "ALTER TABLE `Person` RENAME COLUMN `Name` `FullName`",
                 Sql);
         }
 

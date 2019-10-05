@@ -1,38 +1,39 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
+using Microsoft.Extensions.DependencyInjection;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public class SimpleQueryMySqlTest : SimpleQueryTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>
+    public partial class SimpleQueryMySqlTest : SimpleQueryTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>
     {
         // ReSharper disable once UnusedParameter.Local
         public SimpleQueryMySqlTest(NorthwindQueryMySqlFixture<NoopModelCustomizer> fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
         {
             Fixture.TestSqlLoggerFactory.Clear();
-            //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
+            Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        public override void Query_backed_by_database_view()
+        public override async Task Take_Skip(bool isAsync)
         {
-            // Not present on SQLite
-        }
-
-        public override void Take_Skip()
-        {
-            base.Take_Skip();
+            await base.Take_Skip(isAsync);
 
             AssertSql(
                 @"@__p_0='10'
 @__p_1='5'
 
-SELECT `t`.*
+SELECT `t`.`CustomerID`, `t`.`Address`, `t`.`City`, `t`.`CompanyName`, `t`.`ContactName`, `t`.`ContactTitle`, `t`.`Country`, `t`.`Fax`, `t`.`Phone`, `t`.`PostalCode`, `t`.`Region`
 FROM (
     SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
     FROM `Customers` AS `c`
@@ -43,34 +44,33 @@ ORDER BY `t`.`ContactName`
 LIMIT 18446744073709551610 OFFSET @__p_1");
         }
 
-        public override void Where_datetime_now()
+        public override async Task Where_datetime_now(bool isAsync)
         {
-            base.Where_datetime_now();
+            await base.Where_datetime_now(isAsync);
 
             AssertSql(
                 @"@__myDatetime_0='2015-04-10T00:00:00' (DbType = DateTime)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE CURRENT_TIMESTAMP() <> @__myDatetime_0");
+WHERE (CURRENT_TIMESTAMP() <> @__myDatetime_0) OR @__myDatetime_0 IS NULL");
         }
 
-        public override void Where_datetime_utcnow()
+        public override async Task Where_datetime_utcnow(bool isAsync)
         {
-            base.Where_datetime_utcnow();
+            await base.Where_datetime_utcnow(isAsync);
 
             AssertSql(
                 @"@__myDatetime_0='2015-04-10T00:00:00' (DbType = DateTime)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE UTC_TIMESTAMP() <> @__myDatetime_0");
+WHERE (UTC_TIMESTAMP() <> @__myDatetime_0) OR @__myDatetime_0 IS NULL");
         }
 
-        [ConditionalFact]
-        public override void Where_datetime_today()
+        public override async Task Where_datetime_today(bool isAsync)
         {
-            base.Where_datetime_today();
+            await base.Where_datetime_today(isAsync);
 
             AssertSql(
                 @"SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
@@ -78,262 +78,250 @@ FROM `Employees` AS `e`
 WHERE CONVERT(CURRENT_TIMESTAMP(), date) = CURDATE()");
         }
 
-        public override void Where_datetime_date_component()
+        public override async Task Where_datetime_date_component(bool isAsync)
         {
-            base.Where_datetime_date_component();
+            await base.Where_datetime_date_component(isAsync);
 
             AssertSql(
                 @"@__myDatetime_0='1998-05-04T00:00:00' (DbType = DateTime)
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE CONVERT(`o`.`OrderDate`, date) = @__myDatetime_0");
+WHERE ((CONVERT(`o`.`OrderDate`, date) = @__myDatetime_0) AND (CONVERT(`o`.`OrderDate`, date) IS NOT NULL AND @__myDatetime_0 IS NOT NULL)) OR (CONVERT(`o`.`OrderDate`, date) IS NULL AND @__myDatetime_0 IS NULL)");
         }
 
-        public override void Where_datetime_year_component()
+        public override async Task Where_datetime_year_component(bool isAsync)
         {
-            base.Where_datetime_year_component();
+            await base.Where_datetime_year_component(isAsync);
 
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE EXTRACT(year FROM `o`.`OrderDate`) = 1998");
+WHERE (EXTRACT(year FROM `o`.`OrderDate`) = 1998) AND EXTRACT(year FROM `o`.`OrderDate`) IS NOT NULL");
         }
 
-        public override void Where_datetime_month_component()
+        public override async Task Where_datetime_month_component(bool isAsync)
         {
-            base.Where_datetime_month_component();
+            await base.Where_datetime_month_component(isAsync);
 
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE EXTRACT(month FROM `o`.`OrderDate`) = 4");
+WHERE (EXTRACT(month FROM `o`.`OrderDate`) = 4) AND EXTRACT(month FROM `o`.`OrderDate`) IS NOT NULL");
         }
 
-        public override void Where_datetime_dayOfYear_component()
+        public override async Task Where_datetime_dayOfYear_component(bool isAsync)
         {
-            base.Where_datetime_dayOfYear_component();
+            await base.Where_datetime_dayOfYear_component(isAsync);
 
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE DAYOFYEAR(`o`.`OrderDate`) = 68");
+WHERE (DAYOFYEAR(`o`.`OrderDate`) = 68) AND DAYOFYEAR(`o`.`OrderDate`) IS NOT NULL");
         }
 
-        public override void Where_datetime_day_component()
+        public override async Task Where_datetime_day_component(bool isAsync)
         {
-            base.Where_datetime_day_component();
+            await base.Where_datetime_day_component(isAsync);
 
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE EXTRACT(day FROM `o`.`OrderDate`) = 4");
+WHERE (EXTRACT(day FROM `o`.`OrderDate`) = 4) AND EXTRACT(day FROM `o`.`OrderDate`) IS NOT NULL");
         }
 
-        public override void Where_datetime_hour_component()
+        public override async Task Where_datetime_hour_component(bool isAsync)
         {
-            base.Where_datetime_hour_component();
+            await base.Where_datetime_hour_component(isAsync);
 
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE EXTRACT(hour FROM `o`.`OrderDate`) = 14");
+WHERE (EXTRACT(hour FROM `o`.`OrderDate`) = 14) AND EXTRACT(hour FROM `o`.`OrderDate`) IS NOT NULL");
         }
 
-        public override void Where_datetime_minute_component()
+        public override async Task Where_datetime_minute_component(bool isAsync)
         {
-            base.Where_datetime_minute_component();
+            await base.Where_datetime_minute_component(isAsync);
 
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE EXTRACT(minute FROM `o`.`OrderDate`) = 23");
+WHERE (EXTRACT(minute FROM `o`.`OrderDate`) = 23) AND EXTRACT(minute FROM `o`.`OrderDate`) IS NOT NULL");
         }
 
-        public override void Where_datetime_second_component()
+        public override async Task Where_datetime_second_component(bool isAsync)
         {
-            base.Where_datetime_second_component();
+            await base.Where_datetime_second_component(isAsync);
 
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE EXTRACT(second FROM `o`.`OrderDate`) = 44");
+WHERE (EXTRACT(second FROM `o`.`OrderDate`) = 44) AND EXTRACT(second FROM `o`.`OrderDate`) IS NOT NULL");
         }
 
-        public override void Where_datetime_millisecond_component()
+        public override async Task Where_datetime_millisecond_component(bool isAsync)
         {
-            base.Where_datetime_millisecond_component();
+            await base.Where_datetime_millisecond_component(isAsync);
 
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
-FROM `Orders` AS `o`");
+FROM `Orders` AS `o`
+WHERE (EXTRACT(microsecond FROM `o`.`OrderDate`)) DIV (1000) = 88");
         }
 
-        public override void String_StartsWith_Literal()
+        public override async Task String_StartsWith_Literal(bool isAsync)
         {
-            base.String_StartsWith_Literal();
+            await base.String_StartsWith_Literal(isAsync);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` LIKE CONCAT('M', '%') AND (LEFT(`c`.`ContactName`, CHAR_LENGTH('M')) = 'M')");
+WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE 'M%')");
         }
 
-        public override void String_StartsWith_Identity()
+        public override async Task String_StartsWith_Identity(bool isAsync)
         {
-            base.String_StartsWith_Identity();
+            await base.String_StartsWith_Identity(isAsync);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, '%') AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`)) OR (`c`.`ContactName` = '')");
+WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, '%')) AND (((LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`) AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NOT NULL AND `c`.`ContactName` IS NOT NULL)) OR (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NULL AND `c`.`ContactName` IS NULL)))))");
         }
 
-        public override void String_StartsWith_Column()
+        public override async Task String_StartsWith_Column(bool isAsync)
         {
-            base.String_StartsWith_Column();
+            await base.String_StartsWith_Column(isAsync);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, '%') AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`)) OR (`c`.`ContactName` = '')");
+WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, '%')) AND (((LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`) AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NOT NULL AND `c`.`ContactName` IS NOT NULL)) OR (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NULL AND `c`.`ContactName` IS NULL)))))");
         }
 
-        public override void String_StartsWith_MethodCall()
+        public override async Task String_StartsWith_MethodCall(bool isAsync)
         {
-            base.String_StartsWith_MethodCall();
-
-            AssertSql(
-                @"@__LocalMethod1_0='M' (Size = 4000)
-
-SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` LIKE CONCAT(@__LocalMethod1_0, '%') AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(@__LocalMethod1_0)) = @__LocalMethod1_0)) OR (@__LocalMethod1_0 = '')");
-        }
-
-        public override void String_EndsWith_Literal()
-        {
-            base.String_EndsWith_Literal();
+            await base.String_StartsWith_MethodCall(isAsync);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE RIGHT(`c`.`ContactName`, CHAR_LENGTH('b')) = 'b'");
+WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE 'M%')");
         }
 
-        public override void String_EndsWith_Identity()
+        public override async Task String_EndsWith_Literal(bool isAsync)
         {
-            base.String_EndsWith_Identity();
+            await base.String_EndsWith_Literal(isAsync);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`) OR (`c`.`ContactName` = '')");
+WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE '%b')");
         }
 
-        public override void String_EndsWith_Column()
+        public override async Task String_EndsWith_Identity(bool isAsync)
         {
-            base.String_EndsWith_Column();
+            await base.String_EndsWith_Identity(isAsync);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`) OR (`c`.`ContactName` = '')");
+WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND (((RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`) AND (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NOT NULL AND `c`.`ContactName` IS NOT NULL)) OR (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NULL AND `c`.`ContactName` IS NULL))))");
         }
 
-        public override void String_EndsWith_MethodCall()
+        public override async Task String_EndsWith_Column(bool isAsync)
         {
-            base.String_EndsWith_MethodCall();
-
-            AssertSql(
-                @"@__LocalMethod2_0='m' (Size = 4000)
-
-SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`
-WHERE (RIGHT(`c`.`ContactName`, CHAR_LENGTH(@__LocalMethod2_0)) = @__LocalMethod2_0) OR (@__LocalMethod2_0 = '')");
-        }
-
-        public override void String_Contains_Literal()
-        {
-            AssertQuery<Customer>(
-                cs => cs.Where(c => c.ContactName.Contains("M")), // case-insensitive
-                cs => cs.Where(c => c.ContactName.Contains("M") || c.ContactName.Contains("m")), // case-sensitive
-                entryCount: 34);
+            await base.String_EndsWith_Column(isAsync);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE LOCATE('M', `c`.`ContactName`) > 0");
+WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND (((RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`) AND (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NOT NULL AND `c`.`ContactName` IS NOT NULL)) OR (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NULL AND `c`.`ContactName` IS NULL))))");
         }
 
-        public override void String_Contains_Identity()
+        public override async Task String_EndsWith_MethodCall(bool isAsync)
         {
-            base.String_Contains_Identity();
+            await base.String_EndsWith_MethodCall(isAsync);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0) OR (`c`.`ContactName` = '')");
+WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE '%m')");
         }
 
-        public override void String_Contains_Column()
+        public override async Task String_Contains_Literal(bool isAsync)
         {
-            base.String_Contains_Column();
+            await base.String_Contains_Literal(isAsync);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0) OR (`c`.`ContactName` = '')");
+WHERE LOCATE(BINARY 'M', `c`.`ContactName`) > 0");
         }
 
-        public override void String_Contains_MethodCall()
+        public override async Task String_Contains_Identity(bool isAsync)
         {
-            AssertQuery<Customer>(
-                cs => cs.Where(c => c.ContactName.Contains(LocalMethod1())), // case-insensitive
-                cs => cs.Where(c => c.ContactName.Contains(LocalMethod1().ToLower()) || c.ContactName.Contains(LocalMethod1().ToUpper())), // case-sensitive
-                entryCount: 34);
-
-            AssertSql(
-                @"@__LocalMethod1_0='M' (Size = 4000)
-
-SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`
-WHERE (LOCATE(@__LocalMethod1_0, `c`.`ContactName`) > 0) OR (@__LocalMethod1_0 = '')");
-        }
-
-        public override void IsNullOrWhiteSpace_in_predicate()
-        {
-            base.IsNullOrWhiteSpace_in_predicate();
+            await base.String_Contains_Identity(isAsync);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`Region` IS NULL OR (LTRIM(RTRIM(`c`.`Region`)) = '')");
+WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (LOCATE(BINARY `c`.`ContactName`, `c`.`ContactName`) > 0)");
         }
 
-        public override void Where_string_length()
+        public override async Task String_Contains_Column(bool isAsync)
         {
-            base.Where_string_length();
+            await base.String_Contains_Column(isAsync);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE CHAR_LENGTH(`c`.`City`) = 6");
+WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (LOCATE(BINARY `c`.`ContactName`, `c`.`ContactName`) > 0)");
         }
 
-        public override void Where_string_indexof()
+        public override async Task String_Contains_MethodCall(bool isAsync)
         {
-            base.Where_string_indexof();
+            await base.String_Contains_MethodCall(isAsync);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LOCATE('Sea', `c`.`City`) - 1) <> -1");
+WHERE LOCATE(BINARY 'M', `c`.`ContactName`) > 0");
         }
 
-        public override void Indexof_with_emptystring()
+        public override async Task IsNullOrWhiteSpace_in_predicate(bool isAsync)
         {
-            base.Indexof_with_emptystring();
+            await base.IsNullOrWhiteSpace_in_predicate(isAsync);
+
+            AssertSql(
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE `c`.`Region` IS NULL OR ((TRIM(`c`.`Region`) = '') AND TRIM(`c`.`Region`) IS NOT NULL)");
+        }
+
+        public override async Task Where_string_length(bool isAsync)
+        {
+            await base.Where_string_length(isAsync);
+            AssertSql(
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE (CHAR_LENGTH(`c`.`City`) = 6) AND CHAR_LENGTH(`c`.`City`) IS NOT NULL");
+        }
+
+        public override async Task Where_string_indexof(bool isAsync)
+        {
+            await base.Where_string_indexof(isAsync);
+
+            AssertSql(
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE ((LOCATE('Sea', `c`.`City`) - 1) <> -1) OR LOCATE('Sea', `c`.`City`) - 1 IS NULL");
+        }
+
+        public override async Task Indexof_with_emptystring(bool isAsync)
+        {
+            await base.Indexof_with_emptystring(isAsync);
 
             AssertSql(
                 @"SELECT LOCATE('', `c`.`ContactName`) - 1
@@ -341,19 +329,19 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
-        public override void Where_string_replace()
+        public override async Task Where_string_replace(bool isAsync)
         {
-            base.Where_string_replace();
+            await base.Where_string_replace(isAsync);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE REPLACE(`c`.`City`, 'Sea', 'Rea') = 'Reattle'");
+WHERE (REPLACE(`c`.`City`, 'Sea', 'Rea') = 'Reattle') AND REPLACE(`c`.`City`, 'Sea', 'Rea') IS NOT NULL");
         }
 
-        public override void Replace_with_emptystring()
+        public override async Task Replace_with_emptystring(bool isAsync)
         {
-            base.Replace_with_emptystring();
+            await base.Replace_with_emptystring(isAsync);
 
             AssertSql(
                 @"SELECT REPLACE(`c`.`ContactName`, 'ari', '')
@@ -361,39 +349,39 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
-        public override void Where_string_substring()
+        public override async Task Where_string_substring(bool isAsync)
         {
-            base.Where_string_substring();
+            await base.Where_string_substring(isAsync);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE SUBSTRING(`c`.`City`, 2, 2) = 'ea'");
+WHERE (SUBSTRING(`c`.`City`, 1 + 1, 2) = 'ea') AND SUBSTRING(`c`.`City`, 1 + 1, 2) IS NOT NULL");
         }
 
-        public override void Substring_with_zero_startindex()
+        public override async Task Substring_with_zero_startindex(bool isAsync)
         {
-            base.Substring_with_zero_startindex();
+            await base.Substring_with_zero_startindex(isAsync);
 
             AssertSql(
-                @"SELECT SUBSTRING(`c`.`ContactName`, 1, 3)
+                @"SELECT SUBSTRING(`c`.`ContactName`, 0 + 1, 3)
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
-        public override void Substring_with_constant()
+        public override async Task Substring_with_constant(bool isAsync)
         {
-            base.Substring_with_constant();
+            await base.Substring_with_constant(isAsync);
 
             AssertSql(
-                @"SELECT SUBSTRING(`c`.`ContactName`, 2, 3)
+                @"SELECT SUBSTRING(`c`.`ContactName`, 1 + 1, 3)
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
-        public override void Substring_with_closure()
+        public override async Task Substring_with_closure(bool isAsync)
         {
-            base.Substring_with_closure();
+            await base.Substring_with_closure(isAsync);
 
             AssertSql(
                 @"@__start_0='2'
@@ -403,92 +391,89 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
-        public override void Substring_with_client_eval()
+        public override async Task Substring_with_zero_length(bool isAsync)
         {
-            base.Substring_with_client_eval();
+            await base.Substring_with_zero_length(isAsync);
 
             AssertSql(
-                @"SELECT `c`.`ContactName`
+                @"SELECT SUBSTRING(`c`.`ContactName`, 2 + 1, 0)
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
-        public override void Substring_with_zero_length()
+        public override async Task Where_math_abs1(bool isAsync)
         {
-            base.Substring_with_zero_length();
+            await base.Where_math_abs1(isAsync);
 
             AssertSql(
-                @"SELECT SUBSTRING(`c`.`ContactName`, 3, 0)
-FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` = 'ALFKI'");
+                @"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE ABS(`o`.`ProductID`) > 10");
         }
 
-        public override void Where_math_abs1()
+        public override async Task Where_math_abs2(bool isAsync)
         {
-            base.Where_math_abs1();
+            await base.Where_math_abs2(isAsync);
 
             AssertSql(
-                @"SELECT `od`.`OrderID`, `od`.`ProductID`, `od`.`Discount`, `od`.`Quantity`, `od`.`UnitPrice`
-FROM `Order Details` AS `od`
-WHERE ABS(`od`.`ProductID`) > 10");
+                @"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE ABS(`o`.`Quantity`) > 10");
         }
 
-        public override void Where_math_abs2()
+        public override async Task Where_math_abs_uncorrelated(bool isAsync)
         {
-            base.Where_math_abs2();
+            await base.Where_math_abs_uncorrelated(isAsync);
 
             AssertSql(
-                @"SELECT `od`.`OrderID`, `od`.`ProductID`, `od`.`Discount`, `od`.`Quantity`, `od`.`UnitPrice`
-FROM `Order Details` AS `od`
-WHERE ABS(`od`.`Quantity`) > 10");
+                @"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE 10 < `o`.`ProductID`");
         }
 
-        public override void Where_math_abs_uncorrelated()
+        public override async Task Select_math_round_int(bool isAsync)
         {
-            base.Where_math_abs_uncorrelated();
+            await base.Select_math_round_int(isAsync);
 
-            AssertSql(
-                @"@__Abs_0='10'
-
-SELECT `od`.`OrderID`, `od`.`ProductID`, `od`.`Discount`, `od`.`Quantity`, `od`.`UnitPrice`
-FROM `Order Details` AS `od`
-WHERE @__Abs_0 < `od`.`ProductID`");
-        }
-
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Select_math_round_int()
-        {
-            base.Select_math_round_int();
-
-            AssertSql(
-                @"SELECT round(`o`.`OrderID`) AS `A`
+            if (Fixture.TestStore.ServiceProvider.GetService<IMySqlOptions>()?.ServerVersion.SupportsDoubleCast ?? false)
+            {
+                AssertSql(
+                    @"SELECT ROUND(CAST(`o`.`OrderID` AS double)) AS `A`
 FROM `Orders` AS `o`
 WHERE `o`.`OrderID` < 10250");
+            }
+            else
+            {
+                AssertSql(
+                    @"SELECT ROUND((CAST(`o`.`OrderID` AS decimal(65,30)) + 0e0)) AS `A`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderID` < 10250");
+            }
         }
 
-        public override void Where_math_min()
+        public override async Task Where_math_min(bool isAsync)
         {
-            base.Where_math_min();
+            await base.Where_math_min(isAsync);
 
             AssertSql(
-                @"SELECT `od`.`OrderID`, `od`.`ProductID`, `od`.`Discount`, `od`.`Quantity`, `od`.`UnitPrice`
-FROM `Order Details` AS `od`
-WHERE `od`.`OrderID` = 11077");
+                @"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`OrderID` = 11077) AND (LEAST(`o`.`OrderID`, `o`.`ProductID`) = `o`.`ProductID`)");
         }
 
-        public override void Where_math_max()
+        public override async Task Where_math_max(bool isAsync)
         {
-            base.Where_math_max();
+            await base.Where_math_max(isAsync);
 
             AssertSql(
-                @"SELECT `od`.`OrderID`, `od`.`ProductID`, `od`.`Discount`, `od`.`Quantity`, `od`.`UnitPrice`
-FROM `Order Details` AS `od`
-WHERE `od`.`OrderID` = 11077");
+                @"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`OrderID` = 11077) AND (GREATEST(`o`.`OrderID`, `o`.`ProductID`) = `o`.`OrderID`)");
         }
 
-        public override void Where_string_to_lower()
+        public override async Task Where_string_to_lower(bool isAsync)
         {
-            base.Where_string_to_lower();
+            await base.Where_string_to_lower(isAsync);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
@@ -496,9 +481,9 @@ FROM `Customers` AS `c`
 WHERE LOWER(`c`.`CustomerID`) = 'alfki'");
         }
 
-        public override void Where_string_to_upper()
+        public override async Task Where_string_to_upper(bool isAsync)
         {
-            base.Where_string_to_upper();
+            await base.Where_string_to_upper(isAsync);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
@@ -506,93 +491,93 @@ FROM `Customers` AS `c`
 WHERE UPPER(`c`.`CustomerID`) = 'ALFKI'");
         }
 
-        public override void TrimStart_without_arguments_in_predicate()
+        public override async Task TrimStart_without_arguments_in_predicate(bool isAsync)
         {
-            base.TrimStart_without_arguments_in_predicate();
+            await base.TrimStart_without_arguments_in_predicate(isAsync);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE LTRIM(`c`.`ContactTitle`) = 'Owner'");
+WHERE (TRIM(LEADING FROM `c`.`ContactTitle`) = 'Owner') AND TRIM(LEADING FROM `c`.`ContactTitle`) IS NOT NULL");
         }
 
-        public override void TrimStart_with_char_argument_in_predicate()
+        public override async Task TrimStart_with_char_argument_in_predicate(bool isAsync)
         {
-            base.TrimStart_with_char_argument_in_predicate();
-
-            AssertSql(
-                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`");
-        }
-
-        public override void TrimStart_with_char_array_argument_in_predicate()
-        {
-            base.TrimStart_with_char_array_argument_in_predicate();
-
-            AssertSql(
-                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`");
-        }
-
-        public override void TrimEnd_without_arguments_in_predicate()
-        {
-            base.TrimEnd_without_arguments_in_predicate();
+            await base.TrimStart_with_char_argument_in_predicate(isAsync);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE RTRIM(`c`.`ContactTitle`) = 'Owner'");
+WHERE (TRIM(LEADING 'O' FROM `c`.`ContactTitle`) = 'wner') AND TRIM(LEADING 'O' FROM `c`.`ContactTitle`) IS NOT NULL");
         }
 
-        public override void TrimEnd_with_char_argument_in_predicate()
+        public override Task TrimStart_with_char_array_argument_in_predicate(bool isAsync)
         {
-            base.TrimEnd_with_char_argument_in_predicate();
-
-            AssertSql(
-                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`");
+            // MySQL only supports a string (characters in fixed order) as the parameter specifying what should be trimmed.
+            // String.TrimStart has a different behavior, where any single character in any order will be trimmed.
+            // Therefore, calling String.TrimStart with more than one char to trim, triggers client eval.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.TrimStart_with_char_array_argument_in_predicate(isAsync));
         }
 
-        public override void TrimEnd_with_char_array_argument_in_predicate()
+        public override async Task TrimEnd_without_arguments_in_predicate(bool isAsync)
         {
-            base.TrimEnd_with_char_array_argument_in_predicate();
-
-            AssertSql(
-                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`");
-        }
-
-        public override void Trim_without_argument_in_predicate()
-        {
-            base.Trim_without_argument_in_predicate();
+            await base.TrimEnd_without_arguments_in_predicate(isAsync);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE LTRIM(RTRIM(`c`.`ContactTitle`)) = 'Owner'");
+WHERE (TRIM(TRAILING FROM `c`.`ContactTitle`) = 'Owner') AND TRIM(TRAILING FROM `c`.`ContactTitle`) IS NOT NULL");
         }
 
-        public override void Trim_with_char_argument_in_predicate()
+        public override async Task TrimEnd_with_char_argument_in_predicate(bool isAsync)
         {
-            base.Trim_with_char_argument_in_predicate();
+            await base.TrimEnd_with_char_argument_in_predicate(isAsync);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`");
+FROM `Customers` AS `c`
+WHERE (TRIM(TRAILING 'r' FROM `c`.`ContactTitle`) = 'Owne') AND TRIM(TRAILING 'r' FROM `c`.`ContactTitle`) IS NOT NULL");
         }
 
-        public override void Trim_with_char_array_argument_in_predicate()
+        public override Task TrimEnd_with_char_array_argument_in_predicate(bool isAsync)
         {
-            base.Trim_with_char_array_argument_in_predicate();
+            // MySQL only supports a string (characters in fixed order) as the parameter specifying what should be trimmed.
+            // String.TrimEnd has a different behavior, where any single character in any order will be trimmed.
+            // Therefore, calling String.TrimEnd with more than one char to trim, triggers client eval.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.TrimEnd_with_char_array_argument_in_predicate(isAsync));
+        }
+
+        public override async Task Trim_without_argument_in_predicate(bool isAsync)
+        {
+            await base.Trim_without_argument_in_predicate(isAsync);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`");
+FROM `Customers` AS `c`
+WHERE (TRIM(`c`.`ContactTitle`) = 'Owner') AND TRIM(`c`.`ContactTitle`) IS NOT NULL");
         }
 
-        public override void Sum_with_coalesce()
+        public override async Task Trim_with_char_argument_in_predicate(bool isAsync)
         {
-            base.Sum_with_coalesce();
+            await base.Trim_with_char_argument_in_predicate(isAsync);
+
+            AssertSql(
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE (TRIM('O' FROM `c`.`ContactTitle`) = 'wner') AND TRIM('O' FROM `c`.`ContactTitle`) IS NOT NULL");
+        }
+
+        public override Task Trim_with_char_array_argument_in_predicate(bool isAsync)
+        {
+            // MySQL only supports a string (characters in fixed order) as the parameter specifying what should be trimmed.
+            // String.Trim has a different behavior, where any single character in any order will be trimmed.
+            // Therefore, calling String.Trim with more than one char to trim, triggers client eval.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Trim_with_char_array_argument_in_predicate(isAsync));
+        }
+
+        public override async Task Sum_with_coalesce(bool isAsync)
+        {
+            await base.Sum_with_coalesce(isAsync);
 
             AssertSql(
                 @"SELECT SUM(COALESCE(`p`.`UnitPrice`, 0.0))
@@ -600,1084 +585,276 @@ FROM `Products` AS `p`
 WHERE `p`.`ProductID` < 40");
         }
 
-        public override void Select_datetime_year_component()
+        public override async Task Select_datetime_year_component(bool isAsync)
         {
-            base.Select_datetime_year_component();
+            await base.Select_datetime_year_component(isAsync);
 
             AssertSql(
                 @"SELECT EXTRACT(year FROM `o`.`OrderDate`)
 FROM `Orders` AS `o`");
         }
 
-        public override void Select_datetime_month_component()
+        public override async Task Select_datetime_month_component(bool isAsync)
         {
-            base.Select_datetime_month_component();
+            await base.Select_datetime_month_component(isAsync);
 
             AssertSql(
                 @"SELECT EXTRACT(month FROM `o`.`OrderDate`)
 FROM `Orders` AS `o`");
         }
 
-        public override void Select_datetime_day_of_year_component()
+        public override async Task Select_datetime_day_of_year_component(bool isAsync)
         {
-            base.Select_datetime_day_of_year_component();
+            await base.Select_datetime_day_of_year_component(isAsync);
 
             AssertSql(
                 @"SELECT DAYOFYEAR(`o`.`OrderDate`)
 FROM `Orders` AS `o`");
         }
 
-        public override void Select_datetime_day_component()
+        public override async Task Select_datetime_day_component(bool isAsync)
         {
-            base.Select_datetime_day_component();
+            await base.Select_datetime_day_component(isAsync);
 
             AssertSql(
                 @"SELECT EXTRACT(day FROM `o`.`OrderDate`)
 FROM `Orders` AS `o`");
         }
 
-        public override void Select_datetime_hour_component()
+        public override async Task Select_datetime_hour_component(bool isAsync)
         {
-            base.Select_datetime_hour_component();
+            await base.Select_datetime_hour_component(isAsync);
 
             AssertSql(
                 @"SELECT EXTRACT(hour FROM `o`.`OrderDate`)
 FROM `Orders` AS `o`");
         }
 
-        public override void Select_datetime_minute_component()
+        public override async Task Select_datetime_minute_component(bool isAsync)
         {
-            base.Select_datetime_minute_component();
+            await base.Select_datetime_minute_component(isAsync);
 
             AssertSql(
                 @"SELECT EXTRACT(minute FROM `o`.`OrderDate`)
 FROM `Orders` AS `o`");
         }
 
-        public override void Select_datetime_second_component()
+        public override async Task Select_datetime_second_component(bool isAsync)
         {
-            base.Select_datetime_second_component();
+            await base.Select_datetime_second_component(isAsync);
 
             AssertSql(
                 @"SELECT EXTRACT(second FROM `o`.`OrderDate`)
 FROM `Orders` AS `o`");
         }
 
-        public override void Select_datetime_millisecond_component()
+        public override async Task Select_datetime_millisecond_component(bool isAsync)
         {
-            base.Select_datetime_millisecond_component();
+            await base.Select_datetime_millisecond_component(isAsync);
 
             AssertSql(
-                @"SELECT `o`.`OrderDate`
+                @"SELECT (EXTRACT(microsecond FROM `o`.`OrderDate`)) DIV (1000)
 FROM `Orders` AS `o`");
         }
 
-        public override void Select_expression_references_are_updated_correctly_with_subquery()
+        public override async Task Select_expression_references_are_updated_correctly_with_subquery(bool isAsync)
         {
-            base.Select_expression_references_are_updated_correctly_with_subquery();
+            await base.Select_expression_references_are_updated_correctly_with_subquery(isAsync);
 
             AssertSql(
                 @"@__nextYear_0='2017'
 
-SELECT `t`.`c`
-FROM (
-    SELECT DISTINCT EXTRACT(year FROM `o`.`OrderDate`) AS `c`
-    FROM `Orders` AS `o`
-    WHERE `o`.`OrderDate` IS NOT NULL
-) AS `t`
-WHERE `t`.`c` < @__nextYear_0");
+SELECT DISTINCT EXTRACT(year FROM `o`.`OrderDate`)
+FROM `Orders` AS `o`
+WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__nextYear_0)");
         }
 
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Select_distinct_average()
+        [ConditionalTheory(Skip = "issue #573")]
+        [MemberData("IsAsyncData")]
+        public override Task Project_single_element_from_collection_with_OrderBy_Take_and_FirstOrDefault(bool isAsync)
         {
-            base.Select_distinct_average();
+            return base.Project_single_element_from_collection_with_OrderBy_Take_and_FirstOrDefault(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Average_with_binary_expression()
+        [ConditionalTheory(Skip = "issue #573")]
+        [MemberData("IsAsyncData")]
+        public override Task Project_single_element_from_collection_with_OrderBy_Take_and_FirstOrDefault_with_parameter(bool isAsync)
         {
-            base.Average_with_binary_expression();
+            return base.Project_single_element_from_collection_with_OrderBy_Take_and_FirstOrDefault_with_parameter(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Average_with_arg()
+        [ConditionalTheory(Skip = "issue #573")]
+        [MemberData("IsAsyncData")]
+        public override Task Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault(bool isAsync)
         {
-            base.Average_with_arg();
+            return base.Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Select_math_truncate_int()
+        [ConditionalTheory(Skip = "issue #573")]
+        [MemberData("IsAsyncData")]
+        public override Task Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault_followed_by_projection_of_length_property(bool isAsync)
         {
-            base.Select_math_truncate_int();
+            return base.Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault_followed_by_projection_of_length_property(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Select_skip_average()
+        [ConditionalTheory(Skip = "issue #573")]
+        [MemberData("IsAsyncData")]
+        public override Task Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault_2(bool isAsync)
         {
-            base.Select_skip_average();
+            return base.Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault_2(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Average_with_arg_expression()
+        [ConditionalTheory(Skip = "issue #573")]
+        [MemberData("IsAsyncData")]
+        public override Task Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault(bool isAsync)
         {
-            base.Average_with_arg_expression();
+            return base.Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Sum_on_float_column()
+        [ConditionalTheory(Skip = "issue #573")]
+        [MemberData("IsAsyncData")]
+        public override Task Where_as_queryable_expression(bool isAsync)
         {
-            base.Sum_on_float_column();
+            return base.Where_as_queryable_expression(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Average_with_non_matching_types_in_projection_doesnt_produce_second_explicit_cast()
+        [ConditionalTheory(Skip = "issue #552")]
+        [MemberData("IsAsyncData")]
+        public override Task Where_multiple_contains_in_subquery_with_and(bool isAsync)
         {
-            base.Average_with_non_matching_types_in_projection_doesnt_produce_second_explicit_cast();
+            return base.Where_multiple_contains_in_subquery_with_and(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Average_with_no_arg()
+        [ConditionalTheory(Skip = "issue #552")]
+        [MemberData("IsAsyncData")]
+        public override Task Where_multiple_contains_in_subquery_with_or(bool isAsync)
         {
-            base.Average_with_no_arg();
+            return base.Where_multiple_contains_in_subquery_with_or(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Average_on_float_column()
+        public override Task Intersect(bool isAsync)
         {
-            base.Average_on_float_column();
+            // INTERSECT is not natively supported by MySQL.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Intersect(isAsync));
         }
 
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Average_on_float_column_in_subquery_with_cast()
+        public override Task Intersect_nested(bool isAsync)
         {
-            base.Average_on_float_column_in_subquery_with_cast();
+            // INTERSECT is not natively supported by MySQL.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Intersect_nested(isAsync));
         }
 
-        [ConditionalFact]
-        public override void Average_with_division_on_decimal_no_significant_digits()
+        public override Task Intersect_non_entity(bool isAsync)
         {
-            AssertSingleResult<OrderDetail>(
-                ods => ods.Average(od => od.Quantity / 2m),
-                asserter: (e, a) => Assert.InRange((decimal)e - (decimal)a, -0.2m, 0.2m));
+            // INTERSECT is not natively supported by MySQL.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Intersect_non_entity(isAsync));
         }
 
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Select_take_average()
+        public override Task Union_Intersect(bool isAsync)
         {
-            base.Select_take_average();
+            // INTERSECT is not natively supported by MySQL.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Union_Intersect(isAsync));
         }
 
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Average_on_float_column_in_subquery()
+        public override Task Except(bool isAsync)
         {
-            base.Average_on_float_column_in_subquery();
+            // EXCEPT is not natively supported by MySQL.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Except(isAsync));
         }
 
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Sum_on_float_column_in_subquery()
+        public override Task Except_simple_followed_by_projecting_constant(bool isAsync)
         {
-            base.Sum_on_float_column_in_subquery();
+            // EXCEPT is not natively supported by MySQL.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Except_simple_followed_by_projecting_constant(isAsync));
         }
 
-        [ConditionalFact(Skip = "issue #571")]
-        public override void Select_byte_constant()
+        public override Task Except_nested(bool isAsync)
         {
-            base.Select_byte_constant();
+            // EXCEPT is not natively supported by MySQL.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Except_nested(isAsync));
         }
 
-        [ConditionalFact(Skip = "issue #573")]
-        public override void Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault_2()
+        public override Task Except_non_entity(bool isAsync)
         {
-            base.Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault_2();
+            // EXCEPT is not natively supported by MySQL.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Except_non_entity(isAsync));
         }
 
-        [ConditionalFact(Skip = "issue #573")]
-        public override void Project_single_element_from_collection_with_OrderBy_Take_and_FirstOrDefault()
+        public override Task Select_Except_reference_projection(bool isAsync)
         {
-            base.Project_single_element_from_collection_with_OrderBy_Take_and_FirstOrDefault();
+            // EXCEPT is not natively supported by MySQL.
+            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Select_Except_reference_projection(isAsync));
         }
 
-        [ConditionalFact(Skip = "issue #573")]
-        public override void Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault()
+        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
+        [MemberData("IsAsyncData")]
+        public override Task SelectMany_correlated_with_outer_1(bool isAsync)
         {
-            base.Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault();
+            return base.SelectMany_correlated_with_outer_1(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #573")]
-        public override void Project_single_element_from_collection_with_OrderBy_Take_and_FirstOrDefault_with_parameter()
+        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
+        [MemberData("IsAsyncData")]
+        public override Task SelectMany_correlated_with_outer_2(bool isAsync)
         {
-            base.Project_single_element_from_collection_with_OrderBy_Take_and_FirstOrDefault_with_parameter();
+            return base.SelectMany_correlated_with_outer_2(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #573")]
-        public override void Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault()
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [MemberData("IsAsyncData")]
+        public override Task SelectMany_correlated_with_outer_3(bool isAsync)
         {
-            base.Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault();
+            return base.SelectMany_correlated_with_outer_3(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #552")]
-        public override void Projection_containing_DateTime_subtraction()
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [MemberData("IsAsyncData")]
+        public override Task SelectMany_correlated_with_outer_4(bool isAsync)
         {
-            base.Projection_containing_DateTime_subtraction();
+            return base.SelectMany_correlated_with_outer_4(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #573")]
-        public override void Where_as_queryable_expression()
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [MemberData("IsAsyncData")]
+        public override Task Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault_2(bool isAsync)
         {
-            base.Where_as_queryable_expression();
+            return base.Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault_2(isAsync);
         }
 
-        [ConditionalFact(Skip = "issue #552")]
-        public override void Where_multiple_contains_in_subquery_with_and()
+        [SupportedServerVersionFact(ServerVersion.OuterApplySupportKey)]
+        public override void Select_nested_collection_multi_level()
         {
-            base.Where_multiple_contains_in_subquery_with_and();
+            base.Select_nested_collection_multi_level();
         }
 
-        [ConditionalFact(Skip = "issue #552")]
-        public override void Where_multiple_contains_in_subquery_with_or()
+        [ConditionalTheory(Skip = "TODO: MySQL does not seem to allow an ORDER BY or LIMIT clause directly in a SELECT statement that is part of a UNION.")]
+        public override Task Union_Take_Union_Take(bool isAsync)
         {
-            base.Where_multiple_contains_in_subquery_with_or();
+            // TODO: MySQL does not seem to allow an ORDER BY or LIMIT clause directly in a SELECT statement that is part of a UNION.
+            //       To make this work, the SELECT statement containing the ORDER BY and/or LIMIT clause needs to be wrapped by another
+            //       SELECT statement.
+            return base.Union_Take_Union_Take(isAsync);
         }
 
-        [ConditionalFact]
-        public void PadLeft_without_second_arg()
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        [MemberData("IsAsyncData")]
+        public override Task SelectMany_Joined_Take(bool isAsync)
         {
-            AssertSingleResult<Customer>(
-                    customer => customer.Where(r => r.CustomerID.PadLeft(2) == "AL").Count(),
-                    asserter: (_, a) =>
-                    {
-                        var len = (int)a;
-                        Assert.Equal(len, 1);
-                        AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `r`
-WHERE LPAD(`r`.`CustomerID`, 2, ' ') = 'AL'");
-                    }
-                );
+            return base.SelectMany_Joined_Take(isAsync);
         }
 
-        [ConditionalFact]
-        public void PadLeft_with_second_arg()
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [MemberData("IsAsyncData")]
+        public override Task Project_single_element_from_collection_with_OrderBy_Take_and_SingleOrDefault(bool isAsync)
         {
-            AssertSingleResult<Customer>(
-                    customer => customer.Where(r => r.CustomerID.PadLeft(3, 'x') == "AL").Count(),
-                    asserter: (_, a) =>
-                    {
-                        var len = (int)a;
-                        Assert.Equal(len, 0);
-                        AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `r`
-WHERE LPAD(`r`.`CustomerID`, 3, 'x') = 'AL'");
-                    }
-                );
+            return base.Project_single_element_from_collection_with_OrderBy_Take_and_SingleOrDefault(isAsync);
         }
 
-        [ConditionalFact]
-        public void PadRight_without_second_arg()
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [MemberData("IsAsyncData")]
+        public override Task Project_single_element_from_collection_with_OrderBy_Distinct_and_FirstOrDefault_followed_by_projecting_length(bool isAsync)
         {
-            AssertSingleResult<Customer>(
-                    customer => customer.Where(r => r.CustomerID.PadRight(3) == "AL").Count(),
-                    asserter: (_, a) =>
-                    {
-                        var len = (int)a;
-                        Assert.Equal(len, 0);
-                        AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `r`
-WHERE RPAD(`r`.`CustomerID`, 3, ' ') = 'AL'");
-                    }
-                );
-        }
-
-        [ConditionalFact]
-        public void PadRight_with_second_arg()
-        {
-            AssertSingleResult<Customer>(
-                  customer => customer.Where(r => r.CustomerID.PadRight(4, 'c') == "AL").Count(),
-                  asserter: (_, a) =>
-                  {
-                      var len = (int)a;
-                      Assert.Equal(len, 0);
-                      AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `r`
-WHERE RPAD(`r`.`CustomerID`, 4, 'c') = 'AL'");
-                  }
-              );
-        }
-
-        [ConditionalTheory]
-        [InlineData(StringComparison.OrdinalIgnoreCase, 1)]
-        [InlineData(StringComparison.CurrentCultureIgnoreCase, 1)]
-        [InlineData(StringComparison.InvariantCultureIgnoreCase, 1)]
-        [InlineData(StringComparison.Ordinal, 0)]
-        [InlineData(StringComparison.CurrentCulture, 0)]
-        [InlineData(StringComparison.InvariantCulture, 0)]
-        public void StringEquals_with_comparison(StringComparison comparison, int expected)
-        {
-            AssertSingleResult<Customer>(
-                customer => customer.Where(c => c.CustomerID.Equals("anton", comparison)).Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(expected, (int)a);
-                    // When the comparison parameter is not a constant, we have to use a case
-                    // statement
-                    AssertSql($"@__comparison_0='{comparison:D}'" + @"
-
-SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE CASE
-    WHEN @__comparison_0 IN (4, 0, 2) THEN CASE
-        WHEN `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin
-        THEN TRUE ELSE FALSE
-    END
-    ELSE CASE
-        WHEN LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin
-        THEN TRUE ELSE FALSE
-    END
-END = TRUE");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringEquals_ordinal()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.Equals("anton", StringComparison.Ordinal))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(0, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringEquals_invariant()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.Equals("anton", StringComparison.CurrentCulture))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(0, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringEquals_current()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.Equals("anton", StringComparison.InvariantCulture))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(0, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringEquals_ordinal_ignore_case()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.Equals("anton", StringComparison.OrdinalIgnoreCase))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(1, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringEquals_current_ignore_case()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.Equals("anton", StringComparison.CurrentCultureIgnoreCase))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(1, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringEquals_invariant_ignore_case()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.Equals("anton", StringComparison.InvariantCultureIgnoreCase))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(1, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin");
-                });
-        }
-
-        [ConditionalTheory]
-        [InlineData(StringComparison.OrdinalIgnoreCase, 1)]
-        [InlineData(StringComparison.CurrentCultureIgnoreCase, 1)]
-        [InlineData(StringComparison.InvariantCultureIgnoreCase, 1)]
-        [InlineData(StringComparison.Ordinal, 0)]
-        [InlineData(StringComparison.CurrentCulture, 0)]
-        [InlineData(StringComparison.InvariantCulture, 0)]
-        public void StaticStringEquals_with_comparison(StringComparison comparison, int expected)
-        {
-            AssertSingleResult<Customer>(
-                customer => customer.Where(c => string.Equals(c.CustomerID, "anton", comparison)).Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(expected, (int)a);
-                    // When the comparison parameter is not a constant, we have to use a case
-                    // statement
-                    AssertSql($"@__comparison_0='{comparison:D}'" + @"
-
-SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE CASE
-    WHEN @__comparison_0 IN (4, 0, 2) THEN CASE
-        WHEN `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin
-        THEN TRUE ELSE FALSE
-    END
-    ELSE CASE
-        WHEN LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin
-        THEN TRUE ELSE FALSE
-    END
-END = TRUE");
-                });
-        }
-
-        [ConditionalFact]
-        public void StaticStringEquals_ordinal()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => string.Equals(c.CustomerID, "anton", StringComparison.Ordinal))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(0, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin");
-                });
-        }
-
-        [ConditionalFact]
-        public void StaticStringEquals_invariant()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => string.Equals(c.CustomerID, "anton", StringComparison.CurrentCulture))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(0, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin");
-                });
-        }
-
-        [ConditionalFact]
-        public void StaticStringEquals_current()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => string.Equals(c.CustomerID, "anton", StringComparison.InvariantCulture))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(0, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin");
-                });
-        }
-
-        [ConditionalFact]
-        public void StaticStringEquals_ordinal_ignore_case()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => string.Equals(c.CustomerID, "anton", StringComparison.OrdinalIgnoreCase))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(1, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin");
-                });
-        }
-
-        [ConditionalFact]
-        public void StaticStringEquals_current_ignore_case()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => string.Equals(c.CustomerID, "anton", StringComparison.CurrentCultureIgnoreCase))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(1, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin");
-                });
-        }
-
-        [ConditionalFact]
-        public void StaticStringEquals_invariant_ignore_case()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => string.Equals(c.CustomerID, "anton", StringComparison.InvariantCultureIgnoreCase))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(1, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin");
-                });
-        }
-
-#if NETCOREAPP2_2
-        [ConditionalTheory]
-        [InlineData(StringComparison.OrdinalIgnoreCase, 1)]
-        [InlineData(StringComparison.CurrentCultureIgnoreCase, 1)]
-        [InlineData(StringComparison.InvariantCultureIgnoreCase, 1)]
-        [InlineData(StringComparison.Ordinal, 0)]
-        [InlineData(StringComparison.CurrentCulture, 0)]
-        [InlineData(StringComparison.InvariantCulture, 0)]
-        public void StringContains_with_comparison(StringComparison comparison, int expected)
-        {
-            AssertSingleResult<Customer>(
-                customer => customer.Where(c => c.CustomerID.Contains("nto", comparison)).Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(expected, (int)a);
-                    // When the comparison parameter is not a constant, we have to use a case
-                    // statement
-                    AssertSql($"@__comparison_0='{comparison:D}'" + @"
-
-SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE CASE
-    WHEN @__comparison_0 IN (4, 0, 2) THEN CASE
-        WHEN LOCATE(CONVERT('nto' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`CustomerID`) > 0
-        THEN TRUE ELSE FALSE
-    END
-    ELSE CASE
-        WHEN LOCATE(CONVERT(LCASE('nto') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`)) > 0
-        THEN TRUE ELSE FALSE
-    END
-END = TRUE");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringContains_ordinal()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.Contains("nto", StringComparison.Ordinal))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(0, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE LOCATE(CONVERT('nto' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`CustomerID`) > 0");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringContains_invariant()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.Contains("nto", StringComparison.CurrentCulture))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(0, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE LOCATE(CONVERT('nto' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`CustomerID`) > 0");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringContains_current()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.Contains("nto", StringComparison.InvariantCulture))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(0, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE LOCATE(CONVERT('nto' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`CustomerID`) > 0");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringContains_ordinal_ignore_case()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.Contains("nto", StringComparison.OrdinalIgnoreCase))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(1, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE LOCATE(CONVERT(LCASE('nto') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`)) > 0");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringContains_current_ignore_case()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.Contains("nto", StringComparison.CurrentCultureIgnoreCase))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(1, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE LOCATE(CONVERT(LCASE('nto') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`)) > 0");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringContains_invariant_ignore_case()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.Contains("nto", StringComparison.InvariantCultureIgnoreCase))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(1, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE LOCATE(CONVERT(LCASE('nto') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`)) > 0");
-                });
-        }
-#endif
-
-        [ConditionalTheory]
-        [InlineData(StringComparison.OrdinalIgnoreCase, 1)]
-        [InlineData(StringComparison.CurrentCultureIgnoreCase, 1)]
-        [InlineData(StringComparison.InvariantCultureIgnoreCase, 1)]
-        [InlineData(StringComparison.Ordinal, 0)]
-        [InlineData(StringComparison.CurrentCulture, 0)]
-        [InlineData(StringComparison.InvariantCulture, 0)]
-        public void StringStartsWith_with_comparison(StringComparison comparison, int expected)
-        {
-            AssertSingleResult<Customer>(
-                customer => customer.Where(c => c.CustomerID.StartsWith("anto", comparison)).Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(expected, (int)a);
-                    // When the comparison parameter is not a constant, we have to use a case
-                    // statement
-                    AssertSql($"@__comparison_0='{comparison:D}'" + @"
-
-SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE CASE
-    WHEN @__comparison_0 IN (4, 0, 2) THEN CASE
-        WHEN `c`.`CustomerID` LIKE CONCAT('anto', '%') AND (LEFT(`c`.`CustomerID`, CHAR_LENGTH(CONVERT('anto' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('anto' USING utf8mb4) COLLATE utf8mb4_bin)
-        THEN TRUE ELSE FALSE
-    END
-    ELSE CASE
-        WHEN LCASE(`c`.`CustomerID`) LIKE CONCAT(CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin, '%') AND (LEFT(LCASE(`c`.`CustomerID`), CHAR_LENGTH(CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin)
-        THEN TRUE ELSE FALSE
-    END
-END = TRUE");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringStartsWith_ordinal()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.StartsWith("anto", StringComparison.Ordinal))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(0, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` LIKE CONCAT('anto', '%') AND " +
-                        "(LEFT(`c`.`CustomerID`, CHAR_LENGTH(CONVERT('anto' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('anto' USING utf8mb4) COLLATE utf8mb4_bin)");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringStartsWith_invariant()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.StartsWith("anto", StringComparison.CurrentCulture))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(0, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` LIKE CONCAT('anto', '%') AND " +
-                        "(LEFT(`c`.`CustomerID`, CHAR_LENGTH(CONVERT('anto' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('anto' USING utf8mb4) COLLATE utf8mb4_bin)");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringStartsWith_current()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.StartsWith("anto", StringComparison.InvariantCulture))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(0, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` LIKE CONCAT('anto', '%') AND " +
-                        "(LEFT(`c`.`CustomerID`, CHAR_LENGTH(CONVERT('anto' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('anto' USING utf8mb4) COLLATE utf8mb4_bin)");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringStartsWith_ordinal_ignore_case()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.StartsWith("anto", StringComparison.OrdinalIgnoreCase))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(1, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE LCASE(`c`.`CustomerID`) LIKE CONCAT(CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin, '%') AND " +
-                        "(LEFT(LCASE(`c`.`CustomerID`), CHAR_LENGTH(CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin)");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringStartsWith_current_ignore_case()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.StartsWith("anto", StringComparison.CurrentCultureIgnoreCase))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(1, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE LCASE(`c`.`CustomerID`) LIKE CONCAT(CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin, '%') AND " +
-                        "(LEFT(LCASE(`c`.`CustomerID`), CHAR_LENGTH(CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin)");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringStartsWith_invariant_ignore_case()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.StartsWith("anto", StringComparison.InvariantCultureIgnoreCase))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(1, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE LCASE(`c`.`CustomerID`) LIKE CONCAT(CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin, '%') AND " +
-                        "(LEFT(LCASE(`c`.`CustomerID`), CHAR_LENGTH(CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(LCASE('anto') USING utf8mb4) COLLATE utf8mb4_bin)");
-                });
-        }
-
-        [ConditionalTheory]
-        [InlineData(StringComparison.OrdinalIgnoreCase, 1)]
-        [InlineData(StringComparison.CurrentCultureIgnoreCase, 1)]
-        [InlineData(StringComparison.InvariantCultureIgnoreCase, 1)]
-        [InlineData(StringComparison.Ordinal, 0)]
-        [InlineData(StringComparison.CurrentCulture, 0)]
-        [InlineData(StringComparison.InvariantCulture, 0)]
-        public void StringEndsWith_with_comparison(StringComparison comparison, int expected)
-        {
-            AssertSingleResult<Customer>(
-                customer => customer.Where(c => c.CustomerID.EndsWith("nton", comparison)).Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(expected, (int)a);
-                    // When the comparison parameter is not a constant, we have to use a case
-                    // statement
-                    AssertSql($"@__comparison_0='{comparison:D}'" + @"
-
-SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE CASE
-    WHEN @__comparison_0 IN (4, 0, 2) THEN CASE
-        WHEN RIGHT(`c`.`CustomerID`, CHAR_LENGTH(CONVERT('nton' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('nton' USING utf8mb4) COLLATE utf8mb4_bin
-        THEN TRUE ELSE FALSE
-    END
-    ELSE CASE
-        WHEN RIGHT(LCASE(`c`.`CustomerID`), CHAR_LENGTH(CONVERT(LCASE('nton') USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(LCASE('nton') USING utf8mb4) COLLATE utf8mb4_bin
-        THEN TRUE ELSE FALSE
-    END
-END = TRUE");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringEndsWith_ordinal()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.EndsWith("nton", StringComparison.Ordinal))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(0, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE RIGHT(`c`.`CustomerID`, CHAR_LENGTH(CONVERT('nton' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('nton' USING utf8mb4) COLLATE utf8mb4_bin");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringEndsWith_invariant()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.EndsWith("nton", StringComparison.CurrentCulture))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(0, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE RIGHT(`c`.`CustomerID`, CHAR_LENGTH(CONVERT('nton' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('nton' USING utf8mb4) COLLATE utf8mb4_bin");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringEndsWith_current()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.EndsWith("nton", StringComparison.InvariantCulture))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(0, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE RIGHT(`c`.`CustomerID`, CHAR_LENGTH(CONVERT('nton' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('nton' USING utf8mb4) COLLATE utf8mb4_bin");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringEndsWith_ordinal_ignore_case()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.EndsWith("nton", StringComparison.OrdinalIgnoreCase))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(1, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE RIGHT(LCASE(`c`.`CustomerID`), CHAR_LENGTH(CONVERT(LCASE('nton') USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(LCASE('nton') USING utf8mb4) COLLATE utf8mb4_bin");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringEndsWith_current_ignore_case()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.EndsWith("nton", StringComparison.CurrentCultureIgnoreCase))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(1, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE RIGHT(LCASE(`c`.`CustomerID`), CHAR_LENGTH(CONVERT(LCASE('nton') USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(LCASE('nton') USING utf8mb4) COLLATE utf8mb4_bin");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringEndsWith_invariant_ignore_case()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.EndsWith("nton", StringComparison.InvariantCultureIgnoreCase))
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(1, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE RIGHT(LCASE(`c`.`CustomerID`), CHAR_LENGTH(CONVERT(LCASE('nton') USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(LCASE('nton') USING utf8mb4) COLLATE utf8mb4_bin");
-                });
-        }
-
-        [ConditionalTheory]
-        [InlineData(StringComparison.OrdinalIgnoreCase, 1)]
-        [InlineData(StringComparison.CurrentCultureIgnoreCase, 1)]
-        [InlineData(StringComparison.InvariantCultureIgnoreCase, 1)]
-        [InlineData(StringComparison.Ordinal, 0)]
-        [InlineData(StringComparison.CurrentCulture, 0)]
-        [InlineData(StringComparison.InvariantCulture, 0)]
-        public void StringIndexOf_with_comparison(StringComparison comparison, int expected)
-        {
-            AssertSingleResult<Customer>(
-                customer => customer.Where(c => c.CustomerID.IndexOf("nt", comparison) == 1).Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(expected, (int)a);
-                    // When the comparison parameter is not a constant, we have to use a case
-                    // statement
-                    AssertSql($"@__comparison_0='{comparison:D}'" + @"
-
-SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE CASE
-    WHEN @__comparison_0 IN (4, 0, 2) THEN LOCATE(CONVERT('nt' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`CustomerID`) - 1
-    ELSE LOCATE(CONVERT(LCASE('nt') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`)) - 1
-END = 1");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringIndexOf_ordinal()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.IndexOf("nt", StringComparison.Ordinal) == 1)
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(0, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE LOCATE(CONVERT('nt' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`CustomerID`) - 1 = 1");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringIndexOf_invariant()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.IndexOf("nt", StringComparison.CurrentCulture) == 1)
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(0, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE LOCATE(CONVERT('nt' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`CustomerID`) - 1 = 1");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringIndexOf_current()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.IndexOf("nt", StringComparison.InvariantCulture) == 1)
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(0, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE LOCATE(CONVERT('nt' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`CustomerID`) - 1 = 1");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringIndexOf_ordinal_ignore_case()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.IndexOf("nt", StringComparison.OrdinalIgnoreCase) == 1)
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(1, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE LOCATE(CONVERT(LCASE('nt') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`)) - 1 = 1");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringIndexOf_current_ignore_case()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.IndexOf("nt", StringComparison.CurrentCultureIgnoreCase) == 1)
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(1, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE LOCATE(CONVERT(LCASE('nt') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`)) - 1 = 1");
-                });
-        }
-
-        [ConditionalFact]
-        public void StringIndexOf_invariant_ignore_case()
-        {
-            AssertSingleResult<Customer>(
-                customer =>
-                    customer.Where(c => c.CustomerID.IndexOf("nt", StringComparison.InvariantCultureIgnoreCase) == 1)
-                        .Count(),
-                asserter: (_, a) =>
-                {
-                    Assert.Equal(1, (int)a);
-                    AssertSql(@"SELECT COUNT(*)
-FROM `Customers` AS `c`
-WHERE LOCATE(CONVERT(LCASE('nt') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`)) - 1 = 1");
-                });
+            return base.Project_single_element_from_collection_with_OrderBy_Distinct_and_FirstOrDefault_followed_by_projecting_length(isAsync);
         }
 
         private void AssertSql(params string[] expected)

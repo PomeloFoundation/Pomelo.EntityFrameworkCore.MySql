@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
@@ -14,7 +15,7 @@ namespace Microsoft.EntityFrameworkCore
 {
     public class MySqlOptionsExtensionTest
     {
-        [Fact]
+        [ConditionalFact]
         public void ApplyServices_adds_SQL_server_services()
         {
             var services = new ServiceCollection();
@@ -24,7 +25,7 @@ namespace Microsoft.EntityFrameworkCore
             Assert.True(services.Any(sd => sd.ServiceType == typeof(IMySqlConnection)));
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Changing_RowNumberPagingEnabled_causes_new_service_provider_to_be_built()
         {
             IMySqlOptions singletonOptions;
@@ -45,7 +46,7 @@ namespace Microsoft.EntityFrameworkCore
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Changing_RowNumberPagingEnabled_when_UseInternalServiceProvider_throws()
         {
             using (var context = new ChangedRowNumberContext(rowNumberPagingEnabled: false, setInternalServiceProvider: true))

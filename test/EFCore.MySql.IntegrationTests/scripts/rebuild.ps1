@@ -15,8 +15,8 @@ function Insert-Content ($file) {
 Push-Location (Join-Path (Split-Path $MyInvocation.MyCommand.Path) "../")
 
 Remove-Item (Join-Path "Migrations" "*.cs")
-dotnet ef database drop -f
-dotnet ef migrations add initial
+.\scripts\dotnet-ef.ps1 database drop -f
+.\scripts\dotnet-ef.ps1 migrations add initial
 
 # add using System.Collections.Generic to the migration files
 Get-ChildItem (Join-Path "Migrations" "*.cs") | ForEach-Object {
@@ -26,6 +26,6 @@ Get-ChildItem (Join-Path "Migrations" "*.cs") | ForEach-Object {
     }
 }
 
-dotnet ef database update
+.\scripts\dotnet-ef.ps1 database update
 
 Pop-Location

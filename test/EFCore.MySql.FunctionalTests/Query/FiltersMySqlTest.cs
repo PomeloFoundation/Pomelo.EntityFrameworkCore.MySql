@@ -21,13 +21,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
 SELECT COUNT(*)
 FROM `Customers` AS `c`
-WHERE (`c`.`CompanyName` LIKE CONCAT(@__ef_filter__TenantPrefix_0, '%') AND (LEFT(`c`.`CompanyName`, CHAR_LENGTH(@__ef_filter__TenantPrefix_0)) = @__ef_filter__TenantPrefix_0)) OR (@__ef_filter__TenantPrefix_0 = '')");
+WHERE ((@__ef_filter__TenantPrefix_0 = '') AND @__ef_filter__TenantPrefix_0 IS NOT NULL) OR (`c`.`CompanyName` IS NOT NULL AND (@__ef_filter__TenantPrefix_0 IS NOT NULL AND ((`c`.`CompanyName` LIKE CONCAT(`c`.`CompanyName`, '%')) AND (((LEFT(`c`.`CompanyName`, CHAR_LENGTH(@__ef_filter__TenantPrefix_0)) = @__ef_filter__TenantPrefix_0) AND (LEFT(`c`.`CompanyName`, CHAR_LENGTH(@__ef_filter__TenantPrefix_0)) IS NOT NULL AND @__ef_filter__TenantPrefix_0 IS NOT NULL)) OR (LEFT(`c`.`CompanyName`, CHAR_LENGTH(@__ef_filter__TenantPrefix_0)) IS NULL AND @__ef_filter__TenantPrefix_0 IS NULL)))))");
         }
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
         private void AssertContainsSql(params string[] expected)
-            => Fixture.TestSqlLoggerFactory.AssertBaseline(expected, assertOrder: false);
+            => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
     }
 }

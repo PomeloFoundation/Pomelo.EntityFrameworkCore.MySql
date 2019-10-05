@@ -74,5 +74,25 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities.FakeProvider
         {
             throw new NotImplementedException();
         }
+
+        public bool HasTables()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> HasTablesAsync(CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool CanConnect()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> CanConnectAsync(CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

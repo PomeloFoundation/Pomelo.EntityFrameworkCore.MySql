@@ -1,5 +1,6 @@
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.TestModels.ConcurrencyModel;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 
@@ -9,9 +10,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
     {
         protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
+        public override ModelBuilder CreateModelBuilder()
+            => new ModelBuilder(MySqlConventionSetBuilder.Build());
+
+        protected override void BuildModelExternal(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder, context);
+            base.BuildModelExternal(modelBuilder);
 
             modelBuilder.Entity<Chassis>().Property<byte[]>("Version").IsRowVersion();
             modelBuilder.Entity<Driver>().Property<byte[]>("Version").IsRowVersion();

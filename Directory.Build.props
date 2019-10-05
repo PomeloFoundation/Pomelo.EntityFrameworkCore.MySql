@@ -1,19 +1,24 @@
-﻿<Project>
-  <Import
-    Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))\AspNetCoreSettings.props"
-    Condition=" '$(CI)' != 'true' AND '$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))' != '' " />
+<Project>
+  <!-- HACK: Our test projects don't match Arcade's conventions -->
+  <PropertyGroup Condition="'$(IsUnitTestProject)' == ''">
+    <IsUnitTestProject Condition="$(MSBuildProjectName.EndsWith('.FunctionalTests'))">True</IsUnitTestProject>
+    <IsUnitTestProject Condition="$(MSBuildProjectName.EndsWith('.IntegrationTests'))">True</IsUnitTestProject>
+  </PropertyGroup>
 
-  <Import Project="version.props" />
-  <Import Project="build\dependencies.props" />
-  <!-- <Import Project="build\sources.props" /> -->
+  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+  <Import Project="eng\Development.props" Condition="Exists('eng\Development.props')" />
 
   <PropertyGroup>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
-    <RepositoryUrl>https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql.git</RepositoryUrl>
+    <StrongNameKeyId>Pomelo.EntityFrameworkCore.MySql</StrongNameKeyId>
+    <PackageTags>Entity Framework Core MySQL;entity-framework-core-mysql;EF MySQL;EF Core MySQL</PackageTags>
+    <Product>Pomelo.EntityFrameworkCore.MySql</Product>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <LangVersion>7.2</LangVersion>
-    <NoWarn>$(NoWarn);CA1032;CA1034;CA1063;CA1815;CA1819</NoWarn>
+    <LangVersion>8.0</LangVersion>
+    <DebugType>portable</DebugType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>git://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

@@ -2,23 +2,29 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
-using Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 {
     /// <summary>
     ///     An expression that explicitly specifies the collation of a string value.
     /// </summary>
-    public class MySqlCollateExpression : Expression
+    public class MySqlCollateExpression : SqlExpression
     {
-        private readonly Expression _valueExpression;
+        private readonly SqlExpression _valueExpression;
         private readonly string _charset;
         private readonly string _collation;
+
         public MySqlCollateExpression(
-            [NotNull] Expression valueExpression,
+            [NotNull] SqlExpression valueExpression,
             [NotNull] string charset,
-            [NotNull] string collation)
+            [NotNull] string collation,
+            RelationalTypeMapping typeMapping)
+            : base(typeof(string), typeMapping)
         {
             _valueExpression = valueExpression;
             _charset = charset;
@@ -28,7 +34,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         /// <summary>
         ///     The expression for which a collation is being specified.
         /// </summary>
-        public virtual Expression ValueExpression => _valueExpression;
+        public virtual SqlExpression ValueExpression => _valueExpression;
 
         /// <summary>
         ///     The character set that the string is being converted to.
@@ -41,28 +47,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         public virtual string Collation => _collation;
 
         /// <summary>
-        ///     Returns the node type of this <see cref="Expression" />. (Inherited from <see cref="Expression" />.)
-        /// </summary>
-        /// <returns>The <see cref="ExpressionType" /> that represents this expression.</returns>
-        public override ExpressionType NodeType => ExpressionType.Extension;
-
-        /// <summary>
-        ///     Gets the static type of the expression that this <see cref="Expression" /> represents. (Inherited from <see cref="Expression" />.)
-        /// </summary>
-        /// <returns>The <see cref="Type" /> that represents the static type of the expression.</returns>
-        public override Type Type => typeof(string);
-
-        /// <summary>
         ///     Dispatches to the specific visit method for this node type.
         /// </summary>
         protected override Expression Accept(ExpressionVisitor visitor)
-        {
-            Check.NotNull(visitor, nameof(visitor));
-
-            return visitor is IMySqlExpressionVisitor specificVisitor
-                ? specificVisitor.VisitMySqlCollateExpression(this)
+            => visitor is MySqlQuerySqlGenerator mySqlQuerySqlGenerator
+                ? mySqlQuerySqlGenerator.VisitMySqlCollateExpression(this)
                 : base.Accept(visitor);
-        }
 
         /// <summary>
         ///     Reduces the node and then calls the <see cref="ExpressionVisitor.Visit(Expression)" /> method passing the
@@ -82,7 +72,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
             var newValueExpression = visitor.VisitAndConvert(_valueExpression, nameof(VisitChildren));
 
             return newValueExpression != _valueExpression && newValueExpression != null
-                ? new MySqlCollateExpression(newValueExpression, _charset, _collation)
+                ? new MySqlCollateExpression(newValueExpression, _charset, _collation, TypeMapping)
                 : this;
         }
 
@@ -140,5 +130,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         /// <returns>A <see cref="string" /> representation of the Expression.</returns>
         public override string ToString() =>
             $"{_valueExpression} COLLATE {_collation}";
+
+        public override void Print(ExpressionPrinter expressionPrinter)
+        {
+            expressionPrinter.Append(ToString()); // TODO: ist this correct?
+        }
     }
 }

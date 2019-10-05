@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Xunit;
 
 namespace Microsoft.EntityFrameworkCore
 {
     public class MySqlDatabaseFacadeTest
     {
-        [Fact]
-        public void IsMySql_when_using_OnConfguring()
+        [ConditionalFact]
+        public void IsMySql_when_using_OnConfiguring()
         {
             using (var context = new MySqlOnConfiguringContext())
             {
@@ -18,8 +18,8 @@ namespace Microsoft.EntityFrameworkCore
             }
         }
 
-        [Fact]
-        public void IsMySql_in_OnModelCreating_when_using_OnConfguring()
+        [ConditionalFact]
+        public void IsMySql_in_OnModelCreating_when_using_OnConfiguring()
         {
             using (var context = new MySqlOnModelContext())
             {
@@ -28,8 +28,8 @@ namespace Microsoft.EntityFrameworkCore
             }
         }
 
-        [Fact]
-        public void IsMySql_in_constructor_when_using_OnConfguring()
+        [ConditionalFact]
+        public void IsMySql_in_constructor_when_using_OnConfiguring()
         {
             using (var context = new MySqlConstructorContext())
             {
@@ -38,8 +38,8 @@ namespace Microsoft.EntityFrameworkCore
             }
         }
 
-        [Fact]
-        public void Cannot_use_IsMySql_in_OnConfguring()
+        [ConditionalFact]
+        public void Cannot_use_IsMySql_in_OnConfiguring()
         {
             using (var context = new MySqlUseInOnConfiguringContext())
             {
@@ -53,43 +53,51 @@ namespace Microsoft.EntityFrameworkCore
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void IsMySql_when_using_constructor()
         {
             using (var context = new ProviderContext(
-                new DbContextOptionsBuilder().UseMySql("Database=Maltesers").Options))
+                new DbContextOptionsBuilder()
+                    .UseInternalServiceProvider(MySqlFixture.DefaultServiceProvider)
+                    .UseMySql("Database=Maltesers").Options))
             {
                 Assert.True(context.Database.IsMySql());
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void IsMySql_in_OnModelCreating_when_using_constructor()
         {
             using (var context = new ProviderOnModelContext(
-                new DbContextOptionsBuilder().UseMySql("Database=Maltesers").Options))
+                new DbContextOptionsBuilder()
+                    .UseInternalServiceProvider(MySqlFixture.DefaultServiceProvider)
+                    .UseMySql("Database=Maltesers").Options))
             {
                 var _ = context.Model; // Trigger context initialization
                 Assert.True(context.IsMySqlSet);
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void IsMySql_in_constructor_when_using_constructor()
         {
             using (var context = new ProviderConstructorContext(
-                new DbContextOptionsBuilder().UseMySql("Database=Maltesers").Options))
+                new DbContextOptionsBuilder()
+                    .UseInternalServiceProvider(MySqlFixture.DefaultServiceProvider)
+                    .UseMySql("Database=Maltesers").Options))
             {
                 var _ = context.Model; // Trigger context initialization
                 Assert.True(context.IsMySqlSet);
             }
         }
 
-        [Fact]
-        public void Cannot_use_IsMySql_in_OnConfguring_with_constructor()
+        [ConditionalFact]
+        public void Cannot_use_IsMySql_in_OnConfiguring_with_constructor()
         {
             using (var context = new ProviderUseInOnConfiguringContext(
-                new DbContextOptionsBuilder().UseMySql("Database=Maltesers").Options))
+                new DbContextOptionsBuilder()
+                    .UseInternalServiceProvider(MySqlFixture.DefaultServiceProvider)
+                    .UseMySql("Database=Maltesers").Options))
             {
                 Assert.Equal(
                     CoreStrings.RecursiveOnConfiguring,
@@ -101,11 +109,13 @@ namespace Microsoft.EntityFrameworkCore
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Not_IsMySql_when_using_different_provider()
         {
             using (var context = new ProviderContext(
-                new DbContextOptionsBuilder().UseInMemoryDatabase("Maltesers").Options))
+                new DbContextOptionsBuilder()
+                    .UseInternalServiceProvider(InMemoryFixture.DefaultServiceProvider)
+                    .UseInMemoryDatabase("Maltesers").Options))
             {
                 Assert.False(context.Database.IsMySql());
             }
@@ -128,7 +138,9 @@ namespace Microsoft.EntityFrameworkCore
         private class MySqlOnConfiguringContext : ProviderContext
         {
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-                => optionsBuilder.UseMySql("Database=Maltesers");
+                => optionsBuilder
+                    .UseInternalServiceProvider(MySqlFixture.DefaultServiceProvider)
+                    .UseMySql("Database=Maltesers");
         }
 
         private class MySqlOnModelContext : MySqlOnConfiguringContext
