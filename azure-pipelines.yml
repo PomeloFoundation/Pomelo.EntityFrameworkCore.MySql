@@ -14,21 +14,21 @@ jobs:
         SERVER_VERSION: 8.0.17-mysql
         SQL_MODE: $(current_mysql_mode)
         INTEGRATION_TESTS: "true"
-      MySQL 5.7.27:
-        DOCKER_IMAGE: mysql:5.7.27
-        SERVER_VERSION: 5.7.27-mysql
-        SQL_MODE: $(legacy_mysql_mode)
-        INTEGRATION_TESTS: "true"
-      MariaDB 10.4.8:
-        DOCKER_IMAGE: mariadb:10.4.8
-        SERVER_VERSION: 10.4.8-mariadb
-        SQL_MODE: $(legacy_mysql_mode)
-        INTEGRATION_TESTS: "false"
-      MariaDB 10.3.18:
-        DOCKER_IMAGE: mariadb:10.3.18
-        SERVER_VERSION: 10.3.18-mariadb
-        SQL_MODE: $(legacy_mysql_mode)
-        INTEGRATION_TESTS: "false"
+#      MySQL 5.7.27:
+#        DOCKER_IMAGE: mysql:5.7.27
+#        SERVER_VERSION: 5.7.27-mysql
+#        SQL_MODE: $(legacy_mysql_mode)
+#        INTEGRATION_TESTS: "true"
+#      MariaDB 10.4.8:
+#        DOCKER_IMAGE: mariadb:10.4.8
+#        SERVER_VERSION: 10.4.8-mariadb
+#        SQL_MODE: $(legacy_mysql_mode)
+#        INTEGRATION_TESTS: "false"
+#      MariaDB 10.3.18:
+#        DOCKER_IMAGE: mariadb:10.3.18
+#        SERVER_VERSION: 10.3.18-mariadb
+#        SQL_MODE: $(legacy_mysql_mode)
+#        INTEGRATION_TESTS: "false"
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
@@ -36,7 +36,7 @@ jobs:
       set -e
       sudo systemctl stop mysql
       docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -p 3306:3306 -d $DOCKER_IMAGE
-    displayName: Start Database
+    displayName: Install Database Server
   - task: UseDotNet@2
     displayName: Use .NET Core SDK
     inputs:
@@ -70,11 +70,13 @@ jobs:
 
       docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e "SELECT @@version;"
       docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e "SET GLOBAL sql_mode = '$SQL_MODE';"
-
+      docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e "SELECT @@sql_mode;"
+      docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e "SELECT @@version;"
+      
       if [ "$(INTEGRATION_TESTS)" = "true" ]; then
         ./dotnet-env.sh ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.sh
       fi
-    displayName: Initialize Database
+    displayName: Setup Database
   - bash: ./dotnet-env.sh dotnet test --logger trx test/EFCore.MySql.Tests
     displayName: Tests
     continueOnError: true
@@ -137,8 +139,10 @@ jobs:
   variables:
     sql_mode: $(current_mysql_mode)
   steps:
-  - pwsh: choco install mysql
-    displayName: Start Database
+  - pwsh: |
+      choco install mysql
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
+    displayName: Install Database Server
   - task: UseDotNet@2
     displayName: Use .NET Core SDK
     inputs:
@@ -155,9 +159,11 @@ jobs:
     displayName: Build
   - pwsh: |
       $ErrorActionPreference = "Stop"
-      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
+      dir C:\tools\mysql
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sql_mode)';"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@sql_mode;"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
       .\dotnet-env.ps1 dotnet tool install --global dotnet-ef
       .\dotnet-env.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
     displayName: Setup Database
