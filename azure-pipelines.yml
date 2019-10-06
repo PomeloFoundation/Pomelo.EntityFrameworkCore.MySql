@@ -68,6 +68,7 @@ jobs:
         echo "$DOCKER_IMAGE container failed to start in 180 seconds" >&2
       fi
 
+      docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e "SELECT @@version;"
       docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e "SET GLOBAL sql_mode = '$SQL_MODE';"
 
       if [ "$(INTEGRATION_TESTS)" = "true" ]; then
@@ -77,7 +78,7 @@ jobs:
   - bash: ./dotnet-env.sh dotnet test --logger trx test/EFCore.MySql.Tests
     displayName: Tests
     continueOnError: true
-  - bash: ./dotnet-env.sh dotnet test -c Release --logger trx test/EFCore.MySql.FunctionalTests
+  - bash: ./dotnet-env.sh dotnet test test/EFCore.MySql.FunctionalTests -c Release --logger trx -v:d
     displayName: Functional Tests
     continueOnError: true
   - bash: ./dotnet-env.sh dotnet run --project test/EFCore.MySql.IntegrationTests -c Release testMigrate
@@ -155,6 +156,7 @@ jobs:
   - pwsh: |
       $ErrorActionPreference = "Stop"
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sql_mode)';"
       .\dotnet-env.ps1 dotnet tool install --global dotnet-ef
       .\dotnet-env.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
@@ -162,7 +164,7 @@ jobs:
   - pwsh: .\dotnet-env.ps1 dotnet test --logger trx test\EFCore.MySql.Tests
     displayName: Tests
     continueOnError: true
-  - pwsh: .\dotnet-env.ps1 dotnet test -c Release --logger trx test\EFCore.MySql.FunctionalTests
+  - pwsh: .\dotnet-env.ps1 dotnet test test\EFCore.MySql.FunctionalTests -c Release --logger trx -v:d
     displayName: Functional Tests
     continueOnError: true
   - pwsh: .\dotnet-env.ps1 dotnet run --project test\EFCore.MySql.IntegrationTests -c Release testMigrate
