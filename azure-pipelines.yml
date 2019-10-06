@@ -1,3 +1,11 @@
+trigger:
+  branches:
+    include:
+    - '*'
+  tags:
+    include:
+    - '*'
+
 variables:
   current_mysql_mode: STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
   legacy_mysql_mode: STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
@@ -216,9 +224,10 @@ jobs:
       set -e
 
       pack="false"
-      final_version_kind=""
-      wip="false"
+      pack_nuget_org="false"
+      pack_wip="false"
 
+      final_version_kind=""
       if echo "$(Build.SourceBranch)" | grep -qE '^refs/tags/'; then
         pack="true"
         if echo "$(Build.SourceBranchName)" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
@@ -231,17 +240,12 @@ jobs:
           pack="true"
         elif echo "$(Build.SourceBranchName)" | grep -qE '\-wip$'; then
           pack="true"
-          wip="true"
+          pack_wip="true"
         fi
       fi
 
-      echo "Pack.Pack=$pack"
-      echo "Pack.Wip=$wip"
       echo "OfficialBuildId=$(Build.BuildNumber)"
       echo "DotNetFinalVersionKind=$final_version_kind"
-
-      echo "##vso[task.setvariable variable=Pack.Pack]$pack"
-      echo "##vso[task.setvariable variable=Pack.Wip]$wip"
 
       if [ "$pack" = "true" ]; then
         ./dotnet-env.sh dotnet pack \
@@ -252,7 +256,6 @@ jobs:
           src/EFCore.MySql/
       fi
 
-      pack_nuget_org="false"
       if [ "$final_version_kind" != "" ]; then
         IFS=$'\n'
         for i in $(find artifacts -name "*.nupkg"); do
@@ -264,7 +267,11 @@ jobs:
         unset IFS
       fi
 
+      echo "Pack.Pack=$pack"
+      echo "Pack.Wip=$pack_wip"
       echo "Pack.NugetOrg=$pack_nuget_org"
+      echo "##vso[task.setvariable variable=Pack.Pack]$pack"
+      echo "##vso[task.setvariable variable=Pack.Wip]$pack_wip"
       echo "##vso[task.setvariable variable=Pack.NugetOrg]$pack_nuget_org"
     displayName: "Nuget Pack"
   - task: NuGetCommand@2
@@ -274,7 +281,7 @@ jobs:
       nuGetFeedType: external
       publishFeedCredentials: PomeloEFCoreNuget
       packagesToPush: artifacts/**/*.nupkg
-    condition: and( succeeded(), eq(variables['Pack.Pack'],'true'), or( eq(variables['Pack.Wip'],'true'), variables['BuildSucceeded'] ) )
+    condition: and( succeededOrFailed(), eq(variables['Pack.Pack'],'true'), or( eq(variables['Pack.Wip'],'true'), variables['BuildSucceeded'] ) )
   - task: NuGetCommand@2
     displayName: "Nuget Push nuget.org"
     inputs:
@@ -282,4 +289,4 @@ jobs:
       nuGetFeedType: external
       publishFeedCredentials: NugetOrg
       packagesToPush: artifacts/**/*.nupkg
-    condition: and( succeeded(), eq(variables['Pack.NugetOrg'],'true'), variables['BuildSucceeded'] )
+    condition: and( succeededOrFailed(), eq(variables['Pack.NugetOrg'],'true'), variables['BuildSucceeded'] )
