@@ -32,6 +32,7 @@
     <XunitRunnerVisualStudioPackageVersion>2.4.1</XunitRunnerVisualStudioPackageVersion>
     <XunitRunnerConsolePackageVersion>2.4.1</XunitRunnerConsolePackageVersion>
     <XunitXmlTestLoggerPackageVersion>2.1.26</XunitXmlTestLoggerPackageVersion>
+    <XunitXunitExtensionsOrderingPackageVersion>1.4.5</XunitXunitExtensionsOrderingPackageVersion>
     <MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>3.0.0</MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>
     <!-- EFCoreMySqlFunctionalTests Dependencies -->
     <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>2.2.4</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>

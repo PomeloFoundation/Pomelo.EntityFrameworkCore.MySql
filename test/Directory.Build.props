@@ -12,5 +12,6 @@
     <PackageReference Include="xunit.assert" Version="$(XunitAssertPackageVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioPackageVersion)" />
     <PackageReference Include="xunit.runner.console" Version="$(XunitRunnerConsolePackageVersion)" />
+    <PackageReference Include="Xunit.Extensions.Ordering" Version="$(XunitXunitExtensionsOrderingPackageVersion)" />
   </ItemGroup>
 </Project>

@@ -55,7 +55,6 @@ jobs:
     displayName: Build Solution
   - bash: |
       ./dotnet-env.sh dotnet tool install --global dotnet-ef
-      export PATH="$PATH:$HOME/.dotnet/tools"
 
       started="false"
       for i in $(seq 0 180); do
