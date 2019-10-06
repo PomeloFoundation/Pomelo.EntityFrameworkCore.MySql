@@ -141,6 +141,7 @@ jobs:
   steps:
   - pwsh: |
       $env:Path
+      Get-CimInstance -ClassName Win32_Service | ?{$_.Name -like '*MySQL*'} | select Name, DisplayName, State, PathName
       choco install mysql
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
     displayName: Install Database Server
