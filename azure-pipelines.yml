@@ -143,6 +143,9 @@ jobs:
   - pwsh: |
       choco install mysql
 
+      Write-Host "MySQL Service Path"
+      Get-CimInstance -ClassName Win32_Service | ?{$_.Name -like '*MySQL*'} | select PathName
+
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
 
       net stop MySQL
