@@ -13,8 +13,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         public MappingQueryMySqlTest(MappingQueryMySqlFixture fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
         {
+            using var context = CreateContext();
+            using var command = context.Database.GetDbConnection().CreateCommand();
+
+            command.CommandText = "SELECT @@version";
+            context.Database.OpenConnection();
+
+            var version = command.ExecuteScalar();
+            testOutputHelper.WriteLine($"Database version: {version}");
+
+            Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
             Fixture.TestSqlLoggerFactory.Clear();
-            //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
         public override void All_customers()

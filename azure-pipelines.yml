@@ -71,8 +71,7 @@ jobs:
         exit 1
       fi
 
-      docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e "SELECT @@version;"
-      docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e "SELECT @@sql_mode;"
+      docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e "SET GLOBAL sql_mode = '$SQL_MODE';"
 
       if [ "$(INTEGRATION_TESTS)" = "true" ]; then
         ./dotnet-env.sh ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.sh
@@ -81,7 +80,7 @@ jobs:
   - bash: ./dotnet-env.sh dotnet test --logger trx test/EFCore.MySql.Tests
     displayName: Tests
     continueOnError: true
-  - bash: ./dotnet-env.sh dotnet test test/EFCore.MySql.FunctionalTests -c Release --logger trx -v:d
+  - bash: ./dotnet-env.sh dotnet test test/EFCore.MySql.FunctionalTests -c Release --logger trx --verbosity detailed
     displayName: Functional Tests
     continueOnError: true
   - bash: ./dotnet-env.sh dotnet run --project test/EFCore.MySql.IntegrationTests -c Release testMigrate
