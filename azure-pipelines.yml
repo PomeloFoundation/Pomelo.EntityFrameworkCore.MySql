@@ -72,7 +72,7 @@ jobs:
       docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e "SET GLOBAL sql_mode = '$SQL_MODE';"
       docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e "SELECT @@sql_mode;"
       docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e "SELECT @@version;"
-      
+
       if [ "$(INTEGRATION_TESTS)" = "true" ]; then
         ./dotnet-env.sh ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.sh
       fi
@@ -159,11 +159,32 @@ jobs:
     displayName: Build
   - pwsh: |
       $ErrorActionPreference = "Stop"
+      Set-PSDebug -Trace 1
+      
       dir C:\tools\mysql
+      dir C:\tools\mysql\current
+      dir C:\tools\mysql\mysql-8.0.17-winx64
+
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
-      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sql_mode)';"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
+
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@sql_mode;"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@sql_mode;"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@sql_mode;"
+
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sql_mode)';"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sql_mode)';"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sql_mode)';"
+
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@sql_mode;"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@sql_mode;"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@sql_mode;"
+
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
+
       .\dotnet-env.ps1 dotnet tool install --global dotnet-ef
       .\dotnet-env.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
     displayName: Setup Database
