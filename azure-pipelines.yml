@@ -143,7 +143,10 @@ jobs:
       choco install mysql
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
       Get-CimInstance -ClassName Win32_Service | ?{$_.Name -like '*MySQL*'} | select Name, DisplayName, State, PathName
+      Write-Host C:\tools\mysql\current\
       dir C:\tools\mysql\current\
+      Write-Host C:\ProgramData\MySQL\data
+      dir C:\ProgramData\MySQL\data
       cat C:\tools\mysql\current\my.ini
     displayName: Install Database Server
 #  - task: UseDotNet@2
