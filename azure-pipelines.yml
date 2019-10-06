@@ -45,14 +45,7 @@ jobs:
       sudo systemctl stop mysql
       docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -p 3306:3306 -d $DOCKER_IMAGE
     displayName: Start Database
-  - task: UseDotNet@2
-    displayName: Use .NET Core SDK
-    inputs:
-      packageType: sdk
-      version: 3.0.100
-      installationPath: $(Agent.ToolsDirectory)/dotnet
   - bash: |
-      dotnet --info
       set -e
       cp test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
       cp test/EFCore.MySql.IntegrationTests/appsettings.ci.json test/EFCore.MySql.IntegrationTests/appsettings.json
@@ -61,7 +54,6 @@ jobs:
     displayName: Build Solution
   - bash: |
       ./dotnet-env.sh dotnet tool install --global dotnet-ef
-      export PATH="$PATH:$HOME/.dotnet/tools"
 
       started="false"
       for i in $(seq 0 180); do
@@ -74,6 +66,7 @@ jobs:
 
       if [ "$started" = "false" ]; then
         echo "$DOCKER_IMAGE container failed to start in 180 seconds" >&2
+        exit 1
       fi
 
       docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e "SET GLOBAL sql_mode = '$SQL_MODE';"
@@ -146,12 +139,6 @@ jobs:
   steps:
   - pwsh: choco install mysql
     displayName: Start Database
-  - task: UseDotNet@2
-    displayName: Use .NET Core SDK
-    inputs:
-      packageType: sdk
-      version: 3.0.100
-      installationPath: $(Agent.ToolsDirectory)/dotnet
   - pwsh: |
       dotnet --info
       $ErrorActionPreference = "Stop"
@@ -214,12 +201,6 @@ jobs:
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
-  - task: UseDotNet@2
-    displayName: Use .NET Core SDK
-    inputs:
-      packageType: sdk
-      version: 3.0.100
-      installationPath: $(Agent.ToolsDirectory)/dotnet
   - bash: |
       set -e
 
@@ -281,7 +262,7 @@ jobs:
       nuGetFeedType: external
       publishFeedCredentials: PomeloEFCoreNuget
       packagesToPush: artifacts/**/*.nupkg
-    condition: and( succeededOrFailed(), eq(variables['Pack.Pack'],'true'), or( eq(variables['Pack.Wip'],'true'), variables['BuildSucceeded'] ) )
+    condition: and( succeededOrFailed(), eq(variables['Pack.Pack'],'true'), or( eq(variables['Pack.Wip'],'true'), variables['BuildSucceeded'], eq(variables['Pack.BuildFailedOverride'],'true') ) )
   - task: NuGetCommand@2
     displayName: "Nuget Push nuget.org"
     inputs:
@@ -289,4 +270,4 @@ jobs:
       nuGetFeedType: external
       publishFeedCredentials: NugetOrg
       packagesToPush: artifacts/**/*.nupkg
-    condition: and( succeededOrFailed(), eq(variables['Pack.NugetOrg'],'true'), variables['BuildSucceeded'] )
+    condition: and( succeededOrFailed(), eq(variables['Pack.NugetOrg'],'true'), or ( variables['BuildSucceeded'], eq(variables['Pack.BuildFailedOverride'],'true') ) )
