@@ -102,7 +102,7 @@ jobs:
         if echo "$(Build.SourceBranchName)" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
           export IS_FINAL_BUILD="true"
         else
-          final_version="true"
+          export IS_FINAL_BUILD="true"
         fi
       elif echo "$(Build.SourceBranch)" | grep -qE '^refs/heads/'; then
         if [ "$(Build.SourceBranchName)" = "master" ]; then
@@ -126,7 +126,7 @@ jobs:
         ./build.sh "/p:SkipTests=true" "/p:BuildNumber=${BUILD_NUMBER}" "/p:IsFinalBuild=${IS_FINAL_BUILD}"
       fi
       pack_nuget_org="false"
-      if [ "$final_version_kind" != "" ]; then
+      if [ "$IS_FINAL_BUILD" = "true" ]; then
         IFS=$'\n'
         for i in $(find artifacts -name "*.nupkg"); do
           filename=$(basename $i)
@@ -146,6 +146,7 @@ jobs:
       nuGetFeedType: external
       publishFeedCredentials: PomeloEFCoreNuget
       packagesToPush: artifacts/**/*.nupkg
+    continueOnError: true
     condition: and( succeeded(), eq(variables['Pack.Pack'],'true'), or( eq(variables['Pack.Wip'],'true'), variables['BuildSucceeded'] ) )
   - task: NuGetCommand@2
     displayName: "Nuget Push nuget.org"
