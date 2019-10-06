@@ -144,7 +144,7 @@ jobs:
       choco install mysql
 
       Write-Host "MySQL Service Path"
-      Get-CimInstance -ClassName Win32_Service | ?{$_.Name -like '*MySQL*'} | select Name, PathName
+      Get-CimInstance -ClassName Win32_Service | ?{$_.Name -eq 'MySQL'} | select PathName
 
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
 
@@ -157,6 +157,10 @@ jobs:
       
       # C:\tools\mysql\current\bin\mysqld.exe --defaults-file="C:\tools\mysql\current\my.ini" --console
       net start MySQL
+
+
+      Write-Host "MySQL Service Path"
+      Get-CimInstance -ClassName Win32_Service | ?{$_.Name -eq 'MySQL'} | select PathName
     errorActionPreference: stop
     displayName: Install Database Server
   - pwsh: |
@@ -169,12 +173,20 @@ jobs:
     displayName: Build
   - pwsh: |
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
+
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@sql_mode;"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@sql_mode;"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@sql_mode;"
+
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sql_mode)';"
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@sql_mode;"
 
       .\dotnet-env.ps1 dotnet tool install --global dotnet-ef
       .\dotnet-env.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
-    errorActionPreference: stop
+    errorActionPreference: continue
     displayName: Setup Database
   - pwsh: .\dotnet-env.ps1 dotnet test --logger trx test\EFCore.MySql.Tests
     displayName: Tests
