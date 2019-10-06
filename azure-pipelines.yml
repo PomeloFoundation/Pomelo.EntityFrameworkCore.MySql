@@ -158,7 +158,7 @@ jobs:
 #      .\build.cmd
 #    displayName: Build
   - pwsh: |
-      $ErrorActionPreference = "Stop" # disable this line next
+      #$ErrorActionPreference = "Stop"
       Set-PSDebug -Trace 1
 
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
