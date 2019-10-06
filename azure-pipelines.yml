@@ -156,9 +156,15 @@ jobs:
       Write-Host C:\ProgramData\MySQL\data
       dir C:\ProgramData\MySQL\data
       cat C:\tools\mysql\current\my.ini
+      
+      Set-PSDebug -Trace 1
+      Stop-Service MySQL
       cp .\ci\mysql-8.0-my.ini C:\tools\mysql\current\my.ini -Force
-      Restart-Service MySQL
+      cat C:\tools\mysql\current\my.ini
+      Start-Service MySQL
     displayName: Install Database Server
+    failOnStderr: false
+    ignoreLASTEXITCODE: true
 #  - task: UseDotNet@2
 #    displayName: Use .NET Core SDK
 #    inputs:
