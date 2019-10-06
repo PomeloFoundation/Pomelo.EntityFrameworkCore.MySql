@@ -148,6 +148,8 @@ jobs:
       Write-Host C:\ProgramData\MySQL\data
       dir C:\ProgramData\MySQL\data
       cat C:\tools\mysql\current\my.ini
+      cp .\ci\mysql-8.0-my.ini C:\tools\mysql\current\my.ini -Force
+      Restart-Service MySQL
     displayName: Install Database Server
 #  - task: UseDotNet@2
 #    displayName: Use .NET Core SDK
@@ -167,10 +169,6 @@ jobs:
       # $ErrorActionPreference = "Stop"
       Set-PSDebug -Trace 1
       
-      C:\tools\mysql\current\bin\mysql.exe --help
-      C:\tools\mysql\current\bin\mysql.exe --help
-      C:\tools\mysql\current\bin\mysql.exe --help
-
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "quit"
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "quit"
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "quit;"
