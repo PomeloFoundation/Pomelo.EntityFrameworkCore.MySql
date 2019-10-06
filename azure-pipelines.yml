@@ -141,48 +141,17 @@ jobs:
     sql_mode: $(current_mysql_mode)
   steps:
   - pwsh: |
-      # Write-Host "Existing my.ini:"
-      # Get-Childitem –Path C:\ -Include my.ini -File -Recurse -ErrorAction SilentlyContinue
-
-      # Write-Host "Existing mysql.exe:"
-      # Get-Childitem –Path C:\ -Include mysql.exe -File -Recurse -ErrorAction SilentlyContinue
-
       choco install mysql
 
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
 
-      Write-Host
-      Write-Host MySQL services
-      Get-CimInstance -ClassName Win32_Service | ?{$_.Name -like '*MySQL*'} | select Name, DisplayName, State, PathName
-
-      Write-Host
-      Write-Host C:\tools\mysql\current\
-      dir C:\tools\mysql\current\
-
-      Write-Host
-      Write-Host C:\ProgramData\MySQL\data
-      dir C:\ProgramData\MySQL\data
-
-      Write-Host
-      Write-Host C:\tools\mysql\current\my.ini
-      cat C:\tools\mysql\current\my.ini
-      
-      Set-PSDebug -Trace 1
       net stop MySQL
-
       cp .\ci\win-mysql-8.0-my.ini C:\tools\mysql\current\my.ini -Force
       cat C:\tools\mysql\current\my.ini
-
       # C:\tools\mysql\current\bin\mysqld.exe --defaults-file="C:\tools\mysql\current\my.ini" --console
       net start MySQL
-
-      # Write-Host C:\ProgramData\MySQL\data
-      # dir C:\ProgramData\MySQL\data\*.err
-      # Get-Content -Path C:\ProgramData\MySQL\data\* -Filter *.err
+    errorActionPreference: stop
     displayName: Install Database Server
-    failOnStderr: false
-    ignoreLASTEXITCODE: true
-    errorActionPreference: continue
   - pwsh: |
       dotnet --info
       $ErrorActionPreference = "Stop"
@@ -192,61 +161,50 @@ jobs:
       .\build.cmd
     displayName: Build
   - pwsh: |
-      # $ErrorActionPreference = "Stop"
-      Set-PSDebug -Trace 1
-      
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
-      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
-      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
-
-      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@sql_mode;"
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sql_mode)';"
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@sql_mode;"
 
-      Set-PSDebug -Trace 0
-
       .\dotnet-env.ps1 dotnet tool install --global dotnet-ef
       .\dotnet-env.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
-    failOnStderr: false
-    ignoreLASTEXITCODE: true
-    errorActionPreference: continue
+    errorActionPreference: stop
     displayName: Setup Database
-#  - pwsh: .\dotnet-env.ps1 dotnet test --logger trx test\EFCore.MySql.Tests
-#    displayName: Tests
-#    continueOnError: true
-#  - pwsh: .\dotnet-env.ps1 dotnet test test\EFCore.MySql.FunctionalTests -c Release --logger trx -v:d
-#    displayName: Functional Tests
-#    continueOnError: true
-#  - pwsh: .\dotnet-env.ps1 dotnet run --project test\EFCore.MySql.IntegrationTests -c Release testMigrate
-#    displayName: Integration Tests applying migration
-#    continueOnError: true
-#  - pwsh: .\dotnet-env.ps1 dotnet test -c Release --logger trx test\EFCore.MySql.IntegrationTests
-#    displayName: Integration Tests with EF_BATCH_SIZE=1
-#    continueOnError: true
-#  - pwsh: $env:EF_BATCH_SIZE="10"; .\dotnet-env.ps1 dotnet test -c Release --logger trx test\EFCore.MySql.IntegrationTests
-#    displayName: Integration Tests with EF_BATCH_SIZE=10
-#    continueOnError: true
-#  - pwsh: $env:EF_RETRY_ON_FAILURE="3"; .\dotnet-env.ps1 dotnet test -c Release --logger trx test\EFCore.MySql.IntegrationTests
-#    displayName: Integration Tests with EF_RETRY_ON_FAILURE=3
-#    continueOnError: true
-#  - pwsh: $env:EF_SCHEMA="pomelo_test2"; .\dotnet-env.ps1 dotnet build .\test\EFCore.MySql.IntegrationTests -c Release
-#    displayName: Integration Tests Building migrations with EF_DATABASE=pomelo_test2
-#    continueOnError: true
-#  - pwsh: $env:EF_SCHEMA="pomelo_test2"; .\dotnet-env.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
-#    displayName: Integration Tests Setup migrations with EF_DATABASE=pomelo_test2
-#    continueOnError: true
-#  - pwsh: $env:EF_SCHEMA="pomelo_test2"; .\dotnet-env.ps1 dotnet test -c Release --logger trx test\EFCore.MySql.IntegrationTests
-#    displayName: Integration Tests with EF_SCHEMA=pomelo_test2
-#    continueOnError: true
-#  - task: PublishTestResults@2
-#    displayName: Publish Test Results
-#    condition: succeededOrFailed()
-#    inputs:
-#      testResultsFormat: VSTest
-#      testResultsFiles: test/**/*.trx
-#      testRunTitle: Windows
-#      mergeTestResults: true
-#      failTaskOnFailedTests: true
+  - pwsh: .\dotnet-env.ps1 dotnet test --logger trx test\EFCore.MySql.Tests
+    displayName: Tests
+    continueOnError: true
+  - pwsh: .\dotnet-env.ps1 dotnet test test\EFCore.MySql.FunctionalTests -c Release --logger trx -v:d
+    displayName: Functional Tests
+    continueOnError: true
+  - pwsh: .\dotnet-env.ps1 dotnet run --project test\EFCore.MySql.IntegrationTests -c Release testMigrate
+    displayName: Integration Tests applying migration
+    continueOnError: true
+  - pwsh: .\dotnet-env.ps1 dotnet test -c Release --logger trx test\EFCore.MySql.IntegrationTests
+    displayName: Integration Tests with EF_BATCH_SIZE=1
+    continueOnError: true
+  - pwsh: $env:EF_BATCH_SIZE="10"; .\dotnet-env.ps1 dotnet test -c Release --logger trx test\EFCore.MySql.IntegrationTests
+    displayName: Integration Tests with EF_BATCH_SIZE=10
+    continueOnError: true
+  - pwsh: $env:EF_RETRY_ON_FAILURE="3"; .\dotnet-env.ps1 dotnet test -c Release --logger trx test\EFCore.MySql.IntegrationTests
+    displayName: Integration Tests with EF_RETRY_ON_FAILURE=3
+    continueOnError: true
+  - pwsh: $env:EF_SCHEMA="pomelo_test2"; .\dotnet-env.ps1 dotnet build .\test\EFCore.MySql.IntegrationTests -c Release
+    displayName: Integration Tests Building migrations with EF_DATABASE=pomelo_test2
+    continueOnError: true
+  - pwsh: $env:EF_SCHEMA="pomelo_test2"; .\dotnet-env.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
+    displayName: Integration Tests Setup migrations with EF_DATABASE=pomelo_test2
+    continueOnError: true
+  - pwsh: $env:EF_SCHEMA="pomelo_test2"; .\dotnet-env.ps1 dotnet test -c Release --logger trx test\EFCore.MySql.IntegrationTests
+    displayName: Integration Tests with EF_SCHEMA=pomelo_test2
+    continueOnError: true
+  - task: PublishTestResults@2
+    displayName: Publish Test Results
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: test/**/*.trx
+      testRunTitle: Windows
+      mergeTestResults: true
+      failTaskOnFailedTests: true
 
 #- job: Nuget
 #  dependsOn:
