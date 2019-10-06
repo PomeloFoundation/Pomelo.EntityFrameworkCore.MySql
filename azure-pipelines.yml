@@ -1,3 +1,9 @@
+variables:
+  current_mysql_mode: STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+  legacy_mysql_mode: STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
 jobs:
 
 - job: Linux
@@ -6,18 +12,22 @@ jobs:
       MySQL 8.0.17:
         DOCKER_IMAGE: mysql:8.0.17
         SERVER_VERSION: 8.0.17-mysql
+        SQL_MODE: $(current_mysql_mode)
         INTEGRATION_TESTS: "true"
       MySQL 5.7.27:
         DOCKER_IMAGE: mysql:5.7.27
         SERVER_VERSION: 5.7.27-mysql
+        SQL_MODE: $(legacy_mysql_mode)
         INTEGRATION_TESTS: "true"
       MariaDB 10.4.8:
         DOCKER_IMAGE: mariadb:10.4.8
         SERVER_VERSION: 10.4.8-mariadb
+        SQL_MODE: $(legacy_mysql_mode)
         INTEGRATION_TESTS: "false"
       MariaDB 10.3.18:
         DOCKER_IMAGE: mariadb:10.3.18
         SERVER_VERSION: 10.3.18-mariadb
+        SQL_MODE: $(legacy_mysql_mode)
         INTEGRATION_TESTS: "false"
   pool:
     vmImage: 'ubuntu-16.04'
@@ -58,7 +68,7 @@ jobs:
         echo "$DOCKER_IMAGE container failed to start in 180 seconds" >&2
       fi
 
-      docker exec mysql mysql -h localhost -P 3308 -u root -pPassword12! -e "SELECT @@GLOBAL.sql_mode;"
+      docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e "SET GLOBAL sql_mode = '$SQL_MODE';"
 
       if [ "$(INTEGRATION_TESTS)" = "true" ]; then
         ./dotnet-env.sh ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.sh
@@ -123,6 +133,8 @@ jobs:
 - job: Windows
   pool:
     vmImage: 'windows-2019'
+  variables:
+    sql_mode: $(current_mysql_mode)
   steps:
   - pwsh: choco install mysql
     displayName: Start Database
@@ -143,6 +155,7 @@ jobs:
   - pwsh: |
       $ErrorActionPreference = "Stop"
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sql_mode)';"
       .\dotnet-env.ps1 dotnet tool install --global dotnet-ef
       .\dotnet-env.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
     displayName: Setup Database
