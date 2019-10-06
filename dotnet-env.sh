@@ -14,7 +14,8 @@ scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
 
 . "$scriptroot/eng/common/tools.sh"
 
-InitializeDotNetCli
+InitializeDotNetCli "true"
 export DOTNET_ROOT="$DOTNET_INSTALL_DIR"
+export PATH="$PATH:$HOME/.dotnet/tools"
 
 exec "$@"
