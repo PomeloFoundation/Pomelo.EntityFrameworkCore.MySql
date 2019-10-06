@@ -48,6 +48,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public readonly Version Version;
 
         public bool SupportsDateTime6 => Version >= new Version(5, 6);
+        public bool SupportsFloatCast => Version >= new Version(8, 0, 17);
+        public bool SupportsDoubleCast => Version >= new Version(8, 0, 17);
 
         public bool SupportsRenameIndex
         {

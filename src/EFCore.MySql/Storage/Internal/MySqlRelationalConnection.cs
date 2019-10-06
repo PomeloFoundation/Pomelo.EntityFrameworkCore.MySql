@@ -21,21 +21,29 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         {
         }
 
-        protected override DbConnection CreateDbConnection() => new MySqlConnection(ConnectionString);
+        protected override DbConnection CreateDbConnection()
+            => new MySqlConnection(AddConnectionStringOptions(new MySqlConnectionStringBuilder(ConnectionString)).ConnectionString);
 
         public virtual IMySqlRelationalConnection CreateMasterConnection()
         {
-            var csb = new MySqlConnectionStringBuilder(ConnectionString)
+            var connectionStringBuilder = new MySqlConnectionStringBuilder(ConnectionString)
             {
                 Database = "",
                 Pooling = false
             };
 
-            var contextOptions = new DbContextOptionsBuilder()
-                .UseMySql(csb.ConnectionString)
-                .Options;
+            var optionsBuilder = new DbContextOptionsBuilder()
+                .UseMySql(AddConnectionStringOptions(connectionStringBuilder).ConnectionString, options => options.CommandTimeout(CommandTimeout));
 
-            return new MySqlRelationalConnection(Dependencies.With(contextOptions));
+            return new MySqlRelationalConnection(Dependencies.With(optionsBuilder.Options));
+        }
+
+        private MySqlConnectionStringBuilder AddConnectionStringOptions(MySqlConnectionStringBuilder builder)
+        {
+            if (CommandTimeout != null)
+                builder.DefaultCommandTimeout = (uint)CommandTimeout.Value;
+
+            return builder;
         }
 
         protected override bool SupportsAmbientTransactions => false;

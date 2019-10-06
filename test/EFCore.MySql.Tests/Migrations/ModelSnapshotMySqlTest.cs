@@ -228,11 +228,11 @@ builder.Entity(""Pomelo.EntityFrameworkCore.MySql.Migrations.ModelSnapshotMySqlT
             => new RelationalModelValidator(
                 new ModelValidatorDependencies(
                     new DiagnosticsLogger<DbLoggerCategory.Model.Validation>(
-                        new ListLoggerFactory(new List<(LogLevel, EventId, string)>(), l => l == DbLoggerCategory.Model.Validation.Name),
+                        new ListLoggerFactory(category => category == DbLoggerCategory.Model.Validation.Name),
                         new LoggingOptions(),
                         new DiagnosticListener("Fake")),
                     new DiagnosticsLogger<DbLoggerCategory.Model>(
-                        new ListLoggerFactory(new List<(LogLevel, EventId, string)>(), l => l == DbLoggerCategory.Model.Name),
+                        new ListLoggerFactory(category => category == DbLoggerCategory.Model.Name),
                         new LoggingOptions(),
                         new DiagnosticListener("Fake"))),
                 new RelationalModelValidatorDependencies(

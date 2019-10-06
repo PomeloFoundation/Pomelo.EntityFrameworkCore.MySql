@@ -12,5 +12,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Sql.Internal
         Expression VisitRegexp([NotNull] RegexpExpression regexpExpression);
         Expression VisitMySqlComplexFunctionArgumentExpression([NotNull] MySqlComplexFunctionArgumentExpression mySqlComplexFunctionArgumentExpression);
         Expression VisitMySqlCollateExpression([NotNull] MySqlCollateExpression mySqlCollateExpression);
+        Expression VisitMySqlBinaryExpression([NotNull] MySqlBinaryExpression mySqlBinaryExpression);
     }
 }

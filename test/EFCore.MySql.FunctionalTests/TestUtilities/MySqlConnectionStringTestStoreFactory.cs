@@ -1,10 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore.TestUtilities;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {
-    public class MySqlConnectionStringTestStoreFactory : ITestStoreFactory
+    public class MySqlConnectionStringTestStoreFactory : RelationalTestStoreFactory
     {
         public static MySqlConnectionStringTestStoreFactory Instance { get; } = new MySqlConnectionStringTestStoreFactory();
 
@@ -12,14 +13,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         {
         }
 
-        public virtual TestStore Create(string storeName)
+        public override TestStore Create(string storeName)
             => MySqlTestStore.Create(storeName, useConnectionString: true);
 
-        public virtual TestStore GetOrCreate(string storeName)
+        public override TestStore GetOrCreate(string storeName)
             => MySqlTestStore.GetOrCreate(storeName, useConnectionString: true);
 
-        public IServiceCollection AddProviderServices(IServiceCollection serviceCollection)
-            => serviceCollection.AddEntityFrameworkMySql()
-                .AddSingleton<ILoggerFactory>(new TestSqlLoggerFactory());
+        public override IServiceCollection AddProviderServices(IServiceCollection serviceCollection)
+            => serviceCollection.AddEntityFrameworkMySql();
     }
 }
