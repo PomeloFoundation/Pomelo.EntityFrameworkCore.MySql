@@ -160,10 +160,6 @@ jobs:
   - pwsh: |
       $ErrorActionPreference = "Stop"
       Set-PSDebug -Trace 1
-      
-      dir C:\tools\mysql
-      dir C:\tools\mysql\current
-      dir C:\tools\mysql\mysql-8.0.17-winx64
 
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
@@ -187,6 +183,7 @@ jobs:
 
       .\dotnet-env.ps1 dotnet tool install --global dotnet-ef
       .\dotnet-env.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
+    failOnStderr: false
     displayName: Setup Database
   - pwsh: .\dotnet-env.ps1 dotnet test --logger trx test\EFCore.MySql.Tests
     displayName: Tests
