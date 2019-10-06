@@ -142,6 +142,7 @@ jobs:
   - pwsh: |
       choco install mysql
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
+      Get-CimInstance -ClassName Win32_Service | ?{$_.Name -like '*MySQL*'} | select Name, DisplayName, State, PathName
     displayName: Install Database Server
 #  - task: UseDotNet@2
 #    displayName: Use .NET Core SDK
@@ -160,7 +161,6 @@ jobs:
   - pwsh: |
       # $ErrorActionPreference = "Stop"
       Set-PSDebug -Trace 1
-      $env:Path
       
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
@@ -186,6 +186,7 @@ jobs:
       .\dotnet-env.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
     failOnStderr: false
     ignoreLASTEXITCODE: true
+    errorActionPreference: continue
     displayName: Setup Database
 #  - pwsh: .\dotnet-env.ps1 dotnet test --logger trx test\EFCore.MySql.Tests
 #    displayName: Tests
