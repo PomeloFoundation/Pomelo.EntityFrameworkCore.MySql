@@ -44,8 +44,9 @@ jobs:
       set -e
       sudo systemctl stop mysql
       docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -p 3306:3306 -d $DOCKER_IMAGE
-    displayName: Start Database
+    displayName: Install Database Server
   - bash: |
+      dotnet --info
       set -e
       cp test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
       cp test/EFCore.MySql.IntegrationTests/appsettings.ci.json test/EFCore.MySql.IntegrationTests/appsettings.json
@@ -54,6 +55,7 @@ jobs:
     displayName: Build Solution
   - bash: |
       ./dotnet-env.sh dotnet tool install --global dotnet-ef
+      export PATH="$PATH:$HOME/.dotnet/tools"
 
       started="false"
       for i in $(seq 0 180); do
@@ -69,16 +71,17 @@ jobs:
         exit 1
       fi
 
-      docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e "SET GLOBAL sql_mode = '$SQL_MODE';"
+      docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e "SELECT @@version;"
+      docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e "SELECT @@sql_mode;"
 
       if [ "$(INTEGRATION_TESTS)" = "true" ]; then
         ./dotnet-env.sh ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.sh
       fi
-    displayName: Initialize Database
+    displayName: Setup Database
   - bash: ./dotnet-env.sh dotnet test --logger trx test/EFCore.MySql.Tests
     displayName: Tests
     continueOnError: true
-  - bash: ./dotnet-env.sh dotnet test -c Release --logger trx test/EFCore.MySql.FunctionalTests
+  - bash: ./dotnet-env.sh dotnet test test/EFCore.MySql.FunctionalTests -c Release --logger trx -v:d
     displayName: Functional Tests
     continueOnError: true
   - bash: ./dotnet-env.sh dotnet run --project test/EFCore.MySql.IntegrationTests -c Release testMigrate
@@ -137,8 +140,28 @@ jobs:
   variables:
     sql_mode: $(current_mysql_mode)
   steps:
-  - pwsh: choco install mysql
-    displayName: Start Database
+  - pwsh: |
+      choco install mysql
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
+      Get-CimInstance -ClassName Win32_Service | ?{$_.Name -like '*MySQL*'} | select Name, DisplayName, State, PathName
+      Write-Host C:\tools\mysql\current\
+      dir C:\tools\mysql\current\
+      Write-Host C:\ProgramData\MySQL\data
+      dir C:\ProgramData\MySQL\data
+      cat C:\tools\mysql\current\my.ini
+      
+      Set-PSDebug -Trace 1
+      net stop MySQL
+      cp .\ci\mysql-8.0-my.ini C:\tools\mysql\current\my.ini -Force
+      cat C:\tools\mysql\current\my.ini
+      net start MySQL
+      Write-Host C:\ProgramData\MySQL\data
+      dir C:\ProgramData\MySQL\data\*.err
+      Get-Content -Path C:\ProgramData\MySQL\data\* -Filter *.err
+    displayName: Install Database Server
+    failOnStderr: false
+    ignoreLASTEXITCODE: true
+    errorActionPreference: continue
   - pwsh: |
       dotnet --info
       $ErrorActionPreference = "Stop"
@@ -148,16 +171,47 @@ jobs:
       .\build.cmd
     displayName: Build
   - pwsh: |
-      $ErrorActionPreference = "Stop"
-      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
+      # $ErrorActionPreference = "Stop"
+      Set-PSDebug -Trace 1
+      
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "quit"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "quit"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "quit;"
+
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "select 1;"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "select 1;"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "select 1;"
+
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
+
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@sql_mode;"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@sql_mode;"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@sql_mode;"
+
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sql_mode)';"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sql_mode)';"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sql_mode)';"
+
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@sql_mode;"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@sql_mode;"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@sql_mode;"
+
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
+
       .\dotnet-env.ps1 dotnet tool install --global dotnet-ef
       .\dotnet-env.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
+    failOnStderr: false
+    ignoreLASTEXITCODE: true
+    errorActionPreference: continue
     displayName: Setup Database
   - pwsh: .\dotnet-env.ps1 dotnet test --logger trx test\EFCore.MySql.Tests
     displayName: Tests
     continueOnError: true
-  - pwsh: .\dotnet-env.ps1 dotnet test -c Release --logger trx test\EFCore.MySql.FunctionalTests
+  - pwsh: .\dotnet-env.ps1 dotnet test test\EFCore.MySql.FunctionalTests -c Release --logger trx -v:d
     displayName: Functional Tests
     continueOnError: true
   - pwsh: .\dotnet-env.ps1 dotnet run --project test\EFCore.MySql.IntegrationTests -c Release testMigrate
