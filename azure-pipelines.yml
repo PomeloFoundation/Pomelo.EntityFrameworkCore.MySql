@@ -162,9 +162,13 @@ jobs:
       cp .\ci\mysql-8.0-my.ini C:\tools\mysql\current\my.ini -Force
       cat C:\tools\mysql\current\my.ini
       net start MySQL
+      Write-Host C:\ProgramData\MySQL\data
+      dir C:\ProgramData\MySQL\data\*.err
+      Get-Content -Path C:\ProgramData\MySQL\data\* -Filter *.err
     displayName: Install Database Server
     failOnStderr: false
     ignoreLASTEXITCODE: true
+    errorActionPreference: continue
 #  - task: UseDotNet@2
 #    displayName: Use .NET Core SDK
 #    inputs:
