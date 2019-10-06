@@ -1,87 +1,157 @@
-trigger:
-- master
+jobs:
+- job: Linux
+  pool:
+    vmImage: 'ubuntu-16.04'
+  continueOnError: true
+  steps:
+  - bash: |
+      set -e
+      sudo systemctl stop mysql
+      docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -p 3306:3306 -d mysql:8.0.17
+      cp test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
+      cp test/EFCore.MySql.IntegrationTests/appsettings.ci.json test/EFCore.MySql.IntegrationTests/appsettings.json
+      cp test/EFCore.MySql.IntegrationTests/config.json.example test/EFCore.MySql.IntegrationTests/config.json
+      ./run.sh install-tools
+      ./dotnet-run.sh ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.sh
+    displayName: Setup
+  - bash: |
+      export BUILD_NUMBER=$(TZ=":US/Eastern" date '+%Y%m%d%H%M%S')
+      export IS_FINAL_BUILD=false
+      if echo "$(Build.SourceBranch)" | grep -qE '^refs/tags/'; then
+        export IS_FINAL_BUILD=true
+      fi
+      ./build.sh "/p:SkipTests=true" "/p:BuildNumber=${BUILD_NUMBER}" "/p:IsFinalBuild=${IS_FINAL_BUILD}"
+    displayName: Set Build Number
+  - bash: ./dotnet-run.sh dotnet test test/EFCore.MySql.Tests
+    displayName: Tests
+  - bash: ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.FunctionalTests --filter "FullyQualifiedName~Pomelo.EntityFrameworkCore.MySql.FunctionalTests.MigrationSqlGeneratorMySqlTest|FullyQualifiedName~Pomelo.EntityFrameworkCore.MySql.FunctionalTests.MigrationSqlGeneratorMySql55Test"
+    displayName: Functional Migration Tests
+  - bash: ./dotnet-run.sh dotnet run --project test/EFCore.MySql.IntegrationTests -c Release testMigrate
+    displayName: Integration Tests applying migrations
+  - bash: ./dotnet-run.sh ./test/EFCore.MySql.IntegrationTests/scripts/scaffold.sh
+    displayName: Integration Tests scaffolding
+  - bash: rm -rf ./test/EFCore.MySql.IntegrationTests/Scaffold
+    displayName: Remove scaffolding files
+  - bash: ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.IntegrationTests
+    displayName: Integration Tests with EF_BATCH_SIZE=1
+  - bash: export EF_BATCH_SIZE="10" && ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.IntegrationTests
+    displayName: Integration Tests with EF_BATCH_SIZE=10
+  - bash: export EF_RETRY_ON_FAILURE="3" && ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.IntegrationTests
+    displayName: Integration Tests with EF_RETRY_ON_FAILURE=3
+  - bash: ./dotnet-run.sh ./test/EFCore.MySql.IntegrationTests/scripts/legacy.sh
+    displayName: Integration Tests legacy migrations
+  - bash: export EF_SCHEMA="pomelo_test2" && ./dotnet-run.sh ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.sh
+    displayName: Integration Tests Building migrations with EF_DATABASE=pomelo_test2
+  - bash: export EF_SCHEMA="pomelo_test2" && ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.IntegrationTests
+    displayName: Integration Tests with EF_SCHEMA=pomelo_test2
 
-stages:
-- stage: Build
-  jobs:
-  - job: Linux
-    pool:
-      vmImage: 'ubuntu-16.04'
-    continueOnError: true
-    steps:
-    - bash: |
-        set -e
-        sudo systemctl stop mysql
-        docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -p 3306:3306 -d mysql:8.0.17
-        cp test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
-        cp test/EFCore.MySql.IntegrationTests/appsettings.ci.json test/EFCore.MySql.IntegrationTests/appsettings.json
-        cp test/EFCore.MySql.IntegrationTests/config.json.example test/EFCore.MySql.IntegrationTests/config.json
-        ./run.sh install-tools
-        ./dotnet-run.sh ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.sh
-      displayName: Setup
-    - bash: |
-        export BUILD_NUMBER=$(TZ=":US/Eastern" date '+%Y%m%d%H%M%S')
-        export IS_FINAL_BUILD=false
-        if [ ! -z "$TRAVIS_TAG" ]; then
-          export IS_FINAL_BUILD=true
+- job: Windows
+  pool:
+    vmImage: 'windows-2019'
+  continueOnError: true
+  steps:
+  - pwsh: |
+      $ErrorActionPreference = "Stop"
+      
+      choco install mysql
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
+
+      cp test\EFCore.MySql.FunctionalTests\config.json.example test\EFCore.MySql.FunctionalTests\config.json
+      cp test\EFCore.MySql.IntegrationTests\appsettings.ci.json test\EFCore.MySql.IntegrationTests\appsettings.json
+      cp test\EFCore.MySql.IntegrationTests\config.json.example test\EFCore.MySql.IntegrationTests\config.json
+      .\run.ps1 install-tools
+      .\dotnet-run.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
+    displayName: Setup
+  - pwsh: .\build.cmd "/p:SkipTests=true"
+    displayName: Build Project
+  - pwsh: .\dotnet-run.ps1 dotnet test test\EFCore.MySql.Tests
+    displayName: Tests
+  - pwsh: .\dotnet-run.ps1 dotnet test -c Release test\EFCore.MySql.FunctionalTests --filter "FullyQualifiedName~Pomelo.EntityFrameworkCore.MySql.FunctionalTests.MigrationSqlGeneratorMySqlTest|FullyQualifiedName~Pomelo.EntityFrameworkCore.MySql.FunctionalTests.MigrationSqlGeneratorMySql55Test"
+    displayName: Functional Migration Tests
+  - pwsh: .\dotnet-run.ps1 dotnet run --project test\EFCore.MySql.IntegrationTests -c Release testMigrate
+    displayName: Integration Tests applying migration
+  - pwsh: .\dotnet-run.ps1 dotnet test -c Release test\EFCore.MySql.IntegrationTests
+    displayName: Integration Tests with EF_BATCH_SIZE=1
+  - pwsh: $env:EF_BATCH_SIZE="10"; .\dotnet-run.ps1 dotnet test -c Release test\EFCore.MySql.IntegrationTests
+    displayName: Integration Tests with EF_BATCH_SIZE=10
+  - pwsh: $env:EF_RETRY_ON_FAILURE="3"; .\dotnet-run.ps1 dotnet test -c Release test\EFCore.MySql.IntegrationTests
+    displayName: Integration Tests with EF_RETRY_ON_FAILURE=3
+  - pwsh: $env:EF_SCHEMA="pomelo_test2"; .\dotnet-run.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
+    displayName: Integration Tests Building migrations with EF_DATABASE=pomelo_test2
+  - pwsh: $env:EF_SCHEMA="pomelo_test2"; .\dotnet-run.ps1 dotnet test -c Release test\EFCore.MySql.IntegrationTests
+    displayName: Integration Tests with EF_SCHEMA=pomelo_test2
+
+- job: Nuget
+  dependsOn:
+    - Linux
+    - Windows
+  condition: and( succeededOrFailed(), ne(variables['Build.Reason'], 'PullRequest') )
+  variables:
+    BuildSucceeded: $[ and( in(dependencies.Linux.result, 'Succeeded', 'SucceededWithIssues'), in(dependencies.Windows.result, 'Succeeded', 'SucceededWithIssues')) ]
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+  - bash: |
+      set -e
+      pack="false"
+      final_version_kind=""
+      wip="false"
+      if echo "$(Build.SourceBranch)" | grep -qE '^refs/tags/'; then
+        pack="true"
+        if echo "$(Build.SourceBranchName)" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+          final_version_kind="release"
+        else
+          final_version_kind="prerelease"
         fi
-        ./build.sh "/p:SkipTests=true" "/p:BuildNumber=${BUILD_NUMBER}" "/p:IsFinalBuild=${IS_FINAL_BUILD}"
-      displayName: Set Build Number
-    - bash: ./dotnet-run.sh dotnet test test/EFCore.MySql.Tests
-      displayName: Tests
-    - bash: ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.FunctionalTests --filter "FullyQualifiedName~Pomelo.EntityFrameworkCore.MySql.FunctionalTests.MigrationSqlGeneratorMySqlTest|FullyQualifiedName~Pomelo.EntityFrameworkCore.MySql.FunctionalTests.MigrationSqlGeneratorMySql55Test"
-      displayName: Functional Migration Tests
-    - bash: ./dotnet-run.sh dotnet run --project test/EFCore.MySql.IntegrationTests -c Release testMigrate
-      displayName: Integration Tests applying migrations
-    - bash: ./dotnet-run.sh ./test/EFCore.MySql.IntegrationTests/scripts/scaffold.sh
-      displayName: Integration Tests scaffolding
-    - bash: rm -rf ./test/EFCore.MySql.IntegrationTests/Scaffold
-      displayName: Remove scaffolding files
-    - bash: ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.IntegrationTests
-      displayName: Integration Tests with EF_BATCH_SIZE=1
-    - bash: export EF_BATCH_SIZE="10" && ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.IntegrationTests
-      displayName: Integration Tests with EF_BATCH_SIZE=10
-    - bash: export EF_RETRY_ON_FAILURE="3" && ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.IntegrationTests
-      displayName: Integration Tests with EF_RETRY_ON_FAILURE=3
-    - bash: ./dotnet-run.sh ./test/EFCore.MySql.IntegrationTests/scripts/legacy.sh
-      displayName: Integration Tests legacy migrations
-    - bash: export EF_SCHEMA="pomelo_test2" && ./dotnet-run.sh ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.sh
-      displayName: Integration Tests Building migrations with EF_DATABASE=pomelo_test2
-    - bash: export EF_SCHEMA="pomelo_test2" && ./dotnet-run.sh dotnet test -c Release test/EFCore.MySql.IntegrationTests
-      displayName: Integration Tests with EF_SCHEMA=pomelo_test2
-
-  - job: Windows
-    pool:
-      vmImage: 'windows-2019'
-    continueOnError: true
-    steps:
-    - pwsh: |
-        $ErrorActionPreference = "Stop"
-        
-        choco install mysql
-        C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
-
-        cp test\EFCore.MySql.FunctionalTests\config.json.example test\EFCore.MySql.FunctionalTests\config.json
-        cp test\EFCore.MySql.IntegrationTests\appsettings.ci.json test\EFCore.MySql.IntegrationTests\appsettings.json
-        cp test\EFCore.MySql.IntegrationTests\config.json.example test\EFCore.MySql.IntegrationTests\config.json
-        .\run.ps1 install-tools
-        .\dotnet-run.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
-      displayName: Setup
-    - pwsh: .\build.cmd "/p:SkipTests=true"
-      displayName: Build Project
-    - pwsh: .\dotnet-run.ps1 dotnet test test\EFCore.MySql.Tests
-      displayName: Tests
-    - pwsh: .\dotnet-run.ps1 dotnet test -c Release test\EFCore.MySql.FunctionalTests --filter "FullyQualifiedName~Pomelo.EntityFrameworkCore.MySql.FunctionalTests.MigrationSqlGeneratorMySqlTest|FullyQualifiedName~Pomelo.EntityFrameworkCore.MySql.FunctionalTests.MigrationSqlGeneratorMySql55Test"
-      displayName: Functional Migration Tests
-    - pwsh: .\dotnet-run.ps1 dotnet run --project test\EFCore.MySql.IntegrationTests -c Release testMigrate
-      displayName: Integration Tests applying migration
-    - pwsh: .\dotnet-run.ps1 dotnet test -c Release test\EFCore.MySql.IntegrationTests
-      displayName: Integration Tests with EF_BATCH_SIZE=1
-    - pwsh: $env:EF_BATCH_SIZE="10"; .\dotnet-run.ps1 dotnet test -c Release test\EFCore.MySql.IntegrationTests
-      displayName: Integration Tests with EF_BATCH_SIZE=10
-    - pwsh: $env:EF_RETRY_ON_FAILURE="3"; .\dotnet-run.ps1 dotnet test -c Release test\EFCore.MySql.IntegrationTests
-      displayName: Integration Tests with EF_RETRY_ON_FAILURE=3
-    - pwsh: $env:EF_SCHEMA="pomelo_test2"; .\dotnet-run.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
-      displayName: Integration Tests Building migrations with EF_DATABASE=pomelo_test2
-    - pwsh: $env:EF_SCHEMA="pomelo_test2"; .\dotnet-run.ps1 dotnet test -c Release test\EFCore.MySql.IntegrationTests
-      displayName: Integration Tests with EF_SCHEMA=pomelo_test2
+      elif echo "$(Build.SourceBranch)" | grep -qE '^refs/heads/'; then
+        if [ "$(Build.SourceBranchName)" = "master" ]; then
+          pack="true"
+        elif echo "$(Build.SourceBranchName)" | grep -qE '\-wip$'; then
+          pack="true"
+          wip="true"
+        fi
+      fi
+      echo "Pack.Pack=$pack"
+      echo "Pack.Wip=$wip"
+      echo "OfficialBuildId=$(Build.BuildNumber)"
+      echo "DotNetFinalVersionKind=$final_version_kind"
+      echo "##vso[task.setvariable variable=Pack.Pack]$pack"
+      echo "##vso[task.setvariable variable=Pack.Wip]$wip"
+      if [ "$pack" = "true" ]; then
+        ./dotnet-env.sh dotnet pack \
+          -c Release \
+          "/p:OfficialBuildId=$(Build.BuildNumber)" \
+          "/p:DotNetFinalVersionKind=$final_version_kind" \
+          "/p:ContinuousIntegrationBuild=true" \
+          src/EFCore.MySql/
+      fi
+      pack_nuget_org="false"
+      if [ "$final_version_kind" != "" ]; then
+        IFS=$'\n'
+        for i in $(find artifacts -name "*.nupkg"); do
+          filename=$(basename $i)
+          if [ "$filename" = "Pomelo.EntityFrameworkCore.MySql.$(Build.SourceBranchName).nupkg" ]; then
+            pack_nuget_org="true"
+          fi
+        done
+        unset IFS
+      fi
+      echo "Pack.NugetOrg=$pack_nuget_org"
+      echo "##vso[task.setvariable variable=Pack.NugetOrg]$pack_nuget_org"
+    displayName: "Nuget Pack"
+  - task: NuGetCommand@2
+    displayName: "Nuget Push AZDO Feed"
+    inputs:
+      command: push
+      nuGetFeedType: external
+      publishFeedCredentials: PomeloEFCoreNuget
+      packagesToPush: artifacts/**/*.nupkg
+    condition: and( succeeded(), eq(variables['Pack.Pack'],'true'), or( eq(variables['Pack.Wip'],'true'), variables['BuildSucceeded'] ) )
+  - task: NuGetCommand@2
+    displayName: "Nuget Push nuget.org"
+    inputs:
+      command: push
+      nuGetFeedType: external
+      publishFeedCredentials: NugetOrg
+      packagesToPush: artifacts/**/*.nupkg
+    condition: and( succeeded(), eq(variables['Pack.NugetOrg'],'true'), variables['BuildSucceeded'] )
