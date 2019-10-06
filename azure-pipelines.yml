@@ -144,13 +144,17 @@ jobs:
       choco install mysql
 
       Write-Host "MySQL Service Path"
-      Get-CimInstance -ClassName Win32_Service | ?{$_.Name -like '*MySQL*'} | select PathName
+      Get-CimInstance -ClassName Win32_Service | ?{$_.Name -like '*MySQL*'} | select Name, PathName
 
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
 
       net stop MySQL
+      
       cp .\ci\win-mysql-8.0-my.ini C:\tools\mysql\current\my.ini -Force
       cat C:\tools\mysql\current\my.ini
+ 
+      sc.exe config MySQL binPath= "C:\tools\mysql\current\bin\mysqld --defaults-file=C:\tools\mysql\current\my.ini MySQL"
+      
       # C:\tools\mysql\current\bin\mysqld.exe --defaults-file="C:\tools\mysql\current\my.ini" --console
       net start MySQL
     errorActionPreference: stop
