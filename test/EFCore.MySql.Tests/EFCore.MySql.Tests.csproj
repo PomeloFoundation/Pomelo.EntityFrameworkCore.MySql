@@ -1,10 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <AssemblyName>Pomelo.EntityFrameworkCore.MySql.Tests</AssemblyName>
     <RootNamespace>Pomelo.EntityFrameworkCore.MySql</RootNamespace>
+    <DefaultItemExcludes>$(DefaultItemExcludes);*.trx</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>

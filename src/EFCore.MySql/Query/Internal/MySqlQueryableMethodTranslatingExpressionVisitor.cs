@@ -30,6 +30,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         protected override ShapedQueryExpression TranslateSelect(ShapedQueryExpression source, LambdaExpression selector)
         {
             // Trigger client eval, if there is no LATERAL support.
+            // TODO: Check why this does not catch all OuterApply statements.
             if (((SelectExpression)source.QueryExpression).Tables
                 .Any(t => t is CrossApplyExpression && !_options.ServerVersion.SupportsCrossApply
                           || t is OuterApplyExpression && !_options.ServerVersion.SupportsOuterApply))

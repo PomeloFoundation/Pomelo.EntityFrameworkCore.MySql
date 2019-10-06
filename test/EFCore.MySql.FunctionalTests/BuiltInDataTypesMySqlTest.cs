@@ -904,12 +904,13 @@ WHERE ((`m`.`TimeSpanAsTime` = @__timeSpan_0) AND (`m`.`TimeSpanAsTime` IS NOT N
         [ConditionalFact]
         public virtual void Columns_have_expected_data_types()
         {
+            var maxKeyLength = AppConfig.ServerVersion.MaxKeyLength;
             var actual = QueryForColumnTypes(CreateContext(), _testOutputHelper);
 
-            const string expected = @"BinaryForeignKeyDataType.BinaryKeyDataTypeId ---> [nullable varbinary] [MaxLength = 3072]
+            var expected = $@"BinaryForeignKeyDataType.BinaryKeyDataTypeId ---> [nullable varbinary] [MaxLength = {maxKeyLength}]
 BinaryForeignKeyDataType.Id ---> [int] [Precision = 10 Scale = 0]
 BinaryKeyDataType.Ex ---> [nullable longtext] [MaxLength = -1]
-BinaryKeyDataType.Id ---> [varbinary] [MaxLength = 3072]
+BinaryKeyDataType.Id ---> [varbinary] [MaxLength = {maxKeyLength}]
 BuiltInDataTypes.Enum16 ---> [smallint] [Precision = 5 Scale = 0]
 BuiltInDataTypes.Enum32 ---> [int] [Precision = 10 Scale = 0]
 BuiltInDataTypes.Enum64 ---> [bigint] [Precision = 19 Scale = 0]
@@ -1189,8 +1190,8 @@ ObjectBackedDataTypes.UnsignedInt16 ---> [smallint] [Precision = 5 Scale = 0]
 ObjectBackedDataTypes.UnsignedInt32 ---> [int] [Precision = 10 Scale = 0]
 ObjectBackedDataTypes.UnsignedInt64 ---> [bigint] [Precision = 20 Scale = 0]
 StringForeignKeyDataType.Id ---> [int] [Precision = 10 Scale = 0]
-StringForeignKeyDataType.StringKeyDataTypeId ---> [nullable varchar] [MaxLength = 255]
-StringKeyDataType.Id ---> [varchar] [MaxLength = 255]
+StringForeignKeyDataType.StringKeyDataTypeId ---> [nullable varchar] [MaxLength = {Math.Min(maxKeyLength / (2 * 4), 255)}]
+StringKeyDataType.Id ---> [varchar] [MaxLength = {Math.Min(maxKeyLength / (2 * 4), 255)}]
 UnicodeDataTypes.Id ---> [int] [Precision = 10 Scale = 0]
 UnicodeDataTypes.StringAnsi ---> [nullable longtext] [MaxLength = -1]
 UnicodeDataTypes.StringAnsi3 ---> [nullable varchar] [MaxLength = 3]

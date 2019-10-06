@@ -19,14 +19,14 @@
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.0.0</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <!-- EFCore.MySql Dependencies -->
     <MicrosoftEntityFrameworkCoreRelationalVersion>3.0.0</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MySqlConnectorVersion>0.59</MySqlConnectorVersion>
+    <MySqlConnectorVersion>0.59.2</MySqlConnectorVersion>
     <PomeloJsonObjectVersion>2.2.0</PomeloJsonObjectVersion>
     <CastleCoreVersion>4.4.0</CastleCoreVersion>
     <MicrosoftExtensionsCachingMemoryVersion>3.0.0</MicrosoftExtensionsCachingMemoryVersion>
     <MicrosoftExtensionsDependencyInjection>3.0.0</MicrosoftExtensionsDependencyInjection>
-    <SystemDiagnosticsDiagnosticSource>4.6.0-preview9.19421.4</SystemDiagnosticsDiagnosticSource>
+    <SystemDiagnosticsDiagnosticSource>4.6.0</SystemDiagnosticsDiagnosticSource>
     <!-- Shared Test Dependencies -->
-    <MicrosoftNETTestSdkPackageVersion>16.3.0-preview-20190808-03</MicrosoftNETTestSdkPackageVersion>
+    <MicrosoftNETTestSdkPackageVersion>16.3.0</MicrosoftNETTestSdkPackageVersion>
     <XunitAssertPackageVersion>2.4.1</XunitAssertPackageVersion>
     <XunitCorePackageVersion>2.4.1</XunitCorePackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.1</XunitRunnerVisualStudioPackageVersion>
@@ -42,10 +42,10 @@
     <MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>3.0.0</MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>
     <!-- EFCoreMySqlTests Dependencies -->
     <MicrosoftEntityFrameworkCoreDesignVersion>3.0.0</MicrosoftEntityFrameworkCoreDesignVersion>
-    <MicrosoftCodeAnalysisCSharpPackageVersion>9.9.0-beta3-19305-01</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisCSharpPackageVersion>3.3.1</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0</MicrosoftExtensionsDependencyModelPackageVersion>
     <MoqVersion>4.13.0</MoqVersion>
-    <NewtonsoftJsonPackageVersion>12.0.3-beta1</NewtonsoftJsonPackageVersion>
+    <NewtonsoftJsonPackageVersion>12.0.2</NewtonsoftJsonPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Dependency version settings">
     <!--

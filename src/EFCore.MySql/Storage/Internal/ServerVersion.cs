@@ -45,12 +45,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public readonly ServerType Type;
         public readonly Version Version;
 
-        public int IndexMaxBytes =>
-            (Type == ServerType.MySql && Version >= new Version(5, 7, 7))
-            || (Type == ServerType.MariaDb && Version >= new Version(10, 2, 2))
-                ? 3072
-                : 767;
-
         public override bool Equals(object obj)
             => !(obj is null)
                && obj is ServerVersion version
