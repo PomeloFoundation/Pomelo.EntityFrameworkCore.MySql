@@ -796,7 +796,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     .Append(" AS ")
                     .Append($"({operation.ComputedColumnSql})");
 
-                if (operation.IsNullable && _options.ServerVersion.SupportsNullableGeneratedColumns)
+                if (operation.IsNullable && _connectionInfo.ServerVersion.SupportsNullableGeneratedColumns)
                 {
                     builder.Append(" NULL");
                 }

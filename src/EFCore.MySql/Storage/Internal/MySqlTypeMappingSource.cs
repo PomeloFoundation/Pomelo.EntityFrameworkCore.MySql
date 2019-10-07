@@ -359,7 +359,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     var size = mappingInfo.Size ??
                                (mappingInfo.IsKeyOrIndex
                                    // Allow to use at most half of the max key length, so at least 2 columns can fit
-                                   ? Math.Min(_connectionInfo.ServerVersion.IndexMaxBytes / (bytesPerChar * 2), 255)
+                                   ? Math.Min(_connectionInfo.ServerVersion.MaxKeyLength / (bytesPerChar * 2), 255)
                                    : (int?)null);
                     if (size > maxSize)
                     {
@@ -389,7 +389,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     }
 
                     var size = mappingInfo.Size ??
-                               (mappingInfo.IsKeyOrIndex ? _connectionInfo.ServerVersion.IndexMaxBytes : (int?)null);
+                               (mappingInfo.IsKeyOrIndex ? _connectionInfo.ServerVersion.MaxKeyLength : (int?)null);
 
                     return new MySqlByteArrayTypeMapping(
                         size: size,
