@@ -21,7 +21,6 @@
     <MicrosoftEntityFrameworkCoreRelationalVersion>3.0.0</MicrosoftEntityFrameworkCoreRelationalVersion>
     <MySqlConnectorVersion>0.59.2</MySqlConnectorVersion>
     <PomeloJsonObjectVersion>2.2.0</PomeloJsonObjectVersion>
-    <CastleCoreVersion>4.4.0</CastleCoreVersion>
     <MicrosoftExtensionsCachingMemoryVersion>3.0.0</MicrosoftExtensionsCachingMemoryVersion>
     <MicrosoftExtensionsDependencyInjection>3.0.0</MicrosoftExtensionsDependencyInjection>
     <SystemDiagnosticsDiagnosticSource>4.6.0</SystemDiagnosticsDiagnosticSource>
