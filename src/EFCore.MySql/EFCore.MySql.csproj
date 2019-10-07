@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <PackageReference Include="Pomelo.JsonObject" Version="$(PomeloJsonObjectVersion)" />
-    <PackageReference Include="Castle.Core" Version="$(CastleCoreVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(LocalEFCoreRepository)' == ''">
