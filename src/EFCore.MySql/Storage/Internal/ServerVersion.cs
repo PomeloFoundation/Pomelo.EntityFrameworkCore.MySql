@@ -33,6 +33,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             else
             {
                 Version = _defaultVersion;
+                IsDefault = true;
             }
         }
 
@@ -42,8 +43,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             Type = type;
         }
 
-        public readonly ServerType Type;
-        public readonly Version Version;
+        public ServerType Type { get; }
+        public Version Version { get; }
+        public bool IsDefault { get; }
 
         public override bool Equals(object obj)
             => !(obj is null)

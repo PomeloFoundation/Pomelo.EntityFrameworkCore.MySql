@@ -56,11 +56,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<ISqlExpressionFactory, MySqlSqlExpressionFactory>()
                 .TryAdd<IRelationalSqlTranslatingExpressionVisitorFactory, MySqlSqlTranslatingExpressionVisitorFactory>()
                 .TryAdd<IQueryableMethodTranslatingExpressionVisitorFactory, MySqlQueryableMethodTranslatingExpressionVisitorFactory>()
-                .TryAddProviderSpecificServices(
-                b => b
+                .TryAddProviderSpecificServices(m => m
                     .TryAddSingleton<IMySqlOptions, MySqlOptions>()
-                    .TryAddScoped<IMySqlUpdateSqlGenerator, MySqlUpdateSqlGenerator>()
-                    .TryAddScoped<IMySqlRelationalConnection, MySqlRelationalConnection>());
+                    .TryAddSingleton<IMySqlConnectionInfo, MySqlConnectionInfo>()
+                    .TryAddScoped<IMySqlRelationalConnection, MySqlRelationalConnection>()
+                    .TryAddScoped<IMySqlUpdateSqlGenerator, MySqlUpdateSqlGenerator>());
 
             builder.TryAddCoreServices();
 

@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -42,7 +43,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
         private const ulong LimitUpperBound = 18446744073709551610;
 
-        private readonly IMySqlOptions _options;
+        private readonly IMySqlConnectionInfo _connectionInfo;
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -50,10 +51,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         /// </summary>
         public MySqlQuerySqlGenerator(
             [NotNull] QuerySqlGeneratorDependencies dependencies,
-            [CanBeNull] IMySqlOptions options)
+            [CanBeNull] IMySqlConnectionInfo connectionInfo)
             : base(dependencies)
         {
-            _options = options;
+            _connectionInfo = connectionInfo;
         }
 
         /// <summary>
@@ -191,13 +192,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
             var useDecimalToDoubleFloatWorkaround = false;
 
-            if (castMapping.StartsWith("double") && (!_options?.ServerVersion.SupportsDoubleCast ?? false))
+            if (castMapping.StartsWith("double") && !_connectionInfo.ServerVersion.SupportsDoubleCast)
             {
                 useDecimalToDoubleFloatWorkaround = true;
                 castMapping = "decimal(65,30)";
             }
 
-            if (castMapping.StartsWith("float") && (!_options?.ServerVersion.SupportsFloatCast ?? false))
+            if (castMapping.StartsWith("float") && !_connectionInfo.ServerVersion.SupportsFloatCast)
             {
                 useDecimalToDoubleFloatWorkaround = true;
                 castMapping = "decimal(65,30)";
