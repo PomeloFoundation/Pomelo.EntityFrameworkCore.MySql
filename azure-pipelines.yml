@@ -139,33 +139,40 @@ jobs:
     sql_mode: $(current_mysql_mode)
   steps:
   - pwsh: |
-      choco install mysql
-
-      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
-      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
-
-      net stop MySQL
-      cp .\ci\win-mysql-8.0-my.ini C:\tools\mysql\current\my.ini -Force
-      cat C:\tools\mysql\current\my.ini
-      sc.exe config MySQL binPath= "C:\tools\mysql\current\bin\mysqld --defaults-file=C:\tools\mysql\current\my.ini MySQL"
-      net start MySQL
-    errorActionPreference: stop
+      docker run `
+        -d `
+        --name "mysql" `
+        -e "MYSQL_ROOT_PASSWORD=Password12!" `
+        -p "3306:3306" `
+        pomelofoundation/mysql-windows:8-ltsc2019
     displayName: Install Database Server
   - pwsh: |
-      dotnet --info
-      $ErrorActionPreference = "Stop"
       cp test\EFCore.MySql.FunctionalTests\config.json.example test\EFCore.MySql.FunctionalTests\config.json
       cp test\EFCore.MySql.IntegrationTests\appsettings.ci.json test\EFCore.MySql.IntegrationTests\appsettings.json
       cp test\EFCore.MySql.IntegrationTests\config.json.example test\EFCore.MySql.IntegrationTests\config.json
       .\build.cmd
     displayName: Build
   - pwsh: |
-      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sql_mode)';"
-
+      $started=$false
+      For ($i=0; $i -le 180; $i++) {
+        docker exec mysql mysqladmin -h localhost -P 3306 -u root "-pPassword12!" status
+        if ($LastExitCode -eq 0) {
+          $started=$true
+          break;
+        }
+        Start-Sleep 1
+      }
+      if (!$started) {
+        Write-Error "mysql container failed to start in 180 seconds"
+        exit 1
+      }
+      docker exec mysql mysql -h localhost -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sql_mode)';"
+    errorActionPreference: continue
+    displayName: Setup Database 1/2
+  - pwsh: |
       .\dotnet-env.ps1 dotnet tool install --global dotnet-ef
       .\dotnet-env.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
-    errorActionPreference: stop
-    displayName: Setup Database
+    displayName: Setup Database 2/2
   - pwsh: .\dotnet-env.ps1 dotnet test --logger trx test\EFCore.MySql.Tests
     displayName: Tests
     continueOnError: true
