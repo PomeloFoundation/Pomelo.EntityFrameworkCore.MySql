@@ -10,6 +10,10 @@
     <DeterministicSourcePaths>false</DeterministicSourcePaths>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);EF1001</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Pomelo.JsonObject" Version="$(PomeloJsonObjectVersion)" />
   </ItemGroup>
