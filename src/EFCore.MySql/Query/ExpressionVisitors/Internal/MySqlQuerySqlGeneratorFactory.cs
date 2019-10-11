@@ -3,12 +3,9 @@
 
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Utilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
     public class MySqlQuerySqlGeneratorFactory : IQuerySqlGeneratorFactory
     {

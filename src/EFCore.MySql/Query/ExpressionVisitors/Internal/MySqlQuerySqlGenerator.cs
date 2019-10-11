@@ -4,16 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Utilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Utilities;
+using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used

@@ -46,7 +46,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return visitedExpression;
         }
 
-
         private static bool IsDateTimeBasedOperation(SqlBinaryExpression binaryExpression)
         {
             if (binaryExpression.TypeMapping != null
