@@ -689,25 +689,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 }
             }
 
-            var annotatable = (IAnnotatable)operation;
-            var valueGenerationStrategy = annotatable[MySqlAnnotationNames.ValueGenerationStrategy] as MySqlValueGenerationStrategy?;
-
-            if (!valueGenerationStrategy.HasValue ||
-                valueGenerationStrategy == MySqlValueGenerationStrategy.None)
-            {
-                var generatedOnAddAnnotation = annotatable[MySqlAnnotationNames.LegacyValueGeneratedOnAdd];
-                if (generatedOnAddAnnotation != null && (bool)generatedOnAddAnnotation)
-                {
-                    valueGenerationStrategy = MySqlValueGenerationStrategy.IdentityColumn;
-                }
-
-                var generatedOnAddOrUpdateAnnotation =
-                    annotatable[MySqlAnnotationNames.LegacyValueGeneratedOnAddOrUpdate];
-                if (generatedOnAddOrUpdateAnnotation != null && (bool)generatedOnAddOrUpdateAnnotation)
-                {
-                    valueGenerationStrategy = MySqlValueGenerationStrategy.ComputedColumn;
-                }
-            }
+            var valueGenerationStrategy = MySqlValueGenerationStrategyCompatibility.GetValueGenerationStrategy(operation.GetAnnotations().OfType<IAnnotation>().ToArray());
 
             var autoIncrement = false;
             if (valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn &&
