@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
-using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 {
