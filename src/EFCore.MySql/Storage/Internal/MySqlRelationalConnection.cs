@@ -104,7 +104,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
             if (result)
             {
-                SetServerVersion();
+                MySqlConnectionInfo.SetServerVersion((MySqlConnection)DbConnection, _serviceProvider);
 
                 if (_mySqlOptionsExtension.UpdateSqlModeOnOpen && _mySqlOptionsExtension.NoBackslashEscapes)
                 {
@@ -121,7 +121,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
             if (result)
             {
-                SetServerVersion();
+                MySqlConnectionInfo.SetServerVersion((MySqlConnection)DbConnection, _serviceProvider);
 
                 if (_mySqlOptionsExtension.UpdateSqlModeOnOpen && _mySqlOptionsExtension.NoBackslashEscapes)
                 {
@@ -130,22 +130,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             }
 
             return result;
-        }
-
-        private void SetServerVersion()
-        {
-            var connectionInfo = (MySqlConnectionInfo)_serviceProvider.GetRequiredService<IMySqlConnectionInfo>();
-            var options = _serviceProvider.GetRequiredService<IMySqlOptions>();
-
-            if (options.ServerVersion.IsDefault)
-            {
-                var connection = (MySqlConnection)DbConnection;
-                connectionInfo.ServerVersion = new ServerVersion(connection.ServerVersion);
-            }
-            else
-            {
-                connectionInfo.ServerVersion = options.ServerVersion;
-            }
         }
 
         public virtual void AppendToSqlMode(string mode)

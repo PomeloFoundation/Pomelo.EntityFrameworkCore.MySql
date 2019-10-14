@@ -1,3 +1,6 @@
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using MySql.Data.MySqlClient;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
@@ -23,6 +26,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         {
             get => _connectionServerVersion ?? _optionsServerVersion;
             internal set => _connectionServerVersion = value;
+        }
+
+        internal static void SetServerVersion(MySqlConnection connection, IServiceProvider serviceProvider)
+        {
+            var connectionInfo = (MySqlConnectionInfo)serviceProvider.GetRequiredService<IMySqlConnectionInfo>();
+            var options = serviceProvider.GetRequiredService<IMySqlOptions>();
+
+            if (options.ServerVersion.IsDefault)
+            {
+                connectionInfo.ServerVersion = new ServerVersion(connection.ServerVersion);
+            }
+            else
+            {
+                connectionInfo.ServerVersion = options.ServerVersion;
+            }
         }
     }
 }

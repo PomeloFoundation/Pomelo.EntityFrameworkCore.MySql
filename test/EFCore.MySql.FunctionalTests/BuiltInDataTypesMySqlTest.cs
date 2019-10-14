@@ -432,7 +432,7 @@ WHERE ((`m`.`TimeSpanAsTime` = @__timeSpan_0) AND (`m`.`TimeSpanAsTime` IS NOT N
             var parameters = DumpParameters();
             Assert.Equal(
                 @"@p0='77'
-@p1='True'
+@p1='1'
 @p2='80'
 @p3='0x5D5E5F60' (Nullable = false) (Size = 5)
 @p4='0x61626365' (Nullable = false) (Size = 8000)
@@ -592,7 +592,7 @@ WHERE ((`m`.`TimeSpanAsTime` = @__timeSpan_0) AND (`m`.`TimeSpanAsTime` IS NOT N
             var parameters = DumpParameters();
             Assert.Equal(
                 @"@p0='77'
-@p1='True' (Nullable = true)
+@p1='1' (Nullable = true)
 @p2='80' (Nullable = true)
 @p3='0x5D5E5F60' (Size = 6)
 @p4='0x61626364' (Size = 8000)
@@ -747,7 +747,7 @@ WHERE ((`m`.`TimeSpanAsTime` = @__timeSpan_0) AND (`m`.`TimeSpanAsTime` IS NOT N
             var parameters = DumpParameters();
             Assert.Equal(
                 @"@p0='78'
-@p1=''
+@p1='' (DbType = UInt64)
 @p2='' (DbType = SByte)
 @p3='' (Size = 6) (DbType = Binary)
 @p4='' (Size = 8000) (DbType = Binary)

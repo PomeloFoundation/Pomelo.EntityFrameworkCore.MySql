@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -17,10 +18,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     {
         // boolean
         private readonly MySqlBoolTypeMapping _bit1 = new MySqlBoolTypeMapping("bit", size: 1);
-        private readonly MySqlBoolTypeMapping _tinyint1 = new MySqlBoolTypeMapping("tinyint", DbType.SByte, size: 1);
+        private readonly MySqlBoolTypeMapping _tinyint1 = new MySqlBoolTypeMapping("tinyint", size: 1);
 
         // bit
-        private readonly MySqlBoolTypeMapping _bit = new MySqlBoolTypeMapping("bit");
+        private readonly ULongTypeMapping _bit = new ULongTypeMapping("bit", DbType.UInt64);
 
         // integers
         private readonly SByteTypeMapping _tinyint = new SByteTypeMapping("tinyint", DbType.SByte);
@@ -42,13 +43,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private readonly RelationalTypeMapping _varbinary = new MySqlByteArrayTypeMapping();
 
         // String mappings depend on the MySqlOptions.NoBackslashEscapes setting.
-        private readonly MySqlStringTypeMapping _char;
-        private readonly MySqlStringTypeMapping _varchar;
-        private readonly MySqlStringTypeMapping _nchar;
-        private readonly MySqlStringTypeMapping _nvarchar;
-        private readonly MySqlStringTypeMapping _varcharmax;
-        private readonly MySqlStringTypeMapping _nvarcharmax;
-        private readonly MySqlStringTypeMapping _enum;
+        private MySqlStringTypeMapping _char;
+        private MySqlStringTypeMapping _varchar;
+        private MySqlStringTypeMapping _nchar;
+        private MySqlStringTypeMapping _nvarchar;
+        private MySqlStringTypeMapping _varcharmax;
+        private MySqlStringTypeMapping _nvarcharmax;
+        private MySqlStringTypeMapping _enum;
 
         // DateTime
         private readonly MySqlDateTypeMapping _date = new MySqlDateTypeMapping("date", DbType.Date);
@@ -76,9 +77,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         // guid
         private readonly GuidTypeMapping _uniqueidentifier = new MySqlGuidTypeMapping("char", DbType.Guid, size: 36);
         private readonly GuidTypeMapping _oldGuid = new MySqlOldGuidTypeMapping();
-        private readonly Dictionary<string, RelationalTypeMapping> _storeTypeMappings;
-        private readonly Dictionary<string, RelationalTypeMapping> _unicodeStoreTypeMappings;
-        private readonly Dictionary<Type, RelationalTypeMapping> _clrTypeMappings;
+
+        private Dictionary<string, RelationalTypeMapping> _storeTypeMappings;
+        private Dictionary<string, RelationalTypeMapping> _unicodeStoreTypeMappings;
+        private Dictionary<Type, RelationalTypeMapping> _clrTypeMappings;
 
         // These are disallowed only if specified without any kind of length specified in parenthesis.
         private readonly HashSet<string> _disallowedMappings = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -94,6 +96,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private readonly IMySqlOptions _options;
         private readonly IMySqlConnectionInfo _connectionInfo;
 
+        private bool _initialized;
+
         public MySqlTypeMappingSource(
             [NotNull] TypeMappingSourceDependencies dependencies,
             [NotNull] RelationalTypeMappingSourceDependencies relationalDependencies,
@@ -103,15 +107,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         {
             _options = options;
             _connectionInfo = connectionInfo;
+        }
 
+        protected void Initialize()
+        {
             // String mappings depend on the MySqlOptions.NoBackslashEscapes setting.
-            _char = new MySqlStringTypeMapping("char", DbType.AnsiStringFixedLength, fixedLength: true, noBackslashEscapes: options.NoBackslashEscapes);
-            _varchar = new MySqlStringTypeMapping("varchar", DbType.AnsiString, noBackslashEscapes: options.NoBackslashEscapes);
-            _nchar = new MySqlStringTypeMapping("nchar", DbType.StringFixedLength, unicode: true, fixedLength: true, noBackslashEscapes: options.NoBackslashEscapes);
-            _nvarchar = new MySqlStringTypeMapping("nvarchar", DbType.String, unicode: true, noBackslashEscapes: options.NoBackslashEscapes);
-            _varcharmax = new MySqlStringTypeMapping("longtext", DbType.AnsiString, noBackslashEscapes: options.NoBackslashEscapes);
-            _nvarcharmax = new MySqlStringTypeMapping("longtext", DbType.String, unicode: true, noBackslashEscapes: options.NoBackslashEscapes);
-            _enum = new MySqlStringTypeMapping("enum", DbType.String, unicode: true, noBackslashEscapes: options.NoBackslashEscapes);
+            _char = new MySqlStringTypeMapping("char", DbType.AnsiStringFixedLength, fixedLength: true, noBackslashEscapes: _options.NoBackslashEscapes);
+            _varchar = new MySqlStringTypeMapping("varchar", DbType.AnsiString, noBackslashEscapes: _options.NoBackslashEscapes);
+            _nchar = new MySqlStringTypeMapping("nchar", DbType.StringFixedLength, unicode: true, fixedLength: true, noBackslashEscapes: _options.NoBackslashEscapes);
+            _nvarchar = new MySqlStringTypeMapping("nvarchar", DbType.String, unicode: true, noBackslashEscapes: _options.NoBackslashEscapes);
+            _varcharmax = new MySqlStringTypeMapping("longtext", DbType.AnsiString, noBackslashEscapes: _options.NoBackslashEscapes);
+            _nvarcharmax = new MySqlStringTypeMapping("longtext", DbType.String, unicode: true, noBackslashEscapes: _options.NoBackslashEscapes);
+            _enum = new MySqlStringTypeMapping("enum", DbType.String, unicode: true, noBackslashEscapes: _options.NoBackslashEscapes);
             
             _storeTypeMappings
                 = new Dictionary<string, RelationalTypeMapping>(StringComparer.OrdinalIgnoreCase)
@@ -234,7 +241,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
             if (_disallowedMappings.Contains(relationalMapping?.StoreType))
             {
-                throw new ArgumentException("Unqualified data type " + relationalMapping?.StoreType);
+                throw new ArgumentException($@"Missing length for data type ""{relationalMapping?.StoreType}"".");
             }
         }
 
@@ -249,6 +256,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         private RelationalTypeMapping FindRawMapping(RelationalTypeMappingInfo mappingInfo)
         {
+            // Use deferred initialization to support connection (string) based type mapping in
+            // design time mode (scaffolder etc.).
+            if (!_initialized)
+            {
+                Initialize();
+                _initialized = true;
+            }
+
             var clrType = mappingInfo.ClrType;
             var storeTypeName = mappingInfo.StoreTypeName;
             var storeTypeNameBase = mappingInfo.StoreTypeNameBase;
@@ -308,6 +323,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                         {
                             return _timeStampOffset6;
                         }
+                    }
+                    else if (storeTypeName.Equals("tinyint(1)", StringComparison.OrdinalIgnoreCase)
+                             && _options.ConnectionSettings.TreatTinyAsBoolean)
+                    {
+                        return _tinyint1;
+                    }
+                    else if (storeTypeName.Equals("bit(1)", StringComparison.OrdinalIgnoreCase)
+                             && !_options.ConnectionSettings.TreatTinyAsBoolean)
+                    {
+                        return _bit1;
                     }
 
                     if (_storeTypeMappings.TryGetValue(storeTypeName, out var mapping)
