@@ -15,14 +15,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     /// </summary>
     public class MySqlBoolTypeMapping : BoolTypeMapping
     {
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="BoolTypeMapping" /> class.
-        /// </summary>
-        /// <param name="storeType"> The name of the database type. </param>
         public MySqlBoolTypeMapping(
             [NotNull] string storeType,
-            DbType? dbType = null)
-            : base(storeType, dbType)
+            DbType? dbType = null,
+            int? size = null)
+            : this(new RelationalTypeMappingParameters(
+                new CoreTypeMappingParameters(typeof(bool)),
+                storeType,
+                size == null ? StoreTypePostfix.None : StoreTypePostfix.Size,
+                dbType,
+                size: size))
         {
         }
 

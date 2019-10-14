@@ -35,7 +35,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 new RelationalTypeMappingParameters(
                     new CoreTypeMappingParameters(typeof(DateTimeOffset)),
                     storeType,
-                    StoreTypePostfix.Precision,
+                    precision == null ? StoreTypePostfix.None : StoreTypePostfix.Precision,
                     System.Data.DbType.DateTimeOffset,
                     precision: precision))
         {

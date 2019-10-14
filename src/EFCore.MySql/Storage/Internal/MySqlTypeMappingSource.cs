@@ -16,6 +16,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     public class MySqlTypeMappingSource : RelationalTypeMappingSource
     {
         // boolean
+        private readonly MySqlBoolTypeMapping _bit1 = new MySqlBoolTypeMapping("bit", size: 1);
+        private readonly MySqlBoolTypeMapping _tinyint1 = new MySqlBoolTypeMapping("tinyint", DbType.SByte, size: 1);
+
+        // bit
         private readonly MySqlBoolTypeMapping _bit = new MySqlBoolTypeMapping("bit");
 
         // integers
@@ -29,7 +33,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private readonly ULongTypeMapping _ubigint = new ULongTypeMapping("bigint unsigned", DbType.UInt64);
 
         // decimals
-        private readonly MySqlDecimalTypeMapping _decimal = new MySqlDecimalTypeMapping("decimal(65, 30)", precision: 65, scale: 30);
+        private readonly MySqlDecimalTypeMapping _decimal = new MySqlDecimalTypeMapping("decimal", precision: 65, scale: 30);
         private readonly MySqlDoubleTypeMapping _double = new MySqlDoubleTypeMapping("double", DbType.Double);
         private readonly MySqlFloatTypeMapping _float = new MySqlFloatTypeMapping("float", DbType.Single);
 
@@ -48,24 +52,29 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         // DateTime
         private readonly MySqlDateTypeMapping _date = new MySqlDateTypeMapping("date", DbType.Date);
-        private readonly MySqlDateTimeTypeMapping _dateTime6 = new MySqlDateTimeTypeMapping("datetime(6)", precision: 6);
+        private readonly MySqlDateTimeTypeMapping _dateTime6 = new MySqlDateTimeTypeMapping("datetime", precision: 6);
         private readonly MySqlDateTimeTypeMapping _dateTime = new MySqlDateTimeTypeMapping("datetime");
-        private readonly MySqlDateTimeTypeMapping _timeStamp6 = new MySqlDateTimeTypeMapping("timestamp(6)", precision: 6);
-        private readonly MySqlDateTimeOffsetTypeMapping _dateTimeOffset6 = new MySqlDateTimeOffsetTypeMapping("datetime(6)", precision: 6);
+        private readonly MySqlDateTimeTypeMapping _timeStamp6 = new MySqlDateTimeTypeMapping("timestamp", precision: 6);
+        private readonly MySqlDateTimeOffsetTypeMapping _dateTimeOffset6 = new MySqlDateTimeOffsetTypeMapping("datetime", precision: 6);
         private readonly MySqlDateTimeOffsetTypeMapping _dateTimeOffset = new MySqlDateTimeOffsetTypeMapping("datetime");
-        private readonly MySqlDateTimeOffsetTypeMapping _timeStampOffset6 = new MySqlDateTimeOffsetTypeMapping("timestamp(6)", precision: 6);
-        private readonly MySqlTimeSpanTypeMapping _time6 = new MySqlTimeSpanTypeMapping("time(6)", precision: 6);
+        private readonly MySqlDateTimeOffsetTypeMapping _timeStampOffset6 = new MySqlDateTimeOffsetTypeMapping("timestamp", precision: 6);
+        private readonly MySqlTimeSpanTypeMapping _time6 = new MySqlTimeSpanTypeMapping("time", precision: 6);
         private readonly MySqlTimeSpanTypeMapping _time = new MySqlTimeSpanTypeMapping("time");
 
         private readonly RelationalTypeMapping _binaryRowVersion
-            = new MySqlDateTimeTypeMapping("timestamp",
-                new BytesToDateTimeConverter(), new ByteArrayComparer());
+            = new MySqlDateTimeTypeMapping(
+                "timestamp",
+                new BytesToDateTimeConverter(),
+                new ByteArrayComparer());
         private readonly RelationalTypeMapping _binaryRowVersion6
-            = new MySqlDateTimeTypeMapping("timestamp(6)",
-                new BytesToDateTimeConverter(), new ByteArrayComparer());
+            = new MySqlDateTimeTypeMapping(
+                "timestamp",
+                new BytesToDateTimeConverter(),
+                new ByteArrayComparer(),
+                precision: 6);
 
         // guid
-        private readonly GuidTypeMapping _uniqueidentifier = new GuidTypeMapping("char(36)", DbType.Guid);
+        private readonly GuidTypeMapping _uniqueidentifier = new MySqlGuidTypeMapping("char", DbType.Guid, size: 36);
         private readonly GuidTypeMapping _oldGuid = new MySqlOldGuidTypeMapping();
         private readonly Dictionary<string, RelationalTypeMapping> _storeTypeMappings;
         private readonly Dictionary<string, RelationalTypeMapping> _unicodeStoreTypeMappings;
@@ -170,9 +179,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             _clrTypeMappings
                 = new Dictionary<Type, RelationalTypeMapping>
                 {
-	                // boolean
-	                { typeof(bool), _bit },
-
 	                // integers
 	                { typeof(short), _smallint },
                     { typeof(ushort), _usmallint },
@@ -191,7 +197,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     { typeof(byte), _utinyint }
                 };
 
-            // guid
+            // Boolean
+            _clrTypeMappings[typeof(bool)] = _options.ConnectionSettings.TreatTinyAsBoolean
+                ? _tinyint1
+                : _bit1;
+
+            // Guid
             _clrTypeMappings[typeof(Guid)] = _options.ConnectionSettings.OldGuids
                 ? _oldGuid
                 : _uniqueidentifier;
