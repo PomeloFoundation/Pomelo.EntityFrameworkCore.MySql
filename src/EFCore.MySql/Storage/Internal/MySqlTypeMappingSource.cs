@@ -100,8 +100,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             _varchar = new MySqlStringTypeMapping("varchar", DbType.AnsiString, noBackslashEscapes: options.NoBackslashEscapes);
             _nchar = new MySqlStringTypeMapping("nchar", DbType.StringFixedLength, unicode: true, fixedLength: true, noBackslashEscapes: options.NoBackslashEscapes);
             _nvarchar = new MySqlStringTypeMapping("nvarchar", DbType.String, unicode: true, noBackslashEscapes: options.NoBackslashEscapes);
-            _varcharmax = new MySqlStringTypeMapping("longtext CHARACTER SET latin1", DbType.AnsiString, noBackslashEscapes: options.NoBackslashEscapes);
-            _nvarcharmax = new MySqlStringTypeMapping("longtext CHARACTER SET ucs2", DbType.String, unicode: true, noBackslashEscapes: options.NoBackslashEscapes);
+            _varcharmax = new MySqlStringTypeMapping("longtext", DbType.AnsiString, noBackslashEscapes: options.NoBackslashEscapes);
+            _nvarcharmax = new MySqlStringTypeMapping("longtext", DbType.String, unicode: true, noBackslashEscapes: options.NoBackslashEscapes);
             _enum = new MySqlStringTypeMapping("enum", DbType.String, unicode: true, noBackslashEscapes: options.NoBackslashEscapes);
             
             _storeTypeMappings
