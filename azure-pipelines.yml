@@ -238,6 +238,8 @@ jobs:
       elif echo "$(Build.SourceBranch)" | grep -qE '^refs/heads/'; then
         if [ "$(Build.SourceBranchName)" = "master" ]; then
           pack="true"
+        elif echo "$(Build.SourceBranchName)" | grep -qE '\-maint$'; then
+          pack="true"
         elif echo "$(Build.SourceBranchName)" | grep -qE '\-wip$'; then
           pack="true"
           pack_wip="true"
