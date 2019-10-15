@@ -123,7 +123,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             _storeTypeMappings
                 = new Dictionary<string, RelationalTypeMapping>(StringComparer.OrdinalIgnoreCase)
                 {
-                    // boolean
+                    // bit
                     { "bit", _bit },
 
                     // integers
@@ -270,9 +270,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
             if (storeTypeName != null)
             {
+                if (_options.ConnectionSettings.TreatTinyAsBoolean)
+                {
+                    if (storeTypeName.Equals(_tinyint1.StoreType, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return _tinyint1;
+                    }
+                }
+                else
+                {
+                    if (storeTypeName.Equals(_bit1.StoreType, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return _bit1;
+                    }
+                }
+
                 if (_options.ConnectionSettings.OldGuids)
                 {
-                    if (storeTypeName.Equals("binary(16)", StringComparison.OrdinalIgnoreCase)
+                    if (storeTypeName.Equals(_oldGuid.StoreType, StringComparison.OrdinalIgnoreCase)
                         && clrType == typeof(Guid))
                     {
                         return _oldGuid;
@@ -280,7 +295,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 }
                 else
                 {
-                    if (storeTypeName.Equals("char(36)", StringComparison.OrdinalIgnoreCase)
+                    if (storeTypeName.Equals(_uniqueidentifier.StoreType, StringComparison.OrdinalIgnoreCase)
                         && clrType == typeof(Guid))
                     {
                         return _uniqueidentifier;
@@ -300,7 +315,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 }
                 else
                 {
-                    if (storeTypeNameBase.Equals("datetime", StringComparison.OrdinalIgnoreCase))
+                    if (storeTypeNameBase.Equals(_dateTime6.StoreTypeNameBase, StringComparison.OrdinalIgnoreCase))
                     {
                         if (clrType == null
                             || clrType == typeof(DateTime))
@@ -312,7 +327,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                             return _connectionInfo.ServerVersion.SupportsDateTime6 ? _dateTimeOffset6 : _dateTimeOffset;
                         }
                     }
-                    else if (storeTypeNameBase.Equals("timestamp", StringComparison.OrdinalIgnoreCase))
+                    else if (storeTypeNameBase.Equals(_timeStamp6.StoreTypeNameBase, StringComparison.OrdinalIgnoreCase))
                     {
                         if (clrType == null
                             || clrType == typeof(DateTime))
@@ -323,16 +338,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                         {
                             return _timeStampOffset6;
                         }
-                    }
-                    else if (storeTypeName.Equals("tinyint(1)", StringComparison.OrdinalIgnoreCase)
-                             && _options.ConnectionSettings.TreatTinyAsBoolean)
-                    {
-                        return _tinyint1;
-                    }
-                    else if (storeTypeName.Equals("bit(1)", StringComparison.OrdinalIgnoreCase)
-                             && !_options.ConnectionSettings.TreatTinyAsBoolean)
-                    {
-                        return _bit1;
                     }
 
                     if (_storeTypeMappings.TryGetValue(storeTypeName, out var mapping)
