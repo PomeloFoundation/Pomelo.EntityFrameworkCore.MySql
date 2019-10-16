@@ -13,6 +13,8 @@ using Microsoft.EntityFrameworkCore.Internal;
 using System.Diagnostics;
 using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
 using Microsoft.EntityFrameworkCore.Scaffolding;
+using Microsoft.Extensions.DependencyInjection;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 // ReSharper disable InconsistentNaming
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Scaffolding
@@ -40,7 +42,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Scaffolding
                         new LoggingOptions(),
                         new DiagnosticListener("Fake"),
                         new MySqlLoggingDefinitions());
-                var databaseModelFactory = new MySqlDatabaseModelFactory(logger);
+                var databaseModelFactory = new MySqlDatabaseModelFactory(logger, Fixture.ServiceProvider, Fixture.ServiceProvider.GetService<IMySqlOptions>());
 
                 var databaseModel = databaseModelFactory.Create(Fixture.TestStore.ConnectionString,
                     new DatabaseModelFactoryOptions(tables, schemas));

@@ -77,9 +77,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
             var property = GetProperty<TimestampAndMaxlen>(modelBuilder, "MaxTimestamp");
 
-            var storeType = property.FindRelationalMapping().StoreType;
+            var storeTypeNameBase = property.FindRelationalMapping().StoreTypeNameBase;
 
-            Assert.Equal("timestamp(6)", storeType);
+            Assert.Equal("timestamp", storeTypeNameBase);
 
             return modelBuilder;
         }

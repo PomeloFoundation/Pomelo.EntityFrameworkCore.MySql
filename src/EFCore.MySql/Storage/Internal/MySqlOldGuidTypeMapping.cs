@@ -3,21 +3,21 @@
 
 using System;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Utilities;
 
-namespace Microsoft.EntityFrameworkCore.Storage
+namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public class MySqlOldGuidTypeMapping : GuidTypeMapping
+    public class MySqlOldGuidTypeMapping : MySqlGuidTypeMapping
     {
         /// <summary>
         ///     Initializes a new instance of the <see cref="MySqlOldGuidTypeMapping" /> class.
         /// </summary>
-        public MySqlOldGuidTypeMapping() : base("binary(16)", System.Data.DbType.Guid) { }
+        public MySqlOldGuidTypeMapping() : base("binary", System.Data.DbType.Guid, size: 16) { }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="MySqlOldGuidTypeMapping" />
