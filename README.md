@@ -2,7 +2,7 @@
 
 [![Build Status](https://dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_apis/build/status/PomeloFoundation.Pomelo.EntityFrameworkCore.MySql?branchName=master)](https://dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_build/latest?definitionId=1&branchName=master)
 [![NuGet](https://img.shields.io/nuget/v/Pomelo.EntityFrameworkCore.MySql.svg?style=flat-square&label=nuget)](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/)
-[![MyGet](https://img.shields.io/myget/pomelo/vpre/Pomelo.EntityFrameworkCore.MySql.svg?style=flat-square&label=myget)](https://www.myget.org/Package/Details/pomelo?packageType=nuget&packageId=Pomelo.EntityFrameworkCore.MySql)
+[![Pomelo.EntityFrameworkCore.MySql package in pomelo-efcore-public feed in Azure Artifacts](https://feeds.dev.azure.com/pomelo-efcore/e81f0b59-aba4-4055-8e18-e3f1a565942e/_apis/public/Packaging/Feeds/5f202e7e-2c62-4fc1-a18c-4025a32eabc8/Packages/54935cc0-f38b-4ddb-86d6-c812a8c92988/Badge)](https://dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging?_a=package&feed=5f202e7e-2c62-4fc1-a18c-4025a32eabc8&package=54935cc0-f38b-4ddb-86d6-c812a8c92988&preferRelease=false)
 [![Join the chat at https://gitter.im/PomeloFoundation/Home](https://badges.gitter.im/PomeloFoundation/Home.svg)](https://gitter.im/PomeloFoundation/Home?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 `Pomelo.EntityFrameworkCore.MySql` is an Entity Framework Core provider built on top of [MySqlConnector](https://github.com/mysql-net/MySqlConnector) that enables the use of the Entity Framework Core ORM with MySQL.
@@ -89,21 +89,8 @@ namespace YourNamespace // replace "YourNamespace" with the namespace of your ap
     }
 }
 ```
-#### NO_BACKSLASH_ESCAPES
-The escaping style can be configured to support SQL mode [NO_BACKSLASH_ESCAPES](https://dev.mysql.com/doc/refman/8.0/en/sql-mode.html#sqlmode_no_backslash_escapes) by adding `.DisableBackslashEscaping()` to your MySQL option configuration.
-```csharp
-mysqlOptions =>
-{
-    mysqlOptions
-    .ServerVersion(new Version(5, 7, 17), ServerType.MySql); // replace with your Server Version and Type
-    //further MySQL option configurations go here
-    .DisableBackslashEscaping();
-}
-```
-**PLEASE NOTE** This option does not set the SQL mode and will not check if it matches the actual database configuration either. Do not use this option unless you are absolutely sure it will always be set when queries are performed on the context. 
-As of today, it also **does not apply** to parameter values in insert or update statements; do not use it when the context is used to update entries.
 
-View our [MySql Provider Configuration Options Wiki Page](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/wiki/MySql-Provider-Configuration-Options) for a complete list of supported options.
+View our [Configuration Options Wiki Page](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/wiki/Configuration-Options) for a complete list of supported options.
 
 ### 4. Sample Application
 
@@ -115,17 +102,20 @@ Refer to Microsoft's [EF Core Documentation](https://docs.microsoft.com/en-us/ef
 
 ## Schedule and Roadmap
 
-Milestone | Release week
-----------|-------------
-2.1.4 | 11/29/2018
-2.2.0 | 2/7/2019
+Milestone | Status | Release Date
+----------|--------|-------------
+3.0.0 | Feature lock | Soon
+3.0.0-rc1 | Released | 2019-10-06
+2.2.6 | Released | 2019-10-15
+2.2.0 | Released | 2019-02-07
+2.1.4 | Released | 2018-11-29
 
 #### Scaffolding Tutorial
 
 Using the tool to execute scaffolding commands:
 
 ```
-dotnet ef dbcontext scaffold "Server=localhost;Database=ef;User=root;Password=123456;" "Pomelo.EntityFrameworkCore.MySql"
+dotnet ef dbcontext scaffold "Server=localhost;Database=ef;User=root;Password=123456;TreatTinyAsBoolean=true;" "Pomelo.EntityFrameworkCore.MySql"
 ```
 
 ## Contribute
