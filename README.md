@@ -81,8 +81,6 @@ namespace YourNamespace // replace "YourNamespace" with the namespace of your ap
 }
 ```
 
-Set additional options as needed.
-
 View our [Configuration Options Wiki Page](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/wiki/Configuration-Options) for a complete list of supported options.
 
 ### 4. Sample Application
@@ -97,10 +95,11 @@ Refer to Microsoft's [EF Core Documentation](https://docs.microsoft.com/en-us/ef
 
 Milestone | Status | Release Date
 ----------|--------|-------------
-3.0.0 | In Development | Soon
-2.2.6 | Completed | Soon
-2.2.0 | Released | 2/7/2019
-2.1.4 | Released | 11/29/2018
+3.0.0 | Feature lock | Soon
+3.0.0-rc1 | Released | 2019-10-06
+2.2.6 | Released | 2019-10-15
+2.2.0 | Released | 2019-02-07
+2.1.4 | Released | 2018-11-29
 
 #### Scaffolding Tutorial
 
