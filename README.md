@@ -9,7 +9,18 @@
 
 **Pomelo.EntityFrameworkCore.MySql is currently [looking for core contributors](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/522)**
 
-## Supported DBMS and Versions
+## Compatibility
+
+### EF Core and .NET Core
+
+The following versions of EF Core and .NET Core are compatible with `Pomelo.EntityFrameworkCore.MySql`:
+
+Pomelo.EntityFrameworkCore.MySql | EF Core | .NET Core
+-- | -- | --
+[3.0.0-rc1.final](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.0.0-rc1.final) (prerelease) | 3.0.0 | 3.0
+[2.2.6](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/2.2.6) | 2.2.6 | 2.2 / 3.0
+
+### Supported DBMS and Versions
 
 `Pomelo.EntityFrameworkCore.MySql` is tested against the latest 2 minor versions of `MySQL` and `MariaDB`.  Older versions _may_ be compatible but are not officially supported or tested.  Currently supported versions are:
 
@@ -17,6 +28,16 @@
 - MySQL 5.7
 - MariaDB 10.4
 - MariaDB 10.3
+
+## Schedule and Roadmap
+
+Milestone | Status | Release Date
+----------|--------|-------------
+3.0.0 | Feature lock | Soon
+3.0.0-rc1 | Released | 2019-10-06
+2.2.6 | Released | 2019-10-15
+2.2.0 | Released | 2019-02-07
+2.1.4 | Released | 2018-11-29
 
 ## Nightly Builds
 
@@ -100,19 +121,9 @@ Check out our [Integration Tests](https://github.com/PomeloFoundation/Pomelo.Ent
 
 Refer to Microsoft's [EF Core Documentation](https://docs.microsoft.com/en-us/ef/core/) for detailed instructions and examples on using EF Core.
 
-## Schedule and Roadmap
+## Scaffolding / Reverse Engineering
 
-Milestone | Status | Release Date
-----------|--------|-------------
-3.0.0 | Feature lock | Soon
-3.0.0-rc1 | Released | 2019-10-06
-2.2.6 | Released | 2019-10-15
-2.2.0 | Released | 2019-02-07
-2.1.4 | Released | 2018-11-29
-
-#### Scaffolding Tutorial
-
-Using the tool to execute scaffolding commands:
+Use the EF Core tool to execute scaffolding commands:
 
 ```
 dotnet ef dbcontext scaffold "Server=localhost;Database=ef;User=root;Password=123456;TreatTinyAsBoolean=true;" "Pomelo.EntityFrameworkCore.MySql"
