@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
 {
@@ -24,7 +25,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
             [NotNull] IMigrationCommandExecutor migrationCommandExecutor,
             [NotNull] IRelationalConnection connection,
             [NotNull] ISqlGenerationHelper sqlGenerationHelper,
+            [NotNull] ICurrentDbContext currentContext,
             [NotNull] IDiagnosticsLogger<DbLoggerCategory.Migrations> logger,
+            [NotNull] IDiagnosticsLogger<DbLoggerCategory.Database.Command> commandLogger,
             [NotNull] IDatabaseProvider databaseProvider)
             : base(
                 migrationsAssembly,
@@ -35,7 +38,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                 migrationCommandExecutor,
                 connection,
                 sqlGenerationHelper,
+                currentContext,
                 logger,
+                commandLogger,
                 databaseProvider)
         {
             _migrationsAssembly = migrationsAssembly;

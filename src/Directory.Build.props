@@ -1,3 +1,6 @@
 ﻿<Project>
   <Import Project="..\Directory.Build.props" />
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);EF1001</NoWarn>
+  </PropertyGroup>
 </Project>
