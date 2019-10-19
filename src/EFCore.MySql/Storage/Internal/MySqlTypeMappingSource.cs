@@ -288,7 +288,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 if (_options.ConnectionSettings.OldGuids)
                 {
                     if (storeTypeName.Equals(_oldGuid.StoreType, StringComparison.OrdinalIgnoreCase)
-                        && clrType == typeof(Guid))
+                        && (clrType == typeof(Guid) || clrType == null))
                     {
                         return _oldGuid;
                     }
@@ -296,7 +296,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 else
                 {
                     if (storeTypeName.Equals(_uniqueidentifier.StoreType, StringComparison.OrdinalIgnoreCase)
-                        && clrType == typeof(Guid))
+                        && (clrType == typeof(Guid) || clrType == null))
                     {
                         return _uniqueidentifier;
                     }
