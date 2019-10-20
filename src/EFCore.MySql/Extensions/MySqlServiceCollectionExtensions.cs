@@ -50,6 +50,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<ICompiledQueryCacheKeyGenerator, MySqlCompiledQueryCacheKeyGenerator>()
                 .TryAdd<IExecutionStrategyFactory, MySqlExecutionStrategyFactory>()
                 .TryAdd<ISingletonOptions, IMySqlOptions>(p => p.GetService<IMySqlOptions>())
+                .TryAdd<IMigrator, MySqlMigrator>()
                 .TryAdd<IMethodCallTranslatorProvider, MySqlMethodCallTranslatorProvider>()
                 .TryAdd<IMemberTranslatorProvider, MySqlMemberTranslatorProvider>()
                 .TryAdd<IQuerySqlGeneratorFactory, MySqlQuerySqlGeneratorFactory>()
