@@ -21,6 +21,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             = typeof(string).GetRuntimeMethod(nameof(string.StartsWith), new[] { typeof(string), typeof(StringComparison) });
         private static readonly MethodInfo _endsWithMethodInfo
             = typeof(string).GetRuntimeMethod(nameof(string.EndsWith), new[] { typeof(string), typeof(StringComparison) });
+        private static readonly MethodInfo _containsWithoutParametersMethodInfo
+            = typeof(string).GetRuntimeMethod(nameof(string.Contains), new[] { typeof(string) });
         private static readonly MethodInfo _containsMethodInfo
             = typeof(string).GetRuntimeMethod(nameof(string.Contains), new[] { typeof(string), typeof(StringComparison) });
         private static readonly MethodInfo _indexOfMethodInfo
@@ -72,8 +74,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     methodCallExpression.Arguments[1]
                 );
             }
+            else if (Equals(methodCallExpression.Method, _containsWithoutParametersMethodInfo) &&
+                     methodCallExpression.Object != null)
+            {
+                return MakeContainsExpression(
+                    methodCallExpression.Object,
+                    methodCallExpression.Arguments[0],
+                    Expression.Constant(StringComparison.Ordinal)
+                );
+            }
             else if (Equals(methodCallExpression.Method, _containsMethodInfo) &&
-                methodCallExpression.Object != null)
+                     methodCallExpression.Object != null)
             {
                 return MakeContainsExpression(
                     methodCallExpression.Object,
@@ -305,7 +316,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             }
         }
 
-        private static Expression MakeContainsExpression(
+        internal static Expression MakeContainsExpression(
             [NotNull] Expression target,
             [NotNull] Expression search,
             [NotNull] Expression stringComparison)

@@ -14,7 +14,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
     {
         private static readonly IMethodCallTranslator[] _methodCallTranslators =
         {
-            new MySqlContainsOptimizedTranslator(),
             new MySqlConvertTranslator(),
             new MySqlDateAddTranslator(),
             new MySqlEndsWithOptimizedTranslator(),
