@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Microsoft.Extensions.DependencyInjection;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
@@ -80,6 +82,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                         b.Property(e => e.OnUpdateUseBeforeThrowAfter).HasMaxLength(500).HasDefaultValue("Rabbit");
                         b.Property(e => e.OnUpdateIgnoreBeforeThrowAfter).HasMaxLength(500).HasDefaultValue("Rabbit");
                         b.Property(e => e.OnUpdateThrowBeforeThrowAfter).HasMaxLength(500).HasDefaultValue("Rabbit");
+                    });
+
+                modelBuilder.Entity<WithBackingFields>(
+                    b =>
+                    {
+                        b.Property(e => e.NullableAsNonNullable).HasDefaultValue(1);
+                        b.Property(e => e.NonNullableAsNullable).HasDefaultValue(1);
                     });
 
                 base.OnModelCreating(modelBuilder, context);

@@ -48,6 +48,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             Connection = new MySqlConnection(ConnectionString);
         }
 
+        public static string CreateConnectionString(string name, bool noBackslashEscapes)
+            => new MySqlConnectionStringBuilder(_lazyConfig.Value["Data:ConnectionString"])
+            {
+                Database = name,
+                DefaultCommandTimeout = (uint)GetCommandTimeout(),
+                NoBackslashEscapes = noBackslashEscapes,
+                PersistSecurityInfo = true, // needed by some tests to not leak a broken connection into the following tests
+            }.ConnectionString;
+
         private static int GetCommandTimeout() => _lazyConfig.Value.GetValue<int>("Data:CommandTimeout", DefaultCommandTimeout);
 
         private static readonly Lazy<IConfigurationRoot> _lazyConfig = new Lazy<IConfigurationRoot>(() => new ConfigurationBuilder()
