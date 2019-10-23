@@ -1014,6 +1014,8 @@ builtinnullabledatatypesshadow.TestNullableUnsignedInt16 ---> [nullable smallint
 builtinnullabledatatypesshadow.TestNullableUnsignedInt32 ---> [nullable int] [Precision = 10 Scale = 0]
 builtinnullabledatatypesshadow.TestNullableUnsignedInt64 ---> [nullable bigint] [Precision = 20 Scale = 0]
 builtinnullabledatatypesshadow.TestString ---> [nullable longtext] [MaxLength = -1]
+EmailTemplate.Id ---> [char] [MaxLength = 36]
+EmailTemplate.TemplateType ---> [int] [Precision = 10 Scale = 0]
 mappeddatatypes.BoolAsBit ---> [bit] [Precision = 1]
 mappeddatatypes.ByteAsTinyint ---> [tinyint] [Precision = 3 Scale = 0]
 mappeddatatypes.BytesAsBinary ---> [binary] [MaxLength = 5]

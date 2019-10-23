@@ -189,5 +189,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             return base.Select_subquery_distinct_firstordefault(isAsync);
         }
+
+        [ConditionalTheory(Skip = "Fixed in 3.0.0")]
+        public override Task Enum_ToString_is_client_eval(bool isAsync)
+        {
+            return base.Enum_ToString_is_client_eval(isAsync);
+        }
+
+        [ConditionalTheory(Skip = "https://github.com/mysql-net/MySqlConnector/pull/707")]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Projecting_nullable_bool_in_conditional_works(bool isAsync)
+        {
+            return base.Projecting_nullable_bool_in_conditional_works(isAsync);
+        }
     }
 }
