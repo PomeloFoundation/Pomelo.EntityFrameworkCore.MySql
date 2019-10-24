@@ -111,12 +111,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         {
             var escapedLiteral = $"'{EscapeSqlLiteral(value)}'";
 
-            if (_options.ReplaceLineBreaksWithCharFunction)
+            // BUG: EF Core indents idempotent scripts, which can lead to unexpected values for strings
+            //      that contain line breaks.
+            //      Tracked by: https://github.com/aspnet/EntityFrameworkCore/issues/15256
+            //
+            //      Convert line break characters to their CHAR() representation as a workaround.
+
+            if (_options.ReplaceLineBreaksWithCharFunction
+                && (value.Contains('\r') || value.Contains('\n')))
             {
-                escapedLiteral = escapedLiteral
-                    .Replace("\r\n", "' + CHAR(13) + CHAR(10) + '")
-                    .Replace("\r", "' + CHAR(13) + '")
-                    .Replace("\n", "' + CHAR(10) + '");
+                escapedLiteral = "CONCAT(" + escapedLiteral
+                    .Replace("\r\n", "', CHAR(13, 10), '")
+                    .Replace("\r", "', CHAR(13), '")
+                    .Replace("\n", "', CHAR(10), '") + ")";
             }
 
             return escapedLiteral;
