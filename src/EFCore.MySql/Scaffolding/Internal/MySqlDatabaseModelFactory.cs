@@ -227,14 +227,14 @@ AND
                             }
 
                             defaultValue = FilterClrDefaults(dataType, nullable, defaultValue);
-                            
+
                             var column = new DatabaseColumn
                             {
                                 Table = table,
                                 Name = name,
                                 StoreType = columType,
                                 IsNullable = nullable,
-                                DefaultValueSql = CreateDefaultValueString(defaultValue),
+                                DefaultValueSql = CreateDefaultValueString(defaultValue, dataType),
                                 ValueGenerated = valueGenerated,
                                 Comment = string.IsNullOrEmpty(comment) ? null : comment,
                             };
@@ -293,12 +293,22 @@ AND
             return defaultValue;
         }
 
-        private string CreateDefaultValueString(string str)
+        private string CreateDefaultValueString(string defaultValue, string dataType)
         {
             // Pending the MySqlConnector implement MySqlCommandBuilder class
-            return str != null
-                ? "'" + str.Replace(@"\", @"\\").Replace("'", "''") + "'"
-                : null;
+            if (string.Equals(dataType, "timestamp", StringComparison.OrdinalIgnoreCase)
+                && string.Equals(defaultValue, "CURRENT_TIMESTAMP", StringComparison.OrdinalIgnoreCase))
+            {
+                return defaultValue;
+            }
+            else if (defaultValue != null)
+            {
+                return "'" + defaultValue.Replace(@"\", @"\\").Replace("'", "''") + "'";
+            }
+            else
+            {
+                return null;
+            }
         }
 
         private const string GetPrimaryQuery = @"SELECT `INDEX_NAME`,
