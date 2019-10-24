@@ -440,5 +440,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
             return null;
         }
+
+        protected override string ParseStoreTypeName(string storeTypeName, out bool? unicode, out int? size, out int? precision, out int? scale)
+        {
+            var storeTypeBaseName = base.ParseStoreTypeName(storeTypeName, out unicode, out size, out precision, out scale);
+
+            if (storeTypeName?.Contains("unsigned", StringComparison.OrdinalIgnoreCase) ?? false)
+            {
+                return storeTypeBaseName + " unsigned";
+            }
+
+            return storeTypeBaseName;
+        }
     }
 }
