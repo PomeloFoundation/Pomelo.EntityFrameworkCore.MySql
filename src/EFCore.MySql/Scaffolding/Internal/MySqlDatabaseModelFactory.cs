@@ -407,9 +407,7 @@ AND
                                 {
                                     Table = table,
                                     Name = reader.GetString(0),
-                                    IsUnique = reader.GetFieldType(1) == typeof(string)
-                                        ? reader.GetString(1) == "1"
-                                        : !reader.GetBoolean(1)
+                                    IsUnique = !reader.GetBoolean(1)
                                 };
 
                                 foreach (var column in reader.GetString(2).Split(','))
