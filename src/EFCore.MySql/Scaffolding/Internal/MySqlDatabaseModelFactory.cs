@@ -142,7 +142,7 @@ AND
                         var type = reader.GetString("TABLE_TYPE");
                         var comment = reader.GetString("TABLE_COMMENT");
 
-                        var table = string.Equals(type, "table", StringComparison.OrdinalIgnoreCase)
+                        var table = string.Equals(type, "base table", StringComparison.OrdinalIgnoreCase)
                             ? new DatabaseTable()
                             : new DatabaseView();
 
