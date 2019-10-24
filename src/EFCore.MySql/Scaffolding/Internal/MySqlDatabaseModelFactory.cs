@@ -212,13 +212,30 @@ AND
                             }
                             else if (extra.IndexOf("on update", StringComparison.Ordinal) >= 0)
                             {
-                                if (defaultValue != null && extra.IndexOf(defaultValue, StringComparison.Ordinal) > 0)
+                                if (defaultValue != null
+                                    && (extra.IndexOf(defaultValue, StringComparison.Ordinal) > 0
+                                        || string.Equals(dataType, "timestamp", StringComparison.OrdinalIgnoreCase)
+                                            && extra.IndexOf("CURRENT_TIMESTAMP", StringComparison.Ordinal) > 0))
                                 {
                                     valueGenerated = ValueGenerated.OnAddOrUpdate;
                                 }
                                 else
                                 {
-                                    valueGenerated = ValueGenerated.OnUpdate;
+                                    // BUG: EF Core does not handle code generation for `OnUpdate`.
+                                    //      Instead, it just generates an empty method call ".()".
+                                    //      Tracked by: https://github.com/aspnet/EntityFrameworkCore/issues/18579
+                                    //
+                                    //      As a partial workaround, use `OnAddOrUpdate`, if a default value
+                                    //      has been specified.
+
+                                    if (defaultValue != null)
+                                    {
+                                        valueGenerated = ValueGenerated.OnAddOrUpdate;
+                                    }
+                                    else
+                                    {
+                                        valueGenerated = ValueGenerated.OnUpdate;
+                                    }
                                 }
                             }
                             else
