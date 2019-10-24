@@ -5,13 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Scaffolding;
@@ -20,7 +19,6 @@ using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
@@ -117,7 +115,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
             return tables.Count > 0 ? (s, t) => tables.Contains(t) : (Func<string, string, bool>)null;
         }
 
-        private const string GetTablesQuery = @"SHOW FULL TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
+        private const string GetTablesQuery = @"SELECT
+    `TABLE_NAME`,
+    `TABLE_TYPE`,
+    IF(`TABLE_COMMENT` = 'VIEW' AND `TABLE_TYPE` = 'VIEW', '', `TABLE_COMMENT`) AS `TABLE_COMMENT`
+FROM
+    `INFORMATION_SCHEMA`.`TABLES`
+WHERE
+    `TABLE_SCHEMA` = SCHEMA()
+AND
+    `TABLE_TYPE` IN ('BASE TABLE', 'VIEW');";
 
         private IEnumerable<DatabaseTable> GetTables(
             DbConnection connection,
@@ -131,11 +138,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
                 {
                     while (reader.Read())
                     {
-                        var table = new DatabaseTable
-                        {
-                            Schema = null,
-                            Name = reader.GetString(0).Replace("`", "")
-                        };
+                        var name = reader.GetString("TABLE_NAME");
+                        var type = reader.GetString("TABLE_TYPE");
+                        var comment = reader.GetString("TABLE_COMMENT");
+
+                        var table = string.Equals(type, "table", StringComparison.OrdinalIgnoreCase)
+                            ? new DatabaseTable()
+                            : new DatabaseView();
+
+                        table.Schema = null;
+                        table.Name = name;
+                        table.Comment = string.IsNullOrEmpty(comment) ? null : comment;
 
                         if (filter?.Invoke(table.Schema, table.Name) ?? true)
                         {
@@ -154,7 +167,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
             }
         }
 
-        private const string GetColumnsQuery = @"SHOW COLUMNS FROM `{0}`";
+        private const string GetColumnsQuery = @"SELECT
+	`COLUMN_NAME`,
+    `COLUMN_DEFAULT`,
+    IF(`IS_NULLABLE` = 'YES', 1, 0) AS `IS_NULLABLE`,
+    `DATA_TYPE`,
+    `COLUMN_TYPE`,
+    `COLUMN_COMMENT`,
+    `EXTRA`
+FROM
+	`INFORMATION_SCHEMA`.`COLUMNS`
+WHERE
+	`TABLE_SCHEMA` = SCHEMA()
+AND
+	`TABLE_NAME` = '{0}'";
 
         private void GetColumns(
            DbConnection connection,
@@ -170,15 +196,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
                     {
                         while (reader.Read())
                         {
-                            var extra = reader.GetString(5);
+                            var name = reader.GetValueOrDefault<string>("COLUMN_NAME");
+                            var defaultValue = reader.GetValueOrDefault<string>("COLUMN_DEFAULT");
+                            var nullable = reader.GetBoolean("IS_NULLABLE");
+                            var dataType = reader.GetValueOrDefault<string>("DATA_TYPE");
+                            var columType = reader.GetValueOrDefault<string>("COLUMN_TYPE");
+                            var extra = reader.GetValueOrDefault<string>("EXTRA");
+                            var comment = reader.GetValueOrDefault<string>("COLUMN_COMMENT");
+
                             ValueGenerated valueGenerated;
+
                             if (extra.IndexOf("auto_increment", StringComparison.Ordinal) >= 0)
                             {
                                 valueGenerated = ValueGenerated.OnAdd;
                             }
                             else if (extra.IndexOf("on update", StringComparison.Ordinal) >= 0)
                             {
-                                if (reader[4] != DBNull.Value && extra.IndexOf(reader[4].ToString(), StringComparison.Ordinal) > 0)
+                                if (defaultValue != null && extra.IndexOf(defaultValue, StringComparison.Ordinal) > 0)
                                 {
                                     valueGenerated = ValueGenerated.OnAddOrUpdate;
                                 }
@@ -192,18 +226,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
                                 valueGenerated = ValueGenerated.Never;
                             }
 
-
+                            defaultValue = FilterClrDefaults(dataType, nullable, defaultValue);
+                            
                             var column = new DatabaseColumn
                             {
                                 Table = table,
-                                Name = reader.GetString(0),
-                                StoreType = Regex.Replace(reader.GetString(1), @"(?<=int)\(\d+\)(?=\sunsigned)",
-                                    string.Empty),
-                                IsNullable = reader.GetString(2) == "YES",
-                                DefaultValueSql = reader[4] == DBNull.Value
-                                    ? null
-                                    : '\'' + ParseToMySqlString(reader[4].ToString()) + '\'',
-                                ValueGenerated = valueGenerated
+                                Name = name,
+                                StoreType = columType,
+                                IsNullable = nullable,
+                                DefaultValueSql = CreateDefaultValueString(defaultValue),
+                                ValueGenerated = valueGenerated,
+                                Comment = string.IsNullOrEmpty(comment) ? null : comment,
                             };
                             table.Columns.Add(column);
                         }
@@ -212,13 +245,60 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
             }
         }
 
-        private string ParseToMySqlString(string str)
+        private static string FilterClrDefaults(string dataTypeName, bool nullable, string defaultValue)
+        {
+            if (defaultValue == null)
+            {
+                return null;
+            }
+
+            if (nullable)
+            {
+                return defaultValue;
+            }
+
+            if (defaultValue == string.Empty)
+            {
+                if (dataTypeName.Contains("char")
+                    || dataTypeName.Contains("text"))
+                {
+                    return null;
+                }
+            }
+
+            if (defaultValue == "0")
+            {
+                if (dataTypeName == "bit"
+                    || dataTypeName == "tinyint"
+                    || dataTypeName == "smallint"
+                    || dataTypeName == "int"
+                    || dataTypeName == "bigint"
+                    || dataTypeName == "decimal"
+                    || dataTypeName == "double"
+                    || dataTypeName == "float")
+                {
+                    return null;
+                }
+            }
+            else if (Regex.IsMatch(defaultValue, @"^0\.0+$"))
+            {
+                if (dataTypeName == "decimal"
+                    || dataTypeName == "double"
+                    || dataTypeName == "float")
+                {
+                    return null;
+                }
+            }
+
+            return defaultValue;
+        }
+
+        private string CreateDefaultValueString(string str)
         {
             // Pending the MySqlConnector implement MySqlCommandBuilder class
-            return str
-                .Replace("\\", "\\\\")
-                .Replace("'", "\\'")
-                .Replace("\"", "\\\"");
+            return str != null
+                ? "'" + str.Replace(@"\", @"\\").Replace("'", "''") + "'"
+                : null;
         }
 
         private const string GetPrimaryQuery = @"SELECT `INDEX_NAME`,
