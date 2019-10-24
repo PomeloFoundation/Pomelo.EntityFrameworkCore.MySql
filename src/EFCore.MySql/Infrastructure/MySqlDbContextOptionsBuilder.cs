@@ -92,6 +92,12 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
             => WithOption(e => e.SetSqlModeOnOpen());
 
         /// <summary>
+        ///     Skip replacing `\r` and `\n` with `CHAR()` calls in strings inside queries.
+        /// </summary>
+        public virtual MySqlDbContextOptionsBuilder DisableLineBreakToCharSubstition()
+            => WithOption(e => e.DisableLineBreakToCharSubstition());
+
+        /// <summary>
         ///     Configures the context to use the default retrying <see cref="IExecutionStrategy" />.
         /// </summary>
         /// <param name="maxRetryCount"> The maximum number of retry attempts. </param>

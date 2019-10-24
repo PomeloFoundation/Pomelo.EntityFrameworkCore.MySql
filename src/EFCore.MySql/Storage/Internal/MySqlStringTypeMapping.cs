@@ -6,6 +6,8 @@ using System.Data;
 using System.Data.Common;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
@@ -19,7 +21,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private const int AnsiMax = 8000;
 
         private readonly int _maxSpecificSize;
-        private readonly bool _noBackslashEscapes;
+        private readonly IMySqlOptions _options;
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -28,10 +30,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public MySqlStringTypeMapping(
             [NotNull] string storeType,
             DbType? dbType,
+            IMySqlOptions options,
             bool unicode = false,
             int? size = null,
-            bool fixedLength = false,
-            bool noBackslashEscapes = false)
+            bool fixedLength = false)
             : this(
                 new RelationalTypeMappingParameters(
                     new CoreTypeMappingParameters(typeof(string)),
@@ -41,7 +43,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     unicode,
                     size,
                     fixedLength),
-                noBackslashEscapes)
+                options)
         {
         }
 
@@ -49,11 +51,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        protected MySqlStringTypeMapping(RelationalTypeMappingParameters parameters, bool noBackslashEscapes)
+        protected MySqlStringTypeMapping(RelationalTypeMappingParameters parameters, IMySqlOptions options)
             : base(parameters)
         {
             _maxSpecificSize = CalculateSize(parameters.Unicode, parameters.Size);
-            _noBackslashEscapes = noBackslashEscapes;
+            _options = options;
         }
 
         private static int CalculateSize(bool unicode, int? size)
@@ -67,7 +69,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// <param name="parameters"> The parameters for this mapping. </param>
         /// <returns> The newly created mapping. </returns>
         protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
-            => new MySqlStringTypeMapping(parameters, _noBackslashEscapes);
+            => new MySqlStringTypeMapping(parameters, _options);
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -103,14 +105,29 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         }
 
         protected override string GenerateNonNullSqlLiteral(object value)
-            => $"'{EscapeSqlLiteral((string)value)}'";
+            => EscapeSqlLiteralWithLineBreaks((string)value);
+
+        private string EscapeSqlLiteralWithLineBreaks(string value)
+        {
+            var escapedLiteral = $"'{EscapeSqlLiteral(value)}'";
+
+            if (_options.ReplaceLineBreaksWithCharFunction)
+            {
+                escapedLiteral = escapedLiteral
+                    .Replace("\r\n", "' + CHAR(13) + CHAR(10) + '")
+                    .Replace("\r", "' + CHAR(13) + '")
+                    .Replace("\n", "' + CHAR(10) + '");
+            }
+
+            return escapedLiteral;
+        }
 
         protected override string EscapeSqlLiteral(string literal)
             => EscapeBackslashes(base.EscapeSqlLiteral(literal));
 
         private string EscapeBackslashes(string literal)
         {
-            return _noBackslashEscapes
+            return _options.NoBackslashEscapes
                 ? literal
                 : literal.Replace(@"\", @"\\");
         }

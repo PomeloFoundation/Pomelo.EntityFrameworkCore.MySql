@@ -5,7 +5,6 @@ using System.Text;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.Globalization;
@@ -18,6 +17,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
 
         public MySqlOptionsExtension()
         {
+            ReplaceLineBreaksWithCharFunction = true;
         }
 
         public MySqlOptionsExtension([NotNull] MySqlOptionsExtension copyFrom)
@@ -29,6 +29,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
             UnicodeCharSetInfo = copyFrom.UnicodeCharSetInfo;
             NoBackslashEscapes = copyFrom.NoBackslashEscapes;
             UpdateSqlModeOnOpen = copyFrom.UpdateSqlModeOnOpen;
+            ReplaceLineBreaksWithCharFunction = copyFrom.ReplaceLineBreaksWithCharFunction;
         }
 
         /// <summary>
@@ -79,6 +80,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public bool UpdateSqlModeOnOpen { get; private set; }
+
+        public bool ReplaceLineBreaksWithCharFunction { get; set; }
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -154,6 +157,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
             return clone;
         }
 
+        public MySqlOptionsExtension DisableLineBreakToCharSubstition()
+        {
+            var clone = (MySqlOptionsExtension)Clone();
+            clone.ReplaceLineBreaksWithCharFunction = false;
+            return clone;
+        }
+
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
         ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
@@ -213,6 +223,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                     _serviceProviderHash = (_serviceProviderHash * 397) ^ (Extension.AnsiCharSetInfo?.GetHashCode() ?? 0L);
                     _serviceProviderHash = (_serviceProviderHash * 397) ^ (Extension.UnicodeCharSetInfo?.GetHashCode() ?? 0L);
                     _serviceProviderHash = (_serviceProviderHash * 397) ^ Extension.NoBackslashEscapes.GetHashCode();
+                    _serviceProviderHash = (_serviceProviderHash * 397) ^ Extension.ReplaceLineBreaksWithCharFunction.GetHashCode();
                 }
 
                 return _serviceProviderHash.Value;
@@ -230,6 +241,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                     = (Extension.UnicodeCharSetInfo?.GetHashCode() ?? 0L).ToString(CultureInfo.InvariantCulture);
                 debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.DisableBackslashEscaping)]
                     = Extension.NoBackslashEscapes.GetHashCode().ToString(CultureInfo.InvariantCulture);
+                debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.DisableLineBreakToCharSubstition)]
+                    = Extension.ReplaceLineBreaksWithCharFunction.GetHashCode().ToString(CultureInfo.InvariantCulture);
             }
         }
     }
