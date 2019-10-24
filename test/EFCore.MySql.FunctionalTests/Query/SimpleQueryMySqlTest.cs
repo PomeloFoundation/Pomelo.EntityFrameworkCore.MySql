@@ -258,7 +258,7 @@ WHERE (RIGHT(`c`.`ContactName`, CHAR_LENGTH(@__LocalMethod2_0)) = @__LocalMethod
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE LOCATE(BINARY 'M', `c`.`ContactName`) > 0");
+WHERE LOCATE(CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`ContactName`) > 0");
         }
 
         public override async Task String_Contains_Identity(bool isAsync)
@@ -268,7 +268,7 @@ WHERE LOCATE(BINARY 'M', `c`.`ContactName`) > 0");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LOCATE(BINARY `c`.`ContactName`, `c`.`ContactName`) > 0) OR (`c`.`ContactName` = '')");
+WHERE (LOCATE(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin, `c`.`ContactName`) > 0) OR (`c`.`ContactName` = '')");
         }
 
         public override async Task String_Contains_Column(bool isAsync)
@@ -278,7 +278,7 @@ WHERE (LOCATE(BINARY `c`.`ContactName`, `c`.`ContactName`) > 0) OR (`c`.`Contact
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LOCATE(BINARY `c`.`ContactName`, `c`.`ContactName`) > 0) OR (`c`.`ContactName` = '')");
+WHERE (LOCATE(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin, `c`.`ContactName`) > 0) OR (`c`.`ContactName` = '')");
         }
 
         public override async Task String_Contains_MethodCall(bool isAsync)
@@ -290,7 +290,7 @@ WHERE (LOCATE(BINARY `c`.`ContactName`, `c`.`ContactName`) > 0) OR (`c`.`Contact
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LOCATE(BINARY @__LocalMethod1_0, `c`.`ContactName`) > 0) OR (@__LocalMethod1_0 = '')");
+WHERE (LOCATE(CONVERT(@__LocalMethod1_0 USING utf8mb4) COLLATE utf8mb4_bin, `c`.`ContactName`) > 0) OR (@__LocalMethod1_0 = '')");
         }
 
         public override async Task IsNullOrWhiteSpace_in_predicate(bool isAsync)
