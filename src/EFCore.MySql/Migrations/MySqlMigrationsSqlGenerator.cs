@@ -510,7 +510,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             {
                 builder.Append(" RENAME COLUMN ")
                     .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
-                    .Append(" ")
+                    .Append(" TO ")
                     .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName));
 
                 EndStatement(builder);
