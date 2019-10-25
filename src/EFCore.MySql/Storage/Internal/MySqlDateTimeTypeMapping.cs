@@ -30,12 +30,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// </summary>
         public MySqlDateTimeTypeMapping(
             [NotNull] string storeType,
+            Type clrType,
             ValueConverter converter = null,
             ValueComparer comparer = null,
             int? precision = null)
             : this(
                 new RelationalTypeMappingParameters(
-                    new CoreTypeMappingParameters(typeof(DateTime), converter, comparer),
+                    new CoreTypeMappingParameters(clrType, converter, comparer),
                     storeType,
                     precision == null ? StoreTypePostfix.None : StoreTypePostfix.Precision,
                     System.Data.DbType.DateTime,

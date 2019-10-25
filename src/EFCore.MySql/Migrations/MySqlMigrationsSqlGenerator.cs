@@ -561,11 +561,10 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                                        ? Array.CreateInstance(clrType.GetElementType(), 0)
                                        : clrType.GetDefaultValue());
 
-            var isRowVersion = property.ClrType == typeof(byte[])
+            var isRowVersion = (property.ClrType == typeof(DateTime) || property.ClrType == typeof(byte[]))
                                && property.IsConcurrencyToken
                                && property.ValueGenerated == ValueGenerated.OnAddOrUpdate;
-
-
+            
             var addColumnOperation = new AddColumnOperation
             {
                 Schema = operation.Schema,
