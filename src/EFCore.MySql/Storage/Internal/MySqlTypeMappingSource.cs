@@ -53,9 +53,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         // DateTime
         private readonly MySqlDateTypeMapping _date = new MySqlDateTypeMapping("date", DbType.Date);
-        private readonly MySqlDateTimeTypeMapping _dateTime6 = new MySqlDateTimeTypeMapping("datetime", precision: 6);
-        private readonly MySqlDateTimeTypeMapping _dateTime = new MySqlDateTimeTypeMapping("datetime");
-        private readonly MySqlDateTimeTypeMapping _timeStamp6 = new MySqlDateTimeTypeMapping("timestamp", precision: 6);
+        private readonly MySqlDateTimeTypeMapping _dateTime6 = new MySqlDateTimeTypeMapping("datetime", typeof(DateTime), precision: 6);
+        private readonly MySqlDateTimeTypeMapping _dateTime = new MySqlDateTimeTypeMapping("datetime", typeof(DateTime));
+        private readonly MySqlDateTimeTypeMapping _timeStamp6 = new MySqlDateTimeTypeMapping("timestamp", typeof(DateTime), precision: 6);
         private readonly MySqlDateTimeOffsetTypeMapping _dateTimeOffset6 = new MySqlDateTimeOffsetTypeMapping("datetime", precision: 6);
         private readonly MySqlDateTimeOffsetTypeMapping _dateTimeOffset = new MySqlDateTimeOffsetTypeMapping("datetime");
         private readonly MySqlDateTimeOffsetTypeMapping _timeStampOffset6 = new MySqlDateTimeOffsetTypeMapping("timestamp", precision: 6);
@@ -65,11 +65,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private readonly RelationalTypeMapping _binaryRowVersion
             = new MySqlDateTimeTypeMapping(
                 "timestamp",
+                typeof(byte[]),
                 new BytesToDateTimeConverter(),
                 new ByteArrayComparer());
         private readonly RelationalTypeMapping _binaryRowVersion6
             = new MySqlDateTimeTypeMapping(
                 "timestamp",
+                typeof(byte[]),
                 new BytesToDateTimeConverter(),
                 new ByteArrayComparer(),
                 precision: 6);
@@ -426,7 +428,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 {
                     if (mappingInfo.IsRowVersion == true)
                     {
-                        return _connectionInfo.ServerVersion.SupportsDateTime6 ? _binaryRowVersion6 : _binaryRowVersion;
+                        return _connectionInfo.ServerVersion.SupportsDateTime6
+                            ? _binaryRowVersion6
+                            : _binaryRowVersion;
                     }
 
                     var size = mappingInfo.Size ??
@@ -439,6 +443,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             }
 
             return null;
+        }
+
+        protected override string ParseStoreTypeName(string storeTypeName, out bool? unicode, out int? size, out int? precision, out int? scale)
+        {
+            var storeTypeBaseName = base.ParseStoreTypeName(storeTypeName, out unicode, out size, out precision, out scale);
+
+            if (storeTypeName?.Contains("unsigned", StringComparison.OrdinalIgnoreCase) ?? false)
+            {
+                return storeTypeBaseName + " unsigned";
+            }
+
+            return storeTypeBaseName;
         }
     }
 }

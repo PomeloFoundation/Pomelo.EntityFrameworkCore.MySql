@@ -3,8 +3,11 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Extensions
 {
@@ -102,7 +105,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
         {
             var type = property.ClrType;
 
-            return (type.IsInteger() || type == typeof(decimal) || type == typeof(DateTime) || type == typeof(DateTimeOffset)) && !HasConverter(property);
+            return (type.IsInteger()
+                        || type == typeof(decimal)
+                        || type == typeof(DateTime)
+                        || type == typeof(DateTimeOffset))
+                   && !HasConverter(property);
         }
 
         /// <summary>
@@ -114,11 +121,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
         {
             var type = property.ClrType;
 
-            return (type == typeof(DateTime) || type == typeof(DateTimeOffset)) && !HasConverter(property);
+            // RowVersion uses byte[] and the BytesToDateTimeConverter.
+            return (type == typeof(DateTime) || type == typeof(DateTimeOffset)) && !HasConverter(property)
+                   || type == typeof(byte[]) && !HasExternalConverter(property);
         }
 
         private static bool HasConverter(IProperty property)
-            => (property.FindTypeMapping()?.Converter
-                ?? property.GetValueConverter()) != null;
+            => GetConverter(property) != null;
+
+        private static bool HasExternalConverter(IProperty property)
+        {
+            var converter = GetConverter(property);
+            return converter != null && !(converter is BytesToDateTimeConverter);
+        }
+
+        private static ValueConverter GetConverter(IProperty property)
+            => property.FindTypeMapping()?.Converter ?? property.GetValueConverter();
     }
 }
