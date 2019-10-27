@@ -772,7 +772,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             Generate(migrationBuilder.Operations.ToArray());
 
             Assert.Equal(
-                "ALTER TABLE `Person` RENAME COLUMN `Name` `FullName`",
+                "ALTER TABLE `Person` RENAME COLUMN `Name` TO `FullName`",
                 Sql);
         }
 
@@ -793,7 +793,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 migrationBuilder.Operations.ToArray());
 
             Assert.Equal(
-                "ALTER TABLE `Person` RENAME COLUMN `Name` `FullName`",
+                "ALTER TABLE `Person` RENAME COLUMN `Name` TO `FullName`",
                 Sql);
         }
 
