@@ -20,6 +20,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             CharSetBehavior = CharSetBehavior.AppendToAllAnsiColumns;
             AnsiCharSetInfo = new CharSetInfo(CharSet.Latin1);
             UnicodeCharSetInfo = new CharSetInfo(CharSet.Utf8mb4);
+            ReplaceLineBreaksWithCharFunction = true;
         }
 
         public virtual void Initialize(IDbContextOptions options)
@@ -32,6 +33,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             AnsiCharSetInfo = mySqlOptions.AnsiCharSetInfo ?? AnsiCharSetInfo;
             UnicodeCharSetInfo = mySqlOptions.UnicodeCharSetInfo ?? UnicodeCharSetInfo;
             NoBackslashEscapes = mySqlOptions.NoBackslashEscapes;
+            ReplaceLineBreaksWithCharFunction = mySqlOptions.ReplaceLineBreaksWithCharFunction;
         }
 
         public virtual void Validate(IDbContextOptions options)
@@ -79,5 +81,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         public virtual CharSetInfo AnsiCharSetInfo { get; private set; }
         public virtual CharSetInfo UnicodeCharSetInfo { get; private set; }
         public virtual bool NoBackslashEscapes { get; private set; }
+        public virtual bool ReplaceLineBreaksWithCharFunction { get; private set; }
     }
 }

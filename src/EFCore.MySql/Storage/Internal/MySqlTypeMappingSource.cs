@@ -112,13 +112,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         protected void Initialize()
         {
             // String mappings depend on the MySqlOptions.NoBackslashEscapes setting.
-            _char = new MySqlStringTypeMapping("char", DbType.AnsiStringFixedLength, fixedLength: true, noBackslashEscapes: _options.NoBackslashEscapes);
-            _varchar = new MySqlStringTypeMapping("varchar", DbType.AnsiString, noBackslashEscapes: _options.NoBackslashEscapes);
-            _nchar = new MySqlStringTypeMapping("nchar", DbType.StringFixedLength, unicode: true, fixedLength: true, noBackslashEscapes: _options.NoBackslashEscapes);
-            _nvarchar = new MySqlStringTypeMapping("nvarchar", DbType.String, unicode: true, noBackslashEscapes: _options.NoBackslashEscapes);
-            _varcharmax = new MySqlStringTypeMapping("longtext", DbType.AnsiString, noBackslashEscapes: _options.NoBackslashEscapes);
-            _nvarcharmax = new MySqlStringTypeMapping("longtext", DbType.String, unicode: true, noBackslashEscapes: _options.NoBackslashEscapes);
-            _enum = new MySqlStringTypeMapping("enum", DbType.String, unicode: true, noBackslashEscapes: _options.NoBackslashEscapes);
+            _char = new MySqlStringTypeMapping("char", DbType.AnsiStringFixedLength, _options, fixedLength: true);
+            _varchar = new MySqlStringTypeMapping("varchar", DbType.AnsiString, _options);
+            _nchar = new MySqlStringTypeMapping("nchar", DbType.StringFixedLength, _options, unicode: true, fixedLength: true);
+            _nvarchar = new MySqlStringTypeMapping("nvarchar", DbType.String, _options, unicode: true);
+            _varcharmax = new MySqlStringTypeMapping("longtext", DbType.AnsiString, _options);
+            _nvarcharmax = new MySqlStringTypeMapping("longtext", DbType.String, _options, unicode: true);
+            _enum = new MySqlStringTypeMapping("enum", DbType.String, _options, unicode: true);
             
             _storeTypeMappings
                 = new Dictionary<string, RelationalTypeMapping>(StringComparer.OrdinalIgnoreCase)
@@ -416,10 +416,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                             ? "longtext" + charSetSuffix
                             : (isFixedLength ? "char(" : "varchar(") + size + ")" + charSetSuffix,
                         dbType,
+                        _options,
                         !isAnsi,
                         size,
-                        isFixedLength,
-                        _options.NoBackslashEscapes);
+                        isFixedLength);
                 }
 
                 if (clrType == typeof(byte[]))

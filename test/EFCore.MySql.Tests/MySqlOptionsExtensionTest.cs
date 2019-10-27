@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;

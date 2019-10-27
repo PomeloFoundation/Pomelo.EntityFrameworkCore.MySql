@@ -14,5 +14,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         CharSetInfo AnsiCharSetInfo { get; }
         CharSetInfo UnicodeCharSetInfo { get; }
         bool NoBackslashEscapes { get; }
+        bool ReplaceLineBreaksWithCharFunction { get; }
     }
 }
