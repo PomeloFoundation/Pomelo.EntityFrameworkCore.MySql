@@ -19,8 +19,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             ConnectionSettings = new MySqlConnectionSettings();
             ServerVersion = new ServerVersion(null);
             CharSetBehavior = CharSetBehavior.AppendToAllColumns;
-            CharSet = ServerVersion.DefaultCharSet;
-            NationalCharSet = CharSet.Utf8Mb3; // Prefdefined by MySQL
+
+            // We do not use the MySQL versions's default, but explicitly use `utf8mb4`
+            // if not changed by the user.
+            CharSet = CharSet.Utf8Mb4;
+
+            // NCHAR and NVARCHAR are prefdefined by MySQL.
+            NationalCharSet = CharSet.Utf8Mb3;
+
             ReplaceLineBreaksWithCharFunction = true;
         }
 
@@ -73,7 +79,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                         nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
             }
 
-            if (!Equals(CharSet, mySqlOptions.CharSet ?? ServerVersion.DefaultCharSet))
+            if (!Equals(CharSet, mySqlOptions.CharSet ?? CharSet.Utf8Mb4))
             {
                 throw new InvalidOperationException(
                     CoreStrings.SingletonOptionChanged(
