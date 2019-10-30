@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -46,17 +45,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         // String mappings depend on the MySqlOptions.NoBackslashEscapes setting:
         //
 
-        private MySqlStringTypeMapping _charAnsi;
-        private MySqlStringTypeMapping _varcharAnsi;
-        private MySqlStringTypeMapping _varcharmaxAnsi;
-
         private MySqlStringTypeMapping _charUnicode;
         private MySqlStringTypeMapping _varcharUnicode;
         private MySqlStringTypeMapping _varcharmaxUnicode;
 
         private MySqlStringTypeMapping _nchar;
         private MySqlStringTypeMapping _nvarchar;
-        // private MySqlStringTypeMapping _nvarcharmax;
 
         private MySqlStringTypeMapping _enum;
 
@@ -125,17 +119,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             // String mappings depend on the MySqlOptions.NoBackslashEscapes setting:
             //
 
-            _charAnsi = new MySqlStringTypeMapping("char", DbType.AnsiStringFixedLength, _options, fixedLength: true);
-            _varcharAnsi = new MySqlStringTypeMapping("varchar", DbType.AnsiString, _options);
-            _varcharmaxAnsi = new MySqlStringTypeMapping("longtext", DbType.AnsiString, _options);
-
             _charUnicode = new MySqlStringTypeMapping("char", DbType.StringFixedLength, _options, unicode: true, fixedLength: true);
             _varcharUnicode = new MySqlStringTypeMapping("varchar", DbType.String, _options, unicode: true);
             _varcharmaxUnicode = new MySqlStringTypeMapping("longtext", DbType.String, _options, unicode: true);
 
             _nchar = new MySqlStringTypeMapping("nchar", DbType.StringFixedLength, _options, unicode: true, fixedLength: true);
             _nvarchar = new MySqlStringTypeMapping("nvarchar", DbType.String, _options, unicode: true);
-            // _nvarcharmax = new MySqlStringTypeMapping("longtext", DbType.String, _options, unicode: true);
 
             _enum = new MySqlStringTypeMapping("enum", DbType.String, _options, unicode: true);
 
@@ -361,8 +350,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 {
                     // Some of this logic could be moved into MySqlStringTypeMapping once EF #11896 is fixed
                     var isNationalCharSet = storeTypeNameBase != null
-                                            && (storeTypeNameBase.Equals("nchar", StringComparison.OrdinalIgnoreCase)
-                                                || storeTypeNameBase.Equals("nvarchar", StringComparison.OrdinalIgnoreCase));
+                                            && (storeTypeNameBase.Equals(_nchar.StoreTypeNameBase, StringComparison.OrdinalIgnoreCase)
+                                                || storeTypeNameBase.Equals(_nvarchar.StoreTypeNameBase, StringComparison.OrdinalIgnoreCase));
                     var isFixedLength = mappingInfo.IsFixedLength == true;
                     var charSetSuffix = string.Empty;
                     var bytesPerChar = isNationalCharSet
