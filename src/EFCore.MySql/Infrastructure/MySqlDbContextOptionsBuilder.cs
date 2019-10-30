@@ -40,14 +40,8 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
         /// <summary>
         ///     Configures the ANSI CharSet
         /// </summary>
-        public virtual MySqlDbContextOptionsBuilder AnsiCharSet(CharSet charSet)
-            => WithOption(e => e.WithAnsiCharSetInfo(new CharSetInfo(charSet)));
-
-        /// <summary>
-        ///     Configures the Unicode CharSet
-        /// </summary>
-        public virtual MySqlDbContextOptionsBuilder UnicodeCharSet(CharSet charSet)
-            => WithOption(e => e.WithUnicodeCharSetInfo(new CharSetInfo(charSet)));
+        public virtual MySqlDbContextOptionsBuilder CharSet(CharSet charSet)
+            => WithOption(e => e.WithCharSet(charSet));
 
         /// <summary>
         ///     Configures the context to use the default retrying <see cref="IExecutionStrategy" />.

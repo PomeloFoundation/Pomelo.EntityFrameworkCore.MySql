@@ -24,9 +24,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
                 .AddSingleton<IRelationalTypeMappingSource, MySqlTypeMappingSource>()
                 .AddSingleton<IDatabaseModelFactory, MySqlDatabaseModelFactory>()
                 .AddSingleton<IProviderConfigurationCodeGenerator, MySqlCodeGenerator>()
-                .AddSingleton<IAnnotationCodeGenerator, MySqlAnnotationCodeGenerator>()
-                .AddSingleton<IMySqlOptions, MySqlOptions>()
-                .AddSingleton<IMySqlConnectionInfo, MySqlConnectionInfo>();
+                .AddSingleton<IAnnotationCodeGenerator, MySqlAnnotationCodeGenerator>();
+
+            serviceCollection.TryAddSingleton<IMySqlOptions, MySqlOptions>();
+            serviceCollection.TryAddSingleton<IMySqlConnectionInfo, MySqlConnectionInfo>();
         }
     }
 }

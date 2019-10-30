@@ -19,6 +19,7 @@ using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
@@ -99,7 +100,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
             var optionsBuilder = new DbContextOptionsBuilder();
             optionsBuilder.UseMySql(connection);
 
-            _options.Initialize(optionsBuilder.Options);
+            if (Equals(_options, new MySqlOptions()))
+            {
+                _options.Initialize(optionsBuilder.Options);
+            }
+
             MySqlConnectionInfo.SetServerVersion((MySqlConnection)connection, _serviceProvider);
         }
 

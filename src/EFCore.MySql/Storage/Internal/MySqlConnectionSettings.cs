@@ -24,6 +24,40 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             TreatTinyAsBoolean = csb.TreatTinyAsBoolean;
         }
 
+        protected bool Equals(MySqlConnectionSettings other)
+        {
+            return OldGuids == other.OldGuids &&
+                   TreatTinyAsBoolean == other.TreatTinyAsBoolean;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != this.GetType())
+            {
+                return false;
+            }
+
+            return Equals((MySqlConnectionSettings) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (OldGuids.GetHashCode() * 397) ^ TreatTinyAsBoolean.GetHashCode();
+            }
+        }
+
         public readonly bool OldGuids;
         public readonly bool TreatTinyAsBoolean;
     }
