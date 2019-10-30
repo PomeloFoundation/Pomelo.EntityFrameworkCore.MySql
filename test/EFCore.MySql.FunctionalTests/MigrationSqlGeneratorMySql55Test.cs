@@ -123,7 +123,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 migrationBuilder.Operations.ToArray());
 
             Assert.Equal(
-                "ALTER TABLE `Person` CHANGE `Name` `FullName` longtext NULL;" + EOL,
+                "ALTER TABLE `Person` CHANGE `Name` `FullName` longtext CHARACTER SET utf8mb4 NULL;" + EOL,
                 Sql);
         }
 

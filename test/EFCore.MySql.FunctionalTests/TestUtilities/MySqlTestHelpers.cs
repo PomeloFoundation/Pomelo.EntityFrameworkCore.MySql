@@ -1,13 +1,11 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 //ReSharper disable once CheckNamespace
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
@@ -29,8 +27,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         public IServiceProvider CreateContextServices(Version version, ServerType type)
             => ((IInfrastructure<IServiceProvider>)new DbContext(CreateOptions(version, type))).Instance;
 
-        public IServiceProvider CreateContextServices(CharSetBehavior charSetBehavior, CharSet ansiCharSet, CharSet unicodeCharSet)
-            => ((IInfrastructure<IServiceProvider>)new DbContext(CreateOptions(charSetBehavior, ansiCharSet, unicodeCharSet))).Instance;
+        public IServiceProvider CreateContextServices(CharSetBehavior charSetBehavior, CharSet charSet)
+            => ((IInfrastructure<IServiceProvider>)new DbContext(CreateOptions(charSetBehavior, charSet))).Instance;
 
         public ModelBuilder CreateConventionBuilder(IServiceProvider contextServices)
         {
@@ -48,10 +46,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             return optionsBuilder.Options;
         }
 
-        public DbContextOptions CreateOptions(CharSetBehavior charSetBehavior, CharSet ansiCharSet, CharSet unicodeCharSet)
+        public DbContextOptions CreateOptions(CharSetBehavior charSetBehavior, CharSet charSet)
         {
             var optionsBuilder = new DbContextOptionsBuilder();
-            optionsBuilder.UseMySql("Database=DummyDatabase", b => b.CharSetBehavior(charSetBehavior).AnsiCharSet(ansiCharSet).UnicodeCharSet(unicodeCharSet));
+            optionsBuilder.UseMySql("Database=DummyDatabase", b => b
+                .CharSetBehavior(charSetBehavior)
+                .CharSet(charSet));
 
             return optionsBuilder.Options;
         }
