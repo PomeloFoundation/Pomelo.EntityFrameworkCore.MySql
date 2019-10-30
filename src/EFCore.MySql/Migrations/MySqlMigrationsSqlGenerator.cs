@@ -10,9 +10,7 @@ using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -26,7 +24,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
     /// </summary>
     public class MySqlMigrationsSqlGenerator : MigrationsSqlGenerator
     {
-        private static readonly Regex _typeRe = new Regex(@"([a-z0-9]+)\s*?(?:\(\s*(\d+)?\s*\))?",
+        private static readonly Regex _typeRegex = new Regex(@"([a-z0-9]+)\s*?(?:\(\s*(\d+)?\s*\))?",
             RegexOptions.IgnoreCase);
 
         private readonly IMigrationsAnnotationProvider _migrationsAnnotations;
@@ -678,7 +676,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             var matchType = operation.ColumnType ?? GetColumnType(schema, table, name, operation, model);
             var matchLen = "";
-            var match = _typeRe.Match(matchType ?? "-");
+            var match = _typeRegex.Match(matchType ?? "-");
             if (match.Success)
             {
                 matchType = match.Groups[1].Value.ToLower();
@@ -745,13 +743,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             if (operation.ComputedColumnSql == null)
             {
-                base.ColumnDefinition(
-                    schema,
-                    table,
-                    name,
-                    operation,
-                    model,
-                    builder);
+                ColumnDefinitionWithCharSet(schema, table, name, operation, model, builder);
 
                 if (autoIncrement)
                 {
@@ -784,6 +776,48 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             }
         }
 
+        private void ColumnDefinitionWithCharSet(string schema, string table, string name, ColumnOperation operation, IModel model, MigrationCommandListBuilder builder)
+        {
+            if (operation.ComputedColumnSql != null)
+            {
+                ComputedColumnDefinition(schema, table, name, operation, model, builder);
+                return;
+            }
+
+            var columnType = operation.ColumnType != null
+                ? GetColumnTypeWithCharSet(operation, operation.ColumnType)
+                : GetColumnType(schema, table, name, operation, model);
+            
+            builder
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(name))
+                .Append(" ")
+                .Append(columnType);
+
+            builder.Append(operation.IsNullable ? " NULL" : " NOT NULL");
+
+            DefaultValue(operation.DefaultValue, operation.DefaultValueSql, columnType, builder);
+        }
+
+        protected override string GetColumnType(string schema, string table, string name, ColumnOperation operation, IModel model)
+            => GetColumnTypeWithCharSet(
+                operation,
+                base.GetColumnType(schema, table, name, operation, model));
+
+        private static string GetColumnTypeWithCharSet(ColumnOperation operation, string columnType)
+        {
+            var charSet = operation[MySqlAnnotationNames.CharSet];
+            if (charSet != null)
+            {
+                const string characterSetClausePattern = @"CHARACTER SET \w+";
+                var characterSetClause = $@"CHARACTER SET {charSet}";
+
+                columnType = Regex.IsMatch(columnType, characterSetClausePattern, RegexOptions.IgnoreCase)
+                    ? Regex.Replace(columnType, characterSetClausePattern, characterSetClause)
+                    : columnType.TrimEnd() + " " + characterSetClause;
+            }
+
+            return columnType;
+        }
 
         /// <summary>
         ///     Generates a SQL fragment for the default constraint of a column.

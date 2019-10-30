@@ -3,7 +3,6 @@ using System.Linq;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -190,7 +189,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         [InlineData(null, true, CharSetBehavior.AppendToUnicodeIndexAndKeyColumns, "Utf8Mb4", true)]
         [InlineData(null, true, CharSetBehavior.AppendToAllUnicodeColumns, "Utf8Mb4", true)]
         [InlineData(null, true, CharSetBehavior.AppendToAllColumns, "Utf8Mb4", true)]
-        public virtual void AddColumnOperation_with_charset(bool? isUnicode, bool isIndex, CharSetBehavior charSetBehavior,
+        public virtual void AddColumnOperation_with_charSet_implicit(bool? isUnicode, bool isIndex, CharSetBehavior charSetBehavior,
             string charSetName, bool expectExplicitCharSet)
         {
             var charSet = CharSet.GetCharSetFromName(charSetName);
@@ -877,6 +876,26 @@ ALTER TABLE `dbo`.`People` DROP PRIMARY KEY;".Replace("\r", string.Empty).Replac
 
             Assert.Equal(
                 "-- I <3 DDL" + EOL,
+                Sql);
+        }
+
+        [Fact]
+        public virtual void AddColumnOperation_with_charSet_annotation()
+        {
+            Generate(
+                new AddColumnOperation
+                {
+                    Table = "People",
+                    Name = "Name",
+                    ClrType = typeof(string),
+                    ColumnType = "varchar(255)",
+                    IsNullable = true,
+                    [MySqlAnnotationNames.CharSet] = CharSet.SJis,
+                });
+
+            Assert.Equal(
+                "ALTER TABLE `People` ADD `Name` varchar(255) CHARACTER SET sjis NULL;" +
+                EOL,
                 Sql);
         }
 

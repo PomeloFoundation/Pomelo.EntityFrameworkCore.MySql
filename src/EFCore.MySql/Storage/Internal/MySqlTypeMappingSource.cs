@@ -353,11 +353,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                                             && (storeTypeNameBase.Equals(_nchar.StoreTypeNameBase, StringComparison.OrdinalIgnoreCase)
                                                 || storeTypeNameBase.Equals(_nvarchar.StoreTypeNameBase, StringComparison.OrdinalIgnoreCase));
                     var isFixedLength = mappingInfo.IsFixedLength == true;
+                    var charset = isNationalCharSet ? _options.NationalCharSet : _options.CharSet;
+                    var isUnicode = mappingInfo.IsUnicode ?? charset.IsUnicode;
+                    var bytesPerChar = charset.MaxBytesPerChar;
                     var charSetSuffix = string.Empty;
-                    var bytesPerChar = isNationalCharSet
-                        ? _options.NationalCharSet.MaxBytesPerChar
-                        : _options.CharSet.MaxBytesPerChar;
-                    var isUnicode = mappingInfo.IsUnicode ?? bytesPerChar >= 2;
                     
                     if (isUnicode &&
                             (mappingInfo.IsKeyOrIndex &&

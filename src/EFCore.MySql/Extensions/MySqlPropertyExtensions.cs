@@ -3,7 +3,6 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
@@ -137,5 +136,38 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
 
         private static ValueConverter GetConverter(IProperty property)
             => property.FindTypeMapping()?.Converter ?? property.GetValueConverter();
+
+        /// <summary>
+        /// Returns the <see cref="CharSet"/> used by the property's column.
+        /// </summary>
+        /// <param name="property">The property of which get its column's <see cref="CharSet"/> from.</param>
+        /// <returns>The <see cref="CharSet"/> or null, if no explicit <see cref="CharSet"/> was set.</returns>
+        public static CharSet GetCharSet([NotNull] this IProperty property)
+        {
+            var charSetName = property[MySqlAnnotationNames.CharSet] as string;
+
+            if (string.IsNullOrEmpty(charSetName))
+            {
+                return null;
+            }
+
+            return CharSet.GetCharSetFromName(charSetName);
+        }
+
+        /// <summary>
+        /// Sets the <see cref="CharSet"/> in use by the property's column.
+        /// </summary>
+        /// <param name="property">The property to set the <see cref="CharSet"/> for.</param>
+        /// <param name="charSet">The <see cref="CharSet"/> used by the property's column.</param>
+        public static void SetCharSet([NotNull] this IMutableProperty property, CharSet charSet)
+        {
+            if (charSet != null &&
+                !property.IsUnicode().HasValue)
+            {
+                property.SetIsUnicode(charSet.IsUnicode);
+            }
+
+            property.SetOrRemoveAnnotation(MySqlAnnotationNames.CharSet, charSet);
+        }
     }
 }
