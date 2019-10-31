@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using MySql.Data.MySqlClient;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
@@ -11,14 +12,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
     public class ConnectionSettingsMySqlTest
     {
         [ConditionalTheory]
-        [InlineData(MySqlGuidFormat.Char36, "'850368D8-93EA-4023-ACC7-6FA6E4C3B27F'")]
-        [InlineData(MySqlGuidFormat.Char32, "'850368D893EA4023ACC76FA6E4C3B27F'")]
-        [InlineData(MySqlGuidFormat.Binary16, "UUID_TO_BIN('850368D8-93EA-4023-ACC7-6FA6E4C3B27F', 0)")]
-        [InlineData(MySqlGuidFormat.TimeSwapBinary16, "UUID_TO_BIN('850368D8-93EA-4023-ACC7-6FA6E4C3B27F', 1)")]
-        [InlineData(MySqlGuidFormat.LittleEndianBinary16, "X'D8680385EA932340ACC76FA6E4C3B27F'")]
-        [InlineData(MySqlGuidFormat.None, "X'D8680385EA932340ACC76FA6E4C3B27F'")]
-        public virtual void Insert_and_read_Guid_value (MySqlGuidFormat guidFormat, string sqlEquivalent)
+        [InlineData(MySqlGuidFormat.Char36, "'850368D8-93EA-4023-ACC7-6FA6E4C3B27F'", null)]
+        [InlineData(MySqlGuidFormat.Char32, "'850368D893EA4023ACC76FA6E4C3B27F'", null)]
+        [InlineData(MySqlGuidFormat.Binary16, "UUID_TO_BIN('850368D8-93EA-4023-ACC7-6FA6E4C3B27F', 0)", "8.0.0-mysql")]
+        [InlineData(MySqlGuidFormat.Binary16, "X'850368D893EA4023ACC76FA6E4C3B27F'", null)]
+        [InlineData(MySqlGuidFormat.TimeSwapBinary16, "UUID_TO_BIN('850368D8-93EA-4023-ACC7-6FA6E4C3B27F', 1)", "8.0.0-mysql")]
+        [InlineData(MySqlGuidFormat.TimeSwapBinary16, "X'402393EA850368D8ACC76FA6E4C3B27F'", null)]
+        [InlineData(MySqlGuidFormat.LittleEndianBinary16, "X'D8680385EA932340ACC76FA6E4C3B27F'", null)]
+        [InlineData(MySqlGuidFormat.None, "X'D8680385EA932340ACC76FA6E4C3B27F'", null)]
+        public virtual void Insert_and_read_Guid_value(MySqlGuidFormat guidFormat, string sqlEquivalent, string supportedServerVersion)
         {
+            if (supportedServerVersion != null &&
+                !new ServerVersionSupport(new ServerVersion(supportedServerVersion)).IsSupported(AppConfig.ServerVersion))
+            {
+                return;
+            }
+
             using var context = CreateContext(guidFormat);
 
             context.Database.EnsureDeleted();
