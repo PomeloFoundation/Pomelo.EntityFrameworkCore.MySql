@@ -63,11 +63,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                         nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
             }
 
-            if (!Equals(ConnectionSettings.OldGuids, connectionSettings.OldGuids))
+            if (!Equals(ConnectionSettings.GuidFormat, connectionSettings.GuidFormat))
             {
                 throw new InvalidOperationException(
                     CoreStrings.SingletonOptionChanged(
-                        nameof(MySqlConnectionStringBuilder.OldGuids),
+                        nameof(MySqlConnectionStringBuilder.GuidFormat),
                         nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
             }
 

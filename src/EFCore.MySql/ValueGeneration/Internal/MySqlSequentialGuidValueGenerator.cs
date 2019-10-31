@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
+using MySql.Data.MySqlClient;
 
 namespace Pomelo.EntityFrameworkCore.MySql.ValueGeneration.Internal
 {
@@ -32,7 +33,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.ValueGeneration.Internal
             _rng.GetBytes(randomBytes);
             var ticks = (ulong) DateTime.UtcNow.Ticks;
 
-            if (_options.ConnectionSettings.OldGuids)
+            if (_options.ConnectionSettings.GuidFormat == MySqlGuidFormat.LittleEndianBinary16)
             {
                 var guidBytes = new byte[16];
                 var tickBytes = BitConverter.GetBytes(ticks);

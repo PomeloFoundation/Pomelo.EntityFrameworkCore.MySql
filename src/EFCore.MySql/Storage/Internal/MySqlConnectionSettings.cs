@@ -20,13 +20,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public MySqlConnectionSettings(string connectionString)
         {
             var csb = new MySqlConnectionStringBuilder(connectionString);
-            OldGuids = csb.OldGuids;
+
+            if (csb.GuidFormat == MySqlGuidFormat.Default)
+            {
+                GuidFormat = csb.OldGuids
+                    ? MySqlGuidFormat.LittleEndianBinary16
+                    : MySqlGuidFormat.Char36;
+            }
+            else
+            {
+                GuidFormat = csb.GuidFormat;
+            }
+
             TreatTinyAsBoolean = csb.TreatTinyAsBoolean;
         }
 
         protected bool Equals(MySqlConnectionSettings other)
         {
-            return OldGuids == other.OldGuids &&
+            return GuidFormat == other.GuidFormat &&
                    TreatTinyAsBoolean == other.TreatTinyAsBoolean;
         }
 
@@ -47,18 +58,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 return false;
             }
 
-            return Equals((MySqlConnectionSettings) obj);
+            return Equals((MySqlConnectionSettings)obj);
         }
 
         public override int GetHashCode()
         {
             unchecked
             {
-                return (OldGuids.GetHashCode() * 397) ^ TreatTinyAsBoolean.GetHashCode();
+                var hashCode = (int)GuidFormat;
+                hashCode = (hashCode * 397) ^ TreatTinyAsBoolean.GetHashCode();
+                return hashCode;
             }
         }
 
-        public readonly bool OldGuids;
-        public readonly bool TreatTinyAsBoolean;
+        public MySqlGuidFormat GuidFormat { get; }
+        public bool TreatTinyAsBoolean { get; }
     }
 }

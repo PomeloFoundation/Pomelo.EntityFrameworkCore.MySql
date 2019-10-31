@@ -80,8 +80,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 precision: 6);
 
         // guid
-        private readonly GuidTypeMapping _uniqueidentifier = new MySqlGuidTypeMapping("char", DbType.Guid, size: 36);
-        private readonly GuidTypeMapping _oldGuid = new MySqlOldGuidTypeMapping();
+        private GuidTypeMapping _guid;
 
         private Dictionary<string, RelationalTypeMapping> _storeTypeMappings;
         private Dictionary<Type, RelationalTypeMapping> _clrTypeMappings;
@@ -127,6 +126,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             _nvarchar = new MySqlStringTypeMapping("nvarchar", DbType.String, _options, unicode: true);
 
             _enum = new MySqlStringTypeMapping("enum", DbType.String, _options, unicode: true);
+
+            _guid = MySqlGuidTypeMapping.IsValidGuidFormat(_options.ConnectionSettings.GuidFormat)
+                ? new MySqlGuidTypeMapping(_options.ConnectionSettings.GuidFormat)
+                : null;
 
             _storeTypeMappings
                 = new Dictionary<string, RelationalTypeMapping>(StringComparer.OrdinalIgnoreCase)
@@ -198,18 +201,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
 	                // byte / char
 	                { typeof(sbyte), _tinyint },
-                    { typeof(byte), _utinyint }
+                    { typeof(byte), _utinyint },
                 };
 
             // Boolean
             _clrTypeMappings[typeof(bool)] = _options.ConnectionSettings.TreatTinyAsBoolean
                 ? _tinyint1
                 : _bit1;
-
-            // Guid
-            _clrTypeMappings[typeof(Guid)] = _options.ConnectionSettings.OldGuids
-                ? _oldGuid
-                : _uniqueidentifier;
 
             // DateTime
             if (_connectionInfo.ServerVersion.SupportsDateTime6)
@@ -225,6 +223,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 _clrTypeMappings[typeof(DateTime)] = _dateTime;
                 _clrTypeMappings[typeof(DateTimeOffset)] = _dateTimeOffset;
                 _clrTypeMappings[typeof(TimeSpan)] = _time;
+            }
+
+            // Guid
+            if (_guid != null)
+            {
+                _clrTypeMappings[typeof(Guid)] = _guid;
             }
         }
 
@@ -282,20 +286,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     }
                 }
 
-                if (_options.ConnectionSettings.OldGuids)
+                if (MySqlGuidTypeMapping.IsValidGuidFormat(_options.ConnectionSettings.GuidFormat))
                 {
-                    if (storeTypeName.Equals(_oldGuid.StoreType, StringComparison.OrdinalIgnoreCase)
+                    if (storeTypeName.Equals(_guid.StoreType, StringComparison.OrdinalIgnoreCase)
                         && (clrType == typeof(Guid) || clrType == null))
                     {
-                        return _oldGuid;
-                    }
-                }
-                else
-                {
-                    if (storeTypeName.Equals(_uniqueidentifier.StoreType, StringComparison.OrdinalIgnoreCase)
-                        && (clrType == typeof(Guid) || clrType == null))
-                    {
-                        return _uniqueidentifier;
+                        return _guid;
                     }
                 }
 
@@ -357,7 +353,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     var isUnicode = mappingInfo.IsUnicode ?? charset.IsUnicode;
                     var bytesPerChar = charset.MaxBytesPerChar;
                     var charSetSuffix = string.Empty;
-                    
+
                     if (isUnicode &&
                             (mappingInfo.IsKeyOrIndex &&
                                 (_options.CharSetBehavior & CharSetBehavior.AppendToUnicodeIndexAndKeyColumns) != 0 ||
