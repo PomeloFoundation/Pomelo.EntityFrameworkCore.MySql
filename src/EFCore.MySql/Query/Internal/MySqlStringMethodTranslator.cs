@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -25,7 +22,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         private static readonly MethodInfo _isNullOrWhiteSpaceMethodInfo
             = typeof(string).GetRuntimeMethod(nameof(string.IsNullOrWhiteSpace), new[] { typeof(string) });
 
-        // Method defined in netcoreapp2.0 only
+        // Methods defined in netcoreapp2.0 only
         private static readonly MethodInfo _trimStartMethodInfoWithoutArgs
             = typeof(string).GetRuntimeMethod(nameof(string.TrimStart), Array.Empty<Type>());
         private static readonly MethodInfo _trimStartMethodInfoWithCharArg
@@ -39,7 +36,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         private static readonly MethodInfo _trimMethodInfoWithCharArg
             = typeof(string).GetRuntimeMethod(nameof(string.Trim), new[] { typeof(char) });
 
-        // Method defined in netstandard2.0
+        // Methods defined in netstandard2.0
         private static readonly MethodInfo _trimStartMethodInfoWithCharArrayArg
             = typeof(string).GetRuntimeMethod(nameof(string.TrimStart), new[] { typeof(char[]) });
         private static readonly MethodInfo _trimEndMethodInfoWithCharArrayArg
@@ -66,8 +63,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
-        private const char LikeEscapeChar = '\\';
-
         public MySqlStringMethodTranslator(ISqlExpressionFactory sqlExpressionFactory)
         {
             _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
@@ -77,19 +72,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         {
             if (_indexOfMethodInfo.Equals(method))
             {
-                var argument = arguments[0];
-                var stringTypeMapping = ExpressionExtensions.InferTypeMapping(instance, argument);
-
-                return _sqlExpressionFactory.Subtract(
-                    _sqlExpressionFactory.Function(
-                        "LOCATE",
-                        new[]
-                        {
-                            _sqlExpressionFactory.ApplyTypeMapping(argument, stringTypeMapping),
-                            _sqlExpressionFactory.ApplyTypeMapping(instance, stringTypeMapping)
-                        },
-                        method.ReturnType),
-                    _sqlExpressionFactory.Constant(1));
+                return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory)
+                    .MakeIndexOfExpression(instance, arguments[0], _sqlExpressionFactory.Constant(StringComparison.CurrentCulture));
             }
 
             if (_replaceMethodInfo.Equals(method))
@@ -166,54 +150,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
             if (_containsMethodInfo.Equals(method))
             {
-                var pattern = arguments[0];
-                var stringTypeMapping = ExpressionExtensions.InferTypeMapping(instance, pattern);
-
-                instance = _sqlExpressionFactory.ApplyTypeMapping(instance, stringTypeMapping);
-                pattern = _sqlExpressionFactory.ApplyTypeMapping(pattern, stringTypeMapping);
-
-                var locateCondition = _sqlExpressionFactory.GreaterThan(
-                    _sqlExpressionFactory.Function(
-                        "LOCATE",
-                        new[]
-                        {
-                            _sqlExpressionFactory.ComplexFunctionArgument(
-                                new[]
-                                {
-                                    _sqlExpressionFactory.Fragment("BINARY"), // for case sensitivity
-                                    pattern,
-                                },
-                                typeof(string)),
-                            instance,
-                        },
-                        typeof(int)),
-                    _sqlExpressionFactory.Constant(0));
-
-                if (pattern is SqlConstantExpression constantPattern)
-                {
-                    if ((string)constantPattern.Value == string.Empty)
-                    {
-                        return _sqlExpressionFactory.Constant(true);
-                    }
-
-                    return locateCondition;
-                }
-
-                return _sqlExpressionFactory.OrElse(
-                    _sqlExpressionFactory.Equal(
-                        pattern,
-                        _sqlExpressionFactory.Constant(string.Empty, stringTypeMapping)),
-                    locateCondition);
+                return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory)
+                    .MakeContainsExpression(instance, arguments[0], _sqlExpressionFactory.Constant(StringComparison.Ordinal));
             }
 
             if (_startsWithMethodInfo.Equals(method))
             {
-                return TranslateStartsEndsWith(instance, arguments[0], true);
+                return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory)
+                    .MakeStartsWithExpression(instance, arguments[0], _sqlExpressionFactory.Constant(StringComparison.CurrentCulture));
             }
 
             if (_endsWithMethodInfo.Equals(method))
             {
-                return TranslateStartsEndsWith(instance, arguments[0], false);
+                return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory)
+                    .MakeEndsWithExpression(instance, arguments[0], _sqlExpressionFactory.Constant(StringComparison.CurrentCulture));
             }
 
             if (_padLeftWithOneArg.Equals(method))
@@ -270,93 +220,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     },
                     returnType)
                 : null;
-
-        private SqlExpression TranslateStartsEndsWith(SqlExpression instance, SqlExpression pattern, bool startsWith)
-        {
-            var stringTypeMapping = ExpressionExtensions.InferTypeMapping(instance, pattern);
-
-            instance = _sqlExpressionFactory.ApplyTypeMapping(instance, stringTypeMapping);
-            pattern = _sqlExpressionFactory.ApplyTypeMapping(pattern, stringTypeMapping);
-
-            if (pattern is SqlConstantExpression constantExpression)
-            {
-                // The pattern is constant. Aside from null or empty, we escape all special characters (%, _, \)
-                // in C# and send a simple LIKE
-                if (!(constantExpression.Value is string constantString))
-                {
-                    return _sqlExpressionFactory.Like(instance, _sqlExpressionFactory.Constant(null, stringTypeMapping));
-                }
-                if (constantString.Length == 0)
-                {
-                    return _sqlExpressionFactory.Constant(true);
-                }
-
-                return constantString.Any(c => IsLikeWildChar(c))
-                    ? _sqlExpressionFactory.Like(
-                        instance,
-                        _sqlExpressionFactory.Constant(
-                            startsWith
-                                ? EscapeLikePattern(constantString) + '%'
-                                : '%' + EscapeLikePattern(constantString)),
-                        _sqlExpressionFactory.Constant(LikeEscapeChar.ToString()))
-                    : _sqlExpressionFactory.Like(
-                        instance,
-                        _sqlExpressionFactory.Constant(startsWith ? constantString + '%' : '%' + constantString),
-                        null);
-            }
-
-            // The pattern is non-constant, we use LEFT or RIGHT to extract substring and compare.
-            // For StartsWith we also first run a LIKE to quickly filter out most non-matching results (sargable, but imprecise
-            // because of wildchars).
-            if (startsWith)
-            {
-                return _sqlExpressionFactory.AndAlso(
-                    _sqlExpressionFactory.Like(
-                        instance,
-                        _sqlExpressionFactory.Add(
-                            instance,
-                            _sqlExpressionFactory.Constant("%"))),
-                    _sqlExpressionFactory.Equal(
-                        _sqlExpressionFactory.Function(
-                            "LEFT",
-                            new[] {
-                                instance,
-                                _sqlExpressionFactory.Function("CHAR_LENGTH", new[] { pattern }, typeof(int))
-                            },
-                            typeof(string),
-                            stringTypeMapping),
-                        pattern));
-            }
-
-            return _sqlExpressionFactory.Equal(
-                _sqlExpressionFactory.Function(
-                    "RIGHT",
-                    new[] {
-                        instance,
-                        _sqlExpressionFactory.Function("CHAR_LENGTH", new[] { pattern }, typeof(int))
-                    },
-                    typeof(string),
-                    stringTypeMapping),
-                pattern);
-        }
-
-        // See https://dev.mysql.com/doc/refman/8.0/en/string-comparison-functions.html#operator_like
-        private bool IsLikeWildChar(char c) => c == '%' || c == '_';
-
-        private string EscapeLikePattern(string pattern)
-        {
-            var builder = new StringBuilder();
-            for (var i = 0; i < pattern.Length; i++)
-            {
-                var c = pattern[i];
-                if (IsLikeWildChar(c) || c == LikeEscapeChar)
-                {
-                    builder.Append(LikeEscapeChar);
-                }
-                builder.Append(c);
-            }
-            return builder.ToString();
-        }
 
         private SqlExpression ProcessTrimMethod(SqlExpression instance, SqlExpression trimChar, string locationSpecifier)
         {
