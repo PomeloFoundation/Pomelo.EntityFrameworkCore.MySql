@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Extensions;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
@@ -70,5 +71,23 @@ namespace Microsoft.EntityFrameworkCore
         public static PropertyBuilder<TProperty> UseMySqlComputedColumn<TProperty>(
             [NotNull] this PropertyBuilder<TProperty> propertyBuilder)
             => (PropertyBuilder<TProperty>)UseMySqlComputedColumn((PropertyBuilder)propertyBuilder);
+
+        /// <summary>
+        /// Configures the <see cref="CharSet"/> for the property's column.
+        /// </summary>
+        /// <param name="propertyBuilder">The builder for the property being configured.</param>
+        /// <param name="charSet">The <see cref="CharSet"/> to configure for the property's column.</param>
+        /// <returns>The same builder instance so that multiple calls can be chained.</returns>
+        public static PropertyBuilder HasCharSet(
+            [NotNull] this PropertyBuilder propertyBuilder,
+            CharSet charSet)
+        {
+            Check.NotNull(propertyBuilder, nameof(propertyBuilder));
+
+            var property = propertyBuilder.Metadata;
+            property.SetCharSet(charSet);
+
+            return propertyBuilder;
+        }
     }
 }

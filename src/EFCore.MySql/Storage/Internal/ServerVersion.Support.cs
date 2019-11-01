@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
@@ -45,6 +43,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public const string DoubleCastMySqlSupportVersionString = "8.0.17-mysql";
         public const string DoubleCastMariaDbSupportVersionString = "10.4.0-mariadb";
 
+        public const string DefaultCharSetUtf8Mb4MySqlSupportVersionString = "8.0.0-mysql";
+        // public const string DefaultCharSetUtf8Mb4MariaDbSupportVersionString = "?.?.?-mariadb";
+
         #endregion
 
         #region SupportMap keys for test attributes
@@ -61,6 +62,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public const string JsonSupportKey = nameof(JsonSupportKey);
         public const string GeneratedColumnsSupportKey = nameof(GeneratedColumnsSupportKey);
         public const string NullableGeneratedColumnsSupportKey = nameof(NullableGeneratedColumnsSupportKey);
+        public const string DefaultCharSetUtf8Mb4SupportKey = nameof(DefaultCharSetUtf8Mb4SupportKey);
 
         #endregion
 
@@ -78,6 +80,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             { JsonSupportKey, new ServerVersionSupport(JsonMySqlSupportVersionString/*, JsonMariaDbSupportVersionString*/) },
             { GeneratedColumnsSupportKey, new ServerVersionSupport(GeneratedColumnsMySqlSupportVersionString, GeneratedColumnsMariaDbSupportVersionString) },
             { NullableGeneratedColumnsSupportKey, new ServerVersionSupport(NullableGeneratedColumnsMySqlSupportVersionString/*, NullableGeneratedColumnsMariaDbSupportVersionString*/) },
+            { DefaultCharSetUtf8Mb4SupportKey, new ServerVersionSupport(DefaultCharSetUtf8Mb4MySqlSupportVersionString/*, DefaultCharSetUtf8Mb4MariaDbSupportVersionString*/) },
         };
 
         #region Support checks for provider code
@@ -94,10 +97,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public bool SupportsJson => SupportMap[JsonSupportKey].IsSupported(this);
         public bool SupportsGeneratedColumns => SupportMap[GeneratedColumnsSupportKey].IsSupported(this);
         public bool SupportsNullableGeneratedColumns => SupportMap[NullableGeneratedColumnsSupportKey].IsSupported(this);
+        public bool SupportsDefaultCharSetUtf8Mb4 => SupportMap[DefaultCharSetUtf8Mb4SupportKey].IsSupported(this);
 
         #endregion
 
         public int MaxKeyLength => SupportsLargerKeyLength ? 3072 : 767;
+        public CharSet DefaultCharSet => SupportsDefaultCharSetUtf8Mb4 ? CharSet.Utf8Mb4 : CharSet.Latin1;
         
         /// <summary>
         /// Constructs a new <see cref="ServerVersionSupport"/> object containing the <see cref="ServerVersion"/> objects

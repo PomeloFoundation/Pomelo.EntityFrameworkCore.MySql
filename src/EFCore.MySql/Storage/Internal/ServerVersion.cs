@@ -9,15 +9,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     public partial class ServerVersion
     {
-        public static Regex ReVersion = new Regex(@"\d+\.\d+\.?(?:\d+)?");
-        private static readonly Version _defaultVersion = new Version(8, 0, 0);
+        private static readonly Regex _versionRegex = new Regex(@"\d+\.\d+\.?(?:\d+)?");
+        private static readonly ServerVersion _defaultVersion = new ServerVersion(new Version(8, 0, 0), ServerType.MySql);
+
+        public ServerVersion()
+            : this(null)
+        {
+        }
 
         public ServerVersion(string versionString)
         {
             if (versionString != null)
             {
                 Type = versionString.ToLower().Contains("mariadb") ? ServerType.MariaDb : ServerType.MySql;
-                var semanticVersion = ReVersion.Matches(versionString);
+                var semanticVersion = _versionRegex.Matches(versionString);
                 if (semanticVersion.Count > 0)
                 {
                     Version = Type == ServerType.MariaDb && semanticVersion.Count > 1
@@ -32,7 +37,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             }
             else
             {
-                Version = _defaultVersion;
+                Version = _defaultVersion.Version;
+                Type = _defaultVersion.Type;
                 IsDefault = true;
             }
         }
@@ -43,8 +49,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             Type = type;
         }
 
-        public ServerType Type { get; }
         public Version Version { get; }
+        public ServerType Type { get; }
         public bool IsDefault { get; }
 
         public override bool Equals(object obj)

@@ -25,8 +25,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         {
             ServerVersion = copyFrom.ServerVersion;
             NullableCharSetBehavior = copyFrom.NullableCharSetBehavior;
-            AnsiCharSetInfo = copyFrom.AnsiCharSetInfo;
-            UnicodeCharSetInfo = copyFrom.UnicodeCharSetInfo;
+            CharSet = copyFrom.CharSet;
             NoBackslashEscapes = copyFrom.NoBackslashEscapes;
             UpdateSqlModeOnOpen = copyFrom.UpdateSqlModeOnOpen;
             ReplaceLineBreaksWithCharFunction = copyFrom.ReplaceLineBreaksWithCharFunction;
@@ -60,14 +59,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public CharSetInfo AnsiCharSetInfo { get; private set; }
-
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public CharSetInfo UnicodeCharSetInfo { get; private set; }
+        public CharSet CharSet { get; private set; }
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -113,24 +105,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public MySqlOptionsExtension WithAnsiCharSetInfo(CharSetInfo charSetInfo)
+        public MySqlOptionsExtension WithCharSet(CharSet charSet)
         {
             var clone = (MySqlOptionsExtension)Clone();
 
-            clone.AnsiCharSetInfo = charSetInfo;
-
-            return clone;
-        }
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public MySqlOptionsExtension WithUnicodeCharSetInfo(CharSetInfo charSetInfo)
-        {
-            var clone = (MySqlOptionsExtension)Clone();
-
-            clone.UnicodeCharSetInfo = charSetInfo;
+            clone.CharSet = charSet;
 
             return clone;
         }
@@ -220,8 +199,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                 {
                     _serviceProviderHash = (base.GetServiceProviderHashCode() * 397) ^ (Extension.ServerVersion?.GetHashCode() ?? 0L);
                     _serviceProviderHash = (_serviceProviderHash * 397) ^ (Extension.NullableCharSetBehavior?.GetHashCode() ?? 0L);
-                    _serviceProviderHash = (_serviceProviderHash * 397) ^ (Extension.AnsiCharSetInfo?.GetHashCode() ?? 0L);
-                    _serviceProviderHash = (_serviceProviderHash * 397) ^ (Extension.UnicodeCharSetInfo?.GetHashCode() ?? 0L);
+                    _serviceProviderHash = (_serviceProviderHash * 397) ^ (Extension.CharSet?.GetHashCode() ?? 0L);
                     _serviceProviderHash = (_serviceProviderHash * 397) ^ Extension.NoBackslashEscapes.GetHashCode();
                     _serviceProviderHash = (_serviceProviderHash * 397) ^ Extension.ReplaceLineBreaksWithCharFunction.GetHashCode();
                 }
@@ -235,10 +213,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                     = (Extension.ServerVersion?.GetHashCode() ?? 0L).ToString(CultureInfo.InvariantCulture);
                 debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.CharSetBehavior)]
                     = (Extension.NullableCharSetBehavior?.GetHashCode() ?? 0L).ToString(CultureInfo.InvariantCulture);
-                debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.AnsiCharSet)]
-                    = (Extension.AnsiCharSetInfo?.GetHashCode() ?? 0L).ToString(CultureInfo.InvariantCulture);
-                debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.UnicodeCharSet)]
-                    = (Extension.UnicodeCharSetInfo?.GetHashCode() ?? 0L).ToString(CultureInfo.InvariantCulture);
+                debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.CharSet)]
+                    = (Extension.CharSet?.GetHashCode() ?? 0L).ToString(CultureInfo.InvariantCulture);
                 debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.DisableBackslashEscaping)]
                     = Extension.NoBackslashEscapes.GetHashCode().ToString(CultureInfo.InvariantCulture);
                 debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.DisableLineBreakToCharSubstition)]

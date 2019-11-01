@@ -19,6 +19,8 @@ using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
@@ -99,7 +101,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
             var optionsBuilder = new DbContextOptionsBuilder();
             optionsBuilder.UseMySql(connection);
 
-            _options.Initialize(optionsBuilder.Options);
+            if (Equals(_options, new MySqlOptions()))
+            {
+                _options.Initialize(optionsBuilder.Options);
+            }
+
             MySqlConnectionInfo.SetServerVersion((MySqlConnection)connection, _serviceProvider);
         }
 
@@ -172,6 +178,7 @@ AND
     `COLUMN_DEFAULT`,
     IF(`IS_NULLABLE` = 'YES', 1, 0) AS `IS_NULLABLE`,
     `DATA_TYPE`,
+    `CHARACTER_SET_NAME`,
     `COLUMN_TYPE`,
     `COLUMN_COMMENT`,
     `EXTRA`
@@ -200,6 +207,7 @@ AND
                             var defaultValue = reader.GetValueOrDefault<string>("COLUMN_DEFAULT");
                             var nullable = reader.GetBoolean("IS_NULLABLE");
                             var dataType = reader.GetValueOrDefault<string>("DATA_TYPE");
+                            var charset = reader.GetValueOrDefault<string>("CHARACTER_SET_NAME");
                             var columType = reader.GetValueOrDefault<string>("COLUMN_TYPE");
                             var extra = reader.GetValueOrDefault<string>("EXTRA");
                             var comment = reader.GetValueOrDefault<string>("COLUMN_COMMENT");
@@ -254,7 +262,9 @@ AND
                                 DefaultValueSql = CreateDefaultValueString(defaultValue, dataType),
                                 ValueGenerated = valueGenerated,
                                 Comment = string.IsNullOrEmpty(comment) ? null : comment,
+                                [MySqlAnnotationNames.CharSet] = charset,
                             };
+
                             table.Columns.Add(column);
                         }
                     }
