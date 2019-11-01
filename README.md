@@ -34,6 +34,7 @@ Pomelo.EntityFrameworkCore.MySql | EF Core | .NET Core
 Milestone | Status | Release Date
 ----------|--------|-------------
 3.0.0 | Feature lock | Soon
+3.0.0-rc2 | Announced | 2019-11-04
 3.0.0-rc1 | Released | 2019-10-06
 2.2.6 | Released | 2019-10-15
 2.2.0 | Released | 2019-02-07
