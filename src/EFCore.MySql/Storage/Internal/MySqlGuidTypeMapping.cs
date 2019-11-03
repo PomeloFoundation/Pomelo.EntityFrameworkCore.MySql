@@ -1,59 +1,119 @@
 using System;
-using System.Data;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
+using MySql.Data.MySqlClient;
+using Pomelo.EntityFrameworkCore.MySql.Utilities;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
-    /// <summary>
-    ///     <para>
-    ///         Represents the mapping between a .NET <see cref="Guid" /> type and a database type.
-    ///     </para>
-    ///     <para>
-    ///         This type is typically used by database providers (and other extensions). It is generally
-    ///         not used in application code.
-    ///     </para>
-    /// </summary>
     public class MySqlGuidTypeMapping : GuidTypeMapping
     {
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="Microsoft.EntityFrameworkCore.Storage.GuidTypeMapping" /> class.
-        /// </summary>
-        /// <param name="storeType"> The name of the database type. </param>
-        /// <param name="dbType"> The <see cref="DbType" /> to be used. </param>
-        public MySqlGuidTypeMapping(
-            [NotNull] string storeType,
-            DbType? dbType = null,
-            bool unicode = false,
-            int? size = 0)
+        private readonly MySqlGuidFormat _guidFormat;
+
+        public MySqlGuidTypeMapping(MySqlGuidFormat guidFormat)
             : this(new RelationalTypeMappingParameters(
-                new CoreTypeMappingParameters(typeof(Guid)),
-                storeType,
-                size != null
-                    ? StoreTypePostfix.Size
-                    : StoreTypePostfix.None,
-                dbType,
-                unicode,
-                size,
-                true))
+                    new CoreTypeMappingParameters(typeof(Guid)),
+                    GetStoreType(guidFormat),
+                    StoreTypePostfix.Size,
+                    System.Data.DbType.Guid,
+                    false,
+                    GetSize(guidFormat),
+                    true),
+                guidFormat)
         {
         }
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="Microsoft.EntityFrameworkCore.Storage.GuidTypeMapping" /> class.
-        /// </summary>
-        /// <param name="parameters"> Parameter object for <see cref="RelationalTypeMapping" />. </param>
-        protected MySqlGuidTypeMapping(RelationalTypeMappingParameters parameters)
+        protected MySqlGuidTypeMapping(RelationalTypeMappingParameters parameters, MySqlGuidFormat guidFormat)
             : base(parameters)
         {
+            _guidFormat = guidFormat;
         }
 
-        /// <summary>
-        ///     Creates a copy of this mapping.
-        /// </summary>
-        /// <param name="parameters"> The parameters for this mapping. </param>
-        /// <returns> The newly created mapping. </returns>
         protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
-            => new MySqlGuidTypeMapping(parameters);
+            => new MySqlGuidTypeMapping(parameters, _guidFormat);
+
+        protected override string GenerateNonNullSqlLiteral(object value)
+        {
+            switch (_guidFormat)
+            {
+                case MySqlGuidFormat.Char36:
+                    return $"'{value:D}'";
+
+                case MySqlGuidFormat.Char32:
+                    return $"'{value:N}'";
+
+                case MySqlGuidFormat.Binary16:
+                case MySqlGuidFormat.TimeSwapBinary16:
+                case MySqlGuidFormat.LittleEndianBinary16:
+                    return ByteArrayFormatter.ToHex(GetBytesFromGuid(_guidFormat, (Guid)value));
+
+                case MySqlGuidFormat.None:
+                case MySqlGuidFormat.Default:
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+        
+        private static string GetStoreType(MySqlGuidFormat guidFormat)
+        {
+            switch (guidFormat)
+            {
+                case MySqlGuidFormat.Char36:
+                case MySqlGuidFormat.Char32:
+                    return "char";
+
+                case MySqlGuidFormat.Binary16:
+                case MySqlGuidFormat.TimeSwapBinary16:
+                case MySqlGuidFormat.LittleEndianBinary16:
+                    return "binary";
+
+                case MySqlGuidFormat.None:
+                case MySqlGuidFormat.Default:
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        private static int GetSize(MySqlGuidFormat guidFormat)
+        {
+            switch (guidFormat)
+            {
+                case MySqlGuidFormat.Char36:
+                    return 36;
+
+                case MySqlGuidFormat.Char32:
+                    return 32;
+
+                case MySqlGuidFormat.Binary16:
+                case MySqlGuidFormat.TimeSwapBinary16:
+                case MySqlGuidFormat.LittleEndianBinary16:
+                    return 16;
+
+                case MySqlGuidFormat.None:
+                case MySqlGuidFormat.Default:
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        public static bool IsValidGuidFormat(MySqlGuidFormat guidFormat)
+            => guidFormat != MySqlGuidFormat.None &&
+               guidFormat != MySqlGuidFormat.Default;
+
+        protected static byte[] GetBytesFromGuid(MySqlGuidFormat guidFormat, Guid guid)
+        {
+            var bytes = guid.ToByteArray();
+
+            if (guidFormat == MySqlGuidFormat.Binary16)
+            {
+                return new[] { bytes[3], bytes[2], bytes[1], bytes[0], bytes[5], bytes[4], bytes[7], bytes[6], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15] };
+            }
+
+            if (guidFormat == MySqlGuidFormat.TimeSwapBinary16)
+            {
+                return new[] { bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15] };
+            }
+
+            return bytes;
+        }
     }
 }

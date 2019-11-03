@@ -47,13 +47,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             Connection = new MySqlConnection(ConnectionString);
         }
 
-        public static string CreateConnectionString(string name, bool noBackslashEscapes)
+        public static string CreateConnectionString(string name, bool noBackslashEscapes, MySqlGuidFormat guidFormat = MySqlGuidFormat.Default)
             => new MySqlConnectionStringBuilder(AppConfig.Config["Data:ConnectionString"])
             {
                 Database = name,
                 DefaultCommandTimeout = (uint)GetCommandTimeout(),
                 NoBackslashEscapes = noBackslashEscapes,
                 PersistSecurityInfo = true, // needed by some tests to not leak a broken connection into the following tests
+                GuidFormat = guidFormat,
             }.ConnectionString;
 
         private static int GetCommandTimeout() => AppConfig.Config.GetValue<int>("Data:CommandTimeout", DefaultCommandTimeout);
