@@ -9,6 +9,7 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
@@ -205,25 +206,37 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 };
 
             // Boolean
-            _clrTypeMappings[typeof(bool)] = _options.ConnectionSettings.TreatTinyAsBoolean
-                ? _tinyint1
-                : _bit1;
+            if (_options.DefaultDataTypeMappings.ClrBoolean != MySqlBooleanType.None)
+            {
+                _clrTypeMappings[typeof(bool)] = _options.DefaultDataTypeMappings.ClrBoolean == MySqlBooleanType.Bit1
+                    ? _bit1
+                    : _tinyint1;
+            }
 
             // DateTime
-            if (_connectionInfo.ServerVersion.SupportsDateTime6)
-            {
-                _storeTypeMappings["time"] = _time6;
-                _clrTypeMappings[typeof(DateTime)] = _dateTime6;
-                _clrTypeMappings[typeof(DateTimeOffset)] = _dateTimeOffset6;
-                _clrTypeMappings[typeof(TimeSpan)] = _time6;
-            }
-            else
-            {
-                _storeTypeMappings["time"] = _time;
-                _clrTypeMappings[typeof(DateTime)] = _dateTime;
-                _clrTypeMappings[typeof(DateTimeOffset)] = _dateTimeOffset;
-                _clrTypeMappings[typeof(TimeSpan)] = _time;
-            }
+            _storeTypeMappings["time"] = !_connectionInfo.ServerVersion.SupportsDateTime6 ||
+                                         _options.DefaultDataTypeMappings.ClrTimeSpan == MySqlTimeSpanType.Time
+                ? _time
+                : _time6;
+
+            _clrTypeMappings[typeof(TimeSpan)] = !_connectionInfo.ServerVersion.SupportsDateTime6 ||
+                                                 _options.DefaultDataTypeMappings.ClrTimeSpan == MySqlTimeSpanType.Time
+                ? _time
+                : _time6;
+
+            _clrTypeMappings[typeof(DateTime)] = !_connectionInfo.ServerVersion.SupportsDateTime6 ||
+                                                 _options.DefaultDataTypeMappings.ClrDateTime == MySqlDateTimeType.DateTime
+                ? _dateTime
+                : _options.DefaultDataTypeMappings.ClrDateTime == MySqlDateTimeType.Timestamp6
+                    ? _timeStamp6
+                    : _dateTime6;
+
+            _clrTypeMappings[typeof(DateTimeOffset)] = !_connectionInfo.ServerVersion.SupportsDateTime6 ||
+                                                       _options.DefaultDataTypeMappings.ClrDateTime == MySqlDateTimeType.DateTime
+                ? _dateTimeOffset
+                : _options.DefaultDataTypeMappings.ClrDateTimeOffset == MySqlDateTimeType.Timestamp6
+                    ? _timeStampOffset6
+                    : _dateTimeOffset6;
 
             // Guid
             if (_guid != null)
@@ -271,21 +284,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
             if (storeTypeName != null)
             {
-                if (_options.ConnectionSettings.TreatTinyAsBoolean)
+                if (_options.DefaultDataTypeMappings.ClrBoolean != MySqlBooleanType.None)
                 {
-                    if (storeTypeName.Equals(_tinyint1.StoreType, StringComparison.OrdinalIgnoreCase))
+                    if (_options.DefaultDataTypeMappings.ClrBoolean == MySqlBooleanType.Bit1)
                     {
-                        return _tinyint1;
+                        if (storeTypeName.Equals(_bit1.StoreType, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return _bit1;
+                        }
+                    }
+                    else
+                    {
+                        if (storeTypeName.Equals(_tinyint1.StoreType, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return _tinyint1;
+                        }
                     }
                 }
-                else
-                {
-                    if (storeTypeName.Equals(_bit1.StoreType, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return _bit1;
-                    }
-                }
-
+                
                 if (MySqlGuidTypeMapping.IsValidGuidFormat(_options.ConnectionSettings.GuidFormat))
                 {
                     if (storeTypeName.Equals(_guid.StoreType, StringComparison.OrdinalIgnoreCase)
@@ -300,11 +316,28 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     if (clrType == null
                         || clrType == typeof(DateTime))
                     {
-                        return _connectionInfo.ServerVersion.SupportsDateTime6 ? _dateTime6 : _dateTime;
+                        if (mappingInfo.Precision.GetValueOrDefault() > 0 ||
+                            _connectionInfo.ServerVersion.SupportsDateTime6 && _options.DefaultDataTypeMappings.ClrDateTime != MySqlDateTimeType.DateTime)
+                        {
+                            return _dateTime6;
+                        }
+                        else
+                        {
+                            return _dateTime;
+                        }
                     }
+
                     if (clrType == typeof(DateTimeOffset))
                     {
-                        return _connectionInfo.ServerVersion.SupportsDateTime6 ? _dateTimeOffset6 : _dateTimeOffset;
+                        if (mappingInfo.Precision.GetValueOrDefault() > 0 ||
+                            _connectionInfo.ServerVersion.SupportsDateTime6 && _options.DefaultDataTypeMappings.ClrDateTimeOffset != MySqlDateTimeType.DateTime)
+                        {
+                            return _dateTimeOffset6;
+                        }
+                        else
+                        {
+                            return _dateTimeOffset;
+                        }
                     }
                 }
                 else if (storeTypeNameBase.Equals(_timeStamp6.StoreTypeNameBase, StringComparison.OrdinalIgnoreCase))
@@ -314,6 +347,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     {
                         return _timeStamp6;
                     }
+
                     if (clrType == typeof(DateTimeOffset))
                     {
                         return _timeStampOffset6;

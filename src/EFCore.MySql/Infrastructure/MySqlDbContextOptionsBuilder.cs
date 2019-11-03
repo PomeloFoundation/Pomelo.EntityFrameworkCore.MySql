@@ -8,6 +8,7 @@ using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
+using Pomelo.EntityFrameworkCore.MySql.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Infrastructure
@@ -66,11 +67,11 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
         /// When `false`, does not change the <see cref="SetSqlModeOnOpen" /> option, when calling this method.</param>
         public virtual MySqlDbContextOptionsBuilder DisableBackslashEscaping(bool setSqlModeOnOpen = true)
         {
-            var builder = WithOption(e => e.DisableBackslashEscaping());
+            var builder = WithOption(e => e.WithDisabledBackslashEscaping());
 
             if (setSqlModeOnOpen)
             {
-                builder = builder.WithOption(e => e.SetSqlModeOnOpen());
+                builder = builder.WithOption(e => e.WithSettingSqlModeOnOpen());
             }
 
             return builder;
@@ -83,13 +84,19 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
         ///     handled by the caller, to synchronize it with other options that have been set.
         /// </summary>
         public virtual MySqlDbContextOptionsBuilder SetSqlModeOnOpen()
-            => WithOption(e => e.SetSqlModeOnOpen());
+            => WithOption(e => e.WithSettingSqlModeOnOpen());
 
         /// <summary>
         ///     Skip replacing `\r` and `\n` with `CHAR()` calls in strings inside queries.
         /// </summary>
         public virtual MySqlDbContextOptionsBuilder DisableLineBreakToCharSubstition()
-            => WithOption(e => e.DisableLineBreakToCharSubstition());
+            => WithOption(e => e.WithDisabledLineBreakToCharSubstition());
+
+        /// <summary>
+        ///     Configures default mappings between specific CLR and MySQL types.
+        /// </summary>
+        public virtual MySqlDbContextOptionsBuilder DefaultDataTypeMappings(Func<MySqlDefaultDataTypeMappings, MySqlDefaultDataTypeMappings> defaultDataTypeMappings)
+            => WithOption(e => e.WithDefaultDataTypeMappings(defaultDataTypeMappings(new MySqlDefaultDataTypeMappings())));
 
         /// <summary>
         ///     Configures the context to use the default retrying <see cref="IExecutionStrategy" />.
