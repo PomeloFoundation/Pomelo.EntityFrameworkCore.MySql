@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq.Expressions;
 using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
@@ -97,7 +94,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             return null;
         }
 
-        private SqlExpression MakeStringEqualsExpression(
+        public SqlExpression MakeStringEqualsExpression(
             [NotNull] SqlExpression leftValue,
             [NotNull] SqlExpression rightValue,
             [NotNull] SqlExpression stringComparison)
@@ -155,7 +152,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             }
         }
 
-        private SqlExpression MakeStartsWithExpression(
+        public SqlExpression MakeStartsWithExpression(
             [NotNull] SqlExpression target,
             [NotNull] SqlExpression prefix,
             [NotNull] SqlExpression stringComparison)
@@ -232,7 +229,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 ));
         }
 
-        private SqlExpression MakeEndsWithExpression(
+        public SqlExpression MakeEndsWithExpression(
             [NotNull] SqlExpression target,
             [NotNull] SqlExpression suffix,
             [NotNull] SqlExpression stringComparison)
@@ -312,7 +309,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             }
         }
 
-        private SqlExpression MakeContainsExpression(
+        public SqlExpression MakeContainsExpression(
             [NotNull] SqlExpression target,
             [NotNull] SqlExpression search,
             [NotNull] SqlExpression stringComparison)
@@ -385,7 +382,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             }
         }
 
-        private SqlExpression MakeIndexOfExpression(
+        public SqlExpression MakeIndexOfExpression(
             [NotNull] SqlExpression target,
             [NotNull] SqlExpression search,
             [NotNull] SqlExpression stringComparison)

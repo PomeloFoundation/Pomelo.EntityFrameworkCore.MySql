@@ -178,7 +178,7 @@ WHERE (EXTRACT(microsecond FROM `o`.`OrderDate`)) DIV (1000) = 88");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE 'M%')");
+WHERE `c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT('M', '%')) AND ((LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin) AND LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin)) IS NOT NULL))");
         }
 
         public override async Task String_StartsWith_Identity(bool isAsync)
@@ -188,7 +188,7 @@ WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE 'M%')");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, '%')) AND (((LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`) AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NOT NULL AND `c`.`ContactName` IS NOT NULL)) OR (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NULL AND `c`.`ContactName` IS NULL)))))");
+WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, '%')) AND (((LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin) AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) IS NOT NULL AND CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin IS NOT NULL)) OR (LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) IS NULL AND CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin IS NULL)))))");
         }
 
         public override async Task String_StartsWith_Column(bool isAsync)
@@ -198,7 +198,7 @@ WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`Cont
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, '%')) AND (((LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`) AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NOT NULL AND `c`.`ContactName` IS NOT NULL)) OR (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NULL AND `c`.`ContactName` IS NULL)))))");
+WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, '%')) AND (((LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin) AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) IS NOT NULL AND CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin IS NOT NULL)) OR (LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) IS NULL AND CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin IS NULL)))))");
         }
 
         public override async Task String_StartsWith_MethodCall(bool isAsync)
@@ -208,7 +208,7 @@ WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`Cont
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE 'M%')");
+WHERE `c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT('M', '%')) AND ((LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin) AND LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin)) IS NOT NULL))");
         }
 
         public override async Task String_EndsWith_Literal(bool isAsync)
@@ -218,7 +218,7 @@ WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE 'M%')");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE '%b')");
+WHERE `c`.`ContactName` IS NOT NULL AND ((RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('b' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('b' USING utf8mb4) COLLATE utf8mb4_bin) AND RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('b' USING utf8mb4) COLLATE utf8mb4_bin)) IS NOT NULL)");
         }
 
         public override async Task String_EndsWith_Identity(bool isAsync)
@@ -228,7 +228,7 @@ WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE '%b')");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND (((RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`) AND (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NOT NULL AND `c`.`ContactName` IS NOT NULL)) OR (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NULL AND `c`.`ContactName` IS NULL))))");
+WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND ((((RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin) AND (RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) IS NOT NULL AND CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin IS NOT NULL)) OR (RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) IS NULL AND CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin IS NULL)) OR ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL))))");
         }
 
         public override async Task String_EndsWith_Column(bool isAsync)
@@ -238,7 +238,7 @@ WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`Cont
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND (((RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`) AND (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NOT NULL AND `c`.`ContactName` IS NOT NULL)) OR (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) IS NULL AND `c`.`ContactName` IS NULL))))");
+WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND ((((RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin) AND (RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) IS NOT NULL AND CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin IS NOT NULL)) OR (RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) IS NULL AND CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin IS NULL)) OR ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL))))");
         }
 
         public override async Task String_EndsWith_MethodCall(bool isAsync)
@@ -248,7 +248,7 @@ WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`Cont
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE '%m')");
+WHERE `c`.`ContactName` IS NOT NULL AND ((RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('m' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('m' USING utf8mb4) COLLATE utf8mb4_bin) AND RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('m' USING utf8mb4) COLLATE utf8mb4_bin)) IS NOT NULL)");
         }
 
         public override async Task String_Contains_Literal(bool isAsync)
@@ -258,7 +258,7 @@ WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE '%m')");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE LOCATE(BINARY 'M', `c`.`ContactName`) > 0");
+WHERE LOCATE(CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`ContactName`) > 0");
         }
 
         public override async Task String_Contains_Identity(bool isAsync)
@@ -268,7 +268,7 @@ WHERE LOCATE(BINARY 'M', `c`.`ContactName`) > 0");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (LOCATE(BINARY `c`.`ContactName`, `c`.`ContactName`) > 0)");
+WHERE (LOCATE(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin, `c`.`ContactName`) > 0) OR ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL)");
         }
 
         public override async Task String_Contains_Column(bool isAsync)
@@ -278,7 +278,7 @@ WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (LOCATE(BI
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (LOCATE(BINARY `c`.`ContactName`, `c`.`ContactName`) > 0)");
+WHERE (LOCATE(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin, `c`.`ContactName`) > 0) OR ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL)");
         }
 
         public override async Task String_Contains_MethodCall(bool isAsync)
@@ -288,7 +288,7 @@ WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (LOCATE(BI
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE LOCATE(BINARY 'M', `c`.`ContactName`) > 0");
+WHERE LOCATE(CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`ContactName`) > 0");
         }
 
         public override async Task IsNullOrWhiteSpace_in_predicate(bool isAsync)
@@ -317,7 +317,7 @@ WHERE (CHAR_LENGTH(`c`.`City`) = 6) AND CHAR_LENGTH(`c`.`City`) IS NOT NULL");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE ((LOCATE('Sea', `c`.`City`) - 1) <> -1) OR LOCATE('Sea', `c`.`City`) - 1 IS NULL");
+WHERE ((LOCATE(CONVERT('Sea' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`City`) - 1) <> -1) OR LOCATE(CONVERT('Sea' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`City`) - 1 IS NULL");
         }
 
         public override async Task Indexof_with_emptystring(bool isAsync)
@@ -325,7 +325,7 @@ WHERE ((LOCATE('Sea', `c`.`City`) - 1) <> -1) OR LOCATE('Sea', `c`.`City`) - 1 I
             await base.Indexof_with_emptystring(isAsync);
 
             AssertSql(
-                @"SELECT LOCATE('', `c`.`ContactName`) - 1
+                @"SELECT LOCATE(CONVERT('' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`ContactName`) - 1
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'ALFKI'");
         }
