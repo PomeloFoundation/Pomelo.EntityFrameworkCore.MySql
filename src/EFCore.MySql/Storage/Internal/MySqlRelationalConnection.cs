@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using MySql.Data.MySqlClient;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
@@ -29,7 +30,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             : base(dependencies)
         {
             _serviceProvider = serviceProvider;
-            _mySqlOptionsExtension = Dependencies.ContextOptions.FindExtension<MySqlOptionsExtension>();
+            _mySqlOptionsExtension = Dependencies.ContextOptions.FindExtension<MySqlOptionsExtension>() ?? new MySqlOptionsExtension();
         }
 
         private bool IsMasterConnection { get; set; }
@@ -45,14 +46,47 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// </summary>
         public virtual IMySqlRelationalConnection CreateMasterConnection()
         {
-            var connectionStringBuilder = new MySqlConnectionStringBuilder(ConnectionString)
+            var relationalOptions = RelationalOptionsExtension.Extract(Dependencies.ContextOptions);
+
+            MySqlConnection connection;
+            string connectionString;
+
+            // Make sure to get the original connection string including security sensitive information.
+            if (relationalOptions.Connection == null)
             {
-                Database = "",
+                connection = null;
+                connectionString = ConnectionString;
+            }
+            else
+            {
+                connection = ((MySqlConnection)DbConnection).Clone();
+                connectionString = connection.ConnectionString;
+            }
+
+            // Add master connection specific options.
+            var csb = new MySqlConnectionStringBuilder(connectionString) {
+                Database = string.Empty,
                 Pooling = false
             };
 
-            var optionsBuilder = new DbContextOptionsBuilder()
-                .UseMySql(AddConnectionStringOptions(connectionStringBuilder).ConnectionString, options => options.CommandTimeout(CommandTimeout));
+            csb = AddConnectionStringOptions(csb);
+
+            // Apply modified connection string.
+            if (connection == null)
+            {
+                relationalOptions = relationalOptions.WithConnectionString(csb.ConnectionString);
+            }
+            else
+            {
+                connection.ConnectionString = csb.ConnectionString;
+                relationalOptions = relationalOptions.WithConnection(connection);
+            }
+
+            var optionsBuilder = new DbContextOptionsBuilder();
+            var optionsBuilderInfrastructure = (IDbContextOptionsBuilderInfrastructure)optionsBuilder;
+
+            optionsBuilderInfrastructure.AddOrUpdateExtension(relationalOptions);
+            optionsBuilderInfrastructure.AddOrUpdateExtension(new MySqlOptionsExtension(_mySqlOptionsExtension));
 
             return new MySqlRelationalConnection(Dependencies.With(optionsBuilder.Options), _serviceProvider)
             {
