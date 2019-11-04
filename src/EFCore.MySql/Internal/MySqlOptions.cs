@@ -28,6 +28,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             NationalCharSet = CharSet.Utf8Mb3;
 
             ReplaceLineBreaksWithCharFunction = true;
+            DefaultDataTypeMappings = new MySqlDefaultDataTypeMappings();
         }
 
         public virtual void Initialize(IDbContextOptions options)
@@ -40,6 +41,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             CharSet = mySqlOptions.CharSet ?? CharSet;
             NoBackslashEscapes = mySqlOptions.NoBackslashEscapes;
             ReplaceLineBreaksWithCharFunction = mySqlOptions.ReplaceLineBreaksWithCharFunction;
+            DefaultDataTypeMappings = ApplyDefaultDataTypeMappings(mySqlOptions.DefaultDataTypeMappings, ConnectionSettings);
         }
 
         public virtual void Validate(IDbContextOptions options)
@@ -102,6 +104,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                         nameof(MySqlDbContextOptionsBuilder.DisableLineBreakToCharSubstition),
                         nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
             }
+
+            if (!Equals(DefaultDataTypeMappings, ApplyDefaultDataTypeMappings(mySqlOptions.DefaultDataTypeMappings ?? new MySqlDefaultDataTypeMappings(), connectionSettings)))
+            {
+                throw new InvalidOperationException(
+                    CoreStrings.SingletonOptionChanged(
+                        nameof(MySqlDbContextOptionsBuilder.DefaultDataTypeMappings),
+                        nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
+            }
+        }
+
+        protected virtual MySqlDefaultDataTypeMappings ApplyDefaultDataTypeMappings(MySqlDefaultDataTypeMappings defaultDataTypeMappings, MySqlConnectionSettings connectionSettings)
+        {
+            defaultDataTypeMappings ??= DefaultDataTypeMappings;
+
+            if (connectionSettings.TreatTinyAsBoolean)
+            {
+                defaultDataTypeMappings = defaultDataTypeMappings.WithClrBoolean(MySqlBooleanType.TinyInt1);
+            }
+            else if (defaultDataTypeMappings.ClrBoolean != MySqlBooleanType.Bit1 &&
+                     defaultDataTypeMappings.ClrBoolean != MySqlBooleanType.None)
+            {
+                defaultDataTypeMappings = defaultDataTypeMappings.WithClrBoolean(MySqlBooleanType.Bit1);
+            }
+
+            return defaultDataTypeMappings;
         }
 
         private static MySqlConnectionSettings GetConnectionSettings(MySqlOptionsExtension relationalOptions)
@@ -127,7 +154,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                    Equals(CharSet, other.CharSet) &&
                    Equals(NationalCharSet, other.NationalCharSet) &&
                    NoBackslashEscapes == other.NoBackslashEscapes &&
-                   ReplaceLineBreaksWithCharFunction == other.ReplaceLineBreaksWithCharFunction;
+                   ReplaceLineBreaksWithCharFunction == other.ReplaceLineBreaksWithCharFunction &&
+                   Equals(DefaultDataTypeMappings, other.DefaultDataTypeMappings);
         }
 
         public override bool Equals(object obj)
@@ -172,5 +200,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         public CharSet NationalCharSet { get; }
         public virtual bool NoBackslashEscapes { get; private set; }
         public virtual bool ReplaceLineBreaksWithCharFunction { get; private set; }
+        public virtual MySqlDefaultDataTypeMappings DefaultDataTypeMappings { get; private set; }
     }
 }

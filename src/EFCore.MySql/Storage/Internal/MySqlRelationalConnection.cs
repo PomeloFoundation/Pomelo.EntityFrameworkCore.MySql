@@ -8,12 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.DependencyInjection;
 using MySql.Data.MySqlClient;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
@@ -72,6 +70,27 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             if (_mySqlOptionsExtension.NoBackslashEscapes)
             {
                 builder.NoBackslashEscapes = true;
+            }
+
+            var boolHandling = _mySqlOptionsExtension.DefaultDataTypeMappings?.ClrBoolean;
+            switch (boolHandling)
+            {
+                case null:
+                    // Just keep using whatever is already defined in the connection string.
+                    break;
+
+                case MySqlBooleanType.Default:
+                case MySqlBooleanType.TinyInt1:
+                    builder.TreatTinyAsBoolean = true;
+                    break;
+
+                case MySqlBooleanType.None:
+                case MySqlBooleanType.Bit1:
+                    builder.TreatTinyAsBoolean = false;
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
             return builder;

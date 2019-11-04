@@ -3,6 +3,7 @@
 
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
 {
@@ -15,5 +16,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         CharSet NationalCharSet { get; }
         bool NoBackslashEscapes { get; }
         bool ReplaceLineBreaksWithCharFunction { get; }
+        MySqlDefaultDataTypeMappings DefaultDataTypeMappings { get; }
     }
 }

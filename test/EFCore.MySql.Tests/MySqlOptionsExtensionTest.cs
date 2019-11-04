@@ -17,14 +17,14 @@ namespace Pomelo.EntityFrameworkCore.MySql
                     .WithCharSet(CharSet.Latin1)
                     .WithCharSetBehavior(CharSetBehavior.AppendToAllColumns)
                     .WithServerVersion(new ServerVersion(new Version(1, 2, 3, 4), ServerType.MySql))
-                    .DisableBackslashEscaping()
+                    .WithDisabledBackslashEscaping()
                     .Info
                     .GetServiceProviderHashCode(),
                 new MySqlOptionsExtension()
                     .WithCharSet(CharSet.Latin1)
                     .WithCharSetBehavior(CharSetBehavior.AppendToAllColumns)
                     .WithServerVersion(new ServerVersion(new Version(1, 2, 3, 4), ServerType.MySql))
-                    .DisableBackslashEscaping()
+                    .WithDisabledBackslashEscaping()
                     .Info
                     .GetServiceProviderHashCode());
         }
