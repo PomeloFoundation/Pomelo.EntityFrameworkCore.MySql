@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Xunit;
 

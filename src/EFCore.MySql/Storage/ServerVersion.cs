@@ -5,7 +5,7 @@ using System;
 using System.Text.RegularExpressions;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Storage
 {
     public partial class ServerVersion
     {
