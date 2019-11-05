@@ -57,7 +57,7 @@ jobs:
       ./dotnet-env.sh dotnet tool install --global dotnet-ef
 
       started="false"
-      for i in $(seq 0 180); do
+      for i in $(seq 0 300); do
         if docker exec mysql mysqladmin -h localhost -P 3306 -u root -pPassword12! status; then
           started="true"
           break
@@ -66,7 +66,7 @@ jobs:
       done
 
       if [ "$started" = "false" ]; then
-        echo "$DOCKER_IMAGE container failed to start in 180 seconds" >&2
+        echo "$DOCKER_IMAGE container failed to start in 5 minutes" >&2
         exit 1
       fi
 
@@ -154,7 +154,7 @@ jobs:
     displayName: Build
   - pwsh: |
       $started=$false
-      For ($i=0; $i -le 180; $i++) {
+      For ($i=0; $i -le 300; $i++) {
         docker exec mysql mysqladmin -h localhost -P 3306 -u root "-pPassword12!" status
         if ($LastExitCode -eq 0) {
           $started=$true
@@ -163,7 +163,7 @@ jobs:
         Start-Sleep 1
       }
       if (!$started) {
-        Write-Error "mysql container failed to start in 180 seconds"
+        Write-Error "mysql container failed to start in 5 minutes"
         exit 1
       }
       docker exec mysql mysql -h localhost -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sql_mode)';"
