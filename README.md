@@ -17,7 +17,7 @@ The following versions of EF Core and .NET Core are compatible with `Pomelo.Enti
 
 Pomelo.EntityFrameworkCore.MySql | EF Core | .NET Core
 -- | -- | --
-[3.0.0-rc1.final](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.0.0-rc1.final) (prerelease) | 3.0.0 | 3.0
+[3.0.0-rc2.final](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.0.0-rc2.final) (prerelease) | 3.0.0 | 3.0
 [2.2.6](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/2.2.6) | 2.2.6 | 2.2 / 3.0
 
 ### Supported DBMS and Versions
@@ -34,7 +34,7 @@ Pomelo.EntityFrameworkCore.MySql | EF Core | .NET Core
 Milestone | Status | Release Date
 ----------|--------|-------------
 3.0.0 | Feature lock | Soon
-3.0.0-rc2 | Announced | 2019-11-04
+3.0.0-rc2 | Released | 2019-11-04
 3.0.0-rc1 | Released | 2019-10-06
 2.2.6 | Released | 2019-10-15
 2.2.0 | Released | 2019-02-07
