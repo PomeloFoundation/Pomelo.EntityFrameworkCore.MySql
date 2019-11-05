@@ -284,15 +284,6 @@ AND
                 return defaultValue;
             }
 
-            if (defaultValue == string.Empty)
-            {
-                if (dataTypeName.Contains("char")
-                    || dataTypeName.Contains("text"))
-                {
-                    return null;
-                }
-            }
-
             if (defaultValue == "0")
             {
                 if (dataTypeName == "bit"
