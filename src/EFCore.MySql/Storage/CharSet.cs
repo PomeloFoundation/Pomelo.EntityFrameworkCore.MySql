@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore.Utilities;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Storage
 {
     public class CharSet
     {
@@ -107,15 +107,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         #endregion
 
         public static CharSet GetCharSetFromName(string name)
+            => (CharSet)GetFieldInfoFromName(name)?.GetValue(null);
+
+        internal static FieldInfo GetFieldInfoFromName(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
                 return null;
             }
 
-            return (CharSet)typeof(CharSet)
+            return typeof(CharSet)
                 .GetFields(BindingFlags.Static | BindingFlags.Public)
-                .SingleOrDefault(p => string.Equals(name, p.Name, StringComparison.OrdinalIgnoreCase))?.GetValue(null);
+                .SingleOrDefault(p => string.Equals(name, p.Name, StringComparison.OrdinalIgnoreCase));
         }
     }
 }
