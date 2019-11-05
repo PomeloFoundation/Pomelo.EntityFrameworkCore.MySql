@@ -38,33 +38,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         protected override DbConnection CreateDbConnection()
             => new MySqlConnection(AddConnectionStringOptions(new MySqlConnectionStringBuilder(ConnectionString)).ConnectionString);
 
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
         public virtual IMySqlRelationalConnection CreateMasterConnection()
         {
             var relationalOptions = RelationalOptionsExtension.Extract(Dependencies.ContextOptions);
-
-            MySqlConnection connection;
-            string connectionString;
-
-            // Make sure to get the original connection string including security sensitive information.
-            if (relationalOptions.Connection == null)
-            {
-                connection = null;
-                connectionString = ConnectionString;
-            }
-            else
-            {
-                connection = ((MySqlConnection)DbConnection).Clone();
-                connectionString = connection.ConnectionString;
-            }
+            var connection = (MySqlConnection)relationalOptions.Connection;
+            var connectionString = connection?.ConnectionString ?? relationalOptions.ConnectionString;
 
             // Add master connection specific options.
-            var csb = new MySqlConnectionStringBuilder(connectionString) {
+            var csb = new MySqlConnectionStringBuilder(connectionString)
+            {
                 Database = string.Empty,
                 Pooling = false
             };
@@ -72,21 +54,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             csb = AddConnectionStringOptions(csb);
 
             // Apply modified connection string.
-            if (connection == null)
-            {
-                relationalOptions = relationalOptions.WithConnectionString(csb.ConnectionString);
-            }
-            else
-            {
-                connection.ConnectionString = csb.ConnectionString;
-                relationalOptions = relationalOptions.WithConnection(connection);
-            }
+            relationalOptions = connection is null
+                ? relationalOptions.WithConnectionString(csb.ConnectionString)
+                : relationalOptions.WithConnection(connection.CloneWith(connectionString));
 
             var optionsBuilder = new DbContextOptionsBuilder();
             var optionsBuilderInfrastructure = (IDbContextOptionsBuilderInfrastructure)optionsBuilder;
 
             optionsBuilderInfrastructure.AddOrUpdateExtension(relationalOptions);
-            optionsBuilderInfrastructure.AddOrUpdateExtension(new MySqlOptionsExtension(_mySqlOptionsExtension));
 
             return new MySqlRelationalConnection(Dependencies.With(optionsBuilder.Options), _serviceProvider)
             {
