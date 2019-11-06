@@ -56,7 +56,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             // Apply modified connection string.
             relationalOptions = connection is null
                 ? relationalOptions.WithConnectionString(csb.ConnectionString)
-                : relationalOptions.WithConnection(connection.CloneWith(connectionString));
+                : relationalOptions.WithConnection(connection.CloneWith(csb.ConnectionString));
 
             var optionsBuilder = new DbContextOptionsBuilder();
             var optionsBuilderInfrastructure = (IDbContextOptionsBuilderInfrastructure)optionsBuilder;
