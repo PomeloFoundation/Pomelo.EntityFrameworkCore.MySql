@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 //ReSharper disable once CheckNamespace

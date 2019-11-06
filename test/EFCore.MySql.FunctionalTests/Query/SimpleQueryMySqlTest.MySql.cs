@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query

@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using MySql.Data.MySqlClient;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Internal
 {

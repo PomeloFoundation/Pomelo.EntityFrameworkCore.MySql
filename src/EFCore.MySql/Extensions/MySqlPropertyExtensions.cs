@@ -4,8 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Extensions
@@ -168,6 +170,27 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
             }
 
             property.SetOrRemoveAnnotation(MySqlAnnotationNames.CharSet, charSet);
+        }
+
+        /// <summary>
+        /// Sets a predefined <see cref="CharSet"/> by its name, that is in use by the property's column.
+        /// </summary>
+        /// <param name="property">The property to set the <see cref="CharSet"/> for.</param>
+        /// <param name="predefinedCharSetName">The charset name used by the property's column, that is
+        /// being resolved into a <see cref="CharSet"/> object.</param>
+        public static void SetCharSet([NotNull] this IMutableProperty property, string predefinedCharSetName)
+        {
+            Check.NotNull(property, nameof(property));
+            Check.NotEmpty(predefinedCharSetName, nameof(predefinedCharSetName));
+
+            var charSet = CharSet.GetCharSetFromName(predefinedCharSetName);
+
+            if (charSet == null)
+            {
+                throw new ArgumentOutOfRangeException($"Cannot find a predefined charset with the name of \"{predefinedCharSetName}\".");
+            }
+
+            property.SetCharSet(charSet);
         }
     }
 }

@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
@@ -83,8 +84,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         // guid
         private GuidTypeMapping _guid;
 
+        // Scaffolding type mappings
+        private readonly MySqlCodeGenerationMemberAccessTypeMapping _codeGenerationMemberAccess = new MySqlCodeGenerationMemberAccessTypeMapping();
+
         private Dictionary<string, RelationalTypeMapping> _storeTypeMappings;
         private Dictionary<Type, RelationalTypeMapping> _clrTypeMappings;
+        private Dictionary<Type, RelationalTypeMapping> _scaffoldingClrTypeMappings;
 
         // These are disallowed only if specified without any kind of length specified in parenthesis.
         private readonly HashSet<string> _disallowedMappings = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -243,6 +248,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             {
                 _clrTypeMappings[typeof(Guid)] = _guid;
             }
+
+            // Type mappings that only exist to work around the limited code generation capabilites when scaffolding:
+            _scaffoldingClrTypeMappings = new Dictionary<Type, RelationalTypeMapping>
+            {
+                { typeof(MySqlCodeGenerationMemberAccess), _codeGenerationMemberAccess }
+            };
         }
 
         /// <summary>
@@ -445,6 +456,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     return new MySqlByteArrayTypeMapping(
                         size: size,
                         fixedLength: mappingInfo.IsFixedLength == true);
+                }
+
+                if (_scaffoldingClrTypeMappings.TryGetValue(clrType, out mapping))
+                {
+                    return mapping;
                 }
             }
 

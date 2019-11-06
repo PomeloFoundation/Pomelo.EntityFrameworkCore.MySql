@@ -1,4 +1,5 @@
-﻿using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+﻿using Pomelo.EntityFrameworkCore.MySql.Storage;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes

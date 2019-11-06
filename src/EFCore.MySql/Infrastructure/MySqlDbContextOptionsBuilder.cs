@@ -5,10 +5,10 @@ using System;
 using System.Collections.Generic;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Infrastructure

@@ -1,8 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Xunit;
 using Xunit.Abstractions;
 

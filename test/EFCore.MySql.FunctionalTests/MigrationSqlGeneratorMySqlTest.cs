@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Xunit;
 
 // ReSharper disable InconsistentNaming

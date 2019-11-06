@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
 {
@@ -31,7 +33,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
                 annotation.Value is string charSetName &&
                 charSetName.Length > 0)
             {
-                return new MethodCallCodeFragment("HasCharSet", charSetName);
+                var charSetFieldInfo = CharSet.GetFieldInfoFromName(charSetName);
+
+                return charSetFieldInfo != null
+                    ? new MethodCallCodeFragment("HasCharSet", new MySqlCodeGenerationMemberAccess(charSetFieldInfo))
+                    : null;
             }
 
             return null;
