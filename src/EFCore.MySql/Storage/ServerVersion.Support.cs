@@ -8,7 +8,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
     {
         #region Individual version strings for tests
 
-        public const string DateTime6MySqlSupportVersionString = "5.6.0-mysql";
+        public const string DateTime6MySqlSupportVersionString = "5.6.4-mysql";
         public const string DateTime6MariaDbSupportVersionString = "10.1.2-mariadb";
 
         public const string LargerKeyLengthMySqlSupportVersionString = "5.7.7-mysql";
