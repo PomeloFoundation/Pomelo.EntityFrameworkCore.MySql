@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using MySql.Data.MySqlClient;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
@@ -29,7 +30,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             : base(dependencies)
         {
             _serviceProvider = serviceProvider;
-            _mySqlOptionsExtension = Dependencies.ContextOptions.FindExtension<MySqlOptionsExtension>();
+            _mySqlOptionsExtension = Dependencies.ContextOptions.FindExtension<MySqlOptionsExtension>() ?? new MySqlOptionsExtension();
         }
 
         private bool IsMasterConnection { get; set; }
@@ -37,22 +38,30 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         protected override DbConnection CreateDbConnection()
             => new MySqlConnection(AddConnectionStringOptions(new MySqlConnectionStringBuilder(ConnectionString)).ConnectionString);
 
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
         public virtual IMySqlRelationalConnection CreateMasterConnection()
         {
-            var connectionStringBuilder = new MySqlConnectionStringBuilder(ConnectionString)
+            var relationalOptions = RelationalOptionsExtension.Extract(Dependencies.ContextOptions);
+            var connection = (MySqlConnection)relationalOptions.Connection;
+            var connectionString = connection?.ConnectionString ?? relationalOptions.ConnectionString;
+
+            // Add master connection specific options.
+            var csb = new MySqlConnectionStringBuilder(connectionString)
             {
-                Database = "",
+                Database = string.Empty,
                 Pooling = false
             };
 
-            var optionsBuilder = new DbContextOptionsBuilder()
-                .UseMySql(AddConnectionStringOptions(connectionStringBuilder).ConnectionString, options => options.CommandTimeout(CommandTimeout));
+            csb = AddConnectionStringOptions(csb);
+
+            // Apply modified connection string.
+            relationalOptions = connection is null
+                ? relationalOptions.WithConnectionString(csb.ConnectionString)
+                : relationalOptions.WithConnection(connection.CloneWith(csb.ConnectionString));
+
+            var optionsBuilder = new DbContextOptionsBuilder();
+            var optionsBuilderInfrastructure = (IDbContextOptionsBuilderInfrastructure)optionsBuilder;
+
+            optionsBuilderInfrastructure.AddOrUpdateExtension(relationalOptions);
 
             return new MySqlRelationalConnection(Dependencies.With(optionsBuilder.Options), _serviceProvider)
             {
