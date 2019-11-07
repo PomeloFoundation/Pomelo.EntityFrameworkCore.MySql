@@ -96,6 +96,7 @@ Refer to Microsoft's [EF Core Documentation](https://docs.microsoft.com/en-us/ef
 Milestone | Status | Release Date
 ----------|--------|-------------
 3.0.0 | Feature lock | Soon
+3.0.0-rc3 | Released | 2019-11-07
 3.0.0-rc2 | Released | 2019-11-04
 3.0.0-rc1 | Released | 2019-10-06
 2.2.6 | Released | 2019-10-15
