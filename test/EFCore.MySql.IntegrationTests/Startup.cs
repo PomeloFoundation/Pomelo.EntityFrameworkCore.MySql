@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Buffers;
 using System.Data.Common;
+using System.Diagnostics;
 using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -10,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
 
 namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
@@ -52,38 +54,32 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
             services.AddControllers();
         }
 
-        public static void ConfigureEntityFramework(IServiceCollection services, DbConnection connection = null)
+        public static void ConfigureEntityFramework(IServiceCollection services)
         {
-            if (connection == null)
-            {
-                services.AddDbContextPool<AppDb>(
-                    options => options.UseMySql(AppConfig.Config["Data:ConnectionString"],
-                        mysqlOptions =>
+            services.AddDbContextPool<AppDb>(
+                options => options.UseMySql(GetConnectionString(),
+                    mysqlOptions =>
+                    {
+                        mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize);
+                        mysqlOptions.ServerVersion(AppConfig.Config["Data:ServerVersion"]);
+                        if (AppConfig.EfRetryOnFailure > 0)
                         {
-                            mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize);
-                            mysqlOptions.ServerVersion(AppConfig.Config["Data:ServerVersion"]);
-                            if (AppConfig.EfRetryOnFailure > 0)
-                            {
-                                mysqlOptions.EnableRetryOnFailure(AppConfig.EfRetryOnFailure, TimeSpan.FromSeconds(5), null);
-                            }
+                            mysqlOptions.EnableRetryOnFailure(AppConfig.EfRetryOnFailure, TimeSpan.FromSeconds(5), null);
                         }
-                ));
-            }
-            else
+                    }
+            ));
+        }
+
+        private static string GetConnectionString()
+        {
+            var csb = new MySqlConnectionStringBuilder(AppConfig.Config["Data:ConnectionString"]);
+
+            if (AppConfig.EfDatabase != null)
             {
-                services.AddDbContext<AppDb>(
-                    options => options.UseMySql(connection,
-                        mysqlOptions =>
-                        {
-                            mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize);
-                            mysqlOptions.ServerVersion(AppConfig.Config["Data:ServerVersion"]);
-                            if (AppConfig.EfRetryOnFailure > 0)
-                            {
-                                mysqlOptions.EnableRetryOnFailure(AppConfig.EfRetryOnFailure, TimeSpan.FromSeconds(5), null);
-                            }
-                        }
-                ));
+                csb.Database = AppConfig.EfDatabase;
             }
+
+            return csb.ConnectionString;
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

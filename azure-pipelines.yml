@@ -110,16 +110,16 @@ jobs:
     displayName: Integration Tests legacy migrations
     continueOnError: true
     condition: eq(variables['INTEGRATION_TESTS'],'true')
-  - bash: export EF_SCHEMA="pomelo_test2" && ./dotnet-env.sh dotnet build ./test/EFCore.MySql.IntegrationTests -c Release
+  - bash: export EF_DATABASE="pomelo_test2" && ./dotnet-env.sh dotnet build ./test/EFCore.MySql.IntegrationTests -c Release
     displayName: Integration Tests Building migrations with EF_DATABASE=pomelo_test2
     continueOnError: true
     condition: eq(variables['INTEGRATION_TESTS'],'true')
-  - bash: export EF_SCHEMA="pomelo_test2" && ./dotnet-env.sh ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.sh
+  - bash: export EF_DATABASE="pomelo_test2" && ./dotnet-env.sh ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.sh
     displayName: Integration Tests Setup migrations with EF_DATABASE=pomelo_test2
     continueOnError: true
     condition: eq(variables['INTEGRATION_TESTS'],'true')
-  - bash: export EF_SCHEMA="pomelo_test2" && ./dotnet-env.sh dotnet test -c Release --logger trx test/EFCore.MySql.IntegrationTests
-    displayName: Integration Tests with EF_SCHEMA=pomelo_test2
+  - bash: export EF_DATABASE="pomelo_test2" && ./dotnet-env.sh dotnet test -c Release --logger trx test/EFCore.MySql.IntegrationTests
+    displayName: Integration Tests with EF_DATABASE=pomelo_test2
     continueOnError: true
     condition: eq(variables['INTEGRATION_TESTS'],'true')
   - task: PublishTestResults@2
@@ -191,14 +191,14 @@ jobs:
   - pwsh: $env:EF_RETRY_ON_FAILURE="3"; .\dotnet-env.ps1 dotnet test -c Release --logger trx test\EFCore.MySql.IntegrationTests
     displayName: Integration Tests with EF_RETRY_ON_FAILURE=3
     continueOnError: true
-  - pwsh: $env:EF_SCHEMA="pomelo_test2"; .\dotnet-env.ps1 dotnet build .\test\EFCore.MySql.IntegrationTests -c Release
+  - pwsh: $env:EF_DATABASE="pomelo_test2"; .\dotnet-env.ps1 dotnet build .\test\EFCore.MySql.IntegrationTests -c Release
     displayName: Integration Tests Building migrations with EF_DATABASE=pomelo_test2
     continueOnError: true
-  - pwsh: $env:EF_SCHEMA="pomelo_test2"; .\dotnet-env.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
+  - pwsh: $env:EF_DATABASE="pomelo_test2"; .\dotnet-env.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
     displayName: Integration Tests Setup migrations with EF_DATABASE=pomelo_test2
     continueOnError: true
-  - pwsh: $env:EF_SCHEMA="pomelo_test2"; .\dotnet-env.ps1 dotnet test -c Release --logger trx test\EFCore.MySql.IntegrationTests
-    displayName: Integration Tests with EF_SCHEMA=pomelo_test2
+  - pwsh: $env:EF_DATABASE="pomelo_test2"; .\dotnet-env.ps1 dotnet test -c Release --logger trx test\EFCore.MySql.IntegrationTests
+    displayName: Integration Tests with EF_DATABASE=pomelo_test2
     continueOnError: true
   - task: PublishTestResults@2
     displayName: Publish Test Results
