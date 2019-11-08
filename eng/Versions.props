@@ -37,6 +37,9 @@
     <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>2.2.4</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
     <MicrosoftExtensionsConfigurationFileExtensionsVersion>2.2.0</MicrosoftExtensionsConfigurationFileExtensionsVersion>
     <MicrosoftExtensionsConfigurationJsonVersion>2.2.0</MicrosoftExtensionsConfigurationJsonVersion>
+    <SystemComponentModelTypeConverterVersion>4.3.0</SystemComponentModelTypeConverterVersion>
+    <CastleCoreVersion>4.0.0</CastleCoreVersion>
+    <NetTopologySuiteVersion>2.0.0</NetTopologySuiteVersion>
      <!-- EFCoreMySqlIntegrationTests Dependencies -->
     <MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>3.0.0</MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>
     <MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>3.0.0</MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>

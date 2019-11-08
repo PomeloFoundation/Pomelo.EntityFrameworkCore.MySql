@@ -43,6 +43,10 @@
     <Reference Include="Microsoft.EntityFrameworkCore.Specification.Tests">
       <HintPath>$(LocalEFCoreRepository)\artifacts\bin\EFCore.Relational.Specification.Tests\Debug\$(TargetFramework)\Microsoft.EntityFrameworkCore.Specification.Tests.dll</HintPath>
     </Reference>
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryVersion)" />
+    <PackageReference Include="NetTopologySuite" Version="$(NetTopologySuiteVersion)" />
+    <PackageReference Include="System.ComponentModel.TypeConverter" Version="$(SystemComponentModelTypeConverterVersion)" />
+    <PackageReference Include="Castle.Core" Version="$(CastleCoreVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(LocalMySqlConnectorRepository)' != ''">
