@@ -76,6 +76,24 @@ namespace Microsoft.EntityFrameworkCore
         /// Configures the <see cref="CharSet"/> for the property's column.
         /// </summary>
         /// <param name="propertyBuilder">The builder for the property being configured.</param>
+        /// <param name="charSetName">The name of the charset to configure for the property's column.</param>
+        /// <returns>The same builder instance so that multiple calls can be chained.</returns>
+        public static PropertyBuilder HasCharSet(
+            [NotNull] this PropertyBuilder propertyBuilder,
+            string charSetName)
+        {
+            Check.NotNull(propertyBuilder, nameof(propertyBuilder));
+
+            var property = propertyBuilder.Metadata;
+            property.SetCharSet(charSetName);
+
+            return propertyBuilder;
+        }
+
+        /// <summary>
+        /// Configures the <see cref="CharSet"/> for the property's column.
+        /// </summary>
+        /// <param name="propertyBuilder">The builder for the property being configured.</param>
         /// <param name="charSet">The <see cref="CharSet"/> to configure for the property's column.</param>
         /// <returns>The same builder instance so that multiple calls can be chained.</returns>
         public static PropertyBuilder HasCharSet(
@@ -85,7 +103,7 @@ namespace Microsoft.EntityFrameworkCore
             Check.NotNull(propertyBuilder, nameof(propertyBuilder));
 
             var property = propertyBuilder.Metadata;
-            property.SetCharSet(charSet);
+            property.SetCharSet(charSet?.Name);
 
             return propertyBuilder;
         }
