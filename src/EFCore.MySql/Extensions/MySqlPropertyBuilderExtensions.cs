@@ -73,25 +73,25 @@ namespace Microsoft.EntityFrameworkCore
             => (PropertyBuilder<TProperty>)UseMySqlComputedColumn((PropertyBuilder)propertyBuilder);
 
         /// <summary>
-        /// Configures the <see cref="CharSet"/> for the property's column.
+        /// Configures the charset for the property's column.
         /// </summary>
         /// <param name="propertyBuilder">The builder for the property being configured.</param>
-        /// <param name="charSetName">The name of the charset to configure for the property's column.</param>
+        /// <param name="charSet">The name of the charset to configure for the property's column.</param>
         /// <returns>The same builder instance so that multiple calls can be chained.</returns>
         public static PropertyBuilder HasCharSet(
             [NotNull] this PropertyBuilder propertyBuilder,
-            string charSetName)
+            string charSet)
         {
             Check.NotNull(propertyBuilder, nameof(propertyBuilder));
 
             var property = propertyBuilder.Metadata;
-            property.SetCharSet(charSetName);
+            property.SetCharSet(charSet);
 
             return propertyBuilder;
         }
 
         /// <summary>
-        /// Configures the <see cref="CharSet"/> for the property's column.
+        /// Configures the charset for the property's column.
         /// </summary>
         /// <param name="propertyBuilder">The builder for the property being configured.</param>
         /// <param name="charSet">The <see cref="CharSet"/> to configure for the property's column.</param>
@@ -104,6 +104,24 @@ namespace Microsoft.EntityFrameworkCore
 
             var property = propertyBuilder.Metadata;
             property.SetCharSet(charSet?.Name);
+
+            return propertyBuilder;
+        }
+
+        /// <summary>
+        /// Configures the collation for the property's column.
+        /// </summary>
+        /// <param name="propertyBuilder">The builder for the property being configured.</param>
+        /// <param name="collation">The name of the collation to configure for the property's column.</param>
+        /// <returns>The same builder instance so that multiple calls can be chained.</returns>
+        public static PropertyBuilder HasCollation(
+            [NotNull] this PropertyBuilder propertyBuilder,
+            string collation)
+        {
+            Check.NotNull(propertyBuilder, nameof(propertyBuilder));
+
+            var property = propertyBuilder.Metadata;
+            property.SetCollation(collation);
 
             return propertyBuilder;
         }

@@ -179,6 +179,7 @@ AND
     IF(`IS_NULLABLE` = 'YES', 1, 0) AS `IS_NULLABLE`,
     `DATA_TYPE`,
     `CHARACTER_SET_NAME`,
+    `COLLATION_NAME`,
     `COLUMN_TYPE`,
     `COLUMN_COMMENT`,
     `EXTRA`
@@ -208,6 +209,7 @@ AND
                             var nullable = reader.GetBoolean("IS_NULLABLE");
                             var dataType = reader.GetValueOrDefault<string>("DATA_TYPE");
                             var charset = reader.GetValueOrDefault<string>("CHARACTER_SET_NAME");
+                            var collation = reader.GetValueOrDefault<string>("COLLATION_NAME");
                             var columType = reader.GetValueOrDefault<string>("COLUMN_TYPE");
                             var extra = reader.GetValueOrDefault<string>("EXTRA");
                             var comment = reader.GetValueOrDefault<string>("COLUMN_COMMENT");
@@ -263,6 +265,7 @@ AND
                                 ValueGenerated = valueGenerated,
                                 Comment = string.IsNullOrEmpty(comment) ? null : comment,
                                 [MySqlAnnotationNames.CharSet] = charset,
+                                [MySqlAnnotationNames.Collation] = collation,
                             };
 
                             table.Columns.Add(column);

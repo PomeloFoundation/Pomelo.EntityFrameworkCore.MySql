@@ -29,11 +29,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
             Check.NotNull(property, nameof(property));
             Check.NotNull(annotation, nameof(annotation));
 
-            return annotation.Name == MySqlAnnotationNames.CharSet &&
-                   annotation.Value is string charSetName &&
-                   charSetName.Length > 0
-                ? new MethodCallCodeFragment("HasCharSet", charSetName)
-                : null;
+            switch (annotation.Name)
+            {
+                case MySqlAnnotationNames.CharSet when annotation.Value is string charSet && charSet.Length > 0:
+                    return new MethodCallCodeFragment("HasCharSet", charSet);
+
+                case MySqlAnnotationNames.Collation when annotation.Value is string collation && collation.Length > 0:
+                    return new MethodCallCodeFragment("HasCollation", collation);
+
+                default:
+                    return null;
+            }
         }
     }
 }
