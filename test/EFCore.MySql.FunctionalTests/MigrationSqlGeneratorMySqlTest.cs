@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
@@ -37,8 +38,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 {
                     Table = "Pie",
                     PrincipalTable = "Flavor",
-                    Columns = new[] {"FlavorId"},
-                    PrincipalColumns = new[] {"Id"}
+                    Columns = new[] { "FlavorId" },
+                    PrincipalColumns = new[] { "Id" }
                 });
 
             Assert.Equal(
@@ -81,23 +82,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         }
 
         [Fact]
-        public void EnsureSchemaOperation()
-        {
-            Generate(new EnsureSchemaOperation
-            {
-                Name = "mySchema"
-            });
-
-            Assert.Equal(
-                @"CREATE DATABASE IF NOT EXISTS `mySchema`;" + EOL,
-                Sql,
-                ignoreLineEndingDifferences: true);
-        }
-
-        [Fact]
         public virtual void CreateDatabaseOperation()
         {
-            Generate(new MySqlCreateDatabaseOperation {Name = "Northwind"});
+            Generate(new MySqlCreateDatabaseOperation { Name = "Northwind" });
 
             Assert.Equal(
                 @"CREATE DATABASE `Northwind`;" + EOL,
@@ -110,7 +97,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.CreateTableOperation();
 
             Assert.Equal(
-                @"CREATE TABLE `dbo`.`People` (
+                @"CREATE TABLE `People` (
     `Id` int NOT NULL,
     `EmployerId` int NULL,
     `SSN` char(11) NULL,
@@ -129,7 +116,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 new CreateTableOperation
                 {
                     Name = "TestUlongAutoIncrement",
-                    Schema = "dbo",
                     Columns =
                     {
                         new AddColumnOperation
@@ -144,12 +130,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                     },
                     PrimaryKey = new AddPrimaryKeyOperation
                     {
-                        Columns = new[] {"Id"}
+                        Columns = new[] { "Id" }
                     }
                 });
 
             Assert.Equal(
-                "CREATE TABLE `dbo`.`TestUlongAutoIncrement` (" + EOL +
+                "CREATE TABLE `TestUlongAutoIncrement` (" + EOL +
                 "    `Id` bigint unsigned NOT NULL AUTO_INCREMENT," + EOL +
                 "    PRIMARY KEY (`Id`)" + EOL +
                 ");" + EOL,
@@ -248,7 +234,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.AddColumnOperation_with_defaultValue();
 
             Assert.Equal(
-                @"ALTER TABLE `dbo`.`People` ADD `Name` varchar(30) NOT NULL DEFAULT 'John Doe';" + EOL,
+                @"ALTER TABLE `People` ADD `Name` varchar(30) NOT NULL DEFAULT 'John Doe';" + EOL,
                 Sql);
         }
 
@@ -565,7 +551,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.AddForeignKeyOperation_with_name();
 
             Assert.Equal(
-                "ALTER TABLE `dbo`.`People` ADD CONSTRAINT `FK_People_Companies` FOREIGN KEY (`EmployerId1`, `EmployerId2`) REFERENCES `hr`.`Companies` (`Id1`, `Id2`) ON DELETE CASCADE;" +
+                "ALTER TABLE `People` ADD CONSTRAINT `FK_People_Companies` FOREIGN KEY (`EmployerId1`, `EmployerId2`) REFERENCES `Companies` (`Id1`, `Id2`) ON DELETE CASCADE;" +
                 EOL,
                 Sql);
         }
@@ -577,17 +563,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 new AddForeignKeyOperation
                 {
                     Table = "People",
-                    Schema = "dbo",
                     Name = "FK_ASuperLongForeignKeyNameThatIsDefinetelyNotGoingToFitInThe64CharactersLimit",
-                    Columns = new[] {"EmployerId1", "EmployerId2"},
+                    Columns = new[] { "EmployerId1", "EmployerId2" },
                     PrincipalTable = "Companies",
-                    PrincipalSchema = "hr",
-                    PrincipalColumns = new[] {"Id1", "Id2"},
+                    PrincipalColumns = new[] { "Id1", "Id2" },
                     OnDelete = ReferentialAction.Cascade
                 });
 
             Assert.Equal(
-                "ALTER TABLE `dbo`.`People` ADD CONSTRAINT `FK_ASuperLongForeignKeyNameThatIsDefinetelyNotGoingToFitInThe64C` FOREIGN KEY (`EmployerId1`, `EmployerId2`) REFERENCES `hr`.`Companies` (`Id1`, `Id2`) ON DELETE CASCADE;" +
+                "ALTER TABLE `People` ADD CONSTRAINT `FK_ASuperLongForeignKeyNameThatIsDefinetelyNotGoingToFitInThe64C` FOREIGN KEY (`EmployerId1`, `EmployerId2`) REFERENCES `Companies` (`Id1`, `Id2`) ON DELETE CASCADE;" +
                 EOL,
                 Sql);
         }
@@ -607,7 +591,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.AddPrimaryKeyOperation_with_name();
 
             Assert.Equal(
-                "ALTER TABLE `dbo`.`People` ADD CONSTRAINT `PK_People` PRIMARY KEY (`Id1`, `Id2`);" + EOL,
+                "ALTER TABLE `People` ADD CONSTRAINT `PK_People` PRIMARY KEY (`Id1`, `Id2`);" + EOL,
                 Sql);
         }
 
@@ -630,7 +614,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.AddUniqueConstraintOperation_with_name();
 
             Assert.Equal(
-                "ALTER TABLE `dbo`.`People` ADD CONSTRAINT `AK_People_DriverLicense` UNIQUE (`DriverLicense_State`, `DriverLicense_Number`);" +
+                "ALTER TABLE `People` ADD CONSTRAINT `AK_People_DriverLicense` UNIQUE (`DriverLicense_State`, `DriverLicense_Number`);" +
                 EOL,
                 Sql);
         }
@@ -646,25 +630,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         }
 
         [Fact]
-        public void DropSchemaOperation()
-        {
-            Generate(new DropSchemaOperation
-            {
-                Name = "mySchema"
-            });
-
-            Assert.Equal(
-                @"DROP SCHEMA `mySchema`;" + EOL,
-                Sql);
-        }
-
-        [Fact]
         public override void CreateIndexOperation_unique()
         {
             base.CreateIndexOperation_unique();
 
             Assert.Equal(
-                "CREATE UNIQUE INDEX `IX_People_Name` ON `dbo`.`People` (`FirstName`, `LastName`);" + EOL,
+                "CREATE UNIQUE INDEX `IX_People_Name` ON `People` (`FirstName`, `LastName`);" + EOL,
                 Sql);
         }
 
@@ -676,13 +647,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 {
                     Name = "IX_People_Name",
                     Table = "People",
-                    Schema = "dbo",
-                    Columns = new[] {"FirstName", "LastName"},
+                    Columns = new[] { "FirstName", "LastName" },
                     [MySqlAnnotationNames.FullTextIndex] = true
                 });
 
             Assert.Equal(
-                "CREATE FULLTEXT INDEX `IX_People_Name` ON `dbo`.`People` (`FirstName`, `LastName`);" + EOL,
+                "CREATE FULLTEXT INDEX `IX_People_Name` ON `People` (`FirstName`, `LastName`);" + EOL,
                 Sql);
         }
 
@@ -694,13 +664,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 {
                     Name = "IX_People_Name",
                     Table = "People",
-                    Schema = "dbo",
-                    Columns = new[] {"FirstName", "LastName"},
+                    Columns = new[] { "FirstName", "LastName" },
                     [MySqlAnnotationNames.SpatialIndex] = true
                 });
 
             Assert.Equal(
-                "CREATE SPATIAL INDEX `IX_People_Name` ON `dbo`.`People` (`FirstName`, `LastName`);" + EOL,
+                "CREATE SPATIAL INDEX `IX_People_Name` ON `People` (`FirstName`, `LastName`);" + EOL,
                 Sql);
         }
 
@@ -722,7 +691,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 {
                     Name = "IX_ASuperLongForeignKeyNameThatIsDefinetelyNotGoingToFitInThe64CharactersLimit",
                     Table = "People",
-                    Columns = new[] {"Name"},
+                    Columns = new[] { "Name" },
                     IsUnique = false
                 });
 
@@ -815,7 +784,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.DropColumnOperation();
 
             Assert.Equal(
-                "ALTER TABLE `dbo`.`People` DROP COLUMN `LuckyNumber`;" + EOL,
+                "ALTER TABLE `People` DROP COLUMN `LuckyNumber`;" + EOL,
                 Sql);
         }
 
@@ -825,7 +794,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.DropForeignKeyOperation();
 
             Assert.Equal(
-                "ALTER TABLE `dbo`.`People` DROP FOREIGN KEY `FK_People_Companies`;" + EOL,
+                "ALTER TABLE `People` DROP FOREIGN KEY `FK_People_Companies`;" + EOL,
                 Sql);
         }
 
@@ -835,8 +804,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.DropPrimaryKeyOperation();
 
             Assert.Equal(
-                @"CALL POMELO_BEFORE_DROP_PRIMARY_KEY('dbo', 'People');
-ALTER TABLE `dbo`.`People` DROP PRIMARY KEY;".Replace("\r", string.Empty).Replace("\n", EOL) + EOL,
+                @"CALL POMELO_BEFORE_DROP_PRIMARY_KEY(NULL, 'People');
+ALTER TABLE `People` DROP PRIMARY KEY;".Replace("\r", string.Empty).Replace("\n", EOL) + EOL,
                 Sql);
         }
 
@@ -846,7 +815,7 @@ ALTER TABLE `dbo`.`People` DROP PRIMARY KEY;".Replace("\r", string.Empty).Replac
             base.DropTableOperation();
 
             Assert.Equal(
-                "DROP TABLE `dbo`.`People`;" + EOL,
+                "DROP TABLE `People`;" + EOL,
                 Sql);
         }
 
@@ -856,7 +825,7 @@ ALTER TABLE `dbo`.`People` DROP PRIMARY KEY;".Replace("\r", string.Empty).Replac
             base.DropUniqueConstraintOperation();
 
             Assert.Equal(
-                "ALTER TABLE `dbo`.`People` DROP KEY `AK_People_SSN`;" + EOL,
+                "ALTER TABLE `People` DROP KEY `AK_People_SSN`;" + EOL,
                 Sql);
         }
 
@@ -865,7 +834,7 @@ ALTER TABLE `dbo`.`People` DROP PRIMARY KEY;".Replace("\r", string.Empty).Replac
             base.DropIndexOperation();
 
             Assert.Equal(
-                @"ALTER TABLE `dbo`.`People` DROP INDEX `IX_People_Name`;" + EOL,
+                @"ALTER TABLE `People` DROP INDEX `IX_People_Name`;" + EOL,
                 Sql);
         }
 
@@ -929,32 +898,57 @@ ALTER TABLE `dbo`.`People` DROP PRIMARY KEY;".Replace("\r", string.Empty).Replac
         {
         }
 
-        protected override void Generate(Action<ModelBuilder> buildAction, params MigrationOperation[] operation)
+        protected override void Generate(params MigrationOperation[] operations)
+            => base.Generate(ResetSchema(operations));
+
+        protected override void Generate(Action<ModelBuilder> buildAction, params MigrationOperation[] operations)
         {
             var services = MySqlTestHelpers.Instance.CreateContextServices();
             var modelBuilder = MySqlTestHelpers.Instance.CreateConventionBuilder(services);
             buildAction(modelBuilder);
 
             var batch = services.GetRequiredService<IMigrationsSqlGenerator>()
-                .Generate(operation, modelBuilder.Model);
+                .Generate(ResetSchema(operations), modelBuilder.Model);
 
             Sql = string.Join(
                 EOL,
                 batch.Select(b => b.CommandText));
         }
 
-        protected virtual void Generate(Action<ModelBuilder> buildAction, CharSetBehavior charSetBehavior, CharSet charSet, params MigrationOperation[] operation)
+        protected virtual void Generate(Action<ModelBuilder> buildAction, CharSetBehavior charSetBehavior, CharSet charSet, params MigrationOperation[] operations)
         {
             var services = MySqlTestHelpers.Instance.CreateContextServices(charSetBehavior, charSet);
             var modelBuilder = MySqlTestHelpers.Instance.CreateConventionBuilder(services);
             buildAction(modelBuilder);
 
             var batch = services.GetRequiredService<IMigrationsSqlGenerator>()
-                .Generate(operation, modelBuilder.Model);
+                .Generate(ResetSchema(operations), modelBuilder.Model);
 
             Sql = string.Join(
                 EOL,
                 batch.Select(b => b.CommandText));
+        }
+
+        /// <summary>
+        /// The base class does set schema values, while MySQL does not support
+        /// the EF Core concept of schemas.
+        /// </summary>
+        protected virtual MigrationOperation[] ResetSchema(params MigrationOperation[] operations)
+        {
+            foreach (var operation in operations)
+            {
+                var schemaPropertyInfos = operation
+                    .GetType()
+                    .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty)
+                    .Where(p => p.Name.Contains(nameof(AddForeignKeyOperation.Schema), StringComparison.Ordinal));
+
+                foreach (var schemaPropertyInfo in schemaPropertyInfos)
+                {
+                    schemaPropertyInfo.SetValue(operation, null);
+                }
+            }
+
+            return operations;
         }
     }
 }

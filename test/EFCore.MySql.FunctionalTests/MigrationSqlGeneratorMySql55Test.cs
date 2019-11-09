@@ -127,14 +127,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        protected override void Generate(Action<ModelBuilder> buildAction, params MigrationOperation[] operation)
+        protected override void Generate(Action<ModelBuilder> buildAction, params MigrationOperation[] operations)
         {
             var services = MySqlTestHelpers.Instance.CreateContextServices(new Version(5, 5, 2), ServerType.MySql);
             var modelBuilder = MySqlTestHelpers.Instance.CreateConventionBuilder(services);
             buildAction(modelBuilder);
 
             var batch = services.GetRequiredService<IMigrationsSqlGenerator>()
-                .Generate(operation, modelBuilder.Model);
+                .Generate(ResetSchema(operations), modelBuilder.Model);
 
             Sql = string.Join(
                 EOL,

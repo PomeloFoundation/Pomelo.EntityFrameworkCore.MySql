@@ -74,7 +74,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
                 databaseModel.DatabaseName = connection.Database;
                 databaseModel.DefaultSchema = GetDefaultSchema(connection);
 
-                var schemaList = options.Schemas.ToList();
+                var schemaList = Enumerable.Empty<string>().ToList();
                 var tableList = options.Tables.ToList();
                 var tableFilter = GenerateTableFilter(tableList, schemaList);
 

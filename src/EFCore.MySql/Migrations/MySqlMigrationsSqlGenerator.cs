@@ -4,17 +4,19 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Microsoft.EntityFrameworkCore.Migrations
@@ -29,9 +31,10 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
         private readonly IMigrationsAnnotationProvider _migrationsAnnotations;
         private readonly IMySqlConnectionInfo _connectionInfo;
+        private readonly RelationalTypeMapping _stringTypeMapping;
 
         private IReadOnlyList<MigrationOperation> _operations;
-        
+
         public MySqlMigrationsSqlGenerator(
             [NotNull] MigrationsSqlGeneratorDependencies dependencies,
             [NotNull] IMigrationsAnnotationProvider migrationsAnnotations,
@@ -40,6 +43,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
         {
             _migrationsAnnotations = migrationsAnnotations;
             _connectionInfo = connectionInfo;
+            _stringTypeMapping = dependencies.TypeMappingSource.GetMapping(typeof(string));
         }
 
         /// <summary>
@@ -81,6 +85,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
         {
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
+            CheckSchema(operation);
 
             switch (operation)
             {
@@ -93,6 +98,24 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 default:
                     base.Generate(operation, model, builder);
                     break;
+            }
+        }
+
+        protected virtual void CheckSchema(MigrationOperation operation)
+        {
+            var schema = operation.GetType()
+                .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty)
+                .Where(p => p.Name.Contains(nameof(AddForeignKeyOperation.Schema), StringComparison.Ordinal))
+                .Select(p => p.GetValue(operation) as string)
+                .FirstOrDefault(schemaValue => schemaValue != null);
+
+            if (schema != null)
+            {
+                var name = operation.GetType()
+                    .GetProperty(nameof(AddForeignKeyOperation.Name), BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty)
+                    ?.GetValue(operation) as string;
+
+                throw new InvalidOperationException($"A schema \"{schema}\" has been set for an object of type \"{operation.GetType().Name}\"{(string.IsNullOrEmpty(name) ? string.Empty : $" with the name of \"{name}\"")}. MySQL does not support the EF Core concept of schemas. Any schema property of any \"MigrationOperation\" must be null.");
             }
         }
 
@@ -261,9 +284,8 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             base.Generate(operation, model, builder, terminate);
         }
 
-        /// <summary>
-        ///     Builds commands for the given <see cref="EnsureSchemaOperation" />
-        ///     by making calls on the given <see cref="MigrationCommandListBuilder" />.
+        /// /// <summary>
+        ///     Ignored, since schemas are not supported by MySQL and are silently ignored to improve testing compatibility.
         /// </summary>
         /// <param name="operation"> The operation. </param>
         /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
@@ -271,14 +293,16 @@ namespace Microsoft.EntityFrameworkCore.Migrations
         protected override void Generate(EnsureSchemaOperation operation, IModel model,
             MigrationCommandListBuilder builder)
         {
-            Check.NotNull(operation, nameof(operation));
-            Check.NotNull(builder, nameof(builder));
+        }
 
-            builder
-                .Append("CREATE DATABASE IF NOT EXISTS ")
-                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
-                .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator)
-                .EndCommand();
+        /// <summary>
+        ///     Ignored, since schemas are not supported by MySQL and are silently ignored to improve testing compatibility.
+        /// </summary>
+        /// <param name="operation"> The operation. </param>
+        /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
+        /// <param name="builder"> The command builder to use to build the commands. </param>
+        protected override void Generate(DropSchemaOperation operation, IModel model, MigrationCommandListBuilder builder)
+        {
         }
 
         /// <summary>
@@ -342,24 +366,6 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             builder
                 .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator)
                 .EndCommand();
-        }
-
-        private static string ExpandFileName(string fileName)
-        {
-            Check.NotNull(fileName, nameof(fileName));
-
-            if (fileName.StartsWith("|DataDirectory|", StringComparison.OrdinalIgnoreCase))
-            {
-                var dataDirectory = AppDomain.CurrentDomain.GetData("DataDirectory") as string;
-                if (string.IsNullOrEmpty(dataDirectory))
-                {
-                    dataDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                }
-
-                fileName = Path.Combine(dataDirectory, fileName.Substring("|DataDirectory|".Length));
-            }
-
-            return Path.GetFullPath(fileName);
         }
 
         /// <summary>
@@ -562,7 +568,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             var isRowVersion = (property.ClrType == typeof(DateTime) || property.ClrType == typeof(byte[]))
                                && property.IsConcurrencyToken
                                && property.ValueGenerated == ValueGenerated.OnAddOrUpdate;
-            
+
             var addColumnOperation = new AddColumnOperation
             {
                 Schema = operation.Schema,
@@ -706,7 +712,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                         {
                             throw new InvalidOperationException(
                                 $"Error in {table}.{name}: DATETIME does not support values generated " +
-                                "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");
+                                $"on Add or Update in versions lower than {ServerVersion.GetSupport(ServerVersion.DateTime6SupportKey)}. Try explicitly setting the column type to TIMESTAMP.");
                         }
 
                         goto case "timestamp";
@@ -726,7 +732,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                         {
                             throw new InvalidOperationException(
                                 $"Error in {table}.{name}: DATETIME does not support values generated " +
-                                "on Add or Update in MySql <= 5.5, try explicitly setting the column type to TIMESTAMP");
+                                $"on Add or Update in versions lower than {ServerVersion.GetSupport(ServerVersion.DateTime6SupportKey)}. Try explicitly setting the column type to TIMESTAMP.");
                         }
 
                         goto case "timestamp";
@@ -787,7 +793,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             var columnType = operation.ColumnType != null
                 ? GetColumnTypeWithCharSet(operation, operation.ColumnType)
                 : GetColumnType(schema, table, name, operation, model);
-            
+
             builder
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(name))
                 .Append(" ")
@@ -914,16 +920,8 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             if (operation.Columns.Length == 1)
             {
-                if (operation.Schema == null)
-                {
-                    builder.Append(
-                        $"CALL POMELO_AFTER_ADD_PRIMARY_KEY(NULL, '{operation.Table}', '{operation.Columns.First()}');");
-                }
-                else
-                {
-                    builder.Append(
-                        $"CALL POMELO_AFTER_ADD_PRIMARY_KEY('{operation.Schema}', '{operation.Table}', '{operation.Columns.First()}');");
-                }
+                builder.Append(
+                    $"CALL POMELO_AFTER_ADD_PRIMARY_KEY({_stringTypeMapping.GenerateSqlLiteral(operation.Schema)}, {_stringTypeMapping.GenerateSqlLiteral(operation.Table)}, {_stringTypeMapping.GenerateSqlLiteral(operation.Columns.First())});");
 
                 builder.AppendLine();
             }
@@ -935,14 +933,8 @@ namespace Microsoft.EntityFrameworkCore.Migrations
         {
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
-            if (string.IsNullOrWhiteSpace(operation.Schema))
-            {
-                builder.Append($"CALL POMELO_BEFORE_DROP_PRIMARY_KEY(NULL, '{operation.Table}');");
-            }
-            else
-            {
-                builder.Append($"CALL POMELO_BEFORE_DROP_PRIMARY_KEY('{operation.Schema}', '{operation.Table}');");
-            }
+
+            builder.Append($"CALL POMELO_BEFORE_DROP_PRIMARY_KEY({_stringTypeMapping.GenerateSqlLiteral(operation.Schema)}, {_stringTypeMapping.GenerateSqlLiteral(operation.Table)});");
 
             builder.AppendLine();
             builder

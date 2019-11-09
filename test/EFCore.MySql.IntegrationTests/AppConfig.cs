@@ -18,9 +18,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
                 ? Convert.ToInt32(Environment.GetEnvironmentVariable("EF_RETRY_ON_FAILURE"))
                 : 0;
 
-        public static readonly string EfSchema =
-            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("EF_SCHEMA"))
-                ? Environment.GetEnvironmentVariable("EF_SCHEMA")
+        public static readonly string EfDatabase =
+            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("EF_DATABASE"))
+                ? Environment.GetEnvironmentVariable("EF_DATABASE")
                 : null;
 
         public static ServerVersion ServerVersion => _lazyServerVersion.Value;
