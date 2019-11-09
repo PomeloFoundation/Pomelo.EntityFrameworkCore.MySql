@@ -140,57 +140,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
             => property.FindTypeMapping()?.Converter ?? property.GetValueConverter();
 
         /// <summary>
-        /// Returns the <see cref="CharSet"/> used by the property's column.
+        /// Returns the name of the charset used by the column of the property.
         /// </summary>
-        /// <param name="property">The property of which get its column's <see cref="CharSet"/> from.</param>
-        /// <returns>The <see cref="CharSet"/> or null, if no explicit <see cref="CharSet"/> was set.</returns>
-        public static CharSet GetCharSet([NotNull] this IProperty property)
-        {
-            var charSetName = property[MySqlAnnotationNames.CharSet] as string;
-
-            if (string.IsNullOrEmpty(charSetName))
-            {
-                return null;
-            }
-
-            return CharSet.GetCharSetFromName(charSetName);
-        }
+        /// <param name="property">The property of which to get the columns charset from.</param>
+        /// <returns>The name of the charset or null, if no explicit charset was set.</returns>
+        public static string GetCharSet([NotNull] this IProperty property)
+            => property[MySqlAnnotationNames.CharSet] as string;
 
         /// <summary>
-        /// Sets the <see cref="CharSet"/> in use by the property's column.
+        /// Sets the name of the charset in use by the column of the property.
         /// </summary>
-        /// <param name="property">The property to set the <see cref="CharSet"/> for.</param>
-        /// <param name="charSet">The <see cref="CharSet"/> used by the property's column.</param>
-        public static void SetCharSet([NotNull] this IMutableProperty property, CharSet charSet)
-        {
-            if (charSet != null &&
-                !property.IsUnicode().HasValue)
-            {
-                property.SetIsUnicode(charSet.IsUnicode);
-            }
-
-            property.SetOrRemoveAnnotation(MySqlAnnotationNames.CharSet, charSet);
-        }
-
-        /// <summary>
-        /// Sets a predefined <see cref="CharSet"/> by its name, that is in use by the property's column.
-        /// </summary>
-        /// <param name="property">The property to set the <see cref="CharSet"/> for.</param>
-        /// <param name="predefinedCharSetName">The charset name used by the property's column, that is
-        /// being resolved into a <see cref="CharSet"/> object.</param>
-        public static void SetCharSet([NotNull] this IMutableProperty property, string predefinedCharSetName)
-        {
-            Check.NotNull(property, nameof(property));
-            Check.NotEmpty(predefinedCharSetName, nameof(predefinedCharSetName));
-
-            var charSet = CharSet.GetCharSetFromName(predefinedCharSetName);
-
-            if (charSet == null)
-            {
-                throw new ArgumentOutOfRangeException($"Cannot find a predefined charset with the name of \"{predefinedCharSetName}\".");
-            }
-
-            property.SetCharSet(charSet);
-        }
+        /// <param name="property">The property to set the columns charset for.</param>
+        /// <param name="charSetName">The name of the charset used for the column of the property.</param>
+        public static void SetCharSet([NotNull] this IMutableProperty property, string charSetName)
+            => property.SetOrRemoveAnnotation(MySqlAnnotationNames.CharSet, charSetName);
     }
 }
