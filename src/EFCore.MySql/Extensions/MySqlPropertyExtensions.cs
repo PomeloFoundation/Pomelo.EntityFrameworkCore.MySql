@@ -151,8 +151,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
         /// Sets the name of the charset in use by the column of the property.
         /// </summary>
         /// <param name="property">The property to set the columns charset for.</param>
-        /// <param name="charSetName">The name of the charset used for the column of the property.</param>
-        public static void SetCharSet([NotNull] this IMutableProperty property, string charSetName)
-            => property.SetOrRemoveAnnotation(MySqlAnnotationNames.CharSet, charSetName);
+        /// <param name="charSet">The name of the charset used for the column of the property.</param>
+        public static void SetCharSet([NotNull] this IMutableProperty property, string charSet)
+            => property.SetOrRemoveAnnotation(MySqlAnnotationNames.CharSet, charSet);
+
+        /// <summary>
+        /// Returns the name of the collation used by the column of the property.
+        /// </summary>
+        /// <param name="property">The property of which to get the columns collation from.</param>
+        /// <returns>The name of the collation or null, if no explicit collation was set.</returns>
+        public static string GetCollation([NotNull] this IProperty property)
+            => property[MySqlAnnotationNames.Collation] as string;
+
+        /// <summary>
+        /// Sets the name of the collation in use by the column of the property.
+        /// </summary>
+        /// <param name="property">The property to set the columns collation for.</param>
+        /// <param name="collation">The name of the collation used for the column of the property.</param>
+        public static void SetCollation([NotNull] this IMutableProperty property, string collation)
+            => property.SetOrRemoveAnnotation(MySqlAnnotationNames.Collation, collation);
     }
 }

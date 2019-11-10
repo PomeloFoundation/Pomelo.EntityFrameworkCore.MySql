@@ -791,7 +791,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             }
 
             var columnType = operation.ColumnType != null
-                ? GetColumnTypeWithCharSet(operation, operation.ColumnType)
+                ? GetColumnTypeWithCharSetAndCollation(operation, operation.ColumnType)
                 : GetColumnType(schema, table, name, operation, model);
 
             builder
@@ -805,11 +805,11 @@ namespace Microsoft.EntityFrameworkCore.Migrations
         }
 
         protected override string GetColumnType(string schema, string table, string name, ColumnOperation operation, IModel model)
-            => GetColumnTypeWithCharSet(
+            => GetColumnTypeWithCharSetAndCollation(
                 operation,
                 base.GetColumnType(schema, table, name, operation, model));
 
-        private static string GetColumnTypeWithCharSet(ColumnOperation operation, string columnType)
+        private static string GetColumnTypeWithCharSetAndCollation(ColumnOperation operation, string columnType)
         {
             var charSet = operation[MySqlAnnotationNames.CharSet];
             if (charSet != null)
@@ -820,6 +820,17 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 columnType = Regex.IsMatch(columnType, characterSetClausePattern, RegexOptions.IgnoreCase)
                     ? Regex.Replace(columnType, characterSetClausePattern, characterSetClause)
                     : columnType.TrimEnd() + " " + characterSetClause;
+            }
+
+            var collation = operation[MySqlAnnotationNames.Collation];
+            if (collation != null)
+            {
+                const string collationClausePattern = @"COLLATION \w+";
+                var collationClause = $@"COLLATION {collation}";
+
+                columnType = Regex.IsMatch(columnType, collationClausePattern, RegexOptions.IgnoreCase)
+                    ? Regex.Replace(columnType, collationClausePattern, collationClause)
+                    : columnType.TrimEnd() + " " + collationClause;
             }
 
             return columnType;
