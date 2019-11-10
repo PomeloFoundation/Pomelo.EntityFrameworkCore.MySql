@@ -52,6 +52,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
             bool idempotent = false)
         {
             IEnumerable<string> appliedMigrations;
+
             if (string.IsNullOrEmpty(fromMigration)
                 || fromMigration == Migration.InitialDatabase)
             {
@@ -76,11 +77,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
             var dropPrimaryKeyExists = operations.Any(x => x is DropPrimaryKeyOperation);
             var addPrimaryKeyExists = operations.Any(x => x is AddPrimaryKeyOperation);
 
-            List<string> parts = new List<string>();
+            var parts = new List<string>();
+
             if (dropPrimaryKeyExists)
             {
                 parts.Add(PrepareString(BeforeDropPrimaryKeyHeader));
             }
+
             if (addPrimaryKeyExists)
             {
                 parts.Add(PrepareString(AfterAddPrimaryKeyHeader));
@@ -92,10 +95,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
             {
                 parts.Add(PrepareString(BeforeDropPrimaryKeyFooter));
             }
+
             if (addPrimaryKeyExists)
             {
                 parts.Add(PrepareString(AfterAddPrimaryKeyFooter));
             }
+
             return string.Join("", parts);
         }
 

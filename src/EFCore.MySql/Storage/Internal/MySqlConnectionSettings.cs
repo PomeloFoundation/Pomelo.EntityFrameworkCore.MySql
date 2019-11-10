@@ -35,6 +35,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             TreatTinyAsBoolean = csb.TreatTinyAsBoolean;
         }
 
+        public MySqlGuidFormat GuidFormat { get; }
+        public bool TreatTinyAsBoolean { get; }
+
         protected bool Equals(MySqlConnectionSettings other)
         {
             return GuidFormat == other.GuidFormat &&
@@ -65,13 +68,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         {
             unchecked
             {
-                var hashCode = (int)GuidFormat;
-                hashCode = (hashCode * 397) ^ TreatTinyAsBoolean.GetHashCode();
-                return hashCode;
+                return ((int)GuidFormat * 397) ^ TreatTinyAsBoolean.GetHashCode();
             }
         }
-
-        public MySqlGuidFormat GuidFormat { get; }
-        public bool TreatTinyAsBoolean { get; }
     }
 }
