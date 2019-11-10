@@ -86,24 +86,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
 
         #region Support checks for provider code
 
-        public bool SupportsDateTime6 => SupportMap[DateTime6SupportKey].IsSupported(this);
-        public bool SupportsLargerKeyLength => SupportMap[LargerKeyLengthSupportKey].IsSupported(this);
-        public bool SupportsRenameIndex => SupportMap[RenameIndexSupportKey].IsSupported(this);
-        public bool SupportsRenameColumn => SupportMap[RenameColumnSupportKey].IsSupported(this);
-        public bool SupportsWindowFunctions => SupportMap[WindowFunctionsSupportKey].IsSupported(this);
-        public bool SupportsFloatCast => SupportMap[FloatCastSupportKey].IsSupported(this);
-        public bool SupportsDoubleCast => SupportMap[DoubleCastSupportKey].IsSupported(this);
-        public bool SupportsOuterApply => SupportMap[OuterApplySupportKey].IsSupported(this);
-        public bool SupportsCrossApply => SupportMap[CrossApplySupportKey].IsSupported(this);
-        public bool SupportsJson => SupportMap[JsonSupportKey].IsSupported(this);
-        public bool SupportsGeneratedColumns => SupportMap[GeneratedColumnsSupportKey].IsSupported(this);
-        public bool SupportsNullableGeneratedColumns => SupportMap[NullableGeneratedColumnsSupportKey].IsSupported(this);
-        public bool SupportsDefaultCharSetUtf8Mb4 => SupportMap[DefaultCharSetUtf8Mb4SupportKey].IsSupported(this);
+        public virtual bool SupportsDateTime6 => SupportMap[DateTime6SupportKey].IsSupported(this);
+        public virtual bool SupportsLargerKeyLength => SupportMap[LargerKeyLengthSupportKey].IsSupported(this);
+        public virtual bool SupportsRenameIndex => SupportMap[RenameIndexSupportKey].IsSupported(this);
+        public virtual bool SupportsRenameColumn => SupportMap[RenameColumnSupportKey].IsSupported(this);
+        public virtual bool SupportsWindowFunctions => SupportMap[WindowFunctionsSupportKey].IsSupported(this);
+        public virtual bool SupportsFloatCast => SupportMap[FloatCastSupportKey].IsSupported(this);
+        public virtual bool SupportsDoubleCast => SupportMap[DoubleCastSupportKey].IsSupported(this);
+        public virtual bool SupportsOuterApply => SupportMap[OuterApplySupportKey].IsSupported(this);
+        public virtual bool SupportsCrossApply => SupportMap[CrossApplySupportKey].IsSupported(this);
+        public virtual bool SupportsJson => SupportMap[JsonSupportKey].IsSupported(this);
+        public virtual bool SupportsGeneratedColumns => SupportMap[GeneratedColumnsSupportKey].IsSupported(this);
+        public virtual bool SupportsNullableGeneratedColumns => SupportMap[NullableGeneratedColumnsSupportKey].IsSupported(this);
+        public virtual bool SupportsDefaultCharSetUtf8Mb4 => SupportMap[DefaultCharSetUtf8Mb4SupportKey].IsSupported(this);
 
         #endregion
 
-        public int MaxKeyLength => SupportsLargerKeyLength ? 3072 : 767;
-        public CharSet DefaultCharSet => SupportsDefaultCharSetUtf8Mb4 ? CharSet.Utf8Mb4 : CharSet.Latin1;
+        public virtual int MaxKeyLength => SupportsLargerKeyLength ? 3072 : 767;
+        public virtual CharSet DefaultCharSet => SupportsDefaultCharSetUtf8Mb4 ? CharSet.Utf8Mb4 : CharSet.Latin1;
         
         /// <summary>
         /// Constructs a new <see cref="ServerVersionSupport"/> object containing the <see cref="ServerVersion"/> objects
