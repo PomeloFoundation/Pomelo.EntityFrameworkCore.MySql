@@ -93,7 +93,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         public override void RenameColumnOperation()
         {
             var migrationBuilder = new MigrationBuilder("MySql");
-
+            
             migrationBuilder.RenameColumn(
                     table: "Person",
                     name: "Name",
@@ -130,8 +130,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
         protected override void Generate(Action<ModelBuilder> buildAction, params MigrationOperation[] operations)
         {
-            var services = MySqlTestHelpers.Instance.CreateContextServices(new ServerVersion("5.5.2-mysql"));
-            var modelBuilder = MySqlTestHelpers.Instance.CreateConventionBuilder(services);
+            var serverVersion = new ServerVersion("5.5.2-mysql");
+            var services = MySqlTestHelpers.Instance.CreateContextServices(serverVersion);
+            var modelBuilder = MySqlTestHelpers.Instance.CreateConventionBuilder(services)
+                .ForServerVersion(serverVersion);
+
             buildAction(modelBuilder);
 
             var batch = services.GetRequiredService<IMigrationsSqlGenerator>()

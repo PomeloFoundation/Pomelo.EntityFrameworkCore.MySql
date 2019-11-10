@@ -7,8 +7,6 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
 {
@@ -22,6 +20,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
         public override bool IsHandledByConvention(IModel model, IAnnotation annotation)
         {
             return true;
+        }
+
+        public override MethodCallCodeFragment GenerateFluentApi(IModel model, IAnnotation annotation)
+        {
+            Check.NotNull(model, nameof(model));
+            Check.NotNull(annotation, nameof(annotation));
+
+            switch (annotation.Name)
+            {
+                case MySqlAnnotationNames.ServerVersion when annotation.Value is string serverVersion && serverVersion.Length > 0:
+                    return new MethodCallCodeFragment("ForServerVersion", serverVersion);
+
+                default:
+                    return null;
+            }
         }
 
         public override MethodCallCodeFragment GenerateFluentApi(IProperty property, IAnnotation annotation)

@@ -16,6 +16,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
@@ -73,6 +74,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
 
                 databaseModel.DatabaseName = connection.Database;
                 databaseModel.DefaultSchema = GetDefaultSchema(connection);
+
+                databaseModel.SetAnnotation(
+                    MySqlAnnotationNames.ServerVersion,
+                    _serviceProvider.GetRequiredService<IMySqlConnectionInfo>().ServerVersion.ToString());
 
                 var schemaList = Enumerable.Empty<string>().ToList();
                 var tableList = options.Tables.ToList();

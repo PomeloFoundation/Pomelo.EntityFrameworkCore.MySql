@@ -2,24 +2,25 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Pomelo.EntityFrameworkCore.MySql.Extensions;
+using Pomelo.EntityFrameworkCore.MySql.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
-namespace Microsoft.EntityFrameworkCore.Migrations
+namespace Pomelo.EntityFrameworkCore.MySql.Migrations
 {
     /// <summary>
     ///     MySql-specific implementation of <see cref="MigrationsSqlGenerator" />.
@@ -30,40 +31,15 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             RegexOptions.IgnoreCase);
 
         private readonly IMigrationsAnnotationProvider _migrationsAnnotations;
-        private readonly IMySqlConnectionInfo _connectionInfo;
         private readonly RelationalTypeMapping _stringTypeMapping;
-
-        private IReadOnlyList<MigrationOperation> _operations;
 
         public MySqlMigrationsSqlGenerator(
             [NotNull] MigrationsSqlGeneratorDependencies dependencies,
-            [NotNull] IMigrationsAnnotationProvider migrationsAnnotations,
-            [NotNull] IMySqlConnectionInfo connectionInfo)
+            [NotNull] IMigrationsAnnotationProvider migrationsAnnotations)
             : base(dependencies)
         {
             _migrationsAnnotations = migrationsAnnotations;
-            _connectionInfo = connectionInfo;
             _stringTypeMapping = dependencies.TypeMappingSource.GetMapping(typeof(string));
-        }
-
-        /// <summary>
-        ///     Generates commands from a list of operations.
-        /// </summary>
-        /// <param name="operations"> The operations. </param>
-        /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
-        /// <returns> The list of commands to be executed or scripted. </returns>
-        public override IReadOnlyList<MigrationCommand> Generate(IReadOnlyList<MigrationOperation> operations,
-            IModel model = null)
-        {
-            _operations = operations;
-            try
-            {
-                return base.Generate(operations, model);
-            }
-            finally
-            {
-                _operations = null;
-            }
         }
 
         /// <summary>
@@ -166,9 +142,11 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
+            var serverVersion = GetServerVersion(model);
+
             if (operation.NewName != null)
             {
-                if (_connectionInfo.ServerVersion.SupportsRenameIndex)
+                if (serverVersion.SupportsRenameIndex)
                 {
                     builder.Append("ALTER TABLE ")
                         .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
@@ -507,10 +485,12 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
+            var serverVersion = GetServerVersion(model);
+
             builder.Append("ALTER TABLE ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema));
 
-            if (_connectionInfo.ServerVersion.SupportsRenameColumn)
+            if (serverVersion.SupportsRenameColumn)
             {
                 builder.Append(" RENAME COLUMN ")
                     .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
@@ -680,6 +660,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
+            var serverVersion = GetServerVersion(model);
             var matchType = operation.ColumnType ?? GetColumnType(schema, table, name, operation, model);
             var matchLen = "";
             var match = _typeRegex.Match(matchType ?? "-");
@@ -708,7 +689,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                         autoIncrement = true;
                         break;
                     case "datetime":
-                        if (!_connectionInfo.ServerVersion.SupportsDateTime6)
+                        if (!serverVersion.SupportsDateTime6)
                         {
                             throw new InvalidOperationException(
                                 $"Error in {table}.{name}: DATETIME does not support values generated " +
@@ -728,7 +709,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 switch (matchType)
                 {
                     case "datetime":
-                        if (!_connectionInfo.ServerVersion.SupportsDateTime6)
+                        if (!serverVersion.SupportsDateTime6)
                         {
                             throw new InvalidOperationException(
                                 $"Error in {table}.{name}: DATETIME does not support values generated " +
@@ -775,7 +756,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                     .Append(" AS ")
                     .Append($"({operation.ComputedColumnSql})");
 
-                if (operation.IsNullable && _connectionInfo.ServerVersion.SupportsNullableGeneratedColumns)
+                if (operation.IsNullable && serverVersion.SupportsNullableGeneratedColumns)
                 {
                     builder.Append(" NULL");
                 }
@@ -1031,5 +1012,8 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
             return source.Substring(0, maxLength);
         }
+
+        protected virtual ServerVersion GetServerVersion(IModel model)
+            => new ServerVersion(model?.GetServerVersion());
     }
 }

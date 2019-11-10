@@ -19,6 +19,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Pomelo.EntityFrameworkCore.MySql.Migrations;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 

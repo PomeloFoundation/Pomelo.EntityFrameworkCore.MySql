@@ -46,5 +46,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
         /// <returns> The <see cref="ConfigurationSource" /> for the default <see cref="SqlServerValueGenerationStrategy" />. </returns>
         public static ConfigurationSource? GetValueGenerationStrategyConfigurationSource([NotNull] this IConventionModel model)
             => model.FindAnnotation(MySqlAnnotationNames.ValueGenerationStrategy)?.GetConfigurationSource();
+
+        /// <summary>
+        /// Returns the server version the model is intended for as a string.
+        /// </summary>
+        /// <param name="model">The model of which to get the intended server version from.</param>
+        /// <returns>The intended server version string or null, if no explicit server version was set.</returns>
+        public static string GetServerVersion([NotNull] this IModel model)
+            => model[MySqlAnnotationNames.ServerVersion] as string;
+
+        /// <summary>
+        /// Sets the intended server version for the model.
+        /// </summary>
+        /// <param name="model">The model to set the intended server version for.</param>
+        /// <param name="serverVersion">The server version as a string that the model is intended for.</param>
+        public static void SetServerVersion([NotNull] this IMutableModel model, string serverVersion)
+            => model.SetOrRemoveAnnotation(MySqlAnnotationNames.ServerVersion, serverVersion);
     }
 }
