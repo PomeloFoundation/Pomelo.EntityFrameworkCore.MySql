@@ -10,7 +10,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
     public partial class ServerVersion
     {
         private static readonly Regex _versionRegex = new Regex(@"\d+\.\d+\.?(?:\d+)?");
-        private static readonly ServerVersion _defaultVersion = new ServerVersion(new Version(8, 0, 0), ServerType.MySql);
+
+        public static ServerVersion Default = new ServerVersion(new Version(8, 0, 0), ServerType.MySql);
 
         public ServerVersion()
             : this(null)
@@ -37,8 +38,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
             }
             else
             {
-                Version = _defaultVersion.Version;
-                Type = _defaultVersion.Type;
+                Version = Default.Version;
+                Type = Default.Type;
                 IsDefault = true;
             }
         }
@@ -49,9 +50,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
             Type = type;
         }
 
-        public Version Version { get; }
-        public ServerType Type { get; }
-        public bool IsDefault { get; }
+        public virtual Version Version { get; }
+        public virtual ServerType Type { get; }
+        public virtual bool IsDefault { get; }
 
         public override bool Equals(object obj)
             => !(obj is null)

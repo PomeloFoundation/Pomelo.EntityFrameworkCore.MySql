@@ -25,8 +25,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         protected override void UseProviderOptions(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder.UseMySql("Database=DummyDatabase");
 
-        public IServiceProvider CreateContextServices(Version version, ServerType type)
-            => ((IInfrastructure<IServiceProvider>)new DbContext(CreateOptions(version, type))).Instance;
+        public IServiceProvider CreateContextServices(ServerVersion serverVersion)
+            => ((IInfrastructure<IServiceProvider>)new DbContext(CreateOptions(serverVersion))).Instance;
 
         public IServiceProvider CreateContextServices(CharSetBehavior charSetBehavior, CharSet charSet)
             => ((IInfrastructure<IServiceProvider>)new DbContext(CreateOptions(charSetBehavior, charSet))).Instance;
@@ -39,10 +39,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             return new ModelBuilder(conventionSet);
         }
 
-        public DbContextOptions CreateOptions(Version version, ServerType type)
+        public DbContextOptions CreateOptions(ServerVersion serverVersion)
         {
             var optionsBuilder = new DbContextOptionsBuilder();
-            optionsBuilder.UseMySql("Database=DummyDatabase", b => b.ServerVersion(version, type));
+            optionsBuilder.UseMySql("Database=DummyDatabase", b => b.ServerVersion(serverVersion));
 
             return optionsBuilder.Options;
         }

@@ -856,7 +856,6 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             else if (defaultValue != null)
             {
                 var typeMapping = Dependencies.TypeMappingSource.GetMappingForValue(defaultValue);
-
                 builder
                     .Append(" DEFAULT ")
                     .Append(typeMapping.GenerateSqlLiteral(defaultValue));

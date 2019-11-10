@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.Extensions.DependencyInjection;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Xunit;
@@ -903,7 +904,7 @@ ALTER TABLE `People` DROP PRIMARY KEY;".Replace("\r", string.Empty).Replace("\n"
 
         protected override void Generate(Action<ModelBuilder> buildAction, params MigrationOperation[] operations)
         {
-            var services = MySqlTestHelpers.Instance.CreateContextServices();
+            var services = MySqlTestHelpers.Instance.CreateContextServices(new ServerVersion("8.0.0-mysql"));
             var modelBuilder = MySqlTestHelpers.Instance.CreateConventionBuilder(services);
             buildAction(modelBuilder);
 
