@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Scaffolding;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
 {
@@ -30,11 +31,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
         public override MethodCallCodeFragment GenerateUseProvider(
             string connectionString,
             MethodCallCodeFragment providerOptions)
-            => new MethodCallCodeFragment(
+        {
+            // Strip scaffolding specific connection string options first.
+            connectionString = new MySqlScaffoldingConnectionSettings(connectionString).GetProviderCompatibleConnectionString();
+
+            return new MethodCallCodeFragment(
                 nameof(MySqlDbContextOptionsExtensions.UseMySql),
                 providerOptions == null
-                ? new object[] { connectionString }
-                : new object[] { connectionString, new NestedClosureCodeFragment("x", providerOptions) });
+                    ? new object[] {connectionString}
+                    : new object[] {connectionString, new NestedClosureCodeFragment("x", providerOptions)});
+        }
     }
 }
 
