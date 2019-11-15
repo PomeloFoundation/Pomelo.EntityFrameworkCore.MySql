@@ -904,7 +904,7 @@ ALTER TABLE `People` DROP PRIMARY KEY;".Replace("\r", string.Empty).Replace("\n"
 
         protected override void Generate(Action<ModelBuilder> buildAction, params MigrationOperation[] operations)
         {
-            var services = MySqlTestHelpers.Instance.CreateContextServices(new ServerVersion("8.0.0-mysql"));
+            var services = MySqlTestHelpers.Instance.CreateContextServices(ServerVersion.Default);
             var modelBuilder = MySqlTestHelpers.Instance.CreateConventionBuilder(services);
             buildAction(modelBuilder);
 
