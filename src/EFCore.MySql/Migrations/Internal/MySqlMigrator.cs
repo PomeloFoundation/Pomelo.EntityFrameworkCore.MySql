@@ -30,7 +30,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         private readonly IDiagnosticsLogger<DbLoggerCategory.Database.Command> _commandLogger;
 
         private bool _generateScript;
-        private bool _isIdempotentScript;
+        private bool _isIdempotent;
 
         public MySqlMigrator(
             [NotNull] IMigrationsAssembly migrationsAssembly,
@@ -69,7 +69,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         {
             var commands = base.GenerateUpSql(migration);
 
-            return _isIdempotentScript
+            return _generateScript && _isIdempotent
                 ? commands
                 : WrapWithCustomCommands(
                     migration.UpOperations,
@@ -82,7 +82,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         {
             var commands = base.GenerateDownSql(migration, previousMigration);
 
-            return _isIdempotentScript
+            return _generateScript && _isIdempotent
                 ? commands
                 : WrapWithCustomCommands(
                     migration.DownOperations,
@@ -92,21 +92,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         public override void Migrate(string targetMigration = null)
         {
             _generateScript = false;
-            _isIdempotentScript = false;
+            _isIdempotent = false;
             base.Migrate(targetMigration);
         }
 
         public override Task MigrateAsync(string targetMigration = null, CancellationToken cancellationToken = new CancellationToken())
         {
             _generateScript = false;
-            _isIdempotentScript = false;
+            _isIdempotent = false;
             return base.MigrateAsync(targetMigration, cancellationToken);
         }
 
         public override string GenerateScript(string fromMigration = null, string toMigration = null, bool idempotent = false)
         {
             _generateScript = true;
-            _isIdempotentScript = idempotent;
+            _isIdempotent = idempotent;
 
             if (!idempotent)
             {
@@ -208,7 +208,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
 
             str += _generateScript
                 ? Environment.NewLine + (
-                      _isIdempotentScript
+                      _isIdempotent
                           ? Environment.NewLine
                           : string.Empty)
                 : string.Empty;
