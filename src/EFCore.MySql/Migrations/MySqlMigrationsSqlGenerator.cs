@@ -826,8 +826,8 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             var collation = operation[MySqlAnnotationNames.Collation];
             if (collation != null)
             {
-                const string collationClausePattern = @"COLLATION \w+";
-                var collationClause = $@"COLLATION {collation}";
+                const string collationClausePattern = @"COLLATE \w+";
+                var collationClause = $@"COLLATE {collation}";
 
                 columnType = Regex.IsMatch(columnType, collationClausePattern, RegexOptions.IgnoreCase)
                     ? Regex.Replace(columnType, collationClausePattern, collationClause)

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
@@ -30,6 +29,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
         private readonly IDiagnosticsLogger<DbLoggerCategory.Scaffolding> _logger;
         private readonly IServiceProvider _serviceProvider;
         private readonly IMySqlOptions _options;
+        private MySqlScaffoldingConnectionSettings _settings;
 
         public MySqlDatabaseModelFactory(
             [NotNull] IDiagnosticsLogger<DbLoggerCategory.Scaffolding> logger,
@@ -41,6 +41,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
             _logger = logger;
             _serviceProvider = serviceProvider;
             _options = options;
+            _settings = new MySqlScaffoldingConnectionSettings(string.Empty);
         }
 
         public override DatabaseModel Create(string connectionString, DatabaseModelFactoryOptions options)
@@ -48,10 +49,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
             Check.NotEmpty(connectionString, nameof(connectionString));
             Check.NotNull(options, nameof(options));
 
-            using (var connection = new MySqlConnection(connectionString))
-            {
-                return Create(connection, options);
-            }
+            _settings = new MySqlScaffoldingConnectionSettings(connectionString);
+
+            using var connection = new MySqlConnection(_settings.GetProviderCompatibleConnectionString());
+            return Create(connection, options);
         }
 
         public override DatabaseModel Create(DbConnection connection, DatabaseModelFactoryOptions options)
@@ -264,8 +265,8 @@ AND
                                 DefaultValueSql = CreateDefaultValueString(defaultValue, dataType),
                                 ValueGenerated = valueGenerated,
                                 Comment = string.IsNullOrEmpty(comment) ? null : comment,
-                                [MySqlAnnotationNames.CharSet] = charset,
-                                [MySqlAnnotationNames.Collation] = collation,
+                                [MySqlAnnotationNames.CharSet] = _settings.CharSet ? charset : null,
+                                [MySqlAnnotationNames.Collation] = _settings.Collation ? collation : null,
                             };
 
                             table.Columns.Add(column);

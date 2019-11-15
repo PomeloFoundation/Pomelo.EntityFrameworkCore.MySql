@@ -114,6 +114,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
             }
 
             IEnumerable<string> appliedMigrations;
+
             if (string.IsNullOrEmpty(fromMigration)
                 || fromMigration == Migration.InitialDatabase)
             {
