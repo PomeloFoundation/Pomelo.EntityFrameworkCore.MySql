@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.Extensions.DependencyInjection;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
@@ -129,7 +130,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
         protected override void Generate(Action<ModelBuilder> buildAction, params MigrationOperation[] operations)
         {
-            var services = MySqlTestHelpers.Instance.CreateContextServices(new Version(5, 5, 2), ServerType.MySql);
+            var services = MySqlTestHelpers.Instance.CreateContextServices(new ServerVersion("5.5.2-mysql"));
             var modelBuilder = MySqlTestHelpers.Instance.CreateConventionBuilder(services);
             buildAction(modelBuilder);
 

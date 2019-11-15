@@ -47,6 +47,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string DefaultCharSetUtf8Mb4MySqlSupportVersionString = "8.0.0-mysql";
         // public const string DefaultCharSetUtf8Mb4MariaDbSupportVersionString = "?.?.?-mariadb";
 
+        public const string DefaultExpressionMySqlSupportVersionString = "8.0.13-mysql";
+        // public const string DefaultExpressionMariaDbSupportVersionString = "?.?.?-mariadb";
+
         #endregion
 
         #region SupportMap keys for test attributes
@@ -64,6 +67,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string GeneratedColumnsSupportKey = nameof(GeneratedColumnsSupportKey);
         public const string NullableGeneratedColumnsSupportKey = nameof(NullableGeneratedColumnsSupportKey);
         public const string DefaultCharSetUtf8Mb4SupportKey = nameof(DefaultCharSetUtf8Mb4SupportKey);
+        public const string DefaultExpressionSupportKey = nameof(DefaultExpressionSupportKey);
 
         #endregion
 
@@ -82,28 +86,30 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
             { GeneratedColumnsSupportKey, new ServerVersionSupport(GeneratedColumnsMySqlSupportVersionString, GeneratedColumnsMariaDbSupportVersionString) },
             { NullableGeneratedColumnsSupportKey, new ServerVersionSupport(NullableGeneratedColumnsMySqlSupportVersionString/*, NullableGeneratedColumnsMariaDbSupportVersionString*/) },
             { DefaultCharSetUtf8Mb4SupportKey, new ServerVersionSupport(DefaultCharSetUtf8Mb4MySqlSupportVersionString/*, DefaultCharSetUtf8Mb4MariaDbSupportVersionString*/) },
+            { DefaultExpressionSupportKey, new ServerVersionSupport(DefaultExpressionMySqlSupportVersionString/*, DefaultExpressionMariaDbSupportVersionString*/) },
         };
 
         #region Support checks for provider code
 
-        public bool SupportsDateTime6 => SupportMap[DateTime6SupportKey].IsSupported(this);
-        public bool SupportsLargerKeyLength => SupportMap[LargerKeyLengthSupportKey].IsSupported(this);
-        public bool SupportsRenameIndex => SupportMap[RenameIndexSupportKey].IsSupported(this);
-        public bool SupportsRenameColumn => SupportMap[RenameColumnSupportKey].IsSupported(this);
-        public bool SupportsWindowFunctions => SupportMap[WindowFunctionsSupportKey].IsSupported(this);
-        public bool SupportsFloatCast => SupportMap[FloatCastSupportKey].IsSupported(this);
-        public bool SupportsDoubleCast => SupportMap[DoubleCastSupportKey].IsSupported(this);
-        public bool SupportsOuterApply => SupportMap[OuterApplySupportKey].IsSupported(this);
-        public bool SupportsCrossApply => SupportMap[CrossApplySupportKey].IsSupported(this);
-        public bool SupportsJson => SupportMap[JsonSupportKey].IsSupported(this);
-        public bool SupportsGeneratedColumns => SupportMap[GeneratedColumnsSupportKey].IsSupported(this);
-        public bool SupportsNullableGeneratedColumns => SupportMap[NullableGeneratedColumnsSupportKey].IsSupported(this);
-        public bool SupportsDefaultCharSetUtf8Mb4 => SupportMap[DefaultCharSetUtf8Mb4SupportKey].IsSupported(this);
+        public virtual bool SupportsDateTime6 => SupportMap[DateTime6SupportKey].IsSupported(this);
+        public virtual bool SupportsLargerKeyLength => SupportMap[LargerKeyLengthSupportKey].IsSupported(this);
+        public virtual bool SupportsRenameIndex => SupportMap[RenameIndexSupportKey].IsSupported(this);
+        public virtual bool SupportsRenameColumn => SupportMap[RenameColumnSupportKey].IsSupported(this);
+        public virtual bool SupportsWindowFunctions => SupportMap[WindowFunctionsSupportKey].IsSupported(this);
+        public virtual bool SupportsFloatCast => SupportMap[FloatCastSupportKey].IsSupported(this);
+        public virtual bool SupportsDoubleCast => SupportMap[DoubleCastSupportKey].IsSupported(this);
+        public virtual bool SupportsOuterApply => SupportMap[OuterApplySupportKey].IsSupported(this);
+        public virtual bool SupportsCrossApply => SupportMap[CrossApplySupportKey].IsSupported(this);
+        public virtual bool SupportsJson => SupportMap[JsonSupportKey].IsSupported(this);
+        public virtual bool SupportsGeneratedColumns => SupportMap[GeneratedColumnsSupportKey].IsSupported(this);
+        public virtual bool SupportsNullableGeneratedColumns => SupportMap[NullableGeneratedColumnsSupportKey].IsSupported(this);
+        public virtual bool SupportsDefaultCharSetUtf8Mb4 => SupportMap[DefaultCharSetUtf8Mb4SupportKey].IsSupported(this);
+        public virtual bool SupportsDefaultExpression => SupportMap[DefaultExpressionSupportKey].IsSupported(this);
 
         #endregion
 
-        public int MaxKeyLength => SupportsLargerKeyLength ? 3072 : 767;
-        public CharSet DefaultCharSet => SupportsDefaultCharSetUtf8Mb4 ? CharSet.Utf8Mb4 : CharSet.Latin1;
+        public virtual int MaxKeyLength => SupportsLargerKeyLength ? 3072 : 767;
+        public virtual CharSet DefaultCharSet => SupportsDefaultCharSetUtf8Mb4 ? CharSet.Utf8Mb4 : CharSet.Latin1;
         
         /// <summary>
         /// Constructs a new <see cref="ServerVersionSupport"/> object containing the <see cref="ServerVersion"/> objects

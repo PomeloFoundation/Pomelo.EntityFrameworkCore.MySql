@@ -2,24 +2,24 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Pomelo.EntityFrameworkCore.MySql.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
-namespace Microsoft.EntityFrameworkCore.Migrations
+namespace Pomelo.EntityFrameworkCore.MySql.Migrations
 {
     /// <summary>
     ///     MySql-specific implementation of <see cref="MigrationsSqlGenerator" />.
@@ -33,7 +33,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
         private readonly IMySqlConnectionInfo _connectionInfo;
         private readonly RelationalTypeMapping _stringTypeMapping;
 
-        private IReadOnlyList<MigrationOperation> _operations;
+        protected virtual ServerVersion ServerVersion => _connectionInfo.ServerVersion;
 
         public MySqlMigrationsSqlGenerator(
             [NotNull] MigrationsSqlGeneratorDependencies dependencies,
@@ -44,26 +44,6 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             _migrationsAnnotations = migrationsAnnotations;
             _connectionInfo = connectionInfo;
             _stringTypeMapping = dependencies.TypeMappingSource.GetMapping(typeof(string));
-        }
-
-        /// <summary>
-        ///     Generates commands from a list of operations.
-        /// </summary>
-        /// <param name="operations"> The operations. </param>
-        /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
-        /// <returns> The list of commands to be executed or scripted. </returns>
-        public override IReadOnlyList<MigrationCommand> Generate(IReadOnlyList<MigrationOperation> operations,
-            IModel model = null)
-        {
-            _operations = operations;
-            try
-            {
-                return base.Generate(operations, model);
-            }
-            finally
-            {
-                _operations = null;
-            }
         }
 
         /// <summary>
@@ -856,7 +836,6 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             else if (defaultValue != null)
             {
                 var typeMapping = Dependencies.TypeMappingSource.GetMappingForValue(defaultValue);
-
                 builder
                     .Append(" DEFAULT ")
                     .Append(typeMapping.GenerateSqlLiteral(defaultValue));

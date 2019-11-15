@@ -33,6 +33,12 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
             => WithOption(e => e.WithServerVersion(new ServerVersion(serverVersion)));
 
         /// <summary>
+        ///     Configures the target <see cref="ServerVersion"/>.
+        /// </summary>
+        public virtual MySqlDbContextOptionsBuilder ServerVersion(ServerVersion serverVersion)
+            => WithOption(e => e.WithServerVersion(serverVersion));
+
+        /// <summary>
         ///     Configures the Default CharSet Behavior
         /// </summary>
         public virtual MySqlDbContextOptionsBuilder CharSetBehavior(CharSetBehavior charSetBehavior)
