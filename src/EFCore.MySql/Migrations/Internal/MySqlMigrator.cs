@@ -8,13 +8,29 @@ using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
 {
     public class MySqlMigrator : Migrator
     {
+        private static readonly Dictionary<Type, Tuple<string, string>> _customMigrationCommands = new Dictionary<Type, Tuple<string, string>>
+        {
+            { typeof(DropPrimaryKeyOperation), new Tuple<string, string>(BeforeDropPrimaryKeyMigrationBegin, BeforeDropPrimaryKeyMigrationEnd) },
+            { typeof(AddPrimaryKeyOperation), new Tuple<string, string>(AfterAddPrimaryKeyMigrationBegin, AfterAddPrimaryKeyMigrationEnd) },
+        };
+
         private readonly IMigrationsAssembly _migrationsAssembly;
+        private readonly IRawSqlCommandBuilder _rawSqlCommandBuilder;
+        private readonly ICurrentDbContext _currentContext;
+        private readonly IDiagnosticsLogger<DbLoggerCategory.Database.Command> _commandLogger;
+
+        private bool _generateScript;
+        private bool _isIdempotent;
 
         public MySqlMigrator(
             [NotNull] IMigrationsAssembly migrationsAssembly,
@@ -44,13 +60,59 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                 databaseProvider)
         {
             _migrationsAssembly = migrationsAssembly;
+            _rawSqlCommandBuilder = rawSqlCommandBuilder;
+            _currentContext = currentContext;
+            _commandLogger = commandLogger;
         }
 
-        public override string GenerateScript(
-            string fromMigration = null,
-            string toMigration = null,
-            bool idempotent = false)
+        protected override IReadOnlyList<MigrationCommand> GenerateUpSql(Migration migration)
         {
+            var commands = base.GenerateUpSql(migration);
+
+            return _generateScript && _isIdempotent
+                ? commands
+                : WrapWithCustomCommands(
+                    migration.UpOperations,
+                    commands.ToList());
+        }
+
+        protected override IReadOnlyList<MigrationCommand> GenerateDownSql(
+            Migration migration,
+            Migration previousMigration)
+        {
+            var commands = base.GenerateDownSql(migration, previousMigration);
+
+            return _generateScript && _isIdempotent
+                ? commands
+                : WrapWithCustomCommands(
+                    migration.DownOperations,
+                    commands.ToList());
+        }
+
+        public override void Migrate(string targetMigration = null)
+        {
+            _generateScript = false;
+            _isIdempotent = false;
+            base.Migrate(targetMigration);
+        }
+
+        public override Task MigrateAsync(string targetMigration = null, CancellationToken cancellationToken = new CancellationToken())
+        {
+            _generateScript = false;
+            _isIdempotent = false;
+            return base.MigrateAsync(targetMigration, cancellationToken);
+        }
+
+        public override string GenerateScript(string fromMigration = null, string toMigration = null, bool idempotent = false)
+        {
+            _generateScript = true;
+            _isIdempotent = idempotent;
+
+            if (!idempotent)
+            {
+                return base.GenerateScript(fromMigration, toMigration, false);
+            }
+
             IEnumerable<string> appliedMigrations;
 
             if (string.IsNullOrEmpty(fromMigration)
@@ -73,40 +135,92 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                 out var migrationsToRevert,
                 out var actualTargetMigration);
 
-            var operations = migrationsToApply.SelectMany(x => x.UpOperations).Concat(migrationsToRevert.SelectMany(x => x.DownOperations)).ToList();
-            var dropPrimaryKeyExists = operations.Any(x => x is DropPrimaryKeyOperation);
-            var addPrimaryKeyExists = operations.Any(x => x is AddPrimaryKeyOperation);
+            var operations = migrationsToApply
+                .SelectMany(x => x.UpOperations)
+                .Concat(migrationsToRevert.SelectMany(x => x.DownOperations))
+                .ToList();
 
-            var parts = new List<string>();
+            var builder = new StringBuilder();
 
-            if (dropPrimaryKeyExists)
-            {
-                parts.Add(PrepareString(BeforeDropPrimaryKeyHeader));
-            }
+            builder.AppendJoin(string.Empty, GetMigrationCommandTexts(operations, true));
+            builder.Append(base.GenerateScript(fromMigration, toMigration, true));
+            builder.AppendJoin(string.Empty, GetMigrationCommandTexts(operations, false));
 
-            if (addPrimaryKeyExists)
-            {
-                parts.Add(PrepareString(AfterAddPrimaryKeyHeader));
-            }
-
-            parts.Add(base.GenerateScript(fromMigration, toMigration, idempotent) + Environment.NewLine);
-
-            if (dropPrimaryKeyExists)
-            {
-                parts.Add(PrepareString(BeforeDropPrimaryKeyFooter));
-            }
-
-            if (addPrimaryKeyExists)
-            {
-                parts.Add(PrepareString(AfterAddPrimaryKeyFooter));
-            }
-
-            return string.Join("", parts);
+            return builder.ToString();
         }
 
-        private const string BeforeDropPrimaryKeyHeader = @"DROP PROCEDURE IF EXISTS POMELO_BEFORE_DROP_PRIMARY_KEY;
+        private IReadOnlyList<MigrationCommand> WrapWithCustomCommands(
+            IReadOnlyList<MigrationOperation> migrationOperations,
+            List<MigrationCommand> migrationCommands)
+        {
+            var beginCommandTexts = GetMigrationCommandTexts(migrationOperations, true);
+            var endCommandTexts = GetMigrationCommandTexts(migrationOperations, false);
+
+            migrationCommands.InsertRange(0, beginCommandTexts.Select(t => new MigrationCommand(
+                _rawSqlCommandBuilder.Build(t),
+                _currentContext.Context,
+                _commandLogger)));
+
+            migrationCommands.AddRange(endCommandTexts.Select(t => new MigrationCommand(
+                _rawSqlCommandBuilder.Build(t),
+                _currentContext.Context,
+                _commandLogger)));
+
+            return migrationCommands;
+        }
+
+        private IReadOnlyList<string> GetMigrationCommandTexts(IReadOnlyList<MigrationOperation> migrationOperations, bool beginTexts)
+            => GetCustomCommands(migrationOperations)
+                .Select(t => PrepareString(beginTexts ? t.Item1 : t.Item2))
+                .ToList();
+
+        private static IReadOnlyList<Tuple<string, string>> GetCustomCommands(IReadOnlyList<MigrationOperation> migrationOperations)
+            => _customMigrationCommands
+                .Where(c => migrationOperations.Any(o => c.Key.IsInstanceOfType(o)) && c.Value != null)
+                .Select(kvp => kvp.Value)
+                .ToList();
+
+        private static string CleanUpScriptSpecificPseudoStatements(string commandText)
+        {
+            const string delimiterPattern = @"^\s*DELIMITER\s*(?<Delimiter>;|//)\s*$";
+            const RegexOptions delimiterPatternRegexOptions = RegexOptions.IgnoreCase | RegexOptions.Multiline;
+
+            var delimiter = Regex.Match(commandText, delimiterPattern, delimiterPatternRegexOptions);
+
+            if (delimiter.Success)
+            {
+                var result = Regex.Replace(commandText, delimiterPattern, string.Empty, delimiterPatternRegexOptions);
+                return Regex.Replace(result, $@"\s*{Regex.Escape(delimiter.Groups["Delimiter"].Value)}\s*$", ";", delimiterPatternRegexOptions);
+            }
+
+            return commandText;
+        }
+
+        private string PrepareString(string str)
+        {
+            str = _generateScript
+                ? str
+                : CleanUpScriptSpecificPseudoStatements(str);
+
+            str = str
+                .Replace("\r", string.Empty)
+                .Replace("\n", Environment.NewLine);
+
+            str += _generateScript
+                ? Environment.NewLine + (
+                      _isIdempotent
+                          ? Environment.NewLine
+                          : string.Empty)
+                : string.Empty;
+
+            return str;
+        }
+
+        #region BeforeDropPrimaryKey
+
+        private const string BeforeDropPrimaryKeyMigrationBegin = @"DROP PROCEDURE IF EXISTS `POMELO_BEFORE_DROP_PRIMARY_KEY`;
 DELIMITER //
-CREATE PROCEDURE POMELO_BEFORE_DROP_PRIMARY_KEY(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255))
+CREATE PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255))
 BEGIN
 	DECLARE HAS_AUTO_INCREMENT_ID TINYINT(1);
 	DECLARE PRIMARY_KEY_COLUMN_NAME VARCHAR(255);
@@ -144,9 +258,15 @@ BEGIN
 END //
 DELIMITER ;";
 
-        private const string AfterAddPrimaryKeyHeader = @"DROP PROCEDURE IF EXISTS POMELO_AFTER_ADD_PRIMARY_KEY;
+        private const string BeforeDropPrimaryKeyMigrationEnd = @"DROP PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`;";
+
+        #endregion BeforeDropPrimaryKey
+
+        #region AfterAddPrimaryKey
+
+        private const string AfterAddPrimaryKeyMigrationBegin = @"DROP PROCEDURE IF EXISTS `POMELO_AFTER_ADD_PRIMARY_KEY`;
 DELIMITER //
-CREATE PROCEDURE POMELO_AFTER_ADD_PRIMARY_KEY(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255), IN `COLUMN_NAME_ARGUMENT` VARCHAR(255))
+CREATE PROCEDURE `POMELO_AFTER_ADD_PRIMARY_KEY`(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255), IN `COLUMN_NAME_ARGUMENT` VARCHAR(255))
 BEGIN
 	DECLARE HAS_AUTO_INCREMENT_ID INT(11);
 	DECLARE PRIMARY_KEY_COLUMN_NAME VARCHAR(255);
@@ -186,17 +306,9 @@ BEGIN
 END //
 DELIMITER ;";
 
-        private const string BeforeDropPrimaryKeyFooter = @"DROP PROCEDURE POMELO_BEFORE_DROP_PRIMARY_KEY;";
-        private const string AfterAddPrimaryKeyFooter = @"DROP PROCEDURE POMELO_AFTER_ADD_PRIMARY_KEY;";
+        private const string AfterAddPrimaryKeyMigrationEnd = @"DROP PROCEDURE `POMELO_AFTER_ADD_PRIMARY_KEY`;";
 
-        private static string PrepareString(string str)
-        {
-            return str
-                .Replace("\r", string.Empty)
-                .Replace("\n", Environment.NewLine)
-                + Environment.NewLine
-                + Environment.NewLine;
-        }
+        #endregion AfterAddPrimaryKey
     }
 }
 

@@ -495,7 +495,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
                 builder.Append(" RENAME COLUMN ")
                     .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
                     .Append(" TO ")
-                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName));
+                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName))
+                    .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
 
                 EndStatement(builder);
                 return;
