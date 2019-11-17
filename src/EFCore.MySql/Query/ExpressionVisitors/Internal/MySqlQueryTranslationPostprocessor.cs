@@ -1,26 +1,26 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
     public class MySqlQueryTranslationPostprocessor : RelationalQueryTranslationPostprocessor
     {
-        private readonly IMySqlConnectionInfo _connectionInfo;
+        private readonly IMySqlOptions _options;
 
         public MySqlQueryTranslationPostprocessor(
             QueryTranslationPostprocessorDependencies dependencies,
             RelationalQueryTranslationPostprocessorDependencies relationalDependencies,
             QueryCompilationContext queryCompilationContext,
-            IMySqlConnectionInfo connectionInfo)
+            IMySqlOptions options)
             : base(dependencies, relationalDependencies, queryCompilationContext)
         {
-            _connectionInfo = connectionInfo;
+            _options = options;
         }
 
         public override Expression Process(Expression query)
         {
-            query = new MySqlCompatibilityExpressionVisitor(_connectionInfo).Visit(query);
+            query = new MySqlCompatibilityExpressionVisitor(_options).Visit(query);
 
             return base.Process(query);
         }

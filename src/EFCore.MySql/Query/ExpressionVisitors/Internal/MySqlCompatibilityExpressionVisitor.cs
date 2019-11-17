@@ -3,17 +3,17 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
     public class MySqlCompatibilityExpressionVisitor : ExpressionVisitor
     {
-        private readonly IMySqlConnectionInfo _connectionInfo;
+        private readonly IMySqlOptions _options;
 
-        public MySqlCompatibilityExpressionVisitor(IMySqlConnectionInfo connectionInfo)
+        public MySqlCompatibilityExpressionVisitor(IMySqlOptions options)
         {
-            _connectionInfo = connectionInfo;
+            _options = options;
         }
 
         protected override Expression VisitExtension(Expression extensionExpression)
@@ -40,13 +40,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         }
 
         protected virtual Expression VisitRowNumber(RowNumberExpression rowNumberExpression)
-            => CheckSupport(rowNumberExpression, _connectionInfo.ServerVersion.SupportsWindowFunctions);
+            => CheckSupport(rowNumberExpression, _options.ServerVersion.SupportsWindowFunctions);
 
         protected virtual Expression VisitCrossApply(CrossApplyExpression crossApplyExpression)
-            => CheckSupport(crossApplyExpression, _connectionInfo.ServerVersion.SupportsCrossApply);
+            => CheckSupport(crossApplyExpression, _options.ServerVersion.SupportsCrossApply);
         
         protected virtual Expression VisitOuterApply(OuterApplyExpression outerApplyExpression)
-            => CheckSupport(outerApplyExpression, _connectionInfo.ServerVersion.SupportsOuterApply);
+            => CheckSupport(outerApplyExpression, _options.ServerVersion.SupportsOuterApply);
 
         protected virtual Expression VisitExcept(ExceptExpression exceptExpression)
             => CheckSupport(exceptExpression, false);

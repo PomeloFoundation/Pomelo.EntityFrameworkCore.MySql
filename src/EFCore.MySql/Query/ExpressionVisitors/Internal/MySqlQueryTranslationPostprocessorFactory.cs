@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Query;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
@@ -7,16 +7,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
     {
         private readonly QueryTranslationPostprocessorDependencies _dependencies;
         private readonly RelationalQueryTranslationPostprocessorDependencies _relationalDependencies;
-        private readonly IMySqlConnectionInfo _connectionInfo;
+        private readonly IMySqlOptions _options;
 
         public MySqlQueryTranslationPostprocessorFactory(
             QueryTranslationPostprocessorDependencies dependencies,
             RelationalQueryTranslationPostprocessorDependencies relationalDependencies,
-            IMySqlConnectionInfo connectionInfo)
+            IMySqlOptions options)
         {
             _dependencies = dependencies;
             _relationalDependencies = relationalDependencies;
-            _connectionInfo = connectionInfo;
+            _options = options;
         }
 
         public virtual QueryTranslationPostprocessor Create(QueryCompilationContext queryCompilationContext)
@@ -24,6 +24,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 _dependencies,
                 _relationalDependencies,
                 queryCompilationContext,
-                _connectionInfo);
+                _options);
     }
 }

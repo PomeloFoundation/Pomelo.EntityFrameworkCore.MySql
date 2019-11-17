@@ -8,8 +8,8 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
@@ -41,7 +41,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         private const ulong LimitUpperBound = 18446744073709551610;
 
-        private readonly IMySqlConnectionInfo _connectionInfo;
+        private readonly IMySqlOptions _options;
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -49,10 +49,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         /// </summary>
         public MySqlQuerySqlGenerator(
             [NotNull] QuerySqlGeneratorDependencies dependencies,
-            [CanBeNull] IMySqlConnectionInfo connectionInfo)
+            [CanBeNull] IMySqlOptions options)
             : base(dependencies)
         {
-            _connectionInfo = connectionInfo;
+            _options = options;
         }
 
         /// <summary>
@@ -190,13 +190,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
             var useDecimalToDoubleFloatWorkaround = false;
 
-            if (castMapping.StartsWith("double") && !_connectionInfo.ServerVersion.SupportsDoubleCast)
+            if (castMapping.StartsWith("double") && !_options.ServerVersion.SupportsDoubleCast)
             {
                 useDecimalToDoubleFloatWorkaround = true;
                 castMapping = "decimal(65,30)";
             }
 
-            if (castMapping.StartsWith("float") && !_connectionInfo.ServerVersion.SupportsFloatCast)
+            if (castMapping.StartsWith("float") && !_options.ServerVersion.SupportsFloatCast)
             {
                 useDecimalToDoubleFloatWorkaround = true;
                 castMapping = "decimal(65,30)";

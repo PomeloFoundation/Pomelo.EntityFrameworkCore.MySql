@@ -20,16 +20,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     {
         private const string NoBackslashEscapes = "NO_BACKSLASH_ESCAPES";
 
-        private readonly IServiceProvider _serviceProvider;
         private readonly MySqlOptionsExtension _mySqlOptionsExtension;
 
         // ReSharper disable once VirtualMemberCallInConstructor
         public MySqlRelationalConnection(
-            [NotNull] RelationalConnectionDependencies dependencies,
-            IServiceProvider serviceProvider)
+            [NotNull] RelationalConnectionDependencies dependencies)
             : base(dependencies)
         {
-            _serviceProvider = serviceProvider;
             _mySqlOptionsExtension = Dependencies.ContextOptions.FindExtension<MySqlOptionsExtension>() ?? new MySqlOptionsExtension();
         }
 
@@ -63,7 +60,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
             optionsBuilderInfrastructure.AddOrUpdateExtension(relationalOptions);
 
-            return new MySqlRelationalConnection(Dependencies.With(optionsBuilder.Options), _serviceProvider)
+            return new MySqlRelationalConnection(Dependencies.With(optionsBuilder.Options))
             {
                 IsMasterConnection = true
             };
@@ -132,8 +129,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
             if (result)
             {
-                MySqlConnectionInfo.SetServerVersion((MySqlConnection)DbConnection, _serviceProvider);
-
                 if (_mySqlOptionsExtension.UpdateSqlModeOnOpen && _mySqlOptionsExtension.NoBackslashEscapes)
                 {
                     AppendToSqlMode(NoBackslashEscapes);
@@ -149,8 +144,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
             if (result)
             {
-                MySqlConnectionInfo.SetServerVersion((MySqlConnection)DbConnection, _serviceProvider);
-
                 if (_mySqlOptionsExtension.UpdateSqlModeOnOpen && _mySqlOptionsExtension.NoBackslashEscapes)
                 {
                     await AppendToSqlModeAsync(NoBackslashEscapes);

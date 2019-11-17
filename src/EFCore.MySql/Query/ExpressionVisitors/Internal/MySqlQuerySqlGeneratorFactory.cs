@@ -3,24 +3,24 @@
 
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
     public class MySqlQuerySqlGeneratorFactory : IQuerySqlGeneratorFactory
     {
         private readonly QuerySqlGeneratorDependencies _dependencies;
-        private readonly IMySqlConnectionInfo _connectionInfo;
+        private readonly IMySqlOptions _options;
 
         public MySqlQuerySqlGeneratorFactory(
             [NotNull] QuerySqlGeneratorDependencies dependencies,
-            IMySqlConnectionInfo connectionInfo)
+            IMySqlOptions options)
         {
             _dependencies = dependencies;
-            _connectionInfo = connectionInfo;
+            _options = options;
         }
 
         public virtual QuerySqlGenerator Create()
-            => new MySqlQuerySqlGenerator(_dependencies, _connectionInfo);
+            => new MySqlQuerySqlGenerator(_dependencies, _options);
     }
 }
