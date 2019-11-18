@@ -17,7 +17,7 @@ The following versions of EF Core and .NET Core are compatible with `Pomelo.Enti
 
 Pomelo.EntityFrameworkCore.MySql | EF Core | .NET Core
 -- | -- | --
-[3.0.0-rc3.final](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.0.0-rc3.final) (prerelease) | 3.0.0 | 3.0
+[3.0.0](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.0.0) | 3.0.0 | 3.0
 [2.2.6](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/2.2.6) | 2.2.6 | 2.2 / 3.0
 
 ### Supported DBMS and Versions
@@ -33,7 +33,7 @@ Pomelo.EntityFrameworkCore.MySql | EF Core | .NET Core
 
 Milestone | Status | Release Date
 ----------|--------|-------------
-3.0.0 | Feature lock | Soon
+3.0.0 | Released | 2019-11-18
 3.0.0-rc3 | Released | 2019-11-07
 3.0.0-rc2 | Released | 2019-11-04
 3.0.0-rc1 | Released | 2019-10-06
@@ -59,7 +59,7 @@ To use nightly builds from our MyGet feed, add a `NuGet.config` file in your sol
 
 ### 1. Recommended Server CharSet
 
-We recommend you to set `utf8mb4` as your MySQL database default charset. The following statement will check your DB charset:
+We recommend to set `utf8mb4` as your MySQL database default charset. The following statement will check your current DB charset:
 
 ```sql
 show variables like 'character_set_database';
@@ -67,22 +67,10 @@ show variables like 'character_set_database';
 
 ### 2. CSPROJ Configuration
 
-Ensure that your `.csproj` file has the following references.
+Ensure that your `.csproj` file contains the following reference:
 
 ```xml
-<Project Sdk="Microsoft.NET.Sdk.Web">
-
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.0" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.2.0" />
-  </ItemGroup>
-  
-</Project>
+<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="3.0.0" />
 ```
 
 ### 3. Services Configuration
