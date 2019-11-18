@@ -42,7 +42,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Scaffolding
                         new LoggingOptions(),
                         new DiagnosticListener("Fake"),
                         new MySqlLoggingDefinitions());
-                var databaseModelFactory = new MySqlDatabaseModelFactory(logger, Fixture.ServiceProvider, Fixture.ServiceProvider.GetService<IMySqlOptions>());
+                var databaseModelFactory = new MySqlDatabaseModelFactory(logger);
 
                 var databaseModel = databaseModelFactory.Create(Fixture.TestStore.ConnectionString,
                     new DatabaseModelFactoryOptions(tables, schemas));

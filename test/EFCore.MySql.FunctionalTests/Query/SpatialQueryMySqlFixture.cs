@@ -50,9 +50,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             public ReplacementTypeMappingSource(
                 TypeMappingSourceDependencies dependencies,
                 RelationalTypeMappingSourceDependencies relationalDependencies,
-                IMySqlOptions options,
-                IMySqlConnectionInfo connectionInfo)
-                : base(dependencies, relationalDependencies, options, connectionInfo)
+                IMySqlOptions options)
+                : base(dependencies, relationalDependencies, options)
             {
             }
 

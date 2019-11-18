@@ -14,10 +14,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Migrations
 {
@@ -30,19 +30,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             RegexOptions.IgnoreCase);
 
         private readonly IMigrationsAnnotationProvider _migrationsAnnotations;
-        private readonly IMySqlConnectionInfo _connectionInfo;
+        private readonly IMySqlOptions _options;
         private readonly RelationalTypeMapping _stringTypeMapping;
 
-        protected virtual ServerVersion ServerVersion => _connectionInfo.ServerVersion;
+        protected virtual ServerVersion ServerVersion => _options.ServerVersion;
 
         public MySqlMigrationsSqlGenerator(
             [NotNull] MigrationsSqlGeneratorDependencies dependencies,
             [NotNull] IMigrationsAnnotationProvider migrationsAnnotations,
-            [NotNull] IMySqlConnectionInfo connectionInfo)
+            [NotNull] IMySqlOptions options)
             : base(dependencies)
         {
             _migrationsAnnotations = migrationsAnnotations;
-            _connectionInfo = connectionInfo;
+            _options = options;
             _stringTypeMapping = dependencies.TypeMappingSource.GetMapping(typeof(string));
         }
 
@@ -148,7 +148,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
 
             if (operation.NewName != null)
             {
-                if (_connectionInfo.ServerVersion.SupportsRenameIndex)
+                if (_options.ServerVersion.SupportsRenameIndex)
                 {
                     builder.Append("ALTER TABLE ")
                         .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
@@ -490,7 +490,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             builder.Append("ALTER TABLE ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema));
 
-            if (_connectionInfo.ServerVersion.SupportsRenameColumn)
+            if (_options.ServerVersion.SupportsRenameColumn)
             {
                 builder.Append(" RENAME COLUMN ")
                     .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
@@ -689,7 +689,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
                         autoIncrement = true;
                         break;
                     case "datetime":
-                        if (!_connectionInfo.ServerVersion.SupportsDateTime6)
+                        if (!_options.ServerVersion.SupportsDateTime6)
                         {
                             throw new InvalidOperationException(
                                 $"Error in {table}.{name}: DATETIME does not support values generated " +
@@ -709,7 +709,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
                 switch (matchType)
                 {
                     case "datetime":
-                        if (!_connectionInfo.ServerVersion.SupportsDateTime6)
+                        if (!_options.ServerVersion.SupportsDateTime6)
                         {
                             throw new InvalidOperationException(
                                 $"Error in {table}.{name}: DATETIME does not support values generated " +
@@ -756,7 +756,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
                     .Append(" AS ")
                     .Append($"({operation.ComputedColumnSql})");
 
-                if (operation.IsNullable && _connectionInfo.ServerVersion.SupportsNullableGeneratedColumns)
+                if (operation.IsNullable && _options.ServerVersion.SupportsNullableGeneratedColumns)
                 {
                     builder.Append(" NULL");
                 }

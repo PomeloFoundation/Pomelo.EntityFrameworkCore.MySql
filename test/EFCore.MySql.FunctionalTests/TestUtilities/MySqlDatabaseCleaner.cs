@@ -29,9 +29,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                     loggerFactory,
                     new LoggingOptions(),
                     new DiagnosticListener("Fake"),
-                    new MySqlLoggingDefinitions()),
-                _serviceProvider,
-                _options);
+                    new MySqlLoggingDefinitions()));
 
         protected override bool AcceptIndex(DatabaseIndex index) => false;
         protected override bool AcceptTable(DatabaseTable table) => !(table is DatabaseView);

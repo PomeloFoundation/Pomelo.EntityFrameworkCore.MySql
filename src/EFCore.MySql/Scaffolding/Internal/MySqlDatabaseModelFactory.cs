@@ -17,8 +17,6 @@ using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
@@ -27,20 +25,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
     public class MySqlDatabaseModelFactory : DatabaseModelFactory
     {
         private readonly IDiagnosticsLogger<DbLoggerCategory.Scaffolding> _logger;
-        private readonly IServiceProvider _serviceProvider;
-        private readonly IMySqlOptions _options;
         private MySqlScaffoldingConnectionSettings _settings;
 
         public MySqlDatabaseModelFactory(
-            [NotNull] IDiagnosticsLogger<DbLoggerCategory.Scaffolding> logger,
-            IServiceProvider serviceProvider,
-            IMySqlOptions options)
+            [NotNull] IDiagnosticsLogger<DbLoggerCategory.Scaffolding> logger)
         {
             Check.NotNull(logger, nameof(logger));
 
             _logger = logger;
-            _serviceProvider = serviceProvider;
-            _options = options;
             _settings = new MySqlScaffoldingConnectionSettings(string.Empty);
         }
 
@@ -70,8 +62,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
 
             try
             {
-                SetupMySqlOptions(connection);
-
                 databaseModel.DatabaseName = connection.Database;
                 databaseModel.DefaultSchema = GetDefaultSchema(connection);
 
@@ -95,19 +85,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
                     connection.Close();
                 }
             }
-        }
-
-        private void SetupMySqlOptions(DbConnection connection)
-        {
-            var optionsBuilder = new DbContextOptionsBuilder();
-            optionsBuilder.UseMySql(connection);
-
-            if (Equals(_options, new MySqlOptions()))
-            {
-                _options.Initialize(optionsBuilder.Options);
-            }
-
-            MySqlConnectionInfo.SetServerVersion((MySqlConnection)connection, _serviceProvider);
         }
 
         private string GetDefaultSchema(DbConnection connection)

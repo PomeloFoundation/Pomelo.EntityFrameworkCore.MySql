@@ -103,19 +103,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         };
 
         private readonly IMySqlOptions _options;
-        private readonly IMySqlConnectionInfo _connectionInfo;
 
         private bool _initialized;
 
         public MySqlTypeMappingSource(
             [NotNull] TypeMappingSourceDependencies dependencies,
             [NotNull] RelationalTypeMappingSourceDependencies relationalDependencies,
-            [NotNull] IMySqlOptions options,
-            [NotNull] IMySqlConnectionInfo connectionInfo)
+            [NotNull] IMySqlOptions options)
             : base(dependencies, relationalDependencies)
         {
             _options = options;
-            _connectionInfo = connectionInfo;
         }
 
         protected void Initialize()
@@ -219,24 +216,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             }
 
             // DateTime
-            _storeTypeMappings["time"] = !_connectionInfo.ServerVersion.SupportsDateTime6 ||
+            _storeTypeMappings["time"] = !_options.ServerVersion.SupportsDateTime6 ||
                                          _options.DefaultDataTypeMappings.ClrTimeSpan == MySqlTimeSpanType.Time
                 ? _time
                 : _time6;
 
-            _clrTypeMappings[typeof(TimeSpan)] = !_connectionInfo.ServerVersion.SupportsDateTime6 ||
+            _clrTypeMappings[typeof(TimeSpan)] = !_options.ServerVersion.SupportsDateTime6 ||
                                                  _options.DefaultDataTypeMappings.ClrTimeSpan == MySqlTimeSpanType.Time
                 ? _time
                 : _time6;
 
-            _clrTypeMappings[typeof(DateTime)] = !_connectionInfo.ServerVersion.SupportsDateTime6 ||
+            _clrTypeMappings[typeof(DateTime)] = !_options.ServerVersion.SupportsDateTime6 ||
                                                  _options.DefaultDataTypeMappings.ClrDateTime == MySqlDateTimeType.DateTime
                 ? _dateTime
                 : _options.DefaultDataTypeMappings.ClrDateTime == MySqlDateTimeType.Timestamp6
                     ? _timeStamp6
                     : _dateTime6;
 
-            _clrTypeMappings[typeof(DateTimeOffset)] = !_connectionInfo.ServerVersion.SupportsDateTime6 ||
+            _clrTypeMappings[typeof(DateTimeOffset)] = !_options.ServerVersion.SupportsDateTime6 ||
                                                        _options.DefaultDataTypeMappings.ClrDateTime == MySqlDateTimeType.DateTime
                 ? _dateTimeOffset
                 : _options.DefaultDataTypeMappings.ClrDateTimeOffset == MySqlDateTimeType.Timestamp6
@@ -328,7 +325,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                         || clrType == typeof(DateTime))
                     {
                         if (mappingInfo.Precision.GetValueOrDefault() > 0 ||
-                            _connectionInfo.ServerVersion.SupportsDateTime6 && _options.DefaultDataTypeMappings.ClrDateTime != MySqlDateTimeType.DateTime)
+                            _options.ServerVersion.SupportsDateTime6 && _options.DefaultDataTypeMappings.ClrDateTime != MySqlDateTimeType.DateTime)
                         {
                             return _dateTime6;
                         }
@@ -341,7 +338,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     if (clrType == typeof(DateTimeOffset))
                     {
                         if (mappingInfo.Precision.GetValueOrDefault() > 0 ||
-                            _connectionInfo.ServerVersion.SupportsDateTime6 && _options.DefaultDataTypeMappings.ClrDateTimeOffset != MySqlDateTimeType.DateTime)
+                            _options.ServerVersion.SupportsDateTime6 && _options.DefaultDataTypeMappings.ClrDateTimeOffset != MySqlDateTimeType.DateTime)
                         {
                             return _dateTimeOffset6;
                         }
@@ -418,7 +415,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     var size = mappingInfo.Size ??
                                (mappingInfo.IsKeyOrIndex
                                    // Allow to use at most half of the max key length, so at least 2 columns can fit
-                                   ? Math.Min(_connectionInfo.ServerVersion.MaxKeyLength / (bytesPerChar * 2), 255)
+                                   ? Math.Min(_options.ServerVersion.MaxKeyLength / (bytesPerChar * 2), 255)
                                    : (int?)null);
                     if (size > maxSize)
                     {
@@ -445,13 +442,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 {
                     if (mappingInfo.IsRowVersion == true)
                     {
-                        return _connectionInfo.ServerVersion.SupportsDateTime6
+                        return _options.ServerVersion.SupportsDateTime6
                             ? _binaryRowVersion6
                             : _binaryRowVersion;
                     }
 
                     var size = mappingInfo.Size ??
-                               (mappingInfo.IsKeyOrIndex ? _connectionInfo.ServerVersion.MaxKeyLength : (int?)null);
+                               (mappingInfo.IsKeyOrIndex ? _options.ServerVersion.MaxKeyLength : (int?)null);
 
                     return new MySqlByteArrayTypeMapping(
                         size: size,
