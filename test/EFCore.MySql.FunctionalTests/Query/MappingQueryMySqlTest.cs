@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
-using Xunit.Extensions.Ordering;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -17,7 +16,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
     // This is a non-deterministic behavior.
     // We therefore skip those dependent tests until the Northwind database will be
     // initialized by a SQL dump file.
-    [Order(1)]
     public class MappingQueryMySqlTest : MappingQueryTestBase<MappingQueryMySqlTest.MappingQueryMySqlFixture>
     {
         public MappingQueryMySqlTest(MappingQueryMySqlFixture fixture, ITestOutputHelper testOutputHelper)
