@@ -294,20 +294,26 @@ AND
 
         private string CreateDefaultValueString(string defaultValue, string dataType)
         {
+            if (defaultValue == null)
+            {
+                return null;
+            }
+
             // Pending the MySqlConnector implement MySqlCommandBuilder class
             if (string.Equals(dataType, "timestamp", StringComparison.OrdinalIgnoreCase)
                 && string.Equals(defaultValue, "CURRENT_TIMESTAMP", StringComparison.OrdinalIgnoreCase))
             {
                 return defaultValue;
             }
-            else if (defaultValue != null)
+
+            // Handle bit values.
+            if (string.Equals(dataType, "bit", StringComparison.OrdinalIgnoreCase)
+                && defaultValue.StartsWith("b'"))
             {
-                return "'" + defaultValue.Replace(@"\", @"\\").Replace("'", "''") + "'";
+                return defaultValue;
             }
-            else
-            {
-                return null;
-            }
+
+            return "'" + defaultValue.Replace(@"\", @"\\").Replace("'", "''") + "'";
         }
 
         private const string GetPrimaryQuery = @"SELECT `INDEX_NAME`,
