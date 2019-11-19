@@ -153,6 +153,7 @@ AND
 
         private const string GetColumnsQuery = @"SELECT
 	`COLUMN_NAME`,
+    `ORDINAL_POSITION`,
     `COLUMN_DEFAULT`,
     IF(`IS_NULLABLE` = 'YES', 1, 0) AS `IS_NULLABLE`,
     `DATA_TYPE`,
@@ -166,7 +167,9 @@ FROM
 WHERE
 	`TABLE_SCHEMA` = SCHEMA()
 AND
-	`TABLE_NAME` = '{0}'";
+	`TABLE_NAME` = '{0}'
+ORDER BY
+    `ORDINAL_POSITION`;";
 
         private void GetColumns(
            DbConnection connection,
