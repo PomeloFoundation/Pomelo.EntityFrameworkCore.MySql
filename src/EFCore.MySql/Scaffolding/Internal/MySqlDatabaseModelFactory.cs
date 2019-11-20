@@ -17,6 +17,8 @@ using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
@@ -26,13 +28,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
     {
         private readonly IDiagnosticsLogger<DbLoggerCategory.Scaffolding> _logger;
         private MySqlScaffoldingConnectionSettings _settings;
+        private readonly IMySqlOptions _options;
 
         public MySqlDatabaseModelFactory(
-            [NotNull] IDiagnosticsLogger<DbLoggerCategory.Scaffolding> logger)
+            [NotNull] IDiagnosticsLogger<DbLoggerCategory.Scaffolding> logger,
+            IMySqlOptions options)
         {
             Check.NotNull(logger, nameof(logger));
 
             _logger = logger;
+            _options = options;
             _settings = new MySqlScaffoldingConnectionSettings(string.Empty);
         }
 
@@ -62,6 +67,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
 
             try
             {
+                SetupMySqlOptions(connection);
+
                 databaseModel.DatabaseName = connection.Database;
                 databaseModel.DefaultSchema = GetDefaultSchema(connection);
 
@@ -84,6 +91,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
                 {
                     connection.Close();
                 }
+            }
+        }
+
+        private void SetupMySqlOptions(DbConnection connection)
+        {
+            var optionsBuilder = new DbContextOptionsBuilder();
+            optionsBuilder.UseMySql(connection);
+
+            if (Equals(_options, new MySqlOptions()))
+            {
+                _options.Initialize(optionsBuilder.Options);
             }
         }
 
