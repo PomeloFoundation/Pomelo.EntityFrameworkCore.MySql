@@ -54,8 +54,6 @@ jobs:
       ./build.sh
     displayName: Build Solution
   - bash: |
-      ./dotnet-env.sh dotnet tool install --global dotnet-ef
-
       started="false"
       for i in $(seq 0 300); do
         if docker exec mysql mysqladmin -h localhost -P 3306 -u root -pPassword12! status; then
@@ -71,6 +69,9 @@ jobs:
       fi
 
       docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e "SET GLOBAL sql_mode = '$SQL_MODE';"
+
+      ./dotnet-env.sh dotnet tool install --global dotnet-ef --version 3.0.0
+      ./dotnet-env.sh dotnet ef --version
 
       if [ "$(INTEGRATION_TESTS)" = "true" ]; then
         ./dotnet-env.sh ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.sh
@@ -170,7 +171,8 @@ jobs:
     errorActionPreference: continue
     displayName: Setup Database 1/2
   - pwsh: |
-      .\dotnet-env.ps1 dotnet tool install --global dotnet-ef
+      .\dotnet-env.ps1 dotnet tool install --global dotnet-ef --version 3.0.0
+      .\dotnet-env.ps1 dotnet ef --version
       .\dotnet-env.ps1 .\test\EFCore.MySql.IntegrationTests\scripts\rebuild.ps1
     displayName: Setup Database 2/2
   - pwsh: .\dotnet-env.ps1 dotnet test --logger trx test\EFCore.MySql.Tests
