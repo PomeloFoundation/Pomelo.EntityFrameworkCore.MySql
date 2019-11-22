@@ -1,5 +1,4 @@
-﻿using System;
-using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
+﻿using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -14,12 +13,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {
     public class MySqlDatabaseCleaner : RelationalDatabaseCleaner
     {
-        private readonly IServiceProvider _serviceProvider;
         private readonly IMySqlOptions _options;
 
-        public MySqlDatabaseCleaner(IServiceProvider serviceProvider, IMySqlOptions options)
+        public MySqlDatabaseCleaner(IMySqlOptions options)
         {
-            _serviceProvider = serviceProvider;
             _options = options;
         }
 
@@ -29,7 +26,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                     loggerFactory,
                     new LoggingOptions(),
                     new DiagnosticListener("Fake"),
-                    new MySqlLoggingDefinitions()));
+                    new MySqlLoggingDefinitions()),
+                _options);
 
         protected override bool AcceptIndex(DatabaseIndex index) => false;
         protected override bool AcceptTable(DatabaseTable table) => !(table is DatabaseView);
