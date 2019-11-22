@@ -176,6 +176,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     { "text", _varcharmaxUnicode },
                     { "mediumtext", _varcharmaxUnicode },
                     { "longtext", _varcharmaxUnicode },
+                    { "json", _varcharmaxUnicode },
 
                     { "enum", _enum },
 
