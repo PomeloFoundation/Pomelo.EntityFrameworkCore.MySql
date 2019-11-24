@@ -15,8 +15,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
     // another test class has created the needed tables, the tests will fail.
     // This is a non-deterministic behavior.
     // We therefore skip those dependent tests until the Northwind database will be
-    // initialized by a SQL dump file.
-    public class MappingQueryMySqlTest : MappingQueryTestBase<MappingQueryMySqlTest.MappingQueryMySqlFixture>
+    // initialized by a SQL dump file, by making the class internal instead of public.
+    // Remove `MappingQueryMySqlTest` from `MySqlComplianceTest.IgnoredTestBases` when fixed.
+    internal class MappingQueryMySqlTest : MappingQueryTestBase<MappingQueryMySqlTest.MappingQueryMySqlFixture>
     {
         public MappingQueryMySqlTest(MappingQueryMySqlFixture fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
