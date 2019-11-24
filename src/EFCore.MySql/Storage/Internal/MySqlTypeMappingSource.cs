@@ -149,17 +149,28 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     { "mediumint unsigned", _uint },
                     { "int", _int },
                     { "int unsigned", _uint },
+                    { "integer", _int },
+                    { "integer unsigned", _uint },
                     { "bigint", _bigint },
                     { "bigint unsigned", _ubigint },
 
                     // decimals
                     { "decimal", _decimal },
+                    { "decimal unsigned", _decimal }, // deprecated since 8.0.17-mysql
+                    { "numeric", _decimal },
+                    { "numeric unsigned", _decimal }, // deprecated since 8.0.17-mysql
                     { "dec", _decimal },
+                    { "dec unsigned", _decimal }, // deprecated since 8.0.17-mysql
                     { "fixed", _decimal },
+                    { "fixed unsigned", _decimal }, // deprecated since 8.0.17-mysql
                     { "double", _double },
+                    { "double unsigned", _double }, // deprecated since 8.0.17-mysql
                     { "double precision", _double },
+                    { "double precision unsigned", _double }, // deprecated since 8.0.17-mysql
                     { "real", _double },
+                    { "real unsigned", _double }, // deprecated since 8.0.17-mysql
                     { "float", _float },
+                    { "float unsigned", _float }, // deprecated since 8.0.17-mysql
 
                     // binary
                     { "binary", _binary },
