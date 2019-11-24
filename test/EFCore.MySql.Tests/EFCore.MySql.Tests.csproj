@@ -26,6 +26,10 @@
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(LocalPomeloJsonObjectRepository)' == ''">
+    <PackageReference Include="Pomelo.JsonObject" Version="$(PomeloJsonObjectVersion)" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(LocalEFCoreRepository)' == ''">
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="$(MicrosoftEntityFrameworkCoreDesignVersion)" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(MicrosoftEntityFrameworkCoreRelationalVersion)" />
@@ -34,6 +38,12 @@
 
   <ItemGroup Condition="'$(LocalMySqlConnectorRepository)' == ''">
     <PackageReference Include="MySqlConnector" Version="$(MySqlConnectorVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(LocalPomeloJsonObjectRepository)' != ''">
+    <Reference Include="Pomelo.JsonObject">
+      <HintPath>$(LocalPomeloJsonObjectRepository)\src\Pomelo.JsonObject\bin\Debug\netstandard2.0\Pomelo.JsonObject.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup Condition="'$(LocalEFCoreRepository)' != ''">
