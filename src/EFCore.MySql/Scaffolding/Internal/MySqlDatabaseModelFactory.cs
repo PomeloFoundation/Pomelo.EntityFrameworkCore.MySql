@@ -221,10 +221,10 @@ ORDER BY
                             }
                             else if (extra.IndexOf("on update", StringComparison.Ordinal) >= 0)
                             {
-                                if (defaultValue != null
-                                    && (extra.IndexOf(defaultValue, StringComparison.Ordinal) > 0
-                                        || string.Equals(dataType, "timestamp", StringComparison.OrdinalIgnoreCase)
-                                            && extra.IndexOf("CURRENT_TIMESTAMP", StringComparison.Ordinal) > 0))
+                                if (defaultValue != null && extra.IndexOf(defaultValue, StringComparison.Ordinal) > 0 ||
+                                    (string.Equals(dataType, "timestamp", StringComparison.OrdinalIgnoreCase) ||
+                                     string.Equals(dataType, "datetime", StringComparison.OrdinalIgnoreCase)) &&
+                                    extra.IndexOf("CURRENT_TIMESTAMP", StringComparison.Ordinal) > 0)
                                 {
                                     valueGenerated = ValueGenerated.OnAddOrUpdate;
                                 }
@@ -321,8 +321,9 @@ ORDER BY
             }
 
             // Pending the MySqlConnector implement MySqlCommandBuilder class
-            if (string.Equals(dataType, "timestamp", StringComparison.OrdinalIgnoreCase)
-                && string.Equals(defaultValue, "CURRENT_TIMESTAMP", StringComparison.OrdinalIgnoreCase))
+            if ((string.Equals(dataType, "timestamp", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(dataType, "datetime", StringComparison.OrdinalIgnoreCase)) &&
+                string.Equals(defaultValue, "CURRENT_TIMESTAMP", StringComparison.OrdinalIgnoreCase))
             {
                 return defaultValue;
             }
