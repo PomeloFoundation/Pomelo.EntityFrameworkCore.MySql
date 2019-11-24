@@ -20,6 +20,7 @@ using MySql.Data.MySqlClient;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
@@ -97,7 +98,27 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
         private void SetupMySqlOptions(DbConnection connection)
         {
             var optionsBuilder = new DbContextOptionsBuilder();
-            optionsBuilder.UseMySql(connection);
+            optionsBuilder.UseMySql(connection, builder =>
+            {
+                // Set the actual server version from the open connection here, so we can
+                // access it from IMySqlOptions later when generating the code for the
+                // `UseMySql()` call.
+                if (_options.ServerVersion.IsDefault)
+                {
+                    try
+                    {
+                        var mySqlConnection = (MySqlConnection)connection;
+                        builder.ServerVersion(new ServerVersion(mySqlConnection.ServerVersion));
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // If we cannot determine the server version for some reason, just fall
+                        // back on the latest one (the default).
+
+                        // TODO: Output warning.
+                    }
+                }
+            });
 
             if (Equals(_options, new MySqlOptions()))
             {
