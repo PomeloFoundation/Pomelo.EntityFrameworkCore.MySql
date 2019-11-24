@@ -8,6 +8,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
     {
         #region Individual version strings for tests
 
+        public const string DateTimeCurrentTimestampMySqlSupportVersionString = "5.6.5-mysql";
+        public const string DateTimeCurrentTimestampMariaDbSupportVersionString = "10.0.1-mariadb";
+
         public const string DateTime6MySqlSupportVersionString = "5.6.4-mysql";
         public const string DateTime6MariaDbSupportVersionString = "10.1.2-mariadb";
 
@@ -54,6 +57,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
 
         #region SupportMap keys for test attributes
 
+        public const string DateTimeCurrentTimestampSupportKey = nameof(DateTimeCurrentTimestampSupportKey);
         public const string DateTime6SupportKey = nameof(DateTime6SupportKey);
         public const string LargerKeyLengthSupportKey = nameof(LargerKeyLengthSupportKey);
         public const string RenameIndexSupportKey = nameof(RenameIndexSupportKey);
@@ -73,6 +77,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
 
         protected static readonly Dictionary<string, ServerVersionSupport> SupportMap = new Dictionary<string, ServerVersionSupport>()
         {
+            { DateTimeCurrentTimestampSupportKey, new ServerVersionSupport(DateTimeCurrentTimestampMySqlSupportVersionString, DateTimeCurrentTimestampMariaDbSupportVersionString) },
             { DateTime6SupportKey, new ServerVersionSupport(DateTime6MySqlSupportVersionString, DateTime6MariaDbSupportVersionString) },
             { LargerKeyLengthSupportKey, new ServerVersionSupport(LargerKeyLengthMySqlSupportVersionString, LargerKeyLengthMariaDbSupportVersionString) },
             { RenameIndexSupportKey, new ServerVersionSupport(RenameIndexMySqlSupportVersionString/*, RenameIndexMariaDbSupportVersionString*/) },
@@ -91,6 +96,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
 
         #region Support checks for provider code
 
+        public virtual bool SupportsDateTimeCurrentTimestamp => SupportMap[DateTimeCurrentTimestampSupportKey].IsSupported(this);
         public virtual bool SupportsDateTime6 => SupportMap[DateTime6SupportKey].IsSupported(this);
         public virtual bool SupportsLargerKeyLength => SupportMap[LargerKeyLengthSupportKey].IsSupported(this);
         public virtual bool SupportsRenameIndex => SupportMap[RenameIndexSupportKey].IsSupported(this);
