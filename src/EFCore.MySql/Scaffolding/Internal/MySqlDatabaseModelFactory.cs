@@ -17,7 +17,10 @@ using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
@@ -26,13 +29,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
     {
         private readonly IDiagnosticsLogger<DbLoggerCategory.Scaffolding> _logger;
         private MySqlScaffoldingConnectionSettings _settings;
+        private readonly IMySqlOptions _options;
 
         public MySqlDatabaseModelFactory(
-            [NotNull] IDiagnosticsLogger<DbLoggerCategory.Scaffolding> logger)
+            [NotNull] IDiagnosticsLogger<DbLoggerCategory.Scaffolding> logger,
+            IMySqlOptions options)
         {
             Check.NotNull(logger, nameof(logger));
 
             _logger = logger;
+            _options = options;
             _settings = new MySqlScaffoldingConnectionSettings(string.Empty);
         }
 
@@ -62,6 +68,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
 
             try
             {
+                SetupMySqlOptions(connection);
+
                 databaseModel.DatabaseName = connection.Database;
                 databaseModel.DefaultSchema = GetDefaultSchema(connection);
 
@@ -84,6 +92,37 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
                 {
                     connection.Close();
                 }
+            }
+        }
+
+        private void SetupMySqlOptions(DbConnection connection)
+        {
+            var optionsBuilder = new DbContextOptionsBuilder();
+            optionsBuilder.UseMySql(connection, builder =>
+            {
+                // Set the actual server version from the open connection here, so we can
+                // access it from IMySqlOptions later when generating the code for the
+                // `UseMySql()` call.
+                if (_options.ServerVersion.IsDefault)
+                {
+                    try
+                    {
+                        var mySqlConnection = (MySqlConnection)connection;
+                        builder.ServerVersion(new ServerVersion(mySqlConnection.ServerVersion));
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // If we cannot determine the server version for some reason, just fall
+                        // back on the latest one (the default).
+
+                        // TODO: Output warning.
+                    }
+                }
+            });
+
+            if (Equals(_options, new MySqlOptions()))
+            {
+                _options.Initialize(optionsBuilder.Options);
             }
         }
 
@@ -153,6 +192,7 @@ AND
 
         private const string GetColumnsQuery = @"SELECT
 	`COLUMN_NAME`,
+    `ORDINAL_POSITION`,
     `COLUMN_DEFAULT`,
     IF(`IS_NULLABLE` = 'YES', 1, 0) AS `IS_NULLABLE`,
     `DATA_TYPE`,
@@ -166,7 +206,9 @@ FROM
 WHERE
 	`TABLE_SCHEMA` = SCHEMA()
 AND
-	`TABLE_NAME` = '{0}'";
+	`TABLE_NAME` = '{0}'
+ORDER BY
+    `ORDINAL_POSITION`;";
 
         private void GetColumns(
            DbConnection connection,
@@ -200,10 +242,10 @@ AND
                             }
                             else if (extra.IndexOf("on update", StringComparison.Ordinal) >= 0)
                             {
-                                if (defaultValue != null
-                                    && (extra.IndexOf(defaultValue, StringComparison.Ordinal) > 0
-                                        || string.Equals(dataType, "timestamp", StringComparison.OrdinalIgnoreCase)
-                                            && extra.IndexOf("CURRENT_TIMESTAMP", StringComparison.Ordinal) > 0))
+                                if (defaultValue != null && extra.IndexOf(defaultValue, StringComparison.Ordinal) > 0 ||
+                                    (string.Equals(dataType, "timestamp", StringComparison.OrdinalIgnoreCase) ||
+                                     string.Equals(dataType, "datetime", StringComparison.OrdinalIgnoreCase)) &&
+                                    extra.IndexOf("CURRENT_TIMESTAMP", StringComparison.Ordinal) > 0)
                                 {
                                     valueGenerated = ValueGenerated.OnAddOrUpdate;
                                 }
@@ -294,20 +336,27 @@ AND
 
         private string CreateDefaultValueString(string defaultValue, string dataType)
         {
-            // Pending the MySqlConnector implement MySqlCommandBuilder class
-            if (string.Equals(dataType, "timestamp", StringComparison.OrdinalIgnoreCase)
-                && string.Equals(defaultValue, "CURRENT_TIMESTAMP", StringComparison.OrdinalIgnoreCase))
-            {
-                return defaultValue;
-            }
-            else if (defaultValue != null)
-            {
-                return "'" + defaultValue.Replace(@"\", @"\\").Replace("'", "''") + "'";
-            }
-            else
+            if (defaultValue == null)
             {
                 return null;
             }
+
+            // Pending the MySqlConnector implement MySqlCommandBuilder class
+            if ((string.Equals(dataType, "timestamp", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(dataType, "datetime", StringComparison.OrdinalIgnoreCase)) &&
+                string.Equals(defaultValue, "CURRENT_TIMESTAMP", StringComparison.OrdinalIgnoreCase))
+            {
+                return defaultValue;
+            }
+
+            // Handle bit values.
+            if (string.Equals(dataType, "bit", StringComparison.OrdinalIgnoreCase)
+                && defaultValue.StartsWith("b'"))
+            {
+                return defaultValue;
+            }
+
+            return "'" + defaultValue.Replace(@"\", @"\\").Replace("'", "''") + "'";
         }
 
         private const string GetPrimaryQuery = @"SELECT `INDEX_NAME`,

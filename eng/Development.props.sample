@@ -23,5 +23,6 @@
     -->
     <LocalEFCoreRepository>C:\Repositories\EntityFrameworkCore</LocalEFCoreRepository>
     <LocalMySqlConnectorRepository>C:\Repositories\MySqlConnector</LocalMySqlConnectorRepository>
+    <LocalPomeloJsonObjectRepository>C:\Repositories\Pomelo.JsonObject</LocalPomeloJsonObjectRepository>
   </PropertyGroup>
 </Project>

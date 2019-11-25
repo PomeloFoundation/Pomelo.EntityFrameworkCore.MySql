@@ -689,11 +689,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
                         autoIncrement = true;
                         break;
                     case "datetime":
-                        if (!_options.ServerVersion.SupportsDateTime6)
+                        if (!_options.ServerVersion.SupportsDateTimeCurrentTimestamp)
                         {
                             throw new InvalidOperationException(
                                 $"Error in {table}.{name}: DATETIME does not support values generated " +
-                                $"on Add or Update in versions lower than {ServerVersion.GetSupport(ServerVersion.DateTime6SupportKey)}. Try explicitly setting the column type to TIMESTAMP.");
+                                $"on Add or Update in versions lower than {ServerVersion.GetSupport(ServerVersion.DateTimeCurrentTimestampSupportKey)}. Try explicitly setting the column type to TIMESTAMP.");
                         }
 
                         goto case "timestamp";
@@ -709,11 +709,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
                 switch (matchType)
                 {
                     case "datetime":
-                        if (!_options.ServerVersion.SupportsDateTime6)
+                        if (!_options.ServerVersion.SupportsDateTimeCurrentTimestamp)
                         {
                             throw new InvalidOperationException(
                                 $"Error in {table}.{name}: DATETIME does not support values generated " +
-                                $"on Add or Update in versions lower than {ServerVersion.GetSupport(ServerVersion.DateTime6SupportKey)}. Try explicitly setting the column type to TIMESTAMP.");
+                                $"on Add or Update in versions lower than {ServerVersion.GetSupport(ServerVersion.DateTimeCurrentTimestampSupportKey)}. Try explicitly setting the column type to TIMESTAMP.");
                         }
 
                         goto case "timestamp";

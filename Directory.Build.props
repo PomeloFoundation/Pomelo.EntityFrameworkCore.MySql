@@ -21,6 +21,11 @@
     <RepositoryUrl>git://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql</RepositoryUrl>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Pomelo.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+
   <ItemGroup>
     <EmbeddedResource Include="**\*.rd.xml" />
   </ItemGroup>
