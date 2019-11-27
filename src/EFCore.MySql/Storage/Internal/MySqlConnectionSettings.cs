@@ -36,7 +36,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         }
 
         public virtual MySqlGuidFormat GuidFormat { get; }
-        public bool TreatTinyAsBoolean { get; }
+        public virtual bool TreatTinyAsBoolean { get; }
 
         protected bool Equals(MySqlConnectionSettings other)
         {
