@@ -50,11 +50,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.ValueGeneration.Internal
             _rng.GetBytes(randomBytes);
             var ticks = (ulong) timeNow.Ticks;
 
-            var uuid_version = (ushort) 4;
-            var uuid_variant = (ushort) 0b1000;
+            var uuidVersion = (ushort) 4;
+            var uuidVariant = (ushort) 0b1000;
 
-            var ticksAndVersion = (ushort)((ticks << 48 >> 52) | (ushort)(uuid_version << 12));
-            var ticksAndVariant = (byte)  ((ticks << 60 >> 60) | (byte)  (uuid_variant << 4));
+            var ticksAndVersion = (ushort)((ticks << 48 >> 52) | (ushort)(uuidVersion << 12));
+            var ticksAndVariant = (byte)  ((ticks << 60 >> 60) | (byte)  (uuidVariant << 4));
 
             if (_options.ConnectionSettings.GuidFormat == MySqlGuidFormat.LittleEndianBinary16)
             {
