@@ -12,6 +12,10 @@
     <StrongNameKeyId>Pomelo.EntityFrameworkCore.MySql</StrongNameKeyId>
     <PackageTags>Entity Framework Core MySQL;entity-framework-core-mysql;EF MySQL;EF Core MySQL</PackageTags>
     <Product>Pomelo.EntityFrameworkCore.MySql</Product>
+    <Authors>Pomelo Foundation</Authors>
+    <Company>Pomelo Foundation</Company>
+    <PackageIconUrl>https://avatars3.githubusercontent.com/u/19828814</PackageIconUrl>
+    <PackageIcon>icon.png</PackageIcon>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <LangVersion>8.0</LangVersion>
     <DebugType>portable</DebugType>
@@ -25,6 +29,10 @@
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Pomelo.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)icon.png" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="**\*.rd.xml" />
