@@ -41,8 +41,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string CrossApplyMySqlSupportVersionString = "8.0.14-mysql";
         // public const string CrossApplyMariaDbSupportVersionString = "?.?.?-mariadb"; // MDEV-19078, MDEV-6373
 
-        public const string FloatCastMySqlSupportVersionString = "8.0.17-mysql";
-        // public const string FloatCastMariaDbSupportVersionString = "10.4.5-mariadb"; // The implemented support is wrong, because it drops a decimal place and rounds.
+        // public const string FloatCastMySqlSupportVersionString = "8.0.17-mysql"; // The implemented support drops some decimal places and rounds.
+        // public const string FloatCastMariaDbSupportVersionString = "10.4.5-mariadb"; // The implemented support drops some decimal places and rounds.
 
         public const string DoubleCastMySqlSupportVersionString = "8.0.17-mysql";
         public const string DoubleCastMariaDbSupportVersionString = "10.4.0-mariadb";
@@ -85,7 +85,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
             { WindowFunctionsSupportKey, new ServerVersionSupport(WindowFunctionsMySqlSupportVersionString, WindowFunctionsMariaDbSupportVersionString) },
             { OuterApplySupportKey, new ServerVersionSupport(OuterApplyMySqlSupportVersionString/*, OuterApplyMariaDbSupportVersionString*/) },
             { CrossApplySupportKey, new ServerVersionSupport(CrossApplyMySqlSupportVersionString/*, CrossApplyMariaDbSupportVersionString*/) },
-            { FloatCastSupportKey, new ServerVersionSupport(FloatCastMySqlSupportVersionString/*, FloatCastMariaDbSupportVersionString*/) },
             { DoubleCastSupportKey, new ServerVersionSupport(DoubleCastMySqlSupportVersionString, DoubleCastMariaDbSupportVersionString) },
             { JsonSupportKey, new ServerVersionSupport(JsonMySqlSupportVersionString/*, JsonMariaDbSupportVersionString*/) },
             { GeneratedColumnsSupportKey, new ServerVersionSupport(GeneratedColumnsMySqlSupportVersionString, GeneratedColumnsMariaDbSupportVersionString) },
@@ -102,7 +101,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public virtual bool SupportsRenameIndex => SupportMap[RenameIndexSupportKey].IsSupported(this);
         public virtual bool SupportsRenameColumn => SupportMap[RenameColumnSupportKey].IsSupported(this);
         public virtual bool SupportsWindowFunctions => SupportMap[WindowFunctionsSupportKey].IsSupported(this);
-        public virtual bool SupportsFloatCast => SupportMap[FloatCastSupportKey].IsSupported(this);
+        public virtual bool SupportsFloatCast => false; // The implemented support drops some decimal places and rounds.
         public virtual bool SupportsDoubleCast => SupportMap[DoubleCastSupportKey].IsSupported(this);
         public virtual bool SupportsOuterApply => SupportMap[OuterApplySupportKey].IsSupported(this);
         public virtual bool SupportsCrossApply => SupportMap[CrossApplySupportKey].IsSupported(this);
