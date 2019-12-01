@@ -186,23 +186,27 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             // FLOAT and DOUBLE are supported by CAST() as of MySQL 8.0.17.
             // For server versions before that, a workaround is applied, that casts to a DECIMAL,
             // that is then added to 0e0, which results in a DOUBLE.
+            // As of MySQL 8.0.18, a FLOAT cast might unnecessarily drop decimal places and round,
+            // so we just keep casting to double instead. MySqlConnector ensures, that a System.Single
+            // will be returned if expected, even if we return a DOUBLE.
             // REF: https://stackoverflow.com/a/32991084/2618319
 
-            var useDecimalToDoubleFloatWorkaround = false;
+            var useDecimalToDoubleWorkaround = false;
 
-            if (castMapping.StartsWith("double") && !_options.ServerVersion.SupportsDoubleCast)
+            if (castMapping.StartsWith("float") &&
+                !_options.ServerVersion.SupportsFloatCast)
             {
-                useDecimalToDoubleFloatWorkaround = true;
+                castMapping = "double";
+            }
+
+            if (castMapping.StartsWith("double") &&
+                !_options.ServerVersion.SupportsDoubleCast)
+            {
+                useDecimalToDoubleWorkaround = true;
                 castMapping = "decimal(65,30)";
             }
 
-            if (castMapping.StartsWith("float") && !_options.ServerVersion.SupportsFloatCast)
-            {
-                useDecimalToDoubleFloatWorkaround = true;
-                castMapping = "decimal(65,30)";
-            }
-
-            if (useDecimalToDoubleFloatWorkaround)
+            if (useDecimalToDoubleWorkaround)
             {
                 Sql.Append("(");
             }
@@ -213,7 +217,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             Sql.Append(castMapping);
             Sql.Append(")");
 
-            if (useDecimalToDoubleFloatWorkaround)
+            if (useDecimalToDoubleWorkaround)
             {
                 Sql.Append(" + 0e0)");
             }
