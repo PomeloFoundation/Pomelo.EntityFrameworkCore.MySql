@@ -7,8 +7,6 @@
 
 `Pomelo.EntityFrameworkCore.MySql` is an Entity Framework Core provider built on top of [MySqlConnector](https://github.com/mysql-net/MySqlConnector) that enables the use of the Entity Framework Core ORM with MySQL.
 
-**Pomelo.EntityFrameworkCore.MySql is currently [looking for core contributors](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/522)**
-
 ## Compatibility
 
 ### EF Core and .NET Core
@@ -17,7 +15,7 @@ The following versions of EF Core and .NET Core are compatible with `Pomelo.Enti
 
 Pomelo.EntityFrameworkCore.MySql | EF Core | .NET Core
 -- | -- | --
-[3.0.0](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.0.0) | 3.0.0 | 3.0
+[3.0.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.0.1) | 3.0.1 | 3.0
 [2.2.6](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/2.2.6) | 2.2.6 | 2.2 / 3.0
 
 ### Supported DBMS and Versions
@@ -33,17 +31,15 @@ Pomelo.EntityFrameworkCore.MySql | EF Core | .NET Core
 
 Milestone | Status | Release Date
 ----------|--------|-------------
+3.0.1 | Released | 2019-12-04
 3.0.0 | Released | 2019-11-18
-3.0.0-rc3 | Released | 2019-11-07
-3.0.0-rc2 | Released | 2019-11-04
-3.0.0-rc1 | Released | 2019-10-06
 2.2.6 | Released | 2019-10-15
 2.2.0 | Released | 2019-02-07
 2.1.4 | Released | 2018-11-29
 
 ## Nightly Builds
 
-To use nightly builds from our MyGet feed, add a `NuGet.config` file in your solution root with the following contents:
+To use nightly builds from our Azure DevOps feed, add a `NuGet.config` file in your solution root with the following contents:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -122,6 +118,8 @@ dotnet ef dbcontext scaffold "Server=localhost;Database=ef;User=root;Password=12
 ## Contribute
 
 One of the easiest ways to contribute is to report issues and participate in discussions on issues. You can also contribute by submitting pull requests with code changes and supporting tests.
+
+Pomelo.EntityFrameworkCore.MySql is always looking for additional core contributors. If you got a couple of hours a week and know your way around EF Core, give us a nudge.
 
 ## License
 
