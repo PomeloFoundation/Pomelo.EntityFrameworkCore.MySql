@@ -8,16 +8,7 @@ using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    // This test class depends on tables from the Northwind database, that are not part of
-    // `MappingQueryMySqlTest.MappingQueryMySqlFixture` but `NorthwindQueryMySqlFixture`.
-    // Because we don't bootstrap the `Northwind` database with a SQL dump file, but depend
-    // on the models creating the necessary tables, if test from this class are run before
-    // another test class has created the needed tables, the tests will fail.
-    // This is a non-deterministic behavior.
-    // We therefore skip those dependent tests until the Northwind database will be
-    // initialized by a SQL dump file, by making the class internal instead of public.
-    // Remove `MappingQueryMySqlTest` from `MySqlComplianceTest.IgnoredTestBases` when fixed.
-    internal class MappingQueryMySqlTest : MappingQueryTestBase<MappingQueryMySqlTest.MappingQueryMySqlFixture>
+    public class MappingQueryMySqlTest : MappingQueryTestBase<MappingQueryMySqlTest.MappingQueryMySqlFixture>
     {
         public MappingQueryMySqlTest(MappingQueryMySqlFixture fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
@@ -26,7 +17,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             // Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        [ConditionalFact(Skip = "Issue #856: Depends on tables outside of its model. Enable again, when Northwind gets initialized by SQL dump.")]
+        [ConditionalFact]
         public override void All_customers()
         {
             base.All_customers();
@@ -37,7 +28,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 Sql);
         }
 
-        [ConditionalFact(Skip = "Issue #856: Depends on tables outside of its model. Enable again, when Northwind gets initialized by SQL dump.")]
+        [ConditionalFact]
         public override void All_employees()
         {
             base.All_employees();
@@ -48,7 +39,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 Sql);
         }
 
-        [ConditionalFact(Skip = "issue #573")]
+        [ConditionalFact]
         public override void All_orders()
         {
             base.All_orders();
@@ -59,7 +50,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 Sql);
         }
 
-        [ConditionalFact(Skip = "issue #573")]
+        [ConditionalFact]
         public override void Project_nullable_enum()
         {
             base.Project_nullable_enum();
@@ -76,7 +67,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
         public class MappingQueryMySqlFixture : MappingQueryFixtureBase
         {
-            protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
+            protected override ITestStoreFactory TestStoreFactory => MySqlNorthwindTestStoreFactory.Instance;
 
             protected override string DatabaseSchema { get; } = null;
 
