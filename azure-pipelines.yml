@@ -17,9 +17,9 @@ jobs:
 - job: Linux
   strategy:
     matrix:
-      MySQL 8.0.17:
-        DOCKER_IMAGE: mysql:8.0.17
-        SERVER_VERSION: 8.0.17-mysql
+      MySQL 8.0.18:
+        DOCKER_IMAGE: mysql:8.0.18
+        SERVER_VERSION: 8.0.18-mysql
         SQL_MODE: $(current_mysql_mode)
         INTEGRATION_TESTS: "true"
       MySQL 5.7.27:
@@ -27,14 +27,14 @@ jobs:
         SERVER_VERSION: 5.7.27-mysql
         SQL_MODE: $(legacy_mysql_mode)
         INTEGRATION_TESTS: "true"
-      MariaDB 10.4.8:
-        DOCKER_IMAGE: mariadb:10.4.8
-        SERVER_VERSION: 10.4.8-mariadb
+      MariaDB 10.4.10:
+        DOCKER_IMAGE: mariadb:10.4.10
+        SERVER_VERSION: 10.4.10-mariadb
         SQL_MODE: $(legacy_mysql_mode)
         INTEGRATION_TESTS: "false"
       MariaDB 10.3.18:
-        DOCKER_IMAGE: mariadb:10.3.18
-        SERVER_VERSION: 10.3.18-mariadb
+        DOCKER_IMAGE: mariadb:10.3.20
+        SERVER_VERSION: 10.3.20-mariadb
         SQL_MODE: $(legacy_mysql_mode)
         INTEGRATION_TESTS: "false"
   pool:

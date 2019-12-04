@@ -169,10 +169,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
             return migrationCommands;
         }
 
-        private IReadOnlyList<string> GetMigrationCommandTexts(IReadOnlyList<MigrationOperation> migrationOperations, bool beginTexts)
+        private string[] GetMigrationCommandTexts(IReadOnlyList<MigrationOperation> migrationOperations, bool beginTexts)
             => GetCustomCommands(migrationOperations)
                 .Select(t => PrepareString(beginTexts ? t.Item1 : t.Item2))
-                .ToList();
+                .ToArray();
 
         private static IReadOnlyList<Tuple<string, string>> GetCustomCommands(IReadOnlyList<MigrationOperation> migrationOperations)
             => _customMigrationCommands
