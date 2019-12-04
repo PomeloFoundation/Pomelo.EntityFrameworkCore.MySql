@@ -85,7 +85,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
         {
             var schema = operation.GetType()
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty)
-                .Where(p => p.Name.Contains(nameof(AddForeignKeyOperation.Schema), StringComparison.Ordinal))
+                .Where(p => p.Name.IndexOf(nameof(AddForeignKeyOperation.Schema), StringComparison.Ordinal) >= 0)
                 .Select(p => p.GetValue(operation) as string)
                 .FirstOrDefault(schemaValue => schemaValue != null);
 

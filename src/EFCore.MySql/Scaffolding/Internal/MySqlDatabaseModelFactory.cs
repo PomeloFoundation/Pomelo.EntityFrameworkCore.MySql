@@ -161,9 +161,9 @@ AND
                 {
                     while (reader.Read())
                     {
-                        var name = reader.GetString("TABLE_NAME");
-                        var type = reader.GetString("TABLE_TYPE");
-                        var comment = reader.GetString("TABLE_COMMENT");
+                        var name = reader.GetValueOrDefault<string>("TABLE_NAME");
+                        var type = reader.GetValueOrDefault<string>("TABLE_TYPE");
+                        var comment = reader.GetValueOrDefault<string>("TABLE_COMMENT");
 
                         var table = string.Equals(type, "base table", StringComparison.OrdinalIgnoreCase)
                             ? new DatabaseTable()
@@ -226,7 +226,7 @@ ORDER BY
                         {
                             var name = reader.GetValueOrDefault<string>("COLUMN_NAME");
                             var defaultValue = reader.GetValueOrDefault<string>("COLUMN_DEFAULT");
-                            var nullable = reader.GetBoolean("IS_NULLABLE");
+                            var nullable = reader.GetValueOrDefault<bool>("IS_NULLABLE");
                             var dataType = reader.GetValueOrDefault<string>("DATA_TYPE");
                             var charset = reader.GetValueOrDefault<string>("CHARACTER_SET_NAME");
                             var collation = reader.GetValueOrDefault<string>("COLLATION_NAME");
@@ -486,7 +486,7 @@ ORDER BY
                         while (reader.Read())
                         {
                             var referencedTableName = reader.GetString(2);
-                            var referencedTable = tables.Where(t => t.Name == referencedTableName).FirstOrDefault();
+                            var referencedTable = tables.FirstOrDefault(t => t.Name == referencedTableName);
                             if (referencedTable != null)
                             {
                                 var fkInfo = new DatabaseForeignKey
