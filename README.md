@@ -66,7 +66,7 @@ show variables like 'character_set_database';
 Ensure that your `.csproj` file contains the following reference:
 
 ```xml
-<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="3.0.0" />
+<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="3.0.1" />
 ```
 
 ### 3. Services Configuration
