@@ -117,7 +117,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             //      Convert line break characters to their CHAR() representation as a workaround.
 
             if (_options.ReplaceLineBreaksWithCharFunction
-                && (value.Contains('\r') || value.Contains('\n')))
+                && (value.Contains("\r") || value.Contains("\n")))
             {
                 escapedLiteral = "CONCAT(" + escapedLiteral
                     .Replace("\r\n", "', CHAR(13, 10), '")

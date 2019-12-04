@@ -479,7 +479,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         {
             var storeTypeBaseName = base.ParseStoreTypeName(storeTypeName, out unicode, out size, out precision, out scale);
 
-            if (storeTypeName?.Contains("unsigned", StringComparison.OrdinalIgnoreCase) ?? false)
+            if ((storeTypeName?.IndexOf("unsigned", StringComparison.OrdinalIgnoreCase) ?? -1) >= 0)
             {
                 return storeTypeBaseName + " unsigned";
             }
