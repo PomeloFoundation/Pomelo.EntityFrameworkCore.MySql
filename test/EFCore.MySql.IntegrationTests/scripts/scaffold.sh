@@ -8,7 +8,7 @@ rm -rf Scaffold
 mkdir -p Scaffold
 
 connection_string=$(dotnet run connectionString | tail -1)
-./scripts/dotnet-ef.sh dbcontext scaffold -o "Scaffold" -t "DataTypesSimple" -t "DataTypesVariable" "$connection_string" "Pomelo.EntityFrameworkCore.MySql"
+./scripts/dotnet-ef.sh dbcontext scaffold "$connection_string" "Pomelo.EntityFrameworkCore.MySql" --output-dir "Scaffold" --table "DataTypesSimple" --table "DataTypesVariable"
 
 error=false
 files=( "DataTypesSimple.cs" "DataTypesVariable.cs" )
