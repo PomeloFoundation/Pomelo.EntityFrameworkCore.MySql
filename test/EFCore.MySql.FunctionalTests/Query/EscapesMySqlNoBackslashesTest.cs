@@ -27,16 +27,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
  
             AssertSql(
                 $@"@p0='ESCBCKSLINS' (Nullable = false) (Size = {Math.Min(AppConfig.ServerVersion.MaxKeyLength / (2 * 4), 255)})
-@p1='' (Size = 4000)
-@p2='' (Size = 4000)
+@p1=NULL (Size = 4000)
+@p2=NULL (Size = 4000)
 @p3='Back\slash's Insert Operation' (Size = 4000)
-@p4='' (Size = 4000)
-@p5='' (Size = 4000)
-@p6='' (Size = 4000)
-@p7='' (Size = 4000)
-@p8='' (Size = 4000)
-@p9='' (Size = 4000)
-@p10='' (Size = 4000)
+@p4=NULL (Size = 4000)
+@p5=NULL (Size = 4000)
+@p6=NULL (Size = 4000)
+@p7=NULL (Size = 4000)
+@p8=NULL (Size = 4000)
+@p9=NULL (Size = 4000)
+@p10=NULL (Size = 4000)
 
 INSERT INTO `Customers` (`CustomerID`, `Address`, `City`, `CompanyName`, `ContactName`, `ContactTitle`, `Country`, `Fax`, `Phone`, `PostalCode`, `Region`)
 VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10);",
@@ -54,7 +54,7 @@ WHERE `c`.`CustomerID` = 'ESCBCKSLINS'");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`CompanyName` = 'Back\slash''s Operation') AND `c`.`CompanyName` IS NOT NULL");
+WHERE `c`.`CompanyName` = 'Back\slash''s Operation'");
         }
         
         [ConditionalTheory]
@@ -67,7 +67,7 @@ WHERE (`c`.`CompanyName` = 'Back\slash''s Operation') AND `c`.`CompanyName` IS N
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE ((`c`.`CompanyName` = @__companyName_0) AND (`c`.`CompanyName` IS NOT NULL AND @__companyName_0 IS NOT NULL)) OR (`c`.`CompanyName` IS NULL AND @__companyName_0 IS NULL)");
+WHERE `c`.`CompanyName` = @__companyName_0");
         }
 
         [ConditionalTheory]

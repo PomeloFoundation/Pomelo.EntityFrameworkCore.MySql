@@ -22,7 +22,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE (TIMESTAMPDIFF(YEAR, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0) AND TIMESTAMPDIFF(YEAR, `o`.`OrderDate`, CURRENT_TIMESTAMP()) IS NOT NULL");
+WHERE TIMESTAMPDIFF(YEAR, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
             }
         }
 
@@ -39,7 +39,7 @@ WHERE (TIMESTAMPDIFF(YEAR, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0) AND TIMEST
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE (TIMESTAMPDIFF(MONTH, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0) AND TIMESTAMPDIFF(MONTH, `o`.`OrderDate`, CURRENT_TIMESTAMP()) IS NOT NULL");
+WHERE TIMESTAMPDIFF(MONTH, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
             }
         }
 
@@ -56,7 +56,7 @@ WHERE (TIMESTAMPDIFF(MONTH, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0) AND TIMES
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE (TIMESTAMPDIFF(DAY, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0) AND TIMESTAMPDIFF(DAY, `o`.`OrderDate`, CURRENT_TIMESTAMP()) IS NOT NULL");
+WHERE TIMESTAMPDIFF(DAY, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
             }
         }
 
@@ -73,7 +73,7 @@ WHERE (TIMESTAMPDIFF(DAY, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0) AND TIMESTA
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE (TIMESTAMPDIFF(HOUR, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0) AND TIMESTAMPDIFF(HOUR, `o`.`OrderDate`, CURRENT_TIMESTAMP()) IS NOT NULL");
+WHERE TIMESTAMPDIFF(HOUR, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
             }
         }
 
@@ -90,7 +90,7 @@ WHERE (TIMESTAMPDIFF(HOUR, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0) AND TIMEST
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE (TIMESTAMPDIFF(MINUTE, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0) AND TIMESTAMPDIFF(MINUTE, `o`.`OrderDate`, CURRENT_TIMESTAMP()) IS NOT NULL");
+WHERE TIMESTAMPDIFF(MINUTE, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
             }
         }
 
@@ -107,7 +107,7 @@ WHERE (TIMESTAMPDIFF(MINUTE, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0) AND TIME
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE (TIMESTAMPDIFF(SECOND, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0) AND TIMESTAMPDIFF(SECOND, `o`.`OrderDate`, CURRENT_TIMESTAMP()) IS NOT NULL");
+WHERE TIMESTAMPDIFF(SECOND, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
             }
         }
 
