@@ -113,6 +113,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                                           new RelationalCommandParameterObject(
                                               connection,
                                               null,
+                                              null,
                                               Dependencies.CurrentContext.Context,
                                               Dependencies.CommandLogger))) != 0);
 
@@ -129,6 +130,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                                               .ExecuteScalarAsync(
                                                   new RelationalCommandParameterObject(
                                                       connection,
+                                                      null,
                                                       null,
                                                       Dependencies.CurrentContext.Context,
                                                       Dependencies.CommandLogger),
