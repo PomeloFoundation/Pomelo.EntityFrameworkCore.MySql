@@ -47,6 +47,7 @@ WHERE `c`.`CustomerID` = 'ESCBCKSLINS'");
         }
 
         [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_query_escapes_literal(bool isAsync)
         {
             await base.Where_query_escapes_literal(isAsync);
@@ -58,6 +59,7 @@ WHERE `c`.`CompanyName` = 'Back\slash''s Operation'");
         }
         
         [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_query_escapes_parameter(bool isAsync)
         {
             await base.Where_query_escapes_parameter(isAsync);
@@ -71,6 +73,7 @@ WHERE `c`.`CompanyName` = @__companyName_0");
         }
 
         [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_contains_query_escapes(bool isAsync)
         {
             await base.Where_contains_query_escapes(isAsync);

@@ -38,7 +38,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 context =>
                 {
                     var customers = context.Customers.Where(x => x.CustomerID == "ESCBCKSLINS").ToList();
-                    Assert.Equal(1, customers.Count);
+                    Assert.Single(customers);
                     Assert.True(customers[0].CompanyName == @"Back\slash's Insert Operation");
                 });
         }
@@ -55,7 +55,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     ? await query.ToListAsync()
                     : query.ToList();
 
-                Assert.Equal(1, customers.Count);
+                Assert.Single(customers);
             }
         }
         
@@ -73,7 +73,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     ? await query.ToListAsync()
                     : query.ToList();
 
-                Assert.Equal(1, customers.Count);
+                Assert.Single(customers);
             }
         }
 

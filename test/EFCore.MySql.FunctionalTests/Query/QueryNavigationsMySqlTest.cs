@@ -31,8 +31,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Where_subquery_on_navigation2(isAsync);
         }
 
-        [ConditionalTheory(Skip = "Issue #573")]
-        [MemberData(nameof(IsAsyncData))]
+        [ConditionalFact(Skip = "Issue #573")]
         public override void Navigation_in_subquery_referencing_outer_query_with_client_side_result_operator_and_count()
         {
             base.Navigation_in_subquery_referencing_outer_query_with_client_side_result_operator_and_count();

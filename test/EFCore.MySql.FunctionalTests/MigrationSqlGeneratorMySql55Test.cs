@@ -14,12 +14,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
     public class MigrationSqlGeneratorMySql55Test : MigrationSqlGeneratorMySqlTest
     {
+        [ConditionalFact]
         public override void RenameIndexOperation()
         {
             Assert.Throws<InvalidOperationException>(() => base.RenameIndexOperation());
         }
 
-        [Fact]
+        [ConditionalFact]
         public override void RenameIndexOperation_with_model()
         {
             Generate(
@@ -44,7 +45,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public override void AddColumnOperation_with_datetime6()
         {
             Generate(new AddColumnOperation
@@ -62,6 +63,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
+        [ConditionalFact]
         public override void DefaultValue_formats_literal_correctly()
         {
             Generate(
@@ -89,7 +91,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 ignoreLineEndingDifferences: true);
         }
 
-        [Fact]
+        [ConditionalFact]
         public override void RenameColumnOperation()
         {
             var migrationBuilder = new MigrationBuilder("MySql");
@@ -107,7 +109,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public override void RenameColumnOperation_with_model()
         {
             var migrationBuilder = new MigrationBuilder("MySql");

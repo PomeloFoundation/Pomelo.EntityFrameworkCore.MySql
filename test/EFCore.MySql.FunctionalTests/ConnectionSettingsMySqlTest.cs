@@ -45,9 +45,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 .FromSqlRaw(@"select * from `SimpleGuidEntities` where `GuidValue` = " + string.Format(sqlEquivalent, new Guid("850368D8-93EA-4023-ACC7-6FA6E4C3B27F")))
                 .ToList();
 
-            Assert.Equal(1, result.Count);
+            Assert.Single(result);
             Assert.Equal(new Guid("850368D8-93EA-4023-ACC7-6FA6E4C3B27F"), result[0].GuidValue);
-            Assert.Equal(1, sqlResult.Count);
+            Assert.Single(sqlResult);
         }
 
         private readonly IServiceProvider _serviceProvider = new ServiceCollection()

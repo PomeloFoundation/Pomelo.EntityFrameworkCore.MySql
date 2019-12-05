@@ -607,7 +607,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Take_without_orderby_followed_by_orderBy_is_pushed_down2(isAsync);
         }
 
-        public Task AssertQueryScalar(bool isAsync,
+        protected Task AssertQueryScalar(bool isAsync,
             Func<ISetSource, IQueryable<DateTimeOffset>> query,
             bool assertOrder = false) => AssertQueryScalar(
                 isAsync,
