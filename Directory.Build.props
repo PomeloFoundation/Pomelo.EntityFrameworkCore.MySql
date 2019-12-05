@@ -26,6 +26,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <DefaultNetCoreTargetFramework>netcoreapp3.1</DefaultNetCoreTargetFramework>
+    <DefaultNetStandardTargetFramework>netstandard2.0</DefaultNetStandardTargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Pomelo.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
