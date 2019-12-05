@@ -21,59 +21,59 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             fixture.TestSqlLoggerFactory.Clear();
         }
 
-        public override async Task<Exception> From_sql_queryable_stored_procedure_re_projection(bool async)
+        public override Task From_sql_queryable_stored_procedure_re_projection(bool async)
         {
             // MySQL does not support SELECT on a stored procedure's result set.
-            return AssertSqlException<MySqlException>(await base.From_sql_queryable_stored_procedure_re_projection(async));
+            return Assert.ThrowsAsync<MySqlException>(() => base.From_sql_queryable_stored_procedure_re_projection(async));
         }
 
-        public override async Task<Exception> From_sql_queryable_stored_procedure_composed(bool async)
+        public override Task From_sql_queryable_stored_procedure_composed(bool async)
         {
             // MySQL does not support WHERE on a stored procedure's result set.
-            return AssertSqlException<MySqlException>(await base.From_sql_queryable_stored_procedure_composed(async));
+            return Assert.ThrowsAsync<MySqlException>(() => base.From_sql_queryable_stored_procedure_composed(async));
         }
 
-        public override async Task<Exception> From_sql_queryable_stored_procedure_with_parameter_composed(bool async)
+        public override Task From_sql_queryable_stored_procedure_with_parameter_composed(bool async)
         {
             // MySQL does not support WHERE on a stored procedure's result set.
-            return AssertSqlException<MySqlException>(await base.From_sql_queryable_stored_procedure_with_parameter_composed(async));
+            return Assert.ThrowsAsync<MySqlException>(() => base.From_sql_queryable_stored_procedure_with_parameter_composed(async));
         }
 
-        public override async Task<Exception> From_sql_queryable_stored_procedure_take(bool async)
+        public override Task From_sql_queryable_stored_procedure_take(bool async)
         {
             // MySQL does not support ORDER BY on a stored procedure's result set.
-            return AssertSqlException<MySqlException>(await base.From_sql_queryable_stored_procedure_take(async));
+            return Assert.ThrowsAsync<MySqlException>(() => base.From_sql_queryable_stored_procedure_take(async));
         }
 
-        public override async Task<Exception> From_sql_queryable_stored_procedure_min(bool async)
+        public override Task From_sql_queryable_stored_procedure_min(bool async)
         {
             // MySQL does not support GROUP BY/MIN() on a stored procedure's result set.
-            return AssertSqlException<MySqlException>(await base.From_sql_queryable_stored_procedure_min(async));
+            return Assert.ThrowsAsync<MySqlException>(() => base.From_sql_queryable_stored_procedure_min(async));
         }
 
-        public override async Task<Exception> From_sql_queryable_stored_procedure_with_include_throws(bool async)
+        public override Task From_sql_queryable_stored_procedure_with_include_throws(bool async)
         {
             // MySQL does not support JOIN on a stored procedure's result set.
-            return AssertSqlException<MySqlException>(await base.From_sql_queryable_stored_procedure_with_include_throws(async));
+            return Assert.ThrowsAsync<MySqlException>(() => base.From_sql_queryable_stored_procedure_with_include_throws(async));
         }
 
-        public override async Task<Exception> From_sql_queryable_with_multiple_stored_procedures(bool async)
+        public override Task From_sql_queryable_with_multiple_stored_procedures(bool async)
         {
             // MySQL does neither support calling multiple stored procedures in a query, nor does it support
             // SELECT on multiple stored procedure result sets.
-            return AssertSqlException<MySqlException>(await base.From_sql_queryable_with_multiple_stored_procedures(async));
+            return Assert.ThrowsAsync<MySqlException>(() => base.From_sql_queryable_with_multiple_stored_procedures(async));
         }
 
-        public override async Task<Exception> From_sql_queryable_stored_procedure_and_select(bool async)
+        public override Task From_sql_queryable_stored_procedure_and_select(bool async)
         {
             // MySQL does not support WHERE on a stored procedure's result set.
-            return AssertSqlException<MySqlException>(await base.From_sql_queryable_stored_procedure_and_select(async));
+            return Assert.ThrowsAsync<MySqlException>(() => base.From_sql_queryable_stored_procedure_and_select(async));
         }
 
-        public override async Task<Exception> From_sql_queryable_select_and_stored_procedure(bool async)
+        public override Task From_sql_queryable_select_and_stored_procedure(bool async)
         {
             // MySQL does not support WHERE on a stored procedure's result set.
-            return AssertSqlException<MySqlException>(await base.From_sql_queryable_select_and_stored_procedure(async));
+            return Assert.ThrowsAsync<MySqlException>(() => base.From_sql_queryable_select_and_stored_procedure(async));
         }
 
         protected override string TenMostExpensiveProductsSproc => "CALL `Ten Most Expensive Products`()";

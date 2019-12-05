@@ -37,7 +37,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             {
                 var boolMapping = (RelationalTypeMapping)context.GetService<ITypeMappingSource>().FindMapping(typeof(bool));
                 var actual = context.Set<Product>().FromSqlRaw(
-                        NormalizeDelimetersInRawString(
+                        NormalizeDelimitersInRawString(
                             @"SELECT *
 FROM [Products]
 WHERE [Discontinued] <> " + boolMapping.GenerateSqlLiteral(true)))

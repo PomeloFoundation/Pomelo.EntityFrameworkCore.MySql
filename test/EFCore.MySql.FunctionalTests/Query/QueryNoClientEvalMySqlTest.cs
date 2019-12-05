@@ -47,6 +47,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             => message.Replace("\n", "").Replace("\r", "");
  
         private string NormalizeDelimetersInRawString(string sql)
-            => Fixture.TestStore.NormalizeDelimetersInRawString(sql);
+            => Fixture.TestStore.NormalizeDelimitersInRawString(sql);
     }
 }
