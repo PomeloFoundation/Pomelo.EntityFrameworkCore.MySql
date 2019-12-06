@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
@@ -37,12 +39,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
             {
                 var valueGenerationStrategy = MySqlValueGenerationStrategyCompatibility.GetValueGenerationStrategy(MigrationsAnnotations.For(target).ToArray());
 
-                // Ensure that null will be set for the columns default value, if CURRENT_TIMESTAMP has been required.
+                // Ensure that null will be set for the columns default value, if CURRENT_TIMESTAMP has been required,
+                // or when the store type of the column does not support default values at all.
                 inline = inline ||
-                             (storeType.StoreTypeNameBase == "datetime" ||
-                                storeType.StoreTypeNameBase == "timestamp") &&
-                             (valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn ||
-                                valueGenerationStrategy == MySqlValueGenerationStrategy.ComputedColumn);
+                         (storeType.StoreTypeNameBase == "datetime" ||
+                          storeType.StoreTypeNameBase == "timestamp") &&
+                         (valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn ||
+                          valueGenerationStrategy == MySqlValueGenerationStrategy.ComputedColumn) ||
+                         storeType.StoreTypeNameBase.Contains("text") ||
+                         storeType.StoreTypeNameBase.Contains("blob") ||
+                         storeType.StoreTypeNameBase == "geometry" ||
+                         storeType.StoreTypeNameBase == "json";
             }
 
             return base.Add(target, diffContext, inline);
