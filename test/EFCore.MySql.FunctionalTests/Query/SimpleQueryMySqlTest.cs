@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using MySql.Data.MySqlClient;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Xunit;
@@ -19,6 +23,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Take_Skip(bool isAsync)
         {
             await base.Take_Skip(isAsync);
@@ -38,6 +44,8 @@ ORDER BY `t`.`ContactName`
 LIMIT 18446744073709551610 OFFSET @__p_1");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_datetime_now(bool isAsync)
         {
             await base.Where_datetime_now(isAsync);
@@ -47,9 +55,11 @@ LIMIT 18446744073709551610 OFFSET @__p_1");
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (CURRENT_TIMESTAMP() <> @__myDatetime_0) OR @__myDatetime_0 IS NULL");
+WHERE (CURRENT_TIMESTAMP() <> @__myDatetime_0) OR CURRENT_TIMESTAMP() IS NULL");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_datetime_utcnow(bool isAsync)
         {
             await base.Where_datetime_utcnow(isAsync);
@@ -59,9 +69,11 @@ WHERE (CURRENT_TIMESTAMP() <> @__myDatetime_0) OR @__myDatetime_0 IS NULL");
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (UTC_TIMESTAMP() <> @__myDatetime_0) OR @__myDatetime_0 IS NULL");
+WHERE (UTC_TIMESTAMP() <> @__myDatetime_0) OR UTC_TIMESTAMP() IS NULL");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_datetime_today(bool isAsync)
         {
             await base.Where_datetime_today(isAsync);
@@ -69,9 +81,11 @@ WHERE (UTC_TIMESTAMP() <> @__myDatetime_0) OR @__myDatetime_0 IS NULL");
             AssertSql(
                 @"SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
 FROM `Employees` AS `e`
-WHERE CONVERT(CURRENT_TIMESTAMP(), date) = CURDATE()");
+WHERE (CONVERT(CURRENT_TIMESTAMP(), date) = CURDATE()) OR (CONVERT(CURRENT_TIMESTAMP(), date) IS NULL AND CURDATE() IS NULL)");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_datetime_date_component(bool isAsync)
         {
             await base.Where_datetime_date_component(isAsync);
@@ -81,9 +95,11 @@ WHERE CONVERT(CURRENT_TIMESTAMP(), date) = CURDATE()");
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE ((CONVERT(`o`.`OrderDate`, date) = @__myDatetime_0) AND (CONVERT(`o`.`OrderDate`, date) IS NOT NULL AND @__myDatetime_0 IS NOT NULL)) OR (CONVERT(`o`.`OrderDate`, date) IS NULL AND @__myDatetime_0 IS NULL)");
+WHERE CONVERT(`o`.`OrderDate`, date) = @__myDatetime_0");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_datetime_year_component(bool isAsync)
         {
             await base.Where_datetime_year_component(isAsync);
@@ -91,9 +107,11 @@ WHERE ((CONVERT(`o`.`OrderDate`, date) = @__myDatetime_0) AND (CONVERT(`o`.`Orde
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (EXTRACT(year FROM `o`.`OrderDate`) = 1998) AND EXTRACT(year FROM `o`.`OrderDate`) IS NOT NULL");
+WHERE EXTRACT(year FROM `o`.`OrderDate`) = 1998");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_datetime_month_component(bool isAsync)
         {
             await base.Where_datetime_month_component(isAsync);
@@ -101,9 +119,11 @@ WHERE (EXTRACT(year FROM `o`.`OrderDate`) = 1998) AND EXTRACT(year FROM `o`.`Ord
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (EXTRACT(month FROM `o`.`OrderDate`) = 4) AND EXTRACT(month FROM `o`.`OrderDate`) IS NOT NULL");
+WHERE EXTRACT(month FROM `o`.`OrderDate`) = 4");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_datetime_dayOfYear_component(bool isAsync)
         {
             await base.Where_datetime_dayOfYear_component(isAsync);
@@ -111,9 +131,11 @@ WHERE (EXTRACT(month FROM `o`.`OrderDate`) = 4) AND EXTRACT(month FROM `o`.`Orde
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (DAYOFYEAR(`o`.`OrderDate`) = 68) AND DAYOFYEAR(`o`.`OrderDate`) IS NOT NULL");
+WHERE DAYOFYEAR(`o`.`OrderDate`) = 68");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_datetime_day_component(bool isAsync)
         {
             await base.Where_datetime_day_component(isAsync);
@@ -121,9 +143,11 @@ WHERE (DAYOFYEAR(`o`.`OrderDate`) = 68) AND DAYOFYEAR(`o`.`OrderDate`) IS NOT NU
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (EXTRACT(day FROM `o`.`OrderDate`) = 4) AND EXTRACT(day FROM `o`.`OrderDate`) IS NOT NULL");
+WHERE EXTRACT(day FROM `o`.`OrderDate`) = 4");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_datetime_hour_component(bool isAsync)
         {
             await base.Where_datetime_hour_component(isAsync);
@@ -131,9 +155,11 @@ WHERE (EXTRACT(day FROM `o`.`OrderDate`) = 4) AND EXTRACT(day FROM `o`.`OrderDat
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (EXTRACT(hour FROM `o`.`OrderDate`) = 14) AND EXTRACT(hour FROM `o`.`OrderDate`) IS NOT NULL");
+WHERE EXTRACT(hour FROM `o`.`OrderDate`) = 14");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_datetime_minute_component(bool isAsync)
         {
             await base.Where_datetime_minute_component(isAsync);
@@ -141,9 +167,11 @@ WHERE (EXTRACT(hour FROM `o`.`OrderDate`) = 14) AND EXTRACT(hour FROM `o`.`Order
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (EXTRACT(minute FROM `o`.`OrderDate`) = 23) AND EXTRACT(minute FROM `o`.`OrderDate`) IS NOT NULL");
+WHERE EXTRACT(minute FROM `o`.`OrderDate`) = 23");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_datetime_second_component(bool isAsync)
         {
             await base.Where_datetime_second_component(isAsync);
@@ -151,9 +179,11 @@ WHERE (EXTRACT(minute FROM `o`.`OrderDate`) = 23) AND EXTRACT(minute FROM `o`.`O
             AssertSql(
                 @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (EXTRACT(second FROM `o`.`OrderDate`) = 44) AND EXTRACT(second FROM `o`.`OrderDate`) IS NOT NULL");
+WHERE EXTRACT(second FROM `o`.`OrderDate`) = 44");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_datetime_millisecond_component(bool isAsync)
         {
             await base.Where_datetime_millisecond_component(isAsync);
@@ -164,6 +194,8 @@ FROM `Orders` AS `o`
 WHERE (EXTRACT(microsecond FROM `o`.`OrderDate`)) DIV (1000) = 88");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task String_StartsWith_Literal(bool isAsync)
         {
             await base.String_StartsWith_Literal(isAsync);
@@ -171,9 +203,11 @@ WHERE (EXTRACT(microsecond FROM `o`.`OrderDate`)) DIV (1000) = 88");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT('M', '%')) AND ((LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin) AND LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin)) IS NOT NULL))");
+WHERE `c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT('M', '%')) AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin))");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task String_StartsWith_Identity(bool isAsync)
         {
             await base.String_StartsWith_Identity(isAsync);
@@ -181,9 +215,11 @@ WHERE `c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT('M', '%'
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, '%')) AND (((LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin) AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) IS NOT NULL AND CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin IS NOT NULL)) OR (LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) IS NULL AND CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin IS NULL)))))");
+WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, '%')) AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin))))");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task String_StartsWith_Column(bool isAsync)
         {
             await base.String_StartsWith_Column(isAsync);
@@ -191,9 +227,11 @@ WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`Cont
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, '%')) AND (((LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin) AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) IS NOT NULL AND CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin IS NOT NULL)) OR (LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) IS NULL AND CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin IS NULL)))))");
+WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, '%')) AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin))))");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task String_StartsWith_MethodCall(bool isAsync)
         {
             await base.String_StartsWith_MethodCall(isAsync);
@@ -201,9 +239,11 @@ WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`Cont
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT('M', '%')) AND ((LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin) AND LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin)) IS NOT NULL))");
+WHERE `c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT('M', '%')) AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin))");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task String_EndsWith_Literal(bool isAsync)
         {
             await base.String_EndsWith_Literal(isAsync);
@@ -211,9 +251,11 @@ WHERE `c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT('M', '%'
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` IS NOT NULL AND ((RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('b' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('b' USING utf8mb4) COLLATE utf8mb4_bin) AND RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('b' USING utf8mb4) COLLATE utf8mb4_bin)) IS NOT NULL)");
+WHERE `c`.`ContactName` IS NOT NULL AND (RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('b' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('b' USING utf8mb4) COLLATE utf8mb4_bin)");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task String_EndsWith_Identity(bool isAsync)
         {
             await base.String_EndsWith_Identity(isAsync);
@@ -221,9 +263,11 @@ WHERE `c`.`ContactName` IS NOT NULL AND ((RIGHT(`c`.`ContactName`, CHAR_LENGTH(C
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND ((((RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin) AND (RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) IS NOT NULL AND CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin IS NOT NULL)) OR (RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) IS NULL AND CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin IS NULL)) OR ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL))))");
+WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND ((RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin) OR (`c`.`ContactName` = ''))))");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task String_EndsWith_Column(bool isAsync)
         {
             await base.String_EndsWith_Column(isAsync);
@@ -231,9 +275,11 @@ WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`Cont
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND ((((RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin) AND (RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) IS NOT NULL AND CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin IS NOT NULL)) OR (RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) IS NULL AND CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin IS NULL)) OR ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL))))");
+WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND ((RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin) OR (`c`.`ContactName` = ''))))");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task String_EndsWith_MethodCall(bool isAsync)
         {
             await base.String_EndsWith_MethodCall(isAsync);
@@ -241,9 +287,11 @@ WHERE ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL) OR (`c`.`Cont
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` IS NOT NULL AND ((RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('m' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('m' USING utf8mb4) COLLATE utf8mb4_bin) AND RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('m' USING utf8mb4) COLLATE utf8mb4_bin)) IS NOT NULL)");
+WHERE `c`.`ContactName` IS NOT NULL AND (RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('m' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('m' USING utf8mb4) COLLATE utf8mb4_bin)");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task String_Contains_Literal(bool isAsync)
         {
             await base.String_Contains_Literal(isAsync);
@@ -254,6 +302,8 @@ FROM `Customers` AS `c`
 WHERE LOCATE(CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`ContactName`) > 0");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task String_Contains_Identity(bool isAsync)
         {
             await base.String_Contains_Identity(isAsync);
@@ -261,9 +311,11 @@ WHERE LOCATE(CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`ContactName`) 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LOCATE(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin, `c`.`ContactName`) > 0) OR ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL)");
+WHERE (LOCATE(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin, `c`.`ContactName`) > 0) OR (`c`.`ContactName` = '')");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task String_Contains_Column(bool isAsync)
         {
             await base.String_Contains_Column(isAsync);
@@ -271,9 +323,11 @@ WHERE (LOCATE(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin, `c`.
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LOCATE(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin, `c`.`ContactName`) > 0) OR ((`c`.`ContactName` = '') AND `c`.`ContactName` IS NOT NULL)");
+WHERE (LOCATE(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin, `c`.`ContactName`) > 0) OR (`c`.`ContactName` = '')");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task String_Contains_MethodCall(bool isAsync)
         {
             await base.String_Contains_MethodCall(isAsync);
@@ -284,6 +338,8 @@ FROM `Customers` AS `c`
 WHERE LOCATE(CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`ContactName`) > 0");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task IsNullOrWhiteSpace_in_predicate(bool isAsync)
         {
             await base.IsNullOrWhiteSpace_in_predicate(isAsync);
@@ -291,18 +347,22 @@ WHERE LOCATE(CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`ContactName`) 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`Region` IS NULL OR ((TRIM(`c`.`Region`) = '') AND TRIM(`c`.`Region`) IS NOT NULL)");
+WHERE `c`.`Region` IS NULL OR (TRIM(`c`.`Region`) = '')");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_string_length(bool isAsync)
         {
             await base.Where_string_length(isAsync);
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (CHAR_LENGTH(`c`.`City`) = 6) AND CHAR_LENGTH(`c`.`City`) IS NOT NULL");
+WHERE CHAR_LENGTH(`c`.`City`) = 6");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_string_indexof(bool isAsync)
         {
             await base.Where_string_indexof(isAsync);
@@ -310,9 +370,11 @@ WHERE (CHAR_LENGTH(`c`.`City`) = 6) AND CHAR_LENGTH(`c`.`City`) IS NOT NULL");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE ((LOCATE(CONVERT('Sea' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`City`) - 1) <> -1) OR LOCATE(CONVERT('Sea' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`City`) - 1 IS NULL");
+WHERE ((LOCATE(CONVERT('Sea' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`City`) - 1) <> -1) OR LOCATE(CONVERT('Sea' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`City`) IS NULL");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Indexof_with_emptystring(bool isAsync)
         {
             await base.Indexof_with_emptystring(isAsync);
@@ -323,6 +385,8 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_string_replace(bool isAsync)
         {
             await base.Where_string_replace(isAsync);
@@ -330,9 +394,11 @@ WHERE `c`.`CustomerID` = 'ALFKI'");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (REPLACE(`c`.`City`, 'Sea', 'Rea') = 'Reattle') AND REPLACE(`c`.`City`, 'Sea', 'Rea') IS NOT NULL");
+WHERE REPLACE(`c`.`City`, 'Sea', 'Rea') = 'Reattle'");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Replace_with_emptystring(bool isAsync)
         {
             await base.Replace_with_emptystring(isAsync);
@@ -343,6 +409,8 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_string_substring(bool isAsync)
         {
             await base.Where_string_substring(isAsync);
@@ -350,9 +418,11 @@ WHERE `c`.`CustomerID` = 'ALFKI'");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (SUBSTRING(`c`.`City`, 1 + 1, 2) = 'ea') AND SUBSTRING(`c`.`City`, 1 + 1, 2) IS NOT NULL");
+WHERE SUBSTRING(`c`.`City`, 1 + 1, 2) = 'ea'");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Substring_with_zero_startindex(bool isAsync)
         {
             await base.Substring_with_zero_startindex(isAsync);
@@ -363,6 +433,8 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Substring_with_constant(bool isAsync)
         {
             await base.Substring_with_constant(isAsync);
@@ -373,6 +445,8 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Substring_with_closure(bool isAsync)
         {
             await base.Substring_with_closure(isAsync);
@@ -385,6 +459,8 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Substring_with_zero_length(bool isAsync)
         {
             await base.Substring_with_zero_length(isAsync);
@@ -395,6 +471,8 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_math_abs1(bool isAsync)
         {
             await base.Where_math_abs1(isAsync);
@@ -405,6 +483,8 @@ FROM `Order Details` AS `o`
 WHERE ABS(`o`.`ProductID`) > 10");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_math_abs2(bool isAsync)
         {
             await base.Where_math_abs2(isAsync);
@@ -415,6 +495,8 @@ FROM `Order Details` AS `o`
 WHERE ABS(`o`.`Quantity`) > 10");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_math_abs_uncorrelated(bool isAsync)
         {
             await base.Where_math_abs_uncorrelated(isAsync);
@@ -425,6 +507,8 @@ FROM `Order Details` AS `o`
 WHERE 10 < `o`.`ProductID`");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Select_math_round_int(bool isAsync)
         {
             await base.Select_math_round_int(isAsync);
@@ -445,6 +529,8 @@ WHERE `o`.`OrderID` < 10250");
             }
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_math_min(bool isAsync)
         {
             await base.Where_math_min(isAsync);
@@ -455,6 +541,8 @@ FROM `Order Details` AS `o`
 WHERE (`o`.`OrderID` = 11077) AND (LEAST(`o`.`OrderID`, `o`.`ProductID`) = `o`.`ProductID`)");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_math_max(bool isAsync)
         {
             await base.Where_math_max(isAsync);
@@ -465,6 +553,8 @@ FROM `Order Details` AS `o`
 WHERE (`o`.`OrderID` = 11077) AND (GREATEST(`o`.`OrderID`, `o`.`ProductID`) = `o`.`OrderID`)");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_string_to_lower(bool isAsync)
         {
             await base.Where_string_to_lower(isAsync);
@@ -475,6 +565,8 @@ FROM `Customers` AS `c`
 WHERE LOWER(`c`.`CustomerID`) = 'alfki'");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Where_string_to_upper(bool isAsync)
         {
             await base.Where_string_to_upper(isAsync);
@@ -485,6 +577,8 @@ FROM `Customers` AS `c`
 WHERE UPPER(`c`.`CustomerID`) = 'ALFKI'");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task TrimStart_without_arguments_in_predicate(bool isAsync)
         {
             await base.TrimStart_without_arguments_in_predicate(isAsync);
@@ -492,9 +586,11 @@ WHERE UPPER(`c`.`CustomerID`) = 'ALFKI'");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (TRIM(LEADING FROM `c`.`ContactTitle`) = 'Owner') AND TRIM(LEADING FROM `c`.`ContactTitle`) IS NOT NULL");
+WHERE TRIM(LEADING FROM `c`.`ContactTitle`) = 'Owner'");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task TrimStart_with_char_argument_in_predicate(bool isAsync)
         {
             await base.TrimStart_with_char_argument_in_predicate(isAsync);
@@ -502,9 +598,11 @@ WHERE (TRIM(LEADING FROM `c`.`ContactTitle`) = 'Owner') AND TRIM(LEADING FROM `c
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (TRIM(LEADING 'O' FROM `c`.`ContactTitle`) = 'wner') AND TRIM(LEADING 'O' FROM `c`.`ContactTitle`) IS NOT NULL");
+WHERE TRIM(LEADING 'O' FROM `c`.`ContactTitle`) = 'wner'");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override Task TrimStart_with_char_array_argument_in_predicate(bool isAsync)
         {
             // MySQL only supports a string (characters in fixed order) as the parameter specifying what should be trimmed.
@@ -513,6 +611,8 @@ WHERE (TRIM(LEADING 'O' FROM `c`.`ContactTitle`) = 'wner') AND TRIM(LEADING 'O' 
             return Assert.ThrowsAsync<InvalidOperationException>(() => base.TrimStart_with_char_array_argument_in_predicate(isAsync));
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task TrimEnd_without_arguments_in_predicate(bool isAsync)
         {
             await base.TrimEnd_without_arguments_in_predicate(isAsync);
@@ -520,9 +620,11 @@ WHERE (TRIM(LEADING 'O' FROM `c`.`ContactTitle`) = 'wner') AND TRIM(LEADING 'O' 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (TRIM(TRAILING FROM `c`.`ContactTitle`) = 'Owner') AND TRIM(TRAILING FROM `c`.`ContactTitle`) IS NOT NULL");
+WHERE TRIM(TRAILING FROM `c`.`ContactTitle`) = 'Owner'");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task TrimEnd_with_char_argument_in_predicate(bool isAsync)
         {
             await base.TrimEnd_with_char_argument_in_predicate(isAsync);
@@ -530,9 +632,11 @@ WHERE (TRIM(TRAILING FROM `c`.`ContactTitle`) = 'Owner') AND TRIM(TRAILING FROM 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (TRIM(TRAILING 'r' FROM `c`.`ContactTitle`) = 'Owne') AND TRIM(TRAILING 'r' FROM `c`.`ContactTitle`) IS NOT NULL");
+WHERE TRIM(TRAILING 'r' FROM `c`.`ContactTitle`) = 'Owne'");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override Task TrimEnd_with_char_array_argument_in_predicate(bool isAsync)
         {
             // MySQL only supports a string (characters in fixed order) as the parameter specifying what should be trimmed.
@@ -541,6 +645,8 @@ WHERE (TRIM(TRAILING 'r' FROM `c`.`ContactTitle`) = 'Owne') AND TRIM(TRAILING 'r
             return Assert.ThrowsAsync<InvalidOperationException>(() => base.TrimEnd_with_char_array_argument_in_predicate(isAsync));
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Trim_without_argument_in_predicate(bool isAsync)
         {
             await base.Trim_without_argument_in_predicate(isAsync);
@@ -548,9 +654,11 @@ WHERE (TRIM(TRAILING 'r' FROM `c`.`ContactTitle`) = 'Owne') AND TRIM(TRAILING 'r
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (TRIM(`c`.`ContactTitle`) = 'Owner') AND TRIM(`c`.`ContactTitle`) IS NOT NULL");
+WHERE TRIM(`c`.`ContactTitle`) = 'Owner'");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Trim_with_char_argument_in_predicate(bool isAsync)
         {
             await base.Trim_with_char_argument_in_predicate(isAsync);
@@ -558,9 +666,11 @@ WHERE (TRIM(`c`.`ContactTitle`) = 'Owner') AND TRIM(`c`.`ContactTitle`) IS NOT N
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (TRIM('O' FROM `c`.`ContactTitle`) = 'wner') AND TRIM('O' FROM `c`.`ContactTitle`) IS NOT NULL");
+WHERE TRIM('O' FROM `c`.`ContactTitle`) = 'wner'");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override Task Trim_with_char_array_argument_in_predicate(bool isAsync)
         {
             // MySQL only supports a string (characters in fixed order) as the parameter specifying what should be trimmed.
@@ -569,6 +679,8 @@ WHERE (TRIM('O' FROM `c`.`ContactTitle`) = 'wner') AND TRIM('O' FROM `c`.`Contac
             return Assert.ThrowsAsync<InvalidOperationException>(() => base.Trim_with_char_array_argument_in_predicate(isAsync));
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Sum_with_coalesce(bool isAsync)
         {
             await base.Sum_with_coalesce(isAsync);
@@ -579,6 +691,8 @@ FROM `Products` AS `p`
 WHERE `p`.`ProductID` < 40");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Select_datetime_year_component(bool isAsync)
         {
             await base.Select_datetime_year_component(isAsync);
@@ -588,6 +702,8 @@ WHERE `p`.`ProductID` < 40");
 FROM `Orders` AS `o`");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Select_datetime_month_component(bool isAsync)
         {
             await base.Select_datetime_month_component(isAsync);
@@ -597,6 +713,8 @@ FROM `Orders` AS `o`");
 FROM `Orders` AS `o`");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Select_datetime_day_of_year_component(bool isAsync)
         {
             await base.Select_datetime_day_of_year_component(isAsync);
@@ -606,6 +724,8 @@ FROM `Orders` AS `o`");
 FROM `Orders` AS `o`");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Select_datetime_day_component(bool isAsync)
         {
             await base.Select_datetime_day_component(isAsync);
@@ -615,6 +735,8 @@ FROM `Orders` AS `o`");
 FROM `Orders` AS `o`");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Select_datetime_hour_component(bool isAsync)
         {
             await base.Select_datetime_hour_component(isAsync);
@@ -624,6 +746,8 @@ FROM `Orders` AS `o`");
 FROM `Orders` AS `o`");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Select_datetime_minute_component(bool isAsync)
         {
             await base.Select_datetime_minute_component(isAsync);
@@ -633,6 +757,8 @@ FROM `Orders` AS `o`");
 FROM `Orders` AS `o`");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Select_datetime_second_component(bool isAsync)
         {
             await base.Select_datetime_second_component(isAsync);
@@ -642,6 +768,8 @@ FROM `Orders` AS `o`");
 FROM `Orders` AS `o`");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Select_datetime_millisecond_component(bool isAsync)
         {
             await base.Select_datetime_millisecond_component(isAsync);
@@ -651,6 +779,8 @@ FROM `Orders` AS `o`");
 FROM `Orders` AS `o`");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override async Task Select_expression_references_are_updated_correctly_with_subquery(bool isAsync)
         {
             await base.Select_expression_references_are_updated_correctly_with_subquery(isAsync);
@@ -663,117 +793,146 @@ FROM `Orders` AS `o`
 WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__nextYear_0)");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Where_equals_method_string_with_ignore_case(bool isAsync)
+        {
+            // We have an implementation for this and therefore don't throw.
+            return AssertQuery(
+                isAsync,
+                ss => ss.Set<Customer>().Where(c => c.City.Equals("London", StringComparison.OrdinalIgnoreCase)),
+                entryCount: 6);
+        }
+
         [ConditionalTheory(Skip = "issue #573")]
-        [MemberData("IsAsyncData")]
+        [MemberData(nameof(IsAsyncData))]
         public override Task Project_single_element_from_collection_with_OrderBy_Take_and_FirstOrDefault(bool isAsync)
         {
             return base.Project_single_element_from_collection_with_OrderBy_Take_and_FirstOrDefault(isAsync);
         }
 
         [ConditionalTheory(Skip = "issue #573")]
-        [MemberData("IsAsyncData")]
+        [MemberData(nameof(IsAsyncData))]
         public override Task Project_single_element_from_collection_with_OrderBy_Take_and_FirstOrDefault_with_parameter(bool isAsync)
         {
             return base.Project_single_element_from_collection_with_OrderBy_Take_and_FirstOrDefault_with_parameter(isAsync);
         }
 
         [ConditionalTheory(Skip = "issue #573")]
-        [MemberData("IsAsyncData")]
+        [MemberData(nameof(IsAsyncData))]
         public override Task Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault(bool isAsync)
         {
             return base.Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault(isAsync);
         }
 
         [ConditionalTheory(Skip = "issue #573")]
-        [MemberData("IsAsyncData")]
+        [MemberData(nameof(IsAsyncData))]
         public override Task Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault_followed_by_projection_of_length_property(bool isAsync)
         {
             return base.Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault_followed_by_projection_of_length_property(isAsync);
         }
 
         [ConditionalTheory(Skip = "issue #573")]
-        [MemberData("IsAsyncData")]
+        [MemberData(nameof(IsAsyncData))]
         public override Task Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault_2(bool isAsync)
         {
             return base.Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault_2(isAsync);
         }
 
         [ConditionalTheory(Skip = "issue #573")]
-        [MemberData("IsAsyncData")]
+        [MemberData(nameof(IsAsyncData))]
         public override Task Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault(bool isAsync)
         {
             return base.Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault(isAsync);
         }
 
         [ConditionalTheory(Skip = "issue #573")]
-        [MemberData("IsAsyncData")]
+        [MemberData(nameof(IsAsyncData))]
         public override Task Where_as_queryable_expression(bool isAsync)
         {
             return base.Where_as_queryable_expression(isAsync);
         }
 
         [ConditionalTheory(Skip = "issue #552")]
-        [MemberData("IsAsyncData")]
+        [MemberData(nameof(IsAsyncData))]
         public override Task Where_multiple_contains_in_subquery_with_and(bool isAsync)
         {
             return base.Where_multiple_contains_in_subquery_with_and(isAsync);
         }
 
         [ConditionalTheory(Skip = "issue #552")]
-        [MemberData("IsAsyncData")]
+        [MemberData(nameof(IsAsyncData))]
         public override Task Where_multiple_contains_in_subquery_with_or(bool isAsync)
         {
             return base.Where_multiple_contains_in_subquery_with_or(isAsync);
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override Task Intersect(bool isAsync)
         {
             // INTERSECT is not natively supported by MySQL.
             return Assert.ThrowsAsync<InvalidOperationException>(() => base.Intersect(isAsync));
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override Task Intersect_nested(bool isAsync)
         {
             // INTERSECT is not natively supported by MySQL.
             return Assert.ThrowsAsync<InvalidOperationException>(() => base.Intersect_nested(isAsync));
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override Task Intersect_non_entity(bool isAsync)
         {
             // INTERSECT is not natively supported by MySQL.
             return Assert.ThrowsAsync<InvalidOperationException>(() => base.Intersect_non_entity(isAsync));
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override Task Union_Intersect(bool isAsync)
         {
             // INTERSECT is not natively supported by MySQL.
             return Assert.ThrowsAsync<InvalidOperationException>(() => base.Union_Intersect(isAsync));
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override Task Except(bool isAsync)
         {
             // EXCEPT is not natively supported by MySQL.
             return Assert.ThrowsAsync<InvalidOperationException>(() => base.Except(isAsync));
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override Task Except_simple_followed_by_projecting_constant(bool isAsync)
         {
             // EXCEPT is not natively supported by MySQL.
             return Assert.ThrowsAsync<InvalidOperationException>(() => base.Except_simple_followed_by_projecting_constant(isAsync));
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override Task Except_nested(bool isAsync)
         {
             // EXCEPT is not natively supported by MySQL.
             return Assert.ThrowsAsync<InvalidOperationException>(() => base.Except_nested(isAsync));
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override Task Except_non_entity(bool isAsync)
         {
             // EXCEPT is not natively supported by MySQL.
             return Assert.ThrowsAsync<InvalidOperationException>(() => base.Except_non_entity(isAsync));
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
         public override Task Select_Except_reference_projection(bool isAsync)
         {
             // EXCEPT is not natively supported by MySQL.
@@ -781,7 +940,7 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
         }
 
         [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
-        [MemberData("IsAsyncData")]
+        [MemberData(nameof(IsAsyncData))]
         public override Task SelectMany_correlated_with_outer_1(bool isAsync)
         {
             return base.SelectMany_correlated_with_outer_1(isAsync);
@@ -789,14 +948,14 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
 
         // [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
         [ConditionalTheory(Skip = "Leads to a different result set in CI on Linux with MySQL 8.0.17. TODO: Needs investigation!")]
-        [MemberData("IsAsyncData")]
+        [MemberData(nameof(IsAsyncData))]
         public override Task SelectMany_correlated_with_outer_2(bool isAsync)
         {
             return base.SelectMany_correlated_with_outer_2(isAsync);
         }
 
         [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
-        [MemberData("IsAsyncData")]
+        [MemberData(nameof(IsAsyncData))]
         public override Task SelectMany_correlated_with_outer_3(bool isAsync)
         {
             return base.SelectMany_correlated_with_outer_3(isAsync);
@@ -804,14 +963,14 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
 
         // [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
         [ConditionalTheory(Skip = "Leads to a different result set in CI on Linux with MySQL 8.0.17. TODO: Needs investigation!")]
-        [MemberData("IsAsyncData")]
+        [MemberData(nameof(IsAsyncData))]
         public override Task SelectMany_correlated_with_outer_4(bool isAsync)
         {
             return base.SelectMany_correlated_with_outer_4(isAsync);
         }
 
         [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
-        [MemberData("IsAsyncData")]
+        [MemberData(nameof(IsAsyncData))]
         public override Task Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault_2(bool isAsync)
         {
             return base.Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault_2(isAsync);
@@ -824,20 +983,21 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
         }
 
         [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
-        [MemberData("IsAsyncData")]
+        [MemberData(nameof(IsAsyncData))]
         public override Task Project_single_element_from_collection_with_OrderBy_Distinct_and_FirstOrDefault_followed_by_projecting_length(bool isAsync)
         {
             return base.Project_single_element_from_collection_with_OrderBy_Distinct_and_FirstOrDefault_followed_by_projecting_length(isAsync);
         }
 
         [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
-        [MemberData("IsAsyncData")]
+        [MemberData(nameof(IsAsyncData))]
         public override Task Project_single_element_from_collection_with_OrderBy_Take_and_SingleOrDefault(bool isAsync)
         {
             return base.Project_single_element_from_collection_with_OrderBy_Take_and_SingleOrDefault(isAsync);
         }
 
         [ConditionalTheory(Skip = "TODO: MySQL does not seem to allow an ORDER BY or LIMIT clause directly in a SELECT statement that is part of a UNION.")]
+        [MemberData(nameof(IsAsyncData))]
         public override Task Union_Take_Union_Take(bool isAsync)
         {
             // TODO: MySQL does not seem to allow an ORDER BY or LIMIT clause directly in a SELECT statement that is part of a UNION.
@@ -847,10 +1007,60 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
         }
 
         [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
-        [MemberData("IsAsyncData")]
+        [MemberData(nameof(IsAsyncData))]
         public override Task SelectMany_Joined_Take(bool isAsync)
         {
             return base.SelectMany_Joined_Take(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Complex_nested_query_doesnt_try_binding_to_grandparent_when_parent_returns_complex_result(bool isAsync)
+        {
+            // MySql.Data.MySqlClient.MySqlException: Reference 'CustomerID' not supported (forward reference in item list)
+            return Assert.ThrowsAsync<MySqlException>(() => base.Complex_nested_query_doesnt_try_binding_to_grandparent_when_parent_returns_complex_result(isAsync));
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Member_binding_after_ctor_arguments_fails_with_client_eval(bool isAsync)
+        {
+            return AssertTranslationFailed(() => base.Member_binding_after_ctor_arguments_fails_with_client_eval(isAsync));
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Union_Select_scalar(bool isAsync)
+        {
+            return AssertTranslationFailed(() => base.Union_Select_scalar(isAsync));
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task AsQueryable_in_query_server_evals(bool isAsync)
+        {
+            return base.AsQueryable_in_query_server_evals(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task SelectMany_correlated_subquery_hard(bool isAsync)
+        {
+            return base.SelectMany_correlated_subquery_hard(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task SelectMany_whose_selector_references_outer_source(bool isAsync)
+        {
+            return base.SelectMany_whose_selector_references_outer_source(isAsync);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task SelectMany_with_collection_being_correlated_subquery_which_references_inner_and_outer_entity(bool isAsync)
+        {
+            return base.SelectMany_with_collection_being_correlated_subquery_which_references_inner_and_outer_entity(isAsync);
         }
 
         private void AssertSql(params string[] expected)

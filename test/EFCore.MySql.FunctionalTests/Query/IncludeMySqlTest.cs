@@ -61,7 +61,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                         .Take(1)
                         .ToList();
 
-                Assert.Equal(1, customers.Count);
+                Assert.Single(customers);
                 Assert.Equal(6, customers.SelectMany(c => c.c1.Orders).Count());
                 Assert.True(customers.SelectMany(c => c.c1.Orders).All(o => o.Customer != null));
                 Assert.Equal(7, customers.SelectMany(c => c.c2.Orders).Count());

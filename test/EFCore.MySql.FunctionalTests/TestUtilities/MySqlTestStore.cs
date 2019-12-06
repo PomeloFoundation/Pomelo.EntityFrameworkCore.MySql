@@ -22,8 +22,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         private readonly bool _useConnectionString;
         private readonly bool _noBackslashEscapes;
 
-        protected override string OpenDelimeter => "`";
-        protected override string CloseDelimeter => "`";
+        protected override string OpenDelimiter => "`";
+        protected override string CloseDelimiter => "`";
 
         public static MySqlTestStore GetOrCreate(string name, bool useConnectionString = false, bool noBackslashEscapes = false)
             => new MySqlTestStore(name, useConnectionString: useConnectionString, shared: true, noBackslashEscapes: noBackslashEscapes);

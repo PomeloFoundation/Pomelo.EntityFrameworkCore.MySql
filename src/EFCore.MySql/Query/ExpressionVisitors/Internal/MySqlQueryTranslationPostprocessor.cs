@@ -20,9 +20,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         public override Expression Process(Expression query)
         {
-            query = new MySqlCompatibilityExpressionVisitor(_options).Visit(query);
-
-            return base.Process(query);
+            query = base.Process(query);
+            return new MySqlCompatibilityExpressionVisitor(_options).Visit(query);
         }
     }
 }

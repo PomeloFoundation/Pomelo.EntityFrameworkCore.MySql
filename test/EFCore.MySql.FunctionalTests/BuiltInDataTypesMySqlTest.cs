@@ -33,26 +33,32 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         }
 
         // Blocked by EF #11929
+        [ConditionalFact]
         public override void Can_query_using_any_data_type()
         {
         }
 
+        [ConditionalFact]
         public override void Can_query_using_any_nullable_data_type()
         {
         }
 
+        [ConditionalFact]
         public override void Can_query_using_any_nullable_data_type_as_literal()
         {
         }
 
+        [ConditionalFact]
         public override void Can_query_using_any_data_type_shadow()
         {
         }
 
+        [ConditionalFact]
         public override void Can_query_using_any_data_type_nullable_shadow()
         {
         }
 
+        [ConditionalFact]
         public override void Can_perform_query_with_ansi_strings_test()
         {
         }
@@ -72,7 +78,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Assert.Equal(
                     @"SELECT `m`.`Int`
 FROM `MappedNullableDataTypes` AS `m`
-WHERE (`m`.`TimeSpanAsTime` = '00:01:02') AND `m`.`TimeSpanAsTime` IS NOT NULL",
+WHERE `m`.`TimeSpanAsTime` = '00:01:02'",
                     Sql,
                     ignoreLineEndingDifferences: true);
             }
@@ -97,7 +103,7 @@ WHERE (`m`.`TimeSpanAsTime` = '00:01:02') AND `m`.`TimeSpanAsTime` IS NOT NULL",
 
 SELECT `m`.`Int`
 FROM `MappedNullableDataTypes` AS `m`
-WHERE ((`m`.`TimeSpanAsTime` = @__timeSpan_0) AND (`m`.`TimeSpanAsTime` IS NOT NULL AND @__timeSpan_0 IS NOT NULL)) OR (`m`.`TimeSpanAsTime` IS NULL AND @__timeSpan_0 IS NULL)",
+WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
                     Sql,
                     ignoreLineEndingDifferences: true);
             }
@@ -747,46 +753,46 @@ WHERE ((`m`.`TimeSpanAsTime` = @__timeSpan_0) AND (`m`.`TimeSpanAsTime` IS NOT N
             var parameters = DumpParameters();
             Assert.Equal(
                 @"@p0='78'
-@p1='' (DbType = UInt64)
-@p2='' (DbType = SByte)
-@p3='' (Size = 6) (DbType = Binary)
-@p4='' (Size = 8000) (DbType = Binary)
-@p5='' (Size = 255) (DbType = Binary)
-@p6='' (DbType = Int32)
-@p7='' (Size = 1)
-@p8='' (Size = 1)
-@p9='' (Size = 1)
-@p10='' (DbType = Date)
-@p11='' (DbType = DateTime)
-@p12='' (Size = 6) (DbType = DateTimeOffset)
-@p13='' (Size = 6) (DbType = DateTimeOffset)
-@p14=''
-@p15=''
-@p16='' (DbType = Double)
-@p17='' (DbType = Double)
-@p18='' (Size = 20)
-@p19='' (Size = 20)
-@p20='' (DbType = Single)
-@p21='' (DbType = Guid)
-@p22='' (DbType = Int64)
-@p23='' (DbType = Int16)
-@p24='' (DbType = SByte)
-@p25='' (DbType = Int16)
-@p26='' (Size = 20) (DbType = StringFixedLength)
-@p27='' (Size = 4000)
-@p28='' (Size = 20) (DbType = StringFixedLength)
-@p29='' (Size = 4000)
-@p30='' (Size = 55)
-@p31='' (Size = 55)
-@p32='' (Size = 4000)
-@p33='' (Size = 55)
-@p34='' (DbType = Time)
-@p35='' (DbType = Int32)
-@p36='' (DbType = Int16)
-@p37='' (DbType = Int64)
-@p38='' (DbType = Int32)
-@p39='' (DbType = Int64)
-@p40=''",
+@p1=NULL (DbType = UInt64)
+@p2=NULL (DbType = SByte)
+@p3=NULL (Size = 6) (DbType = Binary)
+@p4=NULL (Size = 8000) (DbType = Binary)
+@p5=NULL (Size = 255) (DbType = Binary)
+@p6=NULL (DbType = Int32)
+@p7=NULL (Size = 1)
+@p8=NULL (Size = 1)
+@p9=NULL (Size = 1)
+@p10=NULL (DbType = Date)
+@p11=NULL (DbType = DateTime)
+@p12=NULL (Size = 6) (DbType = DateTimeOffset)
+@p13=NULL (Size = 6) (DbType = DateTimeOffset)
+@p14=NULL
+@p15=NULL
+@p16=NULL (DbType = Double)
+@p17=NULL (DbType = Double)
+@p18=NULL (Size = 20)
+@p19=NULL (Size = 20)
+@p20=NULL (DbType = Single)
+@p21=NULL (DbType = Guid)
+@p22=NULL (DbType = Int64)
+@p23=NULL (DbType = Int16)
+@p24=NULL (DbType = SByte)
+@p25=NULL (DbType = Int16)
+@p26=NULL (Size = 20) (DbType = StringFixedLength)
+@p27=NULL (Size = 4000)
+@p28=NULL (Size = 20) (DbType = StringFixedLength)
+@p29=NULL (Size = 4000)
+@p30=NULL (Size = 55)
+@p31=NULL (Size = 55)
+@p32=NULL (Size = 4000)
+@p33=NULL (Size = 55)
+@p34=NULL (DbType = Time)
+@p35=NULL (DbType = Int32)
+@p36=NULL (DbType = Int16)
+@p37=NULL (DbType = Int64)
+@p38=NULL (DbType = Int32)
+@p39=NULL (DbType = Int64)
+@p40=NULL",
                 parameters,
                 ignoreLineEndingDifferences: true);
 
@@ -907,10 +913,17 @@ WHERE ((`m`.`TimeSpanAsTime` = @__timeSpan_0) AND (`m`.`TimeSpanAsTime` IS NOT N
             var maxKeyLength = AppConfig.ServerVersion.MaxKeyLength;
             var actual = QueryForColumnTypes(CreateContext(), _testOutputHelper);
 
-            var expected = $@"BinaryForeignKeyDataType.BinaryKeyDataTypeId ---> [nullable varbinary] [MaxLength = {maxKeyLength}]
+            var expected = $@"Animal.Id ---> [int] [Precision = 10 Scale = 0]
+AnimalDetails.AnimalId ---> [nullable int] [Precision = 10 Scale = 0]
+AnimalDetails.BoolField ---> [int] [Precision = 10 Scale = 0]
+AnimalDetails.Id ---> [int] [Precision = 10 Scale = 0]
+AnimalIdentification.AnimalId ---> [int] [Precision = 10 Scale = 0]
+AnimalIdentification.Id ---> [int] [Precision = 10 Scale = 0]
+AnimalIdentification.Method ---> [int] [Precision = 10 Scale = 0]
+BinaryForeignKeyDataType.BinaryKeyDataTypeId ---> [nullable varbinary] [MaxLength = 3072]
 BinaryForeignKeyDataType.Id ---> [int] [Precision = 10 Scale = 0]
 BinaryKeyDataType.Ex ---> [nullable longtext] [MaxLength = -1]
-BinaryKeyDataType.Id ---> [varbinary] [MaxLength = {maxKeyLength}]
+BinaryKeyDataType.Id ---> [varbinary] [MaxLength = 3072]
 BuiltInDataTypes.Enum16 ---> [smallint] [Precision = 5 Scale = 0]
 BuiltInDataTypes.Enum32 ---> [int] [Precision = 10 Scale = 0]
 BuiltInDataTypes.Enum64 ---> [bigint] [Precision = 19 Scale = 0]
@@ -1190,8 +1203,8 @@ ObjectBackedDataTypes.UnsignedInt16 ---> [smallint] [Precision = 5 Scale = 0]
 ObjectBackedDataTypes.UnsignedInt32 ---> [int] [Precision = 10 Scale = 0]
 ObjectBackedDataTypes.UnsignedInt64 ---> [bigint] [Precision = 20 Scale = 0]
 StringForeignKeyDataType.Id ---> [int] [Precision = 10 Scale = 0]
-StringForeignKeyDataType.StringKeyDataTypeId ---> [nullable varchar] [MaxLength = {Math.Min(maxKeyLength / (2 * 4), 255)}]
-StringKeyDataType.Id ---> [varchar] [MaxLength = {Math.Min(maxKeyLength / (2 * 4), 255)}]
+StringForeignKeyDataType.StringKeyDataTypeId ---> [nullable varchar] [MaxLength = 255]
+StringKeyDataType.Id ---> [varchar] [MaxLength = 255]
 UnicodeDataTypes.Id ---> [int] [Precision = 10 Scale = 0]
 UnicodeDataTypes.StringAnsi ---> [nullable longtext] [MaxLength = -1]
 UnicodeDataTypes.StringAnsi3 ---> [nullable varchar] [MaxLength = 3]

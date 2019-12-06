@@ -34,7 +34,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             using (var context = CreateContext())
             {
                 Assert.Equal(
-                    CoreStrings.TranslationFailed("Where<Customer>(    source: FromSqlOnQueryable<Customer>(        source: DbSet<Customer>,         sql: \"select * from `Customers`\",         parameters: (Unhandled parameter: __p_0)),     predicate: (c) => c.IsLondon)"),
+                    CoreStrings.TranslationFailed(@"DbSet<Customer>    .FromSqlOnQueryable(        source: ""select * from `Customers`"",         sql: __p_0)    .Where(c => c.IsLondon)"),
                     RemoveNewLines(Assert.Throws<InvalidOperationException>(
                         () => context.Customers
                             .FromSqlRaw(NormalizeDelimetersInRawString("select * from [Customers]"))
@@ -47,6 +47,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             => message.Replace("\n", "").Replace("\r", "");
  
         private string NormalizeDelimetersInRawString(string sql)
-            => Fixture.TestStore.NormalizeDelimetersInRawString(sql);
+            => Fixture.TestStore.NormalizeDelimitersInRawString(sql);
     }
 }

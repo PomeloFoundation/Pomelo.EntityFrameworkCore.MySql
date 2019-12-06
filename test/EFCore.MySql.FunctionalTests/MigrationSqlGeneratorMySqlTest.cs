@@ -19,7 +19,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
     public class MigrationSqlGeneratorMySqlTest : MigrationSqlGeneratorTestBase
     {
-        [Fact]
+        [ConditionalFact]
         public virtual void It_lifts_foreign_key_additions()
         {
             Generate(
@@ -54,7 +54,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 ignoreLineEndingDifferences: true);
         }
 
-        [Fact]
+        [ConditionalFact]
         public virtual void DefaultValue_formats_literal_correctly()
         {
             Generate(
@@ -82,7 +82,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 ignoreLineEndingDifferences: true);
         }
 
-        [Fact]
+        [ConditionalFact]
         public virtual void CreateDatabaseOperation()
         {
             Generate(new MySqlCreateDatabaseOperation { Name = "Northwind" });
@@ -92,7 +92,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public override void CreateTableOperation()
         {
             base.CreateTableOperation();
@@ -110,7 +110,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 ", Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public virtual void CreateTableUlongAutoincrement()
         {
             Generate(
@@ -143,7 +143,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(true, false, CharSetBehavior.AppendToAllAnsiColumns, "Latin1", false)]
         [InlineData(true, false, CharSetBehavior.AppendToUnicodeIndexAndKeyColumns, "Latin1", false)]
         [InlineData(true, false, CharSetBehavior.AppendToAllUnicodeColumns, "Latin1", true)]
@@ -221,6 +221,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
+        [ConditionalFact]
         public override void AddColumnOperation_with_ansi()
         {
             base.AddColumnOperation_with_ansi();
@@ -230,6 +231,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
+        [ConditionalFact]
         public override void AddColumnOperation_with_defaultValue()
         {
             base.AddColumnOperation_with_defaultValue();
@@ -239,6 +241,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
+        [ConditionalFact]
         public override void AddColumnOperation_without_column_type()
         {
             base.AddColumnOperation_without_column_type();
@@ -248,6 +251,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
+        [ConditionalFact]
         public override void AddColumnOperation_with_defaultValueSql()
         {
             base.AddColumnOperation_with_defaultValueSql();
@@ -257,7 +261,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public virtual void AddColumnOperation_with_datetime6()
         {
             Generate(new AddColumnOperation
@@ -277,6 +281,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
+        [ConditionalFact]
         public override void AddColumnOperation_with_maxLength()
         {
             base.AddColumnOperation_with_maxLength();
@@ -286,6 +291,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
+        [ConditionalFact]
         public override void AddColumnOperation_with_maxLength_overridden()
         {
             base.AddColumnOperation_with_maxLength_overridden();
@@ -295,6 +301,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
+        [ConditionalFact]
         public override void AddColumnOperation_with_maxLength_on_derived()
         {
             base.AddColumnOperation_with_maxLength_on_derived();
@@ -304,6 +311,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
+        [ConditionalFact]
         public override void AddColumnOperation_with_shared_column()
         {
             base.AddColumnOperation_with_shared_column();
@@ -313,7 +321,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public virtual void AddColumnOperation_with_computed_column()
         {
             Generate(
@@ -333,7 +341,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public virtual void AddColumnOperation_serial()
         {
             Generate(new AddColumnOperation
@@ -351,7 +359,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public virtual void AddColumnOperation_with_int_defaultValue_isnt_serial()
         {
             Generate(
@@ -370,7 +378,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public virtual void AddColumnOperation_with_dbgenerated_uuid()
         {
             Generate(
@@ -388,7 +396,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public virtual void AddDefaultDatetimeOperation_with_valueOnUpdate()
         {
             Generate(
@@ -408,7 +416,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public virtual void AddDefaultBooleanOperation()
         {
             Generate(
@@ -428,7 +436,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         }
 
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("tinyblob")]
         [InlineData("blob")]
         [InlineData("mediumblob")]
@@ -489,7 +497,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public void AlterColumnOperation_type_with_index()
         {
             Generate(
@@ -520,7 +528,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public void AlterColumnOperation_ComputedColumnSql_with_index()
         {
             Generate(
@@ -547,6 +555,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
+        [ConditionalFact]
         public override void AddForeignKeyOperation_with_name()
         {
             base.AddForeignKeyOperation_with_name();
@@ -557,7 +566,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public virtual void AddForeignKeyOperation_with_long_name()
         {
             Generate(
@@ -577,6 +586,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
+        [ConditionalFact]
         public override void AddForeignKeyOperation_without_name()
         {
             base.AddForeignKeyOperation_without_name();
@@ -586,7 +596,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public override void AddPrimaryKeyOperation_with_name()
         {
             base.AddPrimaryKeyOperation_with_name();
@@ -596,7 +606,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public override void AddPrimaryKeyOperation_without_name()
         {
             base.AddPrimaryKeyOperation_without_name();
@@ -609,7 +619,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public override void AddUniqueConstraintOperation_with_name()
         {
             base.AddUniqueConstraintOperation_with_name();
@@ -620,7 +630,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public override void AddUniqueConstraintOperation_without_name()
         {
             base.AddUniqueConstraintOperation_without_name();
@@ -630,7 +640,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public override void CreateIndexOperation_unique()
         {
             base.CreateIndexOperation_unique();
@@ -640,7 +650,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public virtual void CreateIndexOperation_fulltext()
         {
             Generate(
@@ -657,7 +667,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public virtual void CreateIndexOperation_spatial()
         {
             Generate(
@@ -674,7 +684,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public override void CreateIndexOperation_nonunique()
         {
             base.CreateIndexOperation_nonunique();
@@ -684,7 +694,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public virtual void CreateIndexOperation_with_long_name()
         {
             Generate(
@@ -701,7 +711,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public virtual void RenameIndexOperation()
         {
             var migrationBuilder = new MigrationBuilder("MySql");
@@ -718,7 +728,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public virtual void RenameIndexOperation_with_model()
         {
             Generate(
@@ -741,7 +751,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public virtual void RenameColumnOperation()
         {
             var migrationBuilder = new MigrationBuilder("MySql");
@@ -758,7 +768,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public virtual void RenameColumnOperation_with_model()
         {
             var migrationBuilder = new MigrationBuilder("MySql");
@@ -779,7 +789,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public override void DropColumnOperation()
         {
             base.DropColumnOperation();
@@ -789,7 +799,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public override void DropForeignKeyOperation()
         {
             base.DropForeignKeyOperation();
@@ -799,7 +809,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public override void DropPrimaryKeyOperation()
         {
             base.DropPrimaryKeyOperation();
@@ -810,7 +820,7 @@ ALTER TABLE `People` DROP PRIMARY KEY;".Replace("\r", string.Empty).Replace("\n"
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public override void DropTableOperation()
         {
             base.DropTableOperation();
@@ -820,7 +830,7 @@ ALTER TABLE `People` DROP PRIMARY KEY;".Replace("\r", string.Empty).Replace("\n"
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public override void DropUniqueConstraintOperation()
         {
             base.DropUniqueConstraintOperation();
@@ -830,6 +840,7 @@ ALTER TABLE `People` DROP PRIMARY KEY;".Replace("\r", string.Empty).Replace("\n"
                 Sql);
         }
 
+        [ConditionalFact]
         public override void DropIndexOperation()
         {
             base.DropIndexOperation();
@@ -839,7 +850,7 @@ ALTER TABLE `People` DROP PRIMARY KEY;".Replace("\r", string.Empty).Replace("\n"
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public override void SqlOperation()
         {
             base.SqlOperation();
@@ -849,7 +860,7 @@ ALTER TABLE `People` DROP PRIMARY KEY;".Replace("\r", string.Empty).Replace("\n"
                 Sql);
         }
 
-        [Fact]
+        [ConditionalFact]
         public virtual void AddColumnOperation_with_charSet_annotation()
         {
             Generate(
@@ -870,26 +881,32 @@ ALTER TABLE `People` DROP PRIMARY KEY;".Replace("\r", string.Empty).Replace("\n"
         }
 
         // MySql doesn't support sequence
+        [ConditionalFact]
         public override void AlterSequenceOperation_with_minValue_and_maxValue()
         {
         }
 
+        [ConditionalFact]
         public override void AlterSequenceOperation_without_minValue_and_maxValue()
         {
         }
 
+        [ConditionalFact]
         public override void CreateSequenceOperation_with_minValue_and_maxValue()
         {
         }
 
+        [ConditionalFact]
         public override void CreateSequenceOperation_with_minValue_and_maxValue_not_long()
         {
         }
 
+        [ConditionalFact]
         public override void CreateSequenceOperation_without_minValue_and_maxValue()
         {
         }
 
+        [ConditionalFact]
         public override void DropSequenceOperation()
         {
         }
