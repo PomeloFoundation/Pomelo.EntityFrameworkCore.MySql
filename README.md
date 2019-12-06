@@ -11,16 +11,17 @@
 
 ### EF Core and .NET Core
 
-The following versions of EF Core and .NET Core are compatible with `Pomelo.EntityFrameworkCore.MySql`:
+The following versions of EF Core and .NET Standard are compatible with `Pomelo.EntityFrameworkCore.MySql`:
 
-Pomelo.EntityFrameworkCore.MySql | EF Core | .NET Core
--- | -- | --
-[3.0.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.0.1) | 3.0.1 | 3.0
-[2.2.6](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/2.2.6) | 2.2.6 | 2.2 / 3.0
+Pomelo.EntityFrameworkCore.MySql | EF Core | .NET Standard | .NET Core | .NET Framework
+-- | -- | -- | -- | --
+[3.1.0-rc1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.1.0-rc1.final) | 3.1.0 | 2.0 | 2.0+ | 4.6.1+
+[3.0.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.0.1) | 3.0.1 | 2.1 | 3.0+ | N/A
+[2.2.6](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/2.2.6) | 2.2.6 | 2.0 | 2.0+ | 4.6.1+
 
 ### Supported DBMS and Versions
 
-`Pomelo.EntityFrameworkCore.MySql` is tested against the latest 2 minor versions of `MySQL` and `MariaDB`.  Older versions _may_ be compatible but are not officially supported or tested.  Currently supported versions are:
+`Pomelo.EntityFrameworkCore.MySql` is tested against the latest 2 minor versions of `MySQL` and `MariaDB`. Older versions _may_ be compatible but are not officially supported or tested.  Currently supported versions are:
 
 - MySQL 8.0
 - MySQL 5.7
@@ -31,6 +32,7 @@ Pomelo.EntityFrameworkCore.MySql | EF Core | .NET Core
 
 Milestone | Status | Release Date
 ----------|--------|-------------
+3.1.0-rc1 | Released | 2019-12-06
 3.0.1 | Released | 2019-12-04
 3.0.0 | Released | 2019-11-18
 2.2.6 | Released | 2019-10-15
@@ -55,7 +57,7 @@ To use nightly builds from our Azure DevOps feed, add a `NuGet.config` file in y
 
 ### 1. Recommended Server CharSet
 
-We recommend to set `utf8mb4` as your MySQL database default charset. The following statement will check your current DB charset:
+We recommend to set `utf8mb4` as your MySQL database default charset. This is the default in MySQL 8. The following statement will check your current DB charset:
 
 ```sql
 show variables like 'character_set_database';
@@ -78,19 +80,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
-namespace YourNamespace // replace "YourNamespace" with the namespace of your application
+// replace "YourNamespace" with the namespace of your application
+namespace YourNamespace
 {
     public class Startup
     {
         public void ConfigureServices(IServiceCollection services)
         {
             // other service configurations go here
-            services.AddDbContextPool<YourDbContext>( // replace "YourDbContext" with the class name of your DbContext
-                options => options.UseMySql("Server=localhost;Database=ef;User=root;Password=123456;", // replace with your Connection String
-                    mySqlOptions =>
-                    {
-                        mySqlOptions.ServerVersion(new Version(5, 7, 17), ServerType.MySql); // replace with your Server Version and Type
-                    }
+            // replace "YourDbContext" with the class name of your DbContext
+            services.AddDbContextPool<YourDbContext>(options => options
+                // replace with your connection string
+                .UseMySql("Server=localhost;Database=ef;User=root;Password=1234;", mySqlOptions => mySqlOptions
+                    // replace with your Server Version and Type
+                    .ServerVersion(new ServerVersion(new Version(8, 0, 18), ServerType.MySql))
             ));
         }
     }
