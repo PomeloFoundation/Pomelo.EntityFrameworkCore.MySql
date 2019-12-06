@@ -2,7 +2,7 @@
   <Import Project="..\Directory.Build.props" />
 
   <PropertyGroup>
-    <NoWarn>$(NoWarn);CA1822;xUnit1004;EF1001</NoWarn>
+      <NoWarn>$(NoWarn);EF1001;MSB3277;xUnit1000</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <NoWarn>$(NoWarn);EF1001</NoWarn>
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);$(NoWarn)</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(LocalPomeloJsonObjectRepository)' == ''">
