@@ -62,15 +62,24 @@ jobs:
       ./build.sh
     displayName: Setup and Build Solution
   - bash: |
+      startTime=$SECONDS
       started="false"
-      for i in $(seq 0 300); do
+
+      while true; do
         if docker exec mysql mysqladmin -h localhost -P 3306 -u root -pPassword12! status; then
           started="true"
           break
         fi
-        sleep 1
-      done
 
+        duration=$(($SECONDS - $startTime))
+        echo "duration=$duration"
+        if (( $duration > 300 )); then
+          break
+        else
+          sleep 3
+        fi
+      done
+      
       if [ "$started" = "false" ]; then
         echo "$DOCKER_IMAGE container failed to start in 5 minutes" >&2
         exit 1
@@ -178,7 +187,7 @@ jobs:
           $started=$true
           break;
         }
-        Start-Sleep 1
+        Start-Sleep 3
       }
       if (!$started) {
         Write-Error "mysql container failed to start in 5 minutes"
