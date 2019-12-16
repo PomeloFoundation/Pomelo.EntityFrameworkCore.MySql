@@ -9,7 +9,7 @@
 
 ## Compatibility
 
-### EF Core and .NET Core
+### EF Core and .NET Standard
 
 The following versions of EF Core and .NET Standard are compatible with `Pomelo.EntityFrameworkCore.MySql`:
 
