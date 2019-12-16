@@ -248,6 +248,9 @@ jobs:
       pack_nuget_org="false"
       pack_wip="false"
 
+      echo "Build.SourceBranch=$(Build.SourceBranch)"
+      echo "Build.SourceBranchName=$(Build.SourceBranchName)"
+
       final_version_kind=""
       if echo "$(Build.SourceBranch)" | grep -qE '^refs/tags/'; then
         pack="true"
