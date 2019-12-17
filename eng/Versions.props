@@ -1,12 +1,21 @@
 <Project>
   <PropertyGroup Label="Version settings">
-    <VersionPrefix>3.1.0</VersionPrefix>
-    <PreReleaseVersionLabel>rtm</PreReleaseVersionLabel>
+    <VersionPrefix>3.2.0</VersionPrefix>
+    <!--
+      Use the following values for the different release types:
+          - "preview" to match preview releases upstream (EF Core)
+          - "rc" targeting a public release of EF Core
+          - "rtm" for the initial public release of a major/minor version
+          - "servicing" for a release containig fixes for a previously published major/minior version
+    -->
+    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
     <IncludeSourceRevisionInInformationalVersion>False</IncludeSourceRevisionInInformationalVersion>
     <!--
-        When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
+        When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages.
+        Set to 'true' for 'rtm' and 'servicing' releases.
     -->
-    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">true</StabilizePackageVersion>
+    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
     <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
   </PropertyGroup>
   <PropertyGroup Label="Arcade settings">
