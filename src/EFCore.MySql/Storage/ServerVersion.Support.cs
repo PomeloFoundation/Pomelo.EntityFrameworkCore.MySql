@@ -53,6 +53,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string DefaultExpressionMySqlSupportVersionString = "8.0.13-mysql";
         // public const string DefaultExpressionMariaDbSupportVersionString = "?.?.?-mariadb";
 
+        // public const string AlternativeDefaultExpressionMySqlSupportVersionString = "?.?.?-mysql";
+        public const string AlternativeDefaultExpressionMariaDbSupportVersionString = "10.2.7-mariadb"; // MDEV-13132
+
         #endregion
 
         #region SupportMap keys for test attributes
@@ -72,6 +75,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string NullableGeneratedColumnsSupportKey = nameof(NullableGeneratedColumnsSupportKey);
         public const string DefaultCharSetUtf8Mb4SupportKey = nameof(DefaultCharSetUtf8Mb4SupportKey);
         public const string DefaultExpressionSupportKey = nameof(DefaultExpressionSupportKey);
+        public const string AlternativeDefaultExpressionSupportKey = nameof(AlternativeDefaultExpressionSupportKey);
 
         #endregion
 
@@ -91,6 +95,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
             { NullableGeneratedColumnsSupportKey, new ServerVersionSupport(NullableGeneratedColumnsMySqlSupportVersionString/*, NullableGeneratedColumnsMariaDbSupportVersionString*/) },
             { DefaultCharSetUtf8Mb4SupportKey, new ServerVersionSupport(DefaultCharSetUtf8Mb4MySqlSupportVersionString/*, DefaultCharSetUtf8Mb4MariaDbSupportVersionString*/) },
             { DefaultExpressionSupportKey, new ServerVersionSupport(DefaultExpressionMySqlSupportVersionString/*, DefaultExpressionMariaDbSupportVersionString*/) },
+            { AlternativeDefaultExpressionSupportKey, new ServerVersionSupport(/*AlternativeDefaultExpressionMySqlSupportVersionString, */AlternativeDefaultExpressionMariaDbSupportVersionString) },
         };
 
         #region Support checks for provider code
@@ -110,12 +115,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public virtual bool SupportsNullableGeneratedColumns => SupportMap[NullableGeneratedColumnsSupportKey].IsSupported(this);
         public virtual bool SupportsDefaultCharSetUtf8Mb4 => SupportMap[DefaultCharSetUtf8Mb4SupportKey].IsSupported(this);
         public virtual bool SupportsDefaultExpression => SupportMap[DefaultExpressionSupportKey].IsSupported(this);
+        public virtual bool SupportsAlternativeDefaultExpression => SupportMap[AlternativeDefaultExpressionSupportKey].IsSupported(this);
 
         #endregion
 
         public virtual int MaxKeyLength => SupportsLargerKeyLength ? 3072 : 767;
         public virtual CharSet DefaultCharSet => SupportsDefaultCharSetUtf8Mb4 ? CharSet.Utf8Mb4 : CharSet.Latin1;
-        
+
         /// <summary>
         /// Constructs a new <see cref="ServerVersionSupport"/> object containing the <see cref="ServerVersion"/> objects
         /// referenced by the provided version strings and/or support keys.
