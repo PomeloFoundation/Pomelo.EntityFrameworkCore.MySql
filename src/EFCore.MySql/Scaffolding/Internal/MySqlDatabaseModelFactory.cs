@@ -211,9 +211,9 @@ ORDER BY
     `ORDINAL_POSITION`;";
 
         private void GetColumns(
-           DbConnection connection,
-           IReadOnlyList<DatabaseTable> tables,
-           Func<string, string, bool> tableFilter)
+            DbConnection connection,
+            IReadOnlyList<DatabaseTable> tables,
+            Func<string, string, bool> tableFilter)
         {
             foreach (var table in tables)
             {
@@ -233,6 +233,11 @@ ORDER BY
                             var columType = reader.GetValueOrDefault<string>("COLUMN_TYPE");
                             var extra = reader.GetValueOrDefault<string>("EXTRA");
                             var comment = reader.GetValueOrDefault<string>("COLUMN_COMMENT");
+
+                            defaultValue = _options.ServerVersion.SupportsAlternativeDefaultExpression &&
+                                           defaultValue != null
+                                ? ConvertDefaultValueFromMariaDbToMySql(defaultValue)
+                                : defaultValue;
 
                             ValueGenerated valueGenerated;
 
@@ -295,6 +300,32 @@ ORDER BY
             }
         }
 
+        /// <summary>
+        /// MariaDB 10.2.7+ implements default values differently from MySQL, to support their own default expression
+        /// syntax. We convert their column values to MySQL compatible syntax here.
+        /// See https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/994#issuecomment-568271740
+        /// for tables with differences.
+        /// </summary>
+        private string ConvertDefaultValueFromMariaDbToMySql([NotNull] string defaultValue)
+        {
+            if (string.Equals(defaultValue, "NULL", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            if (defaultValue.StartsWith("'", StringComparison.Ordinal) &&
+                defaultValue.EndsWith("'", StringComparison.Ordinal) &&
+                defaultValue.Length >= 2)
+            {
+                // MariaDb escapes all single quotes with two single quotes in default value strings, even if they are
+                // escaped with backslashes in the original `CREATE TABLE` statement.
+                return defaultValue.Substring(1, defaultValue.Length - 2)
+                    .Replace("''", "'");
+            }
+
+            return defaultValue;
+        }
+
         private static string FilterClrDefaults(string dataTypeName, bool nullable, string defaultValue)
         {
             if (defaultValue == null)
@@ -343,7 +374,7 @@ ORDER BY
 
             // Pending the MySqlConnector implement MySqlCommandBuilder class
             if ((string.Equals(dataType, "timestamp", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(dataType, "datetime", StringComparison.OrdinalIgnoreCase)) &&
+                 string.Equals(dataType, "datetime", StringComparison.OrdinalIgnoreCase)) &&
                 string.Equals(defaultValue, "CURRENT_TIMESTAMP", StringComparison.OrdinalIgnoreCase))
             {
                 return defaultValue;
@@ -372,8 +403,8 @@ ORDER BY
         /// Primary keys are handled as in <see cref="GetConstraints"/>, not here
         /// </remarks>
         private void GetPrimaryKeys(
-           DbConnection connection,
-           IReadOnlyList<DatabaseTable> tables)
+            DbConnection connection,
+            IReadOnlyList<DatabaseTable> tables)
         {
             foreach (var table in tables)
             {
@@ -386,11 +417,7 @@ ORDER BY
                         {
                             try
                             {
-                                var index = new DatabasePrimaryKey
-                                {
-                                    Table = table,
-                                    Name = reader.GetString(0)
-                                };
+                                var index = new DatabasePrimaryKey {Table = table, Name = reader.GetString(0)};
 
                                 foreach (var column in reader.GetString(2).Split(','))
                                 {
@@ -434,12 +461,7 @@ ORDER BY
                         {
                             try
                             {
-                                var index = new DatabaseIndex
-                                {
-                                    Table = table,
-                                    Name = reader.GetString(0),
-                                    IsUnique = !reader.GetBoolean(1)
-                                };
+                                var index = new DatabaseIndex {Table = table, Name = reader.GetString(0), IsUnique = !reader.GetBoolean(1)};
 
                                 foreach (var column in reader.GetString(2).Split(','))
                                 {
@@ -489,13 +511,7 @@ ORDER BY
                             var referencedTable = tables.FirstOrDefault(t => t.Name == referencedTableName);
                             if (referencedTable != null)
                             {
-                                var fkInfo = new DatabaseForeignKey
-                                {
-                                    Name = reader.GetString(0),
-                                    OnDelete = ConvertToReferentialAction(reader.GetString(4)),
-                                    Table = table,
-                                    PrincipalTable = referencedTable
-                                };
+                                var fkInfo = new DatabaseForeignKey {Name = reader.GetString(0), OnDelete = ConvertToReferentialAction(reader.GetString(4)), Table = table, PrincipalTable = referencedTable};
                                 foreach (var pair in reader.GetString(3).Split(','))
                                 {
                                     fkInfo.Columns.Add(table.Columns.Single(y =>
