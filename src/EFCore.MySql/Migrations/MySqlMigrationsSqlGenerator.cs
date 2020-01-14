@@ -99,6 +99,45 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             }
         }
 
+        protected override void Generate(
+            [NotNull] CreateTableOperation operation,
+            [CanBeNull] IModel model,
+            [NotNull] MigrationCommandListBuilder builder,
+            bool terminate = true)
+        {
+            base.Generate(operation, model, builder, false);
+
+            GenerateComment(operation.Comment, builder);
+
+            if (terminate)
+            {
+                builder.AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
+                EndStatement(builder);
+            }
+        }
+
+        protected override void Generate(AlterTableOperation operation, IModel model, MigrationCommandListBuilder builder)
+        {
+            var madeChanges = false;
+
+            if (operation.Comment != operation.OldTable.Comment)
+            {
+                builder.Append("ALTER TABLE ")
+                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name, operation.Schema));
+
+                // An existing comment will be removed, when set to an empty string.
+                GenerateComment(operation.Comment ?? string.Empty, builder);
+
+                builder.AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
+                madeChanges = true;
+            }
+
+            if (madeChanges)
+            {
+                EndStatement(builder);
+            }
+        }
+
         /// <summary>
         ///     Builds commands for the given <see cref="AlterColumnOperation" />
         ///     by making calls on the given <see cref="MigrationCommandListBuilder" />.
@@ -629,7 +668,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
         /// <param name="operation"> The operation. </param>
         /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
         /// <param name="builder"> The command builder to use to add the SQL fragment. </param>
-
         protected override void ColumnDefinition(AddColumnOperation operation, IModel model,
             MigrationCommandListBuilder builder)
             => ColumnDefinition(
@@ -736,14 +774,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
                 {
                     builder.Append(" AUTO_INCREMENT");
                 }
-                else
+
+                GenerateComment(operation.Comment, builder);
+
+                // AUTO_INCREMENT has priority over reference definitions.
+                if (onUpdateSql != null && !autoIncrement)
                 {
-                    if (onUpdateSql != null)
-                    {
-                        builder
-                            .Append(" ON UPDATE ")
-                            .Append(onUpdateSql);
-                    }
+                    builder
+                        .Append(" ON UPDATE ")
+                        .Append(onUpdateSql);
                 }
             }
             else
@@ -760,7 +799,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
                 {
                     builder.Append(" NULL");
                 }
+
+                GenerateComment(operation.Comment, builder);
             }
+        }
+
+        private void GenerateComment(string comment, MigrationCommandListBuilder builder)
+        {
+            if (comment == null)
+                return;
+
+            var stringTypeMapping = Dependencies.TypeMappingSource.GetMapping(typeof(string));
+
+            builder.Append(" COMMENT ")
+                .Append(stringTypeMapping.GenerateSqlLiteral(comment));
         }
 
         private void ColumnDefinitionWithCharSet(string schema, string table, string name, ColumnOperation operation, IModel model, MigrationCommandListBuilder builder)
@@ -823,7 +875,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
         /// <param name="defaultValue"> The default value for the column. </param>
         /// <param name="defaultValueSql"> The SQL expression to use for the column's default constraint. </param>
         /// <param name="builder"> The command builder to use to add the SQL fragment. </param>
-
         protected override void DefaultValue(object defaultValue, string defaultValueSql, string columnType, MigrationCommandListBuilder builder)
         {
             Check.NotNull(builder, nameof(builder));
