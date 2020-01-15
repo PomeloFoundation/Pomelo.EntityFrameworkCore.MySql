@@ -105,6 +105,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private readonly IMySqlOptions _options;
 
         private bool _initialized;
+        private readonly object _initializationLock = new object();
 
         public MySqlTypeMappingSource(
             [NotNull] TypeMappingSourceDependencies dependencies,
@@ -115,7 +116,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             _options = options;
         }
 
-        protected void Initialize()
+        private void Initialize()
         {
             //
             // String mappings depend on the MySqlOptions.NoBackslashEscapes setting:
@@ -291,10 +292,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         {
             // Use deferred initialization to support connection (string) based type mapping in
             // design time mode (scaffolder etc.).
+            // This is a singleton class and therefore needs to be thread-safe.
             if (!_initialized)
             {
-                Initialize();
-                _initialized = true;
+                lock (_initializationLock)
+                {
+                    if (!_initialized)
+                    {
+                        Initialize();
+                        _initialized = true;
+                    }
+                }
             }
 
             var clrType = mappingInfo.ClrType;
