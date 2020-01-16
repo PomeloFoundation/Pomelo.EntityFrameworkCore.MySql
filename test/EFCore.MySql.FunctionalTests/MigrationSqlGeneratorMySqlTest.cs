@@ -100,13 +100,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             Assert.Equal(
                 @"CREATE TABLE `People` (
     `Id` int NOT NULL,
-    `EmployerId` int NULL,
+    `EmployerId` int NULL COMMENT 'Employer ID comment',
     `SSN` char(11) NULL,
     PRIMARY KEY (`Id`),
     UNIQUE (`SSN`),
     CHECK (SSN > 0),
     FOREIGN KEY (`EmployerId`) REFERENCES `Companies` (`Id`)
-);
+) COMMENT 'Table comment';
 ", Sql);
         }
 
