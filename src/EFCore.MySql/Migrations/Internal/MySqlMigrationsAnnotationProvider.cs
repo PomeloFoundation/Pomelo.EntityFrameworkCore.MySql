@@ -1,9 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -12,37 +8,17 @@ using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
 {
-    /// <summary>
-    ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-    ///     directly from your code. This API may change or be removed in future releases.
-    /// </summary>
     public class MySqlMigrationsAnnotationProvider : MigrationsAnnotationProvider
     {
-        /// <summary>
-        ///     Initializes a new instance of this class.
-        /// </summary>
-        /// <param name="dependencies"> Parameter object containing dependencies for this service. </param>
         public MySqlMigrationsAnnotationProvider([NotNull] MigrationsAnnotationProviderDependencies dependencies)
             : base(dependencies)
         {
         }
 
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public override IEnumerable<IAnnotation> For(IModel model) => ForRemove(model);
+        public override IEnumerable<IAnnotation> For(IModel model) => base.For(model);
 
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public override IEnumerable<IAnnotation> For(IEntityType entityType) => ForRemove(entityType);
+        public override IEnumerable<IAnnotation> For(IEntityType entityType) => base.For(entityType);
 
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public override IEnumerable<IAnnotation> For(IIndex index)
         {
             var isFullText = index.IsFullText();
@@ -62,10 +38,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
             }
         }
 
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public override IEnumerable<IAnnotation> For(IProperty property)
         {
             if (property.GetValueGenerationStrategy() == MySqlValueGenerationStrategy.IdentityColumn)
@@ -80,6 +52,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                 yield return new Annotation(
                     MySqlAnnotationNames.ValueGenerationStrategy,
                     MySqlValueGenerationStrategy.ComputedColumn);
+            }
+
+            var charset = property.GetCharSet();
+            if (charset != null)
+            {
+                yield return new Annotation(
+                    MySqlAnnotationNames.CharSet,
+                    charset);
+            }
+
+            var collation = property.GetCollation();
+            if (collation != null)
+            {
+                yield return new Annotation(
+                    MySqlAnnotationNames.Collation,
+                    collation);
             }
         }
     }
