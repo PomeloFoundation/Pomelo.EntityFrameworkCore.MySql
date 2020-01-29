@@ -163,12 +163,10 @@ jobs:
     inputs:
       version: $(dotnet_version)
   - pwsh: |
-      docker run `
-        -d `
-        --name "mysql" `
-        -e "MYSQL_ROOT_PASSWORD=Password12!" `
-        -p "3306:3306" `
-        pomelofoundation/mysql-windows:8-ltsc2019
+      choco install mysql
+
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SELECT @@version;"
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
     displayName: Install Database Server
   - pwsh: |
       .\dotnet-env.ps1 dotnet --info
@@ -180,21 +178,7 @@ jobs:
       .\build.cmd
     displayName: Setup and Build Solution
   - pwsh: |
-      $started=$false
-      For ($i=0; $i -le 300; $i++) {
-        docker exec mysql mysqladmin -h localhost -P 3306 -u root "-pPassword12!" status
-        if ($LastExitCode -eq 0) {
-          $started=$true
-          break;
-        }
-        Start-Sleep 3
-      }
-      if (!$started) {
-        Write-Error "mysql container failed to start in 5 minutes"
-        exit 1
-      }
-      docker exec mysql mysql -h localhost -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sql_mode)';"
-    errorActionPreference: continue
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sql_mode)';"
     displayName: Setup Database
   - pwsh: |
       .\dotnet-env.ps1 dotnet tool install --global dotnet-ef --version $(dotnet_ef_tools_version)
