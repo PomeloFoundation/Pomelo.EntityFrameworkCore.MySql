@@ -568,7 +568,7 @@ ORDER BY
                         while (reader.Read())
                         {
                             var referencedTableName = reader.GetString(2);
-                            var referencedTable = tables.FirstOrDefault(t => t.Name == referencedTableName);
+                            var referencedTable = tables.FirstOrDefault(t => string.Equals(t.Name, referencedTableName, StringComparison.OrdinalIgnoreCase));
                             if (referencedTable != null)
                             {
                                 var fkInfo = new DatabaseForeignKey {Name = reader.GetString(0), OnDelete = ConvertToReferentialAction(reader.GetString(4)), Table = table, PrincipalTable = referencedTable};
