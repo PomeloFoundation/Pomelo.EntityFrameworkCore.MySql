@@ -17,7 +17,7 @@ using Xunit;
 // ReSharper disable InconsistentNaming
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
-    public class MigrationSqlGeneratorMySqlTest : MigrationSqlGeneratorTestBase
+    public partial class MigrationSqlGeneratorMySqlTest : MigrationSqlGeneratorTestBase
     {
         [ConditionalFact]
         public virtual void It_lifts_foreign_key_additions()
