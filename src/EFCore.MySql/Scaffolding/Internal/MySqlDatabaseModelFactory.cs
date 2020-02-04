@@ -571,9 +571,11 @@ ORDER BY
                             var referencedTable = tables.FirstOrDefault(t => t.Name == referencedTableName);
                             if (referencedTable == null)
                             {
-                                // if the casing of the constraint doesn't match the casing of the table name, try and find a matching table with a
-                                // different case, but ensure that there's only one possible match or we can't be certain which is the right table.
-                                referencedTable = tables.SingleOrDefault(t => string.Equals(t.Name, referencedTableName, StringComparison.OrdinalIgnoreCase));
+                                // On operation systems with insensitive file name handling, the saved reference table name might have a
+                                // different casing than the actual table name. (#1017)
+                                // In the unlikely event that there are multiple tables with the same spelling, differing only in casing,
+                                // we can't be certain which is the right match, so rather fail to be safe.
+                                referencedTable = tables.Single(t => string.Equals(t.Name, referencedTableName, StringComparison.OrdinalIgnoreCase));
                             }
                             if (referencedTable != null)
                             {
