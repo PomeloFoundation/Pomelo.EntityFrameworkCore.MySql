@@ -508,7 +508,13 @@ ORDER BY
                         while (reader.Read())
                         {
                             var referencedTableName = reader.GetString(2);
-                            var referencedTable = tables.FirstOrDefault(t => string.Equals(t.Name, referencedTableName, StringComparison.OrdinalIgnoreCase));
+                            var referencedTable = tables.FirstOrDefault(t => t.Name == referencedTableName);
+                            if (referencedTable == null)
+                            {
+                                // if the casing of the constraint doesn't match the casing of the table name, try and find a matching table with a
+                                // different case, but ensure that there's only one possible match or we can't be certain which is the right table.
+                                referencedTable = tables.SingleOrDefault(t => string.Equals(t.Name, referencedTableName, StringComparison.OrdinalIgnoreCase));
+                            }
                             if (referencedTable != null)
                             {
                                 var fkInfo = new DatabaseForeignKey {Name = reader.GetString(0), OnDelete = ConvertToReferentialAction(reader.GetString(4)), Table = table, PrincipalTable = referencedTable};
