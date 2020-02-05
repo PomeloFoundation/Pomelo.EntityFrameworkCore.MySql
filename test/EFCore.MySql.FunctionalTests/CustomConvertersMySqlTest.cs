@@ -25,24 +25,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.Can_perform_query_with_ansi_strings_test();
         }
 
-        [ConditionalFact(Skip = "EF Core Issue#18147")]
-        public override void Value_conversion_is_appropriately_used_for_join_condition()
-        {
-            base.Value_conversion_is_appropriately_used_for_join_condition();
-        }
-
-        [ConditionalFact(Skip = "EF Core Issue#18147")]
-        public override void Value_conversion_is_appropriately_used_for_left_join_condition()
-        {
-            base.Value_conversion_is_appropriately_used_for_left_join_condition();
-        }
-
-        [ConditionalFact(Skip = "EF Core Issue#18147")]
-        public override void Where_bool_gets_converted_to_equality_when_value_conversion_is_used()
-        {
-            base.Where_bool_gets_converted_to_equality_when_value_conversion_is_used();
-        }
-        
         public class CustomConvertersMySqlFixture : CustomConvertersFixtureBase
         {
             public override bool StrictEquality => true;
