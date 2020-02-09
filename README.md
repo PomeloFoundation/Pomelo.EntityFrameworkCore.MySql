@@ -15,8 +15,8 @@ The following versions of EF Core and .NET Standard are compatible with `Pomelo.
 
 Pomelo.EntityFrameworkCore.MySql | EF Core | .NET Standard | .NET Core | .NET Framework
 -- | -- | -- | -- | --
-[3.1.0](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.1.0) | 3.1.0 | 2.0 | 2.0+ | 4.7.2+
-[3.0.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.0.1) | 3.0.1 | 2.1 | 3.0+ | N/A
+[3.1.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.1.1) | 3.1.x | 2.0 | 2.0+ | 4.7.2+
+[3.0.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.0.1) | 3.0.x | 2.1 | 3.0+ | N/A
 [2.2.6](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/2.2.6) | 2.2.6 | 2.0 | 2.0+ | 4.7.2+
 
 ### Supported DBMS and Versions
@@ -32,8 +32,8 @@ Pomelo.EntityFrameworkCore.MySql | EF Core | .NET Standard | .NET Core | .NET Fr
 
 Milestone | Status | Release Date
 ----------|--------|-------------
+3.1.1 | Released | 2020-01-15
 3.1.0 | Released | 2019-12-16
-3.1.0-rc1 | Released | 2019-12-06
 3.0.1 | Released | 2019-12-04
 3.0.0 | Released | 2019-11-18
 2.2.6 | Released | 2019-10-15
@@ -69,7 +69,7 @@ show variables like 'character_set_database';
 Ensure that your `.csproj` file contains the following reference:
 
 ```xml
-<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="3.0.1" />
+<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="3.1.1" />
 ```
 
 ### 3. Services Configuration
