@@ -84,6 +84,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
 
         protected virtual void CheckSchema(MigrationOperation operation)
         {
+            if (_options.SchemaNameTranslator != null)
+            {
+                return;
+            }
+            
             var schema = operation.GetType()
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty)
                 .Where(p => p.Name.IndexOf(nameof(AddForeignKeyOperation.Schema), StringComparison.Ordinal) >= 0)
@@ -96,7 +101,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
                     .GetProperty(nameof(AddForeignKeyOperation.Name), BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty)
                     ?.GetValue(operation) as string;
 
-                throw new InvalidOperationException($"A schema \"{schema}\" has been set for an object of type \"{operation.GetType().Name}\"{(string.IsNullOrEmpty(name) ? string.Empty : $" with the name of \"{name}\"")}. MySQL does not support the EF Core concept of schemas. Any schema property of any \"MigrationOperation\" must be null.");
+                throw new InvalidOperationException($"A schema \"{schema}\" has been set for an object of type \"{operation.GetType().Name}\"{(string.IsNullOrEmpty(name) ? string.Empty : $" with the name of \"{name}\"")}. MySQL does not support the EF Core concept of schemas. Any schema property of any \"MigrationOperation\" must be null. This behavior can be changed by setting the `SchemaBehavior` option in the `UseMySql` call.");
             }
         }
 

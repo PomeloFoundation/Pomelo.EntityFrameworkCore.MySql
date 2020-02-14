@@ -1,6 +1,7 @@
 // Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
+using System;
 using System.Text;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -31,6 +32,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
             UpdateSqlModeOnOpen = copyFrom.UpdateSqlModeOnOpen;
             ReplaceLineBreaksWithCharFunction = copyFrom.ReplaceLineBreaksWithCharFunction;
             DefaultDataTypeMappings = copyFrom.DefaultDataTypeMappings;
+            SchemaBehavior = copyFrom.SchemaBehavior;
+            SchemaNameTranslator = copyFrom.SchemaNameTranslator;
         }
 
         /// <summary>
@@ -78,6 +81,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         public bool ReplaceLineBreaksWithCharFunction { get; private set; }
 
         public MySqlDefaultDataTypeMappings DefaultDataTypeMappings { get; private set; }
+
+        public MySqlSchemaBehavior SchemaBehavior { get; private set; }
+        public MySqlSchemaNameTranslator SchemaNameTranslator { get; private set; }
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -153,6 +159,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
             clone.DefaultDataTypeMappings = defaultDataTypeMappings;
             return clone;
         }
+
+        public MySqlOptionsExtension WithSchemaBehavior(MySqlSchemaBehavior behavior, MySqlSchemaNameTranslator translator = null)
+        {
+            if (behavior == MySqlSchemaBehavior.Translate && translator == null)
+            {
+                throw new ArgumentException($"The {nameof(translator)} parameter is mandatory when using `{nameof(MySqlSchemaBehavior)}.{nameof(MySqlSchemaBehavior.Translate)}` as the specified behavior.");
+            }
+
+            var clone = (MySqlOptionsExtension)Clone();
+
+            clone.SchemaBehavior = behavior;
+            clone.SchemaNameTranslator = behavior == MySqlSchemaBehavior.Translate
+                ? translator
+                : null;
+
+            return clone;
+        }
         
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -215,6 +238,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                     _serviceProviderHash = (_serviceProviderHash * 397) ^ Extension.UpdateSqlModeOnOpen.GetHashCode();
                     _serviceProviderHash = (_serviceProviderHash * 397) ^ Extension.ReplaceLineBreaksWithCharFunction.GetHashCode();
                     _serviceProviderHash = (_serviceProviderHash * 397) ^ (Extension.DefaultDataTypeMappings?.GetHashCode() ?? 0L);
+                    _serviceProviderHash = (_serviceProviderHash * 397) ^ Extension.SchemaBehavior.GetHashCode();
+                    _serviceProviderHash = (_serviceProviderHash * 397) ^ (Extension.SchemaNameTranslator?.GetHashCode() ?? 0L);
                 }
 
                 return _serviceProviderHash.Value;
@@ -236,6 +261,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                     = Extension.ReplaceLineBreaksWithCharFunction.GetHashCode().ToString(CultureInfo.InvariantCulture);
                 debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.DefaultDataTypeMappings)]
                     = (Extension.DefaultDataTypeMappings?.GetHashCode() ?? 0L).ToString(CultureInfo.InvariantCulture);
+                debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.SchemaBehavior)]
+                    = Extension.SchemaBehavior.GetHashCode().ToString(CultureInfo.InvariantCulture);
             }
         }
     }

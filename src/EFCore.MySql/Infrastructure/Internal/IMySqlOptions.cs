@@ -18,5 +18,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         bool NoBackslashEscapes { get; }
         bool ReplaceLineBreaksWithCharFunction { get; }
         MySqlDefaultDataTypeMappings DefaultDataTypeMappings { get; }
+        MySqlSchemaNameTranslator SchemaNameTranslator { get; }
     }
 }
