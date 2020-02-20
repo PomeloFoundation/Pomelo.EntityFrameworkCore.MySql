@@ -1,25 +1,24 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.TestModels.Northwind;
+using Microsoft.EntityFrameworkCore.TestModels.MusicStore;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public abstract class EscapesMySqlTestBase<TFixture> : QueryTestBase<TFixture>
-        where TFixture : NorthwindQueryFixtureBase<NoopModelCustomizer>, new()
+    public abstract class EscapesMySqlTestBase<TFixture> : IClassFixture<TFixture>
+        where TFixture : EscapesMySqlTestBase<TFixture>.EscapesMySqlFixtureBase, new()
     {
         protected EscapesMySqlTestBase(TFixture fixture)
-            : base(fixture)
         {
+            Fixture = fixture;
+            fixture.ListLoggerFactory.Clear();
         }
-
-        protected virtual string Mode => null;
 
         [ConditionalFact]
         public virtual void Input_query_escapes_parameter()
@@ -27,19 +26,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             ExecuteWithStrategyInTransaction(
                 context =>
                 {
-                    context.Customers.Add(new Customer
+                    context.Artists.Add(new Artist
                     {
-                        CustomerID = "ESCBCKSLINS",
-                        CompanyName = @"Back\slash's Insert Operation"
+                        Name = @"Back\slash's Garden Party",
                     });
-                    
+
                     context.SaveChanges();
                 },
                 context =>
                 {
-                    var customers = context.Customers.Where(x => x.CustomerID == "ESCBCKSLINS").ToList();
-                    Assert.Single(customers);
-                    Assert.True(customers[0].CompanyName == @"Back\slash's Insert Operation");
+                    var artists = context.Artists.Where(x => x.Name.EndsWith(" Garden Party")).ToList();
+                    Assert.Single(artists);
+                    Assert.True(artists[0].Name == @"Back\slash's Garden Party");
                 });
         }
 
@@ -49,31 +47,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             using (var context = CreateContext())
             {
-                var query = context.Set<Customer>().Where(c => c.CompanyName == @"Back\slash's Operation");
+                var query = context.Artists.Where(c => c.Name == @"Back\slasher's");
 
-                var customers = isAsync
+                var artists = isAsync
                     ? await query.ToListAsync()
                     : query.ToList();
 
-                Assert.Single(customers);
+                Assert.Single(artists);
             }
         }
-        
+
         [ConditionalTheory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_query_escapes_parameter(bool isAsync)
         {
             using (var context = CreateContext())
             {
-                var companyName = @"Back\slash's Operation";
+                var artistName = @"Back\slasher's";
 
-                var query = context.Set<Customer>().Where(c => c.CompanyName == companyName);
+                var query = context.Artists.Where(c => c.Name == artistName);
 
-                var customers = isAsync
+                var artists = isAsync
                     ? await query.ToListAsync()
                     : query.ToList();
 
-                Assert.Single(customers);
+                Assert.Single(artists);
             }
         }
 
@@ -83,28 +81,34 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             using (var context = CreateContext())
             {
-                var companyNames = new[]
+                var artistNames = new[]
                 {
-                    @"Back\slash's Operation",
-                    @"B's Beverages"
+                    @"Back\slasher's",
+                    @"John's Chill Box"
                 };
 
-                var query = context.Set<Customer>().Where(c => companyNames.Contains(c.CompanyName));
+                var query = context.Artists.Where(a => artistNames.Contains(a.Name));
 
-                var customers = isAsync
+                var artists = isAsync
                     ? await query.ToListAsync()
                     : query.ToList();
 
-                Assert.Equal(2, customers.Count);
+                Assert.Equal(2, artists.Count);
             }
         }
 
-        protected NorthwindContext CreateContext() => Fixture.CreateContext();
+        public static IEnumerable<object[]> IsAsyncData = new[] { new object[] { false }, new object[] { true } };
+
+        protected TFixture Fixture { get; }
+        protected MusicStoreContext CreateContext() => Fixture.CreateContext();
+
+        protected void AssertSql(params string[] expected)
+            => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
         protected virtual void ExecuteWithStrategyInTransaction(
-            Action<NorthwindContext> testOperation,
-            Action<NorthwindContext> nestedTestOperation1 = null,
-            Action<NorthwindContext> nestedTestOperation2 = null)
+            Action<MusicStoreContext> testOperation,
+            Action<MusicStoreContext> nestedTestOperation1 = null,
+            Action<MusicStoreContext> nestedTestOperation2 = null)
         {
             TestHelpers.ExecuteWithStrategyInTransaction(
                 CreateContext,
@@ -116,5 +120,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
         protected virtual void UseTransaction(DatabaseFacade facade, IDbContextTransaction transaction)
             => facade.UseTransaction(transaction.GetDbTransaction());
+
+        public abstract class EscapesMySqlFixtureBase : SharedStoreFixtureBase<MusicStoreContext>
+        {
+            protected override string StoreName { get; } = "EscapesMusicStore";
+            protected override bool UsePooling => false;
+            public TestSqlLoggerFactory TestSqlLoggerFactory => (TestSqlLoggerFactory)ListLoggerFactory;
+
+            protected override void Seed(MusicStoreContext context)
+            {
+                context.Artists.AddRange(
+                    new Artist { ArtistId = 1, Name = @"Back\slasher's" },
+                    new Artist { ArtistId = 2, Name = @"Ice Cups" },
+                    new Artist { ArtistId = 3, Name = @"John's Chill Box" }
+                );
+
+                context.SaveChanges();
+            }
+        }
     }
 }
