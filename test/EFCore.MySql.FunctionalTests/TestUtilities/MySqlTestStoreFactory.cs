@@ -8,18 +8,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         public static MySqlTestStoreFactory Instance { get; } = new MySqlTestStoreFactory();
         public static MySqlTestStoreFactory NoBackslashEscapesInstance { get; } = new MySqlTestStoreFactory(true);
 
-        private readonly bool _noBackslashEscapes;
+        protected bool NoBackslashEscapes { get; }
 
         protected MySqlTestStoreFactory(bool noBackslashEscapes = false)
         {
-            _noBackslashEscapes = noBackslashEscapes;
+            NoBackslashEscapes = noBackslashEscapes;
         }
 
         public override TestStore Create(string storeName)
-            => MySqlTestStore.Create(storeName, noBackslashEscapes:_noBackslashEscapes);
+            => MySqlTestStore.Create(storeName, noBackslashEscapes:NoBackslashEscapes);
 
         public override TestStore GetOrCreate(string storeName)
-            => MySqlTestStore.GetOrCreate(storeName, noBackslashEscapes: _noBackslashEscapes);
+            => MySqlTestStore.GetOrCreate(storeName, noBackslashEscapes: NoBackslashEscapes);
 
         public override IServiceCollection AddProviderServices(IServiceCollection serviceCollection)
             => serviceCollection.AddEntityFrameworkMySql();
