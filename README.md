@@ -80,6 +80,7 @@ Add `Pomelo.EntityFrameworkCore.MySql` to the services configuration in your the
 using System;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 
 // replace "YourNamespace" with the namespace of your application
 namespace YourNamespace
