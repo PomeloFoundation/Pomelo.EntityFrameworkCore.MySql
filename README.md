@@ -94,7 +94,7 @@ namespace YourNamespace
                 // replace with your connection string
                 .UseMySql("Server=localhost;Database=ef;User=root;Password=1234;", mySqlOptions => mySqlOptions
                     // replace with your Server Version and Type
-                    .ServerVersion(new ServerVersion(new Version(8, 0, 18), ServerType.MySql))
+                    .ServerVersion(new Version(8, 0, 18), ServerType.MySql)
             ));
         }
     }
