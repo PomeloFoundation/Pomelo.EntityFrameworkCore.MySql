@@ -4,7 +4,9 @@ using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
@@ -227,6 +229,30 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                         typeof(string)),
                     prefix
                 ));
+        }
+
+        public SqlExpression MakeMatchExpression(
+            [NotNull] SqlExpression target,
+            [NotNull] SqlExpression match,
+            [NotNull] SqlExpression against)
+        {
+            return _sqlExpressionFactory.MakeMatch(match, against);
+        }
+
+        public SqlExpression MakeMatchInBooleanModeExpression(
+            [NotNull] SqlExpression target,
+            [NotNull] SqlExpression match,
+            [NotNull] SqlExpression against)
+        {
+            return _sqlExpressionFactory.MakeMatchInBooleanMode(match, against);
+        }
+
+        public SqlExpression MakeMatchWithQueryExpansionExpression(
+            [NotNull] SqlExpression target,
+            [NotNull] SqlExpression match,
+            [NotNull] SqlExpression against)
+        {
+            return _sqlExpressionFactory.MakeMatchWithQueryExpansion(match, against);
         }
 
         public SqlExpression MakeEndsWithExpression(

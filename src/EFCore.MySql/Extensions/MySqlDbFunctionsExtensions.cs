@@ -517,5 +517,18 @@ namespace Microsoft.EntityFrameworkCore
 
             return false;
         }
+
+        public static bool Match<T>(
+            [CanBeNull] this DbFunctions _,
+            [CanBeNull] T matchExpression,
+            [CanBeNull] string pattern)
+        {
+            if (matchExpression is IConvertible convertible)
+            {
+                return EF.Functions.Match(convertible.ToString(CultureInfo.InvariantCulture), pattern);
+            }
+
+            return false;
+        }
     }
 }

@@ -146,6 +146,37 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return mySqlRegexpExpression;
         }
 
+        public Expression VisitMySqlMatch(MySqlMatchExpression mySqlMatchExpression)
+        {
+            Check.NotNull(mySqlMatchExpression, nameof(mySqlMatchExpression));
+
+            Sql.Append("MATCH ");
+            Sql.Append("(");
+            Visit(mySqlMatchExpression.Match);
+            Sql.Append(")");
+            Sql.Append(" AGAINST ");
+            Sql.Append($"(");
+            Visit(mySqlMatchExpression.Against);
+            //Sql.Append("`");
+
+            switch (mySqlMatchExpression.SearchMode)
+            {
+                case MySqlMatchExpressionSearchMode.InBooleanMode:
+                    Sql.Append(" IN BOOLEAN MODE");
+                    break;
+                case MySqlMatchExpressionSearchMode.InNaturalLanguageModeWithQueryExpansion:
+                case MySqlMatchExpressionSearchMode.WithQueryExpansion:
+                    Sql.Append(" WITH QUERY EXPANSION");
+                    break;
+                case MySqlMatchExpressionSearchMode.InNaturalLanguageMode:
+                    break;
+            }
+
+            Sql.Append(")");
+
+            return mySqlMatchExpression;
+        }
+
         protected override Expression VisitSqlUnary(SqlUnaryExpression sqlUnaryExpression)
         {
             if (sqlUnaryExpression.OperatorType != ExpressionType.Convert)

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -90,6 +91,45 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 typeMapping);
         }
 
+        public virtual MySqlMatchExpression MakeMatch(
+            SqlExpression match,
+            SqlExpression against,
+            MySqlMatchExpressionSearchMode searchMode = MySqlMatchExpressionSearchMode.InNaturalLanguageMode)
+        {
+            return (MySqlMatchExpression)ApplyDefaultTypeMapping(
+                new MySqlMatchExpression(
+                    match,
+                    against,
+                    searchMode,
+                    null));
+        }
+
+        public virtual MySqlMatchExpression MakeMatchInBooleanMode(
+            SqlExpression match,
+            SqlExpression against,
+            MySqlMatchExpressionSearchMode searchMode = MySqlMatchExpressionSearchMode.InBooleanMode)
+        {
+            return (MySqlMatchExpression)ApplyDefaultTypeMapping(
+                new MySqlMatchExpression(
+                    match,
+                    against,
+                    searchMode,
+                    null));
+        }
+
+        public virtual MySqlMatchExpression MakeMatchWithQueryExpansion(
+            SqlExpression match,
+            SqlExpression against,
+            MySqlMatchExpressionSearchMode searchMode = MySqlMatchExpressionSearchMode.InNaturalLanguageModeWithQueryExpansion)
+        {
+            return (MySqlMatchExpression)ApplyDefaultTypeMapping(
+                new MySqlMatchExpression(
+                    match,
+                    against,
+                    searchMode,
+                    null));
+        }
+
         public override SqlExpression ApplyTypeMapping(SqlExpression sqlExpression, RelationalTypeMapping typeMapping)
         {
             if (sqlExpression == null
@@ -111,6 +151,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
                 case MySqlBinaryExpression e:
                     return ApplyTypeMappingOnMySqlBinary(e, typeMapping);
+
+                case MySqlMatchExpression e:
+                    return ApplyTypeMappingOnMatch(e);
 
                 default:
                     return base.ApplyTypeMapping(sqlExpression, typeMapping);
@@ -140,6 +183,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 inferredTypeMapping ?? collateExpression.TypeMapping);
         }
 
+        private SqlExpression ApplyTypeMappingOnMatch(MySqlMatchExpression matchExpression)
+        {
+            var inferredTypeMapping = ExpressionExtensions.InferTypeMapping(matchExpression.Match)
+                                      ?? _typeMappingSource.FindMapping(matchExpression.Match.Type);
+
+            return new MySqlMatchExpression(
+                ApplyTypeMapping(matchExpression.Match, inferredTypeMapping),
+                ApplyTypeMapping(matchExpression.Against, inferredTypeMapping),
+                matchExpression.SearchMode,
+                _boolTypeMapping);
+        }
+
         private SqlExpression ApplyTypeMappingOnRegexp(MySqlRegexpExpression regexpExpression)
         {
             var inferredTypeMapping = ExpressionExtensions.InferTypeMapping(regexpExpression.Match)
@@ -165,12 +220,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             switch (sqlBinaryExpression.OperatorType)
             {
                 case MySqlBinaryExpressionOperatorType.IntegerDivision:
-                {
-                    inferredTypeMapping = typeMapping ?? ExpressionExtensions.InferTypeMapping(left, right);
-                    resultType = left.Type;
-                    resultTypeMapping = inferredTypeMapping;
-                }
-                break;
+                    {
+                        inferredTypeMapping = typeMapping ?? ExpressionExtensions.InferTypeMapping(left, right);
+                        resultType = left.Type;
+                        resultTypeMapping = inferredTypeMapping;
+                    }
+                    break;
 
                 default:
                     throw new InvalidOperationException("Incorrect OperatorType for MySqlBinaryExpression");

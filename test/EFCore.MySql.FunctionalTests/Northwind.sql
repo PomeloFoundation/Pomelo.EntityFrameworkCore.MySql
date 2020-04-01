@@ -270,6 +270,8 @@ CREATE TABLE `Products` (
 /* GO */
  CREATE  INDEX `SuppliersProducts` ON `Products`(`SupplierID`);
 /* GO */
+ CREATE FULLTEXT INDEX IF NOT EXISTS `FTI__Name` ON `Products`(`Name`)
+/* GO */
 
 CREATE TABLE `Order Details` (
 	`OrderID` int NOT NULL ,
