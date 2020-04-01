@@ -49,7 +49,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         private MySqlStringTypeMapping _charUnicode;
         private MySqlStringTypeMapping _varcharUnicode;
-        private MySqlStringTypeMapping _varcharmaxUnicode;
+        private MySqlStringTypeMapping _tinytextUnicode;
+        private MySqlStringTypeMapping _textUnicode;
+        private MySqlStringTypeMapping _mediumtextUnicode;
+        private MySqlStringTypeMapping _longtextUnicode;
 
         private MySqlStringTypeMapping _nchar;
         private MySqlStringTypeMapping _nvarchar;
@@ -124,7 +127,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
             _charUnicode = new MySqlStringTypeMapping("char", DbType.StringFixedLength, _options, unicode: true, fixedLength: true);
             _varcharUnicode = new MySqlStringTypeMapping("varchar", DbType.String, _options, unicode: true);
-            _varcharmaxUnicode = new MySqlStringTypeMapping("longtext", DbType.String, _options, unicode: true);
+            _tinytextUnicode = new MySqlStringTypeMapping("tinytext", DbType.String, _options, unicode: true);
+            _textUnicode = new MySqlStringTypeMapping("text", DbType.String, _options, unicode: true);
+            _mediumtextUnicode = new MySqlStringTypeMapping("mediumtext", DbType.String, _options, unicode: true);
+            _longtextUnicode = new MySqlStringTypeMapping("longtext", DbType.String, _options, unicode: true);
 
             _nchar = new MySqlStringTypeMapping("nchar", DbType.StringFixedLength, _options, unicode: true, fixedLength: true);
             _nvarchar = new MySqlStringTypeMapping("nvarchar", DbType.String, _options, unicode: true);
@@ -184,10 +190,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     // string
                     { "char", _charUnicode },
                     { "varchar", _varcharUnicode },
-                    { "tinytext", _varcharmaxUnicode },
-                    { "text", _varcharmaxUnicode },
-                    { "mediumtext", _varcharmaxUnicode },
-                    { "longtext", _varcharmaxUnicode },
+                    { "tinytext", _tinytextUnicode },
+                    { "text", _textUnicode },
+                    { "mediumtext", _mediumtextUnicode },
+                    { "longtext", _longtextUnicode },
 
                     { "enum", _enum },
 
@@ -328,7 +334,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                         }
                     }
                 }
-                
+
                 if (MySqlGuidTypeMapping.IsValidGuidFormat(_options.ConnectionSettings.GuidFormat))
                 {
                     if (storeTypeName.Equals(_guid.StoreType, StringComparison.OrdinalIgnoreCase)
@@ -343,28 +349,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     if (clrType == null
                         || clrType == typeof(DateTime))
                     {
-                        if (mappingInfo.Precision.GetValueOrDefault() > 0 ||
-                            _options.ServerVersion.SupportsDateTime6 && _options.DefaultDataTypeMappings.ClrDateTime != MySqlDateTimeType.DateTime)
-                        {
-                            return _dateTime6;
-                        }
-                        else
-                        {
-                            return _dateTime;
-                        }
+                        return mappingInfo.Precision.GetValueOrDefault() > 0 ||
+                               _options.ServerVersion.SupportsDateTime6 && _options.DefaultDataTypeMappings.ClrDateTime != MySqlDateTimeType.DateTime
+                            ? _dateTime6
+                            : _dateTime;
                     }
 
                     if (clrType == typeof(DateTimeOffset))
                     {
-                        if (mappingInfo.Precision.GetValueOrDefault() > 0 ||
-                            _options.ServerVersion.SupportsDateTime6 && _options.DefaultDataTypeMappings.ClrDateTimeOffset != MySqlDateTimeType.DateTime)
-                        {
-                            return _dateTimeOffset6;
-                        }
-                        else
-                        {
-                            return _dateTimeOffset;
-                        }
+                        return mappingInfo.Precision.GetValueOrDefault() > 0 ||
+                               _options.ServerVersion.SupportsDateTime6 && _options.DefaultDataTypeMappings.ClrDateTimeOffset != MySqlDateTimeType.DateTime
+                            ? _dateTimeOffset6
+                            : _dateTimeOffset;
                     }
                 }
                 else if (storeTypeNameBase.Equals(_timeStamp6.StoreTypeNameBase, StringComparison.OrdinalIgnoreCase))
@@ -436,6 +432,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                                    // Allow to use at most half of the max key length, so at least 2 columns can fit
                                    ? Math.Min(_options.ServerVersion.MaxKeyLength / (bytesPerChar * 2), 255)
                                    : (int?)null);
+
                     if (size > maxSize)
                     {
                         size = null;
@@ -487,12 +484,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         {
             var storeTypeBaseName = base.ParseStoreTypeName(storeTypeName, out unicode, out size, out precision, out scale);
 
-            if ((storeTypeName?.IndexOf("unsigned", StringComparison.OrdinalIgnoreCase) ?? -1) >= 0)
-            {
-                return storeTypeBaseName + " unsigned";
-            }
-
-            return storeTypeBaseName;
+            return (storeTypeName?.IndexOf("unsigned", StringComparison.OrdinalIgnoreCase) ?? -1) >= 0
+                ? storeTypeBaseName + " unsigned"
+                : storeTypeBaseName;
         }
     }
 }
