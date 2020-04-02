@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
@@ -12,17 +14,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
     public class MySqlStringComparisonMethodTranslator : IMethodCallTranslator
     {
         private static readonly MethodInfo _equalsMethodInfo
-            = typeof(string).GetRuntimeMethod(nameof(string.Equals), new[] { typeof(string), typeof(StringComparison) });
+            = typeof(string).GetRuntimeMethod(nameof(string.Equals), new[] {typeof(string), typeof(StringComparison)});
+
         private static readonly MethodInfo _staticEqualsMethodInfo
-            = typeof(string).GetRuntimeMethod(nameof(string.Equals), new[] { typeof(string), typeof(string), typeof(StringComparison) });
+            = typeof(string).GetRuntimeMethod(nameof(string.Equals), new[] {typeof(string), typeof(string), typeof(StringComparison)});
+
         private static readonly MethodInfo _startsWithMethodInfo
-            = typeof(string).GetRuntimeMethod(nameof(string.StartsWith), new[] { typeof(string), typeof(StringComparison) });
+            = typeof(string).GetRuntimeMethod(nameof(string.StartsWith), new[] {typeof(string), typeof(StringComparison)});
+
         private static readonly MethodInfo _endsWithMethodInfo
-            = typeof(string).GetRuntimeMethod(nameof(string.EndsWith), new[] { typeof(string), typeof(StringComparison) });
+            = typeof(string).GetRuntimeMethod(nameof(string.EndsWith), new[] {typeof(string), typeof(StringComparison)});
+
         private static readonly MethodInfo _containsMethodInfo
-            = typeof(string).GetRuntimeMethod(nameof(string.Contains), new[] { typeof(string), typeof(StringComparison) });
+            = typeof(string).GetRuntimeMethod(nameof(string.Contains), new[] {typeof(string), typeof(StringComparison)});
+
         private static readonly MethodInfo _indexOfMethodInfo
-            = typeof(string).GetRuntimeMethod(nameof(string.IndexOf), new[] { typeof(string), typeof(StringComparison) });
+            = typeof(string).GetRuntimeMethod(nameof(string.IndexOf), new[] {typeof(string), typeof(StringComparison)});
 
         private readonly SqlExpression _caseSensitiveComparisons;
 
@@ -32,12 +39,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         {
             _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
             _caseSensitiveComparisons = _sqlExpressionFactory.Constant(
-                new []
-                {
-                    StringComparison.Ordinal,
-                    StringComparison.CurrentCulture,
-                    StringComparison.InvariantCulture
-                });
+                new[] {StringComparison.Ordinal, StringComparison.CurrentCulture, StringComparison.InvariantCulture});
         }
 
         public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
@@ -50,7 +52,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     arguments[1]
                 );
             }
-            else if (Equals(method, _staticEqualsMethodInfo))
+
+            if (Equals(method, _staticEqualsMethodInfo))
             {
                 return MakeStringEqualsExpression(
                     arguments[0],
@@ -58,7 +61,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     arguments[2]
                 );
             }
-            else if (Equals(method, _startsWithMethodInfo) && instance != null)
+
+            if (Equals(method, _startsWithMethodInfo) && instance != null)
             {
                 return MakeStartsWithExpression(
                     instance,
@@ -66,7 +70,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     arguments[1]
                 );
             }
-            else if (Equals(method, _endsWithMethodInfo) && instance != null)
+
+            if (Equals(method, _endsWithMethodInfo) && instance != null)
             {
                 return MakeEndsWithExpression(
                     instance,
@@ -74,7 +79,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     arguments[1]
                 );
             }
-            else if (Equals(method, _containsMethodInfo) && instance != null)
+
+            if (Equals(method, _containsMethodInfo) && instance != null)
             {
                 return MakeContainsExpression(
                     instance,
@@ -82,7 +88,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     arguments[1]
                 );
             }
-            else if (Equals(method, _indexOfMethodInfo) && instance != null)
+
+            if (Equals(method, _indexOfMethodInfo) && instance != null)
             {
                 return MakeIndexOfExpression(
                     instance,
@@ -111,209 +118,169 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                             // utilize an index if one exists.
                             return _sqlExpressionFactory.Equal(
                                 leftValue,
-                                Utf8Bin(rightValue)
-                            );
+                                Utf8Bin(rightValue));
                         }
-                        else
-                        {
-                            return _sqlExpressionFactory.Equal(
-                                Utf8Bin(leftValue),
-                                rightValue
-                            );
-                        }
+
+                        return _sqlExpressionFactory.Equal(
+                            Utf8Bin(leftValue),
+                            rightValue);
                     },
-                    () =>
-                        _sqlExpressionFactory.Equal(
-                            LCase(leftValue),
-                            Utf8Bin(LCase(rightValue))
-                        )
-                );
-            }
-            else
-            {
-                return new CaseExpression(
-                    new[]
-                    {
-                        new CaseWhenClause(
-                            _sqlExpressionFactory.In(stringComparison, _caseSensitiveComparisons, false),
-                            // Case sensitive, accent sensitive
-                            _sqlExpressionFactory.Equal(
-                                leftValue,
-                                Utf8Bin(rightValue)
-                            )
-                        )
-                    },
-                    // Case insensitive, accent sensitive
-                    _sqlExpressionFactory.Equal(
+                    () => _sqlExpressionFactory.Equal(
                         LCase(leftValue),
-                        Utf8Bin(LCase(rightValue))
-                    )
-                );
+                        Utf8Bin(LCase(rightValue))));
             }
+
+            return new CaseExpression(
+                new[]
+                {
+                    new CaseWhenClause(
+                        _sqlExpressionFactory.In(stringComparison, _caseSensitiveComparisons, false),
+                        // Case sensitive, accent sensitive
+                        _sqlExpressionFactory.Equal(
+                            leftValue,
+                            Utf8Bin(rightValue)
+                        )
+                    )
+                },
+                // Case insensitive, accent sensitive
+                _sqlExpressionFactory.Equal(
+                    LCase(leftValue),
+                    Utf8Bin(LCase(rightValue)))
+            );
         }
 
         public SqlExpression MakeStartsWithExpression(
             [NotNull] SqlExpression target,
             [NotNull] SqlExpression prefix,
-            [NotNull] SqlExpression stringComparison)
+            [CanBeNull] SqlExpression stringComparison = null)
         {
+            if (stringComparison == null)
+            {
+                return MakeStartsWithEndsWithExpressionImpl(
+                    target,
+                    e => e,
+                    prefix,
+                    e => e,
+                    true);
+            }
+
             if (TryGetExpressionValue<StringComparison>(stringComparison, out var cmp))
             {
                 return CreateExpressionForCaseSensitivity(
                     cmp,
-                    () =>
-                        MakeStartsWithExpressionImpl(
-                            target,
-                            Utf8Bin(prefix),
-                            originalPrefix: prefix
-                        ),
-                    () =>
-                        MakeStartsWithExpressionImpl(
-                            LCase(target),
-                            Utf8Bin(LCase(prefix))
-                        )
-                );
-            }
-            else
-            {
-                return new CaseExpression(
-                    new[]
-                    {
-                        new CaseWhenClause(
-                            _sqlExpressionFactory.In(stringComparison, _caseSensitiveComparisons, false),
-                            // Case sensitive, accent sensitive
-                            MakeStartsWithExpressionImpl(
-                                target,
-                                Utf8Bin(prefix),
-                                originalPrefix: prefix
-                            )
-                        )
-                    },
-                    // Case insensitive, accent sensitive
-                    MakeStartsWithExpressionImpl(
+                    () => MakeStartsWithEndsWithExpressionImpl(
+                        target,
+                        e => e,
+                        prefix,
+                        e => Utf8Bin(e),
+                        true),
+                    () => MakeStartsWithEndsWithExpressionImpl(
                         LCase(target),
-                        Utf8Bin(LCase(prefix))
-                    )
-                );
+                        e => LCase(e),
+                        prefix,
+                        e => Utf8Bin(LCase(e)),
+                        true));
             }
-        }
 
-        private SqlBinaryExpression MakeStartsWithExpressionImpl(
-            SqlExpression target,
-            SqlExpression prefix,
-            SqlExpression originalPrefix = null)
-        {
-            // BUG: EF Core #17389 will lead to a System.NullReferenceException, if SqlExpressionFactory.Like()
-            //      is being called with match and pattern as two expressions, that have not been applied a
-            //      TypeMapping yet and no escapeChar (null).
-            //      As a workaround, apply/infer the type mapping for the match expression manually for now.
-            return _sqlExpressionFactory.AndAlso(
-                _sqlExpressionFactory.Like(
-                    target,
-                    _sqlExpressionFactory.ApplyDefaultTypeMapping(_sqlExpressionFactory.Function(
-                        "CONCAT",
-                        // when performing the like it is preferable to use the untransformed prefix
-                        // value to ensure the index can be used
-                        new[] { originalPrefix ?? prefix, _sqlExpressionFactory.Constant("%") },
-                        typeof(string)))),
-                _sqlExpressionFactory.Equal(
-                    _sqlExpressionFactory.Function(
-                        "LEFT",
-                        new[]
-                        {
+            return new CaseExpression(
+                new[]
+                {
+                    new CaseWhenClause(
+                        _sqlExpressionFactory.In(
+                            stringComparison,
+                            _caseSensitiveComparisons,
+                            false),
+                        // Case sensitive, accent sensitive
+                        MakeStartsWithEndsWithExpressionImpl(
                             target,
-                            CharLength(prefix)
-                        },
-                        typeof(string)),
-                    prefix
-                ));
+                            e => e,
+                            prefix,
+                            e => Utf8Bin(prefix),
+                            true))
+                },
+                // Case insensitive, accent sensitive
+                MakeStartsWithEndsWithExpressionImpl(
+                    target,
+                    e => LCase(e),
+                    prefix,
+                    e => Utf8Bin(LCase(e)),
+                    true));
         }
 
         public SqlExpression MakeEndsWithExpression(
             [NotNull] SqlExpression target,
             [NotNull] SqlExpression suffix,
-            [NotNull] SqlExpression stringComparison)
+            [CanBeNull] SqlExpression stringComparison = null)
         {
+            if (stringComparison == null)
+            {
+                return MakeStartsWithEndsWithExpressionImpl(
+                    target,
+                    e => e,
+                    suffix,
+                    e => e,
+                    false);
+            }
+
             if (TryGetExpressionValue<StringComparison>(stringComparison, out var cmp))
             {
                 return CreateExpressionForCaseSensitivity(
                     cmp,
-                    () =>
-                        MakeEndsWithExpressionImpl(
-                            target,
-                            Utf8Bin(suffix),
-                            suffix
-                        ),
-                    () =>
-                        MakeEndsWithExpressionImpl(
-                            LCase(target),
-                            Utf8Bin(LCase(suffix)),
-                            suffix
-                        )
-                );
+                    () => MakeStartsWithEndsWithExpressionImpl(
+                        target,
+                        e => e,
+                        suffix,
+                        e => Utf8Bin(e),
+                        false),
+                    () => MakeStartsWithEndsWithExpressionImpl(
+                        target,
+                        e => LCase(e),
+                        suffix,
+                        e => Utf8Bin(LCase(e)),
+                        false));
             }
-            else
-            {
-                return new CaseExpression(
-                    new[]
-                    {
-                        new CaseWhenClause(
-                            _sqlExpressionFactory.In(stringComparison, _caseSensitiveComparisons, false),
-                            // Case sensitive, accent sensitive
-                            MakeEndsWithExpressionImpl(
-                                target,
-                                Utf8Bin(suffix),
-                                suffix
-                            )
-                        )
-                    },
-                    // Case insensitive, accent sensitive
-                    MakeEndsWithExpressionImpl(
-                        LCase(target),
-                        Utf8Bin(LCase(suffix)),
-                        suffix
-                    )
-                );
-            }
-        }
 
-        private SqlExpression MakeEndsWithExpressionImpl(
-            [NotNull] SqlExpression target,
-            [NotNull] SqlExpression suffix,
-            [NotNull] SqlExpression originalSuffix)
-        {
-            var endsWithExpression =
-                _sqlExpressionFactory.Equal(
-                    _sqlExpressionFactory.Function(
-                        "RIGHT",
-                        new[]
-                        {
+            return new CaseExpression(
+                new[]
+                {
+                    new CaseWhenClause(
+                        _sqlExpressionFactory.In(
+                            stringComparison,
+                            _caseSensitiveComparisons,
+                            false),
+                        // Case sensitive, accent sensitive
+                        MakeStartsWithEndsWithExpressionImpl(
                             target,
-                            CharLength(suffix)
-                        },
-                        target.Type,
-                        null),
-                    suffix);
-
-            if (originalSuffix is SqlConstantExpression constantSuffix)
-            {
-                return (string)constantSuffix.Value == string.Empty
-                    ? _sqlExpressionFactory.Constant(true)
-                    : (SqlExpression)endsWithExpression;
-            }
-            else
-            {
-                return _sqlExpressionFactory.OrElse(
-                    endsWithExpression,
-                    _sqlExpressionFactory.Equal(originalSuffix, _sqlExpressionFactory.Constant(string.Empty)));
-            }
+                            e => e,
+                            suffix,
+                            e => Utf8Bin(e),
+                            false))
+                },
+                // Case insensitive, accent sensitive
+                MakeStartsWithEndsWithExpressionImpl(
+                    target,
+                    e => LCase(e),
+                    suffix,
+                    e => Utf8Bin(LCase(e)),
+                    false));
         }
 
         public SqlExpression MakeContainsExpression(
             [NotNull] SqlExpression target,
             [NotNull] SqlExpression search,
-            [NotNull] SqlExpression stringComparison)
+            [CanBeNull] SqlExpression stringComparison = null)
         {
+            // Check, whether we should generate an optimized expression, that uses the current database
+            // settings instead of an explicit string comparison value.
+            if (stringComparison == null)
+            {
+                return MakeContainsExpressionImpl(
+                    target,
+                    e => e,
+                    search,
+                    e => e);
+            }
+
             if (TryGetExpressionValue<StringComparison>(stringComparison, out var cmp))
             {
                 return CreateExpressionForCaseSensitivity(
@@ -321,122 +288,221 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     () =>
                         MakeContainsExpressionImpl(
                             target,
-                            Utf8Bin(search),
-                            search
+                            e => e,
+                            search,
+                            e => Utf8Bin(e)
                         ),
                     () =>
                         MakeContainsExpressionImpl(
-                            LCase(target),
-                            Utf8Bin(LCase(search)),
-                            search
+                            target,
+                            e => LCase(e),
+                            search,
+                            e => Utf8Bin(LCase(e))
                         )
                 );
             }
-            else
-            {
-                return new CaseExpression(
-                    new[]
-                    {
-                        new CaseWhenClause(
-                            _sqlExpressionFactory.In(stringComparison, _caseSensitiveComparisons, false),
-                            // Case sensitive, accent sensitive
-                            MakeContainsExpressionImpl(
-                                target,
-                                Utf8Bin(search),
-                                search
-                            )
+
+            return new CaseExpression(
+                new[]
+                {
+                    new CaseWhenClause(
+                        _sqlExpressionFactory.In(stringComparison, _caseSensitiveComparisons, false),
+                        // Case sensitive, accent sensitive
+                        MakeContainsExpressionImpl(
+                            target,
+                            e => e,
+                            search,
+                            e => Utf8Bin(e)
                         )
-                    },
-                    // Case insensitive, accent sensitive
-                    MakeContainsExpressionImpl(
-                        LCase(target),
-                        Utf8Bin(LCase(search)),
-                        search
                     )
-                );
+                },
+                // Case insensitive, accent sensitive
+                MakeContainsExpressionImpl(
+                    target,
+                    e => LCase(e),
+                    search,
+                    e => Utf8Bin(LCase(e))
+                )
+            );
+        }
+
+        private SqlExpression MakeStartsWithEndsWithExpressionImpl(
+            SqlExpression target,
+            [NotNull] Func<SqlExpression, SqlExpression> targetTransform,
+            SqlExpression prefixSuffix,
+            [NotNull] Func<SqlExpression, SqlExpression> prefixSuffixTransform,
+            bool startsWith)
+        {
+            var stringTypeMapping = ExpressionExtensions.InferTypeMapping(target, prefixSuffix);
+            target = _sqlExpressionFactory.ApplyTypeMapping(target, stringTypeMapping);
+            prefixSuffix = _sqlExpressionFactory.ApplyTypeMapping(prefixSuffix, stringTypeMapping);
+
+            if (prefixSuffix is SqlConstantExpression constantPrefixSuffixExpression)
+            {
+                // The prefix is constant. Aside from null or empty, we escape all special characters (%, _, \)
+                // in C# and send a simple LIKE.
+                if (constantPrefixSuffixExpression.Value is string constantPrefixSuffixString)
+                {
+                    // TRUE (pattern == "")
+                    // something LIKE 'foo%' (pattern != "", StartsWith())
+                    // something LIKE '%foo' (pattern != "", EndsWith())
+                    return constantPrefixSuffixString == string.Empty
+                        ? (SqlExpression)_sqlExpressionFactory.Constant(true)
+                        : _sqlExpressionFactory.Like(
+                            targetTransform(target),
+                            prefixSuffixTransform(
+                                _sqlExpressionFactory.Constant(
+                                    (startsWith
+                                        ? string.Empty
+                                        : "%") +
+                                    EscapeLikePattern(constantPrefixSuffixString) +
+                                    (startsWith
+                                        ? "%"
+                                        : string.Empty))));
+                }
+
+                // https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/996#issuecomment-607876040
+                // Can return NULL in .NET 5 after https://github.com/dotnet/efcore/issues/20498 has been fixed.
+                // `something LIKE NULL` always returns `NULL`. We will return `false`, to indicate, that no match
+                // could be found, because returning a constant of `NULL` will throw later in EF Core when used as
+                // a predicate.
+                // return _sqlExpressionFactory.Constant(null, RelationalTypeMapping.NullMapping);
+                // This results in NULL anyway, but works around EF Core's inability to handle predicates that are
+                // constant null values.
+                return _sqlExpressionFactory.Like(target, _sqlExpressionFactory.Constant(null, stringTypeMapping));
             }
+
+            // TODO: Generally, LEFT & compare is faster than escaping potential pattern characters with REPLACE().
+            // However, this might not be the case, if the pattern is constant after all (e.g. `LCASE('fo%o')`), in
+            // which case, `something LIKE CONCAT(REPLACE(REPLACE(LCASE('fo%o'), '%', '\\%'), '_', '\\_'), '%')` should
+            // be faster than `LEFT(something, CHAR_LENGTH('fo%o')) = LCASE('fo%o')`.
+            // See https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/996#issuecomment-607733553
+
+            // The prefix is non-constant, we use LEFT to extract the substring and compare.
+            return _sqlExpressionFactory.Equal(
+                _sqlExpressionFactory.Function(
+                    startsWith
+                        ? "LEFT"
+                        : "RIGHT",
+                    new[] {targetTransform(target), CharLength(prefixSuffix)},
+                    typeof(string),
+                    stringTypeMapping),
+                prefixSuffixTransform(prefixSuffix));
         }
 
         private SqlExpression MakeContainsExpressionImpl(
-            [NotNull] SqlExpression target,
-            [NotNull] SqlExpression search,
-            [NotNull] SqlExpression originalSearch)
+            SqlExpression target,
+            [NotNull] Func<SqlExpression, SqlExpression> targetTransform,
+            SqlExpression pattern,
+            [NotNull] Func<SqlExpression, SqlExpression> patternTransform)
         {
+            var stringTypeMapping = ExpressionExtensions.InferTypeMapping(target, pattern);
+            target = _sqlExpressionFactory.ApplyTypeMapping(target, stringTypeMapping);
+            pattern = _sqlExpressionFactory.ApplyTypeMapping(pattern, stringTypeMapping);
 
-            var containsExpression = _sqlExpressionFactory.GreaterThan(
-                _sqlExpressionFactory.Function("LOCATE", new[] { search, target }, typeof(int), null),
-                _sqlExpressionFactory.Constant(0)
-            );
+            if (pattern is SqlConstantExpression constantPatternExpression)
+            {
+                // The prefix is constant. Aside from null or empty, we escape all special characters (%, _, \)
+                // in C# and send a simple LIKE.
+                if (constantPatternExpression.Value is string constantPatternString)
+                {
+                    // TRUE (pattern == "")
+                    // something LIKE '%foo%' (pattern != "")
+                    return constantPatternString == string.Empty
+                        ? (SqlExpression)_sqlExpressionFactory.Constant(true)
+                        : _sqlExpressionFactory.Like(
+                            targetTransform(target),
+                            patternTransform(_sqlExpressionFactory.Constant('%' + EscapeLikePattern(constantPatternString) + '%')));
+                }
 
-            if (originalSearch is SqlConstantExpression constantSuffix)
-            {
-                return (string)constantSuffix.Value == string.Empty
-                    ? _sqlExpressionFactory.Constant(true)
-                    : (SqlExpression)containsExpression;
+                // https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/996#issuecomment-607876040
+                // Can return NULL in .NET 5 after https://github.com/dotnet/efcore/issues/20498 has been fixed.
+                // `something LIKE NULL` always returns `NULL`. We will return `false`, to indicate, that no match
+                // could be found, because returning a constant of `NULL` will throw later in EF Core when used as
+                // a predicate.
+                // return _sqlExpressionFactory.Constant(null, RelationalTypeMapping.NullMapping);
+                // This results in NULL anyway, but works around EF Core's inability to handle predicates that are
+                // constant null values.
+                return _sqlExpressionFactory.Like(target, _sqlExpressionFactory.Constant(null, stringTypeMapping));
             }
-            else
-            {
-                return _sqlExpressionFactory.OrElse(
-                    containsExpression,
-                    _sqlExpressionFactory.Equal(originalSearch, _sqlExpressionFactory.Constant(string.Empty)));
-            }
+
+            // LOCATE('foo', 'barfoobar') > 0
+            // Using an empty pattern `LOCATE('', 'barfoobar')` returns 1.
+            return _sqlExpressionFactory.GreaterThan(
+                _sqlExpressionFactory.Function(
+                    "LOCATE",
+                    new[] {patternTransform(pattern), targetTransform(target)},
+                    typeof(int)),
+                _sqlExpressionFactory.Constant(0));
         }
 
         public SqlExpression MakeIndexOfExpression(
             [NotNull] SqlExpression target,
             [NotNull] SqlExpression search,
-            [NotNull] SqlExpression stringComparison)
+            [CanBeNull] SqlExpression stringComparison = null)
         {
+            if (stringComparison == null)
+            {
+                return MakeIndexOfExpressionImpl(
+                    target,
+                    e => e,
+                    search,
+                    e => e);
+            }
+
             if (TryGetExpressionValue<StringComparison>(stringComparison, out var cmp))
             {
                 return CreateExpressionForCaseSensitivity(
                     cmp,
-                    () =>
+                    () => MakeIndexOfExpressionImpl(
+                        target,
+                        e => e,
+                        search,
+                        e => Utf8Bin(e)),
+                    () => MakeIndexOfExpressionImpl(
+                        target,
+                        e => LCase(e),
+                        search,
+                        e => Utf8Bin(LCase(e))));
+            }
+
+            return _sqlExpressionFactory.Case(
+                new[]
+                {
+                    new CaseWhenClause(
+                        _sqlExpressionFactory.In(
+                            stringComparison,
+                            _caseSensitiveComparisons,
+                            false),
+                        // Case sensitive, accent sensitive
                         MakeIndexOfExpressionImpl(
                             target,
-                            Utf8Bin(search)
-                        ),
-                    () =>
-                        MakeIndexOfExpressionImpl(
-                            LCase(target),
-                            Utf8Bin(LCase(search))
-                        )
-                );
-            }
-            else
-            {
-                return _sqlExpressionFactory.Case(
-                    new[]
-                    {
-                        new CaseWhenClause(
-                           _sqlExpressionFactory.In(stringComparison, _caseSensitiveComparisons, false),
-                            // Case sensitive, accent sensitive
-                            MakeIndexOfExpressionImpl(
-                                target,
-                                Utf8Bin(search)
-                            )
-                        )
-                    },
-                    // Case insensitive, accent sensitive
-                    MakeIndexOfExpressionImpl(
-                        LCase(target),
-                        Utf8Bin(LCase(search))
-                    )
-                );
-            }
+                            e => e,
+                            search,
+                            e => Utf8Bin(e)))
+                },
+                // Case insensitive, accent sensitive
+                MakeIndexOfExpressionImpl(
+                    target,
+                    e => LCase(e),
+                    search,
+                    e => Utf8Bin(LCase(e))));
         }
 
         private SqlExpression MakeIndexOfExpressionImpl(
-            [NotNull] SqlExpression target,
-            [NotNull] SqlExpression search)
+            SqlExpression target,
+            [NotNull] Func<SqlExpression, SqlExpression> targetTransform,
+            SqlExpression pattern,
+            [NotNull] Func<SqlExpression, SqlExpression> patternTransform)
         {
+            // LOCATE('foo', 'barfoobar') - 1
+            // Using an empty pattern `LOCATE('', 'barfoobar') - 1` returns 0.
             return _sqlExpressionFactory.Subtract(
                 _sqlExpressionFactory.Function(
                     "LOCATE",
-                    new[] { search, target },
+                    new[] {patternTransform(pattern), targetTransform(target)},
                     typeof(int)),
-                _sqlExpressionFactory.Constant(1)
-            );
+                _sqlExpressionFactory.Constant(1));
         }
 
         private static bool TryGetExpressionValue<T>(SqlExpression expression, out T value)
@@ -454,50 +520,58 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 value = (T)constant.Value;
                 return true;
             }
-            else
-            {
-                value = default;
-                return false;
-            }
+
+            value = default;
+            return false;
         }
 
         private static SqlExpression CreateExpressionForCaseSensitivity(
             StringComparison cmp,
             Func<SqlExpression> ifCaseSensitive,
             Func<SqlExpression> ifCaseInsensitive)
-        {
-            switch (cmp)
+            => cmp switch
             {
-                case StringComparison.Ordinal:
-                case StringComparison.CurrentCulture:
-                case StringComparison.InvariantCulture:
-                    return ifCaseSensitive();
-                case StringComparison.OrdinalIgnoreCase:
-                case StringComparison.CurrentCultureIgnoreCase:
-                case StringComparison.InvariantCultureIgnoreCase:
-                    return ifCaseInsensitive();
-                default:
-                    return default;
-            }
-        }
+                StringComparison.Ordinal => ifCaseSensitive(),
+                StringComparison.CurrentCulture => ifCaseSensitive(),
+                StringComparison.InvariantCulture => ifCaseSensitive(),
+                StringComparison.OrdinalIgnoreCase => ifCaseInsensitive(),
+                StringComparison.CurrentCultureIgnoreCase => ifCaseInsensitive(),
+                StringComparison.InvariantCultureIgnoreCase => ifCaseInsensitive(),
+                _ => default
+            };
 
         private SqlExpression LCase(SqlExpression value)
-        {
-            return _sqlExpressionFactory.Function("LCASE", new[] { value }, value.Type, null);
-        }
+            => _sqlExpressionFactory.Function("LCASE", new[] {value}, value.Type, null);
 
         private SqlExpression Utf8Bin(SqlExpression value)
-        {
-            return _sqlExpressionFactory.Collate(
+            => _sqlExpressionFactory.Collate(
                 value,
                 "utf8mb4",
                 "utf8mb4_bin"
             );
-        }
 
         private SqlExpression CharLength(SqlExpression value)
+            => _sqlExpressionFactory.Function("CHAR_LENGTH", new[] {value}, typeof(int), null);
+
+        private const char LikeEscapeChar = '\\';
+
+        private static bool IsLikeWildChar(char c) => c == '%' || c == '_';
+
+        private static string EscapeLikePattern(string pattern)
         {
-            return _sqlExpressionFactory.Function("CHAR_LENGTH", new[] { value }, typeof(int), null);
+            var builder = new StringBuilder();
+            foreach (var c in pattern)
+            {
+                if (IsLikeWildChar(c) ||
+                    c == LikeEscapeChar)
+                {
+                    builder.Append(LikeEscapeChar);
+                }
+
+                builder.Append(c);
+            }
+
+            return builder.ToString();
         }
     }
 }
