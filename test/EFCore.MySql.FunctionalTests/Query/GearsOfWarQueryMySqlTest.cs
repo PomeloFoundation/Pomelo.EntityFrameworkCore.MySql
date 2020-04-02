@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -81,7 +82,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     where m.Timeline.Date > new DateTimeOffset().Date
                     select m,
                 ss => from m in ss.Set<Mission>()
-                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource).Date > new DateTimeOffset().SimulateDatabaseRoundtrip(_typeMappingSource).Date
+                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)
+                        .Date > new DateTimeOffset().SimulateDatabaseRoundtrip(_typeMappingSource)
+                        .Date
                     select new Mission()
                     {
                         Id = m.Id,
@@ -102,7 +105,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     where m.Timeline.Year == 2
                     select m,
                 ss => from m in ss.Set<Mission>()
-                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource).Year == 2
+                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)
+                        .Year == 2
                     select new Mission()
                     {
                         Id = m.Id,
@@ -123,7 +127,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     where m.Timeline.Month == 1
                     select m,
                 ss => from m in ss.Set<Mission>()
-                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource).Month == 1
+                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)
+                        .Month == 1
                     select new Mission()
                     {
                         Id = m.Id,
@@ -144,7 +149,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     where m.Timeline.DayOfYear == 2
                     select m,
                 ss => from m in ss.Set<Mission>()
-                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource).DayOfYear == 2
+                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)
+                        .DayOfYear == 2
                     select new Mission()
                     {
                         Id = m.Id,
@@ -165,7 +171,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     where m.Timeline.Day == 2
                     select m,
                 ss => from m in ss.Set<Mission>()
-                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource).Day == 2
+                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)
+                        .Day == 2
                     select new Mission()
                     {
                         Id = m.Id,
@@ -186,7 +193,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     where m.Timeline.Hour == 10
                     select m,
                 ss => from m in ss.Set<Mission>()
-                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource).Hour == 10
+                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)
+                        .Hour == 10
                     select new Mission()
                     {
                         Id = m.Id,
@@ -207,7 +215,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     where m.Timeline.Minute == 0
                     select m,
                 ss => from m in ss.Set<Mission>()
-                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource).Minute == 0
+                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)
+                        .Minute == 0
                     select new Mission()
                     {
                         Id = m.Id,
@@ -228,7 +237,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     where m.Timeline.Second == 0
                     select m,
                 ss => from m in ss.Set<Mission>()
-                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource).Second == 0
+                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)
+                        .Second == 0
                     select new Mission()
                     {
                         Id = m.Id,
@@ -249,7 +259,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     where m.Timeline.Millisecond == 0
                     select m,
                 ss => from m in ss.Set<Mission>()
-                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource).Millisecond == 0
+                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)
+                        .Millisecond == 0
                     select new Mission()
                     {
                         Id = m.Id,
@@ -339,7 +350,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 ss => from m in ss.Set<Mission>()
                     select m.Timeline.TimeOfDay,
                 ss => from m in ss.Set<Mission>()
-                    select m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource).TimeOfDay);
+                    select m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)
+                        .TimeOfDay);
         }
 
         [ConditionalTheory]
@@ -349,24 +361,45 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             var dto = new DateTimeOffset(599898024001234567, new TimeSpan(1, 30, 0));
             var start = dto.AddDays(-1);
             var end = dto.AddDays(1);
-            var dates = new DateTimeOffset[] { dto };
+            var dates = new DateTimeOffset[] {dto};
 
             return AssertQuery<Mission>(
                 isAsync,
-                ss => ss.Set<Mission>().Where(m => start <= m.Timeline.Date &&
-                                    m.Timeline < end &&
-                                    dates.Contains(m.Timeline)),
-                ss => ss.Set<Mission>().Where(m => start.SimulateDatabaseRoundtrip(_typeMappingSource) <= m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource).Date &&
-                                    m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource) < end.SimulateDatabaseRoundtrip(_typeMappingSource) &&
-                                    dates.Select(d => d.SimulateDatabaseRoundtrip(_typeMappingSource)).Contains(m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)))
-                    .Select(m => new Mission()
-                    {
-                        Id = m.Id,
-                        CodeName = m.CodeName,
-                        Rating = m.Rating,
-                        Timeline = m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource),
-                        ParticipatingSquads = m.ParticipatingSquads,
-                    }));
+                ss => ss.Set<Mission>()
+                    .Where(
+                        m => start <= m.Timeline.Date &&
+                             m.Timeline < end &&
+                             dates.Contains(m.Timeline)),
+                ss => ss.Set<Mission>()
+                    .Where(
+                        m => start.SimulateDatabaseRoundtrip(_typeMappingSource) <= m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)
+                                 .Date &&
+                             m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource) < end.SimulateDatabaseRoundtrip(_typeMappingSource) &&
+                             dates.Select(d => d.SimulateDatabaseRoundtrip(_typeMappingSource))
+                                 .Contains(m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)))
+                    .Select(
+                        m => new Mission()
+                        {
+                            Id = m.Id,
+                            CodeName = m.CodeName,
+                            Rating = m.Rating,
+                            Timeline = m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource),
+                            ParticipatingSquads = m.ParticipatingSquads,
+                        }));
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task DateTimeOffset_Date_returns_datetime(bool async)
+        {
+            var dateTimeOffset = new DateTimeOffset(2, 3, 1, 8, 0, 0, new TimeSpan(-5, 0, 0));
+
+            return AssertQuery(
+                async,
+                ss => ss.Set<Mission>()
+                    .Where(m => m.Timeline.Date >= dateTimeOffset.Date),
+                elementAsserter: AssertMission
+            );
         }
 
         [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
@@ -466,7 +499,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             return base.Where_subquery_distinct_singleordefault_boolean_with_pushdown(isAsync);
         }
-        
+
         [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Correlated_collections_nested_inner_subquery_references_outer_qsre_one_level_up(bool isAsync)
@@ -579,14 +612,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Correlated_collections_basic_projecting_constant_bool(isAsync);
         }
 
-        [ConditionalTheory(/*Skip = "https://github.com/mysql-net/MySqlConnector/pull/707"*/)]
+        [ConditionalTheory( /*Skip = "https://github.com/mysql-net/MySqlConnector/pull/707"*/)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Optional_Navigation_Null_Coalesce_To_Clr_Type(bool isAsync)
         {
             return base.Optional_Navigation_Null_Coalesce_To_Clr_Type(isAsync);
         }
 
-        [ConditionalTheory(/*Skip = "https://github.com/mysql-net/MySqlConnector/pull/707"*/)]
+        [ConditionalTheory( /*Skip = "https://github.com/mysql-net/MySqlConnector/pull/707"*/)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Projecting_nullable_bool_in_conditional_works(bool isAsync)
         {
@@ -607,12 +640,35 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Take_without_orderby_followed_by_orderBy_is_pushed_down2(isAsync);
         }
 
-        protected Task AssertQueryScalar(bool isAsync,
+        private void AssertMission(Mission e, Mission a)
+        {
+            Assert.Equal(e == null, a == null);
+
+            if (a != null)
+            {
+                Assert.Equal(e.Id, a.Id);
+                Assert.Equal(e.CodeName, a.CodeName);
+                Assert.Equal(e.Rating, a.Rating);
+
+                // The max. resolution for DateTime values in MySQL are 6 decimal places.
+                // However, .NET's DateTime has a resolution of 7 decimal places.
+                const int mySqlMaxMillisecondDecimalPlaces = 6;
+                var decimalPlacesFactor = (int)Math.Pow(10, 7 - mySqlMaxMillisecondDecimalPlaces);
+
+                Assert.Equal(
+                    new DateTimeOffset((long)(Math.Truncate((decimal)e.Timeline.Ticks / decimalPlacesFactor) * decimalPlacesFactor), e.Timeline.Offset).UtcDateTime,
+                    a.Timeline.UtcDateTime);
+            }
+        }
+
+        protected Task AssertQueryScalar(
+            bool isAsync,
             Func<ISetSource, IQueryable<DateTimeOffset>> query,
             bool assertOrder = false) => AssertQueryScalar(
-                isAsync,
-                query,
-                ms => query(ms).Select(d => d.SimulateDatabaseRoundtrip(_typeMappingSource)),
-                assertOrder);
+            isAsync,
+            query,
+            ms => query(ms)
+                .Select(d => d.SimulateDatabaseRoundtrip(_typeMappingSource)),
+            assertOrder);
     }
 }
