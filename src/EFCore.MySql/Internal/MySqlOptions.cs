@@ -30,6 +30,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
 
             ReplaceLineBreaksWithCharFunction = true;
             DefaultDataTypeMappings = new MySqlDefaultDataTypeMappings();
+
+            // Throw by default if a schema is being used with any type.
+            SchemaNameTranslator = null;
         }
 
         public virtual void Initialize(IDbContextOptions options)
@@ -43,6 +46,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             NoBackslashEscapes = mySqlOptions.NoBackslashEscapes;
             ReplaceLineBreaksWithCharFunction = mySqlOptions.ReplaceLineBreaksWithCharFunction;
             DefaultDataTypeMappings = ApplyDefaultDataTypeMappings(mySqlOptions.DefaultDataTypeMappings, ConnectionSettings);
+            SchemaNameTranslator = mySqlOptions.SchemaNameTranslator ?? (mySqlOptions.SchemaBehavior == MySqlSchemaBehavior.Ignore
+                ? new MySqlSchemaNameTranslator((_, objectName) => objectName)
+                : null);
         }
 
         public virtual void Validate(IDbContextOptions options)
@@ -111,6 +117,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                 throw new InvalidOperationException(
                     CoreStrings.SingletonOptionChanged(
                         nameof(MySqlDbContextOptionsBuilder.DefaultDataTypeMappings),
+                        nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
+            }
+
+            if (!Equals(SchemaNameTranslator, mySqlOptions.SchemaNameTranslator))
+            {
+                throw new InvalidOperationException(
+                    CoreStrings.SingletonOptionChanged(
+                        nameof(MySqlDbContextOptionsBuilder.SchemaBehavior),
                         nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
             }
         }
@@ -198,9 +212,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         public virtual ServerVersion ServerVersion { get; private set; }
         public virtual CharSetBehavior CharSetBehavior { get; private set; }
         public virtual CharSet CharSet { get; private set; }
-        public CharSet NationalCharSet { get; }
+        public virtual CharSet NationalCharSet { get; }
         public virtual bool NoBackslashEscapes { get; private set; }
         public virtual bool ReplaceLineBreaksWithCharFunction { get; private set; }
         public virtual MySqlDefaultDataTypeMappings DefaultDataTypeMappings { get; private set; }
+        public virtual MySqlSchemaNameTranslator SchemaNameTranslator { get; private set; }
     }
 }

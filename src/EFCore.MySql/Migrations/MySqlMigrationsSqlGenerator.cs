@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -83,6 +84,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
 
         protected virtual void CheckSchema(MigrationOperation operation)
         {
+            if (_options.SchemaNameTranslator != null)
+            {
+                return;
+            }
+            
             var schema = operation.GetType()
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty)
                 .Where(p => p.Name.IndexOf(nameof(AddForeignKeyOperation.Schema), StringComparison.Ordinal) >= 0)
@@ -95,7 +101,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
                     .GetProperty(nameof(AddForeignKeyOperation.Name), BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty)
                     ?.GetValue(operation) as string;
 
-                throw new InvalidOperationException($"A schema \"{schema}\" has been set for an object of type \"{operation.GetType().Name}\"{(string.IsNullOrEmpty(name) ? string.Empty : $" with the name of \"{name}\"")}. MySQL does not support the EF Core concept of schemas. Any schema property of any \"MigrationOperation\" must be null.");
+                throw new InvalidOperationException($"A schema \"{schema}\" has been set for an object of type \"{operation.GetType().Name}\"{(string.IsNullOrEmpty(name) ? string.Empty : $" with the name of \"{name}\"")}. MySQL does not support the EF Core concept of schemas. Any schema property of any \"MigrationOperation\" must be null. This behavior can be changed by setting the `SchemaBehavior` option in the `UseMySql` call.");
             }
         }
 
@@ -448,38 +454,88 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
         /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
         /// <param name="builder"> The command builder to use to build the commands. </param>
         protected override void Generate(
-            DropUniqueConstraintOperation operation, IModel model, MigrationCommandListBuilder builder)
-            => Generate(operation, model, builder, terminate: true);
-
-        /// <summary>
-        ///     Builds commands for the given <see cref="DropUniqueConstraintOperation" /> by making calls on the given
-        ///     <see cref="MigrationCommandListBuilder" />, and then terminates the final command.
-        /// </summary>
-        /// <param name="operation"> The operation. </param>
-        /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
-        /// <param name="builder"> The command builder to use to build the commands. </param>
-        /// <param name="terminate"> Indicates whether or not to terminate the command after generating SQL for the operation. </param>
-        protected virtual void Generate(
             DropUniqueConstraintOperation operation,
             IModel model,
-            MigrationCommandListBuilder builder,
-            bool terminate)
+            MigrationCommandListBuilder builder)
         {
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
-            builder
-                .Append("ALTER TABLE ")
-                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
-                .Append(" DROP KEY ")
-                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name));
-
-            if (terminate)
+            // A foreign key might reuse the alternate key for its own purposes and prohibit its deletion,
+            // if the foreign key columns are listed as the first columns and in the same order as in the foreign key (#678).
+            // We therefore drop and later recreate all foreign keys to ensure, that no other dependencies on the
+            // alternate key exist.
+            TemporarilyDropForeignKeys(model, builder, operation.Schema, operation.Table, () =>
             {
-                builder.AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
+                builder
+                    .Append("ALTER TABLE ")
+                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
+                    .Append(" DROP KEY ")
+                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
+                    .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
+
                 EndStatement(builder);
+            });
+        }
+
+        protected void TemporarilyDropForeignKeys(
+            IModel model,
+            MigrationCommandListBuilder builder,
+            string schemaName,
+            string tableName,
+            Action action)
+        {
+            var foreignKeys = FindEntityTypes(model, schemaName, tableName)
+                                  .FirstOrDefault()
+                                  ?.GetForeignKeys() // CHECK: Should we use GetDeclaredForeignKeys() here?
+                                  .ToArray() ?? Array.Empty<IForeignKey>();
+
+            foreach (var foreignKey in foreignKeys)
+            {
+                Generate(new DropForeignKeyOperation
+                {
+                    Schema = schemaName,
+                    Table = tableName,
+                    Name = foreignKey.GetConstraintName(),
+                }, model, builder);
+            }
+
+            action();
+
+            foreach (var foreignKey in foreignKeys)
+            {
+                Generate(new AddForeignKeyOperation
+                {
+                    Schema = foreignKey.DeclaringEntityType.GetSchema(),
+                    Table = foreignKey.DeclaringEntityType.GetTableName(),
+                    Name = foreignKey.GetConstraintName(),
+                    Columns = GetColumns(foreignKey.Properties),
+                    PrincipalSchema = foreignKey.PrincipalKey.DeclaringEntityType.GetSchema(),
+                    PrincipalTable = foreignKey.PrincipalKey.DeclaringEntityType.GetTableName(),
+                    PrincipalColumns = GetColumns(foreignKey.PrincipalKey.Properties),
+                    OnDelete = ToReferentialAction(foreignKey.DeleteBehavior),
+                }, model, builder);
             }
         }
+
+        protected static ReferentialAction ToReferentialAction(DeleteBehavior deleteBehavior)
+        {
+            switch (deleteBehavior)
+            {
+                case DeleteBehavior.SetNull:
+                    return ReferentialAction.SetNull;
+                case DeleteBehavior.Cascade:
+                    return ReferentialAction.Cascade;
+                case DeleteBehavior.NoAction:
+                case DeleteBehavior.ClientNoAction:
+                    return ReferentialAction.NoAction;
+                default:
+                    return ReferentialAction.Restrict;
+            }
+        }
+
+        protected virtual string[] GetColumns([NotNull] IEnumerable<IProperty> properties)
+            => properties.Select(p => p.GetColumnName()).ToArray();
 
         /// <summary>
         ///     Builds commands for the given <see cref="DropForeignKeyOperation" /> by making calls on the given
@@ -976,16 +1032,25 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
-            builder.Append($"CALL POMELO_BEFORE_DROP_PRIMARY_KEY({_stringTypeMapping.GenerateSqlLiteral(operation.Schema)}, {_stringTypeMapping.GenerateSqlLiteral(operation.Table)});");
+            // A foreign key might reuse the primary key for its own purposes and prohibit its deletion,
+            // if the foreign key columns are listed as the first columns and in the same order as in the foreign key (#678).
+            // We therefore drop and later recreate all foreign keys to ensure, that no other dependencies on the
+            // primary key exist.
+            TemporarilyDropForeignKeys(model, builder, operation.Schema, operation.Table, () =>
+            {
+                builder
+                    .Append($"CALL POMELO_BEFORE_DROP_PRIMARY_KEY({_stringTypeMapping.GenerateSqlLiteral(operation.Schema)}, {_stringTypeMapping.GenerateSqlLiteral(operation.Table)});")
+                    .AppendLine()
+                    .Append("ALTER TABLE ")
+                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
+                    .Append(" DROP PRIMARY KEY");
 
-            builder.AppendLine();
-            builder
-                .Append("ALTER TABLE ")
-                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
-                .Append(" DROP PRIMARY KEY;")
-                .AppendLine();
-
-            EndStatement(builder);
+                if (terminate)
+                {
+                    builder.AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
+                    EndStatement(builder);
+                }
+            });
         }
 
         /// <summary>
