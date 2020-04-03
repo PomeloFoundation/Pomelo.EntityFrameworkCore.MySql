@@ -518,6 +518,22 @@ namespace Microsoft.EntityFrameworkCore
             return false;
         }
 
+        /// <summary>
+        ///     <para>
+        ///         An implementation of the SQL MATCH operation for Full Text search. On relational databases this is usually directly
+        ///         translated to SQL.
+        ///     </para>
+        ///     <para>
+        ///         Note that if this function is translated into SQL, then the semantics of the comparison will
+        ///         depend on the database configuration. In particular, it may be either case-sensitive or
+        ///         case-insensitive. If this function is evaluated on the client, then it will always use
+        ///         a case-insensitive comparison.
+        ///     </para>
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="matchExpression">The property of entity that is to be matched.</param>
+        /// <param name="pattern">The pattern against which Full Text search is performed</param>
+        /// <returns>true if there is a match.</returns>
         public static bool Match<T>(
             [CanBeNull] this DbFunctions _,
             [CanBeNull] T matchExpression,

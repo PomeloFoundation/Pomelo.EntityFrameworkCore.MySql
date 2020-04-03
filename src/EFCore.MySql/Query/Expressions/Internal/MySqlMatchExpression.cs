@@ -8,7 +8,7 @@ using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 {
-    public enum MySqlMatchExpressionSearchMode
+    public enum MySqlMatchSearchMode
     {
         WithQueryExpansion,
         InNaturalLanguageMode,
@@ -21,7 +21,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         public MySqlMatchExpression(
             SqlExpression match,
             SqlExpression against,
-            MySqlMatchExpressionSearchMode searchMode,
+            MySqlMatchSearchMode searchMode,
             RelationalTypeMapping typeMapping)
             : base(typeof(bool), typeMapping)
         {
@@ -34,7 +34,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 
         }
 
-        public virtual MySqlMatchExpressionSearchMode SearchMode { get; }
+        public virtual MySqlMatchSearchMode SearchMode { get; }
 
         public virtual SqlExpression Match { get; }
         public virtual SqlExpression Against { get; }
@@ -83,14 +83,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 
             switch (SearchMode)
             {
-                case MySqlMatchExpressionSearchMode.InBooleanMode:
+                case MySqlMatchSearchMode.InBooleanMode:
                     expressionPrinter.Append(" IN BOOLEAN MODE");
                     break;
-                case MySqlMatchExpressionSearchMode.InNaturalLanguageModeWithQueryExpansion:
-                case MySqlMatchExpressionSearchMode.WithQueryExpansion:
+                case MySqlMatchSearchMode.InNaturalLanguageModeWithQueryExpansion:
+                case MySqlMatchSearchMode.WithQueryExpansion:
                     expressionPrinter.Append(" WITH QUERY EXPANSION");
                     break;
-                case MySqlMatchExpressionSearchMode.InNaturalLanguageMode:
+                case MySqlMatchSearchMode.InNaturalLanguageMode:
                     break;
             }
 

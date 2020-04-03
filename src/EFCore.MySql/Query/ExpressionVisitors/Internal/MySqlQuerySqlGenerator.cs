@@ -157,18 +157,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             Sql.Append(" AGAINST ");
             Sql.Append($"(");
             Visit(mySqlMatchExpression.Against);
-            //Sql.Append("`");
 
             switch (mySqlMatchExpression.SearchMode)
             {
-                case MySqlMatchExpressionSearchMode.InBooleanMode:
+                case MySqlMatchSearchMode.InBooleanMode:
                     Sql.Append(" IN BOOLEAN MODE");
                     break;
-                case MySqlMatchExpressionSearchMode.InNaturalLanguageModeWithQueryExpansion:
-                case MySqlMatchExpressionSearchMode.WithQueryExpansion:
+                case MySqlMatchSearchMode.InNaturalLanguageModeWithQueryExpansion:
+                case MySqlMatchSearchMode.WithQueryExpansion:
                     Sql.Append(" WITH QUERY EXPANSION");
                     break;
-                case MySqlMatchExpressionSearchMode.InNaturalLanguageMode:
+                case MySqlMatchSearchMode.InNaturalLanguageMode:
                     break;
             }
 

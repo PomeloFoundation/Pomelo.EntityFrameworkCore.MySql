@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query;
@@ -234,25 +235,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         public SqlExpression MakeMatchExpression(
             [NotNull] SqlExpression target,
             [NotNull] SqlExpression match,
-            [NotNull] SqlExpression against)
+            [NotNull] SqlExpression against,
+            MySqlMatchSearchMode searchMode)
         {
-            return _sqlExpressionFactory.MakeMatch(match, against);
-        }
-
-        public SqlExpression MakeMatchInBooleanModeExpression(
-            [NotNull] SqlExpression target,
-            [NotNull] SqlExpression match,
-            [NotNull] SqlExpression against)
-        {
-            return _sqlExpressionFactory.MakeMatchInBooleanMode(match, against);
-        }
-
-        public SqlExpression MakeMatchWithQueryExpansionExpression(
-            [NotNull] SqlExpression target,
-            [NotNull] SqlExpression match,
-            [NotNull] SqlExpression against)
-        {
-            return _sqlExpressionFactory.MakeMatchWithQueryExpansion(match, against);
+            return _sqlExpressionFactory.MakeMatch(match, against, searchMode);
         }
 
         public SqlExpression MakeEndsWithExpression(

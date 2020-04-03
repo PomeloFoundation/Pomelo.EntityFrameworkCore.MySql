@@ -52,12 +52,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             = typeof(string).GetRuntimeMethod(nameof(string.Contains), new[] { typeof(string) });
         private static readonly MethodInfo _endsWithMethodInfo
             = typeof(string).GetRuntimeMethod(nameof(string.EndsWith), new[] { typeof(string) });
-        private static readonly MethodInfo _matchMethodInfo
-            = typeof(StringExt).GetRuntimeMethod(nameof(StringExt.Match), new[] {typeof(string), typeof(string)});
-        private static readonly MethodInfo _matchInBooleanModeMethodInfo
-            = typeof(StringExt).GetRuntimeMethod(nameof(StringExt.MatchInBooleanMode), new[] {typeof(string), typeof(string)});
-        private static readonly MethodInfo _matchWithQueryExpansionMethodInfo
-            = typeof(StringExt).GetRuntimeMethod(nameof(StringExt.MatchWithQueryExpansion), new[] {typeof(string), typeof(string)});
 
         private static readonly MethodInfo _padLeftWithOneArg
             = typeof(string).GetRuntimeMethod(nameof(string.PadLeft), new[] { typeof(int) });
@@ -172,24 +166,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             {
                 return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory)
                     .MakeEndsWithExpression(instance, arguments[0], _sqlExpressionFactory.Constant(StringComparison.CurrentCulture));
-            }
-
-            if (_matchMethodInfo.Equals(method))
-            {
-                return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory)
-                    .MakeMatchExpression(instance, arguments[0], arguments[1]);
-            }
-
-            if (_matchInBooleanModeMethodInfo.Equals(method))
-            {
-                return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory)
-                    .MakeMatchInBooleanModeExpression(instance, arguments[0], arguments[1]);
-            }
-
-            if (_matchWithQueryExpansionMethodInfo.Equals(method))
-            {
-                return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory)
-                    .MakeMatchWithQueryExpansionExpression(instance, arguments[0], arguments[1]);
             }
 
             if (_padLeftWithOneArg.Equals(method))

@@ -94,33 +94,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         public virtual MySqlMatchExpression MakeMatch(
             SqlExpression match,
             SqlExpression against,
-            MySqlMatchExpressionSearchMode searchMode = MySqlMatchExpressionSearchMode.InNaturalLanguageMode)
-        {
-            return (MySqlMatchExpression)ApplyDefaultTypeMapping(
-                new MySqlMatchExpression(
-                    match,
-                    against,
-                    searchMode,
-                    null));
-        }
-
-        public virtual MySqlMatchExpression MakeMatchInBooleanMode(
-            SqlExpression match,
-            SqlExpression against,
-            MySqlMatchExpressionSearchMode searchMode = MySqlMatchExpressionSearchMode.InBooleanMode)
-        {
-            return (MySqlMatchExpression)ApplyDefaultTypeMapping(
-                new MySqlMatchExpression(
-                    match,
-                    against,
-                    searchMode,
-                    null));
-        }
-
-        public virtual MySqlMatchExpression MakeMatchWithQueryExpansion(
-            SqlExpression match,
-            SqlExpression against,
-            MySqlMatchExpressionSearchMode searchMode = MySqlMatchExpressionSearchMode.InNaturalLanguageModeWithQueryExpansion)
+            MySqlMatchSearchMode searchMode)
         {
             return (MySqlMatchExpression)ApplyDefaultTypeMapping(
                 new MySqlMatchExpression(
@@ -159,7 +133,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     return base.ApplyTypeMapping(sqlExpression, typeMapping);
             }
         }
-
+        
         private MySqlComplexFunctionArgumentExpression ApplyTypeMappingOnComplexFunctionArgument(MySqlComplexFunctionArgumentExpression complexFunctionArgumentExpression)
         {
             var inferredTypeMapping = ExpressionExtensions.InferTypeMapping(complexFunctionArgumentExpression.ArgumentParts.ToArray())
@@ -220,12 +194,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             switch (sqlBinaryExpression.OperatorType)
             {
                 case MySqlBinaryExpressionOperatorType.IntegerDivision:
-                    {
-                        inferredTypeMapping = typeMapping ?? ExpressionExtensions.InferTypeMapping(left, right);
-                        resultType = left.Type;
-                        resultTypeMapping = inferredTypeMapping;
-                    }
-                    break;
+                {
+                    inferredTypeMapping = typeMapping ?? ExpressionExtensions.InferTypeMapping(left, right);
+                    resultType = left.Type;
+                    resultTypeMapping = inferredTypeMapping;
+                }
+                break;
 
                 default:
                     throw new InvalidOperationException("Incorrect OperatorType for MySqlBinaryExpression");

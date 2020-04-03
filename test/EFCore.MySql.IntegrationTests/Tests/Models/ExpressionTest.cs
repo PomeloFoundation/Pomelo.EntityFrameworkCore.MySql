@@ -1,16 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
-using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
@@ -299,33 +292,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
 
             Assert.True(result.StartsWith);
             Assert.False(result.NotStartsWith);
-        }
-
-        [Fact]
-        public async Task MySqlMatchTranslator()
-        {
-            await Task.FromResult(1);
-            var result = _db.Products.Where(p => p.Name.Match("Product*"));
-
-            Assert.True(result.Any());
-        }
-
-        [Fact]
-        public async Task MySqlMatchInBooleanModeTranslator()
-        {
-            await Task.FromResult(1);
-            var result = _db.Products.Where(p => p.Name.MatchInBooleanMode("Product*"));
-
-            Assert.True(result.Any());
-        }
-
-        [Fact]
-        public async Task MySqlMatchWithQueryExpansionTranslator()
-        {
-            await Task.FromResult(1);
-            var result = _db.Products.Where(p => p.Name.MatchWithQueryExpansion("Product*"));
-
-            Assert.True(result.Any());
         }
 
         [Fact]
