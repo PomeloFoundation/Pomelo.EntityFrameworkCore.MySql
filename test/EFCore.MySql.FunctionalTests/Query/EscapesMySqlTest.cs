@@ -30,7 +30,7 @@ WHERE ROW_COUNT() = 1 AND `ArtistId` = LAST_INSERT_ID();",
                 //
                 @"SELECT `a`.`ArtistId`, `a`.`Name`
 FROM `Artists` AS `a`
-WHERE RIGHT(`a`.`Name`, CHAR_LENGTH(CONVERT(' Garden Party' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(' Garden Party' USING utf8mb4) COLLATE utf8mb4_bin");
+WHERE `a`.`Name` LIKE '% Garden Party'");
         }
 
         [ConditionalTheory]
