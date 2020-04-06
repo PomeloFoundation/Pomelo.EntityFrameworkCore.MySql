@@ -56,14 +56,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             bool noBackslashEscapes = false)
             : base(name, shared)
         {
-            _databaseCharSet = databaseCharSet;
-            _databaseCollation = databaseCollation;
+            _databaseCharSet = databaseCharSet ?? "utf8mb4";
+            _databaseCollation = databaseCollation ?? ModernCsCollation; // all tests assume CS collation by default
             _useConnectionString = useConnectionString;
             _noBackslashEscapes = noBackslashEscapes;
 
             if (scriptPath != null)
             {
-                _scriptPath = Path.Combine(Path.GetDirectoryName(typeof(MySqlTestStore).GetTypeInfo().Assembly.Location), scriptPath);
+                _scriptPath = Path.Combine(
+                    Path.GetDirectoryName(
+                        typeof(MySqlTestStore).GetTypeInfo()
+                            .Assembly.Location), scriptPath);
             }
 
             ConnectionString = CreateConnectionString(name, _noBackslashEscapes);
@@ -92,7 +95,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             builder
                 .CommandTimeout(GetCommandTimeout())
                 .ServerVersion(AppConfig.ServerVersion.Version, AppConfig.ServerVersion.Type)
-                .CharSetBehavior(CharSetBehavior.AppendToAllColumns)
+                .CharSetBehavior(CharSetBehavior.AppendToAllColumns) // TODO: Change to NerverAppend.
                 .CharSet(CharSet.Utf8Mb4);
         }
 
@@ -129,35 +132,45 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 
         private bool CreateDatabase(Action<DbContext> clean)
         {
-            using (var master = new MySqlConnection(CreateAdminConnectionString()))
+            if (DatabaseExists(Name))
             {
-                if (DatabaseExists(Name))
+                if (_scriptPath != null
+                    && !TestEnvironment.IsCI)
                 {
-                    if (_scriptPath != null)
-                    {
-                        return false;
-                    }
-
-                    using (var context = new DbContext(
-                        AddProviderOptions(
-                                new DbContextOptionsBuilder()
-                                    .EnableServiceProviderCaching(false))
-                            .Options))
-                    {
-                        clean?.Invoke(context);
-                        Clean(context);
-                        return true;
-                    }
+                    return false;
                 }
 
-                ExecuteNonQuery(master, GetCreateDatabaseStatement(Name, _databaseCharSet, _databaseCollation));
+                using (var context = new DbContext(
+                    AddProviderOptions(
+                            new DbContextOptionsBuilder()
+                                .EnableServiceProviderCaching(false))
+                        .Options))
+                {
+                    clean?.Invoke(context);
+                    Clean(context);
+                    return true;
+                }
+
+                // DeleteDatabase();
+            }
+
+            using (var master = new MySqlConnection(CreateAdminConnectionString()))
+            {
+                master.Open();
+                ExecuteNonQuery(master, GetCreateDatabaseStatement(master, Name, _databaseCharSet, _databaseCollation));
             }
 
             return true;
         }
 
-        private static string GetCreateDatabaseStatement(string name, string charset = null, string collation = null)
-            => $@"CREATE DATABASE `{name}`{(string.IsNullOrEmpty(charset) ? null : $" CHARSET {charset}")}{(string.IsNullOrEmpty(collation) ? null : $" COLLATE {collation}")};";
+        private void DeleteDatabase()
+        {
+            using var master = new MySqlConnection(CreateAdminConnectionString());
+            ExecuteNonQuery(master, $@"DROP DATABASE IF EXISTS `{Name}`;");
+        }
+
+        private string GetCreateDatabaseStatement(DbConnection connection, string name, string charset = null, string collation = null)
+            => EnsureBackwardsCompatibleCollations(connection, $@"CREATE DATABASE `{name}`{(string.IsNullOrEmpty(charset) ? null : $" CHARSET {charset}")}{(string.IsNullOrEmpty(collation) ? null : $" COLLATE {collation}")};");
 
         private static bool DatabaseExists(string name)
         {
@@ -210,7 +223,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 
             try
             {
-                using (var transaction = useTransaction ? connection.BeginTransaction() : null)
+                using (var transaction = useTransaction
+                    ? connection.BeginTransaction()
+                    : null)
                 {
                     T result;
                     using (var command = CreateCommand(connection, sql, parameters))
@@ -226,8 +241,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             }
             finally
             {
-                if (connection.State == ConnectionState.Closed
-                    && connection.State != ConnectionState.Closed)
+                if (connection.State != ConnectionState.Closed)
                 {
                     connection.Close();
                 }

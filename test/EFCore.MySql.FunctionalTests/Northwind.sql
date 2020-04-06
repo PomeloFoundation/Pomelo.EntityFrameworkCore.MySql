@@ -86,7 +86,7 @@ CREATE TABLE `Employees` (
 		`EmployeeID`
 	)/*,
 	CHECK (BirthDate < curdate())*/
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+);
 /* GO */
  CREATE  INDEX `LastName` ON `Employees`(`LastName`);
 /* GO */
@@ -104,7 +104,7 @@ CREATE TABLE `Categories` (
 	(
 		`CategoryID`
 	)
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+);
 /* GO */
  CREATE  INDEX `CategoryName` ON `Categories`(`CategoryName`);
 /* GO */
@@ -125,7 +125,7 @@ CREATE TABLE `Customers` (
 	(
 		`CustomerID`
 	)
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+);
 /* GO */
  CREATE  INDEX `City` ON `Customers`(`City`);
 /* GO */
@@ -144,7 +144,7 @@ CREATE TABLE `Shippers` (
 	(
 		`ShipperID`
 	)
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+);
 /* GO */
 
 CREATE TABLE `Suppliers` (
@@ -164,7 +164,7 @@ CREATE TABLE `Suppliers` (
 	(
 		`SupplierID`
 	)
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+);
 /* GO */
  CREATE  INDEX `CompanyName` ON `Suppliers`(`CompanyName`);
 /* GO */
@@ -208,7 +208,7 @@ CREATE TABLE `Orders` (
 	) REFERENCES `Shippers` (
 		`ShipperID`
 	)
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+);
 /* GO */
  CREATE  INDEX `CustomerID` ON `Orders`(`CustomerID`);
 /* GO */
@@ -258,7 +258,7 @@ CREATE TABLE `Products` (
 	CHECK (ReorderLevel >= 0),
 	CHECK (UnitsInStock >= 0),
 	CHECK (UnitsOnOrder >= 0)
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+);
 /* GO */
  CREATE  INDEX `CategoriesProducts` ON `Products`(`CategoryID`);
 /* GO */
@@ -297,7 +297,7 @@ CREATE TABLE `Order Details` (
 	CHECK (Discount >= 0 and (Discount <= 1)),
 	CHECK (Quantity > 0),
 	CHECK (UnitPrice >= 0)
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+);
 /* GO */
  CREATE  INDEX `OrderID` ON `Order Details`(`OrderID`);
 /* GO */
@@ -8970,7 +8970,7 @@ CREATE TABLE `CustomerCustomerDemo`
 (
     `CustomerID` char (5) NOT NULL,
 	`CustomerTypeID` char (10) NOT NULL
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+);
 /* GO */
 
 drop table if exists `CustomerDemographics`;
@@ -8980,7 +8980,7 @@ CREATE TABLE `CustomerDemographics`
 (
     `CustomerTypeID` char (10) NOT NULL ,
 	`CustomerDesc` text NULL
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+);
 /* GO */
 
 drop table if exists `Region`;
@@ -8990,7 +8990,7 @@ CREATE TABLE `Region`
 (
     `RegionID` int NOT NULL ,
 	`RegionDescription` char (50) NOT NULL
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+);
 /* GO */
 
 drop table if exists `Territories`;
@@ -9001,7 +9001,7 @@ CREATE TABLE `Territories`
     `TerritoryID` varchar (20) NOT NULL ,
 	`TerritoryDescription` char (50) NOT NULL ,
     `RegionID` int NOT NULL
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+);
 /* GO */
 
 drop table if exists `EmployeeTerritories`;
@@ -9011,7 +9011,7 @@ CREATE TABLE `EmployeeTerritories`
 (
     `EmployeeID` int NOT NULL,
 	`TerritoryID` varchar (20) NOT NULL
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+);
 
 -- The following adds data to the tables just created.
 

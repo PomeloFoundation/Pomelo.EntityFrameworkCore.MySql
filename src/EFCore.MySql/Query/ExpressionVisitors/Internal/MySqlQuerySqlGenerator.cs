@@ -93,7 +93,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
             return base.VisitSqlFunction(sqlFunctionExpression);
         }
-        
+
         protected override Expression VisitCrossApply(CrossApplyExpression crossApplyExpression)
         {
             Sql.Append("JOIN LATERAL ");
@@ -115,7 +115,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
             return outerApplyExpression;
         }
-        
+
         protected override Expression VisitSqlBinary(SqlBinaryExpression sqlBinaryExpression)
         {
             if (sqlBinaryExpression.OperatorType == ExpressionType.Add &&
@@ -251,10 +251,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             {
                 Sql.Append(" + 0e0)");
             }
+            else if (castMapping.EndsWith("char"))
+            {
+                // Expressions like `"mystring" + 1` can lead to collation mismatches.
+                // We force `utf8mb4_bin` here, that should always work. It might however change the case sensitivity of
+                // operations it is part of.
+                Sql.Append(" COLLATE utf8mb4_bin");
+            }
 
             return sqlUnaryExpression;
         }
-        
+
         public Expression VisitMySqlComplexFunctionArgumentExpression(MySqlComplexFunctionArgumentExpression mySqlComplexFunctionArgumentExpression)
         {
             Check.NotNull(mySqlComplexFunctionArgumentExpression, nameof(mySqlComplexFunctionArgumentExpression));

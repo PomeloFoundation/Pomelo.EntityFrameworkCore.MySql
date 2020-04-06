@@ -203,7 +203,7 @@ WHERE (EXTRACT(microsecond FROM `o`.`OrderDate`)) DIV (1000) = 88");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT('M', '%')) AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin))");
+WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE 'M%')");
         }
 
         [ConditionalTheory]
@@ -215,7 +215,7 @@ WHERE `c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT('M', '%'
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, '%')) AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin))))");
+WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`)))");
         }
 
         [ConditionalTheory]
@@ -227,7 +227,7 @@ WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (`c`.`Conta
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT(`c`.`ContactName`, '%')) AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin))))");
+WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`)))");
         }
 
         [ConditionalTheory]
@@ -239,7 +239,7 @@ WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (`c`.`Conta
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT('M', '%')) AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin))");
+WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE 'M%')");
         }
 
         [ConditionalTheory]
@@ -251,7 +251,7 @@ WHERE `c`.`ContactName` IS NOT NULL AND ((`c`.`ContactName` LIKE CONCAT('M', '%'
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` IS NOT NULL AND (RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('b' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('b' USING utf8mb4) COLLATE utf8mb4_bin)");
+WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE '%b')");
         }
 
         [ConditionalTheory]
@@ -263,7 +263,7 @@ WHERE `c`.`ContactName` IS NOT NULL AND (RIGHT(`c`.`ContactName`, CHAR_LENGTH(CO
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND ((RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin) OR (`c`.`ContactName` = ''))))");
+WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`)))");
         }
 
         [ConditionalTheory]
@@ -275,7 +275,7 @@ WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (`c`.`Conta
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND ((RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin) OR (`c`.`ContactName` = ''))))");
+WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` IS NOT NULL AND (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`)))");
         }
 
         [ConditionalTheory]
@@ -287,7 +287,7 @@ WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (`c`.`Conta
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` IS NOT NULL AND (RIGHT(`c`.`ContactName`, CHAR_LENGTH(CONVERT('m' USING utf8mb4) COLLATE utf8mb4_bin)) = CONVERT('m' USING utf8mb4) COLLATE utf8mb4_bin)");
+WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE '%m')");
         }
 
         [ConditionalTheory]
@@ -299,7 +299,7 @@ WHERE `c`.`ContactName` IS NOT NULL AND (RIGHT(`c`.`ContactName`, CHAR_LENGTH(CO
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE LOCATE(CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`ContactName`) > 0");
+WHERE `c`.`ContactName` LIKE '%M%'");
         }
 
         [ConditionalTheory]
@@ -311,7 +311,7 @@ WHERE LOCATE(CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`ContactName`) 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LOCATE(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin, `c`.`ContactName`) > 0) OR (`c`.`ContactName` = '')");
+WHERE LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0");
         }
 
         [ConditionalTheory]
@@ -323,7 +323,7 @@ WHERE (LOCATE(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin, `c`.
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LOCATE(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin, `c`.`ContactName`) > 0) OR (`c`.`ContactName` = '')");
+WHERE LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0");
         }
 
         [ConditionalTheory]
@@ -335,7 +335,7 @@ WHERE (LOCATE(CONVERT(`c`.`ContactName` USING utf8mb4) COLLATE utf8mb4_bin, `c`.
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE LOCATE(CONVERT('M' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`ContactName`) > 0");
+WHERE `c`.`ContactName` LIKE '%M%'");
         }
 
         [ConditionalTheory]
@@ -370,7 +370,7 @@ WHERE CHAR_LENGTH(`c`.`City`) = 6");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE ((LOCATE(CONVERT('Sea' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`City`) - 1) <> -1) OR LOCATE(CONVERT('Sea' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`City`) IS NULL");
+WHERE ((LOCATE('Sea', `c`.`City`) - 1) <> -1) OR LOCATE('Sea', `c`.`City`) IS NULL");
         }
 
         [ConditionalTheory]
@@ -380,7 +380,7 @@ WHERE ((LOCATE(CONVERT('Sea' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`City`) - 1
             await base.Indexof_with_emptystring(isAsync);
 
             AssertSql(
-                @"SELECT LOCATE(CONVERT('' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`ContactName`) - 1
+                @"SELECT LOCATE('', `c`.`ContactName`) - 1
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'ALFKI'");
         }

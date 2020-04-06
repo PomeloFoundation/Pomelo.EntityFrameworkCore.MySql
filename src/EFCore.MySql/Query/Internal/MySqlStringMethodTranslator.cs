@@ -75,7 +75,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             if (_indexOfMethodInfo.Equals(method))
             {
                 return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory)
-                    .MakeIndexOfExpression(instance, arguments[0], _sqlExpressionFactory.Constant(StringComparison.CurrentCulture));
+                    .MakeIndexOfExpression(instance, arguments[0]);
             }
 
             if (_replaceMethodInfo.Equals(method))
@@ -153,19 +153,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             if (_containsMethodInfo.Equals(method))
             {
                 return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory)
-                    .MakeContainsExpression(instance, arguments[0], _sqlExpressionFactory.Constant(StringComparison.Ordinal));
+                    .MakeContainsExpression(instance, arguments[0]);
             }
 
             if (_startsWithMethodInfo.Equals(method))
             {
                 return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory)
-                    .MakeStartsWithExpression(instance, arguments[0], _sqlExpressionFactory.Constant(StringComparison.CurrentCulture));
+                    .MakeStartsWithExpression(instance, arguments[0]);
             }
 
             if (_endsWithMethodInfo.Equals(method))
             {
                 return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory)
-                    .MakeEndsWithExpression(instance, arguments[0], _sqlExpressionFactory.Constant(StringComparison.CurrentCulture));
+                    .MakeEndsWithExpression(instance, arguments[0]);
             }
 
             if (_padLeftWithOneArg.Equals(method))

@@ -1,3 +1,5 @@
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Xunit;
@@ -16,7 +18,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         [ConditionalFact]
         public override void Like_literal()
         {
-            base.Like_literal();
+            using (var context = CreateContext())
+            {
+                var count = context.Customers.Count(c => EF.Functions.Like(c.ContactName, "%M%"));
+
+                Assert.Equal(19, count);
+            }
 
             AssertSql(
                 @"SELECT COUNT(*)

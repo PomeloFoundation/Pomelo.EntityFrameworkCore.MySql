@@ -14,6 +14,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         public static IConfiguration Config { get; }
         public static string DefaultConnection => Config["DefaultConnection"] ?? DefaultConnectionString;
 
+        public static bool IsCI { get; } = Environment.GetEnvironmentVariable("PIPELINE_WORKSPACE") != null
+                                           || Environment.GetEnvironmentVariable("TEAMCITY_VERSION") != null;
+
         static TestEnvironment()
         {
             var configBuilder = new ConfigurationBuilder()
@@ -27,7 +30,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 
             System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
         }
-        
+
         public static Version MySqlVersion
         {
             get
