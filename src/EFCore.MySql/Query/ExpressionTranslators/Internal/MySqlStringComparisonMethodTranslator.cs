@@ -232,15 +232,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 ));
         }
 
-        public SqlExpression MakeMatchExpression(
-            [NotNull] SqlExpression target,
-            [NotNull] SqlExpression match,
-            [NotNull] SqlExpression against,
-            MySqlMatchSearchMode searchMode)
-        {
-            return _sqlExpressionFactory.MakeMatch(match, against, searchMode);
-        }
-
         public SqlExpression MakeEndsWithExpression(
             [NotNull] SqlExpression target,
             [NotNull] SqlExpression suffix,
