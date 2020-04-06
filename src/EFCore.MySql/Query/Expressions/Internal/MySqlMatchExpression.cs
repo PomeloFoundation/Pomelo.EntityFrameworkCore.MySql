@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -8,14 +9,6 @@ using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 {
-    public enum MySqlMatchSearchMode
-    {
-        WithQueryExpansion,
-        InNaturalLanguageMode,
-        InNaturalLanguageModeWithQueryExpansion,
-        InBooleanMode
-    }
-
     public class MySqlMatchExpression : SqlExpression
     {
         public MySqlMatchExpression(

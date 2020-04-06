@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using JetBrains.Annotations;
-using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Internal;
 
 namespace Microsoft.EntityFrameworkCore
 {
@@ -518,14 +518,16 @@ namespace Microsoft.EntityFrameworkCore
 
         /// <summary>
         ///     <para>
-        ///         An implementation of the SQL MATCH operation for Full Text search. On relational databases this is usually directly
-        ///         translated to SQL.
+        ///         An implementation of the SQL MATCH operation for Full Text search.
         ///     </para>
         ///     <para>
-        ///         Note that if this function is translated into SQL, then the semantics of the comparison will
-        ///         depend on the database configuration. In particular, it may be either case-sensitive or
-        ///         case-insensitive. If this function is evaluated on the client, then it will always use
-        ///         a case-insensitive comparison.
+        ///         The semantics of the comparison will depend on the database configuration.
+        ///         In particular, it may be either case-sensitive or
+        ///         case-insensitive.
+        ///     </para>
+        ///     <para>
+        ///         Should be directly translated to SQL.
+        ///         This function can't be evaluated on the client.
         ///     </para>
         /// </summary>
         /// <param name="_">The DbFunctions instance.</param>
@@ -533,18 +535,12 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="pattern">The pattern against which Full Text search is performed</param>
         /// <param name="searchMode">Mode in which search is performed</param>
         /// <returns>true if there is a match.</returns>
+        /// <exception cref="InvalidOperationException">Throws when query switched to client-evaluation.</exception>
         public static bool Match<T>(
             [CanBeNull] this DbFunctions _,
             [CanBeNull] T matchExpression,
             [CanBeNull] string pattern,
             MySqlMatchSearchMode searchMode)
-        {
-            if (matchExpression is IConvertible convertible)
-            {
-                return EF.Functions.Match(convertible.ToString(CultureInfo.InvariantCulture), pattern, searchMode);
-            }
-
-            return false;
-        }
+            => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(Match)));
     }
 }

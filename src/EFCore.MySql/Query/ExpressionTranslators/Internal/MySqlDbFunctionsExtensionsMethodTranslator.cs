@@ -10,7 +10,6 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
@@ -61,11 +60,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             typeof(sbyte?),
         };
 
-        private static readonly Type[] _supportedMatchTypes =
-        {
-            typeof(string)
-        };
-
         private static readonly MethodInfo[] _likeMethodInfos
             = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethods()
                 .Where(method => method.Name == nameof(MySqlDbFunctionsExtensions.Like)
@@ -73,12 +67,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                                  && method.GetParameters().Length >= 3 && method.GetParameters().Length <= 4)
                 .SelectMany(method => _supportedLikeTypes.Select(type => method.MakeGenericMethod(type))).ToArray();
 
-        private static readonly MethodInfo[] _matchMethodInfos
+        private static readonly MethodInfo _matchMethodInfo
             = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethods()
-                .Where(method => method.Name == nameof(MySqlDbFunctionsExtensions.Match)
-                                 && method.IsGenericMethod
-                                 && method.GetParameters().Length >= 3 && method.GetParameters().Length <= 4)
-                .SelectMany(method => _supportedMatchTypes.Select(type => method.MakeGenericMethod(type))).ToArray();
+                .FirstOrDefault(method => method.Name == nameof(MySqlDbFunctionsExtensions.Match))
+                ?.MakeGenericMethod(typeof(string));
 
         public MySqlDbFunctionsExtensionsMethodTranslator(ISqlExpressionFactory sqlExpressionFactory)
         {
@@ -111,7 +103,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     excapeChar);
             }
 
-            if(_matchMethodInfos.Any(m => Equals(method, m)))
+            if (Equals(method, _matchMethodInfo))
             {
                 if (TryGetExpressionValue<MySqlMatchSearchMode>(arguments[3], out var searchMode))
                 {
@@ -160,7 +152,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             {
                 return _sqlExpressionFactory.ApplyTypeMapping(expression, inferenceSourceTypeMapping);
             }
-            
+
             return _sqlExpressionFactory.ApplyDefaultTypeMapping(expression);
         }
     }
