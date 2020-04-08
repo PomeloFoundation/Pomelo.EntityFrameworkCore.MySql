@@ -731,6 +731,42 @@ DROP TABLE DependentTable;
 DROP TABLE PrincipalTable;");
         }
 
+        // Important: the inconsistent casing of the referenced table name is intentional. Do not change.
+        [Fact]
+        public void Ensure_constraints_scaffold_with_case_mismatch()
+        {
+            Test(
+                @"
+CREATE TABLE `PrincipalTable` (
+  `Id` INT NOT NULL,
+  PRIMARY KEY (`Id`));
+
+CREATE TABLE `DependentTable` (
+  `Id` INT NOT NULL,
+  `ForeignKeyId` INT NOT NULL,
+  PRIMARY KEY (`Id`),
+  CONSTRAINT `ForeignKey_Id`
+    FOREIGN KEY (`ForeignKeyId`)
+    REFERENCES `principaltable` (`Id`)
+);",
+                Enumerable.Empty<string>(),
+                Enumerable.Empty<string>(),
+                dbModel =>
+                {
+                    var principal = dbModel.Tables.FirstOrDefault(t => t.Name == "PrincipalTable");
+                    var dependent = dbModel.Tables.FirstOrDefault(t => t.Name == "DependentTable");
+
+                    Assert.NotNull(principal);
+                    Assert.NotNull(dependent);
+
+                    Assert.Contains(dependent.ForeignKeys, t => t.PrincipalTable.Name == principal.Name);
+                    Assert.True(true);
+                },
+                @"
+DROP TABLE DependentTable;
+DROP TABLE PrincipalTable;"
+                );
+        }
         #endregion
 
         #region Warnings
@@ -817,7 +853,7 @@ DROP TABLE PrincipalTable;");
 
         #endregion
 
-        public class MySqlDatabaseModelFixture : SharedStoreFixtureBase<DbContext>
+        public class MySqlDatabaseModelFixture : SharedStoreFixtureBase<PoolableDbContext>
         {
             protected override string StoreName { get; } = nameof(MySqlDatabaseModelFactoryTest);
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
