@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
@@ -20,6 +21,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
     /// </summary>
     public class MySqlDbFunctionsExtensionsMethodTranslator : IMethodCallTranslator
     {
+        private readonly IMySqlOptions _options;
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
         private static readonly Type[] _supportedLikeTypes = {
@@ -72,9 +74,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 .FirstOrDefault(method => method.Name == nameof(MySqlDbFunctionsExtensions.Match))
                 ?.MakeGenericMethod(typeof(string));
 
-        public MySqlDbFunctionsExtensionsMethodTranslator(ISqlExpressionFactory sqlExpressionFactory)
+        public MySqlDbFunctionsExtensionsMethodTranslator(
+            ISqlExpressionFactory sqlExpressionFactory,
+            IMySqlOptions options)
         {
             _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
+            _options = options;
         }
 
         /// <summary>
@@ -112,6 +117,25 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 
                 if (arguments[3] is SqlParameterExpression parameter)
                 {
+                    if (!_options.ServerVersion.SupportsMatchAgainstInsideCase)
+                    {
+                        // MariaDB is currently unable to perform a MATCH...AGAINST from inside of a CASE statement.
+                        // Use nested OR clauses instead:
+                        // <search_mode_1> = @p AND MATCH ... AGAINST ... OR
+                        // <search_mode_2> = @p AND MATCH ... AGAINST ... OR [...]
+                        var andClauses = Enum.GetValues(typeof(MySqlMatchSearchMode))
+                            .Cast<MySqlMatchSearchMode>()
+                            .OrderByDescending(m => m)
+                            .Select(m => _sqlExpressionFactory.AndAlso(_sqlExpressionFactory.Equal(parameter, _sqlExpressionFactory.Constant(m)), _sqlExpressionFactory.MakeMatch(arguments[1], arguments[2], m)))
+                            .ToArray();
+
+                        return andClauses
+                            .Skip(1)
+                            .Aggregate(
+                                andClauses.First(),
+                                (currentAnd, previousExpression) => _sqlExpressionFactory.OrElse(previousExpression, currentAnd));
+                    }
+
                     var whenClauses = Enum.GetValues(typeof(MySqlMatchSearchMode))
                         .Cast<MySqlMatchSearchMode>()
                         .Where(m => m != default)

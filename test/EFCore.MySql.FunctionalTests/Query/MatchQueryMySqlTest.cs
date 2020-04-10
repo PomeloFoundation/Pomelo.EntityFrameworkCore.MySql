@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
@@ -81,8 +83,8 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`) AGAINST ('First*' IN BOOLEAN MODE)");
         }
 
-        [ConditionalFact]
-        public virtual void Match_in_boolean_mode_with_search_mode_parameter()
+        [SupportedServerVersionFact(ServerVersion.MatchAgainstInsideCaseSupportKey)]
+        public virtual void Match_in_boolean_mode_with_search_mode_parameter_mysql()
         {
             using var context = CreateContext();
 
@@ -101,6 +103,24 @@ WHERE CASE @__searchMode_1
     WHEN 2 THEN MATCH (`h`.`Name`) AGAINST ('First*' IN BOOLEAN MODE)
     ELSE MATCH (`h`.`Name`) AGAINST ('First*')
 END");
+        }
+
+        [SupportedServerVersionLessThanFact(ServerVersion.MatchAgainstInsideCaseSupportKey)]
+        public virtual void Match_in_boolean_mode_with_search_mode_parameter_mariadb()
+        {
+            using var context = CreateContext();
+
+            var searchMode = MySqlMatchSearchMode.Boolean;
+            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(herb.Name, "First*", searchMode));
+
+            Assert.Equal(3, count);
+
+            AssertSql(
+                @"@__searchMode_1='2'
+
+SELECT COUNT(*)
+FROM `Herb` AS `h`
+WHERE ((@__searchMode_1 = 0) AND MATCH (`h`.`Name`) AGAINST ('First*')) OR (((@__searchMode_1 = 1) AND MATCH (`h`.`Name`) AGAINST ('First*' WITH QUERY EXPANSION)) OR ((@__searchMode_1 = 2) AND MATCH (`h`.`Name`) AGAINST ('First*' IN BOOLEAN MODE)))");
         }
 
         [ConditionalFact]
