@@ -124,10 +124,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                 table);
 
         /// <summary>
-        ///     The 'FreeText' method is not supported because the query has switched to client-evaluation. Inspect the log to determine which query expressions are triggering client-evaluation.
+        ///     The '{methodName}' method is not supported because the query has switched to client-evaluation. Inspect the log to determine which query expressions are triggering client-evaluation.
         /// </summary>
-        public static string FreeTextFunctionOnClient
-            => GetString("FreeTextFunctionOnClient");
+        public static string FunctionOnClient([CanBeNull] object methodName)
+            => string.Format(
+                GetString("FunctionOnClient", nameof(methodName)),
+                methodName);
 
         /// <summary>
         ///     Computed value generation cannot be used for the property '{property}' on entity type '{entityType}' because the property type is '{propertyType}'. Computed value generation can only be used with DateTime and DateTimeOffset properties.

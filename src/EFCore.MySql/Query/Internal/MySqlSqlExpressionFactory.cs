@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -90,6 +91,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 typeMapping);
         }
 
+        public virtual MySqlMatchExpression MakeMatch(
+            SqlExpression match,
+            SqlExpression against,
+            MySqlMatchSearchMode searchMode)
+        {
+            return (MySqlMatchExpression)ApplyDefaultTypeMapping(
+                new MySqlMatchExpression(
+                    match,
+                    against,
+                    searchMode,
+                    null));
+        }
+
         public override SqlExpression ApplyTypeMapping(SqlExpression sqlExpression, RelationalTypeMapping typeMapping)
         {
             if (sqlExpression == null
@@ -112,11 +126,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 case MySqlBinaryExpression e:
                     return ApplyTypeMappingOnMySqlBinary(e, typeMapping);
 
+                case MySqlMatchExpression e:
+                    return ApplyTypeMappingOnMatch(e);
+
                 default:
                     return base.ApplyTypeMapping(sqlExpression, typeMapping);
             }
         }
-
+        
         private MySqlComplexFunctionArgumentExpression ApplyTypeMappingOnComplexFunctionArgument(MySqlComplexFunctionArgumentExpression complexFunctionArgumentExpression)
         {
             var inferredTypeMapping = ExpressionExtensions.InferTypeMapping(complexFunctionArgumentExpression.ArgumentParts.ToArray())
@@ -138,6 +155,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 collateExpression.Charset,
                 collateExpression.Collation,
                 inferredTypeMapping ?? collateExpression.TypeMapping);
+        }
+
+        private SqlExpression ApplyTypeMappingOnMatch(MySqlMatchExpression matchExpression)
+        {
+            var inferredTypeMapping = ExpressionExtensions.InferTypeMapping(matchExpression.Match)
+                                      ?? _typeMappingSource.FindMapping(matchExpression.Match.Type);
+
+            return new MySqlMatchExpression(
+                ApplyTypeMapping(matchExpression.Match, inferredTypeMapping),
+                ApplyTypeMapping(matchExpression.Against, inferredTypeMapping),
+                matchExpression.SearchMode,
+                _boolTypeMapping);
         }
 
         private SqlExpression ApplyTypeMappingOnRegexp(MySqlRegexpExpression regexpExpression)

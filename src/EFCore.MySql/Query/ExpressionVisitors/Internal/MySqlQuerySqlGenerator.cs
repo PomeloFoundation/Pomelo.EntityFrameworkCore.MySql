@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Utilities;
@@ -144,6 +145,36 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             Visit(mySqlRegexpExpression.Pattern);
 
             return mySqlRegexpExpression;
+        }
+
+        public Expression VisitMySqlMatch(MySqlMatchExpression mySqlMatchExpression)
+        {
+            Check.NotNull(mySqlMatchExpression, nameof(mySqlMatchExpression));
+
+            Sql.Append("MATCH ");
+            Sql.Append("(");
+            Visit(mySqlMatchExpression.Match);
+            Sql.Append(")");
+            Sql.Append(" AGAINST ");
+            Sql.Append($"(");
+            Visit(mySqlMatchExpression.Against);
+
+            switch (mySqlMatchExpression.SearchMode)
+            {
+                case MySqlMatchSearchMode.InBooleanMode:
+                    Sql.Append(" IN BOOLEAN MODE");
+                    break;
+                case MySqlMatchSearchMode.InNaturalLanguageModeWithQueryExpansion:
+                case MySqlMatchSearchMode.WithQueryExpansion:
+                    Sql.Append(" WITH QUERY EXPANSION");
+                    break;
+                case MySqlMatchSearchMode.InNaturalLanguageMode:
+                    break;
+            }
+
+            Sql.Append(")");
+
+            return mySqlMatchExpression;
         }
 
         protected override Expression VisitSqlUnary(SqlUnaryExpression sqlUnaryExpression)

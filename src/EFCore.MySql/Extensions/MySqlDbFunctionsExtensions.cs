@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
 using JetBrains.Annotations;
+using Pomelo.EntityFrameworkCore.MySql.Internal;
 
 namespace Microsoft.EntityFrameworkCore
 {
@@ -517,5 +515,32 @@ namespace Microsoft.EntityFrameworkCore
 
             return false;
         }
+
+        /// <summary>
+        ///     <para>
+        ///         An implementation of the SQL MATCH operation for Full Text search.
+        ///     </para>
+        ///     <para>
+        ///         The semantics of the comparison will depend on the database configuration.
+        ///         In particular, it may be either case-sensitive or
+        ///         case-insensitive.
+        ///     </para>
+        ///     <para>
+        ///         Should be directly translated to SQL.
+        ///         This function can't be evaluated on the client.
+        ///     </para>
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="matchExpression">The property of entity that is to be matched.</param>
+        /// <param name="pattern">The pattern against which Full Text search is performed</param>
+        /// <param name="searchMode">Mode in which search is performed</param>
+        /// <returns>true if there is a match.</returns>
+        /// <exception cref="InvalidOperationException">Throws when query switched to client-evaluation.</exception>
+        public static bool Match<T>(
+            [CanBeNull] this DbFunctions _,
+            [CanBeNull] T matchExpression,
+            [CanBeNull] string pattern,
+            MySqlMatchSearchMode searchMode)
+            => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(Match)));
     }
 }

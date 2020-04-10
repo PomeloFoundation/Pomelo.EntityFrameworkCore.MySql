@@ -9,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
+using Pomelo.EntityFrameworkCore.MySql.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
@@ -18,9 +20,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
     /// </summary>
     public class MySqlDbFunctionsExtensionsMethodTranslator : IMethodCallTranslator
     {
-        private readonly ISqlExpressionFactory _sqlExpressionFactory;
+        private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
-        private static readonly Type[] _supportedTypes = {
+        private static readonly Type[] _supportedLikeTypes = {
             typeof(int),
             typeof(long),
             typeof(DateTime),
@@ -58,16 +60,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             typeof(sbyte?),
         };
 
-        private static readonly MethodInfo[] _methodInfos
+        private static readonly MethodInfo[] _likeMethodInfos
             = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethods()
                 .Where(method => method.Name == nameof(MySqlDbFunctionsExtensions.Like)
                                  && method.IsGenericMethod
                                  && method.GetParameters().Length >= 3 && method.GetParameters().Length <= 4)
-                .SelectMany(method => _supportedTypes.Select(type => method.MakeGenericMethod(type))).ToArray();
+                .SelectMany(method => _supportedLikeTypes.Select(type => method.MakeGenericMethod(type))).ToArray();
+
+        private static readonly MethodInfo _matchMethodInfo
+            = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethods()
+                .FirstOrDefault(method => method.Name == nameof(MySqlDbFunctionsExtensions.Match))
+                ?.MakeGenericMethod(typeof(string));
 
         public MySqlDbFunctionsExtensionsMethodTranslator(ISqlExpressionFactory sqlExpressionFactory)
         {
-            _sqlExpressionFactory = sqlExpressionFactory;
+            _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
         }
 
         /// <summary>
@@ -76,7 +83,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         /// </summary>
         public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
         {
-            if (_methodInfos.Any(m => Equals(method, m)))
+            if (_likeMethodInfos.Any(m => Equals(method, m)))
             {
                 var match = _sqlExpressionFactory.ApplyDefaultTypeMapping(arguments[1]);
 
@@ -96,7 +103,37 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     excapeChar);
             }
 
+            if (Equals(method, _matchMethodInfo))
+            {
+                if (TryGetExpressionValue<MySqlMatchSearchMode>(arguments[3], out var searchMode))
+                {
+                    return _sqlExpressionFactory.MakeMatch(arguments[1], arguments[2], searchMode);
+                }
+            }
+
             return null;
+        }
+
+        private static bool TryGetExpressionValue<T>(SqlExpression expression, out T value)
+        {
+            if (expression.Type != typeof(T))
+            {
+                throw new ArgumentException(
+                    MySqlStrings.ExpressionTypeMismatch,
+                    nameof(expression)
+                );
+            }
+
+            if (expression is SqlConstantExpression constant)
+            {
+                value = (T)constant.Value;
+                return true;
+            }
+            else
+            {
+                value = default;
+                return false;
+            }
         }
 
         private SqlExpression InferStringTypeMappingOrApplyDefault(SqlExpression expression, RelationalTypeMapping inferenceSourceTypeMapping)
@@ -115,7 +152,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             {
                 return _sqlExpressionFactory.ApplyTypeMapping(expression, inferenceSourceTypeMapping);
             }
-            
+
             return _sqlExpressionFactory.ApplyDefaultTypeMapping(expression);
         }
     }
