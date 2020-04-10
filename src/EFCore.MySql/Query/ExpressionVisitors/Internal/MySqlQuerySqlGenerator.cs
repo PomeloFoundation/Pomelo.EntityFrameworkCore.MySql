@@ -161,14 +161,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
             switch (mySqlMatchExpression.SearchMode)
             {
-                case MySqlMatchSearchMode.InBooleanMode:
-                    Sql.Append(" IN BOOLEAN MODE");
+                case MySqlMatchSearchMode.NaturalLanguage:
                     break;
-                case MySqlMatchSearchMode.InNaturalLanguageModeWithQueryExpansion:
-                case MySqlMatchSearchMode.WithQueryExpansion:
+                case MySqlMatchSearchMode.NaturalLanguageWithQueryExpansion:
                     Sql.Append(" WITH QUERY EXPANSION");
                     break;
-                case MySqlMatchSearchMode.InNaturalLanguageMode:
+                case MySqlMatchSearchMode.Boolean:
+                    Sql.Append(" IN BOOLEAN MODE");
                     break;
             }
 

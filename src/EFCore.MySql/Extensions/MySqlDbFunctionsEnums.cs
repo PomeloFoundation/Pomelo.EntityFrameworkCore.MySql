@@ -2,9 +2,8 @@
 {
     public enum MySqlMatchSearchMode
     {
-        WithQueryExpansion,
-        InNaturalLanguageMode,
-        InNaturalLanguageModeWithQueryExpansion,
-        InBooleanMode
+        NaturalLanguage = 0,
+        NaturalLanguageWithQueryExpansion = 1,
+        Boolean = 2,
     }
 }

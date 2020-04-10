@@ -105,35 +105,27 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 
             if (Equals(method, _matchMethodInfo))
             {
-                if (TryGetExpressionValue<MySqlMatchSearchMode>(arguments[3], out var searchMode))
+                if (arguments[3] is SqlConstantExpression constant)
                 {
-                    return _sqlExpressionFactory.MakeMatch(arguments[1], arguments[2], searchMode);
+                    return _sqlExpressionFactory.MakeMatch(arguments[1], arguments[2], (MySqlMatchSearchMode)constant.Value);
+                }
+
+                if (arguments[3] is SqlParameterExpression parameter)
+                {
+                    var whenClauses = Enum.GetValues(typeof(MySqlMatchSearchMode))
+                        .Cast<MySqlMatchSearchMode>()
+                        .Where(m => m != default)
+                        .Select(m => new CaseWhenClause(_sqlExpressionFactory.Constant(m), _sqlExpressionFactory.MakeMatch(arguments[1], arguments[2], m)))
+                        .ToArray();
+
+                    return _sqlExpressionFactory.Case(
+                        parameter,
+                        _sqlExpressionFactory.MakeMatch(arguments[1], arguments[2], default),
+                        whenClauses);
                 }
             }
 
             return null;
-        }
-
-        private static bool TryGetExpressionValue<T>(SqlExpression expression, out T value)
-        {
-            if (expression.Type != typeof(T))
-            {
-                throw new ArgumentException(
-                    MySqlStrings.ExpressionTypeMismatch,
-                    nameof(expression)
-                );
-            }
-
-            if (expression is SqlConstantExpression constant)
-            {
-                value = (T)constant.Value;
-                return true;
-            }
-            else
-            {
-                value = default;
-                return false;
-            }
         }
 
         private SqlExpression InferStringTypeMappingOrApplyDefault(SqlExpression expression, RelationalTypeMapping inferenceSourceTypeMapping)
