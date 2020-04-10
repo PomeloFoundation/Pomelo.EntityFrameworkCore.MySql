@@ -83,30 +83,8 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`) AGAINST ('First*' IN BOOLEAN MODE)");
         }
 
-        [SupportedServerVersionFact(ServerVersion.MatchAgainstInsideCaseSupportKey)]
-        public virtual void Match_in_boolean_mode_with_search_mode_parameter_mysql()
-        {
-            using var context = CreateContext();
-
-            var searchMode = MySqlMatchSearchMode.Boolean;
-            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(herb.Name, "First*", searchMode));
-
-            Assert.Equal(3, count);
-
-            AssertSql(
-                @"@__searchMode_1='2'
-
-SELECT COUNT(*)
-FROM `Herb` AS `h`
-WHERE CASE @__searchMode_1
-    WHEN 1 THEN MATCH (`h`.`Name`) AGAINST ('First*' WITH QUERY EXPANSION)
-    WHEN 2 THEN MATCH (`h`.`Name`) AGAINST ('First*' IN BOOLEAN MODE)
-    ELSE MATCH (`h`.`Name`) AGAINST ('First*')
-END");
-        }
-
-        [SupportedServerVersionLessThanFact(ServerVersion.MatchAgainstInsideCaseSupportKey)]
-        public virtual void Match_in_boolean_mode_with_search_mode_parameter_mariadb()
+        [ConditionalFact]
+        public virtual void Match_in_boolean_mode_with_search_mode_parameter()
         {
             using var context = CreateContext();
 

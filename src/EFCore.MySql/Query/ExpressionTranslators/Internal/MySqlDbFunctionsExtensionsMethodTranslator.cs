@@ -112,40 +112,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             {
                 if (arguments[3] is SqlConstantExpression constant)
                 {
-                    return _sqlExpressionFactory.MakeMatch(arguments[1], arguments[2], (MySqlMatchSearchMode)constant.Value);
+                    return _sqlExpressionFactory.MakeMatch(
+                        arguments[1],
+                        arguments[2],
+                        (MySqlMatchSearchMode)constant.Value);
                 }
 
                 if (arguments[3] is SqlParameterExpression parameter)
                 {
-                    if (!_options.ServerVersion.SupportsMatchAgainstInsideCase)
-                    {
-                        // MariaDB is currently unable to perform a MATCH...AGAINST from inside of a CASE statement.
-                        // Use nested OR clauses instead:
-                        // <search_mode_1> = @p AND MATCH ... AGAINST ... OR
-                        // <search_mode_2> = @p AND MATCH ... AGAINST ... OR [...]
-                        var andClauses = Enum.GetValues(typeof(MySqlMatchSearchMode))
-                            .Cast<MySqlMatchSearchMode>()
-                            .OrderByDescending(m => m)
-                            .Select(m => _sqlExpressionFactory.AndAlso(_sqlExpressionFactory.Equal(parameter, _sqlExpressionFactory.Constant(m)), _sqlExpressionFactory.MakeMatch(arguments[1], arguments[2], m)))
-                            .ToArray();
-
-                        return andClauses
-                            .Skip(1)
-                            .Aggregate(
-                                andClauses.First(),
-                                (currentAnd, previousExpression) => _sqlExpressionFactory.OrElse(previousExpression, currentAnd));
-                    }
-
-                    var whenClauses = Enum.GetValues(typeof(MySqlMatchSearchMode))
+                    // Use nested OR clauses here, because MariaDB does not support MATCH...AGAINST from inside of
+                    // CASE statements and the nested OR clauses use the fulltext index, while using CASE does not:
+                    // <search_mode_1> = @p AND MATCH ... AGAINST ... OR
+                    // <search_mode_2> = @p AND MATCH ... AGAINST ... OR [...]
+                    var andClauses = Enum.GetValues(typeof(MySqlMatchSearchMode))
                         .Cast<MySqlMatchSearchMode>()
-                        .Where(m => m != default)
-                        .Select(m => new CaseWhenClause(_sqlExpressionFactory.Constant(m), _sqlExpressionFactory.MakeMatch(arguments[1], arguments[2], m)))
+                        .OrderByDescending(m => m)
+                        .Select(m => _sqlExpressionFactory.AndAlso(
+                            _sqlExpressionFactory.Equal(parameter, _sqlExpressionFactory.Constant(m)),
+                            _sqlExpressionFactory.MakeMatch(arguments[1], arguments[2], m)))
                         .ToArray();
 
-                    return _sqlExpressionFactory.Case(
-                        parameter,
-                        _sqlExpressionFactory.MakeMatch(arguments[1], arguments[2], default),
-                        whenClauses);
+                    return andClauses
+                        .Skip(1)
+                        .Aggregate(
+                            andClauses.First(),
+                            (currentAnd, previousExpression) => _sqlExpressionFactory.OrElse(previousExpression, currentAnd));
                 }
             }
 
