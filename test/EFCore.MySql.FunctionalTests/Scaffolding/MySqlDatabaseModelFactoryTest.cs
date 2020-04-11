@@ -731,10 +731,10 @@ DROP TABLE DependentTable;
 DROP TABLE PrincipalTable;");
         }
 
-        // Important: the inconsistent casing of the referenced table name is intentional. Do not change.
         [Fact]
         public void Ensure_constraints_scaffold_with_case_mismatch()
         {
+            // Important: the inconsistent casing of the referenced table name is intentional. Do not change.
             Test(
                 @"
 CREATE TABLE `PrincipalTable` (
@@ -760,7 +760,6 @@ CREATE TABLE `DependentTable` (
                     Assert.NotNull(dependent);
 
                     Assert.Contains(dependent.ForeignKeys, t => t.PrincipalTable.Name == principal.Name);
-                    Assert.True(true);
                 },
                 @"
 DROP TABLE DependentTable;
