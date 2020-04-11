@@ -88,6 +88,12 @@ jobs:
       docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e "SET GLOBAL sql_mode = '$SQL_MODE';"
     displayName: Setup Database
   - bash: |
+      docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e "SHOW VARIABLES;';"
+      echo "Exit code: $?"
+    displayName: Database Information
+    continueOnError: true
+    failOnStderr: false
+  - bash: |
       ./dotnet-env.sh dotnet tool install --global dotnet-ef --version $(dotnet_ef_tools_version)
       ./dotnet-env.sh dotnet ef --version
     displayName: Install EF Core Tools
@@ -180,6 +186,12 @@ jobs:
   - pwsh: |
       C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sql_mode)';"
     displayName: Setup Database
+  - pwsh: |
+      C:\tools\mysql\current\bin\mysql.exe -h localhost -u root -pPassword12! -e "SHOW VARIABLES;';"
+      echo "Exit code: $LastExitCode"
+    displayName: Database Information
+    continueOnError: true
+    ignoreLASTEXITCODE: true
   - pwsh: |
       .\dotnet-env.ps1 dotnet tool install --global dotnet-ef --version $(dotnet_ef_tools_version)
       .\dotnet-env.ps1 dotnet ef --version
