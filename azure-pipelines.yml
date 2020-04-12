@@ -173,8 +173,6 @@ jobs:
     inputs:
       version: $(dotnet_version)
   - pwsh: |
-      Set-PSDebug -Trace 1
-
       choco install mysql
 
       Stop-Service $(mysql_service_name)
@@ -185,8 +183,6 @@ jobs:
 
       mysql -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
       mysql -h localhost -u root -pPassword12! -e "SELECT @@version;"
-
-      Set-PSDebug -Trace 0
     displayName: Install Database Server
   - pwsh: |
       .\dotnet-env.ps1 dotnet --info
