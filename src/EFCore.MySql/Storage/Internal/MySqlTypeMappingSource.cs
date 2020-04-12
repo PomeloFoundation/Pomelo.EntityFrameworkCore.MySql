@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -60,29 +61,27 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private MySqlStringTypeMapping _enum;
 
         // DateTime
-        private readonly MySqlDateTypeMapping _date = new MySqlDateTypeMapping("date", DbType.Date);
-        private readonly MySqlDateTimeTypeMapping _dateTime6 = new MySqlDateTimeTypeMapping("datetime", typeof(DateTime), precision: 6);
-        private readonly MySqlDateTimeTypeMapping _dateTime = new MySqlDateTimeTypeMapping("datetime", typeof(DateTime));
-        private readonly MySqlDateTimeTypeMapping _timeStamp6 = new MySqlDateTimeTypeMapping("timestamp", typeof(DateTime), precision: 6);
-        private readonly MySqlDateTimeOffsetTypeMapping _dateTimeOffset6 = new MySqlDateTimeOffsetTypeMapping("datetime", precision: 6);
-        private readonly MySqlDateTimeOffsetTypeMapping _dateTimeOffset = new MySqlDateTimeOffsetTypeMapping("datetime");
-        private readonly MySqlDateTimeOffsetTypeMapping _timeStampOffset6 = new MySqlDateTimeOffsetTypeMapping("timestamp", precision: 6);
-        private readonly MySqlTimeSpanTypeMapping _time6 = new MySqlTimeSpanTypeMapping("time", precision: 6);
+        private readonly MySqlDateTypeMapping _date = new MySqlDateTypeMapping("date");
         private readonly MySqlTimeSpanTypeMapping _time = new MySqlTimeSpanTypeMapping("time");
+        private readonly MySqlDateTimeTypeMapping _dateTime = new MySqlDateTimeTypeMapping("datetime");
+        private readonly MySqlDateTimeTypeMapping _timeStamp = new MySqlDateTimeTypeMapping("timestamp");
+        private readonly MySqlDateTimeOffsetTypeMapping _dateTimeOffset = new MySqlDateTimeOffsetTypeMapping("datetime");
+        private readonly MySqlDateTimeOffsetTypeMapping _timeStampOffset = new MySqlDateTimeOffsetTypeMapping("timestamp");
 
         private readonly RelationalTypeMapping _binaryRowVersion
             = new MySqlDateTimeTypeMapping(
                 "timestamp",
+                null,
                 typeof(byte[]),
                 new BytesToDateTimeConverter(),
                 new ByteArrayComparer());
         private readonly RelationalTypeMapping _binaryRowVersion6
             = new MySqlDateTimeTypeMapping(
                 "timestamp",
+                6,
                 typeof(byte[]),
                 new BytesToDateTimeConverter(),
-                new ByteArrayComparer(),
-                precision: 6);
+                new ByteArrayComparer());
 
         // guid
         private GuidTypeMapping _guid;
@@ -90,7 +89,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         // Scaffolding type mappings
         private readonly MySqlCodeGenerationMemberAccessTypeMapping _codeGenerationMemberAccess = new MySqlCodeGenerationMemberAccessTypeMapping();
 
-        private Dictionary<string, RelationalTypeMapping> _storeTypeMappings;
+        private Dictionary<string, RelationalTypeMapping[]> _storeTypeMappings;
         private Dictionary<Type, RelationalTypeMapping> _clrTypeMappings;
         private Dictionary<Type, RelationalTypeMapping> _scaffoldingClrTypeMappings;
 
@@ -125,142 +124,141 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             // String mappings depend on the MySqlOptions.NoBackslashEscapes setting:
             //
 
-            _charUnicode = new MySqlStringTypeMapping("char", DbType.StringFixedLength, _options, unicode: true, fixedLength: true);
-            _varcharUnicode = new MySqlStringTypeMapping("varchar", DbType.String, _options, unicode: true);
-            _tinytextUnicode = new MySqlStringTypeMapping("tinytext", DbType.String, _options, unicode: true);
-            _textUnicode = new MySqlStringTypeMapping("text", DbType.String, _options, unicode: true);
-            _mediumtextUnicode = new MySqlStringTypeMapping("mediumtext", DbType.String, _options, unicode: true);
-            _longtextUnicode = new MySqlStringTypeMapping("longtext", DbType.String, _options, unicode: true);
+            _charUnicode = new MySqlStringTypeMapping("char", DbType.StringFixedLength, _options, fixedLength: true);
+            _varcharUnicode = new MySqlStringTypeMapping("varchar", DbType.String, _options);
+            _tinytextUnicode = new MySqlStringTypeMapping("tinytext", DbType.String, _options);
+            _textUnicode = new MySqlStringTypeMapping("text", DbType.String, _options);
+            _mediumtextUnicode = new MySqlStringTypeMapping("mediumtext", DbType.String, _options);
+            _longtextUnicode = new MySqlStringTypeMapping("longtext", DbType.String, _options);
 
-            _nchar = new MySqlStringTypeMapping("nchar", DbType.StringFixedLength, _options, unicode: true, fixedLength: true);
-            _nvarchar = new MySqlStringTypeMapping("nvarchar", DbType.String, _options, unicode: true);
+            _nchar = new MySqlStringTypeMapping("nchar", DbType.StringFixedLength, _options, fixedLength: true);
+            _nvarchar = new MySqlStringTypeMapping("nvarchar", DbType.String, _options);
 
-            _enum = new MySqlStringTypeMapping("enum", DbType.String, _options, unicode: true);
+            _enum = new MySqlStringTypeMapping("enum", DbType.String, _options);
 
             _guid = MySqlGuidTypeMapping.IsValidGuidFormat(_options.ConnectionSettings.GuidFormat)
                 ? new MySqlGuidTypeMapping(_options.ConnectionSettings.GuidFormat)
                 : null;
 
             _storeTypeMappings
-                = new Dictionary<string, RelationalTypeMapping>(StringComparer.OrdinalIgnoreCase)
+                = new Dictionary<string, RelationalTypeMapping[]>(StringComparer.OrdinalIgnoreCase)
                 {
                     // bit
-                    { "bit", _bit },
+                    { "bit",                       new[] { _bit } },
 
                     // integers
-                    { "tinyint", _tinyint },
-                    { "tinyint unsigned", _utinyint },
-                    { "smallint", _smallint },
-                    { "smallint unsigned", _usmallint },
-                    { "mediumint", _int },
-                    { "mediumint unsigned", _uint },
-                    { "int", _int },
-                    { "int unsigned", _uint },
-                    { "integer", _int },
-                    { "integer unsigned", _uint },
-                    { "bigint", _bigint },
-                    { "bigint unsigned", _ubigint },
+                    { "tinyint",                   new[] { _tinyint } },
+                    { "tinyint unsigned",          new[] { _utinyint } },
+                    { "smallint",                  new[] { _smallint } },
+                    { "smallint unsigned",         new[] { _usmallint } },
+                    { "mediumint",                 new[] { _int } },
+                    { "mediumint unsigned",        new[] { _uint } },
+                    { "int",                       new[] { _int } },
+                    { "int unsigned",              new[] { _uint } },
+                    { "integer",                   new[] { _int } },
+                    { "integer unsigned",          new[] { _uint } },
+                    { "bigint",                    new[] { _bigint } },
+                    { "bigint unsigned",           new[] { _ubigint } },
 
                     // decimals
-                    { "decimal", _decimal },
-                    { "decimal unsigned", _decimal }, // deprecated since 8.0.17-mysql
-                    { "numeric", _decimal },
-                    { "numeric unsigned", _decimal }, // deprecated since 8.0.17-mysql
-                    { "dec", _decimal },
-                    { "dec unsigned", _decimal }, // deprecated since 8.0.17-mysql
-                    { "fixed", _decimal },
-                    { "fixed unsigned", _decimal }, // deprecated since 8.0.17-mysql
-                    { "double", _double },
-                    { "double unsigned", _double }, // deprecated since 8.0.17-mysql
-                    { "double precision", _double },
-                    { "double precision unsigned", _double }, // deprecated since 8.0.17-mysql
-                    { "real", _double },
-                    { "real unsigned", _double }, // deprecated since 8.0.17-mysql
-                    { "float", _float },
-                    { "float unsigned", _float }, // deprecated since 8.0.17-mysql
+                    { "decimal",                   new[] { _decimal } },
+                    { "decimal unsigned",          new[] { _decimal } }, // deprecated since 8.0.17-mysql
+                    { "numeric",                   new[] { _decimal } },
+                    { "numeric unsigned",          new[] { _decimal } }, // deprecated since 8.0.17-mysql
+                    { "dec",                       new[] { _decimal } },
+                    { "dec unsigned",              new[] { _decimal } }, // deprecated since 8.0.17-mysql
+                    { "fixed",                     new[] { _decimal } },
+                    { "fixed unsigned",            new[] { _decimal } }, // deprecated since 8.0.17-mysql
+                    { "double",                    new[] { _double } },
+                    { "double unsigned",           new[] { _double } }, // deprecated since 8.0.17-mysql
+                    { "double precision",          new[] { _double } },
+                    { "double precision unsigned", new[] { _double } }, // deprecated since 8.0.17-mysql
+                    { "real",                      new[] { _double } },
+                    { "real unsigned",             new[] { _double } }, // deprecated since 8.0.17-mysql
+                    { "float",                     new[] { _float } },
+                    { "float unsigned",            new[] { _float } }, // deprecated since 8.0.17-mysql
 
                     // binary
-                    { "binary", _binary },
-                    { "varbinary", _varbinary },
-                    { "tinyblob", _varbinary },
-                    { "blob", _varbinary },
-                    { "mediumblob", _varbinary },
-                    { "longblob", _varbinary },
+                    { "binary",                    new[] { _binary } },
+                    { "varbinary",                 new[] { _varbinary } },
+                    { "tinyblob",                  new[] { _varbinary } },
+                    { "blob",                      new[] { _varbinary } },
+                    { "mediumblob",                new[] { _varbinary } },
+                    { "longblob",                  new[] { _varbinary } },
 
                     // string
-                    { "char", _charUnicode },
-                    { "varchar", _varcharUnicode },
-                    { "tinytext", _tinytextUnicode },
-                    { "text", _textUnicode },
-                    { "mediumtext", _mediumtextUnicode },
-                    { "longtext", _longtextUnicode },
+                    { "char",                      new[] { _charUnicode } },
+                    { "varchar",                   new[] { _varcharUnicode } },
+                    { "tinytext",                  new[] { _tinytextUnicode } },
+                    { "text",                      new[] { _textUnicode } },
+                    { "mediumtext",                new[] { _mediumtextUnicode } },
+                    { "longtext",                  new[] { _longtextUnicode } },
 
-                    { "enum", _enum },
+                    { "enum",                      new[] { _enum } },
 
-                    { "nchar", _nchar },
-                    { "nvarchar", _nvarchar },
+                    { "nchar",                     new[] { _nchar } },
+                    { "nvarchar",                  new[] { _nvarchar } },
 
                     // DateTime
-                    { "date", _date }
+                    { "date",                      new[] { _date } },
+                    { "time",                      new[] { _time } },
+                    { "datetime",                  new RelationalTypeMapping[] { _dateTime, _dateTimeOffset } },
+                    { "timestamp",                 new RelationalTypeMapping[] { _timeStamp, _timeStampOffset } },
                 };
 
             _clrTypeMappings
                 = new Dictionary<Type, RelationalTypeMapping>
                 {
 	                // integers
-	                { typeof(short), _smallint },
-                    { typeof(ushort), _usmallint },
-                    { typeof(int), _int },
-                    { typeof(uint), _uint },
-                    { typeof(long), _bigint },
-                    { typeof(ulong), _ubigint },
+	                { typeof(short),    _smallint },
+                    { typeof(ushort),   _usmallint },
+                    { typeof(int),      _int },
+                    { typeof(uint),     _uint },
+                    { typeof(long),     _bigint },
+                    { typeof(ulong),    _ubigint },
 
 	                // decimals
-	                { typeof(decimal), _decimal },
-                    { typeof(float), _float },
-                    { typeof(double), _double },
+	                { typeof(decimal),  _decimal },
+                    { typeof(float),    _float },
+                    { typeof(double),   _double },
 
 	                // byte / char
-	                { typeof(sbyte), _tinyint },
-                    { typeof(byte), _utinyint },
+	                { typeof(sbyte),    _tinyint },
+                    { typeof(byte),     _utinyint },
+
+                    // datetimes
+                    { typeof(TimeSpan), _options.DefaultDataTypeMappings.ClrTimeSpan == MySqlTimeSpanType.Time6
+                        ? _time.Clone(6, null)
+                        : _time },
+                    { typeof(DateTime), _options.DefaultDataTypeMappings.ClrDateTime switch
+                        {
+                            MySqlDateTimeType.DateTime6 =>_dateTime.Clone(6, null),
+                            MySqlDateTimeType.Timestamp6 => _timeStamp.Clone(6, null),
+                            MySqlDateTimeType.Timestamp => _timeStamp,
+                            _ => _dateTime,
+                        }},
+                    { typeof(DateTimeOffset), _options.DefaultDataTypeMappings.ClrDateTimeOffset switch
+                        {
+                            MySqlDateTimeType.DateTime6 =>_dateTimeOffset.Clone(6, null),
+                            MySqlDateTimeType.Timestamp6 => _timeStampOffset.Clone(6, null),
+                            MySqlDateTimeType.Timestamp => _timeStampOffset,
+                            _ => _dateTimeOffset,
+                        }},
                 };
 
             // Boolean
             if (_options.DefaultDataTypeMappings.ClrBoolean != MySqlBooleanType.None)
             {
-                _clrTypeMappings[typeof(bool)] = _options.DefaultDataTypeMappings.ClrBoolean == MySqlBooleanType.Bit1
-                    ? _bit1
-                    : _tinyint1;
+                var bit1AsBool = _options.DefaultDataTypeMappings.ClrBoolean == MySqlBooleanType.Bit1;
+
+                _storeTypeMappings[bit1AsBool ? "bit(1)" : "tinyint(1)"] = new[] { bit1AsBool ? _bit1 : _tinyint1 };
+                _clrTypeMappings[typeof(bool)] = bit1AsBool ? _bit1 : _tinyint1;
             }
-
-            // DateTime
-            _storeTypeMappings["time"] = !_options.ServerVersion.SupportsDateTime6 ||
-                                         _options.DefaultDataTypeMappings.ClrTimeSpan == MySqlTimeSpanType.Time
-                ? _time
-                : _time6;
-
-            _clrTypeMappings[typeof(TimeSpan)] = !_options.ServerVersion.SupportsDateTime6 ||
-                                                 _options.DefaultDataTypeMappings.ClrTimeSpan == MySqlTimeSpanType.Time
-                ? _time
-                : _time6;
-
-            _clrTypeMappings[typeof(DateTime)] = !_options.ServerVersion.SupportsDateTime6 ||
-                                                 _options.DefaultDataTypeMappings.ClrDateTime == MySqlDateTimeType.DateTime
-                ? _dateTime
-                : _options.DefaultDataTypeMappings.ClrDateTime == MySqlDateTimeType.Timestamp6
-                    ? _timeStamp6
-                    : _dateTime6;
-
-            _clrTypeMappings[typeof(DateTimeOffset)] = !_options.ServerVersion.SupportsDateTime6 ||
-                                                       _options.DefaultDataTypeMappings.ClrDateTime == MySqlDateTimeType.DateTime
-                ? _dateTimeOffset
-                : _options.DefaultDataTypeMappings.ClrDateTimeOffset == MySqlDateTimeType.Timestamp6
-                    ? _timeStampOffset6
-                    : _dateTimeOffset6;
 
             // Guid
             if (_guid != null)
             {
+                _storeTypeMappings[_guid.StoreType] = new []{ _guid };
                 _clrTypeMappings[typeof(Guid)] = _guid;
             }
 
@@ -317,110 +315,80 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
             if (storeTypeName != null)
             {
-                if (_options.DefaultDataTypeMappings.ClrBoolean != MySqlBooleanType.None)
+                // First look for the fully qualified store type name.
+                if (_storeTypeMappings.TryGetValue(storeTypeName, out var mappings))
                 {
-                    if (_options.DefaultDataTypeMappings.ClrBoolean == MySqlBooleanType.Bit1)
-                    {
-                        if (storeTypeName.Equals(_bit1.StoreType, StringComparison.OrdinalIgnoreCase))
-                        {
-                            return _bit1;
-                        }
-                    }
-                    else
-                    {
-                        if (storeTypeName.Equals(_tinyint1.StoreType, StringComparison.OrdinalIgnoreCase))
-                        {
-                            return _tinyint1;
-                        }
-                    }
+                    // We found the user-specified store type.
+                    // If no CLR type was provided, we're probably scaffolding from an existing database. Take the first
+                    // mapping as the default.
+                    // If a CLR type was provided, look for a mapping between the store and CLR types. If none is found,
+                    // fail immediately.
+                    return clrType == null
+                        ? mappings[0]
+                        : mappings.FirstOrDefault(m => m.ClrType == clrType);
                 }
 
-                if (MySqlGuidTypeMapping.IsValidGuidFormat(_options.ConnectionSettings.GuidFormat))
-                {
-                    if (storeTypeName.Equals(_guid.StoreType, StringComparison.OrdinalIgnoreCase)
-                        && (clrType == typeof(Guid) || clrType == null))
-                    {
-                        return _guid;
-                    }
-                }
-
-                if (storeTypeNameBase.Equals(_dateTime6.StoreTypeNameBase, StringComparison.OrdinalIgnoreCase))
-                {
-                    if (clrType == null
-                        || clrType == typeof(DateTime))
-                    {
-                        return mappingInfo.Precision.GetValueOrDefault() > 0 ||
-                               _options.ServerVersion.SupportsDateTime6 && _options.DefaultDataTypeMappings.ClrDateTime != MySqlDateTimeType.DateTime
-                            ? _dateTime6
-                            : _dateTime;
-                    }
-
-                    if (clrType == typeof(DateTimeOffset))
-                    {
-                        return mappingInfo.Precision.GetValueOrDefault() > 0 ||
-                               _options.ServerVersion.SupportsDateTime6 && _options.DefaultDataTypeMappings.ClrDateTimeOffset != MySqlDateTimeType.DateTime
-                            ? _dateTimeOffset6
-                            : _dateTimeOffset;
-                    }
-                }
-                else if (storeTypeNameBase.Equals(_timeStamp6.StoreTypeNameBase, StringComparison.OrdinalIgnoreCase))
-                {
-                    if (clrType == null
-                        || clrType == typeof(DateTime))
-                    {
-                        return _timeStamp6;
-                    }
-
-                    if (clrType == typeof(DateTimeOffset))
-                    {
-                        return _timeStampOffset6;
-                    }
-                }
-
-                if (_storeTypeMappings.TryGetValue(storeTypeName, out var mapping)
-                    || _storeTypeMappings.TryGetValue(storeTypeNameBase, out mapping))
+                // Then look for the base store type name.
+                if (_storeTypeMappings.TryGetValue(storeTypeNameBase, out mappings))
                 {
                     return clrType == null
-                           || mapping.ClrType == clrType
-                        ? mapping
-                        : null;
+                        ? mappings[0]
+                            .Clone(in mappingInfo)
+                        : mappings.FirstOrDefault(m => m.ClrType == clrType)
+                            ?.Clone(in mappingInfo);
                 }
+
+                // A store type name was provided, but is unknown. This could be a domain (alias) type, in which case
+                // we proceed with a CLR type lookup (if the type doesn't exist at all the failure will come later).
             }
 
             if (clrType != null)
             {
                 if (_clrTypeMappings.TryGetValue(clrType, out var mapping))
                 {
-                    return mapping;
-                }
+                    // If needed, clone the mapping with the configured length/precision/scale
+                    if (mappingInfo.Precision.HasValue)
+                    {
+                        if (clrType == typeof(decimal))
+                        {
+                            return mapping.Clone(mappingInfo.Precision.Value, mappingInfo.Scale);
+                        }
 
-                if (clrType.TryGetElementType(typeof(JsonObject<>)) != null)
-                {
-                    return new MySqlJsonTypeMapping(clrType, unicode: mappingInfo.IsUnicode);
+                        if (clrType == typeof(DateTime) ||
+                            clrType == typeof(DateTimeOffset) ||
+                            clrType == typeof(TimeSpan))
+                        {
+                            return mapping.Clone(mappingInfo.Precision.Value, null);
+                        }
+                    }
+
+                    return mapping;
                 }
 
                 if (clrType == typeof(string))
                 {
-                    // Some of this logic could be moved into MySqlStringTypeMapping once EF #11896 is fixed
-                    var isNationalCharSet = storeTypeNameBase != null
-                                            && (storeTypeNameBase.Equals(_nchar.StoreTypeNameBase, StringComparison.OrdinalIgnoreCase)
-                                                || storeTypeNameBase.Equals(_nvarchar.StoreTypeNameBase, StringComparison.OrdinalIgnoreCase));
+                    var isNationalCharSet = storeTypeNameBase != null &&
+                                            (storeTypeNameBase.Equals(_nchar.StoreTypeNameBase, StringComparison.OrdinalIgnoreCase) ||
+                                             storeTypeNameBase.Equals(_nvarchar.StoreTypeNameBase, StringComparison.OrdinalIgnoreCase));
                     var isFixedLength = mappingInfo.IsFixedLength == true;
-                    var charset = isNationalCharSet ? _options.NationalCharSet : _options.CharSet;
+                    var charset = isNationalCharSet
+                        ? _options.NationalCharSet
+                        : _options.CharSet;
                     var isUnicode = mappingInfo.IsUnicode ?? charset.IsUnicode;
                     var bytesPerChar = charset.MaxBytesPerChar;
                     var charSetSuffix = string.Empty;
 
+                    // Obsolete: Remove for .NET 5 release.
                     if (isUnicode &&
-                            (mappingInfo.IsKeyOrIndex &&
-                                (_options.CharSetBehavior & CharSetBehavior.AppendToUnicodeIndexAndKeyColumns) != 0 ||
-                            !mappingInfo.IsKeyOrIndex &&
-                                (_options.CharSetBehavior & CharSetBehavior.AppendToUnicodeNonIndexAndKeyColumns) != 0) ||
+                        (mappingInfo.IsKeyOrIndex &&
+                         (_options.CharSetBehavior & CharSetBehavior.AppendToUnicodeIndexAndKeyColumns) != 0 ||
+                         !mappingInfo.IsKeyOrIndex &&
+                         (_options.CharSetBehavior & CharSetBehavior.AppendToUnicodeNonIndexAndKeyColumns) != 0) ||
                         !isUnicode &&
-                            (mappingInfo.IsKeyOrIndex &&
-                                (_options.CharSetBehavior & CharSetBehavior.AppendToAnsiIndexAndKeyColumns) != 0 ||
-                            !mappingInfo.IsKeyOrIndex &&
-                                (_options.CharSetBehavior & CharSetBehavior.AppendToAnsiNonIndexAndKeyColumns) != 0))
+                        (mappingInfo.IsKeyOrIndex &&
+                         (_options.CharSetBehavior & CharSetBehavior.AppendToAnsiIndexAndKeyColumns) != 0 ||
+                         !mappingInfo.IsKeyOrIndex &&
+                         (_options.CharSetBehavior & CharSetBehavior.AppendToAnsiNonIndexAndKeyColumns) != 0))
                     {
                         charSetSuffix = $" CHARACTER SET {(isNationalCharSet ? _options.NationalCharSet : _options.CharSet).Name}";
                     }
@@ -439,14 +407,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     }
 
                     var dbType = isUnicode
-                        ? isFixedLength ? DbType.StringFixedLength : DbType.String
-                        : isFixedLength ? DbType.AnsiStringFixedLength : DbType.AnsiString;
+                        ? isFixedLength
+                            ? DbType.StringFixedLength
+                            : DbType.String
+                        : isFixedLength
+                            ? DbType.AnsiStringFixedLength
+                            : DbType.AnsiString;
 
                     return new MySqlStringTypeMapping(
                         size == null
                             ? "longtext" + charSetSuffix
-                            : (isNationalCharSet ? "n" : string.Empty) +
-                              (isFixedLength ? "char(" : "varchar(") + size + ")" + charSetSuffix,
+                            : (isNationalCharSet
+                                  ? "n"
+                                  : string.Empty) +
+                              (isFixedLength
+                                  ? "char("
+                                  : "varchar(") + size + ")" + charSetSuffix,
                         dbType,
                         _options,
                         isUnicode,
@@ -464,16 +440,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     }
 
                     var size = mappingInfo.Size ??
-                               (mappingInfo.IsKeyOrIndex ? _options.ServerVersion.MaxKeyLength : (int?)null);
+                               (mappingInfo.IsKeyOrIndex
+                                   ? _options.ServerVersion.MaxKeyLength
+                                   : (int?)null);
 
                     return new MySqlByteArrayTypeMapping(
                         size: size,
                         fixedLength: mappingInfo.IsFixedLength == true);
                 }
 
-                if (_scaffoldingClrTypeMappings.TryGetValue(clrType, out mapping))
+                if (clrType.TryGetElementType(typeof(JsonObject<>)) != null)
                 {
-                    return mapping;
+                    return new MySqlJsonTypeMapping(clrType);
                 }
             }
 

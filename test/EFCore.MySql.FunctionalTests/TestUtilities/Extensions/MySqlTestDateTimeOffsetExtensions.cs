@@ -10,10 +10,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Extensi
         public static DateTimeOffset SimulateDatabaseRoundtrip(this DateTimeOffset dateTimeOffset, MySqlTypeMappingSource typeMappingSource)
         {
             var dateTimeOffsetTypeMapping = (MySqlDateTimeOffsetTypeMapping)typeMappingSource.GetMappingForValue(dateTimeOffset);
+            var formatString = dateTimeOffsetTypeMapping.GetFormatString();
             var value = DateTimeOffset.ParseExact(
                 dateTimeOffsetTypeMapping.GenerateSqlLiteral(dateTimeOffset)
                     .Trim('\''),
-                dateTimeOffsetTypeMapping.GetFormatString(),
+                formatString,
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.AssumeUniversal);
             return value;

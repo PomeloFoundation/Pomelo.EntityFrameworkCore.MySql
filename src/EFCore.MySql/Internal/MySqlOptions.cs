@@ -133,7 +133,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         {
             defaultDataTypeMappings ??= DefaultDataTypeMappings;
 
-            if (connectionSettings.TreatTinyAsBoolean)
+            if (connectionSettings.TreatTinyAsBoolean ||
+                defaultDataTypeMappings.ClrBoolean == MySqlBooleanType.Default)
             {
                 defaultDataTypeMappings = defaultDataTypeMappings.WithClrBoolean(MySqlBooleanType.TinyInt1);
             }
@@ -141,6 +142,30 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                      defaultDataTypeMappings.ClrBoolean != MySqlBooleanType.None)
             {
                 defaultDataTypeMappings = defaultDataTypeMappings.WithClrBoolean(MySqlBooleanType.Bit1);
+            }
+
+            if (defaultDataTypeMappings.ClrDateTime == MySqlDateTimeType.Default)
+            {
+                defaultDataTypeMappings = defaultDataTypeMappings.WithClrDateTime(
+                    ServerVersion.SupportsDateTime6
+                        ? MySqlDateTimeType.DateTime6
+                        : MySqlDateTimeType.DateTime);
+            }
+
+            if (defaultDataTypeMappings.ClrDateTimeOffset == MySqlDateTimeType.Default)
+            {
+                defaultDataTypeMappings = defaultDataTypeMappings.WithClrDateTimeOffset(
+                    ServerVersion.SupportsDateTime6
+                        ? MySqlDateTimeType.DateTime6
+                        : MySqlDateTimeType.DateTime);
+            }
+
+            if (defaultDataTypeMappings.ClrTimeSpan == MySqlTimeSpanType.Default)
+            {
+                defaultDataTypeMappings = defaultDataTypeMappings.WithClrTimeSpan(
+                    ServerVersion.SupportsDateTime6
+                        ? MySqlTimeSpanType.Time6
+                        : MySqlTimeSpanType.Time);
             }
 
             return defaultDataTypeMappings;

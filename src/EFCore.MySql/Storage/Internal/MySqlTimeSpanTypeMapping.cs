@@ -2,9 +2,10 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Globalization;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.EntityFrameworkCore.Utilities;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
@@ -27,7 +28,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 new RelationalTypeMappingParameters(
                     new CoreTypeMappingParameters(typeof(TimeSpan)),
                     storeType,
-                    precision == null ? StoreTypePostfix.None : StoreTypePostfix.Precision,
+                    StoreTypePostfix.Precision,
                     System.Data.DbType.Time,
                     precision: precision))
         {
@@ -51,8 +52,37 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             => new MySqlTimeSpanTypeMapping(parameters);
 
         /// <summary>
+        ///     Generates the SQL representation of a non-null literal value.
+        /// </summary>
+        /// <param name="value">The literal value.</param>
+        /// <returns>
+        ///     The generated string.
+        /// </returns>
+        protected override string GenerateNonNullSqlLiteral([NotNull] object value)
+        {
+            // Custom TimeSpan formats do not handle the fraction point character as gracefully as System.DateTime does.
+            var literal = base.GenerateNonNullSqlLiteral(value);
+            return literal.EndsWith(".0")
+                ? "'" + literal.Substring(0, literal.Length - 2) + "'"
+                : "'" + literal + "'";
+        }
+
+        /// <summary>
         ///     Gets the string format to be used to generate SQL literals of this type.
         /// </summary>
-        protected override string SqlLiteralFormatString => "'{0}'";
+        protected override string SqlLiteralFormatString
+            => $"{{0:{GetFormatString()}}}";
+
+        public virtual string GetFormatString()
+            => GetTimeSpanFormatString(Parameters.Precision);
+
+        public static string GetTimeSpanFormatString(int? precision)
+        {
+            var validPrecision = Math.Min(Math.Max(precision.GetValueOrDefault(), 0), 6);
+            var precisionFormat = validPrecision > 0
+                ? @"\.f" + new string('F', validPrecision - 1)
+                : null;
+            return @"hh\:mm\:ss" + precisionFormat;
+        }
     }
 }

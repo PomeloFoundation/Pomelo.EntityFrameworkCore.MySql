@@ -103,7 +103,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         Default = 0,
         DateTime = 1,
         DateTime6 = 2,
-        Timestamp6 = 3
+        Timestamp6 = 3,
+        Timestamp = 4,
     }
 
     public enum MySqlTimeSpanType

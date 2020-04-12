@@ -30,7 +30,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             [NotNull] string storeType,
             DbType? dbType,
             IMySqlOptions options,
-            bool unicode = false,
+            bool unicode = true,
             int? size = null,
             bool fixedLength = false)
             : this(
@@ -96,7 +96,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             {
                 length = null;
             }
-            
+
             parameter.Value = value;
             parameter.Size = value == null || value == DBNull.Value || length != null && length <= _maxSpecificSize
                 ? _maxSpecificSize
