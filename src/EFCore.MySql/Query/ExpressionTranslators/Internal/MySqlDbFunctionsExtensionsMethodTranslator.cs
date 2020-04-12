@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
@@ -20,6 +21,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
     /// </summary>
     public class MySqlDbFunctionsExtensionsMethodTranslator : IMethodCallTranslator
     {
+        private readonly IMySqlOptions _options;
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
         private static readonly Type[] _supportedLikeTypes = {
@@ -72,9 +74,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 .FirstOrDefault(method => method.Name == nameof(MySqlDbFunctionsExtensions.Match))
                 ?.MakeGenericMethod(typeof(string));
 
-        public MySqlDbFunctionsExtensionsMethodTranslator(ISqlExpressionFactory sqlExpressionFactory)
+        public MySqlDbFunctionsExtensionsMethodTranslator(
+            ISqlExpressionFactory sqlExpressionFactory,
+            IMySqlOptions options)
         {
             _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
+            _options = options;
         }
 
         /// <summary>
@@ -105,35 +110,37 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 
             if (Equals(method, _matchMethodInfo))
             {
-                if (TryGetExpressionValue<MySqlMatchSearchMode>(arguments[3], out var searchMode))
+                if (arguments[3] is SqlConstantExpression constant)
                 {
-                    return _sqlExpressionFactory.MakeMatch(arguments[1], arguments[2], searchMode);
+                    return _sqlExpressionFactory.MakeMatch(
+                        arguments[1],
+                        arguments[2],
+                        (MySqlMatchSearchMode)constant.Value);
+                }
+
+                if (arguments[3] is SqlParameterExpression parameter)
+                {
+                    // Use nested OR clauses here, because MariaDB does not support MATCH...AGAINST from inside of
+                    // CASE statements and the nested OR clauses use the fulltext index, while using CASE does not:
+                    // <search_mode_1> = @p AND MATCH ... AGAINST ... OR
+                    // <search_mode_2> = @p AND MATCH ... AGAINST ... OR [...]
+                    var andClauses = Enum.GetValues(typeof(MySqlMatchSearchMode))
+                        .Cast<MySqlMatchSearchMode>()
+                        .OrderByDescending(m => m)
+                        .Select(m => _sqlExpressionFactory.AndAlso(
+                            _sqlExpressionFactory.Equal(parameter, _sqlExpressionFactory.Constant(m)),
+                            _sqlExpressionFactory.MakeMatch(arguments[1], arguments[2], m)))
+                        .ToArray();
+
+                    return andClauses
+                        .Skip(1)
+                        .Aggregate(
+                            andClauses.First(),
+                            (currentAnd, previousExpression) => _sqlExpressionFactory.OrElse(previousExpression, currentAnd));
                 }
             }
 
             return null;
-        }
-
-        private static bool TryGetExpressionValue<T>(SqlExpression expression, out T value)
-        {
-            if (expression.Type != typeof(T))
-            {
-                throw new ArgumentException(
-                    MySqlStrings.ExpressionTypeMismatch,
-                    nameof(expression)
-                );
-            }
-
-            if (expression is SqlConstantExpression constant)
-            {
-                value = (T)constant.Value;
-                return true;
-            }
-            else
-            {
-                value = default;
-                return false;
-            }
         }
 
         private SqlExpression InferStringTypeMappingOrApplyDefault(SqlExpression expression, RelationalTypeMapping inferenceSourceTypeMapping)
