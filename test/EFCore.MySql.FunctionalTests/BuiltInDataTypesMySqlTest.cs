@@ -1236,7 +1236,7 @@ UnicodeDataTypes.StringUnicode ---> [nullable longtext] [MaxLength = -1]
             using (context)
             {
                 var connection = context.Database.GetDbConnection();
-                
+
                 var command = connection.CreateCommand();
                 command.CommandText = query;
 

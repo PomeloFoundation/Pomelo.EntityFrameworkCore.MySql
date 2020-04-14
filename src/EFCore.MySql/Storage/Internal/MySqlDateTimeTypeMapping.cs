@@ -2,8 +2,7 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
-using System.Data;
-using System.Data.Common;
+using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -19,9 +18,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     /// </summary>
     public class MySqlDateTimeTypeMapping : DateTimeTypeMapping
     {
-        private const string DateTimeFormatConst6 = @"'{0:yyyy-MM-dd HH\:mm\:ss.ffffff}'";
-        private const string DateTimeFormatConst = @"'{0:yyyy-MM-dd HH\:mm\:ss}'";
-
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
         ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
@@ -30,15 +26,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// </summary>
         public MySqlDateTimeTypeMapping(
             [NotNull] string storeType,
-            Type clrType,
-            ValueConverter converter = null,
-            ValueComparer comparer = null,
-            int? precision = null)
+            int? precision = null,
+            Type clrType = null,
+            [CanBeNull] ValueConverter converter = null,
+            [CanBeNull] ValueComparer comparer = null)
             : this(
                 new RelationalTypeMappingParameters(
-                    new CoreTypeMappingParameters(clrType, converter, comparer),
+                    new CoreTypeMappingParameters(clrType ?? typeof(DateTime), converter, comparer),
                     storeType,
-                    precision == null ? StoreTypePostfix.None : StoreTypePostfix.Precision,
+                    StoreTypePostfix.Precision,
                     System.Data.DbType.DateTime,
                     precision: precision))
         {
@@ -65,6 +61,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         ///     Gets the string format to be used to generate SQL literals of this type.
         /// </summary>
         protected override string SqlLiteralFormatString
-            => Parameters.Precision == null ? DateTimeFormatConst : DateTimeFormatConst6;
+            => $"'{{0:{GetFormatString()}}}'";
+
+        public virtual string GetFormatString()
+            => GetDateTimeFormatString(Parameters.Precision);
+
+        public static string GetDateTimeFormatString(int? precision)
+        {
+            var validPrecision = Math.Min(Math.Max(precision.GetValueOrDefault(), 0), 6);
+            var precisionFormat = validPrecision > 0
+                ? "." + new string('F', validPrecision)
+                : null;
+            return @"yyyy-MM-dd HH\:mm\:ss" + precisionFormat;
+        }
     }
 }

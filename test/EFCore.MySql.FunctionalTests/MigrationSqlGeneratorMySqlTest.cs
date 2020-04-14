@@ -75,7 +75,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
             Assert.Equal(
                 @"CREATE TABLE `History` (
-    `Event` TEXT NOT NULL DEFAULT '2015-04-12 17:05:00.000000'
+    `Event` TEXT NOT NULL DEFAULT '2015-04-12 17:05:00'
 );
 ",
                 Sql,
@@ -276,7 +276,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
             Assert.Equal(
                 "ALTER TABLE `People` ADD `Birthday` timestamp(6) NOT NULL DEFAULT '" +
-                new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified).ToString("yyyy-MM-dd HH:mm:ss.ffffff") +
+                new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified).ToString("yyyy-MM-dd HH:mm:ss.FFFFFF") +
                 "';" + EOL,
                 Sql);
         }

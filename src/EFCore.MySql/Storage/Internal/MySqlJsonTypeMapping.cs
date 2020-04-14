@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -32,15 +31,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// </summary>
         public MySqlJsonTypeMapping(
             Type clrType,
-            string storeType = null,
-            bool? unicode = null)
+            string storeType = null)
             : this(
                 new RelationalTypeMappingParameters(
                     new CoreTypeMappingParameters(clrType, GetConverter(clrType), GetComprarer(clrType)),
                     storeType ?? "json",
                     StoreTypePostfix.None,
                     System.Data.DbType.String,
-                    unicode ?? false))
+                    true))
         {
         }
 
@@ -72,6 +70,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// <returns> The newly created mapping. </returns>
         protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
             => new MySqlJsonTypeMapping(parameters);
+
+        public virtual RelationalTypeMapping Clone(Type clrType)
+            => new MySqlJsonTypeMapping(clrType, StoreType);
 
         /// <summary>
         ///     Generates the escaped SQL representation of a literal value.
