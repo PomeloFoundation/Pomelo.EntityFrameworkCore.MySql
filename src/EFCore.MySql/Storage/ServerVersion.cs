@@ -11,7 +11,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
     {
         private static readonly Regex _versionRegex = new Regex(@"\d+\.\d+\.?(?:\d+)?");
 
-        public static ServerVersion Default = new ServerVersion(new Version(8, 0, 18), ServerType.MySql);
+        public static ServerVersion Default = new ServerVersion(new Version(8, 0, 19), ServerType.MySql);
 
         public ServerVersion()
             : this(null)
