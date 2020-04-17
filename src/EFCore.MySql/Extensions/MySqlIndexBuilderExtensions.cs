@@ -60,11 +60,11 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="prefixLengths">The prefix lengths to set, in the order the index columns where specified.
         /// A value of `0` indicates, that the full length should be used for that column. </param>
         /// <returns> The index builder. </returns>
-        public static IndexBuilder HasPrefixLengths([NotNull] this IndexBuilder indexBuilder, params int[] prefixLengths)
+        public static IndexBuilder HasPrefixLength([NotNull] this IndexBuilder indexBuilder, params int[] prefixLengths)
         {
             Check.NotNull(indexBuilder, nameof(indexBuilder));
 
-            indexBuilder.Metadata.SetPrefixLengths(prefixLengths);
+            indexBuilder.Metadata.SetPrefixLength(prefixLengths);
 
             return indexBuilder;
         }

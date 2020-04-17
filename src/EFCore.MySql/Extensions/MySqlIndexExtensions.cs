@@ -55,8 +55,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
         /// <param name="index"> The index. </param>
         /// <returns> The prefix lengths.
         /// A value of `0` indicates, that the full length should be used for that column. </returns>
-        public static int[] PrefixLengths([NotNull] this IIndex index)
-            => (int[])index[MySqlAnnotationNames.IndexPrefixLengths];
+        public static int[] PrefixLength([NotNull] this IIndex index)
+            => (int[])index[MySqlAnnotationNames.IndexPrefixLength];
 
         /// <summary>
         ///     Sets prefix lengths for the index.
@@ -64,9 +64,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
         /// <param name="values"> The prefix lengths to set.
         /// A value of `0` indicates, that the full length should be used for that column. </param>
         /// <param name="index"> The index. </param>
-        public static void SetPrefixLengths([NotNull] this IMutableIndex index, int[] values)
+        public static void SetPrefixLength([NotNull] this IMutableIndex index, int[] values)
             => index.SetOrRemoveAnnotation(
-                MySqlAnnotationNames.IndexPrefixLengths,
+                MySqlAnnotationNames.IndexPrefixLength,
                 values);
 
         /// <summary>
@@ -76,10 +76,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
         /// A value of `0` indicates, that the full length should be used for that column. </param>
         /// <param name="index"> The index. </param>
         /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
-        public static void SetPrefixLengths(
+        public static void SetPrefixLength(
             [NotNull] this IConventionIndex index, int[] values, bool fromDataAnnotation = false)
             => index.SetOrRemoveAnnotation(
-                MySqlAnnotationNames.IndexPrefixLengths,
+                MySqlAnnotationNames.IndexPrefixLength,
                 values,
                 fromDataAnnotation);
 
@@ -88,8 +88,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
         /// </summary>
         /// <param name="property"> The property. </param>
         /// <returns> The <see cref="ConfigurationSource" /> for prefix lengths of the index. </returns>
-        public static ConfigurationSource? GetPrefixLengthsConfigurationSource([NotNull] this IConventionIndex property)
-            => property.FindAnnotation(MySqlAnnotationNames.IndexPrefixLengths)?.GetConfigurationSource();
+        public static ConfigurationSource? GetPrefixLengthConfigurationSource([NotNull] this IConventionIndex property)
+            => property.FindAnnotation(MySqlAnnotationNames.IndexPrefixLength)?.GetConfigurationSource();
 
         /// <summary>
         ///     Returns a value indicating whether the index is spartial.

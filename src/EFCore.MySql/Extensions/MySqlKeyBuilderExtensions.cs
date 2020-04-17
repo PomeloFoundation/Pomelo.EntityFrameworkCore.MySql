@@ -15,11 +15,11 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="prefixLengths">The prefix lengths to set, in the order the key columns where specified.
         /// A value of `0` indicates, that the full length should be used for that column. </param>
         /// <returns> The key builder. </returns>
-        public static KeyBuilder HasPrefixLengths([NotNull] this KeyBuilder keyBuilder, params int[] prefixLengths)
+        public static KeyBuilder HasPrefixLength([NotNull] this KeyBuilder keyBuilder, params int[] prefixLengths)
         {
             Check.NotNull(keyBuilder, nameof(keyBuilder));
 
-            keyBuilder.Metadata.SetPrefixLengths(prefixLengths);
+            keyBuilder.Metadata.SetPrefixLength(prefixLengths);
 
             return keyBuilder;
         }

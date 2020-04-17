@@ -924,7 +924,7 @@ ALTER TABLE `People` DROP PRIMARY KEY;".Replace("\r", string.Empty).Replace("\n"
                     Name = "IX_IceCreams_Brand_Name",
                     Table = "IceCreams",
                     Columns = new[] { "Name", "Brand" },
-                    [MySqlAnnotationNames.IndexPrefixLengths] = new [] { 0, 20 }
+                    [MySqlAnnotationNames.IndexPrefixLength] = new [] { 0, 20 }
                 });
 
             Assert.Equal(
@@ -958,7 +958,7 @@ ALTER TABLE `People` DROP PRIMARY KEY;".Replace("\r", string.Empty).Replace("\n"
                     PrimaryKey = new AddPrimaryKeyOperation
                     {
                         Columns = new[] { "Name", "Brand" },
-                        [MySqlAnnotationNames.IndexPrefixLengths] = new [] { 0, 20 }
+                        [MySqlAnnotationNames.IndexPrefixLength] = new [] { 0, 20 }
                     },
                 });
 

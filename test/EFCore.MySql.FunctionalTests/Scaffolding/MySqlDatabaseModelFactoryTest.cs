@@ -458,7 +458,7 @@ CREATE TABLE `IceCreams` (
                     Assert.Equal(2, pk.Columns.Count);
                     Assert.Equal("Name", pk.Columns[0].Name);
                     Assert.Equal("Brand", pk.Columns[1].Name);
-                    Assert.Equal(new [] { 0, 20 }, pk.FindAnnotation(MySqlAnnotationNames.IndexPrefixLengths)?.Value);
+                    Assert.Equal(new [] { 0, 20 }, pk.FindAnnotation(MySqlAnnotationNames.IndexPrefixLength)?.Value);
                 },
                 @"DROP TABLE IF EXISTS `IceCreams`;");
         }
@@ -592,7 +592,7 @@ CREATE INDEX `IX_IceCreams_Brand_Name` ON `IceCreams` (`Name`, `Brand`(20));
                     Assert.Equal(2, index.Columns.Count);
                     Assert.Equal("Name", index.Columns[0].Name);
                     Assert.Equal("Brand", index.Columns[1].Name);
-                    Assert.Equal(new [] { 0, 20 }, index.FindAnnotation(MySqlAnnotationNames.IndexPrefixLengths)?.Value);
+                    Assert.Equal(new [] { 0, 20 }, index.FindAnnotation(MySqlAnnotationNames.IndexPrefixLength)?.Value);
                 },
                 @"DROP TABLE IF EXISTS `IceCreams`;");
         }

@@ -325,7 +325,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
                 .Append(" ON ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
                 .Append(" (")
-                .Append(ColumnListWithIndexPrefixLengths(operation, operation.Columns))
+                .Append(ColumnListWithIndexPrefixLength(operation, operation.Columns))
                 .Append(")");
 
             IndexOptions(operation, model, builder);
@@ -1054,7 +1054,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             IndexTraits(operation, model, builder);
 
             builder.Append("(")
-                .Append(ColumnListWithIndexPrefixLengths(operation, operation.Columns))
+                .Append(ColumnListWithIndexPrefixLength(operation, operation.Columns))
                 .Append(")");
         }
 
@@ -1080,7 +1080,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             IndexTraits(operation, model, builder);
 
             builder.Append("(")
-                .Append(ColumnListWithIndexPrefixLengths(operation, operation.Columns))
+                .Append(ColumnListWithIndexPrefixLength(operation, operation.Columns))
                 .Append(")");
         }
 
@@ -1200,8 +1200,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             }
         }
 
-        private string ColumnListWithIndexPrefixLengths(MigrationOperation operation, string[] columns)
-            => operation[MySqlAnnotationNames.IndexPrefixLengths] is int[] prefixValues
+        private string ColumnListWithIndexPrefixLength(MigrationOperation operation, string[] columns)
+            => operation[MySqlAnnotationNames.IndexPrefixLength] is int[] prefixValues
                 ? ColumnList(
                     columns,
                     (c, i) => prefixValues.Length > i && prefixValues[i] > 0

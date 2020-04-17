@@ -436,7 +436,7 @@ ORDER BY
 
                                 if (prefixLengths.Length > 0)
                                 {
-                                    key[MySqlAnnotationNames.IndexPrefixLengths] = prefixLengths;
+                                    key[MySqlAnnotationNames.IndexPrefixLength] = prefixLengths;
                                 }
 
                                 table.PrimaryKey = key;
@@ -496,7 +496,7 @@ ORDER BY
 
                                 if (prefixLengths.Length > 0)
                                 {
-                                    index[MySqlAnnotationNames.IndexPrefixLengths] = prefixLengths;
+                                    index[MySqlAnnotationNames.IndexPrefixLength] = prefixLengths;
                                 }
 
                                 table.Indexes.Add(index);
