@@ -3,13 +3,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
@@ -88,7 +91,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             {
                 return;
             }
-            
+
             var schema = operation.GetType()
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty)
                 .Where(p => p.Name.IndexOf(nameof(AddForeignKeyOperation.Schema), StringComparison.Ordinal) >= 0)
@@ -304,9 +307,34 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             MigrationCommandListBuilder builder,
             bool terminate = true)
         {
-            operation.Filter = null;
-            operation.Name = Truncate(operation.Name, 64);
-            base.Generate(operation, model, builder, terminate);
+            Check.NotNull(operation, nameof(operation));
+            Check.NotNull(builder, nameof(builder));
+
+            builder.Append("CREATE ");
+
+            if (operation.IsUnique)
+            {
+                builder.Append("UNIQUE ");
+            }
+
+            IndexTraits(operation, model, builder);
+
+            builder
+                .Append("INDEX ")
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(Truncate(operation.Name, 64)))
+                .Append(" ON ")
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
+                .Append(" (")
+                .Append(ColumnListWithIndexPrefixLengths(operation, operation.Columns))
+                .Append(")");
+
+            IndexOptions(operation, model, builder);
+
+            if (terminate)
+            {
+                builder.AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
+                EndStatement(builder);
+            }
         }
 
         /// /// <summary>
@@ -1004,6 +1032,58 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             }
         }
 
+        protected override void PrimaryKeyConstraint(
+            [NotNull] AddPrimaryKeyOperation operation,
+            [CanBeNull] IModel model,
+            [NotNull] MigrationCommandListBuilder builder)
+        {
+            Check.NotNull(operation, nameof(operation));
+            Check.NotNull(builder, nameof(builder));
+
+            if (operation.Name != null)
+            {
+                builder
+                    .Append("CONSTRAINT ")
+                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
+                    .Append(" ");
+            }
+
+            builder
+                .Append("PRIMARY KEY ");
+
+            IndexTraits(operation, model, builder);
+
+            builder.Append("(")
+                .Append(ColumnListWithIndexPrefixLengths(operation, operation.Columns))
+                .Append(")");
+        }
+
+        protected override void UniqueConstraint(
+            [NotNull] AddUniqueConstraintOperation operation,
+            [CanBeNull] IModel model,
+            [NotNull] MigrationCommandListBuilder builder)
+        {
+            Check.NotNull(operation, nameof(operation));
+            Check.NotNull(builder, nameof(builder));
+
+            if (operation.Name != null)
+            {
+                builder
+                    .Append("CONSTRAINT ")
+                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
+                    .Append(" ");
+            }
+
+            builder
+                .Append("UNIQUE ");
+
+            IndexTraits(operation, model, builder);
+
+            builder.Append("(")
+                .Append(ColumnListWithIndexPrefixLengths(operation, operation.Columns))
+                .Append(")");
+        }
+
         protected override void Generate(AddPrimaryKeyOperation operation, IModel model, MigrationCommandListBuilder builder, bool terminate = true)
         {
             Check.NotNull(operation, nameof(operation));
@@ -1094,6 +1174,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             }
         }
 
+        protected override void IndexOptions(CreateIndexOperation operation, IModel model, MigrationCommandListBuilder builder)
+        {
+            // The base implementation supports index filters in form of a WHERE clause.
+            // This is not supported by MySQL.
+        }
+
         /// <summary>
         ///     Generates a SQL fragment for the given referential action.
         /// </summary>
@@ -1113,6 +1199,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
                 base.ForeignKeyAction(referentialAction, builder);
             }
         }
+
+        private string ColumnListWithIndexPrefixLengths(MigrationOperation operation, string[] columns)
+            => operation[MySqlAnnotationNames.IndexPrefixLengths] is int[] prefixValues
+                ? ColumnList(
+                    columns,
+                    (c, i) => prefixValues.Length > i && prefixValues[i] > 0
+                        ? $"({prefixValues[i]})"
+                        : null)
+                : ColumnList(columns);
+
+        protected virtual string ColumnList([NotNull] string[] columns, Func<string, int, string> columnPostfix)
+            => string.Join(", ", columns.Select((c, i) => Dependencies.SqlGenerationHelper.DelimitIdentifier(c) + columnPostfix?.Invoke(c, i)));
 
         private string IntegerConstant(long value)
             => string.Format(CultureInfo.InvariantCulture, "{0}", value);

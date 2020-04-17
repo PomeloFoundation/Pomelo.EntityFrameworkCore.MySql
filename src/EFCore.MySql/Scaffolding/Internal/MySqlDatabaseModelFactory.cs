@@ -391,13 +391,13 @@ ORDER BY
         }
 
         private const string GetPrimaryQuery = @"SELECT `INDEX_NAME`,
-     `NON_UNIQUE`,
-     GROUP_CONCAT(`COLUMN_NAME` ORDER BY `SEQ_IN_INDEX` SEPARATOR ',') AS COLUMNS
+     GROUP_CONCAT(`COLUMN_NAME` ORDER BY `SEQ_IN_INDEX` SEPARATOR ',') AS `COLUMNS`,
+     GROUP_CONCAT(IFNULL(`SUB_PART`, 0) ORDER BY `SEQ_IN_INDEX` SEPARATOR ',') AS `SUB_PARTS`
      FROM `INFORMATION_SCHEMA`.`STATISTICS`
      WHERE `TABLE_SCHEMA` = '{0}'
      AND `TABLE_NAME` = '{1}'
      AND `INDEX_NAME` = 'PRIMARY'
-     GROUP BY `INDEX_NAME`, `NON_UNIQUE`;";
+     GROUP BY `INDEX_NAME`;";
 
         /// <remarks>
         /// Primary keys are handled as in <see cref="GetConstraints"/>, not here
@@ -411,20 +411,35 @@ ORDER BY
                 using (var command = connection.CreateCommand())
                 {
                     command.CommandText = string.Format(GetPrimaryQuery, connection.Database, table.Name);
+
                     using (var reader = command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
                             try
                             {
-                                var index = new DatabasePrimaryKey {Table = table, Name = reader.GetString(0)};
-
-                                foreach (var column in reader.GetString(2).Split(','))
+                                var key = new DatabasePrimaryKey
                                 {
-                                    index.Columns.Add(table.Columns.Single(y => y.Name == column));
+                                    Table = table,
+                                    Name = reader.GetValueOrDefault<string>("INDEX_NAME"),
+                                };
+
+                                foreach (var column in reader.GetValueOrDefault<string>("COLUMNS").Split(','))
+                                {
+                                    key.Columns.Add(table.Columns.Single(y => y.Name == column));
                                 }
 
-                                table.PrimaryKey = index;
+                                var prefixLengths = reader.GetValueOrDefault<string>("SUB_PARTS")
+                                    .Split(',')
+                                    .Select(int.Parse)
+                                    .ToArray();
+
+                                if (prefixLengths.Length > 0)
+                                {
+                                    key[MySqlAnnotationNames.IndexPrefixLengths] = prefixLengths;
+                                }
+
+                                table.PrimaryKey = key;
                             }
                             catch (Exception ex)
                             {
@@ -438,7 +453,8 @@ ORDER BY
 
         private const string GetIndexesQuery = @"SELECT `INDEX_NAME`,
      `NON_UNIQUE`,
-     GROUP_CONCAT(`COLUMN_NAME` ORDER BY `SEQ_IN_INDEX` SEPARATOR ',') AS COLUMNS
+     GROUP_CONCAT(`COLUMN_NAME` ORDER BY `SEQ_IN_INDEX` SEPARATOR ',') AS `COLUMNS`,
+     GROUP_CONCAT(IFNULL(`SUB_PART`, 0) ORDER BY `SEQ_IN_INDEX` SEPARATOR ',') AS `SUB_PARTS`
      FROM `INFORMATION_SCHEMA`.`STATISTICS`
      WHERE `TABLE_SCHEMA` = '{0}'
      AND `TABLE_NAME` = '{1}'
@@ -455,17 +471,32 @@ ORDER BY
                 using (var command = connection.CreateCommand())
                 {
                     command.CommandText = string.Format(GetIndexesQuery, connection.Database, table.Name);
+
                     using (var reader = command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
                             try
                             {
-                                var index = new DatabaseIndex {Table = table, Name = reader.GetString(0), IsUnique = !reader.GetBoolean(1)};
+                                var index = new DatabaseIndex
+                                {
+                                    Table = table, Name = reader.GetValueOrDefault<string>("INDEX_NAME"),
+                                    IsUnique = !reader.GetValueOrDefault<bool>("NON_UNIQUE"),
+                                };
 
-                                foreach (var column in reader.GetString(2).Split(','))
+                                foreach (var column in reader.GetValueOrDefault<string>("COLUMNS").Split(','))
                                 {
                                     index.Columns.Add(table.Columns.Single(y => y.Name == column));
+                                }
+
+                                var prefixLengths = reader.GetValueOrDefault<string>("SUB_PARTS")
+                                    .Split(',')
+                                    .Select(int.Parse)
+                                    .ToArray();
+
+                                if (prefixLengths.Length > 0)
+                                {
+                                    index[MySqlAnnotationNames.IndexPrefixLengths] = prefixLengths;
                                 }
 
                                 table.Indexes.Add(index);

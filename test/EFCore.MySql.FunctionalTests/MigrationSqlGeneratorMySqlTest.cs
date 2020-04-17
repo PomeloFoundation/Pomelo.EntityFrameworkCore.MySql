@@ -880,35 +880,96 @@ ALTER TABLE `People` DROP PRIMARY KEY;".Replace("\r", string.Empty).Replace("\n"
                 Sql);
         }
 
-        // MySql doesn't support sequence
-        [ConditionalFact]
+        [ConditionalFact(Skip = "MySQL doesn't support sequence.")]
         public override void AlterSequenceOperation_with_minValue_and_maxValue()
-        {
-        }
+            => base.AlterSequenceOperation_with_minValue_and_maxValue();
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "MySQL doesn't support sequence.")]
         public override void AlterSequenceOperation_without_minValue_and_maxValue()
-        {
-        }
+            => base.AlterSequenceOperation_without_minValue_and_maxValue();
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "MySQL doesn't support sequence.")]
         public override void CreateSequenceOperation_with_minValue_and_maxValue()
-        {
-        }
+            => base.CreateSequenceOperation_with_minValue_and_maxValue();
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "MySQL doesn't support sequence.")]
         public override void CreateSequenceOperation_with_minValue_and_maxValue_not_long()
-        {
-        }
+            => base.CreateSequenceOperation_with_minValue_and_maxValue_not_long();
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "MySQL doesn't support sequence.")]
         public override void CreateSequenceOperation_without_minValue_and_maxValue()
+            => base.CreateSequenceOperation_without_minValue_and_maxValue();
+
+        [ConditionalFact(Skip = "MySQL doesn't support sequence.")]
+        public override void DropSequenceOperation()
+            => base.DropSequenceOperation();
+
+        [ConditionalFact]
+        public virtual void CreateIndexOperation_with_prefix_lengths()
         {
+            Generate(
+                builder => builder.Entity(
+                    "IceCreams",
+                    entity =>
+                    {
+                        entity.Property<int>("IceCreamId");
+                        entity.Property<string>("Name")
+                            .HasMaxLength(255);
+                        entity.Property<string>("Brand");
+
+                        entity.HasKey("IceCreamId");
+                    }),
+                new CreateIndexOperation
+                {
+                    Name = "IX_IceCreams_Brand_Name",
+                    Table = "IceCreams",
+                    Columns = new[] { "Name", "Brand" },
+                    [MySqlAnnotationNames.IndexPrefixLengths] = new [] { 0, 20 }
+                });
+
+            Assert.Equal(
+                @"CREATE INDEX `IX_IceCreams_Brand_Name` ON `IceCreams` (`Name`, `Brand`(20));" + EOL,
+                Sql,
+                ignoreLineEndingDifferences: true);
         }
 
         [ConditionalFact]
-        public override void DropSequenceOperation()
+        public virtual void CreateTableOperation_primary_key_with_prefix_lengths()
         {
+            Generate(
+                new CreateTableOperation
+                {
+                    Name = "IceCreams",
+                    Columns =
+                    {
+                        new AddColumnOperation
+                        {
+                            Name = "Brand",
+                            ColumnType = "longtext",
+                            ClrType = typeof(string),
+                        },
+                        new AddColumnOperation
+                        {
+                            Name = "Name",
+                            ColumnType = "varchar(255)",
+                            ClrType = typeof(string),
+                        },
+                    },
+                    PrimaryKey = new AddPrimaryKeyOperation
+                    {
+                        Columns = new[] { "Name", "Brand" },
+                        [MySqlAnnotationNames.IndexPrefixLengths] = new [] { 0, 20 }
+                    },
+                });
+
+            Assert.Equal(
+                @"CREATE TABLE `IceCreams` (
+    `Brand` longtext NOT NULL,
+    `Name` varchar(255) NOT NULL,
+    PRIMARY KEY (`Name`, `Brand`(20))
+);" + EOL,
+                Sql,
+                ignoreLineEndingDifferences: true);
         }
 
         public MigrationSqlGeneratorMySqlTest()
