@@ -131,7 +131,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             {
                 if (_mySqlOptionsExtension.UpdateSqlModeOnOpen && _mySqlOptionsExtension.NoBackslashEscapes)
                 {
-                    AppendToSqlMode(NoBackslashEscapes);
+                    AddSqlMode(NoBackslashEscapes);
                 }
             }
 
@@ -146,17 +146,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             {
                 if (_mySqlOptionsExtension.UpdateSqlModeOnOpen && _mySqlOptionsExtension.NoBackslashEscapes)
                 {
-                    await AppendToSqlModeAsync(NoBackslashEscapes);
+                    await AddSqlModeAsync(NoBackslashEscapes);
                 }
             }
 
             return result;
         }
 
-        public virtual void AppendToSqlMode(string mode)
-            => Dependencies.CurrentContext.Context?.Database.ExecuteSqlRaw(@"SET SESSION sql_mode = CONCAT(@@sql_mode, ',', @p0)", new MySqlParameter("@p0", mode));
+        public virtual void AddSqlMode(string mode)
+            => Dependencies.CurrentContext.Context?.Database.ExecuteSqlInterpolated($@"SET SESSION sql_mode = CONCAT(@@sql_mode, ',', {mode});");
 
-        public virtual Task AppendToSqlModeAsync(string mode)
-            => Dependencies.CurrentContext.Context?.Database.ExecuteSqlRawAsync(@"SET SESSION sql_mode = CONCAT(@@sql_mode, ',', @p0)", new MySqlParameter("@p0", mode));
+        public virtual Task AddSqlModeAsync(string mode)
+            => Dependencies.CurrentContext.Context?.Database.ExecuteSqlInterpolatedAsync($@"SET SESSION sql_mode = CONCAT(@@sql_mode, ',', {mode});");
+
+        public virtual void RemoveSqlMode(string mode)
+            => Dependencies.CurrentContext.Context?.Database.ExecuteSqlInterpolated($@"SET SESSION sql_mode = REPLACE(@@sql_mode, {mode}, '');");
+
+        public virtual void RemoveSqlModeAsync(string mode)
+            => Dependencies.CurrentContext.Context?.Database.ExecuteSqlInterpolatedAsync($@"SET SESSION sql_mode = REPLACE(@@sql_mode, {mode}, '');");
     }
 }

@@ -5,8 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
@@ -202,7 +200,7 @@ WHERE MATCH (`h`.`Name`) AGAINST ('First' WITH QUERY EXPANSION)");
                     {
                         herb.HasData(MatchQueryData.CreateHerbs());
                         herb.HasKey(h => h.Id);
-                        herb.HasIndex(h => h.Name).ForMySqlIsFullText();
+                        herb.HasIndex(h => h.Name).IsFullText();
                     });
             }
 

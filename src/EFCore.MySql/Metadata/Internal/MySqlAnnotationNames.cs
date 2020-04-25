@@ -20,17 +20,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public const string ValueGenerationStrategy = Prefix + "ValueGenerationStrategy";
-
         public const string LegacyValueGeneratedOnAdd = Prefix + "ValueGeneratedOnAdd";
-
         public const string LegacyValueGeneratedOnAddOrUpdate = Prefix + "ValueGeneratedOnAddOrUpdate";
-
         public const string FullTextIndex = Prefix + "FullTextIndex";
-
         public const string SpatialIndex = Prefix + "SpatialIndex";
-
         public const string CharSet = Prefix + "CharSet";
-
         public const string Collation = Prefix + "Collation";
+        public const string IndexPrefixLength = Prefix + "IndexPrefixLength";
     }
 }

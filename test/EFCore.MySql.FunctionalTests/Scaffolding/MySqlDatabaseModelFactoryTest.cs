@@ -15,6 +15,7 @@ using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 
 // ReSharper disable InconsistentNaming
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Scaffolding
@@ -427,14 +428,39 @@ CREATE TABLE PrimaryKeyName (
                 Enumerable.Empty<string>(),
                 Enumerable.Empty<string>(),
                 dbModel =>
-                    {
-                        var pk = dbModel.Tables.Single().PrimaryKey;
+                {
+                    var pk = dbModel.Tables.Single().PrimaryKey;
 
-                        Assert.Equal("PrimaryKeyName", pk.Table.Name);
-                        Assert.Equal("PK", pk.Name);
-                        Assert.Equal(new List<string> { "Id" }, pk.Columns.Select(ic => ic.Name).ToList());
-                    },
+                    Assert.Equal("PrimaryKeyName", pk.Table.Name);
+                    Assert.Equal("PK", pk.Name);
+                    Assert.Equal(new List<string> { "Id" }, pk.Columns.Select(ic => ic.Name).ToList());
+                },
                 @"DROP TABLE PrimaryKeyName;");
+        }
+
+        [Fact]
+        public void Prefix_lengths_for_primary_key()
+        {
+            Test(
+                @"
+CREATE TABLE `IceCreams` (
+    `Brand` longtext NOT NULL,
+    `Name` varchar(255) NOT NULL,
+    PRIMARY KEY (`Name`, `Brand`(20))
+);",
+                Enumerable.Empty<string>(),
+                Enumerable.Empty<string>(),
+                dbModel =>
+                {
+                    var pk = dbModel.Tables.Single().PrimaryKey;
+
+                    Assert.Equal("IceCreams", pk.Table.Name);
+                    Assert.Equal(2, pk.Columns.Count);
+                    Assert.Equal("Name", pk.Columns[0].Name);
+                    Assert.Equal("Brand", pk.Columns[1].Name);
+                    Assert.Equal(new [] { 0, 20 }, pk.FindAnnotation(MySqlAnnotationNames.IndexPrefixLength)?.Value);
+                },
+                @"DROP TABLE IF EXISTS `IceCreams`;");
         }
 
         #endregion
@@ -540,6 +566,35 @@ CREATE UNIQUE INDEX IX_UNIQUE on UniqueIndex (Id2);",
                         Assert.Equal(new List<string> { "Id2" }, index.Columns.Select(ic => ic.Name).ToList());
                     },
                 @"DROP TABLE UniqueIndex;");
+        }
+
+        [Fact]
+        public void Prefix_lengths_for_index()
+        {
+            Test(
+                @"
+CREATE TABLE `IceCreams` (
+    `IceCreamId` int NOT NULL,
+    `Brand` longtext NOT NULL,
+    `Name` varchar(255) NOT NULL,
+    PRIMARY KEY (`IceCreamId`)
+);
+
+CREATE INDEX `IX_IceCreams_Brand_Name` ON `IceCreams` (`Name`, `Brand`(20));
+",
+                Enumerable.Empty<string>(),
+                Enumerable.Empty<string>(),
+                dbModel =>
+                {
+                    var index = dbModel.Tables.Single().Indexes.Single();
+
+                    Assert.Equal("IceCreams", index.Table.Name);
+                    Assert.Equal(2, index.Columns.Count);
+                    Assert.Equal("Name", index.Columns[0].Name);
+                    Assert.Equal("Brand", index.Columns[1].Name);
+                    Assert.Equal(new [] { 0, 20 }, index.FindAnnotation(MySqlAnnotationNames.IndexPrefixLength)?.Value);
+                },
+                @"DROP TABLE IF EXISTS `IceCreams`;");
         }
 
         #endregion
@@ -817,7 +872,7 @@ DROP TABLE PrincipalTable;");
 
         #endregion
 
-        public class MySqlDatabaseModelFixture : SharedStoreFixtureBase<DbContext>
+        public class MySqlDatabaseModelFixture : SharedStoreFixtureBase<PoolableDbContext>
         {
             protected override string StoreName { get; } = nameof(MySqlDatabaseModelFactoryTest);
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
