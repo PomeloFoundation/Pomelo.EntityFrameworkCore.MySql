@@ -395,6 +395,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
                     var maxSize = 8000 / bytesPerChar;
 
+                    // Obsolete: Remove this for .NET 5 release, because of `HasPrefixLength()` support.
                     var size = mappingInfo.Size ??
                                (mappingInfo.IsKeyOrIndex
                                    // Allow to use at most half of the max key length, so at least 2 columns can fit
