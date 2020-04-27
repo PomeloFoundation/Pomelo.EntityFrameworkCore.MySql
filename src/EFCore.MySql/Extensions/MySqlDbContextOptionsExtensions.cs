@@ -31,7 +31,7 @@ namespace Microsoft.EntityFrameworkCore
             };
 
             connectionString = csb.ConnectionString;
-            var extension = GetOrCreateExtension(optionsBuilder).WithConnectionString(connectionString);
+            var extension = (MySqlOptionsExtension)GetOrCreateExtension(optionsBuilder).WithConnectionString(connectionString);
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
             ConfigureWarnings(optionsBuilder);
             mySqlOptionsAction?.Invoke(new MySqlDbContextOptionsBuilder(optionsBuilder));
