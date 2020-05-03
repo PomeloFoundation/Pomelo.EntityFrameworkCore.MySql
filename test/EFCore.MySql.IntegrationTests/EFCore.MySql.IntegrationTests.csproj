@@ -73,6 +73,10 @@
     <AppConfig Include="config.json" />
   </ItemGroup>
 
+  <Target Name="CheckConfigFile" BeforeTargets="Build">
+    <Error Condition="!Exists('config.json')"
+           Text="The &quot;config.json&quot; file could not be found. This file is mandatory to run the &quot;$(ProjectName)&quot; tests and needs to be created and configured after cloning the repository. The necessary setup steps are described in the &quot;README.md&quot; file, that is located in the base directory of the &quot;$(ProjectName)&quot; project."/>
+  </Target>
   <Target Name="CopyDirsAfterBuild" AfterTargets="Build">
     <Copy SourceFiles="@(AppConfig)" DestinationFolder="$(OutDir)\%(RecursiveDir)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" Retries="3" RetryDelayMilliseconds="300" />
   </Target>
