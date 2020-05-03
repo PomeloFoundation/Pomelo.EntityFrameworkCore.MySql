@@ -236,27 +236,37 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 castMapping = "decimal(65,30)";
             }
 
-            if (useDecimalToDoubleWorkaround)
+            // There needs to be no CAST() applied between the exact same store type. This could happen, if
+            // `System.DateTime` and `System.DateTimeOffset` are used in conjunction, because both use different type
+            // mappings, but map to the same store type (e.g. `datetime(6)`).
+            if (!castMapping.Equals(sqlUnaryExpression.Operand.TypeMapping.StoreType, StringComparison.OrdinalIgnoreCase))
             {
-                Sql.Append("(");
-            }
+                if (useDecimalToDoubleWorkaround)
+                {
+                    Sql.Append("(");
+                }
 
-            Sql.Append("CAST(");
-            Visit(sqlUnaryExpression.Operand);
-            Sql.Append(" AS ");
-            Sql.Append(castMapping);
-            Sql.Append(")");
+                Sql.Append("CAST(");
+                Visit(sqlUnaryExpression.Operand);
+                Sql.Append(" AS ");
+                Sql.Append(castMapping);
+                Sql.Append(")");
 
-            if (useDecimalToDoubleWorkaround)
-            {
-                Sql.Append(" + 0e0)");
+                if (useDecimalToDoubleWorkaround)
+                {
+                    Sql.Append(" + 0e0)");
+                }
+                else if (castMapping.EndsWith("char"))
+                {
+                    // Expressions like `"mystring" + 1` can lead to collation mismatches.
+                    // We force `utf8mb4_bin` here, that should always work. It might however change the case sensitivity of
+                    // operations it is part of.
+                    Sql.Append(" COLLATE utf8mb4_bin");
+                }
             }
-            else if (castMapping.EndsWith("char"))
+            else
             {
-                // Expressions like `"mystring" + 1` can lead to collation mismatches.
-                // We force `utf8mb4_bin` here, that should always work. It might however change the case sensitivity of
-                // operations it is part of.
-                Sql.Append(" COLLATE utf8mb4_bin");
+                Visit(sqlUnaryExpression.Operand);
             }
 
             return sqlUnaryExpression;
