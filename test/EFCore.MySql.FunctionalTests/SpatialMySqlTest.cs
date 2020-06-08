@@ -4,8 +4,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
-    // Made internal to skip all tests.
-    internal class SpatialMySqlTest : SpatialTestBase<SpatialMySqlFixture>
+    public class SpatialMySqlTest : SpatialTestBase<SpatialMySqlFixture>
     {
         public SpatialMySqlTest(SpatialMySqlFixture fixture)
             : base(fixture)

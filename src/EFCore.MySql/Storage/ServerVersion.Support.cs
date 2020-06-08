@@ -55,6 +55,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         // public const string AlternativeDefaultExpressionMySqlSupportVersionString = "?.?.?-mysql";
         public const string AlternativeDefaultExpressionMariaDbSupportVersionString = "10.2.7-mariadb"; // MDEV-13132
 
+        // public const string SpatialBoundaryMySqlSupportVersionString = "?.?.?-mysql";
+        public const string SpatialBoundaryMariaDbSupportVersionString = "10.2.1-mariadb"; // MDEV-13132
+
         #endregion
 
         #region SupportMap keys for test attributes
@@ -75,6 +78,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string DefaultCharSetUtf8Mb4SupportKey = nameof(DefaultCharSetUtf8Mb4SupportKey);
         public const string DefaultExpressionSupportKey = nameof(DefaultExpressionSupportKey);
         public const string AlternativeDefaultExpressionSupportKey = nameof(AlternativeDefaultExpressionSupportKey);
+        public const string SpatialBoundaryExpressionSupportKey = nameof(SpatialBoundaryExpressionSupportKey);
 
         #endregion
 
@@ -95,6 +99,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
             { DefaultCharSetUtf8Mb4SupportKey, new ServerVersionSupport(DefaultCharSetUtf8Mb4MySqlSupportVersionString/*, DefaultCharSetUtf8Mb4MariaDbSupportVersionString*/) },
             { DefaultExpressionSupportKey, new ServerVersionSupport(DefaultExpressionMySqlSupportVersionString/*, DefaultExpressionMariaDbSupportVersionString*/) },
             { AlternativeDefaultExpressionSupportKey, new ServerVersionSupport(/*AlternativeDefaultExpressionMySqlSupportVersionString, */AlternativeDefaultExpressionMariaDbSupportVersionString) },
+            { SpatialBoundaryExpressionSupportKey, new ServerVersionSupport(/*SpatialBoundaryMySqlSupportVersionString, */SpatialBoundaryMariaDbSupportVersionString)},
         };
 
         #region Support checks for provider code
@@ -115,6 +120,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public virtual bool SupportsDefaultCharSetUtf8Mb4 => SupportMap[DefaultCharSetUtf8Mb4SupportKey].IsSupported(this);
         public virtual bool SupportsDefaultExpression => SupportMap[DefaultExpressionSupportKey].IsSupported(this);
         public virtual bool SupportsAlternativeDefaultExpression => SupportMap[AlternativeDefaultExpressionSupportKey].IsSupported(this);
+        public virtual bool SupportsSpatialBoundary => SupportMap[SpatialBoundaryExpressionSupportKey].IsSupported(this);
 
         #endregion
 

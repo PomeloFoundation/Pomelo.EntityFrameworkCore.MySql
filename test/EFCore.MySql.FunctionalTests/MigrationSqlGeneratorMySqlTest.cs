@@ -670,6 +670,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         [ConditionalFact]
         public virtual void CreateIndexOperation_spatial()
         {
+            // TODO: Use meaningful column names.
             Generate(
                 new CreateIndexOperation
                 {

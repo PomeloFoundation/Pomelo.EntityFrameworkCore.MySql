@@ -13,12 +13,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
         protected override IServiceCollection AddServices(IServiceCollection serviceCollection)
             => base.AddServices(serviceCollection)
-                /*.AddEntityFrameworkMySqlNetTopologySuite()*/;
+                .AddEntityFrameworkMySqlNetTopologySuite();
 
         public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
         {
             var optionsBuilder = base.AddOptions(builder);
-            new MySqlDbContextOptionsBuilder(optionsBuilder)/*.UseNetTopologySuite()*/;
+            new MySqlDbContextOptionsBuilder(optionsBuilder)
+                .UseNetTopologySuite();
 
             return optionsBuilder;
         }
