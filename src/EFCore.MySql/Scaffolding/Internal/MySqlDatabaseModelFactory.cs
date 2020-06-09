@@ -454,7 +454,8 @@ ORDER BY
         private const string GetIndexesQuery = @"SELECT `INDEX_NAME`,
      `NON_UNIQUE`,
      GROUP_CONCAT(`COLUMN_NAME` ORDER BY `SEQ_IN_INDEX` SEPARATOR ',') AS `COLUMNS`,
-     GROUP_CONCAT(IFNULL(`SUB_PART`, 0) ORDER BY `SEQ_IN_INDEX` SEPARATOR ',') AS `SUB_PARTS`
+     GROUP_CONCAT(IFNULL(`SUB_PART`, 0) ORDER BY `SEQ_IN_INDEX` SEPARATOR ',') AS `SUB_PARTS`,
+     `INDEX_TYPE`
      FROM `INFORMATION_SCHEMA`.`STATISTICS`
      WHERE `TABLE_SCHEMA` = '{0}'
      AND `TABLE_NAME` = '{1}'
@@ -497,6 +498,18 @@ ORDER BY
                                 if (prefixLengths.Length > 0)
                                 {
                                     index[MySqlAnnotationNames.IndexPrefixLength] = prefixLengths;
+                                }
+
+                                var indexType = reader.GetValueOrDefault<string>("INDEX_TYPE");
+
+                                if (string.Equals(indexType, "spatial", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    index[MySqlAnnotationNames.SpatialIndex] = true;
+                                }
+
+                                if (string.Equals(indexType, "fulltext", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    index[MySqlAnnotationNames.FullTextIndex] = true;
                                 }
 
                                 table.Indexes.Add(index);
