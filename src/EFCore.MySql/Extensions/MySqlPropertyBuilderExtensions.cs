@@ -29,7 +29,7 @@ namespace Microsoft.EntityFrameworkCore
 
             var property = propertyBuilder.Metadata;
             property.SetValueGenerationStrategy(MySqlValueGenerationStrategy.IdentityColumn);
-            
+
             return propertyBuilder;
         }
 
@@ -54,7 +54,7 @@ namespace Microsoft.EntityFrameworkCore
             [NotNull] this PropertyBuilder propertyBuilder)
         {
             Check.NotNull(propertyBuilder, nameof(propertyBuilder));
-            
+
             var property = propertyBuilder.Metadata;
             property.SetValueGenerationStrategy(MySqlValueGenerationStrategy.ComputedColumn);
 
@@ -122,6 +122,24 @@ namespace Microsoft.EntityFrameworkCore
 
             var property = propertyBuilder.Metadata;
             property.SetCollation(collation);
+
+            return propertyBuilder;
+        }
+
+        /// <summary>
+        /// Restricts the Spatial Reference System Identifier (SRID) for the property's column.
+        /// </summary>
+        /// <param name="propertyBuilder">The builder for the property being configured.</param>
+        /// <param name="srid">The SRID to configure for the property's column.</param>
+        /// <returns>The same builder instance so that multiple calls can be chained.</returns>
+        public static PropertyBuilder HasSpatialReferenceSystem(
+            [NotNull] this PropertyBuilder propertyBuilder,
+            int srid)
+        {
+            Check.NotNull(propertyBuilder, nameof(propertyBuilder));
+
+            var property = propertyBuilder.Metadata;
+            property.SetSpatialReferenceSystem(srid);
 
             return propertyBuilder;
         }

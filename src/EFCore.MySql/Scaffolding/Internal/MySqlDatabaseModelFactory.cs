@@ -200,7 +200,8 @@ AND
     `COLLATION_NAME`,
     `COLUMN_TYPE`,
     `COLUMN_COMMENT`,
-    `EXTRA`
+    `EXTRA`,
+    `SRS_ID`
 FROM
 	`INFORMATION_SCHEMA`.`COLUMNS`
 WHERE
@@ -233,6 +234,7 @@ ORDER BY
                             var columType = reader.GetValueOrDefault<string>("COLUMN_TYPE");
                             var extra = reader.GetValueOrDefault<string>("EXTRA");
                             var comment = reader.GetValueOrDefault<string>("COLUMN_COMMENT");
+                            var srid = reader.GetValueOrDefault<int>("SRS_ID");
 
                             defaultValue = _options.ServerVersion.SupportsAlternativeDefaultExpression &&
                                            defaultValue != null
@@ -291,6 +293,7 @@ ORDER BY
                                 Comment = string.IsNullOrEmpty(comment) ? null : comment,
                                 [MySqlAnnotationNames.CharSet] = _settings.CharSet ? charset : null,
                                 [MySqlAnnotationNames.Collation] = _settings.Collation ? collation : null,
+                                [MySqlAnnotationNames.SpatialReferenceSystemId] = srid,
                             };
 
                             table.Columns.Add(column);
