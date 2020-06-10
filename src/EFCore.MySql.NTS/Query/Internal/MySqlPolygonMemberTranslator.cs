@@ -20,7 +20,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         private static readonly IDictionary<MemberInfo, string> _geometryMemberToFunctionName = new Dictionary<MemberInfo, string>
         {
             { _exteriorRing, "ST_ExteriorRing" },
-            { _numInteriorRings, "ST_NumInteriorRing" },
+            { _numInteriorRings, "ST_NumInteriorRings" }, // MariaDB bug: Only knows `ST_NumInteriorRings` instead of `ST_NumInteriorRing` (without `s`).
         };
 
         private readonly IRelationalTypeMappingSource _typeMappingSource;

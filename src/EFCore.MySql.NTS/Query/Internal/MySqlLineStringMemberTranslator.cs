@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 using NetTopologySuite.Geometries;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -26,13 +27,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
         private readonly IRelationalTypeMappingSource _typeMappingSource;
         private readonly ISqlExpressionFactory _sqlExpressionFactory;
+        private readonly IMySqlOptions _options;
 
         public MySqlLineStringMemberTranslator(
             IRelationalTypeMappingSource typeMappingSource,
-            ISqlExpressionFactory sqlExpressionFactory)
+            ISqlExpressionFactory sqlExpressionFactory,
+            IMySqlOptions options)
         {
             _typeMappingSource = typeMappingSource;
             _sqlExpressionFactory = sqlExpressionFactory;
+            _options = options;
         }
 
         public virtual SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType)
@@ -46,11 +50,46 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     ? _typeMappingSource.FindMapping(returnType, storeType)
                     : _typeMappingSource.FindMapping(returnType);
 
-                return _sqlExpressionFactory.Function(
-                    functionName,
-                    new [] {instance},
-                    returnType,
-                    resultTypeMapping);
+                // Emulate ST_IsRing if not supported.
+                var sqlExpression = functionName != "ST_IsRing" ||
+                                  _options.ServerVersion.SupportsSpatialIsRingFunction
+                    ? (SqlExpression)_sqlExpressionFactory.Function(
+                        functionName,
+                        new[] {instance},
+                        returnType,
+                        resultTypeMapping)
+                    : _sqlExpressionFactory.AndAlso(
+                        _sqlExpressionFactory.Function(
+                            "ST_IsClosed",
+                            new[] {instance},
+                            returnType,
+                            resultTypeMapping),
+                        _sqlExpressionFactory.Function(
+                            "ST_IsSimple",
+                            new[] {instance},
+                            returnType,
+                            resultTypeMapping)
+                    );
+
+                // ST_IsRing and others returns TRUE for a NULL value in MariaDB, which is inconsistent with NTS' implementation.
+                // We return the following instead:
+                // CASE
+                //     WHEN instance IS NULL THEN NULL
+                //     ELSE expression
+                // END
+                if (returnType == typeof(bool))
+                {
+                    sqlExpression = _sqlExpressionFactory.Case(
+                        new[]
+                        {
+                            new CaseWhenClause(
+                                _sqlExpressionFactory.IsNull(instance),
+                                _sqlExpressionFactory.Constant(null, RelationalTypeMapping.NullMapping))
+                        },
+                        sqlExpression);
+                }
+
+                return sqlExpression;
             }
 
             return null;

@@ -76,7 +76,7 @@ ALTER TABLE `Cars` ADD CONSTRAINT `FK_Cars_LicensePlates_LicensePlateNumber` FOR
 
             Assert.Equal(
                 @"CREATE TABLE `IceCreamShops` (
-    `Location` GEOMETRY NOT NULL SRID 0
+    `Location` GEOMETRY NOT NULL /*!80003 SRID 0 */
 );
 ",
                 Sql,

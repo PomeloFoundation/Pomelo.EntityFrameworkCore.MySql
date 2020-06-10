@@ -930,7 +930,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             if (srid != null &&
                 columnType.IndexOf("geometry", StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                builder.Append($" SRID {srid}");
+                builder.Append($" /*!80003 SRID {srid} */");
             }
         }
 

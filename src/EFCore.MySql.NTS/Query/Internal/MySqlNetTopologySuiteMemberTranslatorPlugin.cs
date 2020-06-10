@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -30,13 +31,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         ///     doing so can result in application failures when updating to a new Entity Framework Core release.
         /// </summary>
         public MySqlNetTopologySuiteMemberTranslatorPlugin(
-            IRelationalTypeMappingSource typeMappingSource, ISqlExpressionFactory sqlExpressionFactory)
+            IRelationalTypeMappingSource typeMappingSource,
+            ISqlExpressionFactory sqlExpressionFactory,
+            IMySqlOptions options)
         {
             Translators = new IMemberTranslator[]
             {
                 new MySqlGeometryMemberTranslator(typeMappingSource, sqlExpressionFactory),
                 new MySqlGeometryCollectionMemberTranslator(sqlExpressionFactory),
-                new MySqlLineStringMemberTranslator(typeMappingSource, sqlExpressionFactory),
+                new MySqlLineStringMemberTranslator(typeMappingSource, sqlExpressionFactory, options),
                 new MySqlMultiLineStringMemberTranslator(sqlExpressionFactory),
                 new MySqlPointMemberTranslator(sqlExpressionFactory),
                 new MySqlPolygonMemberTranslator(typeMappingSource, sqlExpressionFactory)

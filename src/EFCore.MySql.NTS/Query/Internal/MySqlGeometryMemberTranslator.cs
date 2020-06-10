@@ -64,11 +64,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         ? _typeMappingSource.FindMapping(returnType, storeType)
                         : _typeMappingSource.FindMapping(returnType);
 
-                    return _sqlExpressionFactory.Function(
+                    SqlExpression sqlExpression = _sqlExpressionFactory.Function(
                         functionName,
                         new [] {instance},
                         returnType,
                         resultTypeMapping);
+
+                    // ST_IsRing and others returns TRUE for a NULL value in MariaDB, which is inconsistent with NTS' implementation.
+                    // We return the following instead:
+                    // CASE
+                    //     WHEN instance IS NULL THEN NULL
+                    //     ELSE expression
+                    // END
+                    if (returnType == typeof(bool))
+                    {
+                        sqlExpression = _sqlExpressionFactory.Case(
+                            new[]
+                            {
+                                new CaseWhenClause(
+                                    _sqlExpressionFactory.IsNull(instance),
+                                    _sqlExpressionFactory.Constant(null, RelationalTypeMapping.NullMapping))
+                            },
+                            sqlExpression);
+                    }
+
+                    return sqlExpression;
                 }
 
                 if (Equals(member, _ogcGeometryType))
@@ -114,7 +134,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 if (Equals(member, _srid))
                 {
                     return _sqlExpressionFactory.Function(
-                        "ST_Srid",
+                        "ST_SRID",
                         new [] {instance},
                         returnType);
                 }

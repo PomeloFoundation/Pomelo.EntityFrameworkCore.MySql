@@ -55,8 +55,26 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         // public const string AlternativeDefaultExpressionMySqlSupportVersionString = "?.?.?-mysql";
         public const string AlternativeDefaultExpressionMariaDbSupportVersionString = "10.2.7-mariadb"; // MDEV-13132
 
-        // public const string SpatialBoundaryMySqlSupportVersionString = "?.?.?-mysql";
-        public const string SpatialBoundaryMariaDbSupportVersionString = "10.2.1-mariadb"; // MDEV-13132
+        public const string SpatialReferenceSystemRestrictedColumnsMySqlSupportVersionString = "8.0.3-mysql";
+        // public const string SpatialReferenceSystemRestrictedColumnsMariaDbSupportVersionString = "?.?.?-mariadb";
+
+        // public const string SpatialFunctionAdditionsMySqlSupportVersionString = "?.?.?-mysql";
+        public const string SpatialFunctionAdditionsMariaDbSupportVersionString = "10.1.2-mariadb";
+
+        // public const string SpatialBoundaryFunctionMySqlSupportVersionString = SpatialFunctionAdditionsMySqlSupportVersionString;
+        public const string SpatialBoundaryFunctionMariaDbSupportVersionString = SpatialFunctionAdditionsMariaDbSupportVersionString;
+
+        // public const string SpatialIsRingFunctionMySqlSupportVersionString = SpatialFunctionAdditionsMySqlSupportVersionString;
+        public const string SpatialIsRingFunctionMariaDbSupportVersionString = SpatialFunctionAdditionsMariaDbSupportVersionString;
+
+        // public const string SpatialPointOnSurfaceFunctionMySqlSupportVersionString = SpatialFunctionAdditionsMySqlSupportVersionString;
+        public const string SpatialPointOnSurfaceFunctionMariaDbSupportVersionString = SpatialFunctionAdditionsMariaDbSupportVersionString;
+
+        // public const string SpatialRelateFunctionMySqlSupportVersionString = SpatialFunctionAdditionsMySqlSupportVersionString;
+        public const string SpatialRelateFunctionMariaDbSupportVersionString = SpatialFunctionAdditionsMariaDbSupportVersionString;
+
+        public const string SpatialIsValidFunctionMySqlSupportVersionString = "5.7.6-mysql";
+        // public const string SpatialIsValidFunctionMariaDbSupportVersionString = "?.?.?-mariadb";
 
         #endregion
 
@@ -78,7 +96,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string DefaultCharSetUtf8Mb4SupportKey = nameof(DefaultCharSetUtf8Mb4SupportKey);
         public const string DefaultExpressionSupportKey = nameof(DefaultExpressionSupportKey);
         public const string AlternativeDefaultExpressionSupportKey = nameof(AlternativeDefaultExpressionSupportKey);
-        public const string SpatialBoundaryExpressionSupportKey = nameof(SpatialBoundaryExpressionSupportKey);
+        public const string SpatialReferenceSystemRestrictedColumnsSupportKey = nameof(SpatialReferenceSystemRestrictedColumnsSupportKey);
+        public const string SpatialFunctionAdditionsSupportKey = nameof(SpatialFunctionAdditionsSupportKey);
+        public const string SpatialBoundaryFunctionSupportKey = nameof(SpatialBoundaryFunctionSupportKey);
+        public const string SpatialIsRingFunctionSupportKey = nameof(SpatialIsRingFunctionSupportKey);
+        public const string SpatialPointOnSurfaceFunctionSupportKey = nameof(SpatialPointOnSurfaceFunctionSupportKey);
+        public const string SpatialRelateFunctionSupportKey = nameof(SpatialRelateFunctionSupportKey);
+        public const string SpatialIsValidFunctionSupportKey = nameof(SpatialIsValidFunctionSupportKey);
 
         #endregion
 
@@ -99,7 +123,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
             { DefaultCharSetUtf8Mb4SupportKey, new ServerVersionSupport(DefaultCharSetUtf8Mb4MySqlSupportVersionString/*, DefaultCharSetUtf8Mb4MariaDbSupportVersionString*/) },
             { DefaultExpressionSupportKey, new ServerVersionSupport(DefaultExpressionMySqlSupportVersionString/*, DefaultExpressionMariaDbSupportVersionString*/) },
             { AlternativeDefaultExpressionSupportKey, new ServerVersionSupport(/*AlternativeDefaultExpressionMySqlSupportVersionString, */AlternativeDefaultExpressionMariaDbSupportVersionString) },
-            { SpatialBoundaryExpressionSupportKey, new ServerVersionSupport(/*SpatialBoundaryMySqlSupportVersionString, */SpatialBoundaryMariaDbSupportVersionString)},
+            { SpatialReferenceSystemRestrictedColumnsSupportKey, new ServerVersionSupport(SpatialReferenceSystemRestrictedColumnsMySqlSupportVersionString/*, SpatialReferenceSystemRestrictedColumnsMariaDbSupportVersionString*/)},
+            { SpatialFunctionAdditionsSupportKey, new ServerVersionSupport(/*SpatialFunctionAdditionsMySqlSupportVersionString, */SpatialFunctionAdditionsMariaDbSupportVersionString)},
+            { SpatialBoundaryFunctionSupportKey, new ServerVersionSupport(/*SpatialBoundaryFunctionMySqlSupportVersionString, */SpatialBoundaryFunctionMariaDbSupportVersionString)},
+            { SpatialIsRingFunctionSupportKey, new ServerVersionSupport(/*SpatialIsRingFunctionMySqlSupportVersionString, */SpatialIsRingFunctionMariaDbSupportVersionString)},
+            { SpatialPointOnSurfaceFunctionSupportKey, new ServerVersionSupport(/*SpatialPointOnSurfaceFunctionMySqlSupportVersionString, */SpatialPointOnSurfaceFunctionMariaDbSupportVersionString)},
+            { SpatialRelateFunctionSupportKey, new ServerVersionSupport(/*SpatialRelateFunctionMySqlSupportVersionString, */SpatialRelateFunctionMariaDbSupportVersionString)},
+            { SpatialIsValidFunctionSupportKey, new ServerVersionSupport(SpatialIsValidFunctionMySqlSupportVersionString/*, SpatialIsValidFunctionMariaDbSupportVersionString*/)},
         };
 
         #region Support checks for provider code
@@ -120,7 +150,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public virtual bool SupportsDefaultCharSetUtf8Mb4 => SupportMap[DefaultCharSetUtf8Mb4SupportKey].IsSupported(this);
         public virtual bool SupportsDefaultExpression => SupportMap[DefaultExpressionSupportKey].IsSupported(this);
         public virtual bool SupportsAlternativeDefaultExpression => SupportMap[AlternativeDefaultExpressionSupportKey].IsSupported(this);
-        public virtual bool SupportsSpatialBoundary => SupportMap[SpatialBoundaryExpressionSupportKey].IsSupported(this);
+        public virtual bool SupportsSpatialReferenceSystemRestrictedColumns => SupportMap[SpatialReferenceSystemRestrictedColumnsSupportKey].IsSupported(this);
+        public virtual bool SupportsSpatialFunctionAdditions => SupportMap[SpatialFunctionAdditionsSupportKey].IsSupported(this);
+        public virtual bool SupportsSpatialBoundaryFunction => SupportMap[SpatialBoundaryFunctionSupportKey].IsSupported(this);
+        public virtual bool SupportsSpatialIsRingFunction => SupportMap[SpatialIsRingFunctionSupportKey].IsSupported(this);
+        public virtual bool SupportsSpatialPointOnSurfaceFunction => SupportMap[SpatialPointOnSurfaceFunctionSupportKey].IsSupported(this);
+        public virtual bool SupportsSpatialRelateFunction => SupportMap[SpatialRelateFunctionSupportKey].IsSupported(this);
+        public virtual bool SupportsSpatialIsValidFunction => SupportMap[SpatialIsValidFunctionSupportKey].IsSupported(this);
 
         #endregion
 

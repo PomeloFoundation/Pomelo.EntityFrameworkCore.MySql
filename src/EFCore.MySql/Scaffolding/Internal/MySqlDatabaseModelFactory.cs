@@ -200,8 +200,8 @@ AND
     `COLLATION_NAME`,
     `COLUMN_TYPE`,
     `COLUMN_COMMENT`,
-    `EXTRA`,
-    `SRS_ID`
+    `EXTRA` /*!80003 ,
+    `SRS_ID` */
 FROM
 	`INFORMATION_SCHEMA`.`COLUMNS`
 WHERE
@@ -234,7 +234,11 @@ ORDER BY
                             var columType = reader.GetValueOrDefault<string>("COLUMN_TYPE");
                             var extra = reader.GetValueOrDefault<string>("EXTRA");
                             var comment = reader.GetValueOrDefault<string>("COLUMN_COMMENT");
-                            var srid = reader.GetValueOrDefault<int>("SRS_ID");
+
+                            // MariaDB does not support SRID column restrictions.
+                            var srid = reader.GetColumnSchema().Any(c => string.Equals(c.ColumnName, "SRS_ID", StringComparison.OrdinalIgnoreCase))
+                                ? reader.GetValueOrDefault<int>("SRS_ID")
+                                : (int?)null;
 
                             defaultValue = _options.ServerVersion.SupportsAlternativeDefaultExpression &&
                                            defaultValue != null

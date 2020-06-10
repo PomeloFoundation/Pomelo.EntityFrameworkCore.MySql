@@ -78,7 +78,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             var geometry = (Geometry)value;
             var defaultSrid = geometry.SRID == 0;
 
-            if (geometry == Point.Empty)
+            if (CheckEmptyValue(geometry))
             {
                 defaultSrid = true;
             }
@@ -149,6 +149,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
             var mySqlParameter = (MySqlParameter)parameter;
             mySqlParameter.MySqlDbType = MySqlDbType.Geometry;
+        }
+
+        protected virtual bool CheckEmptyValue(Geometry geometry)
+        {
+            // Only `GeometryCollection.Empty` is currently supported by MySQL and MariaDB.
+            if (geometry == Point.Empty ||
+                geometry == LineString.Empty ||
+                geometry == Polygon.Empty ||
+                geometry == MultiPoint.Empty ||
+                geometry == MultiLineString.Empty ||
+                geometry == MultiPolygon.Empty)
+            {
+                throw new InvalidOperationException($@"An empty spatial geometry value has been used for a type of ""{geometry.GetType()}"". The only empty value currently supported by MySQL and MariaDB is ""GeometryCollection.Empty"".");
+            }
+
+            return geometry == GeometryCollection.Empty;
         }
     }
 }

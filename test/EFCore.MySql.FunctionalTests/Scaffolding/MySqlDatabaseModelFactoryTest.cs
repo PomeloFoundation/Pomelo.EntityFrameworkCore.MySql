@@ -463,14 +463,14 @@ CREATE TABLE `IceCreams` (
                 @"DROP TABLE IF EXISTS `IceCreams`;");
         }
 
-        [Fact()]
+        [Fact]
         public void Column_srid_value_is_set()
         {
             Test(
                 @"
 CREATE TABLE `IceCreamShop` (
     `IceCreamShopId` int NOT NULL,
-    `Location` geometry NOT NULL SRID 0,
+    `Location` geometry NOT NULL /*!80003 SRID 0 */,
     PRIMARY KEY (`IceCreamShopId`)
 );",
                 Enumerable.Empty<string>(),
@@ -479,8 +479,20 @@ CREATE TABLE `IceCreamShop` (
                 {
                     var columns = dbModel.Tables.Single().Columns;
 
-                    Assert.Equal(0, columns.Single(c => c.Name == "Location")
-                        .FindAnnotation(MySqlAnnotationNames.SpatialReferenceSystemId)?.Value);
+                    if (AppConfig.ServerVersion.SupportsSpatialReferenceSystemRestrictedColumns)
+                    {
+                        Assert.Equal(
+                            0, columns.Single(c => c.Name == "Location")
+                                .FindAnnotation(MySqlAnnotationNames.SpatialReferenceSystemId)
+                                ?.Value);
+                    }
+                    else
+                    {
+                        Assert.Null(
+                            columns.Single(c => c.Name == "Location")
+                                .FindAnnotation(MySqlAnnotationNames.SpatialReferenceSystemId)
+                                ?.Value);
+                    }
                 },
                 @"DROP TABLE IF EXISTS `IceCreamShop`;");
         }
@@ -652,7 +664,7 @@ CREATE FULLTEXT INDEX `IX_IceCreams_Name` ON `IceCreams` (`Name`);",
                 @"
 CREATE TABLE `IceCreamShop` (
     `IceCreamShopId` int NOT NULL,
-    `Location` geometry NOT NULL SRID 0,
+    `Location` geometry NOT NULL /*!80003 SRID 0 */,
     PRIMARY KEY (`IceCreamShopId`)
 );
 

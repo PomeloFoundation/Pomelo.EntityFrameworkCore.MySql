@@ -75,7 +75,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     _geometryMethodToFunctionName.TryGetValue(method, out functionName))
                 {
                     instance = _sqlExpressionFactory.ApplyTypeMapping(
-                        instance, _typeMappingSource.FindMapping(instance.Type, storeType));
+                        instance,
+                        _typeMappingSource.FindMapping(instance.Type, storeType));
 
                     var typeMappedArguments = new List<SqlExpression>
                     {
@@ -98,7 +99,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
                     return _sqlExpressionFactory.Function(
                         functionName,
-                        Simplify(typeMappedArguments),
+                        typeMappedArguments,
                         method.ReturnType,
                         resultTypeMapping);
                 }
@@ -137,31 +138,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
                     return _sqlExpressionFactory.LessThanOrEqual(
                         _sqlExpressionFactory.Function(
-                            instance,
                             "ST_Distance",
-                            Simplify(new[] { instance, typeMappedArguments[0] }),
+                            new[] { instance, typeMappedArguments[0] },
                             typeof(double)),
                         typeMappedArguments[1]);
                 }
             }
 
             return null;
-        }
-
-        private IEnumerable<SqlExpression> Simplify(IEnumerable<SqlExpression> arguments)
-        {
-            foreach (var argument in arguments)
-            {
-                if (argument is SqlConstantExpression constant
-                    && constant.Value is Geometry geometry
-                    && geometry.SRID == 0)
-                {
-                    yield return _sqlExpressionFactory.Fragment("'" + geometry.AsText() + "'");
-                    continue;
-                }
-
-                yield return argument;
-            }
         }
     }
 }

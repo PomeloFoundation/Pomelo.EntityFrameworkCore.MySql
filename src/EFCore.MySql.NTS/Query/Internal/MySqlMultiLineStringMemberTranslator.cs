@@ -5,6 +5,7 @@ using System;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Storage;
 using NetTopologySuite.Geometries;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
@@ -23,10 +24,30 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         {
             if (Equals(member, _isClosed))
             {
-                return _sqlExpressionFactory.Function(
+                SqlExpression sqlExpression = _sqlExpressionFactory.Function(
                     "ST_IsClosed",
                     new [] {instance},
                     returnType);
+
+                // ST_IsRing and others returns TRUE for a NULL value in MariaDB, which is inconsistent with NTS' implementation.
+                // We return the following instead:
+                // CASE
+                //     WHEN instance IS NULL THEN NULL
+                //     ELSE expression
+                // END
+                if (returnType == typeof(bool))
+                {
+                    sqlExpression = _sqlExpressionFactory.Case(
+                        new[]
+                        {
+                            new CaseWhenClause(
+                                _sqlExpressionFactory.IsNull(instance),
+                                _sqlExpressionFactory.Constant(null, RelationalTypeMapping.NullMapping))
+                        },
+                        sqlExpression);
+                }
+
+                return sqlExpression;
             }
 
             return null;
