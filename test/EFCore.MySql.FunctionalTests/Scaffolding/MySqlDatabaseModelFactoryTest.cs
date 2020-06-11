@@ -463,6 +463,40 @@ CREATE TABLE `IceCreams` (
                 @"DROP TABLE IF EXISTS `IceCreams`;");
         }
 
+        [Fact]
+        public void Column_srid_value_is_set()
+        {
+            Test(
+                @"
+CREATE TABLE `IceCreamShop` (
+    `IceCreamShopId` int NOT NULL,
+    `Location` geometry NOT NULL /*!80003 SRID 0 */,
+    PRIMARY KEY (`IceCreamShopId`)
+);",
+                Enumerable.Empty<string>(),
+                Enumerable.Empty<string>(),
+                dbModel =>
+                {
+                    var columns = dbModel.Tables.Single().Columns;
+
+                    if (AppConfig.ServerVersion.SupportsSpatialReferenceSystemRestrictedColumns)
+                    {
+                        Assert.Equal(
+                            0, columns.Single(c => c.Name == "Location")
+                                .FindAnnotation(MySqlAnnotationNames.SpatialReferenceSystemId)
+                                ?.Value);
+                    }
+                    else
+                    {
+                        Assert.Null(
+                            columns.Single(c => c.Name == "Location")
+                                .FindAnnotation(MySqlAnnotationNames.SpatialReferenceSystemId)
+                                ?.Value);
+                    }
+                },
+                @"DROP TABLE IF EXISTS `IceCreamShop`;");
+        }
+
         #endregion
 
         #region UniqueConstraintFacets
@@ -586,7 +620,7 @@ CREATE INDEX `IX_IceCreams_Brand_Name` ON `IceCreams` (`Name`, `Brand`(20));
                 Enumerable.Empty<string>(),
                 dbModel =>
                 {
-                    var index = dbModel.Tables.Single().Indexes.Single();
+                    var index = Assert.Single(dbModel.Tables.Single().Indexes);
 
                     Assert.Equal("IceCreams", index.Table.Name);
                     Assert.Equal(2, index.Columns.Count);
@@ -595,6 +629,58 @@ CREATE INDEX `IX_IceCreams_Brand_Name` ON `IceCreams` (`Name`, `Brand`(20));
                     Assert.Equal(new [] { 0, 20 }, index.FindAnnotation(MySqlAnnotationNames.IndexPrefixLength)?.Value);
                 },
                 @"DROP TABLE IF EXISTS `IceCreams`;");
+        }
+
+        [Fact]
+        public void Set_fulltext_for_fulltext_index()
+        {
+            Test(
+                @"
+CREATE TABLE `IceCreams` (
+    `IceCreamId` int NOT NULL,
+    `Name` varchar(255) NOT NULL,
+    PRIMARY KEY (`IceCreamId`)
+);
+
+CREATE FULLTEXT INDEX `IX_IceCreams_Name` ON `IceCreams` (`Name`);",
+                Enumerable.Empty<string>(),
+                Enumerable.Empty<string>(),
+                dbModel =>
+                {
+                    var index = Assert.Single(dbModel.Tables.Single().Indexes);
+
+                    Assert.Equal("IceCreams", index.Table.Name);
+                    Assert.Equal(1, index.Columns.Count);
+                    Assert.Equal("Name", index.Columns[0].Name);
+                    Assert.Equal(true, index.FindAnnotation(MySqlAnnotationNames.FullTextIndex)?.Value);
+                },
+                @"DROP TABLE IF EXISTS `IceCreams`;");
+        }
+
+        [Fact]
+        public void Set_spatial_for_spatial_index()
+        {
+            Test(
+                @"
+CREATE TABLE `IceCreamShop` (
+    `IceCreamShopId` int NOT NULL,
+    `Location` geometry NOT NULL /*!80003 SRID 0 */,
+    PRIMARY KEY (`IceCreamShopId`)
+);
+
+CREATE SPATIAL INDEX `IX_IceCreams_Location` ON `IceCreamShop` (`Location`);",
+                Enumerable.Empty<string>(),
+                Enumerable.Empty<string>(),
+                dbModel =>
+                {
+                    var index = Assert.Single(dbModel.Tables.Single().Indexes);
+
+                    Assert.Equal("IceCreamShop", index.Table.Name);
+                    Assert.Equal(1, index.Columns.Count);
+                    Assert.Equal("Location", index.Columns[0].Name);
+                    Assert.Equal(true, index.FindAnnotation(MySqlAnnotationNames.SpatialIndex)?.Value);
+                },
+                @"DROP TABLE IF EXISTS `IceCreamShop`;");
         }
 
         #endregion

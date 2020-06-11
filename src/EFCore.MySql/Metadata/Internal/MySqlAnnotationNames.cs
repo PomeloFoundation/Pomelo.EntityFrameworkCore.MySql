@@ -27,5 +27,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
         public const string CharSet = Prefix + "CharSet";
         public const string Collation = Prefix + "Collation";
         public const string IndexPrefixLength = Prefix + "IndexPrefixLength";
+        public const string SpatialReferenceSystemId = Prefix + "SpatialReferenceSystemId";
     }
 }

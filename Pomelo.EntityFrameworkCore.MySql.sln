@@ -30,6 +30,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.MySql.FunctionalTest
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.MySql.IntegrationTests", "test\EFCore.MySql.IntegrationTests\EFCore.MySql.IntegrationTests.csproj", "{FF3B4140-42B3-4127-96D8-681858A5387B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EFCore.MySql.NTS", "src\EFCore.MySql.NTS\EFCore.MySql.NTS.csproj", "{7A727AB9-38F0-40E5-B134-7AC830B8D1EC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +54,10 @@ Global
 		{FF3B4140-42B3-4127-96D8-681858A5387B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FF3B4140-42B3-4127-96D8-681858A5387B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FF3B4140-42B3-4127-96D8-681858A5387B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A727AB9-38F0-40E5-B134-7AC830B8D1EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A727AB9-38F0-40E5-B134-7AC830B8D1EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A727AB9-38F0-40E5-B134-7AC830B8D1EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A727AB9-38F0-40E5-B134-7AC830B8D1EC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -61,6 +67,7 @@ Global
 		{DE5212AE-4C17-4702-851D-0F1FC0D32E3C} = {6EC4A4AA-D865-4EF9-BD52-C2D0AA075CDF}
 		{E7D9C7D9-1CDD-4745-975D-9752AE095418} = {6EC4A4AA-D865-4EF9-BD52-C2D0AA075CDF}
 		{FF3B4140-42B3-4127-96D8-681858A5387B} = {6EC4A4AA-D865-4EF9-BD52-C2D0AA075CDF}
+		{7A727AB9-38F0-40E5-B134-7AC830B8D1EC} = {7E8380DB-F015-407B-99C2-26404E551673}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {48E34212-4B35-4A81-92F9-3C25D4E76D6C}

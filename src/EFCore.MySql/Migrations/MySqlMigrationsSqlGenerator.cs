@@ -918,7 +918,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
 
             builder.Append(operation.IsNullable ? " NULL" : " NOT NULL");
 
-            DefaultValue(operation.DefaultValue, operation.DefaultValueSql, columnType, builder);
+            if (columnType.IndexOf("blob", StringComparison.OrdinalIgnoreCase) < 0 &&
+                columnType.IndexOf("text", StringComparison.OrdinalIgnoreCase) < 0 &&
+                columnType.IndexOf("geometry", StringComparison.OrdinalIgnoreCase) < 0 &&
+                columnType.IndexOf("json", StringComparison.OrdinalIgnoreCase) < 0)
+            {
+                DefaultValue(operation.DefaultValue, operation.DefaultValueSql, columnType, builder);
+            }
+
+            var srid = operation[MySqlAnnotationNames.SpatialReferenceSystemId];
+            if (srid != null &&
+                columnType.IndexOf("geometry", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                builder.Append($" /*!80003 SRID {srid} */");
+            }
         }
 
         protected override string GetColumnType(string schema, string table, string name, ColumnOperation operation, IModel model)

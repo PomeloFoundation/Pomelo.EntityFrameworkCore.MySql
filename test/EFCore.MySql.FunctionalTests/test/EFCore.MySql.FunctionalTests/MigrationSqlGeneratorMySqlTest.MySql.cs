@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
+using NetTopologySuite.Geometries;
+using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
@@ -51,6 +53,34 @@ ALTER TABLE `Cars` DROP PRIMARY KEY;
 
 ALTER TABLE `Cars` ADD CONSTRAINT `FK_Cars_LicensePlates_LicensePlateNumber` FOREIGN KEY (`LicensePlateNumber`) REFERENCES `LicensePlates` (`LicensePlateNumber`) ON DELETE CASCADE;
 ");
+        }
+
+        [ConditionalFact]
+        public virtual void CreateTable_uses_srid()
+        {
+            Generate(
+                new CreateTableOperation
+                {
+                    Name = "IceCreamShops",
+                    Columns =
+                    {
+                        new AddColumnOperation
+                        {
+                            Name = "Location",
+                            ClrType = typeof(Point),
+                            ColumnType = "GEOMETRY",
+                            [MySqlAnnotationNames.SpatialReferenceSystemId] = 0,
+                        }
+                    }
+                });
+
+            Assert.Equal(
+                @"CREATE TABLE `IceCreamShops` (
+    `Location` GEOMETRY NOT NULL /*!80003 SRID 0 */
+);
+",
+                Sql,
+                ignoreLineEndingDifferences: true);
         }
 
         private static void SetupModel(ModelBuilder modelBuilder)

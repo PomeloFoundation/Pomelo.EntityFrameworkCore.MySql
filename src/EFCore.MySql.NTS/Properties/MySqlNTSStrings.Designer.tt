@@ -1,0 +1,6 @@
+<#
+    Session["ResourceFile"] = "MySqlNTSStrings.resx";
+    Session["LoggingDefinitionsClass"] = "MySqlNtsLoggingDefinitions";
+    Session["NoDiagnostics"] = true;
+#>
+<#@ include file="..\..\..\tools\Resources.tt" #>

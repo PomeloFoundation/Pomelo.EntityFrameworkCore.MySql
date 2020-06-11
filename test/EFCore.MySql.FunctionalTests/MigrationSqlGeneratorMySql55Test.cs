@@ -64,34 +64,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         }
 
         [ConditionalFact]
-        public override void DefaultValue_formats_literal_correctly()
-        {
-            Generate(
-                new CreateTableOperation
-                {
-                    Name = "History",
-                    Columns =
-                    {
-                        new AddColumnOperation
-                        {
-                            Name = "Event",
-                            ClrType = typeof(string),
-                            ColumnType = "TEXT",
-                            DefaultValue = new DateTime(2015, 4, 12, 17, 5, 0)
-                        }
-                    }
-                });
-
-            Assert.Equal(
-                @"CREATE TABLE `History` (
-    `Event` TEXT NOT NULL DEFAULT '2015-04-12 17:05:00'
-);
-",
-                Sql,
-                ignoreLineEndingDifferences: true);
-        }
-
-        [ConditionalFact]
         public override void RenameColumnOperation()
         {
             var migrationBuilder = new MigrationBuilder("MySql");

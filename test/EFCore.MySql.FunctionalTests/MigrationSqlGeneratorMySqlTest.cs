@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.Extensions.DependencyInjection;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Xunit;
@@ -55,7 +54,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         }
 
         [ConditionalFact]
-        public virtual void DefaultValue_formats_literal_correctly()
+        public virtual void DefaultValue_not_generated_for_text_column()
         {
             Generate(
                 new CreateTableOperation
@@ -75,7 +74,35 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
             Assert.Equal(
                 @"CREATE TABLE `History` (
-    `Event` TEXT NOT NULL DEFAULT '2015-04-12 17:05:00'
+    `Event` TEXT NOT NULL
+);
+",
+                Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        public virtual void DefaultValue_formats_literal_correctly()
+        {
+            Generate(
+                new CreateTableOperation
+                {
+                    Name = "History",
+                    Columns =
+                    {
+                        new AddColumnOperation
+                        {
+                            Name = "Event",
+                            ClrType = typeof(string),
+                            ColumnType = "VARCHAR(255)",
+                            DefaultValue = new DateTime(2015, 4, 12, 17, 5, 0)
+                        }
+                    }
+                });
+
+            Assert.Equal(
+                @"CREATE TABLE `History` (
+    `Event` VARCHAR(255) NOT NULL DEFAULT '2015-04-12 17:05:00'
 );
 ",
                 Sql,
@@ -670,6 +697,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         [ConditionalFact]
         public virtual void CreateIndexOperation_spatial()
         {
+            // TODO: Use meaningful column names.
             Generate(
                 new CreateIndexOperation
                 {

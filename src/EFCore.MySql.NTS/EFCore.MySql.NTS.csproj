@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Pomelo's MySQL database provider for Entity Framework Core.</Description>
-    <TargetFramework>$(DefaultNetStandardTargetFramework)</TargetFramework>
+    <Description>NetTopologySuite support for Pomelo's MySQL provider for Entity Framework Core.</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <MinClientVersion>3.6</MinClientVersion>
-    <AssemblyName>Pomelo.EntityFrameworkCore.MySql</AssemblyName>
+    <AssemblyName>Pomelo.EntityFrameworkCore.MySql.NetTopologySuite</AssemblyName>
     <RootNamespace>Pomelo.EntityFrameworkCore.MySql</RootNamespace>
     <IsPackable>true</IsPackable>
-    <DeterministicSourcePaths>false</DeterministicSourcePaths>
+    <PackageTags>$(PackageTags);MySQL;GIS;OpenGIS;NTS;OGC;Spatial</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -18,24 +18,37 @@
     <Compile Include="..\Shared\*.cs" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(LocalPomeloJsonObjectRepository)' == ''">
-    <PackageReference Include="Pomelo.JsonObject" Version="$(PomeloJsonObjectVersion)" />
+  <!-- CHECK: What is this doing? -->
+  <ItemGroup>
+    <None Include="build\**\*">
+      <Pack>True</Pack>
+      <PackagePath>build</PackagePath>
+    </None>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(LocalEFCoreRepository)' == ''">
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(MicrosoftEntityFrameworkCoreRelationalVersion)" />
+  <ItemGroup>
+    <ProjectReference Include="..\EFCore.MySql\EFCore.MySql.csproj" PrivateAssets="contentfiles;build" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NetTopologySuite" Version="$(NetTopologySuitePackageVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(LocalMySqlConnectorRepository)' == ''">
     <PackageReference Include="MySqlConnector" Version="$(MySqlConnectorVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(LocalPomeloJsonObjectRepository)' != ''">
-    <Reference Include="Pomelo.JsonObject">
-      <HintPath>$(LocalPomeloJsonObjectRepository)\src\Pomelo.JsonObject\bin\Debug\netstandard2.0\Pomelo.JsonObject.dll</HintPath>
+  <ItemGroup Condition="'$(LocalEFCoreRepository)' == ''">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(MicrosoftEntityFrameworkCoreRelationalVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(LocalMySqlConnectorRepository)' != ''">
+    <Reference Include="MySqlConnector">
+      <HintPath>E:\Sources\MySqlConnector\src\MySqlConnector\bin\Debug\netstandard2.0\MySqlConnector.dll</HintPath>
     </Reference>
   </ItemGroup>
 
+  <!-- TODO: Check, whether the following references are really all in use. -->
   <ItemGroup Condition="'$(LocalEFCoreRepository)' != ''">
     <Reference Include="Microsoft.EntityFrameworkCore">
       <HintPath>$(LocalEFCoreRepository)\artifacts\bin\EFCore.Relational\Debug\$(TargetFramework)\Microsoft.EntityFrameworkCore.dll</HintPath>
@@ -64,16 +77,10 @@
     <PackageReference Include="System.ComponentModel.Annotations" Version="$(SystemComponentModelAnnotationsVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(LocalMySqlConnectorRepository)' != ''">
-    <Reference Include="MySqlConnector">
-      <HintPath>$(LocalMySqlConnectorRepository)\src\MySqlConnector\bin\Debug\$(TargetFramework)\MySqlConnector.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
   <ItemGroup>
-    <None Update="Properties\MySqlStrings.Designer.tt">
+    <None Update="Properties\MySqlNTSStrings.Designer.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>MySqlStrings.Designer.cs</LastGenOutput>
+      <LastGenOutput>MySqlNTSStrings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
 
@@ -82,16 +89,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Properties\MySqlStrings.Designer.cs">
+    <Compile Update="Properties\MySqlNTSStrings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>MySqlStrings.Designer.tt</DependentUpon>
+      <DependentUpon>MySqlNTSStrings.Designer.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Properties\MySqlStrings.resx">
+    <EmbeddedResource Update="Properties\MySqlNTSStrings.resx">
       <CustomToolNamespace>Pomelo.EntityFrameworkCore.MySql.Internal</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
+
 </Project>

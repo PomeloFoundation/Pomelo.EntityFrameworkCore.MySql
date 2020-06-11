@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
+using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
-    // Made internal to skip all tests.
-    internal class SpatialMySqlTest : SpatialTestBase<SpatialMySqlFixture>
+    public class SpatialMySqlTest : SpatialTestBase<SpatialMySqlFixture>
     {
         public SpatialMySqlTest(SpatialMySqlFixture fixture)
             : base(fixture)
@@ -14,5 +14,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
         protected override void UseTransaction(DatabaseFacade facade, IDbContextTransaction transaction)
             => facade.UseTransaction(transaction.GetDbTransaction());
+
+        [ConditionalFact(Skip = "Point.Empty is currently not supported by MySQL and MariaDB.")]
+        public override void Translators_handle_static_members()
+            => base.Translators_handle_static_members();
     }
 }
