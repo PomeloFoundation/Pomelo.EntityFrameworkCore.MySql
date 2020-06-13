@@ -1,9 +1,7 @@
 // Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
-using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.IO;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MySql.Data.Types;
@@ -39,21 +37,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.ValueConversion.Internal
         private static readonly ConcurrentDictionary<uint, NtsGeometryServices> _geometryServiceses = new ConcurrentDictionary<uint, NtsGeometryServices>();
 
         private static MySqlGeometry ConvertToProviderCore(TGeometry v)
-        {
-            var geometry = MySqlGeometry.FromWkb(v.SRID, v.ToBinary());
-#if DEBUG
-            var hexString = BitConverter.ToString(geometry.Value).Replace("-", string.Empty);
-            Debug.WriteLine("Spatial to provider: " + hexString);
-#endif
-            return geometry;
-        }
+            => MySqlGeometry.FromWkb(v.SRID, v.ToBinary());
 
         private static TGeometry ConvertFromProviderCore(MySqlGeometry v)
         {
-#if DEBUG
-            var hexString = BitConverter.ToString(v.Value).Replace("-", string.Empty);
-            Debug.WriteLine("Spatial from provider: " + hexString);
-#endif
             using var memoryStream = new MemoryStream(v.Value);
 
             // MySQL starts it's spatial data with a 4 byte SRID, that is unexpected by WKBReader.
