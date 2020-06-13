@@ -7,7 +7,7 @@
     <AssemblyName>Pomelo.EntityFrameworkCore.MySql.NetTopologySuite</AssemblyName>
     <RootNamespace>Pomelo.EntityFrameworkCore.MySql</RootNamespace>
     <IsPackable>true</IsPackable>
-    <PackageTags>$(PackageTags);MySQL;GIS;OpenGIS;NTS;OGC;Spatial</PackageTags>
+    <PackageTags>$(PackageTags);gis;opengis;nts;ogc;spatial</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup>

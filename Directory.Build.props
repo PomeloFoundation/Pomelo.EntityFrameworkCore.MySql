@@ -10,7 +10,7 @@
 
   <PropertyGroup>
     <StrongNameKeyId>Pomelo.EntityFrameworkCore.MySql</StrongNameKeyId>
-    <PackageTags>Entity Framework Core MySQL;entity-framework-core-mysql;EF MySQL;EF Core MySQL</PackageTags>
+    <PackageTags>pomelo;mysql;mariadb;Entity Framework Core;entity-framework-core;ef;efcore;ef core;orm;sql</PackageTags>
     <Product>Pomelo.EntityFrameworkCore.MySql</Product>
     <Authors>Pomelo Foundation</Authors>
     <Company>Pomelo Foundation</Company>

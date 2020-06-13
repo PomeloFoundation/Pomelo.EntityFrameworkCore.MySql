@@ -12,7 +12,7 @@ variables:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   dotnet_version: 3.1.x
-  dotnet_ef_tools_version: 3.1.3
+  dotnet_ef_tools_version: 3.1.5
 
 jobs:
 
@@ -266,7 +266,7 @@ jobs:
       set -e
 
       pack="false"
-      pack_nuget_org="false"
+      pack_nuget_org=""
       pack_wip="false"
 
       echo "Build.SourceBranch=$(Build.SourceBranch)"
@@ -301,17 +301,33 @@ jobs:
           "/p:DotNetFinalVersionKind=$final_version_kind" \
           "/p:ContinuousIntegrationBuild=true" \
           src/EFCore.MySql/
+        ./dotnet-env.sh dotnet pack \
+          -c Release \
+          "/p:OfficialBuildId=$(Build.BuildNumber)" \
+          "/p:DotNetFinalVersionKind=$final_version_kind" \
+          "/p:ContinuousIntegrationBuild=true" \
+          src/EFCore.MySql.NTS/
       fi
 
+      # If ALL nupkg files end in the branch name (no "preview-" etc.), we consider
+      # this an official release and push this to nuget.org.
+      # Otherwise, this release will be pushed exclusively to AZDO as a nightly build.
       if [ "$final_version_kind" != "" ]; then
         IFS=$'\n'
         for i in $(find artifacts -name "*.nupkg"); do
           filename=$(basename $i)
-          if [ "$filename" = "Pomelo.EntityFrameworkCore.MySql.$(Build.SourceBranchName).nupkg" ]; then
+          if { [ "$pack_nuget_org" == "" ] || [ "$pack_nuget_org" == "true" ]; } && [ "$filename" = "*.$(Build.SourceBranchName).nupkg" ]; then
             pack_nuget_org="true"
+          elif [ $pack_nuget_org = "true" ]; then
+            pack_nuget_org="false"
+            break
           fi
         done
         unset IFS
+      fi
+
+      if [ "$pack_nuget_org" == "" ]; then
+        pack_nuget_org="false"
       fi
 
       echo "Pack.Pack=$pack"
