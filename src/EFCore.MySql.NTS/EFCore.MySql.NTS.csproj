@@ -8,6 +8,7 @@
     <RootNamespace>Pomelo.EntityFrameworkCore.MySql</RootNamespace>
     <IsPackable>true</IsPackable>
     <PackageTags>$(PackageTags);gis;opengis;nts;ogc;spatial</PackageTags>
+    <DeterministicSourcePaths>false</DeterministicSourcePaths>
   </PropertyGroup>
 
   <PropertyGroup>
