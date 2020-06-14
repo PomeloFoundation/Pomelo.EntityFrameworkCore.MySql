@@ -51,8 +51,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         protected override void ConfigureParameter(DbParameter parameter)
         {
-            var mySqlParameter = parameter as MySqlParameter;
-            if (mySqlParameter == null)
+            if (!(parameter is MySqlParameter mySqlParameter))
             {
                 throw new ArgumentException($"MySql-specific type mapping {GetType()} being used with non-MySql parameter type {parameter.GetType().Name}");
             }

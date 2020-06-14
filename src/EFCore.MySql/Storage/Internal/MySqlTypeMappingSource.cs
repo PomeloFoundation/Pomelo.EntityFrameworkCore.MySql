@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text.Json;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -454,7 +455,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
                 if (clrType.TryGetElementType(typeof(JsonObject<>)) != null)
                 {
-                    return new MySqlJsonTypeMapping(clrType);
+                    return new MySqlLegacyJsonTypeMapping(clrType);
                 }
             }
 

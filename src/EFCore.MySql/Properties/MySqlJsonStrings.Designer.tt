@@ -1,0 +1,6 @@
+<#
+    Session["ResourceFile"] = "MySqlJsonStrings.resx";
+    Session["LoggingDefinitionsClass"] = "MySqlJsonLoggingDefinitions";
+    Session["NoDiagnostics"] = true;
+#>
+<#@ include file="..\..\..\tools\Resources.tt" #>

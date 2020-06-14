@@ -3,7 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
@@ -11,6 +14,8 @@ using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
@@ -42,6 +47,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         private const ulong LimitUpperBound = 18446744073709551610;
 
+        [NotNull] private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
         private readonly IMySqlOptions _options;
 
         /// <summary>
@@ -50,10 +56,118 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         /// </summary>
         public MySqlQuerySqlGenerator(
             [NotNull] QuerySqlGeneratorDependencies dependencies,
+            [NotNull] MySqlSqlExpressionFactory sqlExpressionFactory,
             [CanBeNull] IMySqlOptions options)
             : base(dependencies)
         {
+            _sqlExpressionFactory = sqlExpressionFactory;
             _options = options;
+        }
+
+        protected override Expression VisitExtension(Expression extensionExpression)
+            => extensionExpression switch
+            {
+                MySqlJsonTraversalExpression jsonTraversalExpression => VisitJsonPathTraversal(jsonTraversalExpression),
+                _ => base.VisitExtension(extensionExpression)
+            };
+
+        protected virtual Expression VisitJsonPathTraversal(MySqlJsonTraversalExpression expression)
+        {
+            if (expression.Path.Count <= 0)
+            {
+                Visit(expression.Expression);
+                return expression;
+            }
+
+            // If the path contains parameters, then the -> and ->> aliases are not supported by MySQL, because
+            // we need to concatenate the path and the parameters.
+            // We will use JSON_EXTRACT (and JSON_UNQUOTE if needed) only in this case, because the aliases
+            // are much more readable.
+            var isSimplePath = expression.Path.All(
+                l => l is SqlConstantExpression ||
+                     l is MySqlJsonArrayIndexExpression e && e.Expression is SqlConstantExpression);
+
+            if (isSimplePath)
+            {
+                Visit(expression.Expression);
+
+                Sql.Append(
+                    expression.ReturnsText
+                        ? "->>"
+                        : "->");
+                Sql.Append("'$");
+
+                foreach (var location in expression.Path)
+                {
+                    if (location is MySqlJsonArrayIndexExpression arrayIndexExpression)
+                    {
+                        Sql.Append("[");
+                        Visit(arrayIndexExpression.Expression);
+                        Sql.Append("]");
+                    }
+                    else
+                    {
+                        Sql.Append(".");
+                        Visit(location);
+                    }
+                }
+
+                Sql.Append("'");
+            }
+            else
+            {
+                if (expression.ReturnsText)
+                {
+                    Sql.Append("JSON_UNQUOTE(");
+                }
+
+                Sql.Append("JSON_EXTRACT(");
+
+                Visit(expression.Expression);
+
+                Sql.Append(", CONCAT(");
+                Sql.Append("'$");
+
+                foreach (var location in expression.Path)
+                {
+                    if (location is MySqlJsonArrayIndexExpression arrayIndexExpression)
+                    {
+                        var isConstantExpression = arrayIndexExpression.Expression is SqlConstantExpression;
+
+                        Sql.Append("[");
+
+                        if (!isConstantExpression)
+                        {
+                            Sql.Append("', ");
+                        }
+
+                        Visit(arrayIndexExpression.Expression);
+
+                        if (!isConstantExpression)
+                        {
+                            Sql.Append(", '");
+                        }
+
+                        Sql.Append("]");
+                    }
+                    else
+                    {
+                        Sql.Append(".");
+                        Visit(location);
+                    }
+                }
+
+                Sql.Append("'");
+                Sql.Append(")");
+                Sql.Append(")");
+
+                if (expression.ReturnsText)
+                {
+                    Sql.Append(")");
+                }
+            }
+
+            return expression;
         }
 
         /// <summary>
@@ -239,7 +353,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             // There needs to be no CAST() applied between the exact same store type. This could happen, if
             // `System.DateTime` and `System.DateTimeOffset` are used in conjunction, because both use different type
             // mappings, but map to the same store type (e.g. `datetime(6)`).
-            if (!castMapping.Equals(sqlUnaryExpression.Operand.TypeMapping.StoreType, StringComparison.OrdinalIgnoreCase))
+            //
+            // An exception is the JSON data type, when used in conjunction with a parameter (like `JsonDocument`).
+            // JSON parameters like that will be serialized to string and supplied as a string parameter to MySQL
+            // (at least this seems to be the case currently with MySqlConnector). To make assignments and comparisons
+            // between JSON columns and JSON parameters (supplied as string) work, the string needs to be explicitly
+            // converted to JSON.
+            if (!castMapping.Equals(sqlUnaryExpression.Operand.TypeMapping.StoreType, StringComparison.OrdinalIgnoreCase) ||
+                castMapping == "json")
             {
                 if (useDecimalToDoubleWorkaround)
                 {
