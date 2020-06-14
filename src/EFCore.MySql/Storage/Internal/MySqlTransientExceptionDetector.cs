@@ -3,7 +3,7 @@
 
 using System;
 using JetBrains.Annotations;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {

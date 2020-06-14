@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using Moq;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Pomelo.EntityFrameworkCore.MySql.ValueGeneration.Internal;

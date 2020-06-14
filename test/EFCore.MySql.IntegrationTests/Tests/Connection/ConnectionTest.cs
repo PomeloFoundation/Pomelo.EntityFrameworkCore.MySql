@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Connection

@@ -2,7 +2,7 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System.Data.Common;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
