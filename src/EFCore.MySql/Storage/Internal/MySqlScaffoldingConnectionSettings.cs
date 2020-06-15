@@ -11,7 +11,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public const string ScaffoldPrefix = "Scaffold:";
         public const string CharSetKey = ScaffoldPrefix + "CharSet";
         public const string CollationKey = ScaffoldPrefix + "Collation";
-        //public const string SpatialKey = ScaffoldPrefix + "Spatial";
 
         private readonly DbConnectionStringBuilder _csb;
 
@@ -21,12 +20,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
             CharSet = GetBoolean(CharSetKey, true);
             Collation = GetBoolean(CollationKey, true);
-            //Spatial = GetBoolean(SpatialKey, false);
         }
 
         public bool CharSet { get; set; }
         public bool Collation { get; set; }
-        //public bool Spatial { get; set; }
 
         public string GetProviderCompatibleConnectionString()
         {
@@ -34,7 +31,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
             csb.Remove(CharSetKey);
             csb.Remove(CollationKey);
-            //csb.Remove(SpatialKey);
 
             return csb.ConnectionString;
         }
