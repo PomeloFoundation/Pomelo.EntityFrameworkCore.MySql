@@ -14,6 +14,7 @@ using System.Diagnostics;
 using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.Extensions.DependencyInjection;
+using NetTopologySuite.Geometries;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 
@@ -275,17 +276,19 @@ DROP TABLE PrincipalTable;");
 
         #region ColumnFacets
 
-        [Fact(Skip = "Issue #582")]
+        [Fact]
         public void Column_storetype_is_set()
         {
             Test(
                 @"
 CREATE TABLE StoreType (
-    IntegerProperty integer,
+    /* IntegerProperty int,
     RealProperty real,
     TextProperty text,
-    BlobProperty blob,
-    RandomProperty randomType
+    BlobProperty blob,*/
+    GeometryProperty geometry,
+    PointProperty point/*,
+    RandomProperty randomType*/
 );",
                 Enumerable.Empty<string>(),
                 Enumerable.Empty<string>(),
@@ -293,11 +296,13 @@ CREATE TABLE StoreType (
                     {
                         var columns = dbModel.Tables.Single().Columns;
 
-                        Assert.Equal("integer", columns.Single(c => c.Name == "IntegerProperty").StoreType);
-                        Assert.Equal("real", columns.Single(c => c.Name == "RealProperty").StoreType);
-                        Assert.Equal("text", columns.Single(c => c.Name == "TextProperty").StoreType);
-                        Assert.Equal("blob", columns.Single(c => c.Name == "BlobProperty").StoreType);
-                        Assert.Equal("randomType", columns.Single(c => c.Name == "RandomProperty").StoreType);
+                        //Assert.Equal("integer", columns.Single(c => c.Name == "IntegerProperty").StoreType);
+                        //Assert.Equal("real", columns.Single(c => c.Name == "RealProperty").StoreType);
+                        //Assert.Equal("text", columns.Single(c => c.Name == "TextProperty").StoreType);
+                        //Assert.Equal("blob", columns.Single(c => c.Name == "BlobProperty").StoreType);
+                        Assert.Equal("geometry", columns.Single(c => c.Name == "GeometryProperty").StoreType);
+                        Assert.Equal("point", columns.Single(c => c.Name == "PointProperty").StoreType);
+                        //Assert.Equal("randomType", columns.Single(c => c.Name == "RandomProperty").StoreType);
                     },
                 @"DROP TABLE StoreType;");
         }

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
@@ -251,14 +252,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             {
                 var bit1AsBool = _options.DefaultDataTypeMappings.ClrBoolean == MySqlBooleanType.Bit1;
 
-                _storeTypeMappings[bit1AsBool ? "bit(1)" : "tinyint(1)"] = new[] { bit1AsBool ? _bit1 : _tinyint1 };
+                _storeTypeMappings[bit1AsBool ? "bit(1)" : "tinyint(1)"] = new RelationalTypeMapping[] { bit1AsBool ? _bit1 : _tinyint1 };
                 _clrTypeMappings[typeof(bool)] = bit1AsBool ? _bit1 : _tinyint1;
             }
 
             // Guid
             if (_guid != null)
             {
-                _storeTypeMappings[_guid.StoreType] = new []{ _guid };
+                _storeTypeMappings[_guid.StoreType] = new RelationalTypeMapping[]{ _guid };
                 _clrTypeMappings[typeof(Guid)] = _guid;
             }
 

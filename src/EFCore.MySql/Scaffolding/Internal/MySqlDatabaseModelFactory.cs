@@ -118,6 +118,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
                         // TODO: Output warning.
                     }
                 }
+
+                // HACK: Explicitly look for NTS library, if it should be used in scaffolding.
+                /*
+                if (_settings.Spatial)
+                {
+                    var type = Type.GetType("Microsoft.Extensions.DependencyInjection.MySqlNetTopologySuiteServiceCollectionExtensions, Pomelo.EntityFrameworkCore.MySql.NetTopologySuite");
+                    var method = type
+                        ?.GetMethod(
+                            "AddEntityFrameworkMySqlNetTopologySuite",
+                            BindingFlags.Static | BindingFlags.Public,
+                            null,
+                            new[] {typeof(IServiceCollection)},
+                            null);
+                    method
+                        ?.Invoke(null, new object[] {_serviceCollection});
+                }
+                */
             });
 
             if (Equals(_options, new MySqlOptions()))
