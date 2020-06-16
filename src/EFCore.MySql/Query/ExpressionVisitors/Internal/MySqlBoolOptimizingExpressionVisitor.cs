@@ -53,8 +53,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         {
             var oldSkipExplicitTrueValue = _skipExplicitTrueValue;
 
-            // Don't output "NOT(`boolColumn` = TRUE)" but just "NOT(`boolColumn`)".
-            // This would apply to a LINQ query like: "context.Table.Where(t => !t.BoolColumn)".
+            // Optimize translation of the following expressions:
+            //     context.Table.Where(t => !t.BoolColumn)
+            //         translate to: NOT(`boolColumn`)
+            //         instead of:   NOT(`boolColumn` <> FALSE)
             if (!_skipExplicitTrueValue &&
                 sqlUnaryExpression.OperatorType == ExpressionType.Not &&
                 sqlUnaryExpression.Operand is ColumnExpression columnExpression &&
@@ -86,11 +88,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             var columnExpression = sqlBinaryExpression.Left as ColumnExpression ?? sqlBinaryExpression.Right as ColumnExpression;
             var sqlConstantExpression = sqlBinaryExpression.Left as SqlConstantExpression ?? sqlBinaryExpression.Right as SqlConstantExpression;
 
-            // Don't output "(`boolColumn` = TRUE) = TRUE" but just "`boolColumn` = TRUE".
-            // Don't output "(`boolColumn` = TRUE) = FALSE" but just "`boolColumn` = FALSE".
-            // This would apply to a LINQ query like: "context.Table.Where(t => t.BoolColumn == true)".
+            // Optimize translation of the following expressions:
+            //     context.Table.Where(t => t.BoolColumn == true)
+            //         translate to: `boolColumn` = TRUE
+            //         instead of:   (`boolColumn` <> FALSE) = TRUE
+            //     context.Table.Where(t => t.BoolColumn == false)
+            //         translate to: `boolColumn` = FALSE
+            //         instead of:   (`boolColumn` <> FALSE) = FALSE
+            //     context.Table.Where(t => t.BoolColumn != true)
+            //         translate to: `boolColumn` <> TRUE
+            //         instead of:   (`boolColumn` <> FALSE) <> TRUE
+            //     context.Table.Where(t => t.BoolColumn != false)
+            //         translate to: `boolColumn` <> FALSE
+            //         instead of:   (`boolColumn` <> FALSE) <> FALSE
             if (!_skipExplicitTrueValue &&
-                sqlBinaryExpression.OperatorType == ExpressionType.Equal &&
+                (sqlBinaryExpression.OperatorType == ExpressionType.Equal || sqlBinaryExpression.OperatorType == ExpressionType.NotEqual) &&
                 columnExpression != null &&
                 sqlConstantExpression != null &&
                 columnExpression.TypeMapping is MySqlBoolTypeMapping &&
@@ -122,7 +134,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             => columnExpression.TypeMapping is MySqlBoolTypeMapping &&
                columnExpression.Type == typeof(bool) &&
                !_skipExplicitTrueValue
-                ? (Expression)_sqlExpressionFactory.Equal(columnExpression, _sqlExpressionFactory.Constant(true))
+                ? (Expression)_sqlExpressionFactory.NotEqual(columnExpression, _sqlExpressionFactory.Constant(false))
                 : columnExpression;
     }
 }
