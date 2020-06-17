@@ -20,6 +20,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         public MySqlOptionsExtension()
         {
             ReplaceLineBreaksWithCharFunction = true;
+
+            // TODO: Change to `true` for EF Core 5.
+            IndexOptimizedBooleanColumns = false;
         }
 
         public MySqlOptionsExtension([NotNull] MySqlOptionsExtension copyFrom)
@@ -34,6 +37,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
             DefaultDataTypeMappings = copyFrom.DefaultDataTypeMappings;
             SchemaBehavior = copyFrom.SchemaBehavior;
             SchemaNameTranslator = copyFrom.SchemaNameTranslator;
+            IndexOptimizedBooleanColumns = copyFrom.IndexOptimizedBooleanColumns;
         }
 
         /// <summary>
@@ -84,6 +88,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
 
         public MySqlSchemaBehavior SchemaBehavior { get; private set; }
         public MySqlSchemaNameTranslator SchemaNameTranslator { get; private set; }
+        public bool IndexOptimizedBooleanColumns { get; private set; }
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -176,7 +181,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
 
             return clone;
         }
-        
+
+        public MySqlOptionsExtension WithIndexOptimizedBooleanColumns(bool enable)
+        {
+            var clone = (MySqlOptionsExtension)Clone();
+            clone.IndexOptimizedBooleanColumns = enable;
+            return clone;
+        }
+
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
         ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
@@ -240,6 +252,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                     _serviceProviderHash = (_serviceProviderHash * 397) ^ (Extension.DefaultDataTypeMappings?.GetHashCode() ?? 0L);
                     _serviceProviderHash = (_serviceProviderHash * 397) ^ Extension.SchemaBehavior.GetHashCode();
                     _serviceProviderHash = (_serviceProviderHash * 397) ^ (Extension.SchemaNameTranslator?.GetHashCode() ?? 0L);
+                    _serviceProviderHash = (_serviceProviderHash * 397) ^ Extension.IndexOptimizedBooleanColumns.GetHashCode();
                 }
 
                 return _serviceProviderHash.Value;
@@ -263,6 +276,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                     = (Extension.DefaultDataTypeMappings?.GetHashCode() ?? 0L).ToString(CultureInfo.InvariantCulture);
                 debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.SchemaBehavior)]
                     = Extension.SchemaBehavior.GetHashCode().ToString(CultureInfo.InvariantCulture);
+                debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.EnableIndexOptimizedBooleanColumns)]
+                    = Extension.IndexOptimizedBooleanColumns.GetHashCode().ToString(CultureInfo.InvariantCulture);
             }
         }
     }

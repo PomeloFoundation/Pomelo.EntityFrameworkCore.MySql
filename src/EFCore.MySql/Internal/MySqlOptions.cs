@@ -33,6 +33,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
 
             // Throw by default if a schema is being used with any type.
             SchemaNameTranslator = null;
+
+            // TODO: Change to `true` for EF Core 5.
+            IndexOptimizedBooleanColumns = false;
         }
 
         public virtual void Initialize(IDbContextOptions options)
@@ -49,6 +52,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             SchemaNameTranslator = mySqlOptions.SchemaNameTranslator ?? (mySqlOptions.SchemaBehavior == MySqlSchemaBehavior.Ignore
                 ? new MySqlSchemaNameTranslator((_, objectName) => objectName)
                 : null);
+            IndexOptimizedBooleanColumns = mySqlOptions.IndexOptimizedBooleanColumns;
         }
 
         public virtual void Validate(IDbContextOptions options)
@@ -127,6 +131,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                         nameof(MySqlDbContextOptionsBuilder.SchemaBehavior),
                         nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
             }
+
+            if (!Equals(IndexOptimizedBooleanColumns, mySqlOptions.IndexOptimizedBooleanColumns))
+            {
+                throw new InvalidOperationException(
+                    CoreStrings.SingletonOptionChanged(
+                        nameof(MySqlDbContextOptionsBuilder.EnableIndexOptimizedBooleanColumns),
+                        nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
+            }
         }
 
         protected virtual MySqlDefaultDataTypeMappings ApplyDefaultDataTypeMappings(MySqlDefaultDataTypeMappings defaultDataTypeMappings, MySqlConnectionSettings connectionSettings)
@@ -195,7 +207,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                    Equals(NationalCharSet, other.NationalCharSet) &&
                    NoBackslashEscapes == other.NoBackslashEscapes &&
                    ReplaceLineBreaksWithCharFunction == other.ReplaceLineBreaksWithCharFunction &&
-                   Equals(DefaultDataTypeMappings, other.DefaultDataTypeMappings);
+                   Equals(DefaultDataTypeMappings, other.DefaultDataTypeMappings) &&
+                   Equals(SchemaNameTranslator, other.SchemaNameTranslator) &&
+                   IndexOptimizedBooleanColumns == other.IndexOptimizedBooleanColumns;
         }
 
         public override bool Equals(object obj)
@@ -220,17 +234,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
 
         public override int GetHashCode()
         {
-            unchecked
-            {
-                var hashCode = ConnectionSettings != null ? ConnectionSettings.GetHashCode() : 0;
-                hashCode = (hashCode * 397) ^ (ServerVersion != null ? ServerVersion.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (int)CharSetBehavior;
-                hashCode = (hashCode * 397) ^ (CharSet != null ? CharSet.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (NationalCharSet != null ? NationalCharSet.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ NoBackslashEscapes.GetHashCode();
-                hashCode = (hashCode * 397) ^ ReplaceLineBreaksWithCharFunction.GetHashCode();
-                return hashCode;
-            }
+            var hashCode = new HashCode();
+            hashCode.Add(ConnectionSettings);
+            hashCode.Add(ServerVersion);
+            hashCode.Add((int) CharSetBehavior);
+            hashCode.Add(CharSet);
+            hashCode.Add(NationalCharSet);
+            hashCode.Add(NoBackslashEscapes);
+            hashCode.Add(ReplaceLineBreaksWithCharFunction);
+            hashCode.Add(DefaultDataTypeMappings);
+            hashCode.Add(SchemaNameTranslator);
+            hashCode.Add(IndexOptimizedBooleanColumns);
+            return hashCode.ToHashCode();
         }
 
         public virtual MySqlConnectionSettings ConnectionSettings { get; private set; }
@@ -242,5 +257,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         public virtual bool ReplaceLineBreaksWithCharFunction { get; private set; }
         public virtual MySqlDefaultDataTypeMappings DefaultDataTypeMappings { get; private set; }
         public virtual MySqlSchemaNameTranslator SchemaNameTranslator { get; private set; }
+        public virtual bool IndexOptimizedBooleanColumns { get; private set; }
     }
 }

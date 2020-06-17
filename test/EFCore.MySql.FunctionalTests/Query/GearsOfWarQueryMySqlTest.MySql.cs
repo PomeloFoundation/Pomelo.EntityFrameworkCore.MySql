@@ -70,7 +70,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
             AssertSingleStatementWithKeyUsage(@"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
-WHERE `w`.`IsAutomatic` <> FALSE",
+WHERE `w`.`IsAutomatic` = TRUE",
                 "IX_Weapons_IsAutomatic");
         }
 

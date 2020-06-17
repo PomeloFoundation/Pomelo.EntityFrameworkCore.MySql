@@ -56,10 +56,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             // Optimize translation of the following expressions:
             //     context.Table.Where(t => !t.BoolColumn)
             //         translate to: `boolColumn` = FALSE
-            //         instead of:   NOT(`boolColumn` <> FALSE)
+            //         instead of:   NOT(`boolColumn` = TRUE)
             // Translating to "NOT(`boolColumn`)" would not use indices in MySQL 5.7.
-            if (!_skipExplicitTrueValue &&
-                sqlUnaryExpression.OperatorType == ExpressionType.Not &&
+            if (sqlUnaryExpression.OperatorType == ExpressionType.Not &&
                 sqlUnaryExpression.Operand is ColumnExpression columnExpression &&
                 columnExpression.TypeMapping is MySqlBoolTypeMapping &&
                 columnExpression.Type == typeof(bool))
@@ -94,16 +93,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             // Optimize translation of the following expressions:
             //     context.Table.Where(t => t.BoolColumn == true)
             //         translate to: `boolColumn` = TRUE
-            //         instead of:   (`boolColumn` <> FALSE) = TRUE
+            //         instead of:   (`boolColumn` = TRUE) = TRUE
             //     context.Table.Where(t => t.BoolColumn == false)
             //         translate to: `boolColumn` = FALSE
-            //         instead of:   (`boolColumn` <> FALSE) = FALSE
+            //         instead of:   (`boolColumn` = TRUE) = FALSE
             //     context.Table.Where(t => t.BoolColumn != true)
             //         translate to: `boolColumn` <> TRUE
-            //         instead of:   (`boolColumn` <> FALSE) <> TRUE
+            //         instead of:   (`boolColumn` = TRUE) <> TRUE
             //     context.Table.Where(t => t.BoolColumn != false)
             //         translate to: `boolColumn` <> FALSE
-            //         instead of:   (`boolColumn` <> FALSE) <> FALSE
+            //         instead of:   (`boolColumn` = TRUE) <> FALSE
             if (!_skipExplicitTrueValue &&
                 (sqlBinaryExpression.OperatorType == ExpressionType.Equal || sqlBinaryExpression.OperatorType == ExpressionType.NotEqual) &&
                 columnExpression != null &&
@@ -137,7 +136,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             => columnExpression.TypeMapping is MySqlBoolTypeMapping &&
                columnExpression.Type == typeof(bool) &&
                !_skipExplicitTrueValue
-                ? (Expression)_sqlExpressionFactory.NotEqual(columnExpression, _sqlExpressionFactory.Constant(false))
+                ? (Expression)_sqlExpressionFactory.Equal(columnExpression, _sqlExpressionFactory.Constant(true))
                 : columnExpression;
     }
 }
