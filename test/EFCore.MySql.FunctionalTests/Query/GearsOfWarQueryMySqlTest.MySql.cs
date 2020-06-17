@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestModels.GearsOfWarModel;
+using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 using Xunit;
 
 // ReSharper disable RedundantBoolCompare
@@ -29,12 +31,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             var connection = context.Database.GetDbConnection();
 
             using var command = connection.CreateCommand();
-            command.CommandText = "EXPLAIN " + sql;
+            command.CommandText = "EXPLAIN " + Regex.Replace(
+                sql,
+                @"\r?\nFROM (?:`.*?`\.)?`.*?`(?: AS `.*?`)?(?=$|\r?\n)",
+                $@"$0{Environment.NewLine}FORCE INDEX ({string.Join(", ", keys.Select(s => $"`{s}`"))})",
+                RegexOptions.IgnoreCase);
 
             using var dataReader = command.ExecuteReader();
             while (dataReader.Read())
             {
-                keysUsed.Add(dataReader.GetString(dataReader.GetOrdinal("key")));
+                var key = dataReader.GetValueOrDefault<string>("key");
+
+                if (!string.IsNullOrEmpty(key))
+                {
+                    keysUsed.Add(key);
+                }
             }
 
             Assert.Empty(keys.Except(keysUsed, StringComparer.OrdinalIgnoreCase));
