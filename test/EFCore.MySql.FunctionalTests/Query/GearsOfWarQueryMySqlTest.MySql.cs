@@ -1,5 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestModels.GearsOfWarModel;
 using Xunit;
 
@@ -13,6 +16,36 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
+        private void AssertKeyUsage(string sql, params string[] keys)
+        {
+            if (keys.Length <= 0)
+            {
+                return;
+            }
+
+            var keysUsed = new HashSet<string>();
+
+            using var context = CreateContext();
+            var connection = context.Database.GetDbConnection();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = "EXPLAIN " + sql;
+
+            using var dataReader = command.ExecuteReader();
+            while (dataReader.Read())
+            {
+                keysUsed.Add(dataReader.GetString(dataReader.GetOrdinal("key")));
+            }
+
+            Assert.Empty(keys.Except(keysUsed, StringComparer.OrdinalIgnoreCase));
+        }
+
+        private void AssertSingleStatementWithKeyUsage(string expected, params string[] keys)
+        {
+            AssertSql(expected);
+            AssertKeyUsage(expected, keys);
+        }
+
         [ConditionalTheory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_bool_optimization(bool isAsync)
@@ -24,10 +57,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     where w.IsAutomatic
                     select w.Name);
 
-            AssertSql(
-                @"SELECT `w`.`Name`
+            AssertSingleStatementWithKeyUsage(@"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
-WHERE `w`.`IsAutomatic` <> FALSE");
+WHERE `w`.`IsAutomatic` <> FALSE",
+                "IX_Weapons_IsAutomatic");
         }
 
         [ConditionalTheory]
@@ -41,10 +74,11 @@ WHERE `w`.`IsAutomatic` <> FALSE");
                     where !w.IsAutomatic
                     select w.Name);
 
-            AssertSql(
+            AssertSingleStatementWithKeyUsage(
                 @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
-WHERE NOT (`w`.`IsAutomatic`)");
+WHERE NOT (`w`.`IsAutomatic`)",
+                "IX_Weapons_IsAutomatic");
         }
 
         [ConditionalTheory]
@@ -58,10 +92,11 @@ WHERE NOT (`w`.`IsAutomatic`)");
                     where w.IsAutomatic == true
                     select w.Name);
 
-            AssertSql(
+            AssertSingleStatementWithKeyUsage(
                 @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
-WHERE `w`.`IsAutomatic` = TRUE");
+WHERE `w`.`IsAutomatic` = TRUE",
+                "IX_Weapons_IsAutomatic");
         }
 
         [ConditionalTheory]
@@ -75,10 +110,11 @@ WHERE `w`.`IsAutomatic` = TRUE");
                     where w.IsAutomatic == false
                     select w.Name);
 
-            AssertSql(
+            AssertSingleStatementWithKeyUsage(
                 @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
-WHERE `w`.`IsAutomatic` = FALSE");
+WHERE `w`.`IsAutomatic` = FALSE",
+                "IX_Weapons_IsAutomatic");
         }
 
         [ConditionalTheory]
@@ -92,10 +128,11 @@ WHERE `w`.`IsAutomatic` = FALSE");
                     where w.IsAutomatic != true
                     select w.Name);
 
-            AssertSql(
+            AssertSingleStatementWithKeyUsage(
                 @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
-WHERE `w`.`IsAutomatic` <> TRUE");
+WHERE `w`.`IsAutomatic` <> TRUE",
+                "IX_Weapons_IsAutomatic");
         }
 
         [ConditionalTheory]
@@ -109,10 +146,11 @@ WHERE `w`.`IsAutomatic` <> TRUE");
                     where w.IsAutomatic != false
                     select w.Name);
 
-            AssertSql(
+            AssertSingleStatementWithKeyUsage(
                 @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
-WHERE `w`.`IsAutomatic` <> FALSE");
+WHERE `w`.`IsAutomatic` <> FALSE",
+                "IX_Weapons_IsAutomatic");
         }
 
         [ConditionalTheory]
@@ -126,10 +164,11 @@ WHERE `w`.`IsAutomatic` <> FALSE");
                     where !(w.IsAutomatic == true)
                     select w.Name);
 
-            AssertSql(
+            AssertSingleStatementWithKeyUsage(
                 @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
-WHERE `w`.`IsAutomatic` <> TRUE");
+WHERE `w`.`IsAutomatic` <> TRUE",
+                "IX_Weapons_IsAutomatic");
         }
 
         [ConditionalTheory]
@@ -143,10 +182,11 @@ WHERE `w`.`IsAutomatic` <> TRUE");
                     where !(w.IsAutomatic == false)
                     select w.Name);
 
-            AssertSql(
+            AssertSingleStatementWithKeyUsage(
                 @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
-WHERE `w`.`IsAutomatic` <> FALSE");
+WHERE `w`.`IsAutomatic` <> FALSE",
+                "IX_Weapons_IsAutomatic");
         }
     }
 }
