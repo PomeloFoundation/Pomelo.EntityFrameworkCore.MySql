@@ -88,7 +88,7 @@ WHERE `w`.`IsAutomatic` <> FALSE",
             AssertSingleStatementWithKeyUsage(
                 @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
-WHERE NOT (`w`.`IsAutomatic`)",
+WHERE `w`.`IsAutomatic` = FALSE",
                 "IX_Weapons_IsAutomatic");
         }
 

@@ -55,8 +55,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
             // Optimize translation of the following expressions:
             //     context.Table.Where(t => !t.BoolColumn)
-            //         translate to: NOT(`boolColumn`)
+            //         translate to: `boolColumn` = FALSE
             //         instead of:   NOT(`boolColumn` <> FALSE)
+            // Translating to "NOT(`boolColumn`)" would not use indices in MySQL 5.7.
             if (!_skipExplicitTrueValue &&
                 sqlUnaryExpression.OperatorType == ExpressionType.Not &&
                 sqlUnaryExpression.Operand is ColumnExpression columnExpression &&
@@ -64,22 +65,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 columnExpression.Type == typeof(bool))
             {
                 _skipExplicitTrueValue = true;
+
+                try
+                {
+                    var newOperand = (SqlExpression)Visit(sqlUnaryExpression.Operand);
+
+                    return _sqlExpressionFactory.MakeBinary(
+                        ExpressionType.Equal,
+                        newOperand,
+                        _sqlExpressionFactory.Constant(false),
+                        sqlUnaryExpression.TypeMapping);
+                }
+                finally
+                {
+                    _skipExplicitTrueValue = oldSkipExplicitTrueValue;
+                }
             }
 
-            try
-            {
-                var newOperand = (SqlExpression)Visit(sqlUnaryExpression.Operand);
-
-                return _sqlExpressionFactory.MakeUnary(
-                    sqlUnaryExpression.OperatorType,
-                    newOperand,
-                    sqlUnaryExpression.Type,
-                    sqlUnaryExpression.TypeMapping);
-            }
-            finally
-            {
-                _skipExplicitTrueValue = oldSkipExplicitTrueValue;
-            }
+            return sqlUnaryExpression.Update((SqlExpression)Visit(sqlUnaryExpression.Operand));
         }
 
         private Expression VisitSqlBinaryExpression(SqlBinaryExpression sqlBinaryExpression)
