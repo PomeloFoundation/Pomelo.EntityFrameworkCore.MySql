@@ -22,7 +22,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         {
             query = base.Process(query);
 
-            query = new MySqlBoolOptimizingExpressionVisitor(SqlExpressionFactory).Visit(query);
+            if (_options.IndexOptimizedBooleanColumns)
+            {
+                query = new MySqlBoolOptimizingExpressionVisitor(SqlExpressionFactory).Visit(query);
+            }
+
             query = new MySqlCompatibilityExpressionVisitor(_options).Visit(query);
 
             return query;

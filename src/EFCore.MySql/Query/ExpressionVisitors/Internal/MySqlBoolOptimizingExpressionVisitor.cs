@@ -53,31 +53,35 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         {
             var oldSkipExplicitTrueValue = _skipExplicitTrueValue;
 
-            // Don't output "NOT(`boolColumn` = TRUE)" but just "NOT(`boolColumn`)".
-            // This would apply to a LINQ query like: "context.Table.Where(t => !t.BoolColumn)".
-            if (!_skipExplicitTrueValue &&
-                sqlUnaryExpression.OperatorType == ExpressionType.Not &&
+            // Optimize translation of the following expressions:
+            //     context.Table.Where(t => !t.BoolColumn)
+            //         translate to: `boolColumn` = FALSE
+            //         instead of:   NOT(`boolColumn` = TRUE)
+            // Translating to "NOT(`boolColumn`)" would not use indices in MySQL 5.7.
+            if (sqlUnaryExpression.OperatorType == ExpressionType.Not &&
                 sqlUnaryExpression.Operand is ColumnExpression columnExpression &&
                 columnExpression.TypeMapping is MySqlBoolTypeMapping &&
                 columnExpression.Type == typeof(bool))
             {
                 _skipExplicitTrueValue = true;
+
+                try
+                {
+                    var newOperand = (SqlExpression)Visit(sqlUnaryExpression.Operand);
+
+                    return _sqlExpressionFactory.MakeBinary(
+                        ExpressionType.Equal,
+                        newOperand,
+                        _sqlExpressionFactory.Constant(false),
+                        sqlUnaryExpression.TypeMapping);
+                }
+                finally
+                {
+                    _skipExplicitTrueValue = oldSkipExplicitTrueValue;
+                }
             }
 
-            try
-            {
-                var newOperand = (SqlExpression)Visit(sqlUnaryExpression.Operand);
-
-                return _sqlExpressionFactory.MakeUnary(
-                    sqlUnaryExpression.OperatorType,
-                    newOperand,
-                    sqlUnaryExpression.Type,
-                    sqlUnaryExpression.TypeMapping);
-            }
-            finally
-            {
-                _skipExplicitTrueValue = oldSkipExplicitTrueValue;
-            }
+            return sqlUnaryExpression.Update((SqlExpression)Visit(sqlUnaryExpression.Operand));
         }
 
         private Expression VisitSqlBinaryExpression(SqlBinaryExpression sqlBinaryExpression)
@@ -86,11 +90,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             var columnExpression = sqlBinaryExpression.Left as ColumnExpression ?? sqlBinaryExpression.Right as ColumnExpression;
             var sqlConstantExpression = sqlBinaryExpression.Left as SqlConstantExpression ?? sqlBinaryExpression.Right as SqlConstantExpression;
 
-            // Don't output "(`boolColumn` = TRUE) = TRUE" but just "`boolColumn` = TRUE".
-            // Don't output "(`boolColumn` = TRUE) = FALSE" but just "`boolColumn` = FALSE".
-            // This would apply to a LINQ query like: "context.Table.Where(t => t.BoolColumn == true)".
+            // Optimize translation of the following expressions:
+            //     context.Table.Where(t => t.BoolColumn == true)
+            //         translate to: `boolColumn` = TRUE
+            //         instead of:   (`boolColumn` = TRUE) = TRUE
+            //     context.Table.Where(t => t.BoolColumn == false)
+            //         translate to: `boolColumn` = FALSE
+            //         instead of:   (`boolColumn` = TRUE) = FALSE
+            //     context.Table.Where(t => t.BoolColumn != true)
+            //         translate to: `boolColumn` <> TRUE
+            //         instead of:   (`boolColumn` = TRUE) <> TRUE
+            //     context.Table.Where(t => t.BoolColumn != false)
+            //         translate to: `boolColumn` <> FALSE
+            //         instead of:   (`boolColumn` = TRUE) <> FALSE
             if (!_skipExplicitTrueValue &&
-                sqlBinaryExpression.OperatorType == ExpressionType.Equal &&
+                (sqlBinaryExpression.OperatorType == ExpressionType.Equal || sqlBinaryExpression.OperatorType == ExpressionType.NotEqual) &&
                 columnExpression != null &&
                 sqlConstantExpression != null &&
                 columnExpression.TypeMapping is MySqlBoolTypeMapping &&

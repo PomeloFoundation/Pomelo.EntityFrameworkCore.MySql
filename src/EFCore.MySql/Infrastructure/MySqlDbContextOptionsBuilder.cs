@@ -123,5 +123,12 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
         /// </summary>
         public virtual MySqlDbContextOptionsBuilder SchemaBehavior(MySqlSchemaBehavior behavior, MySqlSchemaNameTranslator translator = null)
             => WithOption(e => e.WithSchemaBehavior(behavior, translator));
+
+        /// <summary>
+        ///     Configures the context to optimize `System.Boolean` mapped columns for index usage,
+        ///     by translating `e.BoolColumn` to `BoolColumn = TRUE` and `!e.BoolColumn` to `BoolColumn = FALSE`.
+        /// </summary>
+        public virtual MySqlDbContextOptionsBuilder EnableIndexOptimizedBooleanColumns(bool enable = true)
+            => WithOption(e => e.WithIndexOptimizedBooleanColumns(enable));
     }
 }
