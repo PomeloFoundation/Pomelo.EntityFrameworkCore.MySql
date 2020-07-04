@@ -3,16 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
@@ -32,6 +29,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
     {
         private static readonly Regex _typeRegex = new Regex(@"([a-z0-9]+)\s*?(?:\(\s*(\d+)?\s*\))?",
             RegexOptions.IgnoreCase);
+
+        private static readonly HashSet<string> _spatialStoreTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "geometry",
+            "point",
+            "curve",
+            "linestring",
+            "line",
+            "linearring",
+            "surface",
+            "polygon",
+            "geometrycollection",
+            "multipoint",
+            "multicurve",
+            "multilinestring",
+            "multisurface",
+            "multipolygon",
+        };
 
         private readonly IMigrationsAnnotationProvider _migrationsAnnotations;
         private readonly IMySqlOptions _options;
@@ -918,17 +933,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
 
             builder.Append(operation.IsNullable ? " NULL" : " NOT NULL");
 
+            var isSpatialStoreType = IsSpatialStoreType(columnType);
+
             if (columnType.IndexOf("blob", StringComparison.OrdinalIgnoreCase) < 0 &&
                 columnType.IndexOf("text", StringComparison.OrdinalIgnoreCase) < 0 &&
-                columnType.IndexOf("geometry", StringComparison.OrdinalIgnoreCase) < 0 &&
-                columnType.IndexOf("json", StringComparison.OrdinalIgnoreCase) < 0)
+                columnType.IndexOf("json", StringComparison.OrdinalIgnoreCase) < 0 &&
+                !isSpatialStoreType)
             {
                 DefaultValue(operation.DefaultValue, operation.DefaultValueSql, columnType, builder);
             }
 
             var srid = operation[MySqlAnnotationNames.SpatialReferenceSystemId];
-            if (srid != null &&
-                columnType.IndexOf("geometry", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (srid is int &&
+                isSpatialStoreType)
             {
                 builder.Append($" /*!80003 SRID {srid} */");
             }
@@ -1238,5 +1255,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
 
             return source.Substring(0, maxLength);
         }
+
+        private static bool IsSpatialStoreType(string storeType)
+            => _spatialStoreTypes.Contains(storeType);
     }
 }
