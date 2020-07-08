@@ -102,13 +102,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
         /// <returns> <c>true</c> if compatible. </returns>
         public static bool IsCompatibleIdentityColumn(IProperty property)
         {
-            var type = property.ClrType;
-
-            return (type.IsInteger()
-                        || type == typeof(decimal)
-                        || type == typeof(DateTime)
-                        || type == typeof(DateTimeOffset))
-                   && !HasConverter(property);
+            var valueConverter = GetConverter(property);
+            var type = (valueConverter?.ProviderClrType ?? property.ClrType).UnwrapNullableType();
+            return type.IsInteger()
+                   || type == typeof(decimal)
+                   || type == typeof(DateTime)
+                   || type == typeof(DateTimeOffset);
         }
 
         /// <summary>
