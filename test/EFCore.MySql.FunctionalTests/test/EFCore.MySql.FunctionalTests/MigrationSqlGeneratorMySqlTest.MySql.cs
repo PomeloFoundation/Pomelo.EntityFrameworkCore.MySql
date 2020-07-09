@@ -83,6 +83,34 @@ ALTER TABLE `Cars` ADD CONSTRAINT `FK_Cars_LicensePlates_LicensePlateNumber` FOR
                 ignoreLineEndingDifferences: true);
         }
 
+        [ConditionalFact]
+        public virtual void CreateTable_uses_srid_geometry_derived()
+        {
+            Generate(
+                new CreateTableOperation
+                {
+                    Name = "IceCreamShops",
+                    Columns =
+                    {
+                        new AddColumnOperation
+                        {
+                            Name = "Location",
+                            ClrType = typeof(Point),
+                            ColumnType = "POINT",
+                            [MySqlAnnotationNames.SpatialReferenceSystemId] = 4326,
+                        }
+                    }
+                });
+
+            Assert.Equal(
+                @"CREATE TABLE `IceCreamShops` (
+    `Location` POINT NOT NULL /*!80003 SRID 4326 */
+);
+",
+                Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
         private static void SetupModel(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Car>(entity =>
