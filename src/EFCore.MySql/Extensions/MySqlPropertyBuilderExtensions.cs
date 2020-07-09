@@ -134,7 +134,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <returns>The same builder instance so that multiple calls can be chained.</returns>
         public static PropertyBuilder HasSpatialReferenceSystem(
             [NotNull] this PropertyBuilder propertyBuilder,
-            int srid)
+            int? srid)
         {
             Check.NotNull(propertyBuilder, nameof(propertyBuilder));
 

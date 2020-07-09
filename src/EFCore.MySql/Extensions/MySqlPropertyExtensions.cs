@@ -174,15 +174,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
         /// </summary>
         /// <param name="property">The property of which to get the columns SRID from.</param>
         /// <returns>The SRID or null, if no explicit SRID has been set.</returns>
-        public static int GetSpatialReferenceSystem([NotNull] this IProperty property)
-            => (int)property[MySqlAnnotationNames.SpatialReferenceSystemId];
+        public static int? GetSpatialReferenceSystem([NotNull] this IProperty property)
+            => (int?)property[MySqlAnnotationNames.SpatialReferenceSystemId];
 
         /// <summary>
         /// Sets the Spatial Reference System Identifier (SRID) in use by the column of the property.
         /// </summary>
         /// <param name="property">The property to set the columns SRID for.</param>
         /// <param name="srid">The SRID to configure for the property's column.</param>
-        public static void SetSpatialReferenceSystem([NotNull] this IMutableProperty property, int srid)
+        public static void SetSpatialReferenceSystem([NotNull] this IMutableProperty property, int? srid)
             => property.SetOrRemoveAnnotation(MySqlAnnotationNames.SpatialReferenceSystemId, srid);
     }
 }

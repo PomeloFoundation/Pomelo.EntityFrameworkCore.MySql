@@ -15,12 +15,29 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         {
         }
 
-        public override IEnumerable<IAnnotation> For(IModel model) => base.For(model);
-
-        public override IEnumerable<IAnnotation> For(IEntityType entityType) => base.For(entityType);
+        public override IEnumerable<IAnnotation> For(IKey key)
+        {
+            var prefixLength = key.PrefixLength();
+            if (prefixLength != null &&
+                prefixLength.Length > 0)
+            {
+                yield return new Annotation(
+                    MySqlAnnotationNames.IndexPrefixLength,
+                    prefixLength);
+            }
+        }
 
         public override IEnumerable<IAnnotation> For(IIndex index)
         {
+            var prefixLength = index.PrefixLength();
+            if (prefixLength != null &&
+                prefixLength.Length > 0)
+            {
+                yield return new Annotation(
+                    MySqlAnnotationNames.IndexPrefixLength,
+                    prefixLength);
+            }
+
             var isFullText = index.IsFullText();
             if (isFullText.HasValue)
             {
@@ -68,6 +85,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                 yield return new Annotation(
                     MySqlAnnotationNames.Collation,
                     collation);
+            }
+
+            var srid = property.GetSpatialReferenceSystem();
+            if (srid != null)
+            {
+                yield return new Annotation(
+                    MySqlAnnotationNames.SpatialReferenceSystemId,
+                    srid.Value);
             }
         }
     }
