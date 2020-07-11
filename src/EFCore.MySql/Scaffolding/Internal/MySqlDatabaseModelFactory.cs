@@ -28,8 +28,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
     public class MySqlDatabaseModelFactory : DatabaseModelFactory
     {
         private readonly IDiagnosticsLogger<DbLoggerCategory.Scaffolding> _logger;
-        private MySqlScaffoldingConnectionSettings _settings;
         private readonly IMySqlOptions _options;
+
+        protected MySqlScaffoldingConnectionSettings Settings { get; set; }
 
         public MySqlDatabaseModelFactory(
             [NotNull] IDiagnosticsLogger<DbLoggerCategory.Scaffolding> logger,
@@ -39,7 +40,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
 
             _logger = logger;
             _options = options;
-            _settings = new MySqlScaffoldingConnectionSettings(string.Empty);
+            Settings = new MySqlScaffoldingConnectionSettings(string.Empty);
         }
 
         public override DatabaseModel Create(string connectionString, DatabaseModelFactoryOptions options)
@@ -47,9 +48,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
             Check.NotEmpty(connectionString, nameof(connectionString));
             Check.NotNull(options, nameof(options));
 
-            _settings = new MySqlScaffoldingConnectionSettings(connectionString);
+            Settings = new MySqlScaffoldingConnectionSettings(connectionString);
 
-            using var connection = new MySqlConnection(_settings.GetProviderCompatibleConnectionString());
+            using var connection = new MySqlConnection(Settings.GetProviderCompatibleConnectionString());
             return Create(connection, options);
         }
 
@@ -95,7 +96,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
             }
         }
 
-        private void SetupMySqlOptions(DbConnection connection)
+        protected virtual void SetupMySqlOptions(DbConnection connection)
         {
             var optionsBuilder = new DbContextOptionsBuilder();
             optionsBuilder.UseMySql(connection, builder =>
@@ -126,17 +127,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
             }
         }
 
-        private string GetDefaultSchema(DbConnection connection)
-        {
-            return null;
-        }
+        protected virtual string GetDefaultSchema(DbConnection connection)
+            => null;
 
-        private static Func<string, string, bool> GenerateTableFilter(
+        protected virtual Func<string, string, bool> GenerateTableFilter(
             IReadOnlyList<string> tables,
             IReadOnlyList<string> schemas)
-        {
-            return tables.Count > 0 ? (s, t) => tables.Contains(t) : (Func<string, string, bool>)null;
-        }
+            => tables.Count > 0 ? (s, t) => tables.Contains(t) : (Func<string, string, bool>)null;
 
         private const string GetTablesQuery = @"SELECT
     `TABLE_NAME`,
@@ -149,7 +146,7 @@ WHERE
 AND
     `TABLE_TYPE` IN ('BASE TABLE', 'VIEW');";
 
-        private IEnumerable<DatabaseTable> GetTables(
+        protected virtual IEnumerable<DatabaseTable> GetTables(
             DbConnection connection,
             Func<string, string, bool> filter)
         {
@@ -173,7 +170,11 @@ AND
                         table.Name = name;
                         table.Comment = string.IsNullOrEmpty(comment) ? null : comment;
 
-                        if (filter?.Invoke(table.Schema, table.Name) ?? true)
+                        var isValidByFilter = filter?.Invoke(table.Schema, table.Name) ?? true;
+                        var isValidBySettings = !(table is DatabaseView) || Settings.Views;
+
+                        if (isValidByFilter &&
+                            isValidBySettings)
                         {
                             tables.Add(table);
                         }
@@ -211,7 +212,7 @@ AND
 ORDER BY
     `ORDINAL_POSITION`;";
 
-        private void GetColumns(
+        protected virtual void GetColumns(
             DbConnection connection,
             IReadOnlyList<DatabaseTable> tables,
             Func<string, string, bool> tableFilter)
@@ -295,8 +296,8 @@ ORDER BY
                                 DefaultValueSql = CreateDefaultValueString(defaultValue, dataType),
                                 ValueGenerated = valueGenerated,
                                 Comment = string.IsNullOrEmpty(comment) ? null : comment,
-                                [MySqlAnnotationNames.CharSet] = _settings.CharSet ? charset : null,
-                                [MySqlAnnotationNames.Collation] = _settings.Collation ? collation : null,
+                                [MySqlAnnotationNames.CharSet] = Settings.CharSet ? charset : null,
+                                [MySqlAnnotationNames.Collation] = Settings.Collation ? collation : null,
                                 [MySqlAnnotationNames.SpatialReferenceSystemId] = srid,
                             };
 
@@ -313,7 +314,7 @@ ORDER BY
         /// See https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/994#issuecomment-568271740
         /// for tables with differences.
         /// </summary>
-        private string ConvertDefaultValueFromMariaDbToMySql([NotNull] string defaultValue)
+        protected virtual string ConvertDefaultValueFromMariaDbToMySql([NotNull] string defaultValue)
         {
             if (string.Equals(defaultValue, "NULL", StringComparison.OrdinalIgnoreCase))
             {
@@ -333,7 +334,7 @@ ORDER BY
             return defaultValue;
         }
 
-        private static string FilterClrDefaults(string dataTypeName, bool nullable, string defaultValue)
+        protected virtual string FilterClrDefaults(string dataTypeName, bool nullable, string defaultValue)
         {
             if (defaultValue == null)
             {
@@ -372,7 +373,7 @@ ORDER BY
             return defaultValue;
         }
 
-        private string CreateDefaultValueString(string defaultValue, string dataType)
+        protected virtual string CreateDefaultValueString(string defaultValue, string dataType)
         {
             if (defaultValue == null)
             {
@@ -409,7 +410,7 @@ ORDER BY
         /// <remarks>
         /// Primary keys are handled as in <see cref="GetConstraints"/>, not here
         /// </remarks>
-        private void GetPrimaryKeys(
+        protected virtual void GetPrimaryKeys(
             DbConnection connection,
             IReadOnlyList<DatabaseTable> tables)
         {
@@ -472,7 +473,10 @@ ORDER BY
         /// <remarks>
         /// Primary keys are handled as in <see cref="GetConstraints"/>, not here
         /// </remarks>
-        private void GetIndexes(DbConnection connection, IReadOnlyList<DatabaseTable> tables, Func<string, string, bool> tableFilter)
+        protected virtual void GetIndexes(
+            DbConnection connection,
+            IReadOnlyList<DatabaseTable> tables,
+            Func<string, string, bool> tableFilter)
         {
             foreach (var table in tables)
             {
@@ -547,7 +551,9 @@ ORDER BY
         `TABLE_NAME`,
         `REFERENCED_TABLE_NAME`;";
 
-        private void GetConstraints(DbConnection connection, IReadOnlyList<DatabaseTable> tables)
+        protected virtual void GetConstraints(
+            DbConnection connection,
+            IReadOnlyList<DatabaseTable> tables)
         {
             foreach (var table in tables)
             {
@@ -583,25 +589,14 @@ ORDER BY
             }
         }
 
-        private static ReferentialAction? ConvertToReferentialAction(string onDeleteAction)
-        {
-            switch (onDeleteAction.ToUpperInvariant())
+        protected virtual ReferentialAction? ConvertToReferentialAction(string onDeleteAction)
+            => onDeleteAction.ToUpperInvariant() switch
             {
-                case "RESTRICT":
-                    return ReferentialAction.Restrict;
-
-                case "CASCADE":
-                    return ReferentialAction.Cascade;
-
-                case "SET NULL":
-                    return ReferentialAction.SetNull;
-
-                case "NO ACTION":
-                    return ReferentialAction.NoAction;
-
-                default:
-                    return null;
-            }
-        }
+                "RESTRICT" => ReferentialAction.Restrict,
+                "CASCADE" => ReferentialAction.Cascade,
+                "SET NULL" => ReferentialAction.SetNull,
+                "NO ACTION" => ReferentialAction.NoAction,
+                _ => null
+            };
     }
 }
