@@ -222,5 +222,55 @@ WHERE `o`.`OrderID` LIKE '!%' ESCAPE '!'");
             byte[] b = {0x30, 0x31};
             Assert.True(EF.Functions.Like(b, "30%"));
         }
+
+        [ConditionalFact]
+        public virtual void Hex()
+        {
+            using (var context = CreateContext())
+            {
+                var count = context.Orders
+                    .Count(o => EF.Functions.Hex(o.CustomerID) == "56494E4554");
+
+                Assert.Equal(5, count);
+
+                AssertSql(
+                    @"SELECT COUNT(*)
+FROM `Orders` AS `o`
+WHERE HEX(`o`.`CustomerID`) = '56494E4554'");
+            }
+        }
+
+        [ConditionalFact]
+        public virtual void Hex_client_eval()
+        {
+            var hex = EF.Functions.Hex("VINET");
+
+            Assert.Equal("56494E4554", hex);
+        }
+
+        [ConditionalFact]
+        public virtual void Unhex()
+        {
+            using (var context = CreateContext())
+            {
+                var count = context.Orders
+                    .Count(o => EF.Functions.Unhex(EF.Functions.Hex(o.CustomerID)) == "VINET");
+
+                Assert.Equal(5, count);
+
+                AssertSql(
+                    @"SELECT COUNT(*)
+FROM `Orders` AS `o`
+WHERE UNHEX(HEX(`o`.`CustomerID`)) = 'VINET'");
+            }
+        }
+
+        [ConditionalFact]
+        public virtual void Unhex_client_eval()
+        {
+            var unhex = EF.Functions.Unhex("56494E4554");
+
+            Assert.Equal("VINET", unhex);
+        }
     }
 }

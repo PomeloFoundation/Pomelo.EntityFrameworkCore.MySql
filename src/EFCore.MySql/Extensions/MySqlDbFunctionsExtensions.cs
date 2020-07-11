@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Globalization;
+using System.Text;
 using JetBrains.Annotations;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 
+// ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
 {
     /// <summary>
@@ -542,5 +544,106 @@ namespace Microsoft.EntityFrameworkCore
             [CanBeNull] string pattern,
             MySqlMatchSearchMode searchMode)
             => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(Match)));
+
+        /// <summary>
+        ///     <para>
+        ///         For a string argument `value`, Hex() returns a hexadecimal string representation of `value` where
+        ///         each byte of each character in `value` is converted to two hexadecimal digits.
+        ///     </para>
+        ///     <para>
+        ///         For a numeric argument `value`, Hex() returns a hexadecimal string representation of `value`
+        ///         treated as a `Int64` (BIGINT) number.
+        ///     </para>
+        ///     <para>
+        ///
+        ///     </para>
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="value">The string or number to convert to a hexadecimal string.</param>
+        /// <returns>The hexadecimal string or `null`.</returns>
+        public static string Hex<T>(
+            [CanBeNull] this DbFunctions _,
+            [CanBeNull] T value)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+
+            if (value is string stringValue)
+            {
+                if (stringValue == string.Empty)
+                {
+                    return string.Empty;
+                }
+
+                var bytes = Encoding.UTF8.GetBytes(stringValue);
+                var sb = new StringBuilder(bytes.Length * 2);
+                var lastCharIndex = bytes.Length - 1;
+
+                for (var i = 0; i < lastCharIndex; i++)
+                {
+                    sb.Append(bytes[i].ToString("X2"));
+                }
+
+                // MySQL does not return a leading zero.
+                sb.Append(bytes[lastCharIndex].ToString("X"));
+
+                return sb.ToString();
+            }
+
+            if (typeof(T).IsInteger() &&
+                value is IConvertible convertible)
+            {
+                return convertible
+                    .ToInt64(CultureInfo.InvariantCulture)
+                    .ToString("X");
+            }
+
+            throw new InvalidOperationException(MySqlStrings.ExpressionTypeMismatch);
+        }
+
+        /// <summary>
+        /// For a string argument `value`, Unhex() interprets each pair of characters in the argument as a hexadecimal
+        /// number and converts it to the byte represented by the number.
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="value">The hexadecimal string to convert to a character string.</param>
+        /// <returns>The string or `null`.</returns>
+        public static string Unhex(
+            [CanBeNull] this DbFunctions _,
+            [CanBeNull] string value)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+
+            if (value == string.Empty)
+            {
+                return string.Empty;
+            }
+
+            var byteCount = (value.Length + 1) / 2;
+            var sb = new StringBuilder(byteCount);
+
+            try
+            {
+                // The string might not contain a leading zero.
+                var firstByteLength = value.Length % 2 == 1 ? 1 : 2;
+                sb.Append(Convert.ToChar(Convert.ToByte(value.Substring(0, firstByteLength), 16)));
+
+                for (var i = 1; i < byteCount; i++)
+                {
+                    sb.Append(Convert.ToChar(Convert.ToByte(value.Substring(i * 2, 2), 16)));
+                }
+            }
+            catch (FormatException)
+            {
+                return null;
+            }
+
+            return sb.ToString();
+        }
     }
 }

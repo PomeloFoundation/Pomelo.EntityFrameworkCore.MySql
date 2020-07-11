@@ -10,7 +10,6 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
@@ -73,6 +72,35 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethods()
                 .FirstOrDefault(method => method.Name == nameof(MySqlDbFunctionsExtensions.Match))
                 ?.MakeGenericMethod(typeof(string));
+
+        private static readonly Type[] _supportedHexTypes = {
+            typeof(string),
+            typeof(int),
+            typeof(long),
+            typeof(short),
+            typeof(sbyte),
+            typeof(int?),
+            typeof(long?),
+            typeof(short?),
+            typeof(sbyte?),
+            typeof(uint),
+            typeof(ulong),
+            typeof(ushort),
+            typeof(byte),
+            typeof(uint?),
+            typeof(ulong?),
+            typeof(ushort?),
+            typeof(byte?),
+        };
+
+        private static readonly MethodInfo[] _hexMethodInfos
+            = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethods()
+                .Where(method => method.Name == nameof(MySqlDbFunctionsExtensions.Hex) &&
+                                 method.IsGenericMethod)
+                .SelectMany(method => _supportedHexTypes.Select(type => method.MakeGenericMethod(type)))
+                .ToArray();
+
+        private static readonly MethodInfo _unhexMethodInfo = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(nameof(MySqlDbFunctionsExtensions.Unhex), new[] {typeof(DbFunctions), typeof(string)});
 
         public MySqlDbFunctionsExtensionsMethodTranslator(
             ISqlExpressionFactory sqlExpressionFactory,
@@ -138,6 +166,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                             andClauses.First(),
                             (currentAnd, previousExpression) => _sqlExpressionFactory.OrElse(previousExpression, currentAnd));
                 }
+            }
+
+            if (_hexMethodInfos.Any(m => Equals(method, m)))
+            {
+                return _sqlExpressionFactory.Function(
+                    "HEX",
+                    new[] {arguments[1]},
+                    typeof(string));
+            }
+
+            if (method == _unhexMethodInfo)
+            {
+                return _sqlExpressionFactory.Function(
+                    "UNHEX",
+                    new[] {arguments[1]},
+                    typeof(string));
             }
 
             return null;
