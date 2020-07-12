@@ -75,6 +75,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 
         private static readonly Type[] _supportedHexTypes = {
             typeof(string),
+            typeof(byte[]),
             typeof(int),
             typeof(long),
             typeof(short),
@@ -91,6 +92,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             typeof(ulong?),
             typeof(ushort?),
             typeof(byte?),
+            typeof(decimal),
+            typeof(double),
+            typeof(float),
+            typeof(decimal?),
+            typeof(double?),
+            typeof(float?),
         };
 
         private static readonly MethodInfo[] _hexMethodInfos
