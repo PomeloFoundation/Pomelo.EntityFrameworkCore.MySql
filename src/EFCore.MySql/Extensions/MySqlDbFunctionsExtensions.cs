@@ -570,6 +570,8 @@ namespace Microsoft.EntityFrameworkCore
                 return null;
             }
 
+            var bytes = value as byte[];
+
             if (value is string stringValue)
             {
                 if (stringValue == string.Empty)
@@ -577,7 +579,16 @@ namespace Microsoft.EntityFrameworkCore
                     return string.Empty;
                 }
 
-                var bytes = Encoding.UTF8.GetBytes(stringValue);
+                bytes = Encoding.UTF8.GetBytes(stringValue);
+            }
+
+            if (bytes != null)
+            {
+                if (bytes.Length <= 0)
+                {
+                    return string.Empty;
+                }
+
                 var sb = new StringBuilder(bytes.Length * 2);
                 var lastCharIndex = bytes.Length - 1;
 
@@ -592,7 +603,12 @@ namespace Microsoft.EntityFrameworkCore
                 return sb.ToString();
             }
 
-            if (typeof(T).IsInteger() &&
+            var type = typeof(T).UnwrapNullableType();
+
+            if ((type.IsInteger() ||
+                 type == typeof(decimal) ||
+                 type == typeof(double) ||
+                 type == typeof(float)) &&
                 value is IConvertible convertible)
             {
                 return convertible
