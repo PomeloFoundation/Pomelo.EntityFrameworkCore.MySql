@@ -238,8 +238,8 @@ ORDER BY
 
                             // MariaDB does not support SRID column restrictions.
                             var srid = reader.GetColumnSchema().Any(c => string.Equals(c.ColumnName, "SRS_ID", StringComparison.OrdinalIgnoreCase))
-                                ? reader.GetValueOrDefault<int>("SRS_ID")
-                                : (int?)null;
+                                ? reader.GetValueOrDefault<uint?>("SRS_ID")
+                                : null;
 
                             defaultValue = _options.ServerVersion.SupportsAlternativeDefaultExpression &&
                                            defaultValue != null
@@ -298,7 +298,7 @@ ORDER BY
                                 Comment = string.IsNullOrEmpty(comment) ? null : comment,
                                 [MySqlAnnotationNames.CharSet] = Settings.CharSet ? charset : null,
                                 [MySqlAnnotationNames.Collation] = Settings.Collation ? collation : null,
-                                [MySqlAnnotationNames.SpatialReferenceSystemId] = srid,
+                                [MySqlAnnotationNames.SpatialReferenceSystemId] = srid.HasValue ? (int?)(int)srid.Value : null,
                             };
 
                             table.Columns.Add(column);
@@ -442,7 +442,8 @@ ORDER BY
                                     .Select(int.Parse)
                                     .ToArray();
 
-                                if (prefixLengths.Length > 0)
+                                if (prefixLengths.Length > 1 ||
+                                    prefixLengths.Length == 1 && prefixLengths[0] > 0)
                                 {
                                     key[MySqlAnnotationNames.IndexPrefixLength] = prefixLengths;
                                 }
@@ -506,7 +507,8 @@ ORDER BY
                                     .Select(int.Parse)
                                     .ToArray();
 
-                                if (prefixLengths.Length > 0)
+                                if (prefixLengths.Length > 1 ||
+                                    prefixLengths.Length == 1 && prefixLengths[0] > 0)
                                 {
                                     index[MySqlAnnotationNames.IndexPrefixLength] = prefixLengths;
                                 }
