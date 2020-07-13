@@ -380,10 +380,11 @@ ORDER BY
                 return null;
             }
 
-            // Pending the MySqlConnector implement MySqlCommandBuilder class
+            // MySQL uses `CURRENT_TIMESTAMP` (or `CURRENT_TIMESTAMP(6)`),
+            // while MariaDB uses `current_timestamp()` (or `current_timestamp(6)`).
             if ((string.Equals(dataType, "timestamp", StringComparison.OrdinalIgnoreCase) ||
                  string.Equals(dataType, "datetime", StringComparison.OrdinalIgnoreCase)) &&
-                string.Equals(defaultValue, "CURRENT_TIMESTAMP", StringComparison.OrdinalIgnoreCase))
+                Regex.IsMatch(defaultValue, @"^CURRENT_TIMESTAMP(?:\(\d*\))?$", RegexOptions.IgnoreCase))
             {
                 return defaultValue;
             }
