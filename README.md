@@ -13,9 +13,9 @@
 
 The following versions of MySqlConnector, EF Core and .NET Standard are compatible with `Pomelo.EntityFrameworkCore.MySql`:
 
-Pomelo.EntityFrameworkCore.MySql | MySqlConnector | EF Core | .NET Standard | .NET Core | .NET Framework
+Pomelo.EFCore.MySql | MySqlConnector | EF Core | .NET Standard | .NET Core | .NET Framework
 -- | -- | -- | -- | -- | --
-[3.1.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.1.1) | 0.61.0+ (but < 1.0.0) | 3.1.x | 2.0 | 2.0+ | 4.6.1+
+[3.1.2](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.1.2) | 0.61.0+ (but < 1.0.0) | 3.1.x | 2.0 | 2.0+ | 4.6.1+
 [3.0.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.0.1) | 0.61.0+ (but < 1.0.0) | 3.0.x | 2.1 | 3.0+ | N/A
 [2.2.6](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/2.2.6) | 0.59.2+ (but < 1.0.0) | 2.2.6 | 2.0 | 2.0+ | 4.6.1+
 
@@ -35,6 +35,7 @@ Currently supported versions are:
 Milestone | Status | Release Date
 ----------|--------|-------------
 3.2.0 | In Development | TBA
+3.1.2 | Released | 2020-07-22
 3.1.1 | Released | 2020-01-15
 3.1.0 | Released | 2019-12-16
 3.0.1 | Released | 2019-12-04
