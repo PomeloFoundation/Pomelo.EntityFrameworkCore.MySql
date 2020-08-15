@@ -76,6 +76,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string SpatialIsValidFunctionMySqlSupportVersionString = "5.7.6-mysql";
         // public const string SpatialIsValidFunctionMariaDbSupportVersionString = "?.?.?-mariadb";
 
+        // public const string ExceptInterceptMySqlSupportVersionString = "?.?.?-mysql";
+        public const string ExceptInterceptMariaDbSupportVersionString = "10.3.0-mariadb";
+
+        // public const string ExceptInterceptPrecedenceMySqlSupportVersionString = "?.?.?-mysql";
+        public const string ExceptInterceptPrecedenceMariaDbSupportVersionString = "10.4.0-mariadb";
+
         #endregion
 
         #region SupportMap keys for test attributes
@@ -103,6 +109,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string SpatialPointOnSurfaceFunctionSupportKey = nameof(SpatialPointOnSurfaceFunctionSupportKey);
         public const string SpatialRelateFunctionSupportKey = nameof(SpatialRelateFunctionSupportKey);
         public const string SpatialIsValidFunctionSupportKey = nameof(SpatialIsValidFunctionSupportKey);
+        public const string ExceptInterceptSupportKey = nameof(ExceptInterceptSupportKey);
+        public const string ExceptInterceptPrecedenceSupportKey = nameof(ExceptInterceptPrecedenceSupportKey);
 
         #endregion
 
@@ -130,6 +138,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
             { SpatialPointOnSurfaceFunctionSupportKey, new ServerVersionSupport(/*SpatialPointOnSurfaceFunctionMySqlSupportVersionString, */SpatialPointOnSurfaceFunctionMariaDbSupportVersionString)},
             { SpatialRelateFunctionSupportKey, new ServerVersionSupport(/*SpatialRelateFunctionMySqlSupportVersionString, */SpatialRelateFunctionMariaDbSupportVersionString)},
             { SpatialIsValidFunctionSupportKey, new ServerVersionSupport(SpatialIsValidFunctionMySqlSupportVersionString/*, SpatialIsValidFunctionMariaDbSupportVersionString*/)},
+            { ExceptInterceptSupportKey, new ServerVersionSupport(/*ExceptInterceptMySqlSupportVersionString, */ExceptInterceptMariaDbSupportVersionString)},
+            { ExceptInterceptPrecedenceSupportKey, new ServerVersionSupport(/*ExceptInterceptPrecedenceMySqlSupportVersionString, */ExceptInterceptPrecedenceMariaDbSupportVersionString)},
         };
 
         #region Support checks for provider code
@@ -157,6 +167,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public virtual bool SupportsSpatialPointOnSurfaceFunction => SupportMap[SpatialPointOnSurfaceFunctionSupportKey].IsSupported(this);
         public virtual bool SupportsSpatialRelateFunction => SupportMap[SpatialRelateFunctionSupportKey].IsSupported(this);
         public virtual bool SupportsSpatialIsValidFunction => SupportMap[SpatialIsValidFunctionSupportKey].IsSupported(this);
+        public virtual bool SupportsExceptIntercept => SupportMap[ExceptInterceptSupportKey].IsSupported(this);
+        public virtual bool SupportsExceptInterceptPrecedence => SupportMap[ExceptInterceptPrecedenceSupportKey].IsSupported(this);
 
         #endregion
 

@@ -867,76 +867,164 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
             return base.Where_multiple_contains_in_subquery_with_or(isAsync);
         }
 
-        [ConditionalTheory]
+        [SupportedServerVersionTheory(ServerVersion.ExceptInterceptSupportKey)]
         [MemberData(nameof(IsAsyncData))]
-        public override Task Intersect(bool isAsync)
+        public override async Task Intersect(bool isAsync)
         {
-            // INTERSECT is not natively supported by MySQL.
-            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Intersect(isAsync));
+            await base.Intersect(isAsync);
+
+            AssertSql(
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE `c`.`City` = 'London'
+INTERSECT
+SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+FROM `Customers` AS `c0`
+WHERE `c0`.`ContactName` LIKE '%Thomas%'");
         }
 
-        [ConditionalTheory]
+        [SupportedServerVersionTheory(ServerVersion.ExceptInterceptSupportKey)]
         [MemberData(nameof(IsAsyncData))]
-        public override Task Intersect_nested(bool isAsync)
+        public override async Task Intersect_nested(bool isAsync)
         {
-            // INTERSECT is not natively supported by MySQL.
-            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Intersect_nested(isAsync));
+            await base.Intersect_nested(isAsync);
+
+            AssertSql(
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE `c`.`City` = 'México D.F.'
+INTERSECT
+SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+FROM `Customers` AS `c0`
+WHERE `c0`.`ContactTitle` = 'Owner'
+INTERSECT
+SELECT `c1`.`CustomerID`, `c1`.`Address`, `c1`.`City`, `c1`.`CompanyName`, `c1`.`ContactName`, `c1`.`ContactTitle`, `c1`.`Country`, `c1`.`Fax`, `c1`.`Phone`, `c1`.`PostalCode`, `c1`.`Region`
+FROM `Customers` AS `c1`
+WHERE `c1`.`Fax` IS NOT NULL");
         }
 
-        [ConditionalTheory]
+        [SupportedServerVersionTheory(ServerVersion.ExceptInterceptSupportKey)]
         [MemberData(nameof(IsAsyncData))]
-        public override Task Intersect_non_entity(bool isAsync)
+        public override async Task Intersect_non_entity(bool isAsync)
         {
-            // INTERSECT is not natively supported by MySQL.
-            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Intersect_non_entity(isAsync));
+            await base.Intersect_non_entity(isAsync);
+
+            AssertSql(
+                @"SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+WHERE `c`.`City` = 'México D.F.'
+INTERSECT
+SELECT `c0`.`CustomerID`
+FROM `Customers` AS `c0`
+WHERE `c0`.`ContactTitle` = 'Owner'");
         }
 
-        [ConditionalTheory]
+        [SupportedServerVersionTheory(ServerVersion.ExceptInterceptPrecedenceSupportKey)]
         [MemberData(nameof(IsAsyncData))]
-        public override Task Union_Intersect(bool isAsync)
+        public override async Task Union_Intersect(bool isAsync)
         {
-            // INTERSECT is not natively supported by MySQL.
-            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Union_Intersect(isAsync));
+            await base.Union_Intersect(isAsync);
+
+            AssertSql(
+                @"(
+    SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+    FROM `Customers` AS `c`
+    WHERE `c`.`City` = 'Berlin'
+    UNION
+    SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+    FROM `Customers` AS `c0`
+    WHERE `c0`.`City` = 'London'
+)
+INTERSECT
+SELECT `c1`.`CustomerID`, `c1`.`Address`, `c1`.`City`, `c1`.`CompanyName`, `c1`.`ContactName`, `c1`.`ContactTitle`, `c1`.`Country`, `c1`.`Fax`, `c1`.`Phone`, `c1`.`PostalCode`, `c1`.`Region`
+FROM `Customers` AS `c1`
+WHERE `c1`.`ContactName` LIKE '%Thomas%'");
         }
 
-        [ConditionalTheory]
+        [SupportedServerVersionTheory(ServerVersion.ExceptInterceptSupportKey)]
         [MemberData(nameof(IsAsyncData))]
-        public override Task Except(bool isAsync)
+        public override async Task Except(bool isAsync)
         {
-            // EXCEPT is not natively supported by MySQL.
-            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Except(isAsync));
+            await base.Except(isAsync);
+
+            AssertSql(
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE `c`.`City` = 'London'
+EXCEPT
+SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+FROM `Customers` AS `c0`
+WHERE `c0`.`ContactName` LIKE '%Thomas%'");
         }
 
-        [ConditionalTheory]
+        [SupportedServerVersionTheory(ServerVersion.ExceptInterceptSupportKey)]
         [MemberData(nameof(IsAsyncData))]
-        public override Task Except_simple_followed_by_projecting_constant(bool isAsync)
+        public override async Task Except_simple_followed_by_projecting_constant(bool isAsync)
         {
-            // EXCEPT is not natively supported by MySQL.
-            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Except_simple_followed_by_projecting_constant(isAsync));
+            await base.Except_simple_followed_by_projecting_constant(isAsync);
+
+            AssertSql(
+                @"SELECT 1
+FROM (
+    SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+    FROM `Customers` AS `c`
+    EXCEPT
+    SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+    FROM `Customers` AS `c0`
+) AS `t`");
         }
 
-        [ConditionalTheory]
+        [SupportedServerVersionTheory(ServerVersion.ExceptInterceptSupportKey)]
         [MemberData(nameof(IsAsyncData))]
-        public override Task Except_nested(bool isAsync)
+        public override async Task Except_nested(bool isAsync)
         {
-            // EXCEPT is not natively supported by MySQL.
-            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Except_nested(isAsync));
+            await base.Except_nested(isAsync);
+
+            AssertSql(
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE `c`.`ContactTitle` = 'Owner'
+EXCEPT
+SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+FROM `Customers` AS `c0`
+WHERE `c0`.`City` = 'México D.F.'
+EXCEPT
+SELECT `c1`.`CustomerID`, `c1`.`Address`, `c1`.`City`, `c1`.`CompanyName`, `c1`.`ContactName`, `c1`.`ContactTitle`, `c1`.`Country`, `c1`.`Fax`, `c1`.`Phone`, `c1`.`PostalCode`, `c1`.`Region`
+FROM `Customers` AS `c1`
+WHERE `c1`.`City` = 'Seattle'");
         }
 
-        [ConditionalTheory]
+        [SupportedServerVersionTheory(ServerVersion.ExceptInterceptSupportKey)]
         [MemberData(nameof(IsAsyncData))]
-        public override Task Except_non_entity(bool isAsync)
+        public override async Task Except_non_entity(bool isAsync)
         {
-            // EXCEPT is not natively supported by MySQL.
-            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Except_non_entity(isAsync));
+            await base.Except_non_entity(isAsync);
+
+            AssertSql(
+                @"SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+WHERE `c`.`ContactTitle` = 'Owner'
+EXCEPT
+SELECT `c0`.`CustomerID`
+FROM `Customers` AS `c0`
+WHERE `c0`.`City` = 'México D.F.'");
         }
 
-        [ConditionalTheory]
+        [SupportedServerVersionTheory(ServerVersion.ExceptInterceptSupportKey)]
         [MemberData(nameof(IsAsyncData))]
-        public override Task Select_Except_reference_projection(bool isAsync)
+        public override async Task Select_Except_reference_projection(bool isAsync)
         {
-            // EXCEPT is not natively supported by MySQL.
-            return Assert.ThrowsAsync<InvalidOperationException>(() => base.Select_Except_reference_projection(isAsync));
+            await base.Select_Except_reference_projection(isAsync);
+
+            AssertSql(
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Orders` AS `o`
+LEFT JOIN `Customers` AS `c` ON `o`.`CustomerID` = `c`.`CustomerID`
+EXCEPT
+SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+FROM `Orders` AS `o0`
+LEFT JOIN `Customers` AS `c0` ON `o0`.`CustomerID` = `c0`.`CustomerID`
+WHERE `o0`.`CustomerID` = 'ALFKI'");
         }
 
         [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
@@ -1028,11 +1116,21 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
             return AssertTranslationFailed(() => base.Member_binding_after_ctor_arguments_fails_with_client_eval(isAsync));
         }
 
-        [ConditionalTheory]
+        [SupportedServerVersionTheory(ServerVersion.ExceptInterceptSupportKey)]
         [MemberData(nameof(IsAsyncData))]
-        public override Task Union_Select_scalar(bool isAsync)
+        public override async Task Union_Select_scalar(bool isAsync)
         {
-            return AssertTranslationFailed(() => base.Union_Select_scalar(isAsync));
+            await base.Union_Select_scalar(isAsync);
+
+            AssertSql(
+                @"SELECT 1
+FROM (
+    SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+    FROM `Customers` AS `c`
+    EXCEPT
+    SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+    FROM `Customers` AS `c0`
+) AS `t`");
         }
 
         [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
