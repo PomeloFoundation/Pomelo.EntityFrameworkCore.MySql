@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
 using System.Linq;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
@@ -62,6 +61,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private MySqlStringTypeMapping _enum;
 
         // DateTime
+        private readonly MySqlYearTypeMapping _year = new MySqlYearTypeMapping("year");
         private readonly MySqlDateTypeMapping _date = new MySqlDateTypeMapping("date");
         private readonly MySqlTimeSpanTypeMapping _time = new MySqlTimeSpanTypeMapping("time");
         private readonly MySqlDateTimeTypeMapping _dateTime = new MySqlDateTimeTypeMapping("datetime");
@@ -201,6 +201,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     { "nvarchar",                  new[] { _nvarchar } },
 
                     // DateTime
+                    { "year",                      new[] { _year } },
                     { "date",                      new[] { _date } },
                     { "time",                      new[] { _time } },
                     { "datetime",                  new RelationalTypeMapping[] { _dateTime, _dateTimeOffset } },
@@ -211,21 +212,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 = new Dictionary<Type, RelationalTypeMapping>
                 {
 	                // integers
-	                { typeof(short),    _smallint },
-                    { typeof(ushort),   _usmallint },
-                    { typeof(int),      _int },
-                    { typeof(uint),     _uint },
-                    { typeof(long),     _bigint },
-                    { typeof(ulong),    _ubigint },
+	                { typeof(short),   _smallint },
+                    { typeof(ushort),  _usmallint },
+                    { typeof(int),     _int },
+                    { typeof(uint),    _uint },
+                    { typeof(long),    _bigint },
+                    { typeof(ulong),   _ubigint },
 
 	                // decimals
-	                { typeof(decimal),  _decimal },
-                    { typeof(float),    _float },
-                    { typeof(double),   _double },
+	                { typeof(decimal), _decimal },
+                    { typeof(float),   _float },
+                    { typeof(double),  _double },
 
 	                // byte / char
-	                { typeof(sbyte),    _tinyint },
-                    { typeof(byte),     _utinyint },
+	                { typeof(sbyte),   _tinyint },
+                    { typeof(byte),    _utinyint },
 
                     // datetimes
                     { typeof(TimeSpan), _options.DefaultDataTypeMappings.ClrTimeSpan == MySqlTimeSpanType.Time6

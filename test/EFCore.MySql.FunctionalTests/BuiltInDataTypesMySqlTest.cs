@@ -5,13 +5,10 @@ using System.Linq;
 using System.Text;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -157,7 +154,9 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
                         CharAsText = 'G',
                         CharAsInt = 'I',
                         EnumAsNvarchar20 = StringEnumU16.Value4,
-                        EnumAsVarchar20 = StringEnum16.Value2
+                        EnumAsVarchar20 = StringEnum16.Value2,
+                        UShortAsYear = 42,
+                        IntAsYear = 2011,
                     });
 
                 Assert.Equal(1, context.SaveChanges());
@@ -280,6 +279,12 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
 
                 StringEnum16? param60 = StringEnum16.Value2;
                 Assert.Same(entity, context.Set<MappedNullableDataTypes>().Single(e => e.Int == 999 && e.EnumAsVarchar20 == param60));
+
+                ushort? param61 = 42;
+                Assert.Same(entity, context.Set<MappedNullableDataTypes>().Single(e => e.Int == 999 && e.UShortAsYear == param61));
+
+                int? param62 = 2011;
+                Assert.Same(entity, context.Set<MappedNullableDataTypes>().Single(e => e.Int == 999 && e.IntAsYear == param62));
             }
         }
 
@@ -421,6 +426,12 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
 
                 StringEnum16? param60 = null;
                 Assert.Same(entity, context.Set<MappedNullableDataTypes>().Single(e => e.Int == 911 && e.EnumAsVarchar20 == param60));
+
+                ushort? param61 = null;
+                Assert.Same(entity, context.Set<MappedNullableDataTypes>().Single(e => e.Int == 911 && e.UShortAsYear == param61));
+
+                ushort? param62 = null;
+                Assert.Same(entity, context.Set<MappedNullableDataTypes>().Single(e => e.Int == 911 && e.IntAsYear == param62));
             }
         }
 
@@ -459,26 +470,28 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
 @p19='Value4' (Nullable = false) (Size = 20)
 @p20='Value2' (Nullable = false) (Size = 20)
 @p21='a8f9f951-145f-4545-ac60-b92ff57ada47'
-@p22='78'
-@p23='-128'
-@p24='128'
-@p25='79'
-@p26='Your' (Nullable = false) (Size = 10) (DbType = StringFixedLength)
-@p27='arm' (Nullable = false) (Size = 4000)
-@p28='anyone!' (Nullable = false) (Size = 4000)
-@p29='strong' (Nullable = false) (Size = 10) (DbType = StringFixedLength)
-@p30='Gumball Rules OK!' (Nullable = false) (Size = 4000)
-@p31='" + entity.StringAsNvarchar + @"' (Nullable = false) (Size = -1)
-@p32='Gumball Rules!' (Nullable = false) (Size = 4000)
-@p33='help' (Nullable = false) (Size = 4000)
-@p34='" + entity.StringAsVarchar + @"' (Nullable = false) (Size = -1)
-@p35='11:15:12'
-@p36='65535'
+@p22='2011' (DbType = Int32)
+@p23='78'
+@p24='-128'
+@p25='128'
+@p26='79'
+@p27='Your' (Nullable = false) (Size = 10) (DbType = StringFixedLength)
+@p28='arm' (Nullable = false) (Size = 4000)
+@p29='anyone!' (Nullable = false) (Size = 4000)
+@p30='strong' (Nullable = false) (Size = 10) (DbType = StringFixedLength)
+@p31='Gumball Rules OK!' (Nullable = false) (Size = 4000)
+@p32='" + entity.StringAsNvarchar + @"' (Nullable = false) (Size = -1)
+@p33='Gumball Rules!' (Nullable = false) (Size = 4000)
+@p34='help' (Nullable = false) (Size = 4000)
+@p35='" + entity.StringAsVarchar + @"' (Nullable = false) (Size = -1)
+@p36='11:15:12'
 @p37='65535'
-@p38='4294967295'
-@p39='4294967295'
-@p40='18446744073709551615'
-@p41='18446744073709551615'",
+@p38='65535'
+@p39='42' (DbType = Int32)
+@p40='4294967295'
+@p41='4294967295'
+@p42='18446744073709551615'
+@p43='18446744073709551615'",
                 parameters,
                 ignoreLineEndingDifferences: true);
 
@@ -536,6 +549,8 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
             Assert.Equal('I', entity.CharAsInt);
             Assert.Equal(StringEnum16.Value2, entity.EnumAsVarchar20);
             Assert.Equal(StringEnumU16.Value4, entity.EnumAsNvarchar20);
+            Assert.Equal(2042, entity.UShortAsYear);
+            Assert.Equal(2011, entity.IntAsYear);
         }
 
         private static MappedDataTypes CreateMappedDataTypes(int id)
@@ -582,7 +597,9 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
                 CharAsNvarchar = 'D',
                 CharAsInt = 'I',
                 EnumAsNvarchar20 = StringEnumU16.Value4,
-                EnumAsVarchar20 = StringEnum16.Value2
+                EnumAsVarchar20 = StringEnum16.Value2,
+                UShortAsYear = 42,
+                IntAsYear = 2011,
             };
 
         [Fact]
@@ -619,25 +636,27 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
 @p19='Value2' (Size = 20)
 @p20='84.4' (Nullable = true)
 @p21='a8f9f951-145f-4545-ac60-b92ff57ada47' (Nullable = true)
-@p22='78' (Nullable = true)
-@p23='-128' (Nullable = true)
+@p22='2011' (Nullable = true) (DbType = Int32)
+@p23='78' (Nullable = true)
 @p24='-128' (Nullable = true)
-@p25='79' (Nullable = true)
-@p26='C' (Size = 20) (DbType = StringFixedLength)
-@p27='anyone!' (Size = 4000)
-@p28='Your' (Size = 20) (DbType = StringFixedLength)
-@p29='Gumball Rules OK!' (Size = 4000)
-@p30='don't' (Size = 55)
-@p31='Gumball Rules!' (Size = 55)
-@p32='help' (Size = 4000)
-@p33='strong' (Size = 55)
-@p34='11:15:12' (Nullable = true)
-@p35='65535' (Nullable = true)
-@p36='-1' (Nullable = true)
-@p37='4294967295' (Nullable = true)
-@p38='-1' (Nullable = true)
-@p39='-1' (Nullable = true)
-@p40='18446744073709551615' (Nullable = true)",
+@p25='-128' (Nullable = true)
+@p26='79' (Nullable = true)
+@p27='C' (Size = 20) (DbType = StringFixedLength)
+@p28='anyone!' (Size = 4000)
+@p29='Your' (Size = 20) (DbType = StringFixedLength)
+@p30='Gumball Rules OK!' (Size = 4000)
+@p31='don't' (Size = 55)
+@p32='Gumball Rules!' (Size = 55)
+@p33='help' (Size = 4000)
+@p34='strong' (Size = 55)
+@p35='11:15:12' (Nullable = true)
+@p36='65535' (Nullable = true)
+@p37='-1' (Nullable = true)
+@p38='42' (Nullable = true) (DbType = Int32)
+@p39='4294967295' (Nullable = true)
+@p40='-1' (Nullable = true)
+@p41='-1' (Nullable = true)
+@p42='18446744073709551615' (Nullable = true)",
                 parameters,
                 ignoreLineEndingDifferences: true);
 
@@ -691,6 +710,8 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
             Assert.Equal('I', entity.CharAsInt);
             Assert.Equal(StringEnum16.Value2, entity.EnumAsVarchar20);
             Assert.Equal(StringEnumU16.Value4, entity.EnumAsNvarchar20);
+            Assert.Equal((ushort)2042, entity.UShortAsYear);
+            Assert.Equal(2011, entity.IntAsYear);
         }
 
         private static MappedNullableDataTypes CreateMappedNullableDataTypes(int id)
@@ -736,7 +757,9 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
                 CharAsText = 'G',
                 CharAsInt = 'I',
                 EnumAsNvarchar20 = StringEnumU16.Value4,
-                EnumAsVarchar20 = StringEnum16.Value2
+                EnumAsVarchar20 = StringEnum16.Value2,
+                UShortAsYear = 42,
+                IntAsYear = 2011,
             };
 
         [Fact]
@@ -774,25 +797,27 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
 @p19=NULL (Size = 20)
 @p20=NULL (DbType = Single)
 @p21=NULL (DbType = Guid)
-@p22=NULL (DbType = Int64)
-@p23=NULL (DbType = Int16)
-@p24=NULL (DbType = SByte)
-@p25=NULL (DbType = Int16)
-@p26=NULL (Size = 20) (DbType = StringFixedLength)
-@p27=NULL (Size = 4000)
-@p28=NULL (Size = 20) (DbType = StringFixedLength)
-@p29=NULL (Size = 4000)
-@p30=NULL (Size = 55)
+@p22=NULL (DbType = Int32)
+@p23=NULL (DbType = Int64)
+@p24=NULL (DbType = Int16)
+@p25=NULL (DbType = SByte)
+@p26=NULL (DbType = Int16)
+@p27=NULL (Size = 20) (DbType = StringFixedLength)
+@p28=NULL (Size = 4000)
+@p29=NULL (Size = 20) (DbType = StringFixedLength)
+@p30=NULL (Size = 4000)
 @p31=NULL (Size = 55)
-@p32=NULL (Size = 4000)
-@p33=NULL (Size = 55)
-@p34=NULL (DbType = Time)
-@p35=NULL (DbType = Int32)
-@p36=NULL (DbType = Int16)
-@p37=NULL (DbType = Int64)
+@p32=NULL (Size = 55)
+@p33=NULL (Size = 4000)
+@p34=NULL (Size = 55)
+@p35=NULL (DbType = Time)
+@p36=NULL (DbType = Int32)
+@p37=NULL (DbType = Int16)
 @p38=NULL (DbType = Int32)
 @p39=NULL (DbType = Int64)
-@p40=NULL",
+@p40=NULL (DbType = Int32)
+@p41=NULL (DbType = Int64)
+@p42=NULL",
                 parameters,
                 ignoreLineEndingDifferences: true);
 
@@ -845,6 +870,8 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
             Assert.Null(entity.CharAsInt);
             Assert.Null(entity.EnumAsNvarchar20);
             Assert.Null(entity.EnumAsVarchar20);
+            Assert.Null(entity.UShortAsYear);
+            Assert.Null(entity.IntAsYear);
         }
 
         [Fact]
@@ -1056,6 +1083,7 @@ MappedDataTypes.EnumAsNvarchar20 ---> [varchar] [MaxLength = 20]
 MappedDataTypes.EnumAsVarchar20 ---> [varchar] [MaxLength = 20]
 MappedDataTypes.GuidAsUniqueidentifier ---> [char] [MaxLength = 36]
 MappedDataTypes.Int ---> [int] [Precision = 10 Scale = 0]
+MappedDataTypes.IntAsYear ---> [year]
 MappedDataTypes.LongAsBigInt ---> [bigint] [Precision = 19 Scale = 0]
 MappedDataTypes.SByteAsSmallint ---> [smallint] [Precision = 5 Scale = 0]
 MappedDataTypes.SByteAsTinyint ---> [tinyint] [Precision = 3 Scale = 0]
@@ -1076,6 +1104,7 @@ MappedDataTypes.UlongAsBigint ---> [bigint] [Precision = 20 Scale = 0]
 MappedDataTypes.UlongAsDecimal200 ---> [decimal] [Precision = 20 Scale = 0]
 MappedDataTypes.UShortAsInt ---> [int] [Precision = 10 Scale = 0]
 MappedDataTypes.UShortAsSmallint ---> [smallint] [Precision = 5 Scale = 0]
+MappedDataTypes.UShortAsYear ---> [year]
 MappedNullableDataTypes.BoolAsBit ---> [nullable bit] [Precision = 1]
 MappedNullableDataTypes.ByteAsTinyint ---> [nullable tinyint] [Precision = 3 Scale = 0]
 MappedNullableDataTypes.BytesAsBinary ---> [nullable binary] [MaxLength = 6]
@@ -1098,6 +1127,7 @@ MappedNullableDataTypes.EnumAsVarchar20 ---> [nullable varchar] [MaxLength = 20]
 MappedNullableDataTypes.FloatAsFloat ---> [nullable float] [Precision = 20 Scale = 4]
 MappedNullableDataTypes.GuidAsUniqueidentifier ---> [nullable char] [MaxLength = 36]
 MappedNullableDataTypes.Int ---> [int] [Precision = 10 Scale = 0]
+MappedNullableDataTypes.IntAsYear ---> [nullable year]
 MappedNullableDataTypes.LongAsBigint ---> [nullable bigint] [Precision = 19 Scale = 0]
 MappedNullableDataTypes.SByteAsSmallint ---> [nullable smallint] [Precision = 5 Scale = 0]
 MappedNullableDataTypes.SbyteAsTinyint ---> [nullable tinyint] [Precision = 3 Scale = 0]
@@ -1117,6 +1147,7 @@ MappedNullableDataTypes.UlongAsBigint ---> [nullable bigint] [Precision = 19 Sca
 MappedNullableDataTypes.UlongAsDecimal200 ---> [nullable decimal] [Precision = 20 Scale = 0]
 MappedNullableDataTypes.UShortAsInt ---> [nullable int] [Precision = 10 Scale = 0]
 MappedNullableDataTypes.UShortAsSmallint ---> [nullable smallint] [Precision = 5 Scale = 0]
+MappedNullableDataTypes.UShortAsYear ---> [nullable year]
 MaxLengthDataTypes.ByteArray5 ---> [nullable varbinary] [MaxLength = 5]
 MaxLengthDataTypes.ByteArray9000 ---> [nullable longblob] [MaxLength = -1]
 MaxLengthDataTypes.Id ---> [int] [Precision = 10 Scale = 0]
@@ -1512,6 +1543,12 @@ UnicodeDataTypes.StringUnicode ---> [nullable longtext] [MaxLength = -1]
             [Column(TypeName = "int")]
             public ushort UShortAsInt { get; set; }
 
+            [Column(TypeName = "year")]
+            public ushort UShortAsYear { get; set; }
+
+            [Column(TypeName = "year")]
+            public int IntAsYear { get; set; }
+
             [Column(TypeName = "smallint")]
             public sbyte SByteAsSmallint { get; set; }
 
@@ -1634,6 +1671,12 @@ UnicodeDataTypes.StringUnicode ---> [nullable longtext] [MaxLength = -1]
 
             [Column(TypeName = "int")]
             public ushort? UShortAsInt { get; set; }
+
+            [Column(TypeName = "year")]
+            public ushort? UShortAsYear { get; set; }
+
+            [Column(TypeName = "year")]
+            public int? IntAsYear { get; set; }
 
             [Column(TypeName = "smallint")]
             public sbyte? SByteAsSmallint { get; set; }
