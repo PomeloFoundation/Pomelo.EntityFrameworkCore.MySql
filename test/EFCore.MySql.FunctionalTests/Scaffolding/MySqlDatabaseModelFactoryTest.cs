@@ -877,6 +877,48 @@ DROP TABLE DependentTable;
 DROP TABLE PrincipalTable;");
         }
 
+        [Fact]
+        public void Ensure_constraints_scaffold_with_case_mismatch()
+        {
+            // The lower case table reference to a mixed cased table will only be accepted under certain conditions
+            // (lower_case_table_names <> 0).
+            Test(
+                @"
+CREATE TABLE `PrincipalTable` (
+  `Id` INT NOT NULL,
+  PRIMARY KEY (`Id`));
+
+set @sql = concat('
+CREATE TABLE `DependentTable` (
+  `Id` INT NOT NULL,
+  `ForeignKeyId` INT NOT NULL,
+  PRIMARY KEY (`Id`),
+  CONSTRAINT `ForeignKey_Id`
+    FOREIGN KEY (`ForeignKeyId`)
+    REFERENCES `', IF(@@lower_case_table_names <> 0, LOWER('PrincipalTable'), 'PrincipalTable'), '` (`Id`)
+)');
+
+PREPARE dynamic_statement FROM @sql;
+EXECUTE dynamic_statement;
+DEALLOCATE PREPARE dynamic_statement;",
+                Enumerable.Empty<string>(),
+                Enumerable.Empty<string>(),
+                dbModel =>
+                {
+                    var principal = dbModel.Tables.FirstOrDefault(t => string.Equals(t.Name, "PrincipalTable", StringComparison.OrdinalIgnoreCase));
+                    var dependent = dbModel.Tables.FirstOrDefault(t => string.Equals(t.Name, "DependentTable", StringComparison.OrdinalIgnoreCase));
+
+                    Assert.NotNull(principal);
+                    Assert.NotNull(dependent);
+
+                    Assert.Contains(dependent.ForeignKeys, t => t.PrincipalTable.Name == principal.Name);
+                },
+                @"
+DROP TABLE DependentTable;
+DROP TABLE PrincipalTable;"
+            );
+        }
+
         #endregion
 
         #region Warnings

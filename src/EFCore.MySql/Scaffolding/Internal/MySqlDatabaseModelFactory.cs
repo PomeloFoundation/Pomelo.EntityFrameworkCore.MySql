@@ -569,6 +569,14 @@ ORDER BY
                         {
                             var referencedTableName = reader.GetString(2);
                             var referencedTable = tables.FirstOrDefault(t => t.Name == referencedTableName);
+                            if (referencedTable == null)
+                            {
+                                // On operation systems with insensitive file name handling, the saved reference table name might have a
+                                // different casing than the actual table name. (#1017)
+                                // In the unlikely event that there are multiple tables with the same spelling, differing only in casing,
+                                // we can't be certain which is the right match, so rather fail to be safe.
+                                referencedTable = tables.Single(t => string.Equals(t.Name, referencedTableName, StringComparison.OrdinalIgnoreCase));
+                            }
                             if (referencedTable != null)
                             {
                                 var fkInfo = new DatabaseForeignKey {Name = reader.GetString(0), OnDelete = ConvertToReferentialAction(reader.GetString(4)), Table = table, PrincipalTable = referencedTable};
