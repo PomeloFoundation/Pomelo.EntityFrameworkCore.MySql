@@ -44,15 +44,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         protected virtual Expression VisitCrossApply(CrossApplyExpression crossApplyExpression)
             => CheckSupport(crossApplyExpression, _options.ServerVersion.SupportsCrossApply);
-        
+
         protected virtual Expression VisitOuterApply(OuterApplyExpression outerApplyExpression)
             => CheckSupport(outerApplyExpression, _options.ServerVersion.SupportsOuterApply);
 
         protected virtual Expression VisitExcept(ExceptExpression exceptExpression)
-            => CheckSupport(exceptExpression, false);
+            => CheckSupport(exceptExpression, _options.ServerVersion.SupportsExceptIntercept);
 
         protected virtual Expression VisitIntercept(IntersectExpression intersectExpression)
-            => CheckSupport(intersectExpression, false);
+            => CheckSupport(intersectExpression, _options.ServerVersion.SupportsExceptIntercept);
 
         protected virtual Expression CheckSupport(Expression expression, bool isSupported)
             => CheckTranslated(
