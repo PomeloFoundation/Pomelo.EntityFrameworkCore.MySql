@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
@@ -17,14 +18,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
     public class MySqlJsonDbFunctionsTranslator : IMethodCallTranslator
     {
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
+        private readonly IMySqlOptions _options;
         private readonly RelationalTypeMapping _stringTypeMapping;
-        private readonly RelationalTypeMapping _jsonTypeMapping;
 
-        public MySqlJsonDbFunctionsTranslator([NotNull] MySqlSqlExpressionFactory sqlExpressionFactory, [NotNull] IRelationalTypeMappingSource typeMappingSource)
+        public MySqlJsonDbFunctionsTranslator(
+            [NotNull] MySqlSqlExpressionFactory sqlExpressionFactory,
+            [NotNull] IRelationalTypeMappingSource typeMappingSource,
+            IMySqlOptions options)
         {
             _sqlExpressionFactory = sqlExpressionFactory;
+            _options = options;
             _stringTypeMapping = typeMappingSource.FindMapping(typeof(string));
-            _jsonTypeMapping = typeMappingSource.FindMapping("json");
         }
 
         public virtual SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
@@ -88,35 +92,37 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                         .Concat(deconstructParamsArray(args[1])),
                     typeof(bool)),
                 nameof(MySqlJsonDbFunctionsExtensions.JsonSearchAny)
-                => _sqlExpressionFactory.Function(
-                    "JSON_SEARCH",
-                    Array.Empty<SqlExpression>()
-                        .Append(json(args[0]))
-                        .Append(_sqlExpressionFactory.Constant("one"))
-                        .Append(args[1])
-                        .AppendIfTrue(args.Length >= 3, () => args.Length >= 4
-                            ? args[3]
-                            : _sqlExpressionFactory.Constant(null, RelationalTypeMapping.NullMapping))
-                        .AppendIfTrue(args.Length >= 3, () => args[2]),
-                    typeof(bool)),
+                => _sqlExpressionFactory.IsNotNull(
+                    _sqlExpressionFactory.Function(
+                        "JSON_SEARCH",
+                        Array.Empty<SqlExpression>()
+                            .Append(json(args[0]))
+                            .Append(_sqlExpressionFactory.Constant("one"))
+                            .Append(args[1])
+                            .AppendIfTrue(args.Length >= 3, () => args.Length >= 4
+                                ? args[3]
+                                : _sqlExpressionFactory.Constant(null, RelationalTypeMapping.NullMapping))
+                            .AppendIfTrue(args.Length >= 3, () => args[2]),
+                        typeof(bool))),
                 nameof(MySqlJsonDbFunctionsExtensions.JsonSearchAll)
-                => _sqlExpressionFactory.Function(
-                    "JSON_SEARCH",
-                    Array.Empty<SqlExpression>()
-                        .Append(json(args[0]))
-                        .Append(_sqlExpressionFactory.Constant("all"))
-                        .Append(args[1])
-                        .AppendIfTrue(args.Length >= 3, () => args.Length >= 4
-                            ? args[3]
-                            : _sqlExpressionFactory.Constant(null, RelationalTypeMapping.NullMapping))
-                        .AppendIfTrue(args.Length >= 3, () => args[2]),
-                    typeof(bool)),
+                => _sqlExpressionFactory.IsNotNull(
+                    _sqlExpressionFactory.Function(
+                        "JSON_SEARCH",
+                        Array.Empty<SqlExpression>()
+                            .Append(json(args[0]))
+                            .Append(_sqlExpressionFactory.Constant("all"))
+                            .Append(args[1])
+                            .AppendIfTrue(args.Length >= 3, () => args.Length >= 4
+                                ? args[3]
+                                : _sqlExpressionFactory.Constant(null, RelationalTypeMapping.NullMapping))
+                            .AppendIfTrue(args.Length >= 3, () => args[2]),
+                        typeof(bool))) as SqlExpression,
                 _ => null
             };
 
             return result;
 
-            SqlExpression json(SqlExpression e) => _sqlExpressionFactory.ApplyTypeMapping(e, _jsonTypeMapping);
+            SqlExpression json(SqlExpression e) => _sqlExpressionFactory.ApplyTypeMapping(e, _sqlExpressionFactory.FindMapping(e.Type, "json"));
 
             static SqlExpression removeConvert(SqlExpression e)
             {

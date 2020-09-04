@@ -73,12 +73,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         protected virtual Expression VisitJsonPathTraversal(MySqlJsonTraversalExpression expression)
         {
-            if (expression.Path.Count <= 0)
-            {
-                Visit(expression.Expression);
-                return expression;
-            }
-
             // If the path contains parameters, then the -> and ->> aliases are not supported by MySQL, because
             // we need to concatenate the path and the parameters.
             // We will use JSON_EXTRACT (and JSON_UNQUOTE if needed) only in this case, because the aliases
@@ -87,45 +81,27 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 l => l is SqlConstantExpression ||
                      l is MySqlJsonArrayIndexExpression e && e.Expression is SqlConstantExpression);
 
-            if (isSimplePath)
+            if (expression.ReturnsText)
             {
-                Visit(expression.Expression);
-
-                Sql.Append(
-                    expression.ReturnsText
-                        ? "->>"
-                        : "->");
-                Sql.Append("'$");
-
-                foreach (var location in expression.Path)
-                {
-                    if (location is MySqlJsonArrayIndexExpression arrayIndexExpression)
-                    {
-                        Sql.Append("[");
-                        Visit(arrayIndexExpression.Expression);
-                        Sql.Append("]");
-                    }
-                    else
-                    {
-                        Sql.Append(".");
-                        Visit(location);
-                    }
-                }
-
-                Sql.Append("'");
+                Sql.Append("JSON_UNQUOTE(");
             }
-            else
+
+            if (expression.Path.Count > 0)
             {
-                if (expression.ReturnsText)
+                Sql.Append("JSON_EXTRACT(");
+            }
+
+            Visit(expression.Expression);
+
+            if (expression.Path.Count > 0)
+            {
+                Sql.Append(", ");
+
+                if (!isSimplePath)
                 {
-                    Sql.Append("JSON_UNQUOTE(");
+                    Sql.Append("CONCAT(");
                 }
 
-                Sql.Append("JSON_EXTRACT(");
-
-                Visit(expression.Expression);
-
-                Sql.Append(", CONCAT(");
                 Sql.Append("'$");
 
                 foreach (var location in expression.Path)
@@ -158,13 +134,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 }
 
                 Sql.Append("'");
-                Sql.Append(")");
-                Sql.Append(")");
 
-                if (expression.ReturnsText)
+                if (!isSimplePath)
                 {
                     Sql.Append(")");
                 }
+
+                Sql.Append(")");
+            }
+
+            if (expression.ReturnsText)
+            {
+                Sql.Append(")");
             }
 
             return expression;

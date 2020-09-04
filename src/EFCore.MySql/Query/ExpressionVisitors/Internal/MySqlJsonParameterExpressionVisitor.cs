@@ -1,19 +1,21 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
     public class MySqlJsonParameterExpressionVisitor : ExpressionVisitor
     {
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
-        private readonly RelationalTypeMapping _jsonTypeMapping;
+        private readonly IMySqlOptions _options;
 
-        public MySqlJsonParameterExpressionVisitor(MySqlSqlExpressionFactory sqlExpressionFactory)
+        public MySqlJsonParameterExpressionVisitor(MySqlSqlExpressionFactory sqlExpressionFactory, IMySqlOptions options)
         {
             _sqlExpressionFactory = sqlExpressionFactory;
-            _jsonTypeMapping = _sqlExpressionFactory.FindMapping("json");
+            _options = options;
         }
 
         protected override Expression VisitExtension(Expression extensionExpression)
@@ -24,11 +26,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             };
 
         protected virtual SqlExpression VisitParameter(SqlParameterExpression sqlParameterExpression)
-            => sqlParameterExpression.TypeMapping?.StoreType == "json"
-                ? (SqlExpression)_sqlExpressionFactory.Convert(
-                    sqlParameterExpression,
-                    sqlParameterExpression.Type,
-                    _jsonTypeMapping)
-                : sqlParameterExpression;
+        {
+            SqlExpression expression = sqlParameterExpression;
+
+            if (expression.TypeMapping is MySqlJsonTypeMapping)
+            {
+                var typeMapping = _sqlExpressionFactory.FindMapping(expression.Type, "json");
+
+                if (_options.ServerVersion.SupportsJsonDataTypeEmulation)
+                {
+                    // expression = _sqlExpressionFactory.Function(
+                    //     "JSON_COMPACT",
+                    //     new[] {expression},
+                    //     expression.Type,
+                    //     typeMapping);
+                }
+                else
+                {
+                    expression = _sqlExpressionFactory.Convert(
+                        expression,
+                        expression.Type,
+                        typeMapping);
+                }
+            }
+
+            return expression;
+        }
     }
 }

@@ -31,7 +31,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 new MySqlRegexIsMatchTranslator(sqlExpressionFactory),
                 new MySqlDbFunctionsExtensionsMethodTranslator(sqlExpressionFactory, options),
                 new MySqlJsonDomTranslator(sqlExpressionFactory, typeMappingSource),
-                new MySqlJsonDbFunctionsTranslator(sqlExpressionFactory, typeMappingSource)
+                new MySqlJsonDbFunctionsTranslator(sqlExpressionFactory, typeMappingSource, options)
             });
         }
     }

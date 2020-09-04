@@ -27,6 +27,27 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         public virtual RelationalTypeMapping FindMapping([NotNull] string storeTypeName)
             => _typeMappingSource.FindMapping(storeTypeName);
 
+        public virtual RelationalTypeMapping FindMapping(
+            [NotNull] Type type,
+            [CanBeNull] string storeTypeName,
+            bool keyOrIndex = false,
+            bool? unicode = null,
+            int? size = null,
+            bool? rowVersion = null,
+            bool? fixedLength = null,
+            int? precision = null,
+            int? scale = null)
+            => _typeMappingSource.FindMapping(
+                type,
+                storeTypeName,
+                keyOrIndex,
+                unicode,
+                size,
+                rowVersion,
+                fixedLength,
+                precision,
+                scale);
+
         #region Expression factory methods
 
         public MySqlComplexFunctionArgumentExpression ComplexFunctionArgument(

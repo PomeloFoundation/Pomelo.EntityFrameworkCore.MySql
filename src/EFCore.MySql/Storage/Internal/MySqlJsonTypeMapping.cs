@@ -26,7 +26,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     : typeof(T) == typeof(JsonElement)
                         ? new JsonElementValueConverter()
                         : typeof(T) == typeof(string)
-                            ? null
+                            ? new JsonStringValueConverter()
                             : (ValueConverter)new JsonPocoValueConverter<T>())
         {
         }
@@ -97,6 +97,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 string s => Expression.Constant(s),
                 _ => throw new NotSupportedException("Cannot generate code literals for JSON POCOs")
             };
+
+        protected override void ConfigureParameter(DbParameter parameter)
+        {
+            base.ConfigureParameter(parameter);
+
+            // MariaDB does not really have a JSON type. It is just a LONGTEXT alias. Therefore, MariaDB does not
+            // process/compact JSON documents/values on its own by default.
+            // if (Options.ServerVersion.SupportsJsonDataTypeEmulation &&
+            //     parameter.Value is string stringValue)
+            // {
+            //     var valueConverter = new JsonDocumentValueConverter();
+            //     parameter.Value = valueConverter.ConvertToProvider(valueConverter.ConvertFromProvider(stringValue));
+            // }
+        }
 
         private static readonly Expression _defaultJsonDocumentOptions = Expression.New(typeof(JsonDocumentOptions));
         private static readonly MethodInfo _parseMethod = typeof(JsonDocument).GetMethod(nameof(JsonDocument.Parse), new[] {typeof(string), typeof(JsonDocumentOptions)});

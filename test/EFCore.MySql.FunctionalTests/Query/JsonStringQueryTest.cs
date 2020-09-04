@@ -80,24 +80,11 @@ FROM `JsonEntities` AS `j`
 WHERE `j`.`Id` = @__p_0
 LIMIT 1",
                 //
-                @"@__expected_0='{""Age"": 25
-""Name"": ""Joe""
-""IsVip"": false
-""Orders"": [{""Price"": 99.5
-""ShippingDate"": ""2019-10-01""
-""ShippingAddress"": ""Some address 1""}
-{""Price"": 23
-""ShippingDate"": ""2019-10-10""
-""ShippingAddress"": ""Some address 2""}]
-""Statistics"": {""Nested"": {""IntArray"": [3
-4]
-""SomeProperty"": 10}
-""Visits"": 4
-""Purchases"": 3}}'
+                $@"{InsertJsonDocument(@"@__expected_0='{""Age"":25,""Name"":""Joe"",""IsVip"":false,""Orders"":[{""Price"":99.5,""ShippingDate"":""2019-10-01"",""ShippingAddress"":""Some address 1""},{""Price"":23,""ShippingDate"":""2019-10-10"",""ShippingAddress"":""Some address 2""}],""Statistics"":{""Nested"":{""IntArray"":[3,4],""SomeProperty"":10},""Visits"":4,""Purchases"":3}}'", @"@__expected_0='{""Name"":""Joe"",""Age"":25,""IsVip"":false,""Statistics"":{""Visits"":4,""Purchases"":3,""Nested"":{""SomeProperty"":10,""IntArray"":[3,4]}},""Orders"":[{""Price"":99.5,""ShippingAddress"":""Some address 1"",""ShippingDate"":""2019-10-01""},{""Price"":23,""ShippingAddress"":""Some address 2"",""ShippingDate"":""2019-10-10""}]}'")}
 
 SELECT `j`.`Id`, `j`.`CustomerJson`
 FROM `JsonEntities` AS `j`
-WHERE `j`.`CustomerJson` = CAST(@__expected_0 AS json)
+WHERE `j`.`CustomerJson` = {InsertJsonConvert("@__expected_0")}
 LIMIT 2");
         }
 
@@ -127,11 +114,11 @@ WHERE JSON_CONTAINS(`j`.`CustomerJson`, '{""Name"": ""Joe"", ""Age"": 25}')");
 
             Assert.Equal(1, count);
             AssertSql(
-                @"@__element_1='{""Name"":""Joe"",""Age"":25}' (Nullable = false)
+                $@"@__element_1='{{""Name"":""Joe"",""Age"":25}}' (Nullable = false)
 
 SELECT COUNT(*)
 FROM `JsonEntities` AS `j`
-WHERE JSON_CONTAINS(`j`.`CustomerJson`, CAST(@__element_1 AS json))");
+WHERE JSON_CONTAINS(`j`.`CustomerJson`, {InsertJsonConvert("@__element_1")})");
         }
 
         [Fact]
@@ -179,6 +166,16 @@ WHERE JSON_CONTAINS_PATH(`j`.`CustomerJson`, 'all', '$.foo', '$.Age')");
         #endregion Functions
 
         #region Support
+
+        protected string InsertJsonConvert(string sqlFragment)
+            => AppConfig.ServerVersion.SupportsJsonDataTypeEmulation
+                ? sqlFragment
+                : $"CAST({sqlFragment} AS json)";
+
+        protected string InsertJsonDocument(string mySqlDocument, string mariaDbDocument)
+            => AppConfig.ServerVersion.SupportsJsonDataTypeEmulation
+                ? mariaDbDocument
+                : mySqlDocument;
 
         protected JsonStringQueryContext CreateContext() => Fixture.CreateContext();
 
