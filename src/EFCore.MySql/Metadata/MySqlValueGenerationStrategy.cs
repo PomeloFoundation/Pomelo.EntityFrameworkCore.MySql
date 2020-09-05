@@ -8,6 +8,6 @@ namespace Microsoft.EntityFrameworkCore.Metadata
     {
         None,
         IdentityColumn,
-        ComputedColumn
+        ComputedColumn // TODO: Remove this and only use .HasComputedColumnSql() instead in EF Core 5
     }
 }

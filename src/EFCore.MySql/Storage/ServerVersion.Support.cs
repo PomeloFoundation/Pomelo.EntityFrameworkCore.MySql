@@ -26,7 +26,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         // public const string NullableGeneratedColumnsMariaDbSupportVersionString = "?.?.?-mariadb";
 
         public const string JsonMySqlSupportVersionString = "5.7.8-mysql";
-        // public const string JsonMariaDbSupportVersionString = "?.?.?-mariadb";
+        public const string JsonMariaDbSupportVersionString = "10.2.4-mariadb";
 
         public const string RenameColumnMySqlSupportVersionString = "8.0.0-mysql";
         // public const string RenameColumnMariaDbSupportVersionString = "?.?.?-mariadb";
@@ -82,6 +82,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         // public const string ExceptInterceptPrecedenceMySqlSupportVersionString = "?.?.?-mysql";
         public const string ExceptInterceptPrecedenceMariaDbSupportVersionString = "10.4.0-mariadb";
 
+        // public const string JsonDataTypeEmulationMySqlSupportVersionString = "5.7.8-mysql";
+        public const string JsonDataTypeEmulationMariaDbSupportVersionString = "10.2.4-mariadb"; // JSON_COMPACT was added in 10.2.4, though most other functions where added in 10.2.3
+
         #endregion
 
         #region SupportMap keys for test attributes
@@ -111,6 +114,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string SpatialIsValidFunctionSupportKey = nameof(SpatialIsValidFunctionSupportKey);
         public const string ExceptInterceptSupportKey = nameof(ExceptInterceptSupportKey);
         public const string ExceptInterceptPrecedenceSupportKey = nameof(ExceptInterceptPrecedenceSupportKey);
+        public const string JsonDataTypeEmulationSupportKey = nameof(JsonDataTypeEmulationSupportKey);
 
         #endregion
 
@@ -140,6 +144,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
             { SpatialIsValidFunctionSupportKey, new ServerVersionSupport(SpatialIsValidFunctionMySqlSupportVersionString/*, SpatialIsValidFunctionMariaDbSupportVersionString*/)},
             { ExceptInterceptSupportKey, new ServerVersionSupport(/*ExceptInterceptMySqlSupportVersionString, */ExceptInterceptMariaDbSupportVersionString)},
             { ExceptInterceptPrecedenceSupportKey, new ServerVersionSupport(/*ExceptInterceptPrecedenceMySqlSupportVersionString, */ExceptInterceptPrecedenceMariaDbSupportVersionString)},
+            { JsonDataTypeEmulationSupportKey, new ServerVersionSupport(/*JsonDataTypeEmulationMySqlSupportVersionString, */JsonDataTypeEmulationMariaDbSupportVersionString)},
         };
 
         #region Support checks for provider code
@@ -169,6 +174,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public virtual bool SupportsSpatialIsValidFunction => SupportMap[SpatialIsValidFunctionSupportKey].IsSupported(this);
         public virtual bool SupportsExceptIntercept => SupportMap[ExceptInterceptSupportKey].IsSupported(this);
         public virtual bool SupportsExceptInterceptPrecedence => SupportMap[ExceptInterceptPrecedenceSupportKey].IsSupported(this);
+        public virtual bool SupportsJsonDataTypeEmulation => SupportMap[JsonDataTypeEmulationSupportKey].IsSupported(this);
 
         #endregion
 

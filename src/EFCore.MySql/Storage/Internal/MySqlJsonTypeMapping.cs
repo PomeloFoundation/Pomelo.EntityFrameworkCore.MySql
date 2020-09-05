@@ -1,117 +1,118 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
-// Licensed under the MIT. See LICENSE in the project root for license information.
-
-using System;
-using System.Collections.Concurrent;
+﻿using System;
+using System.Data.Common;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Text.Json;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Microsoft.EntityFrameworkCore.Utilities;
+using MySql.Data.MySqlClient;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.ValueConversion.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
-    /// <summary>
-    ///     <para>
-    ///         Represents the mapping between a .NET <see cref="JsonObject" /> type and a database type.
-    ///     </para>
-    ///     <para>
-    ///         This type is typically used by database providers (and other extensions). It is generally
-    ///         not used in application code.
-    ///     </para>
-    /// </summary>
-    public class MySqlJsonTypeMapping : RelationalTypeMapping
+    public class MySqlJsonTypeMapping<T> : MySqlJsonTypeMapping
     {
-        private static readonly ConcurrentDictionary<Type, ValueConverter> JsonConverters = new ConcurrentDictionary<Type, ValueConverter>();
-        private static readonly ConcurrentDictionary<Type, ValueComparer> JsonComparers = new ConcurrentDictionary<Type, ValueComparer>();
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public MySqlJsonTypeMapping(
-            Type clrType,
-            string storeType = null)
-            : this(
-                new RelationalTypeMappingParameters(
-                    new CoreTypeMappingParameters(clrType, GetConverter(clrType), GetComprarer(clrType)),
-                    storeType ?? "json",
-                    StoreTypePostfix.None,
-                    System.Data.DbType.String,
-                    true))
+            [NotNull] string storeType,
+            [NotNull] IMySqlOptions options)
+            : base(
+                storeType,
+                typeof(T),
+                options,
+                typeof(T) == typeof(JsonDocument)
+                    ? new JsonDocumentValueConverter()
+                    : typeof(T) == typeof(JsonElement)
+                        ? new JsonElementValueConverter()
+                        : typeof(T) == typeof(string)
+                            ? new JsonStringValueConverter()
+                            : (ValueConverter)new JsonPocoValueConverter<T>())
         {
         }
 
-        private static ValueConverter GetConverter(Type jsonType)
-            => JsonConverters.GetOrAdd(jsonType, t =>
-                (ValueConverter)typeof(JsonToStringConverter<>)
-                    .MakeGenericType(t.TryGetElementType(typeof(JsonObject<>)))
-                    .GetDeclaredConstructor(new Type[0]).Invoke(new object[0]));
-
-        private static ValueComparer GetComprarer(Type jsonType)
-            => JsonComparers.GetOrAdd(jsonType, t =>
-                (ValueComparer)typeof(JsonComparer<>)
-                    .MakeGenericType(t.TryGetElementType(typeof(JsonObject<>)))
-                    .GetDeclaredConstructor(new Type[0]).Invoke(new object[0]));
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        protected MySqlJsonTypeMapping(RelationalTypeMappingParameters parameters)
-            : base(parameters)
+        protected MySqlJsonTypeMapping(
+            RelationalTypeMappingParameters parameters,
+            MySqlDbType mySqlDbType,
+            IMySqlOptions options)
+            : base(parameters, mySqlDbType, options)
         {
         }
 
-        /// <summary>
-        ///     Creates a copy of this mapping.
-        /// </summary>
-        /// <param name="parameters"> The parameters for this mapping. </param>
-        /// <returns> The newly created mapping. </returns>
         protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
-            => new MySqlJsonTypeMapping(parameters);
+            => new MySqlJsonTypeMapping<T>(parameters, MySqlDbType, Options);
+    }
 
-        public virtual RelationalTypeMapping Clone(Type clrType)
-            => new MySqlJsonTypeMapping(clrType, StoreType);
+    public abstract class MySqlJsonTypeMapping : MySqlTypeMapping
+    {
+        [NotNull]
+        protected IMySqlOptions Options { get; }
 
-        /// <summary>
-        ///     Generates the escaped SQL representation of a literal value.
-        /// </summary>
-        /// <param name="literal">The value to be escaped.</param>
-        /// <returns>
-        ///     The generated string.
-        /// </returns>
-        protected virtual string EscapeSqlLiteral([NotNull]string literal)
-            => Check.NotNull(literal, nameof(literal)).Replace("'", "''");
+        public MySqlJsonTypeMapping(
+            [NotNull] string storeType,
+            [NotNull] Type clrType,
+            [NotNull] IMySqlOptions options,
+            [CanBeNull] ValueConverter valueConverter)
+            : base(
+                storeType,
+                clrType,
+                MySqlDbType.JSON,
+                valueConverter: valueConverter)
+        {
+            if (storeType != "json")
+            {
+                throw new ArgumentException($"The store type '{nameof(storeType)}' must be 'json'.", nameof(storeType));
+            }
 
-        /// <summary>
-        ///     Generates the SQL representation of a literal value.
-        /// </summary>
-        /// <param name="value">The literal value.</param>
-        /// <returns>
-        ///     The generated string.
-        /// </returns>
+            Options = options;
+        }
+
+        protected MySqlJsonTypeMapping(
+            RelationalTypeMappingParameters parameters,
+            MySqlDbType mySqlDbType,
+            IMySqlOptions options)
+            : base(parameters, mySqlDbType)
+        {
+            Options = options;
+        }
+
+        protected virtual string EscapeSqlLiteral([NotNull] string literal)
+            => MySqlStringTypeMapping.EscapeSqlLiteralWithLineBreaks(literal, Options);
+
         protected override string GenerateNonNullSqlLiteral(object value)
-            => $"'{EscapeSqlLiteral((string)value)}'";
-
-        private class JsonToStringConverter<T> : ValueConverter<JsonObject<T>, string>
-            where T : class
-        {
-            public JsonToStringConverter()
-                : base(
-                    v => v.ToString(),
-                    v => new JsonObject<T>(v))
+            => value switch
             {
-            }
+                string s => EscapeSqlLiteral(s),
+                _ => EscapeSqlLiteral(JsonSerializer.Serialize(value))
+            };
+
+        public override Expression GenerateCodeLiteral(object value)
+            => value switch
+            {
+                // TODO: Move to MySqlJsonSerializer.
+                JsonDocument document => Expression.Call(_parseMethod, Expression.Constant(document.RootElement.ToString()), _defaultJsonDocumentOptions),
+                JsonElement element => Expression.Property(
+                    Expression.Call(_parseMethod, Expression.Constant(element.ToString()), _defaultJsonDocumentOptions),
+                    nameof(JsonDocument.RootElement)),
+                string s => Expression.Constant(s),
+                _ => throw new NotSupportedException("Cannot generate code literals for JSON POCOs")
+            };
+
+        protected override void ConfigureParameter(DbParameter parameter)
+        {
+            base.ConfigureParameter(parameter);
+
+            // MariaDB does not really have a JSON type. It is just a LONGTEXT alias. Therefore, MariaDB does not
+            // process/compact JSON documents/values on its own by default.
+            // if (Options.ServerVersion.SupportsJsonDataTypeEmulation &&
+            //     parameter.Value is string stringValue)
+            // {
+            //     var valueConverter = new JsonDocumentValueConverter();
+            //     parameter.Value = valueConverter.ConvertToProvider(valueConverter.ConvertFromProvider(stringValue));
+            // }
         }
 
-        private class JsonComparer<T> : ValueComparer<JsonObject<T>>
-            where T : class
-        {
-            public JsonComparer()
-                : base((l, r) => object.Equals(l, r), v => v.GetHashCode())
-            {
-            }
-        }
+        private static readonly Expression _defaultJsonDocumentOptions = Expression.New(typeof(JsonDocumentOptions));
+        private static readonly MethodInfo _parseMethod = typeof(JsonDocument).GetMethod(nameof(JsonDocument.Parse), new[] {typeof(string), typeof(JsonDocumentOptions)});
     }
 }

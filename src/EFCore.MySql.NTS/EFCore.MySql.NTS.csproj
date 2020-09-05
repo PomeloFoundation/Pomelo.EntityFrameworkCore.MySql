@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NetTopologySuite" Version="$(NetTopologySuitePackageVersion)" />
+    <PackageReference Include="NetTopologySuite" Version="$(NetTopologySuiteVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(LocalMySqlConnectorRepository)' == ''">

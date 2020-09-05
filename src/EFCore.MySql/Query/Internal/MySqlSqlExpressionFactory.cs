@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
@@ -20,6 +23,30 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             _typeMappingSource = dependencies.TypeMappingSource;
             _boolTypeMapping = _typeMappingSource.FindMapping(typeof(bool));
         }
+
+        public virtual RelationalTypeMapping FindMapping([NotNull] string storeTypeName)
+            => _typeMappingSource.FindMapping(storeTypeName);
+
+        public virtual RelationalTypeMapping FindMapping(
+            [NotNull] Type type,
+            [CanBeNull] string storeTypeName,
+            bool keyOrIndex = false,
+            bool? unicode = null,
+            int? size = null,
+            bool? rowVersion = null,
+            bool? fixedLength = null,
+            int? precision = null,
+            int? scale = null)
+            => _typeMappingSource.FindMapping(
+                type,
+                storeTypeName,
+                keyOrIndex,
+                unicode,
+                size,
+                rowVersion,
+                fixedLength,
+                precision,
+                scale);
 
         #region Expression factory methods
 
@@ -104,6 +131,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     null));
         }
 
+        public virtual MySqlJsonTraversalExpression JsonTraversal(
+            [NotNull] SqlExpression expression,
+            bool returnsText,
+            [NotNull] Type type,
+            [CanBeNull] RelationalTypeMapping typeMapping = null)
+            => new MySqlJsonTraversalExpression(
+                ApplyDefaultTypeMapping(expression),
+                returnsText,
+                type,
+                typeMapping);
+
+        public virtual MySqlJsonArrayIndexExpression JsonArrayIndex(
+            [NotNull] SqlExpression expression)
+            => JsonArrayIndex(expression, typeof(int));
+
+        public virtual MySqlJsonArrayIndexExpression JsonArrayIndex(
+            [NotNull] SqlExpression expression,
+            [NotNull] Type type,
+            [CanBeNull] RelationalTypeMapping typeMapping = null)
+            => (MySqlJsonArrayIndexExpression)ApplyDefaultTypeMapping(
+                new MySqlJsonArrayIndexExpression(
+                    ApplyDefaultTypeMapping(expression),
+                    type,
+                    typeMapping));
+
         public override SqlExpression ApplyTypeMapping(SqlExpression sqlExpression, RelationalTypeMapping typeMapping)
         {
             if (sqlExpression == null
@@ -112,28 +164,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 return sqlExpression;
             }
 
-            switch (sqlExpression)
-            {
-                case MySqlComplexFunctionArgumentExpression e:
-                    return ApplyTypeMappingOnComplexFunctionArgument(e);
-
-                case MySqlCollateExpression e:
-                    return ApplyTypeMappingOnCollate(e);
-
-                case MySqlRegexpExpression e:
-                    return ApplyTypeMappingOnRegexp(e);
-
-                case MySqlBinaryExpression e:
-                    return ApplyTypeMappingOnMySqlBinary(e, typeMapping);
-
-                case MySqlMatchExpression e:
-                    return ApplyTypeMappingOnMatch(e);
-
-                default:
-                    return base.ApplyTypeMapping(sqlExpression, typeMapping);
-            }
+            return ApplyNewTypeMapping(sqlExpression, typeMapping);
         }
-        
+
+        private SqlExpression ApplyNewTypeMapping(SqlExpression sqlExpression, RelationalTypeMapping typeMapping)
+        {
+            return sqlExpression switch
+            {
+                MySqlComplexFunctionArgumentExpression e => ApplyTypeMappingOnComplexFunctionArgument(e),
+                MySqlCollateExpression e => ApplyTypeMappingOnCollate(e),
+                MySqlRegexpExpression e => ApplyTypeMappingOnRegexp(e),
+                MySqlBinaryExpression e => ApplyTypeMappingOnMySqlBinary(e, typeMapping),
+                MySqlMatchExpression e => ApplyTypeMappingOnMatch(e),
+                MySqlJsonArrayIndexExpression e => e.ApplyTypeMapping(typeMapping),
+                _ => base.ApplyTypeMapping(sqlExpression, typeMapping)
+            };
+        }
+
         private MySqlComplexFunctionArgumentExpression ApplyTypeMappingOnComplexFunctionArgument(MySqlComplexFunctionArgumentExpression complexFunctionArgumentExpression)
         {
             var inferredTypeMapping = ExpressionExtensions.InferTypeMapping(complexFunctionArgumentExpression.ArgumentParts.ToArray())
