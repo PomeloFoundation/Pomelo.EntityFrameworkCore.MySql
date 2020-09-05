@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq.Expressions;
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
@@ -12,19 +12,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
     public class MySqlSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExpressionVisitor
     {
-        private readonly MySqlJsonPocoTranslator _jsonPocoTranslator;
+        private readonly IMySqlJsonPocoTranslator _jsonPocoTranslator;
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
-        //private readonly RelationalTypeMapping _jsonTypeMapping;
 
         public MySqlSqlTranslatingExpressionVisitor(
             RelationalSqlTranslatingExpressionVisitorDependencies dependencies,
             IModel model,
-            QueryableMethodTranslatingExpressionVisitor queryableMethodTranslatingExpressionVisitor)
+            QueryableMethodTranslatingExpressionVisitor queryableMethodTranslatingExpressionVisitor,
+            [CanBeNull] IMySqlJsonPocoTranslator jsonPocoTranslator)
             : base(dependencies, model, queryableMethodTranslatingExpressionVisitor)
         {
-            _jsonPocoTranslator = ((MySqlMemberTranslatorProvider)Dependencies.MemberTranslatorProvider).JsonPocoTranslator;
+            _jsonPocoTranslator = jsonPocoTranslator;
             _sqlExpressionFactory = (MySqlSqlExpressionFactory)Dependencies.SqlExpressionFactory;
-            //_jsonTypeMapping = _sqlExpressionFactory.FindMapping("json");
         }
 
         /// <inheritdoc />
@@ -37,7 +36,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                     return null;
                 }
 
-                return _jsonPocoTranslator.TranslateArrayLength(sqlOperand);
+                return _jsonPocoTranslator?.TranslateArrayLength(sqlOperand);
             }
 
             return base.VisitUnary(unaryExpression);
@@ -54,7 +53,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 }
 
                 // Try translating ArrayIndex inside json column
-                return _jsonPocoTranslator.TranslateMemberAccess(
+                return _jsonPocoTranslator?.TranslateMemberAccess(
                     sqlLeft,
                     _sqlExpressionFactory.JsonArrayIndex(sqlRight),
                     binaryExpression.Type);
@@ -81,40 +80,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                             ? null
                             : visitedBinaryExpression;
                 }
-
-                // The following section might not be needed. Lets keep it for a bit, until we are sure.
-                /*
-                // When comparing a JSON value to some string value or when assigning a string value
-                // to a JSON column, convert the string value to JSON first.
-                // Also explicitly convert parameter instances to JSON.
-                if (visitedBinaryExpression.Left.TypeMapping?.StoreType == "json" &&
-                    visitedBinaryExpression.Right.TypeMapping?.StoreType != "json" &&
-                    visitedBinaryExpression.Right.TypeMapping?.ClrType == typeof(string))
-                {
-                    visitedExpression = _sqlExpressionFactory.MakeBinary(
-                        visitedBinaryExpression.OperatorType,
-                        visitedBinaryExpression.Left,
-                        _sqlExpressionFactory.Convert(
-                            visitedBinaryExpression.Right,
-                            visitedBinaryExpression.Right.Type,
-                            _jsonTypeMapping),
-                        _jsonTypeMapping);
-                }
-                else if (visitedBinaryExpression.Right.TypeMapping?.StoreType == "json" &&
-                         visitedBinaryExpression.Left.TypeMapping?.StoreType != "json" &&
-                         visitedBinaryExpression.Left.TypeMapping?.ClrType == typeof(string) &&
-                         visitedBinaryExpression.OperatorType != ExpressionType.Assign)
-                {
-                    visitedExpression = _sqlExpressionFactory.MakeBinary(
-                        visitedBinaryExpression.OperatorType,
-                        _sqlExpressionFactory.Convert(
-                            visitedBinaryExpression.Left,
-                            visitedBinaryExpression.Left.Type,
-                            _jsonTypeMapping),
-                        visitedBinaryExpression.Right,
-                        _jsonTypeMapping);
-                }
-                */
             }
 
             return visitedExpression;

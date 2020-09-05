@@ -79,7 +79,7 @@ jobs:
           sleep 3
         fi
       done
-      
+
       if [ "$started" = "false" ]; then
         echo "$DOCKER_IMAGE container failed to start in 5 minutes" >&2
         exit 1
@@ -196,7 +196,7 @@ jobs:
   - pwsh: |
       mysql -h localhost -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sql_mode)';"
     displayName: Setup Database
-    ignoreLASTEXITCODE: true  
+    ignoreLASTEXITCODE: true
   - pwsh: |
       echo "$(mysql_ini_path) file:"
       cat $(mysql_ini_path)
@@ -307,6 +307,12 @@ jobs:
           "/p:DotNetFinalVersionKind=$final_version_kind" \
           "/p:ContinuousIntegrationBuild=true" \
           src/EFCore.MySql.NTS/
+        ./dotnet-env.sh dotnet pack \
+          -c Release \
+          "/p:OfficialBuildId=$(Build.BuildNumber)" \
+          "/p:DotNetFinalVersionKind=$final_version_kind" \
+          "/p:ContinuousIntegrationBuild=true" \
+          src/EFCore.MySql.Json.Microsoft/
       fi
 
       # If ALL nupkg files end in the branch name (no "preview-" etc.), we consider

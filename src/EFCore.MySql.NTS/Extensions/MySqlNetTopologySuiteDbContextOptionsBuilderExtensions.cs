@@ -17,7 +17,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <summary>
         ///     Use NetTopologySuite to access MySQL spatial data.
         /// </summary>
-        /// <param name="optionsBuilder"> The build being used to configure MySQL. </param>
+        /// <param name="optionsBuilder"> The builder being used to configure MySQL. </param>
         /// <returns> The options builder so that further configuration can be chained. </returns>
         public static MySqlDbContextOptionsBuilder UseNetTopologySuite(
             [NotNull] this MySqlDbContextOptionsBuilder optionsBuilder)

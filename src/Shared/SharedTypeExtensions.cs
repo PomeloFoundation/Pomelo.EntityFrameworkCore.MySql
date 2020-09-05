@@ -175,6 +175,49 @@ namespace System
                          && c.GetParameters().Select(p => p.ParameterType).SequenceEqual(types));
         }
 
+        public static IEnumerable<PropertyInfo> GetPropertiesInHierarchy(this Type type, string name)
+        {
+            do
+            {
+                var typeInfo = type.GetTypeInfo();
+                foreach (var propertyInfo in typeInfo.DeclaredProperties)
+                {
+                    if (propertyInfo.Name.Equals(name, StringComparison.Ordinal)
+                        && !(propertyInfo.GetMethod ?? propertyInfo.SetMethod).IsStatic)
+                    {
+                        yield return propertyInfo;
+                    }
+                }
+
+                type = typeInfo.BaseType;
+            }
+            while (type != null);
+        }
+
+        // Looking up the members through the whole hierarchy allows to find inherited private members.
+        public static IEnumerable<MemberInfo> GetMembersInHierarchy(this Type type)
+        {
+            do
+            {
+                // Do the whole hierarchy for properties first since looking for fields is slower.
+                foreach (var propertyInfo in type.GetRuntimeProperties().Where(pi => !(pi.GetMethod ?? pi.SetMethod).IsStatic))
+                {
+                    yield return propertyInfo;
+                }
+
+                foreach (var fieldInfo in type.GetRuntimeFields().Where(f => !f.IsStatic))
+                {
+                    yield return fieldInfo;
+                }
+
+                type = type.BaseType;
+            }
+            while (type != null);
+        }
+
+        public static IEnumerable<MemberInfo> GetMembersInHierarchy(this Type type, string name)
+            => type.GetMembersInHierarchy().Where(m => m.Name == name);
+
         private static readonly Dictionary<Type, object> _commonTypeDictionary = new Dictionary<Type, object>
         {
 #pragma warning disable IDE0034 // Simplify 'default' expression - default causes default(object)

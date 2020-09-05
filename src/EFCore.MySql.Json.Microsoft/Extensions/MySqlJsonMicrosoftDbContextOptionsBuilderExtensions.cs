@@ -3,9 +3,8 @@
 
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
-using Pomelo.EntityFrameworkCore.MySql;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
@@ -13,12 +12,12 @@ namespace Microsoft.EntityFrameworkCore
     /// <summary>
     ///     Json specific extension methods for <see cref="MySqlDbContextOptionsBuilder" />.
     /// </summary>
-    public static class MySqlJsonDbContextOptionsBuilderExtensions
+    public static class MySqlJsonMicrosoftDbContextOptionsBuilderExtensions
     {
         /// <summary>
-        ///     Use Json to access MySQL spatial data.
+        ///     Use System.Text.Json to access MySQL JSON data.
         /// </summary>
-        /// <param name="optionsBuilder"> The build being used to configure MySQL. </param>
+        /// <param name="optionsBuilder"> The builder being used to configure MySQL. </param>
         /// <returns> The options builder so that further configuration can be chained. </returns>
         public static MySqlDbContextOptionsBuilder UseMicrosoftJson(
             [NotNull] this MySqlDbContextOptionsBuilder optionsBuilder)
@@ -27,10 +26,8 @@ namespace Microsoft.EntityFrameworkCore
 
             var coreOptionsBuilder = ((IRelationalDbContextOptionsBuilderInfrastructure)optionsBuilder).OptionsBuilder;
 
-            var extension = coreOptionsBuilder.Options.FindExtension<MySqlJsonOptionsExtension>()
-                ?? new MySqlJsonOptionsExtension();
-
-            extension.Serializer = MicrosoftJsonSerializer.Instance;
+            var extension = coreOptionsBuilder.Options.FindExtension<MySqlJsonMicrosoftOptionsExtension>() ??
+                            new MySqlJsonMicrosoftOptionsExtension();
 
             ((IDbContextOptionsBuilderInfrastructure)coreOptionsBuilder).AddOrUpdateExtension(extension);
 

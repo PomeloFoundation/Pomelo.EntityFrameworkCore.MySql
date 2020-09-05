@@ -1,28 +1,24 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public class JsonPocoQueryTest : IClassFixture<JsonPocoQueryTest.JsonPocoQueryFixture>
+    public abstract class JsonPocoQueryTestBase<TFixture> : IClassFixture<TFixture>
+        where TFixture : JsonPocoQueryTestBase<TFixture>.JsonPocoQueryFixtureBase
     {
-        JsonPocoQueryFixture Fixture { get; }
-
-        public JsonPocoQueryTest(JsonPocoQueryFixture fixture, ITestOutputHelper testOutputHelper)
+        protected JsonPocoQueryTestBase(JsonPocoQueryFixtureBase fixture)
         {
             Fixture = fixture;
-            Fixture.TestSqlLoggerFactory.Clear();
-            //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
+
+        protected JsonPocoQueryFixtureBase Fixture { get; }
 
         [Fact]
         public void Roundtrip()
@@ -39,27 +35,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             Assert.Equal(99.5m, orders[0].Price);
             Assert.Equal("Some address 1", orders[0].ShippingAddress);
             Assert.Equal(new DateTime(2019, 10, 1), orders[0].ShippingDate);
-            Assert.Equal(23, orders[1].Price);
-            Assert.Equal("Some address 2", orders[1].ShippingAddress);
-            Assert.Equal(new DateTime(2019, 10, 10), orders[1].ShippingDate);
-        }
-
-        [Fact]
-        public void Roundtrip_json()
-        {
-            using var ctx = CreateContext();
-            var x = ctx.JsonEntities.Single(e => e.Id == 1);
-            var customer = x.Customer;
-
-            Assert.Equal("Joe", customer.Name);
-            Assert.Equal(25, customer.Age);
-
-            var orders = customer.Orders;
-
-            Assert.Equal(99.5m, orders[0].Price);
-            Assert.Equal("Some address 1", orders[0].ShippingAddress);
-            Assert.Equal(new DateTime(2019, 10, 1), orders[0].ShippingDate);
-            Assert.Equal(23, orders[1].Price);
+            Assert.Equal(23.1m, orders[1].Price);
             Assert.Equal("Some address 2", orders[1].ShippingAddress);
             Assert.Equal(new DateTime(2019, 10, 10), orders[1].ShippingDate);
         }
@@ -92,7 +68,7 @@ FROM `JsonEntities` AS `j`
 WHERE `j`.`Id` = @__p_0
 LIMIT 1",
                 //
-                $@"@__expected_0='{{""Name"":""Joe"",""Age"":25,""ID"":""00000000-0000-0000-0000-000000000000"",""is_vip"":false,""Statistics"":{{""Visits"":4,""Purchases"":3,""Nested"":{{""SomeProperty"":10,""SomeNullableInt"":20,""IntArray"":[3,4],""SomeNullableGuid"":""d5f2685d-e5c4-47e5-97aa-d0266154eb2d""}}}},""Orders"":[{{""Price"":99.5,""ShippingAddress"":""Some address 1"",""ShippingDate"":""2019-10-01T00:00:00""}},{{""Price"":23,""ShippingAddress"":""Some address 2"",""ShippingDate"":""2019-10-10T00:00:00""}}]}}'
+                $@"@__expected_0='{{""Name"":""Joe"",""Age"":25,""ID"":""00000000-0000-0000-0000-000000000000"",""is_vip"":false,""Statistics"":{{""Visits"":4,""Purchases"":3,""Nested"":{{""SomeProperty"":10,""SomeNullableInt"":20,""IntArray"":[3,4],""SomeNullableGuid"":""d5f2685d-e5c4-47e5-97aa-d0266154eb2d""}}}},""Orders"":[{{""Price"":99.5,""ShippingAddress"":""Some address 1"",""ShippingDate"":""2019-10-01T00:00:00""}},{{""Price"":23.1,""ShippingAddress"":""Some address 2"",""ShippingDate"":""2019-10-10T00:00:00""}}]}}'
 
 SELECT `j`.`Id`, `j`.`Customer`, `j`.`ToplevelArray`
 FROM `JsonEntities` AS `j`
@@ -332,21 +308,7 @@ LIMIT 2");
         #region Functions
 
         [Fact]
-        public void JsonContains_with_json_element()
-        {
-            using var ctx = CreateContext();
-            var element = JsonDocument.Parse(@"{""Name"": ""Joe"", ""Age"": 25}").RootElement;
-            var count = ctx.JsonEntities.Count(e =>
-                EF.Functions.JsonContains(e.Customer, element));
-
-            Assert.Equal(1, count);
-            AssertSql(
-                $@"@__element_1='{{""Name"":""Joe"",""Age"":25}}' (Nullable = false)
-
-SELECT COUNT(*)
-FROM `JsonEntities` AS `j`
-WHERE JSON_CONTAINS(`j`.`Customer`, {InsertJsonConvert("@__element_1")})");
-        }
+        public abstract void JsonContains_with_json_element();
 
         [Fact]
         public void JsonContains_with_string_literal()
@@ -452,7 +414,7 @@ WHERE JSON_TYPE(JSON_EXTRACT(`j`.`Customer`, '$.Statistics.Visits')) = 'INTEGER'
 
         protected JsonPocoQueryContext CreateContext() => Fixture.CreateContext();
 
-        void AssertSql(params string[] expected)
+        protected void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
         public class JsonPocoQueryContext : PoolableDbContext
@@ -496,7 +458,7 @@ WHERE JSON_TYPE(JSON_EXTRACT(`j`.`Customer`, '$.Statistics.Visits')) = 'INTEGER'
                         },
                         new Order
                         {
-                            Price = 23,
+                            Price = 23.1m,
                             ShippingAddress = "Some address 2",
                             ShippingDate = new DateTime(2019, 10, 10)
                         }
@@ -545,27 +507,12 @@ WHERE JSON_TYPE(JSON_EXTRACT(`j`.`Customer`, '$.Statistics.Visits')) = 'INTEGER'
             public string[] ToplevelArray { get; set; }
         }
 
-        public class JsonPocoQueryFixture : SharedStoreFixtureBase<JsonPocoQueryContext>
+        public class JsonPocoQueryFixtureBase : SharedStoreFixtureBase<JsonPocoQueryContext>
         {
             protected override string StoreName => "JsonPocoQueryTest";
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
             public TestSqlLoggerFactory TestSqlLoggerFactory => (TestSqlLoggerFactory)ListLoggerFactory;
             protected override void Seed(JsonPocoQueryContext context) => JsonPocoQueryContext.Seed(context);
-
-            protected override IServiceCollection AddServices(IServiceCollection serviceCollection)
-            {
-                return base.AddServices(serviceCollection)
-                    .AddEntityFrameworkMySqlJson(new MicrosoftJsonSerializer());
-            }
-
-            public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
-            {
-                var options = base.AddOptions(builder);
-                new MySqlDbContextOptionsBuilder(options)
-                    .UseMicrosoftJson();
-
-                return options;
-            }
         }
 
         public class Customer
@@ -573,7 +520,8 @@ WHERE JSON_TYPE(JSON_EXTRACT(`j`.`Customer`, '$.Statistics.Visits')) = 'INTEGER'
             public string Name { get; set; }
             public int Age { get; set; }
             public Guid ID { get; set; }
-            [JsonPropertyName("is_vip")]
+            [JsonProperty("is_vip")] // Newtonsoft.Json
+            [JsonPropertyName("is_vip")] // System.Text.Json
             public bool IsVip { get; set; }
             public Statistics Statistics { get; set; }
             public Order[] Orders { get; set; }
