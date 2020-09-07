@@ -2,9 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
-using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions;
@@ -41,14 +38,10 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
 
             var valueGeneratorConvention = new MySqlValueGenerationConvention(Dependencies, RelationalDependencies);
             ReplaceConvention(conventionSet.EntityTypeBaseTypeChangedConventions, valueGeneratorConvention);
-
             ReplaceConvention(conventionSet.EntityTypePrimaryKeyChangedConventions, valueGeneratorConvention);
-
             ReplaceConvention(conventionSet.ForeignKeyAddedConventions, valueGeneratorConvention);
-
             ReplaceConvention(conventionSet.ForeignKeyRemovedConventions, valueGeneratorConvention);
-
-            conventionSet.PropertyAnnotationChangedConventions.Add((MySqlValueGenerationConvention)valueGeneratorConvention);
+            conventionSet.PropertyAnnotationChangedConventions.Add(valueGeneratorConvention);
 
             return conventionSet;
         }

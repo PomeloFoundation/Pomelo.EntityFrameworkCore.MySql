@@ -3,24 +3,20 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public class JsonStringQueryTest : IClassFixture<JsonStringQueryTest.JsonStringQueryFixture>
+    public abstract class JsonStringQueryTestBase<TFixture> : IClassFixture<TFixture>
+        where TFixture : JsonStringQueryTestBase<TFixture>.JsonStringQueryFixtureBase
     {
-        JsonStringQueryFixture Fixture { get; }
+        protected JsonStringQueryFixtureBase Fixture { get; }
 
-        public JsonStringQueryTest(JsonStringQueryFixture fixture, ITestOutputHelper testOutputHelper)
+        protected JsonStringQueryTestBase(JsonStringQueryFixtureBase fixture)
         {
             Fixture = fixture;
-            Fixture.TestSqlLoggerFactory.Clear();
-            //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
         [Fact]
@@ -102,23 +98,6 @@ LIMIT 2");
                 @"SELECT COUNT(*)
 FROM `JsonEntities` AS `j`
 WHERE JSON_CONTAINS(`j`.`CustomerJson`, '{""Name"": ""Joe"", ""Age"": 25}')");
-        }
-
-        [Fact]
-        public void JsonContains_with_json_element()
-        {
-            using var ctx = CreateContext();
-            var element = JsonDocument.Parse(@"{""Name"": ""Joe"", ""Age"": 25}").RootElement;
-            var count = ctx.JsonEntities.Count(e =>
-                EF.Functions.JsonContains(e.CustomerJson, element));
-
-            Assert.Equal(1, count);
-            AssertSql(
-                $@"@__element_1='{{""Name"":""Joe"",""Age"":25}}' (Nullable = false)
-
-SELECT COUNT(*)
-FROM `JsonEntities` AS `j`
-WHERE JSON_CONTAINS(`j`.`CustomerJson`, {InsertJsonConvert("@__element_1")})");
         }
 
         [Fact]
@@ -260,27 +239,12 @@ WHERE JSON_CONTAINS_PATH(`j`.`CustomerJson`, 'all', '$.foo', '$.Age')");
             public string CustomerJson { get; set; }
         }
 
-        public class JsonStringQueryFixture : SharedStoreFixtureBase<JsonStringQueryContext>
+        public class JsonStringQueryFixtureBase : SharedStoreFixtureBase<JsonStringQueryContext>
         {
             protected override string StoreName => "JsonStringQueryTest";
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
             public TestSqlLoggerFactory TestSqlLoggerFactory => (TestSqlLoggerFactory)ListLoggerFactory;
             protected override void Seed(JsonStringQueryContext context) => JsonStringQueryContext.Seed(context);
-
-            protected override IServiceCollection AddServices(IServiceCollection serviceCollection)
-            {
-                return base.AddServices(serviceCollection)
-                    .AddEntityFrameworkMySqlJson(new MicrosoftJsonSerializer());
-            }
-
-            public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
-            {
-                var options = base.AddOptions(builder);
-                new MySqlDbContextOptionsBuilder(options)
-                    .UseMicrosoftJson();
-
-                return options;
-            }
         }
 
         #endregion

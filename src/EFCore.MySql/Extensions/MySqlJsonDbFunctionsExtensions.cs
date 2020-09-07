@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text.Json;
 using JetBrains.Annotations;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 

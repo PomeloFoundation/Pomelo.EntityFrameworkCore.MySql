@@ -1,0 +1,46 @@
+<Project>
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <EFCoreMySqlJsonMicrosoftFile>$(IntermediateOutputPath)EFCoreMySqlJsonMicrosoft$(DefaultLanguageSourceExtension)</EFCoreMySqlJsonMicrosoftFile>
+  </PropertyGroup>
+  <Choose>
+    <When Condition="'$(Language)' == 'F#'">
+      <Choose>
+        <When Condition="'$(OutputType)' == 'Exe' OR '$(OutputType)' == 'WinExe'">
+          <PropertyGroup>
+            <CodeFragmentItemGroup>CompileBefore</CodeFragmentItemGroup>
+          </PropertyGroup>
+        </When>
+        <Otherwise>
+          <PropertyGroup>
+            <CodeFragmentItemGroup>CompileAfter</CodeFragmentItemGroup>
+          </PropertyGroup>
+        </Otherwise>
+      </Choose>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <CodeFragmentItemGroup>Compile</CodeFragmentItemGroup>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
+  <Target Name="AddEFCoreMySqlJsonMicrosoft"
+          BeforeTargets="CoreCompile"
+          DependsOnTargets="PrepareForBuild"
+          Condition="'$(DesignTimeBuild)' != 'True'"
+          Inputs="$(MSBuildAllProjects)"
+          Outputs="$(EFCoreMySqlJsonMicrosoftFile)">
+    <ItemGroup>
+      <EFCoreMySqlJsonMicrosoftServices Include="Microsoft.EntityFrameworkCore.Design.DesignTimeServicesReferenceAttribute">
+        <_Parameter1>Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Design.Internal.MySqlJsonMicrosoftDesignTimeServices, Pomelo.EntityFrameworkCore.MySql.Json.Microsoft</_Parameter1>
+        <_Parameter2>Pomelo.EntityFrameworkCore.MySql.Json.Microsoft</_Parameter2>
+      </EFCoreMySqlJsonMicrosoftServices>
+    </ItemGroup>
+    <WriteCodeFragment AssemblyAttributes="@(EFCoreMySqlJsonMicrosoftServices)"
+                       Language="$(Language)"
+                       OutputFile="$(EFCoreMySqlJsonMicrosoftFile)">
+      <Output TaskParameter="OutputFile" ItemName="$(CodeFragmentItemGroup)" />
+      <Output TaskParameter="OutputFile" ItemName="FileWrites" />
+    </WriteCodeFragment>
+  </Target>
+</Project>

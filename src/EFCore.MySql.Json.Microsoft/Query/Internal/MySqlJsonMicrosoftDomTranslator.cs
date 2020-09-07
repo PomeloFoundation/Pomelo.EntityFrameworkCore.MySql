@@ -11,9 +11,9 @@ using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Query.ExpressionTranslators.Internal
 {
-    public class MySqlJsonDomTranslator : IMemberTranslator, IMethodCallTranslator
+    public class MySqlJsonMicrosoftDomTranslator : IMemberTranslator, IMethodCallTranslator
     {
         private static readonly MemberInfo _rootElement = typeof(JsonDocument).GetProperty(nameof(JsonDocument.RootElement));
         private static readonly MethodInfo _getProperty = typeof(JsonElement).GetRuntimeMethod(nameof(JsonElement.GetProperty), new[] { typeof(string) });
@@ -42,7 +42,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         private readonly IRelationalTypeMappingSource _typeMappingSource;
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
-        public MySqlJsonDomTranslator([NotNull] MySqlSqlExpressionFactory sqlExpressionFactory, [NotNull] IRelationalTypeMappingSource typeMappingSource)
+        public MySqlJsonMicrosoftDomTranslator([NotNull] MySqlSqlExpressionFactory sqlExpressionFactory, [NotNull] IRelationalTypeMappingSource typeMappingSource)
         {
             _typeMappingSource = typeMappingSource;
             _sqlExpressionFactory = sqlExpressionFactory;

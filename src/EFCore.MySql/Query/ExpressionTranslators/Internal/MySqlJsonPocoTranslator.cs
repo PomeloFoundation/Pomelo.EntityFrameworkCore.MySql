@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Linq;
 using System.Reflection;
-using System.Text.Json.Serialization;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
@@ -12,11 +9,10 @@ using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
-    public class MySqlJsonPocoTranslator : IMemberTranslator
+    public abstract class MySqlJsonPocoTranslator : IMySqlJsonPocoTranslator
     {
         private readonly IRelationalTypeMappingSource _typeMappingSource;
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
-        private readonly RelationalTypeMapping _jsonTypeMapping;
         private readonly RelationalTypeMapping _unquotedStringTypeMapping;
         private readonly RelationalTypeMapping _intTypeMapping;
         private readonly RelationalTypeMapping _boolTypeMapping;
@@ -28,7 +24,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             _typeMappingSource = typeMappingSource;
             _sqlExpressionFactory = sqlExpressionFactory;
             _unquotedStringTypeMapping = ((MySqlStringTypeMapping)_typeMappingSource.FindMapping(typeof(string))).Clone(true);
-            _jsonTypeMapping = _typeMappingSource.FindMapping("json");
             _intTypeMapping = _typeMappingSource.FindMapping(typeof(int));
             _boolTypeMapping = _typeMappingSource.FindMapping(typeof(bool));
         }
@@ -42,7 +37,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 // has quotes.
                 var sqlConstantExpression = _sqlExpressionFactory.ApplyDefaultTypeMapping(
                     _sqlExpressionFactory.Constant(
-                        member.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? member.Name,
+                        GetJsonPropertyName(member) ?? member.Name,
                         _unquotedStringTypeMapping));
 
                 return TranslateMemberAccess(
@@ -53,6 +48,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 
             return null;
         }
+
+        public abstract string GetJsonPropertyName(MemberInfo member);
 
         public virtual SqlExpression TranslateMemberAccess(
             [NotNull] SqlExpression instance, [NotNull] SqlExpression member, [NotNull] Type returnType)
@@ -104,15 +101,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 : expression;
 
         private RelationalTypeMapping FindPocoTypeMapping(Type type)
-        {
-            var mapping = _typeMappingSource.FindMapping(type);
-
-            if (mapping == null)
-            {
-                mapping = _typeMappingSource.FindMapping(type, "json");
-            }
-
-            return mapping;
-        }
+            => _typeMappingSource.FindMapping(type) ?? _typeMappingSource.FindMapping(type, "json");
     }
 }
