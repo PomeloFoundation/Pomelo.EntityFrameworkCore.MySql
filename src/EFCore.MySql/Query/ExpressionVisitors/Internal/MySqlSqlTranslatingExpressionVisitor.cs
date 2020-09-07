@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
@@ -31,12 +32,28 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         {
             if (unaryExpression.NodeType == ExpressionType.ArrayLength)
             {
-                if (TranslationFailed(unaryExpression.Operand, Visit(unaryExpression.Operand), out var sqlOperand))
-                {
-                    return null;
-                }
+                return TranslationFailed(unaryExpression.Operand, Visit(unaryExpression.Operand), out var sqlOperand)
+                    ? null
+                    : _jsonPocoTranslator?.TranslateArrayLength(sqlOperand);
+            }
 
-                return _jsonPocoTranslator?.TranslateArrayLength(sqlOperand);
+            // Make explicit casts implicit if they are applied to a JSON traversal object.
+            // It is pretty common for Newtonsoft.Json objects to be cast to other types (e.g. casting from
+            // JToken to JArray to check an arrays length via the JContainer.Count property).
+            if (unaryExpression.NodeType == ExpressionType.Convert ||
+                unaryExpression.NodeType == ExpressionType.ConvertChecked)
+            {
+                var visitedOperand = Visit(unaryExpression.Operand);
+
+                if (visitedOperand is MySqlJsonTraversalExpression traversal)
+                {
+                    return unaryExpression.Type == typeof(object)
+                        ? visitedOperand
+                        : traversal.Clone(
+                            traversal.ReturnsText,
+                            unaryExpression.Type,
+                            _sqlExpressionFactory.FindMapping(unaryExpression.Type));
+                }
             }
 
             return base.VisitUnary(unaryExpression);

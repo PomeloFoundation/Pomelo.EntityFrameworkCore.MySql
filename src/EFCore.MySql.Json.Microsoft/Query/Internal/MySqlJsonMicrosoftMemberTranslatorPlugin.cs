@@ -18,10 +18,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Query.Internal
             IMySqlJsonPocoTranslator jsonPocoTranslator)
         {
             var mySqlSqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
+            var mySqlJsonPocoTranslator = (MySqlJsonPocoTranslator)jsonPocoTranslator;
 
             Translators = new IMemberTranslator[]
             {
-                new MySqlJsonMicrosoftDomTranslator(mySqlSqlExpressionFactory, typeMappingSource),
+                new MySqlJsonMicrosoftDomTranslator(
+                    mySqlSqlExpressionFactory,
+                    typeMappingSource,
+                    mySqlJsonPocoTranslator),
                 jsonPocoTranslator,
             };
         }

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
@@ -15,6 +16,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Query.ExpressionTransl
 {
     public class MySqlJsonMicrosoftDomTranslator : IMemberTranslator, IMethodCallTranslator
     {
+        private static readonly MethodInfo _enumerableAnyWithoutPredicate = typeof(Enumerable).GetTypeInfo()
+            .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+            .Single(mi => mi.Name == nameof(Enumerable.Any) && mi.GetParameters().Length == 1);
+
         private static readonly MemberInfo _rootElement = typeof(JsonDocument).GetProperty(nameof(JsonDocument.RootElement));
         private static readonly MethodInfo _getProperty = typeof(JsonElement).GetRuntimeMethod(nameof(JsonElement.GetProperty), new[] { typeof(string) });
         private static readonly MethodInfo _getArrayLength = typeof(JsonElement).GetRuntimeMethod(nameof(JsonElement.GetArrayLength), Type.EmptyTypes);
@@ -41,15 +46,27 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Query.ExpressionTransl
 
         private readonly IRelationalTypeMappingSource _typeMappingSource;
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
+        private readonly MySqlJsonPocoTranslator _jsonPocoTranslator;
 
-        public MySqlJsonMicrosoftDomTranslator([NotNull] MySqlSqlExpressionFactory sqlExpressionFactory, [NotNull] IRelationalTypeMappingSource typeMappingSource)
+        public MySqlJsonMicrosoftDomTranslator(
+            [NotNull] MySqlSqlExpressionFactory sqlExpressionFactory,
+            [NotNull] IRelationalTypeMappingSource typeMappingSource,
+            [NotNull] MySqlJsonPocoTranslator jsonPocoTranslator)
         {
-            _typeMappingSource = typeMappingSource;
             _sqlExpressionFactory = sqlExpressionFactory;
+            _typeMappingSource = typeMappingSource;
+            _jsonPocoTranslator = jsonPocoTranslator;
         }
 
         public virtual SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType)
         {
+            if (instance?.Type.IsGenericList() == true &&
+                member.Name == nameof(List<object>.Count) &&
+                instance.TypeMapping is null)
+            {
+                return _jsonPocoTranslator.TranslateArrayLength(instance);
+            }
+
             if (member.DeclaringType != typeof(JsonDocument))
             {
                 return null;
@@ -68,6 +85,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Query.ExpressionTransl
 
         public virtual SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
         {
+            if (instance != null && instance.Type.IsGenericList() && method.Name == "get_Item" && arguments.Count == 1)
+            {
+                // Try translating indexing inside json column
+                return _jsonPocoTranslator.TranslateMemberAccess(instance, arguments[0], method.ReturnType);
+            }
+
+            // Predicate-less Any - translate to a simple length check.
+            if (method.IsClosedFormOf(_enumerableAnyWithoutPredicate) &&
+                arguments.Count == 1 &&
+                arguments[0].Type.TryGetElementType(out _) &&
+                arguments[0].TypeMapping is MySqlJsonTypeMapping)
+            {
+                return _sqlExpressionFactory.GreaterThan(
+                    _jsonPocoTranslator.TranslateArrayLength(arguments[0]),
+                    _sqlExpressionFactory.Constant(0));
+            }
+
             if (method.DeclaringType != typeof(JsonElement) ||
                 !(instance.TypeMapping is MySqlJsonTypeMapping mapping))
             {

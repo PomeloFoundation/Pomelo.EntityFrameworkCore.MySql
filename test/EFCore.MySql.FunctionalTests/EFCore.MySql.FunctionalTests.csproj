@@ -63,6 +63,7 @@
     <ProjectReference Include="..\..\src\EFCore.MySql\EFCore.MySql.csproj" />
     <ProjectReference Include="..\..\src\EFCore.MySql.NTS\EFCore.MySql.NTS.csproj" />
     <ProjectReference Include="..\..\src\EFCore.MySql.Json.Microsoft\EFCore.MySql.Json.Microsoft.csproj" />
+    <ProjectReference Include="..\..\src\EFCore.MySql.Json.Newtonsoft\EFCore.MySql.Json.Newtonsoft.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,15 +4,15 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
-using Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Query.ExpressionTranslators.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Query.ExpressionTranslators.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Query.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Query.Internal
 {
-    public class MySqlJsonMicrosoftMethodCallTranslatorPlugin : IMethodCallTranslatorPlugin
+    public class MySqlJsonNewtonsoftMethodCallTranslatorPlugin : IMethodCallTranslatorPlugin
     {
-        public MySqlJsonMicrosoftMethodCallTranslatorPlugin(
+        public MySqlJsonNewtonsoftMethodCallTranslatorPlugin(
             IRelationalTypeMappingSource typeMappingSource,
             ISqlExpressionFactory sqlExpressionFactory,
             IMySqlJsonPocoTranslator jsonPocoTranslator)
@@ -22,7 +22,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Query.Internal
 
             Translators = new IMethodCallTranslator[]
             {
-                new MySqlJsonMicrosoftDomTranslator(
+                new MySqlJsonNewtonsoftDomTranslator(
                     mySqlSqlExpressionFactory,
                     typeMappingSource,
                     mySqlJsonPocoTranslator),

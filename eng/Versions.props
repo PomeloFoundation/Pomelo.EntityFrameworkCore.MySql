@@ -45,6 +45,8 @@
     <NetTopologySuiteVersion>2.0.0</NetTopologySuiteVersion>
     <!-- EFCore.MySql.Json.Microsoft Dependencies -->
     <SystemTextJsonVersion>4.7.1</SystemTextJsonVersion>
+    <!-- EFCore.MySql.Json.Newtonsoft Dependencies -->
+    <NewtonsoftJsonVersion>12.0.3</NewtonsoftJsonVersion>
     <!-- Shared Test Dependencies -->
     <MicrosoftNETTestSdkPackageVersion>16.3.0</MicrosoftNETTestSdkPackageVersion>
     <XunitAssertPackageVersion>2.4.1</XunitAssertPackageVersion>
