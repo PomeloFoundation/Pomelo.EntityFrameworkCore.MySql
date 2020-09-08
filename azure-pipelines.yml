@@ -313,6 +313,12 @@ jobs:
           "/p:DotNetFinalVersionKind=$final_version_kind" \
           "/p:ContinuousIntegrationBuild=true" \
           src/EFCore.MySql.Json.Microsoft/
+        ./dotnet-env.sh dotnet pack \
+          -c Release \
+          "/p:OfficialBuildId=$(Build.BuildNumber)" \
+          "/p:DotNetFinalVersionKind=$final_version_kind" \
+          "/p:ContinuousIntegrationBuild=true" \
+          src/EFCore.MySql.Json.Newtonsoft/
       fi
 
       # If ALL nupkg files end in the branch name (no "preview-" etc.), we consider

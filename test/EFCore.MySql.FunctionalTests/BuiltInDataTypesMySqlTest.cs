@@ -157,6 +157,7 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
                         EnumAsVarchar20 = StringEnum16.Value2,
                         UShortAsYear = 42,
                         IntAsYear = 2011,
+                        StringAsJson = @"{""a"": ""b""}",
                     });
 
                 Assert.Equal(1, context.SaveChanges());
@@ -285,6 +286,9 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
 
                 int? param62 = 2011;
                 Assert.Same(entity, context.Set<MappedNullableDataTypes>().Single(e => e.Int == 999 && e.IntAsYear == param62));
+
+                var param63 = @"{""a"": ""b""}";
+                Assert.Same(entity, context.Set<MappedNullableDataTypes>().Single(e => e.Int == 999 && e.StringAsJson == param63));
             }
         }
 
@@ -432,6 +436,9 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
 
                 ushort? param62 = null;
                 Assert.Same(entity, context.Set<MappedNullableDataTypes>().Single(e => e.Int == 911 && e.IntAsYear == param62));
+
+                string param63 = null;
+                Assert.Same(entity, context.Set<MappedNullableDataTypes>().Single(e => e.Int == 911 && e.StringAsJson == param63));
             }
         }
 
@@ -476,22 +483,23 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
 @p25='128'
 @p26='79'
 @p27='Your' (Nullable = false) (Size = 10) (DbType = StringFixedLength)
-@p28='arm' (Nullable = false) (Size = 4000)
-@p29='anyone!' (Nullable = false) (Size = 4000)
-@p30='strong' (Nullable = false) (Size = 10) (DbType = StringFixedLength)
-@p31='Gumball Rules OK!' (Nullable = false) (Size = 4000)
-@p32='" + entity.StringAsNvarchar + @"' (Nullable = false) (Size = -1)
-@p33='Gumball Rules!' (Nullable = false) (Size = 4000)
-@p34='help' (Nullable = false) (Size = 4000)
-@p35='" + entity.StringAsVarchar + @"' (Nullable = false) (Size = -1)
-@p36='11:15:12'
-@p37='65535'
+@p28='{""a"": ""b""}' (Nullable = false)
+@p29='arm' (Nullable = false) (Size = 4000)
+@p30='anyone!' (Nullable = false) (Size = 4000)
+@p31='strong' (Nullable = false) (Size = 10) (DbType = StringFixedLength)
+@p32='Gumball Rules OK!' (Nullable = false) (Size = 4000)
+@p33='" + entity.StringAsNvarchar + @"' (Nullable = false) (Size = -1)
+@p34='Gumball Rules!' (Nullable = false) (Size = 4000)
+@p35='help' (Nullable = false) (Size = 4000)
+@p36='" + entity.StringAsVarchar + @"' (Nullable = false) (Size = -1)
+@p37='11:15:12'
 @p38='65535'
-@p39='42' (DbType = Int32)
-@p40='4294967295'
+@p39='65535'
+@p40='42' (DbType = Int32)
 @p41='4294967295'
-@p42='18446744073709551615'
-@p43='18446744073709551615'",
+@p42='4294967295'
+@p43='18446744073709551615'
+@p44='18446744073709551615'",
                 parameters,
                 ignoreLineEndingDifferences: true);
 
@@ -551,6 +559,7 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
             Assert.Equal(StringEnumU16.Value4, entity.EnumAsNvarchar20);
             Assert.Equal(2042, entity.UShortAsYear);
             Assert.Equal(2011, entity.IntAsYear);
+            Assert.Equal(@"{""a"": ""b""}", entity.StringAsJson);
         }
 
         private static MappedDataTypes CreateMappedDataTypes(int id)
@@ -600,6 +609,7 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
                 EnumAsVarchar20 = StringEnum16.Value2,
                 UShortAsYear = 42,
                 IntAsYear = 2011,
+                StringAsJson = @"{""a"": ""b""}",
             };
 
         [Fact]
@@ -642,21 +652,22 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
 @p25='-128' (Nullable = true)
 @p26='79' (Nullable = true)
 @p27='C' (Size = 20) (DbType = StringFixedLength)
-@p28='anyone!' (Size = 4000)
-@p29='Your' (Size = 20) (DbType = StringFixedLength)
-@p30='Gumball Rules OK!' (Size = 4000)
-@p31='don't' (Size = 55)
-@p32='Gumball Rules!' (Size = 55)
-@p33='help' (Size = 4000)
-@p34='strong' (Size = 55)
-@p35='11:15:12' (Nullable = true)
-@p36='65535' (Nullable = true)
-@p37='-1' (Nullable = true)
-@p38='42' (Nullable = true) (DbType = Int32)
-@p39='4294967295' (Nullable = true)
-@p40='-1' (Nullable = true)
+@p28='{""a"": ""b""}'
+@p29='anyone!' (Size = 4000)
+@p30='Your' (Size = 20) (DbType = StringFixedLength)
+@p31='Gumball Rules OK!' (Size = 4000)
+@p32='don't' (Size = 55)
+@p33='Gumball Rules!' (Size = 55)
+@p34='help' (Size = 4000)
+@p35='strong' (Size = 55)
+@p36='11:15:12' (Nullable = true)
+@p37='65535' (Nullable = true)
+@p38='-1' (Nullable = true)
+@p39='42' (Nullable = true) (DbType = Int32)
+@p40='4294967295' (Nullable = true)
 @p41='-1' (Nullable = true)
-@p42='18446744073709551615' (Nullable = true)",
+@p42='-1' (Nullable = true)
+@p43='18446744073709551615' (Nullable = true)",
                 parameters,
                 ignoreLineEndingDifferences: true);
 
@@ -712,6 +723,7 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
             Assert.Equal(StringEnumU16.Value4, entity.EnumAsNvarchar20);
             Assert.Equal((ushort)2042, entity.UShortAsYear);
             Assert.Equal(2011, entity.IntAsYear);
+            Assert.Equal(@"{""a"": ""b""}", entity.StringAsJson);
         }
 
         private static MappedNullableDataTypes CreateMappedNullableDataTypes(int id)
@@ -760,6 +772,7 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
                 EnumAsVarchar20 = StringEnum16.Value2,
                 UShortAsYear = 42,
                 IntAsYear = 2011,
+                StringAsJson = @"{""a"": ""b""}",
             };
 
         [Fact]
@@ -803,21 +816,22 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
 @p25=NULL (DbType = SByte)
 @p26=NULL (DbType = Int16)
 @p27=NULL (Size = 20) (DbType = StringFixedLength)
-@p28=NULL (Size = 4000)
-@p29=NULL (Size = 20) (DbType = StringFixedLength)
-@p30=NULL (Size = 4000)
-@p31=NULL (Size = 55)
+@p28=NULL
+@p29=NULL (Size = 4000)
+@p30=NULL (Size = 20) (DbType = StringFixedLength)
+@p31=NULL (Size = 4000)
 @p32=NULL (Size = 55)
-@p33=NULL (Size = 4000)
-@p34=NULL (Size = 55)
-@p35=NULL (DbType = Time)
-@p36=NULL (DbType = Int32)
-@p37=NULL (DbType = Int16)
-@p38=NULL (DbType = Int32)
-@p39=NULL (DbType = Int64)
-@p40=NULL (DbType = Int32)
-@p41=NULL (DbType = Int64)
-@p42=NULL",
+@p33=NULL (Size = 55)
+@p34=NULL (Size = 4000)
+@p35=NULL (Size = 55)
+@p36=NULL (DbType = Time)
+@p37=NULL (DbType = Int32)
+@p38=NULL (DbType = Int16)
+@p39=NULL (DbType = Int32)
+@p40=NULL (DbType = Int64)
+@p41=NULL (DbType = Int32)
+@p42=NULL (DbType = Int64)
+@p43=NULL",
                 parameters,
                 ignoreLineEndingDifferences: true);
 
@@ -872,6 +886,7 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
             Assert.Null(entity.EnumAsVarchar20);
             Assert.Null(entity.UShortAsYear);
             Assert.Null(entity.IntAsYear);
+            Assert.Null(entity.StringAsJson);
         }
 
         [Fact]
@@ -1089,6 +1104,7 @@ MappedDataTypes.SByteAsSmallint ---> [smallint] [Precision = 5 Scale = 0]
 MappedDataTypes.SByteAsTinyint ---> [tinyint] [Precision = 3 Scale = 0]
 MappedDataTypes.ShortAsSmallint ---> [smallint] [Precision = 5 Scale = 0]
 MappedDataTypes.StringAsChar ---> [char] [MaxLength = 10]
+MappedDataTypes.StringAsJson ---> [{(AppConfig.ServerVersion.SupportsJsonDataTypeEmulation ? "longtext] [MaxLength = -1" : "json")}]
 MappedDataTypes.StringAsLongtext ---> [longtext] [MaxLength = -1]
 MappedDataTypes.StringAsMediumtext ---> [mediumtext] [MaxLength = 16777215]
 MappedDataTypes.StringAsNChar ---> [char] [MaxLength = 10]
@@ -1133,6 +1149,7 @@ MappedNullableDataTypes.SByteAsSmallint ---> [nullable smallint] [Precision = 5 
 MappedNullableDataTypes.SbyteAsTinyint ---> [nullable tinyint] [Precision = 3 Scale = 0]
 MappedNullableDataTypes.ShortAsSmallint ---> [nullable smallint] [Precision = 5 Scale = 0]
 MappedNullableDataTypes.StringAsChar ---> [nullable char] [MaxLength = 20]
+MappedNullableDataTypes.StringAsJson ---> [nullable {(AppConfig.ServerVersion.SupportsJsonDataTypeEmulation ? "longtext] [MaxLength = -1" : "json")}]
 MappedNullableDataTypes.StringAsMediumtext ---> [nullable mediumtext] [MaxLength = 8388607]
 MappedNullableDataTypes.StringAsNChar ---> [nullable char] [MaxLength = 20]
 MappedNullableDataTypes.StringAsNtext ---> [nullable text] [MaxLength = 65535]
@@ -1566,6 +1583,9 @@ UnicodeDataTypes.StringUnicode ---> [nullable longtext] [MaxLength = -1]
 
             [Column(TypeName = "nvarchar(20)")]
             public StringEnumU16 EnumAsNvarchar20 { get; set; }
+
+            [Column(TypeName = "json")]
+            public string StringAsJson { get; set; }
         }
 
         protected class MappedNullableDataTypes
@@ -1698,6 +1718,9 @@ UnicodeDataTypes.StringUnicode ---> [nullable longtext] [MaxLength = -1]
 
             [Column(TypeName = "nvarchar(20)")]
             public StringEnumU16? EnumAsNvarchar20 { get; set; }
+
+            [Column(TypeName = "json")]
+            public string StringAsJson { get; set; }
         }
 
         public class ColumnInfo

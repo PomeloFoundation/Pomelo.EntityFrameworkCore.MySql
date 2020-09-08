@@ -19,6 +19,7 @@
 
   <ItemGroup Condition="'$(LocalEFCoreRepository)' == ''">
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" Version="$(MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="$(MicrosoftEntityFrameworkCoreDesignVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(LocalMySqlConnectorRepository)' == ''">
@@ -47,6 +48,9 @@
     <Reference Include="Microsoft.EntityFrameworkCore.Specification.Tests">
       <HintPath>$(LocalEFCoreRepository)\artifacts\bin\EFCore.Relational.Specification.Tests\Debug\$(TargetFramework)\Microsoft.EntityFrameworkCore.Specification.Tests.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.EntityFrameworkCore.Design">
+      <HintPath>$(LocalEFCoreRepository)\artifacts\bin\EFCore.Design.Tests\Debug\netcoreapp3.1\Microsoft.EntityFrameworkCore.Design.dll</HintPath>
+    </Reference>
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryVersion)" />
     <PackageReference Include="NetTopologySuite" Version="$(NetTopologySuiteVersion)" />
     <PackageReference Include="System.ComponentModel.TypeConverter" Version="$(SystemComponentModelTypeConverterVersion)" />
@@ -63,6 +67,7 @@
     <ProjectReference Include="..\..\src\EFCore.MySql\EFCore.MySql.csproj" />
     <ProjectReference Include="..\..\src\EFCore.MySql.NTS\EFCore.MySql.NTS.csproj" />
     <ProjectReference Include="..\..\src\EFCore.MySql.Json.Microsoft\EFCore.MySql.Json.Microsoft.csproj" />
+    <ProjectReference Include="..\..\src\EFCore.MySql.Json.Newtonsoft\EFCore.MySql.Json.Newtonsoft.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -72,6 +77,9 @@
     <None Update="Northwind.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
   </ItemGroup>
 
   <Target Name="CheckConfigFile" BeforeTargets="Build">
