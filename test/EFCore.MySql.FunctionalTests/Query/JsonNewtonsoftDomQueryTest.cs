@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Linq;
-using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Newtonsoft.Json.Linq;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
@@ -30,24 +28,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
              using var ctx = CreateContext();
 
              var json = ctx.JsonEntities.Single(e => e.Id == 1);
-             PerformAsserts(json.CustomerJObject.Root);
-             PerformAsserts(json.CustomerJToken);
+             performAsserts(json.CustomerJObject.Root);
+             performAsserts(json.CustomerJToken);
 
-             static void PerformAsserts(JToken customer)
+             static void performAsserts(JToken customer)
              {
                  Assert.Equal("Joe", customer["Name"].Value<string>());
-                 Assert.Equal(25, customer["Age"].Value<Int32>());
+                 Assert.Equal(25, customer["Age"].Value<int>());
 
                  var order1 = customer["Orders"][0];
 
-                 Assert.Equal(99.5m, order1["Price"].Value<Decimal>());
-                 Assert.Equal("Some address 1", order1["ShippingAddress"].Value<String>());
+                 Assert.Equal(99.5m, order1["Price"].Value<decimal>());
+                 Assert.Equal("Some address 1", order1["ShippingAddress"].Value<string>());
                  Assert.Equal(new DateTime(2019, 10, 1), order1["ShippingDate"].Value<DateTime>());
 
                  var order2 = customer["Orders"][1];
 
-                 Assert.Equal(23.1m, order2["Price"].Value<Decimal>());
-                 Assert.Equal("Some address 2", order2["ShippingAddress"].Value<String>());
+                 Assert.Equal(23.1m, order2["Price"].Value<decimal>());
+                 Assert.Equal("Some address 2", order2["ShippingAddress"].Value<string>());
                  Assert.Equal(new DateTime(2019, 10, 10), order2["ShippingDate"].Value<DateTime>());
              }
          }
@@ -117,9 +115,9 @@ LIMIT 2");
         public void Text_output_on_document()
         {
             using var ctx = CreateContext();
-            var x = ctx.JsonEntities.Single(e => e.CustomerJObject.Root["Name"].Value<String>() == "Joe");
+            var x = ctx.JsonEntities.Single(e => e.CustomerJObject.Root["Name"].Value<string>() == "Joe");
 
-            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<String>());
+            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<string>());
             AssertSql(
                 @"SELECT `j`.`Id`, `j`.`CustomerJObject`, `j`.`CustomerJToken`
 FROM `JsonEntities` AS `j`
@@ -131,9 +129,9 @@ LIMIT 2");
         public void Text_output()
         {
             using var ctx = CreateContext();
-            var x = ctx.JsonEntities.Single(e => e.CustomerJToken["Name"].Value<String>() == "Joe");
+            var x = ctx.JsonEntities.Single(e => e.CustomerJToken["Name"].Value<string>() == "Joe");
 
-            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<String>());
+            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<string>());
             AssertSql(
                 @"SELECT `j`.`Id`, `j`.`CustomerJObject`, `j`.`CustomerJToken`
 FROM `JsonEntities` AS `j`
@@ -161,7 +159,7 @@ LIMIT 2");
             using var ctx = CreateContext();
             var x = ctx.JsonEntities.Single(e => e.CustomerJToken["ID"].Value<Guid>() == Guid.Empty);
 
-            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<String>());
+            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<string>());
             AssertSql(
                 @"SELECT `j`.`Id`, `j`.`CustomerJObject`, `j`.`CustomerJToken`
 FROM `JsonEntities` AS `j`
@@ -173,9 +171,9 @@ LIMIT 2");
         public void Bool_output()
         {
             using var ctx = CreateContext();
-            var x = ctx.JsonEntities.Single(e => e.CustomerJToken["IsVip"].Value<Boolean>());
+            var x = ctx.JsonEntities.Single(e => e.CustomerJToken["IsVip"].Value<bool>());
 
-            Assert.Equal("Moe", x.CustomerJToken["Name"].Value<String>());
+            Assert.Equal("Moe", x.CustomerJToken["Name"].Value<string>());
             AssertSql(
                 @"SELECT `j`.`Id`, `j`.`CustomerJObject`, `j`.`CustomerJToken`
 FROM `JsonEntities` AS `j`
@@ -187,9 +185,9 @@ LIMIT 2");
         public void Nested()
         {
             using var ctx = CreateContext();
-            var x = ctx.JsonEntities.Single(e => e.CustomerJToken["Statistics"]["Visits"].Value<Int64>() == 4);
+            var x = ctx.JsonEntities.Single(e => e.CustomerJToken["Statistics"]["Visits"].Value<long>() == 4);
 
-            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<String>());
+            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<string>());
             AssertSql(
                 @"SELECT `j`.`Id`, `j`.`CustomerJObject`, `j`.`CustomerJToken`
 FROM `JsonEntities` AS `j`
@@ -201,9 +199,9 @@ LIMIT 2");
         public void Nested_twice()
         {
             using var ctx = CreateContext();
-            var x = ctx.JsonEntities.Single(e => e.CustomerJToken["Statistics"]["Nested"]["SomeProperty"].Value<Int32>() == 10);
+            var x = ctx.JsonEntities.Single(e => e.CustomerJToken["Statistics"]["Nested"]["SomeProperty"].Value<int>() == 10);
 
-            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<String>());
+            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<string>());
             AssertSql(
                 @"SELECT `j`.`Id`, `j`.`CustomerJObject`, `j`.`CustomerJToken`
 FROM `JsonEntities` AS `j`
@@ -215,9 +213,9 @@ LIMIT 2");
         public void Array_of_objects()
         {
             using var ctx = CreateContext();
-            var x = ctx.JsonEntities.Single(e => e.CustomerJToken["Orders"][0]["Price"].Value<Decimal>() == 99.5m);
+            var x = ctx.JsonEntities.Single(e => e.CustomerJToken["Orders"][0]["Price"].Value<decimal>() == 99.5m);
 
-            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<String>());
+            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<string>());
             AssertSql(
                 @"SELECT `j`.`Id`, `j`.`CustomerJObject`, `j`.`CustomerJToken`
 FROM `JsonEntities` AS `j`
@@ -230,9 +228,9 @@ LIMIT 2");
         {
             using var ctx = CreateContext();
             var x = ctx.JsonEntities.Single(e =>
-                e.CustomerJToken["Statistics"]["Nested"]["IntArray"][1].Value<Int32>() == 4);
+                e.CustomerJToken["Statistics"]["Nested"]["IntArray"][1].Value<int>() == 4);
 
-            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<String>());
+            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<string>());
             AssertSql(
                 @"SELECT `j`.`Id`, `j`.`CustomerJObject`, `j`.`CustomerJToken`
 FROM `JsonEntities` AS `j`
@@ -246,9 +244,9 @@ LIMIT 2");
             using var ctx = CreateContext();
             var i = 1;
             var x = ctx.JsonEntities.Single(e =>
-                e.CustomerJToken["Statistics"]["Nested"]["IntArray"][i].Value<Int32>() == 4);
+                e.CustomerJToken["Statistics"]["Nested"]["IntArray"][i].Value<int>() == 4);
 
-            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<String>());
+            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<string>());
             AssertSql(
                 @"@__i_0='1'
 
@@ -264,7 +262,7 @@ LIMIT 2");
             using var ctx = CreateContext();
             var x = ctx.JsonEntities.Single(e => e.CustomerJToken["Orders"].Count() == 2);
 
-            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<String>());
+            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<string>());
             AssertSql(
                 @"SELECT `j`.`Id`, `j`.`CustomerJObject`, `j`.`CustomerJToken`
 FROM `JsonEntities` AS `j`
@@ -278,7 +276,7 @@ LIMIT 2");
             using var ctx = CreateContext();
             var x = ctx.JsonEntities.Single(e => ((JContainer)e.CustomerJToken["Orders"]).Count == 2);
 
-            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<String>());
+            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<string>());
             AssertSql(
                 @"SELECT `j`.`Id`, `j`.`CustomerJObject`, `j`.`CustomerJToken`
 FROM `JsonEntities` AS `j`
@@ -292,7 +290,7 @@ LIMIT 2");
             using var ctx = CreateContext();
             var x = ctx.JsonEntities.Single(e => ((JArray)e.CustomerJToken["Orders"]).Count == 2);
 
-            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<String>());
+            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<string>());
             AssertSql(
                 @"SELECT `j`.`Id`, `j`.`CustomerJObject`, `j`.`CustomerJToken`
 FROM `JsonEntities` AS `j`
@@ -304,9 +302,9 @@ LIMIT 2");
         public void Like()
         {
             using var ctx = CreateContext();
-            var x = ctx.JsonEntities.Single(e => e.CustomerJToken["Name"].Value<String>().StartsWith("J"));
+            var x = ctx.JsonEntities.Single(e => e.CustomerJToken["Name"].Value<string>().StartsWith("J"));
 
-            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<String>());
+            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<string>());
             AssertSql(
                 @"SELECT `j`.`Id`, `j`.`CustomerJObject`, `j`.`CustomerJToken`
 FROM `JsonEntities` AS `j`
@@ -322,7 +320,7 @@ LIMIT 2");
                 e.CustomerJToken["Statistics"]["Nested"]["SomeNullableGuid"].Value<Guid>()
                 == Guid.Parse("d5f2685d-e5c4-47e5-97aa-d0266154eb2d"));
 
-            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<String>());
+            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<string>());
             AssertSql(
                 @"SELECT `j`.`Id`, `j`.`CustomerJObject`, `j`.`CustomerJToken`
 FROM `JsonEntities` AS `j`
@@ -334,7 +332,7 @@ LIMIT 2");
         public void Where_root_value()
         {
             using var ctx = CreateContext();
-            _ = ctx.JsonEntities.Single(e => e.CustomerJToken.Value<String>() == "foo");
+            _ = ctx.JsonEntities.Single(e => e.CustomerJToken.Value<string>() == "foo");
 
             AssertSql(
                 @"SELECT `j`.`Id`, `j`.`CustomerJObject`, `j`.`CustomerJToken`
@@ -438,7 +436,7 @@ WHERE JSON_TYPE(JSON_EXTRACT(`j`.`CustomerJToken`, '$.Statistics.Visits')) = 'IN
             using var ctx = CreateContext();
             var x = ctx.JsonEntities.Single(e => EF.Functions.JsonSearchAny(e.CustomerJToken, "J%", "$.Name"));
 
-            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<String>());
+            Assert.Equal("Joe", x.CustomerJToken["Name"].Value<string>());
             AssertSql(
                 @"SELECT `j`.`Id`, `j`.`CustomerJObject`, `j`.`CustomerJToken`
 FROM `JsonEntities` AS `j`
@@ -493,7 +491,7 @@ WHERE JSON_SEARCH(`j`.`CustomerJToken`, 'all', '%o%', NULL, '$.Name') IS NOT NUL
 
         protected JsonDomQueryContext CreateContext() => Fixture.CreateContext();
 
-        void AssertSql(params string[] expected)
+        private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
         public class JsonDomQueryContext : PoolableDbContext
@@ -504,7 +502,7 @@ WHERE JSON_SEARCH(`j`.`CustomerJToken`, 'all', '%o%', NULL, '$.Name') IS NOT NUL
 
             public static void Seed(JsonDomQueryContext context)
             {
-                var (customer1, customer2, customer3) = (CreateCustomer1(), CreateCustomer2(), CreateCustomer3());
+                var (customer1, customer2, customer3) = (createCustomer1(), createCustomer2(), createCustomer3());
 
                 context.JsonEntities.AddRange(
                     new JsonEntity { Id = 1, CustomerJObject = customer1, CustomerJToken = customer1},
@@ -512,7 +510,7 @@ WHERE JSON_SEARCH(`j`.`CustomerJToken`, 'all', '%o%', NULL, '$.Name') IS NOT NUL
                     new JsonEntity { Id = 3, CustomerJObject = null, CustomerJToken = customer3});
                 context.SaveChanges();
 
-                static JObject CreateCustomer1() => JObject.Parse(@"
+                static JObject createCustomer1() => JObject.Parse(@"
                 {
                     ""Name"": ""Joe"",
                     ""Age"": 25,
@@ -545,7 +543,7 @@ WHERE JSON_SEARCH(`j`.`CustomerJToken`, 'all', '%o%', NULL, '$.Name') IS NOT NUL
                     ]
                 }");
 
-                static JObject CreateCustomer2() => JObject.Parse(@"
+                static JObject createCustomer2() => JObject.Parse(@"
                 {
                     ""Name"": ""Moe"",
                     ""Age"": 35,
@@ -573,7 +571,7 @@ WHERE JSON_SEARCH(`j`.`CustomerJToken`, 'all', '%o%', NULL, '$.Name') IS NOT NUL
                     ]
                 }");
 
-                static JToken CreateCustomer3() => JToken.Parse(@"""foo""");
+                static JToken createCustomer3() => JToken.Parse(@"""foo""");
             }
         }
 

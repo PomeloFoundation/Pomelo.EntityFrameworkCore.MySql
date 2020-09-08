@@ -28,10 +28,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             using var ctx = CreateContext();
 
             var json = ctx.JsonEntities.Single(e => e.Id == 1);
-            PerformAsserts(json.CustomerDocument.RootElement);
-            PerformAsserts(json.CustomerElement);
+            performAsserts(json.CustomerDocument.RootElement);
+            performAsserts(json.CustomerElement);
 
-            static void PerformAsserts(JsonElement customer)
+            static void performAsserts(JsonElement customer)
             {
                 Assert.Equal("Joe", customer.GetProperty("Name").GetString());
                 Assert.Equal(25, customer.GetProperty("Age").GetInt32());
@@ -474,7 +474,7 @@ WHERE JSON_SEARCH(`j`.`CustomerElement`, 'all', '%o%', NULL, '$.Name') IS NOT NU
 
             public static void Seed(JsonDomQueryContext context)
             {
-                var (customer1, customer2, customer3) = (CreateCustomer1(), CreateCustomer2(), CreateCustomer3());
+                var (customer1, customer2, customer3) = (createCustomer1(), createCustomer2(), createCustomer3());
 
                 context.JsonEntities.AddRange(
                     new JsonEntity { Id = 1, CustomerDocument = customer1, CustomerElement = customer1.RootElement },
@@ -482,7 +482,7 @@ WHERE JSON_SEARCH(`j`.`CustomerElement`, 'all', '%o%', NULL, '$.Name') IS NOT NU
                     new JsonEntity { Id = 3, CustomerDocument = customer3, CustomerElement = customer3.RootElement });
                 context.SaveChanges();
 
-                static JsonDocument CreateCustomer1() => JsonDocument.Parse(@"
+                static JsonDocument createCustomer1() => JsonDocument.Parse(@"
                 {
                     ""Name"": ""Joe"",
                     ""Age"": 25,
@@ -515,7 +515,7 @@ WHERE JSON_SEARCH(`j`.`CustomerElement`, 'all', '%o%', NULL, '$.Name') IS NOT NU
                     ]
                 }");
 
-                static JsonDocument CreateCustomer2() => JsonDocument.Parse(@"
+                static JsonDocument createCustomer2() => JsonDocument.Parse(@"
                 {
                     ""Name"": ""Moe"",
                     ""Age"": 35,
@@ -543,7 +543,7 @@ WHERE JSON_SEARCH(`j`.`CustomerElement`, 'all', '%o%', NULL, '$.Name') IS NOT NU
                     ]
                 }");
 
-                static JsonDocument CreateCustomer3() => JsonDocument.Parse(@"""foo""");
+                static JsonDocument createCustomer3() => JsonDocument.Parse(@"""foo""");
             }
         }
 
