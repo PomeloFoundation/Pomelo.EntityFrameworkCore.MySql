@@ -14,6 +14,8 @@ using MySql.Data.MySqlClient;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
 {
+    // TODO: Rename to MySqlDbContextOptionsBuilderExtensions for .NET Core 5.0, which is in line with Npgsql, but
+    //       not with SqlServer.
     public static class MySqlDbContextOptionsExtensions
     {
         public static DbContextOptionsBuilder UseMySql(
@@ -31,7 +33,7 @@ namespace Microsoft.EntityFrameworkCore
             };
 
             connectionString = csb.ConnectionString;
-            var extension = GetOrCreateExtension(optionsBuilder).WithConnectionString(connectionString);
+            var extension = (MySqlOptionsExtension)GetOrCreateExtension(optionsBuilder).WithConnectionString(connectionString);
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
             ConfigureWarnings(optionsBuilder);
             mySqlOptionsAction?.Invoke(new MySqlDbContextOptionsBuilder(optionsBuilder));
@@ -66,7 +68,7 @@ namespace Microsoft.EntityFrameworkCore
                 }
             }
 
-            var extension = GetOrCreateExtension(optionsBuilder).WithConnection(connection);
+            var extension = (MySqlOptionsExtension)GetOrCreateExtension(optionsBuilder).WithConnection(connection);
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
             ConfigureWarnings(optionsBuilder);
             mySqlOptionsAction?.Invoke(new MySqlDbContextOptionsBuilder(optionsBuilder));
