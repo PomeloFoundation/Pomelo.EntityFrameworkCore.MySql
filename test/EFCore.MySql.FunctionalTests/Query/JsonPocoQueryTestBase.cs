@@ -398,6 +398,52 @@ FROM `JsonEntities` AS `j`
 WHERE JSON_TYPE(JSON_EXTRACT(`j`.`Customer`, '$.Statistics.Visits')) = 'INTEGER'");
         }
 
+        [Fact]
+        public void JsonPropertyChangeDetected()
+        {
+            using var ctx = CreateContext();
+            var x = ctx.JsonEntities.Single(e => e.Id == 1);
+
+            x.Customer.Orders[0].ShippingAddress = "Some very different address";
+            ctx.ChangeTracker.DetectChanges();
+
+            Assert.True(ctx.Entry(x).Property(e => e.Customer).IsModified);
+        }
+
+        [Fact]
+        public void JsonPropertyNoChangeDetectedIfNotChanged()
+        {
+            using var ctx = CreateContext();
+            var x = ctx.JsonEntities.Single(e => e.Id == 1);
+
+            ctx.ChangeTracker.DetectChanges();
+
+            Assert.False(ctx.Entry(x).Property(e => e.Customer).IsModified);
+        }
+
+        [Fact]
+        public void JsonToplevelArrayChangeDetected()
+        {
+            using var ctx = CreateContext();
+            var x = ctx.JsonEntities.Single(e => e.Id == 1);
+
+            x.ToplevelArray[2] = "fortytwo";
+            ctx.ChangeTracker.DetectChanges();
+
+            Assert.True(ctx.Entry(x).Property(e => e.ToplevelArray).IsModified);
+        }
+
+        [Fact]
+        public void JsonToplevelArrayNoChangeDetectedIfNotChanged()
+        {
+            using var ctx = CreateContext();
+            var x = ctx.JsonEntities.Single(e => e.Id == 1);
+
+            ctx.ChangeTracker.DetectChanges();
+
+            Assert.False(ctx.Entry(x).Property(e => e.ToplevelArray).IsModified);
+        }
+
         #endregion Functions
 
         #region Support
