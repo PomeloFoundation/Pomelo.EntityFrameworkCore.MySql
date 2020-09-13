@@ -2,6 +2,7 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Linq;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Microsoft.EntityFrameworkCore;
@@ -41,6 +42,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         public virtual void Initialize(IDbContextOptions options)
         {
             var mySqlOptions = options.FindExtension<MySqlOptionsExtension>() ?? new MySqlOptionsExtension();
+            var mySqlJsonOptions = (MySqlJsonOptionsExtension)options.Extensions.LastOrDefault(e => e is MySqlJsonOptionsExtension);
 
             ConnectionSettings = GetConnectionSettings(mySqlOptions);
             ServerVersion = mySqlOptions.ServerVersion ?? ServerVersion;
@@ -53,11 +55,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                 ? new MySqlSchemaNameTranslator((_, objectName) => objectName)
                 : null);
             IndexOptimizedBooleanColumns = mySqlOptions.IndexOptimizedBooleanColumns;
+            JsonChangeTrackingOptions = mySqlJsonOptions?.JsonChangeTrackingOptions ?? default;
         }
 
         public virtual void Validate(IDbContextOptions options)
         {
             var mySqlOptions = options.FindExtension<MySqlOptionsExtension>() ?? new MySqlOptionsExtension();
+            var mySqlJsonOptions = (MySqlJsonOptionsExtension)options.Extensions.LastOrDefault(e => e is MySqlJsonOptionsExtension);
             var connectionSettings = GetConnectionSettings(mySqlOptions);
 
             if (!Equals(ServerVersion, mySqlOptions.ServerVersion ?? new ServerVersion(null)))
@@ -139,6 +143,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                         nameof(MySqlDbContextOptionsBuilder.EnableIndexOptimizedBooleanColumns),
                         nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
             }
+
+            if (!Equals(JsonChangeTrackingOptions, mySqlJsonOptions?.JsonChangeTrackingOptions ?? default))
+            {
+                throw new InvalidOperationException(
+                    CoreStrings.SingletonOptionChanged(
+                        nameof(MySqlJsonOptionsExtension.JsonChangeTrackingOptions),
+                        nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
+            }
         }
 
         protected virtual MySqlDefaultDataTypeMappings ApplyDefaultDataTypeMappings(MySqlDefaultDataTypeMappings defaultDataTypeMappings, MySqlConnectionSettings connectionSettings)
@@ -209,7 +221,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                    ReplaceLineBreaksWithCharFunction == other.ReplaceLineBreaksWithCharFunction &&
                    Equals(DefaultDataTypeMappings, other.DefaultDataTypeMappings) &&
                    Equals(SchemaNameTranslator, other.SchemaNameTranslator) &&
-                   IndexOptimizedBooleanColumns == other.IndexOptimizedBooleanColumns;
+                   IndexOptimizedBooleanColumns == other.IndexOptimizedBooleanColumns &&
+                   JsonChangeTrackingOptions == other.JsonChangeTrackingOptions;
         }
 
         public override bool Equals(object obj)
@@ -245,6 +258,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             hashCode.Add(DefaultDataTypeMappings);
             hashCode.Add(SchemaNameTranslator);
             hashCode.Add(IndexOptimizedBooleanColumns);
+            hashCode.Add(JsonChangeTrackingOptions);
             return hashCode.ToHashCode();
         }
 
@@ -258,5 +272,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         public virtual MySqlDefaultDataTypeMappings DefaultDataTypeMappings { get; private set; }
         public virtual MySqlSchemaNameTranslator SchemaNameTranslator { get; private set; }
         public virtual bool IndexOptimizedBooleanColumns { get; private set; }
+        public virtual MySqlJsonChangeTrackingOptions JsonChangeTrackingOptions { get; private set; }
     }
 }

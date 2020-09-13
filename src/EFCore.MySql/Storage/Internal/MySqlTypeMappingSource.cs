@@ -144,7 +144,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 ? new MySqlGuidTypeMapping(_options.ConnectionSettings.GuidFormat)
                 : null;
 
-            _jsonDefaultString = new MySqlJsonTypeMapping<string>("json", null, _options);
+            _jsonDefaultString = new MySqlJsonTypeMapping<string>("json", null, null, _options);
 
             _storeTypeMappings
                 = new Dictionary<string, RelationalTypeMapping[]>(StringComparer.OrdinalIgnoreCase)

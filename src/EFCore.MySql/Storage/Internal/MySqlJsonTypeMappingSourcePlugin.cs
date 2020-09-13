@@ -1,5 +1,9 @@
-﻿using System;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
@@ -31,6 +35,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                         MySqlJsonTypeMappingType.MakeGenericType(clrType),
                         storeTypeName,
                         GetValueConverter(clrType),
+                        GetValueComparer(clrType),
                         Options)
                     : null;
             }
@@ -41,5 +46,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         protected abstract Type MySqlJsonTypeMappingType { get; }
         protected abstract RelationalTypeMapping FindDomMapping(RelationalTypeMappingInfo mappingInfo);
         protected abstract ValueConverter GetValueConverter(Type clrType);
+        protected abstract ValueComparer GetValueComparer(Type clrType);
     }
 }

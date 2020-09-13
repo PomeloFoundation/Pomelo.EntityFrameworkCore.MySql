@@ -4,9 +4,11 @@
 using System;
 using System.Text.Json;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Storage.ValueComparison.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Storage.ValueConversion.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
@@ -14,9 +16,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Storage.Internal
 {
     public class MySqlJsonMicrosoftTypeMappingSourcePlugin : MySqlJsonTypeMappingSourcePlugin
     {
-        private static readonly Lazy<JsonDocumentValueConverter> _jsonDocumentValueConverter = new Lazy<JsonDocumentValueConverter>();
-        private static readonly Lazy<JsonElementValueConverter> _jsonElementValueConverter = new Lazy<JsonElementValueConverter>();
-        private static readonly Lazy<JsonStringValueConverter> _jsonStringValueConverter = new Lazy<JsonStringValueConverter>();
+        private static readonly Lazy<MySqlJsonMicrosoftJsonDocumentValueConverter> _jsonDocumentValueConverter = new Lazy<MySqlJsonMicrosoftJsonDocumentValueConverter>();
+        private static readonly Lazy<MySqlJsonMicrosoftJsonElementValueConverter> _jsonElementValueConverter = new Lazy<MySqlJsonMicrosoftJsonElementValueConverter>();
+        private static readonly Lazy<MySqlJsonMicrosoftStringValueConverter> _jsonStringValueConverter = new Lazy<MySqlJsonMicrosoftStringValueConverter>();
 
         public MySqlJsonMicrosoftTypeMappingSourcePlugin(
             [NotNull] IMySqlOptions options)
@@ -37,6 +39,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Storage.Internal
                     MySqlJsonTypeMappingType.MakeGenericType(clrType),
                     "json",
                     GetValueConverter(clrType),
+                    GetValueComparer(clrType),
                     Options);
             }
 
@@ -60,7 +63,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Storage.Internal
                 return _jsonStringValueConverter.Value;
             }
 
-            return (ValueConverter)Activator.CreateInstance(typeof(JsonPocoValueConverter<>).MakeGenericType(clrType));
+            return (ValueConverter)Activator.CreateInstance(
+                typeof(MySqlJsonMicrosoftPocoValueConverter<>).MakeGenericType(clrType));
         }
+
+        protected override ValueComparer GetValueComparer(Type clrType)
+            => MySqlJsonMicrosoftValueComparer.Create(clrType, Options.JsonChangeTrackingOptions);
     }
 }
