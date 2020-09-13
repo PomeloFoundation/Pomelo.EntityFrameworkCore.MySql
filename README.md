@@ -34,7 +34,7 @@ Currently supported versions are:
 
 Milestone | Status | Release Date
 ----------|--------|-------------
-3.2.0 | Announced | 2020-09-13
+3.2.0 | Announced | 2020-09-15
 3.1.2 | Released | 2020-07-22
 3.1.1 | Released | 2020-01-15
 3.1.0 | Released | 2019-12-16
