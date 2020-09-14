@@ -21,10 +21,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Infrastructure.Intern
         {
         }
 
-        /// <summary>
-        ///     Override this method in a derived class to ensure that any clone created is also of that class.
-        /// </summary>
-        /// <returns> A clone of this instance, which can be modified before being returned as immutable. </returns>
         protected override MySqlJsonOptionsExtension Clone()
             => new MySqlJsonNewtonsoftOptionsExtension(this);
 

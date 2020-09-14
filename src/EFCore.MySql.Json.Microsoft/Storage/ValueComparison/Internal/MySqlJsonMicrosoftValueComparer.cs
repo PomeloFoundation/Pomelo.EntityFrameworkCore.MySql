@@ -90,8 +90,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Storage.ValueCompariso
                 }
 
                 // Force the string to be parsed, so that e.g. whitespaces are normalized.
-                // Using the JsonSerializer with the WriteIndented option will not work, if the source object is already
-                // a string.
+                // Just using JsonSerializer with the WriteIndented option will not work, if the source object is
+                // already a string.
+                // We therefore accomplish this differently by converting the string temorarily to a JsonDocument.
                 return (left, right) => MySqlJsonMicrosoftStringValueConverter.ProcessJsonString(left as string) == MySqlJsonMicrosoftStringValueConverter.ProcessJsonString(right as string);
             }
 
