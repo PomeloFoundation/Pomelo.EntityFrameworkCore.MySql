@@ -2,6 +2,7 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
@@ -11,11 +12,34 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Infrastructure.Intern
 {
     public class MySqlJsonNewtonsoftOptionsExtension : MySqlJsonOptionsExtension
     {
-        public override void ApplyServices(IServiceCollection services)
-            => services.AddEntityFrameworkMySqlJsonNewtonsoft();
+        public MySqlJsonNewtonsoftOptionsExtension()
+        {
+        }
+
+        public MySqlJsonNewtonsoftOptionsExtension([NotNull] MySqlJsonOptionsExtension copyFrom)
+            : base(copyFrom)
+        {
+        }
+
+        /// <summary>
+        ///     Override this method in a derived class to ensure that any clone created is also of that class.
+        /// </summary>
+        /// <returns> A clone of this instance, which can be modified before being returned as immutable. </returns>
+        protected override MySqlJsonOptionsExtension Clone()
+            => new MySqlJsonNewtonsoftOptionsExtension(this);
 
         public override string UseJsonOptionName => nameof(MySqlJsonNewtonsoftDbContextOptionsBuilderExtensions.UseNewtonsoftJson);
         public override string AddEntityFrameworkName => nameof(MySqlJsonNewtonsoftServiceCollectionExtensions.AddEntityFrameworkMySqlJsonNewtonsoft);
         public override Type TypeMappingSourcePluginType => typeof(MySqlJsonNewtonsoftTypeMappingSourcePlugin);
+
+        /// <summary>
+        ///     Adds the services required to make the selected options work. This is used when there
+        ///     is no external <see cref="IServiceProvider" /> and EF is maintaining its own service
+        ///     provider internally. This allows database providers (and other extensions) to register their
+        ///     required services when EF is creating an service provider.
+        /// </summary>
+        /// <param name="services"> The collection to add services to. </param>
+        public override void ApplyServices(IServiceCollection services)
+            => services.AddEntityFrameworkMySqlJsonNewtonsoft();
     }
 }

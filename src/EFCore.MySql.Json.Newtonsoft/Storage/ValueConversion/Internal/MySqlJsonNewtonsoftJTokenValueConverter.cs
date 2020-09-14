@@ -8,9 +8,9 @@ using Newtonsoft.Json.Linq;
 // ReSharper disable once CheckNamespace
 namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Storage.ValueConversion.Internal
 {
-    public class MySqlJTokenValueConverter : ValueConverter<JToken, string>
+    public class MySqlJsonNewtonsoftJTokenValueConverter : ValueConverter<JToken, string>
     {
-        public MySqlJTokenValueConverter()
+        public MySqlJsonNewtonsoftJTokenValueConverter()
             : base(
                 v => ConvertToProviderCore(v),
                 v => ConvertFromProviderCore(v))

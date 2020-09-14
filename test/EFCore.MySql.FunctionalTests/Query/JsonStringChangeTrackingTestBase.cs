@@ -59,7 +59,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             x.Customer = x.Customer.Replace("25", "42");
             ctx.ChangeTracker.DetectChanges();
 
-            Assert.True(Regex.IsMatch(x.Customer, @"""Age""\s*:\s*42"));
+            Assert.Matches(@"""Age""\s*:\s*42", x.Customer);
             Assert.True(ctx.Entry(x).Property(e => e.Customer).IsModified);
         }
 
@@ -72,7 +72,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             x.Customer = x.Customer.Replace("25,", "25 ,");
             ctx.ChangeTracker.DetectChanges();
 
-            Assert.True(Regex.IsMatch(x.Customer, @"""Age""\s*:\s*25 ,"));
+            Assert.Matches(@"""Age""\s*:\s*25 ,", x.Customer);
             Assert.True(ctx.Entry(x).Property(e => e.Customer).IsModified);
         }
 
@@ -86,7 +86,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             x.Customer = x.Customer.Replace("25,", "25 ,");
             ctx.ChangeTracker.DetectChanges();
 
-            Assert.True(Regex.IsMatch(x.Customer, @"""Age""\s*:\s*25 ,"));
+            Assert.Matches(@"""Age""\s*:\s*25 ,", x.Customer);
             Assert.False(ctx.Entry(x).Property(e => e.Customer).IsModified);
         }
 
@@ -99,7 +99,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             x.Customer = x.Customer.Replace("25", "42");
             ctx.ChangeTracker.DetectChanges();
 
-            Assert.True(Regex.IsMatch(x.Customer, @"""Age""\s*:\s*42"));
+            Assert.Matches(@"""Age""\s*:\s*42", x.Customer);
             Assert.True(ctx.Entry(x).Property(e => e.Customer).IsModified);
         }
 
@@ -123,7 +123,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             x.Customer = x.Customer.Replace("25", "42");
             ctx.ChangeTracker.DetectChanges();
 
-            Assert.True(Regex.IsMatch(x.Customer, @"""Age""\s*:\s*42"));
+            Assert.Matches(@"""Age""\s*:\s*42", x.Customer);
             Assert.True(ctx.Entry(x).Property(e => e.Customer).IsModified);
         }
 
@@ -184,7 +184,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             x.Customer = x.Customer.Replace("25", "42");
             ctx.ChangeTracker.DetectChanges();
 
-            Assert.True(Regex.IsMatch(x.Customer, @"""Age""\s*:\s*42"));
+            Assert.Matches(@"""Age""\s*:\s*42", x.Customer);
             Assert.True(ctx.Entry(x).Property(e => e.Customer).IsModified);
         }
 

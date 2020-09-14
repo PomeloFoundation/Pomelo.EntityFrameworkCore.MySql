@@ -5,9 +5,9 @@ using Newtonsoft.Json.Linq;
 // ReSharper disable once CheckNamespace
 namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Storage.ValueConversion.Internal
 {
-    public class JsonStringValueConverter : ValueConverter<string, string>
+    public class MySqlJsonNewtonsoftStringValueConverter : ValueConverter<string, string>
     {
-        public JsonStringValueConverter()
+        public MySqlJsonNewtonsoftStringValueConverter()
             : base(
                 v => ConvertToProviderCore(v),
                 v => ConvertFromProviderCore(v))
@@ -15,12 +15,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Storage.ValueConversi
         }
 
         private static string ConvertToProviderCore(string v)
-            => ProcessString(v);
+            => ProcessJsonString(v);
 
         private static string ConvertFromProviderCore(string v)
-            => ProcessString(v);
+            => ProcessJsonString(v);
 
-        private static string ProcessString(string v)
+        internal static string ProcessJsonString(string v)
             => JToken.Parse(v).ToString(Formatting.None);
     }
 }
