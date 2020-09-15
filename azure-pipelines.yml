@@ -333,9 +333,9 @@ jobs:
         IFS=$'\n'
         for i in $(find artifacts -name "*.nupkg"); do
           filename=$(basename $i)
-          if { [ "$pack_nuget_org" == "" ] || [ "$pack_nuget_org" == "true" ]; } && [ "$filename" = "*.$(Build.SourceBranchName).nupkg" ]; then
+          if { [ "$pack_nuget_org" == "" ] || [ "$pack_nuget_org" == "true" ]; } && [[ $filename == *.$(Build.SourceBranchName).nupkg ]]; then
             pack_nuget_org="true"
-          elif [ $pack_nuget_org = "true" ]; then
+          elif [ "$pack_nuget_org" == "true" ]; then
             pack_nuget_org="false"
             break
           fi
