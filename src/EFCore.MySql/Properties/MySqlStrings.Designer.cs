@@ -22,7 +22,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             = new ResourceManager("Pomelo.EntityFrameworkCore.MySql.Properties.MySqlStrings", typeof(MySqlStrings).GetTypeInfo().Assembly);
 
         /// <summary>
-        ///     Identity value generation cannot be used for the property '{property}' on entity type '{entityType}' because the property type is '{propertyType}'. Identity value generation can only be used with signed integer, DateTime, and DateTimeOffset properties.
+        ///     Identity value generation cannot be used for the property '{property}' on entity type '{entityType}' because the property type is '{propertyType}'. Identity value generation can only be used with integer, DateTime, and DateTimeOffset properties.
         /// </summary>
         public static string IdentityBadType([CanBeNull] object property, [CanBeNull] object entityType, [CanBeNull] object propertyType)
             => string.Format(
