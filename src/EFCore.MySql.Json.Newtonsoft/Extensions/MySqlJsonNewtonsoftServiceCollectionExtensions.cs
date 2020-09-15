@@ -8,7 +8,7 @@ using Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Query.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
-using Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Query.ExpressionTranslators.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Query.ExpressionTranslators.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 
 // ReSharper disable once CheckNamespace

@@ -1,5 +1,9 @@
-﻿using System;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MySql.Data.MySqlClient;
@@ -12,11 +16,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public MySqlJsonTypeMapping(
             [NotNull] string storeType,
             [CanBeNull] ValueConverter valueConverter,
+            [CanBeNull] ValueComparer valueComparer,
             [NotNull] IMySqlOptions options)
             : base(
                 storeType,
                 typeof(T),
                 valueConverter,
+                valueComparer,
                 options)
         {
         }
@@ -42,12 +48,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             [NotNull] string storeType,
             [NotNull] Type clrType,
             [CanBeNull] ValueConverter valueConverter,
+            [CanBeNull] ValueComparer valueComparer,
             [NotNull] IMySqlOptions options)
             : base(
                 storeType,
                 clrType,
                 MySqlDbType.JSON,
-                valueConverter: valueConverter)
+                valueConverter: valueConverter,
+                valueComparer: valueComparer)
         {
             if (storeType != "json")
             {

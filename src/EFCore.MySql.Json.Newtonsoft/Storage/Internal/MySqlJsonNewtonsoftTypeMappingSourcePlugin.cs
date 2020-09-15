@@ -3,10 +3,12 @@
 
 using System;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Newtonsoft.Json.Linq;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Storage.ValueComparison.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Storage.ValueConversion.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
@@ -14,8 +16,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Storage.Internal
 {
     public class MySqlJsonNewtonsoftTypeMappingSourcePlugin : MySqlJsonTypeMappingSourcePlugin
     {
-        private static readonly Lazy<JTokenValueConverter> _jTokenValueConverter = new Lazy<JTokenValueConverter>();
-        private static readonly Lazy<JsonStringValueConverter> _jsonStringValueConverter = new Lazy<JsonStringValueConverter>();
+        private static readonly Lazy<MySqlJsonNewtonsoftJTokenValueConverter> _jTokenValueConverter = new Lazy<MySqlJsonNewtonsoftJTokenValueConverter>();
+        private static readonly Lazy<MySqlJsonNewtonsoftStringValueConverter> _jsonStringValueConverter = new Lazy<MySqlJsonNewtonsoftStringValueConverter>();
 
         public MySqlJsonNewtonsoftTypeMappingSourcePlugin(
             [NotNull] IMySqlOptions options)
@@ -35,6 +37,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Storage.Internal
                     MySqlJsonTypeMappingType.MakeGenericType(clrType),
                     "json",
                     GetValueConverter(clrType),
+                    GetValueComparer(clrType),
                     Options);
             }
 
@@ -53,7 +56,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Storage.Internal
                 return _jsonStringValueConverter.Value;
             }
 
-            return (ValueConverter)Activator.CreateInstance(typeof(JsonPocoValueConverter<>).MakeGenericType(clrType));
+            return (ValueConverter)Activator.CreateInstance(typeof(MySqlJsonNewtonsoftPocoValueConverter<>).MakeGenericType(clrType));
         }
+
+        protected override ValueComparer GetValueComparer(Type clrType)
+            => MySqlJsonNewtonsoftValueComparer.Create(clrType, Options.JsonChangeTrackingOptions);
     }
 }

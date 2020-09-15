@@ -1,7 +1,11 @@
-﻿using System;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System;
 using System.Linq.Expressions;
 using System.Reflection;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MySql.Data.MySqlClient;
@@ -19,10 +23,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Storage.Internal
         public MySqlJsonNewtonsoftTypeMapping(
             [NotNull] string storeType,
             [CanBeNull] ValueConverter valueConverter,
+            [CanBeNull] ValueComparer valueComparer,
             [NotNull] IMySqlOptions options)
             : base(
                 storeType,
                 valueConverter,
+                valueComparer,
                 options)
         {
         }

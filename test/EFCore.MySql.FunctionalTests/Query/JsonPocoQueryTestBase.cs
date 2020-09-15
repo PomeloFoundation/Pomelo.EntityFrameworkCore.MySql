@@ -426,11 +426,11 @@ WHERE JSON_TYPE(JSON_EXTRACT(`j`.`Customer`, '$.Statistics.Visits')) = 'INTEGER'
             public static void Seed(JsonPocoQueryContext context)
             {
                 context.JsonEntities.AddRange(
-                    new JsonEntity { Id = 1, Customer = CreateCustomer1(), ToplevelArray = new[] { "one", "two", "three" } },
-                    new JsonEntity { Id = 2, Customer = CreateCustomer2() });
+                    new JsonEntity { Id = 1, Customer = createCustomer1(), ToplevelArray = new[] { "one", "two", "three" } },
+                    new JsonEntity { Id = 2, Customer = createCustomer2() });
                 context.SaveChanges();
 
-                static Customer CreateCustomer1() => new Customer
+                static Customer createCustomer1() => new Customer
                 {
                     Name = "Joe",
                     Age = 25,
@@ -465,7 +465,7 @@ WHERE JSON_TYPE(JSON_EXTRACT(`j`.`Customer`, '$.Statistics.Visits')) = 'INTEGER'
                     }
                 };
 
-                static Customer CreateCustomer2() => new Customer
+                static Customer createCustomer2() => new Customer
                 {
                     Name = "Moe",
                     Age = 35,
