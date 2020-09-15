@@ -12,7 +12,7 @@
     <StrongNameKeyId>Pomelo.EntityFrameworkCore.MySql</StrongNameKeyId>
     <PackageTags>pomelo;mysql;mariadb;Entity Framework Core;entity-framework-core;ef;efcore;ef core;orm;sql</PackageTags>
     <Product>Pomelo.EntityFrameworkCore.MySql</Product>
-    <Authors>Pomelo Foundation</Authors>
+    <Authors>Laurents Meyer, Caleb Lloyd, Yuko Zheng</Authors>
     <Company>Pomelo Foundation</Company>
     <PackageIconUrl>https://avatars3.githubusercontent.com/u/19828814</PackageIconUrl>
     <PackageIcon>icon.png</PackageIcon>
@@ -36,7 +36,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)icon.png" Pack="true" PackagePath="\"/>
+    <None Include="$(MSBuildThisFileDirectory)icon.png" Pack="true" PackagePath=""/>
   </ItemGroup>
 
   <ItemGroup>

@@ -36,7 +36,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             return base.SelectMany_with_navigation_filter_paging_and_explicit_DefaultIfEmpty(isAsync);
         }
-        
+
         [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Including_reference_navigation_and_projecting_collection_navigation_2(bool isAsync)
@@ -55,6 +55,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         public override void Member_pushdown_chain_3_levels_deep_entity()
         {
             base.Member_pushdown_chain_3_levels_deep_entity();
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task SelectMany_with_outside_reference_to_joined_table_correctly_translated_to_apply(bool async)
+        {
+            return base.SelectMany_with_outside_reference_to_joined_table_correctly_translated_to_apply(async);
         }
     }
 }
