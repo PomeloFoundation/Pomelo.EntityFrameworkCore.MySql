@@ -65,7 +65,7 @@
     <MicrosoftEntityFrameworkCoreDesignVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreDesignVersion>
     <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>3.1.8</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
     <MicrosoftExtensionsConfigurationFileExtensionsVersion>3.1.8</MicrosoftExtensionsConfigurationFileExtensionsVersion>
-    <MicrosoftExtensionsConfigurationJsonVersion>3.1.8</MicrosoftExtensionsConfigurationJsonVersion>
+    <MicrosoftExtensionsConfigurationJsonVersion>3.0.3</MicrosoftExtensionsConfigurationJsonVersion>
     <SystemComponentModelTypeConverterVersion>4.3.0</SystemComponentModelTypeConverterVersion>
     <CastleCoreVersion>4.4.1</CastleCoreVersion>
     <!-- EFCoreMySqlIntegrationTests Dependencies -->

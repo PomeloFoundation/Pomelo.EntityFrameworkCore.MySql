@@ -29,6 +29,11 @@ jobs:
         SERVER_VERSION: 5.7.27-mysql
         SQL_MODE: $(legacy_mysql_mode)
         INTEGRATION_TESTS: "true"
+      MariaDB 10.5.5:
+        DOCKER_IMAGE: mariadb:10.5.5
+        SERVER_VERSION: 10.5.5-mariadb
+        SQL_MODE: $(legacy_mysql_mode)
+        INTEGRATION_TESTS: "false"
       MariaDB 10.4.10:
         DOCKER_IMAGE: mariadb:10.4.10
         SERVER_VERSION: 10.4.10-mariadb
