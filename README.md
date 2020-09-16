@@ -19,6 +19,13 @@ Pomelo.EFCore.MySql | MySqlConnector | EF Core | .NET Standard | .NET Core | .NE
 [3.0.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.0.1) | 0.61.0+ (but < 1.0.0) | 3.0.x | 2.1 | 3.0+ | N/A
 [2.2.6](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/2.2.6) | 0.59.2+ (but < 1.0.0) | 2.2.6 | 2.0 | 2.0+ | 4.6.1+
 
+### Packages
+
+* [Pomelo.EntityFrameworkCore.MySql](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/)
+* [Pomelo.EntityFrameworkCore.MySql.Json.Microsoft](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql.Json.Microsoft/)
+* [Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft/)
+* [Pomelo.EntityFrameworkCore.MySql.NetTopologySuite](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql.NetTopologySuite/)
+
 ### Supported Databases and Versions
 
 `Pomelo.EntityFrameworkCore.MySql` is tested at least against the latest 2 minor versions of `MySQL` and `MariaDB`. Older versions and other server implementations _may_ be compatible (and likely are, at least partially) but are not officially supported or tested.
