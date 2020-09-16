@@ -42,7 +42,7 @@ Currently supported versions are:
 
 Milestone | Status | Release Date
 ----------|--------|-------------
-5.0.0 | In Development | 2020-09-15
+5.0.0 | In Development | TBA
 3.2.0 | Released | 2020-09-15
 3.1.2 | Released | 2020-07-22
 3.1.1 | Released | 2020-01-15
