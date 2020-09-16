@@ -15,18 +15,19 @@ The following versions of MySqlConnector, EF Core and .NET Standard are compatib
 
 Pomelo.EFCore.MySql | MySqlConnector | EF Core | .NET Standard | .NET Core | .NET Framework
 -- | -- | -- | -- | -- | --
-[3.1.2](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.1.2) | 0.61.0+ (but < 1.0.0) | 3.1.x | 2.0 | 2.0+ | 4.6.1+
+[3.2.0](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.2.0) | 0.69.9+ (but < 1.0.0) | 3.1.x | 2.0 | 2.0+ | 4.6.1+
 [3.0.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.0.1) | 0.61.0+ (but < 1.0.0) | 3.0.x | 2.1 | 3.0+ | N/A
 [2.2.6](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/2.2.6) | 0.59.2+ (but < 1.0.0) | 2.2.6 | 2.0 | 2.0+ | 4.6.1+
 
-### Supported DBMS and Versions
+### Supported Databases and Versions
 
-`Pomelo.EntityFrameworkCore.MySql` is tested against the latest 2 minor versions of `MySQL` and `MariaDB`. Older versions and other server implementations _may_ be compatible (and likely are, at least partially) but are not officially supported or tested.
+`Pomelo.EntityFrameworkCore.MySql` is tested at least against the latest 2 minor versions of `MySQL` and `MariaDB`. Older versions and other server implementations _may_ be compatible (and likely are, at least partially) but are not officially supported or tested.
 
 Currently supported versions are:
 
 - MySQL 8.0
 - MySQL 5.7
+- MariaDB 10.5
 - MariaDB 10.4
 - MariaDB 10.3
 
@@ -34,7 +35,8 @@ Currently supported versions are:
 
 Milestone | Status | Release Date
 ----------|--------|-------------
-3.2.0 | Announced | 2020-09-15
+5.0.0 | In Development | 2020-09-15
+3.2.0 | Released | 2020-09-15
 3.1.2 | Released | 2020-07-22
 3.1.1 | Released | 2020-01-15
 3.1.0 | Released | 2019-12-16
@@ -46,7 +48,7 @@ Milestone | Status | Release Date
 
 ## Nightly Builds
 
-To use nightly builds from our Azure DevOps feed, add a `NuGet.config` file in your solution root with the following contents:
+To use nightly builds from our Azure DevOps feed, add a `NuGet.config` file to your solution root with the following content:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -68,12 +70,12 @@ We recommend to set `utf8mb4` as your MySQL database default charset. This is al
 show variables like 'character_set_database';
 ```
 
-### 2. CSPROJ Configuration
+### 2. Project Configuration
 
 Ensure that your `.csproj` file contains the following reference:
 
 ```xml
-<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="3.1.1" />
+<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="3.2.0" />
 ```
 
 ### 3. Services Configuration
@@ -125,9 +127,9 @@ dotnet ef dbcontext scaffold "Server=localhost;Database=ef;User=root;Password=12
 
 ## Contribute
 
-One of the easiest ways to contribute is to report issues and participate in discussions on issues. You can also contribute by submitting pull requests with code changes and supporting tests.
+One of the easiest ways to contribute is to report issues and participate in discussions. You can also contribute by submitting pull requests with code changes and supporting tests.
 
-`Pomelo.EntityFrameworkCore.MySql` is always looking for additional core contributors. If you got a couple of hours a week and know your way around EF Core, give us a nudge.
+We are always looking for additional core contributors. If you got a couple of hours a week and know your way around EF Core and MySQL, give us a nudge.
 
 ## License
 
