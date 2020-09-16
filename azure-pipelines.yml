@@ -367,6 +367,6 @@ jobs:
     inputs:
       command: push
       nuGetFeedType: external
-      publishFeedCredentials: NugetOrg
+      publishFeedCredentials: NugetOrg-PomeloFoundation-AllPackages-PushNew
       packagesToPush: artifacts/**/*.nupkg
     condition: and( succeededOrFailed(), eq(variables['Pack.NugetOrg'],'true'), or ( variables['BuildSucceeded'], eq(variables['Pack.BuildFailedOverride'],'true') ) )
