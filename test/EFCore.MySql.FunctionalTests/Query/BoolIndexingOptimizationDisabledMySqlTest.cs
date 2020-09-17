@@ -1,0 +1,226 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.TestModels.GearsOfWarModel;
+using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
+using Xunit;
+using Xunit.Abstractions;
+// ReSharper disable NegativeEqualityExpression
+// ReSharper disable RedundantBoolCompare
+
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+{
+    public class BoolIndexingOptimizationDisabledMySqlTest : QueryTestBase<BoolIndexingOptimizationDisabledMySqlTest.BoolIndexingOptimizationDisabledMySqlFixture>
+    {
+        public BoolIndexingOptimizationDisabledMySqlTest(BoolIndexingOptimizationDisabledMySqlFixture fixture, ITestOutputHelper testOutputHelper)
+            : base(fixture)
+        {
+            Fixture.TestSqlLoggerFactory.Clear();
+            //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual async Task Where_bool_optimization(bool isAsync)
+        {
+            // Relates to MySqlBoolOptimizingExpressionVisitor.
+            await AssertQuery(
+                isAsync,
+                ss => from w in ss.Set<Weapon>()
+                    where w.IsAutomatic
+                    select w.Name);
+
+            AssertSingleStatementWithKeyUsage(@"SELECT `w`.`Name`
+FROM `Weapons` AS `w`
+WHERE `w`.`IsAutomatic`",
+                "IX_Weapons_IsAutomatic");
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual async Task Where_bool_optimization_not(bool isAsync)
+        {
+            // Relates to MySqlBoolOptimizingExpressionVisitor.
+            await AssertQuery(
+                isAsync,
+                ss => from w in ss.Set<Weapon>()
+                    where !w.IsAutomatic
+                    select w.Name);
+
+            AssertSingleStatementWithKeyUsage(
+                @"SELECT `w`.`Name`
+FROM `Weapons` AS `w`
+WHERE NOT (`w`.`IsAutomatic`)",
+                "IX_Weapons_IsAutomatic");
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual async Task Where_bool_optimization_equals_true(bool isAsync)
+        {
+            // Relates to MySqlBoolOptimizingExpressionVisitor.
+            await AssertQuery(
+                isAsync,
+                ss => from w in ss.Set<Weapon>()
+                    where w.IsAutomatic == true
+                    select w.Name);
+
+            AssertSingleStatementWithKeyUsage(
+                @"SELECT `w`.`Name`
+FROM `Weapons` AS `w`
+WHERE `w`.`IsAutomatic` = TRUE",
+                "IX_Weapons_IsAutomatic");
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual async Task Where_bool_optimization_equals_false(bool isAsync)
+        {
+            // Relates to MySqlBoolOptimizingExpressionVisitor.
+            await AssertQuery(
+                isAsync,
+                ss => from w in ss.Set<Weapon>()
+                    where w.IsAutomatic == false
+                    select w.Name);
+
+            AssertSingleStatementWithKeyUsage(
+                @"SELECT `w`.`Name`
+FROM `Weapons` AS `w`
+WHERE `w`.`IsAutomatic` = FALSE",
+                "IX_Weapons_IsAutomatic");
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual async Task Where_bool_optimization_not_equals_true(bool isAsync)
+        {
+            // Relates to MySqlBoolOptimizingExpressionVisitor.
+            await AssertQuery(
+                isAsync,
+                ss => from w in ss.Set<Weapon>()
+                    where w.IsAutomatic != true
+                    select w.Name);
+
+            AssertSingleStatementWithKeyUsage(
+                @"SELECT `w`.`Name`
+FROM `Weapons` AS `w`
+WHERE `w`.`IsAutomatic` <> TRUE",
+                "IX_Weapons_IsAutomatic");
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual async Task Where_bool_optimization_not_equals_false(bool isAsync)
+        {
+            // Relates to MySqlBoolOptimizingExpressionVisitor.
+            await AssertQuery(
+                isAsync,
+                ss => from w in ss.Set<Weapon>()
+                    where w.IsAutomatic != false
+                    select w.Name);
+
+            AssertSingleStatementWithKeyUsage(
+                @"SELECT `w`.`Name`
+FROM `Weapons` AS `w`
+WHERE `w`.`IsAutomatic` <> FALSE",
+                "IX_Weapons_IsAutomatic");
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual async Task Where_bool_optimization_not_parenthesis_equals_true(bool isAsync)
+        {
+            // Relates to MySqlBoolOptimizingExpressionVisitor.
+            await AssertQuery(
+                isAsync,
+                ss => from w in ss.Set<Weapon>()
+                    where !(w.IsAutomatic == true)
+                    select w.Name);
+
+            AssertSingleStatementWithKeyUsage(
+                @"SELECT `w`.`Name`
+FROM `Weapons` AS `w`
+WHERE `w`.`IsAutomatic` <> TRUE",
+                "IX_Weapons_IsAutomatic");
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual async Task Where_bool_optimization_not_parenthesis_equals_false(bool isAsync)
+        {
+            // Relates to MySqlBoolOptimizingExpressionVisitor.
+            await AssertQuery(
+                isAsync,
+                ss => from w in ss.Set<Weapon>()
+                    where !(w.IsAutomatic == false)
+                    select w.Name);
+
+            AssertSingleStatementWithKeyUsage(
+                @"SELECT `w`.`Name`
+FROM `Weapons` AS `w`
+WHERE `w`.`IsAutomatic` <> FALSE",
+                "IX_Weapons_IsAutomatic");
+        }
+
+
+        private void AssertSql(params string[] expected)
+            => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
+
+        private void AssertKeyUsage(string sql, params string[] keys)
+        {
+            if (keys.Length <= 0)
+            {
+                return;
+            }
+
+            var keysUsed = new HashSet<string>();
+
+            using var context = CreateContext();
+            var connection = context.Database.GetDbConnection();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = "EXPLAIN " + Regex.Replace(
+                sql,
+                @"\r?\nFROM (?:`.*?`\.)?`.*?`(?: AS `.*?`)?(?=$|\r?\n)",
+                $@"$0{Environment.NewLine}FORCE INDEX ({string.Join(", ", keys.Select(s => $"`{s}`"))})",
+                RegexOptions.IgnoreCase);
+
+            using var dataReader = command.ExecuteReader();
+            while (dataReader.Read())
+            {
+                var key = dataReader.GetValueOrDefault<string>("key");
+
+                if (!string.IsNullOrEmpty(key))
+                {
+                    keysUsed.Add(key);
+                }
+            }
+
+            Assert.Empty(keys.Except(keysUsed, StringComparer.OrdinalIgnoreCase));
+        }
+
+        private void AssertSingleStatementWithKeyUsage(string expected, params string[] keys)
+        {
+            AssertSql(expected);
+            AssertKeyUsage(expected, keys);
+        }
+
+        protected GearsOfWarContext CreateContext() => Fixture.CreateContext();
+
+        public class BoolIndexingOptimizationDisabledMySqlFixture : GearsOfWarQueryMySqlFixture
+        {
+            public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
+            {
+                new MySqlDbContextOptionsBuilder(base.AddOptions(builder))
+                    .EnableIndexOptimizedBooleanColumns(false);
+
+                return builder;
+            }
+        }
+    }
+}

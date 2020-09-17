@@ -96,7 +96,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 .CommandTimeout(GetCommandTimeout())
                 .ServerVersion(AppConfig.ServerVersion.Version, AppConfig.ServerVersion.Type)
                 .CharSetBehavior(CharSetBehavior.AppendToAllColumns) // TODO: Change to NerverAppend.
-                .CharSet(CharSet.Utf8Mb4);
+                .CharSet(CharSet.Utf8Mb4)
+                .EnableIndexOptimizedBooleanColumns();
         }
 
         public static void AddOptions(MySqlDbContextOptionsBuilder builder, bool noBackslashEscapes)
