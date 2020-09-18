@@ -49,6 +49,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         private static readonly MethodInfo _isWithinDistance = typeof(Geometry).GetRuntimeMethod(
             nameof(Geometry.IsWithinDistance), new[] { typeof(Geometry), typeof(double) });
 
+        private static readonly MethodInfo _distanceForGeographicalDistance = typeof(Geometry).GetRuntimeMethod(
+            nameof(Geometry.Distance),
+            new[] { typeof(Geometry) });
+
         private readonly IRelationalTypeMappingSource _typeMappingSource;
         private readonly ISqlExpressionFactory _sqlExpressionFactory;
 
@@ -97,6 +101,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         ? _typeMappingSource.FindMapping(method.ReturnType, storeType)
                         : _typeMappingSource.FindMapping(method.ReturnType);
 
+                    if (method == _distanceForGeographicalDistance)
+                    {
+                        return ReturnDistance(typeMappedArguments[0], typeMappedArguments[1], method.ReturnType, resultTypeMapping);
+                    }
+
                     return _sqlExpressionFactory.Function(
                         functionName,
                         typeMappedArguments,
@@ -136,16 +145,51 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                                     : _typeMappingSource.FindMapping(argument.Type)));
                     }
 
+                    var resultTypeMapping = typeof(Geometry).IsAssignableFrom(method.ReturnType)
+                        ? _typeMappingSource.FindMapping(method.ReturnType, storeType)
+                        : _typeMappingSource.FindMapping(method.ReturnType);
+
                     return _sqlExpressionFactory.LessThanOrEqual(
-                        _sqlExpressionFactory.Function(
-                            "ST_Distance",
-                            new[] { instance, typeMappedArguments[0] },
-                            typeof(double)),
+                        ReturnDistance(
+                            instance,
+                            typeMappedArguments[0],
+                            _distanceForGeographicalDistance.ReturnType,
+                            resultTypeMapping),
                         typeMappedArguments[1]);
                 }
             }
 
             return null;
         }
+
+        // If the distance should be calculated, use `ST_Distance_Sphere()` for SRID 4326 and
+        // `ST_Distance()` for all other cases.
+        private SqlExpression ReturnDistance(
+            SqlExpression left,
+            SqlExpression right,
+            Type resultType,
+            RelationalTypeMapping resultTypeMapping)
+            => _sqlExpressionFactory.Case(
+                new[]
+                {
+                    new CaseWhenClause(
+                        _sqlExpressionFactory.Equal(
+                            _sqlExpressionFactory.Function(
+                                "ST_SRID",
+                                new[] {left},
+                                typeof(int),
+                                _typeMappingSource.FindMapping(typeof(int))),
+                            _sqlExpressionFactory.Constant(4326)),
+                        _sqlExpressionFactory.Function(
+                            "ST_Distance_Sphere",
+                            new [] {left, right},
+                            resultType,
+                            resultTypeMapping)),
+                },
+                _sqlExpressionFactory.Function(
+                    "ST_Distance",
+                    new [] {left, right},
+                    resultType,
+                    resultTypeMapping));
     }
 }
