@@ -76,20 +76,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         {
             var builder = new StringBuilder();
             var geometry = (Geometry)value;
-            var defaultSrid = geometry.SRID == 0;
+            var isDefaultSrid = geometry.SRID == 0;
+            var isGeography = geometry.SRID == 4326;
 
             if (CheckEmptyValue(geometry))
             {
-                defaultSrid = true;
+                isDefaultSrid = true;
             }
 
             builder
                 .Append("ST_GeomFromText")
                 .Append("('")
-                .Append(geometry.ToText())
+                .Append(
+                    isGeography
+                        ? new MySqlGeographyWktWriter().Write(geometry)
+                        : geometry.ToText())
                 .Append("'");
 
-            if (!defaultSrid)
+            if (!isDefaultSrid)
             {
                 builder
                     .Append(", ")

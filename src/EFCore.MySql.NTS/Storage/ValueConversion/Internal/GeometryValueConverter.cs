@@ -11,6 +11,11 @@ using NetTopologySuite.IO;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.ValueConversion.Internal
 {
+    internal static class GeometryValueConverter
+    {
+        internal static readonly ConcurrentDictionary<uint, NtsGeometryServices> GeometryServiceses = new ConcurrentDictionary<uint, NtsGeometryServices>();
+    }
+
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
     ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
@@ -33,9 +38,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.ValueConversion.Internal
         {
         }
 
-        // ReSharper disable once StaticMemberInGenericType
-        private static readonly ConcurrentDictionary<uint, NtsGeometryServices> _geometryServiceses = new ConcurrentDictionary<uint, NtsGeometryServices>();
-
         private static MySqlGeometry ConvertToProviderCore(TGeometry v)
             => MySqlGeometry.FromWkb(v.SRID, v.ToBinary());
 
@@ -47,7 +49,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.ValueConversion.Internal
             var biEndianBinaryReader = new BiEndianBinaryReader(memoryStream);
             var srid = biEndianBinaryReader.ReadUInt32();
 
-            var geometryServices = _geometryServiceses.GetOrAdd(
+            var geometryServices = GeometryValueConverter.GeometryServiceses.GetOrAdd(
                 srid,
                 b => new NtsGeometryServices(
                     NtsGeometryServices.Instance.DefaultCoordinateSequenceFactory,
