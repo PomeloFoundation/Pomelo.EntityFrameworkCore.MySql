@@ -13,7 +13,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.ValueConversion.Internal
 {
     internal static class GeometryValueConverter
     {
-        internal static readonly ConcurrentDictionary<uint, NtsGeometryServices> GeometryServiceses = new ConcurrentDictionary<uint, NtsGeometryServices>();
+        internal static readonly ConcurrentDictionary<int, NtsGeometryServices> GeometryServices = new ConcurrentDictionary<int, NtsGeometryServices>();
     }
 
     /// <summary>
@@ -46,18 +46,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.ValueConversion.Internal
             using var memoryStream = new MemoryStream(v.Value);
 
             // MySQL starts it's spatial data with a 4 byte SRID, that is unexpected by WKBReader.
-            var biEndianBinaryReader = new BiEndianBinaryReader(memoryStream);
-            var srid = biEndianBinaryReader.ReadUInt32();
+            var biEndianBinaryReader = new BiEndianBinaryReader(memoryStream, ByteOrder.LittleEndian);
+            var srid = biEndianBinaryReader.ReadInt32();
 
-            var geometryServices = GeometryValueConverter.GeometryServiceses.GetOrAdd(
+            var geometryServices = GeometryValueConverter.GeometryServices.GetOrAdd(
                 srid,
                 b => new NtsGeometryServices(
                     NtsGeometryServices.Instance.DefaultCoordinateSequenceFactory,
                     NtsGeometryServices.Instance.DefaultPrecisionModel,
-                    (int)b));
+                    b));
 
             var reader = new WKBReader(geometryServices);
             var geometry = reader.Read(memoryStream);
+
+            if (geometry.SRID == -1 &&
+                geometry.SRID != srid)
+            {
+                geometry.SRID = srid;
+            }
 
             return (TGeometry)geometry;
         }
