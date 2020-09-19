@@ -470,7 +470,7 @@ ORDER BY
      WHERE `TABLE_SCHEMA` = '{0}'
      AND `TABLE_NAME` = '{1}'
      AND `INDEX_NAME` <> 'PRIMARY'
-     GROUP BY `INDEX_NAME`, `NON_UNIQUE`;";
+     GROUP BY `INDEX_NAME`, `NON_UNIQUE`, `INDEX_TYPE`;";
 
         /// <remarks>
         /// Primary keys are handled as in <see cref="GetConstraints"/>, not here

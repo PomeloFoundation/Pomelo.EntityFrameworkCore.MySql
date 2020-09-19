@@ -45,7 +45,7 @@
 
   <ItemGroup Condition="'$(LocalMySqlConnectorRepository)' != ''">
     <Reference Include="MySqlConnector">
-      <HintPath>E:\Sources\MySqlConnector\src\MySqlConnector\bin\Debug\netstandard2.0\MySqlConnector.dll</HintPath>
+      <HintPath>$(LocalMySqlConnectorRepository)\src\MySqlConnector\bin\Debug\netstandard2.0\MySqlConnector.dll</HintPath>
     </Reference>
   </ItemGroup>
 
