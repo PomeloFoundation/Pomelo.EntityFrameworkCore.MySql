@@ -73,8 +73,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         // public const string SpatialRelateFunctionMySqlSupportVersionString = SpatialFunctionAdditionsMySqlSupportVersionString;
         public const string SpatialRelateFunctionMariaDbSupportVersionString = SpatialFunctionAdditionsMariaDbSupportVersionString;
 
-        public const string SpatialIsValidFunctionMySqlSupportVersionString = "5.7.6-mysql";
-        // public const string SpatialIsValidFunctionMariaDbSupportVersionString = "?.?.?-mariadb";
+        public const string SpatialSupportFunctionAdditionsMySqlSupportVersionString = "5.7.6-mysql";
+        // public const string SpatialSupportFunctionAdditionsMariaDbSupportVersionString = "?.?.?-mariadb";
+
+        public const string SpatialIsValidFunctionMySqlSupportVersionString = SpatialSupportFunctionAdditionsMySqlSupportVersionString;
+        // public const string SpatialIsValidFunctionMariaDbSupportVersionString = SpatialSupportFunctionAdditionsMariaDbSupportVersionString;
+
+        public const string SpatialDistanceSphereFunctionMySqlSupportVersionString = SpatialSupportFunctionAdditionsMySqlSupportVersionString;
+        // public const string SpatialDistanceSphereFunctionMariaDbSupportVersionString = SpatialSupportFunctionAdditionsMariaDbSupportVersionString;
+
+        public const string SpatialSetSridFunctionMySqlSupportVersionString = "8.0.0-mysql";
+        // public const string SpatialSetSridFunctionMariaDbSupportVersionString = "?.?.?-mariadb";
+
+        public const string SpatialDistanceFunctionImplementsAndoyerMySqlSupportVersionString = "8.0.0-mysql";
+        // public const string SpatialDistanceFunctionImplementsAndoyerMariaDbSupportVersionString = "?.?.?-mariadb";
 
         // public const string ExceptInterceptMySqlSupportVersionString = "?.?.?-mysql";
         public const string ExceptInterceptMariaDbSupportVersionString = "10.3.0-mariadb";
@@ -111,7 +123,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string SpatialIsRingFunctionSupportKey = nameof(SpatialIsRingFunctionSupportKey);
         public const string SpatialPointOnSurfaceFunctionSupportKey = nameof(SpatialPointOnSurfaceFunctionSupportKey);
         public const string SpatialRelateFunctionSupportKey = nameof(SpatialRelateFunctionSupportKey);
+        public const string SpatialSupportFunctionAdditionsSupportKey = nameof(SpatialSupportFunctionAdditionsSupportKey);
         public const string SpatialIsValidFunctionSupportKey = nameof(SpatialIsValidFunctionSupportKey);
+        public const string SpatialDistanceSphereFunctionSupportKey = nameof(SpatialDistanceSphereFunctionSupportKey);
+        public const string SpatialSetSridFunctionSupportKey = nameof(SpatialSetSridFunctionSupportKey);
+        public const string SpatialDistanceFunctionImplementsAndoyerSupportKey = nameof(SpatialDistanceFunctionImplementsAndoyerSupportKey);
         public const string ExceptInterceptSupportKey = nameof(ExceptInterceptSupportKey);
         public const string ExceptInterceptPrecedenceSupportKey = nameof(ExceptInterceptPrecedenceSupportKey);
         public const string JsonDataTypeEmulationSupportKey = nameof(JsonDataTypeEmulationSupportKey);
@@ -141,7 +157,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
             { SpatialIsRingFunctionSupportKey, new ServerVersionSupport(/*SpatialIsRingFunctionMySqlSupportVersionString, */SpatialIsRingFunctionMariaDbSupportVersionString)},
             { SpatialPointOnSurfaceFunctionSupportKey, new ServerVersionSupport(/*SpatialPointOnSurfaceFunctionMySqlSupportVersionString, */SpatialPointOnSurfaceFunctionMariaDbSupportVersionString)},
             { SpatialRelateFunctionSupportKey, new ServerVersionSupport(/*SpatialRelateFunctionMySqlSupportVersionString, */SpatialRelateFunctionMariaDbSupportVersionString)},
+            { SpatialSupportFunctionAdditionsSupportKey, new ServerVersionSupport(SpatialSupportFunctionAdditionsMySqlSupportVersionString/*, SpatialSupportFunctionAdditionsMariaDbSupportVersionString*/)},
             { SpatialIsValidFunctionSupportKey, new ServerVersionSupport(SpatialIsValidFunctionMySqlSupportVersionString/*, SpatialIsValidFunctionMariaDbSupportVersionString*/)},
+            { SpatialDistanceSphereFunctionSupportKey, new ServerVersionSupport(SpatialDistanceSphereFunctionMySqlSupportVersionString/*, SpatialDistanceSphereFunctionMariaDbSupportVersionString*/)},
+            { SpatialSetSridFunctionSupportKey, new ServerVersionSupport(SpatialSetSridFunctionMySqlSupportVersionString/*, SpatialSetSridFunctionMariaDbSupportVersionString*/)},
+            { SpatialDistanceFunctionImplementsAndoyerSupportKey, new ServerVersionSupport(SpatialDistanceFunctionImplementsAndoyerMySqlSupportVersionString/*, SpatialDistanceFunctionImplementsAndoyerMariaDbSupportVersionString*/)},
             { ExceptInterceptSupportKey, new ServerVersionSupport(/*ExceptInterceptMySqlSupportVersionString, */ExceptInterceptMariaDbSupportVersionString)},
             { ExceptInterceptPrecedenceSupportKey, new ServerVersionSupport(/*ExceptInterceptPrecedenceMySqlSupportVersionString, */ExceptInterceptPrecedenceMariaDbSupportVersionString)},
             { JsonDataTypeEmulationSupportKey, new ServerVersionSupport(/*JsonDataTypeEmulationMySqlSupportVersionString, */JsonDataTypeEmulationMariaDbSupportVersionString)},
@@ -171,7 +191,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public virtual bool SupportsSpatialIsRingFunction => SupportMap[SpatialIsRingFunctionSupportKey].IsSupported(this);
         public virtual bool SupportsSpatialPointOnSurfaceFunction => SupportMap[SpatialPointOnSurfaceFunctionSupportKey].IsSupported(this);
         public virtual bool SupportsSpatialRelateFunction => SupportMap[SpatialRelateFunctionSupportKey].IsSupported(this);
+        public virtual bool SupportsSpatialSupportFunctionAdditions => SupportMap[SpatialSupportFunctionAdditionsSupportKey].IsSupported(this);
         public virtual bool SupportsSpatialIsValidFunction => SupportMap[SpatialIsValidFunctionSupportKey].IsSupported(this);
+        public virtual bool SupportsSpatialDistanceSphereFunction => SupportMap[SpatialDistanceSphereFunctionSupportKey].IsSupported(this);
+        public virtual bool SupportsSpatialSetSridFunction => SupportMap[SpatialSetSridFunctionSupportKey].IsSupported(this);
+        public virtual bool SupportsSpatialDistanceFunctionImplementsAndoyer => SupportMap[SpatialSetSridFunctionSupportKey].IsSupported(this);
         public virtual bool SupportsExceptIntercept => SupportMap[ExceptInterceptSupportKey].IsSupported(this);
         public virtual bool SupportsExceptInterceptPrecedence => SupportMap[ExceptInterceptPrecedenceSupportKey].IsSupported(this);
         public virtual bool SupportsJsonDataTypeEmulation => SupportMap[JsonDataTypeEmulationSupportKey].IsSupported(this);

@@ -6,10 +6,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 using NetTopologySuite.Geometries;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -24,7 +27,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.ConvexHull), Type.EmptyTypes), "ST_ConvexHull" },
             { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Difference), new[] { typeof(Geometry) }), "ST_Difference" },
             { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Disjoint), new[] { typeof(Geometry) }), "ST_Disjoint" },
-            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Distance), new[] { typeof(Geometry) }), "ST_Distance" },
             { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.EqualsTopologically), new[] { typeof(Geometry) }), "ST_Equals" },
             { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Intersection), new[] { typeof(Geometry) }), "ST_Intersection" },
             { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Intersects), new[] { typeof(Geometry) }), "ST_Intersects" },
@@ -49,19 +51,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         private static readonly MethodInfo _isWithinDistance = typeof(Geometry).GetRuntimeMethod(
             nameof(Geometry.IsWithinDistance), new[] { typeof(Geometry), typeof(double) });
 
-        private static readonly MethodInfo _distanceForGeographicalDistance = typeof(Geometry).GetRuntimeMethod(
+        private static readonly MethodInfo _distance = typeof(Geometry).GetRuntimeMethod(
             nameof(Geometry.Distance),
             new[] { typeof(Geometry) });
 
         private readonly IRelationalTypeMappingSource _typeMappingSource;
         private readonly ISqlExpressionFactory _sqlExpressionFactory;
+        private readonly IMySqlOptions _options;
 
         public MySqlGeometryMethodTranslator(
             IRelationalTypeMappingSource typeMappingSource,
-            ISqlExpressionFactory sqlExpressionFactory)
+            ISqlExpressionFactory sqlExpressionFactory,
+            IMySqlOptions options)
         {
             _typeMappingSource = typeMappingSource;
             _sqlExpressionFactory = sqlExpressionFactory;
+            _options = options;
         }
 
         public virtual SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
@@ -101,11 +106,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         ? _typeMappingSource.FindMapping(method.ReturnType, storeType)
                         : _typeMappingSource.FindMapping(method.ReturnType);
 
-                    if (method == _distanceForGeographicalDistance)
-                    {
-                        return ReturnDistance(typeMappedArguments[0], typeMappedArguments[1], method.ReturnType, resultTypeMapping);
-                    }
-
                     return _sqlExpressionFactory.Function(
                         functionName,
                         typeMappedArguments,
@@ -128,34 +128,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         _typeMappingSource.FindMapping(method.ReturnType, storeType));
                 }
 
+                if (Equals(method, _distance))
+                {
+                    return GetDistanceCallBySrid(
+                        instance,
+                        arguments[0],
+                        method.ReturnType,
+                        _typeMappingSource.FindMapping(method.ReturnType, storeType));
+                }
+
                 if (Equals(method, _isWithinDistance))
                 {
-                    instance = _sqlExpressionFactory.ApplyTypeMapping(
-                        instance, _typeMappingSource.FindMapping(instance.Type, storeType));
-
-                    var typeMappedArguments = new List<SqlExpression>();
-
-                    foreach (var argument in arguments)
-                    {
-                        typeMappedArguments.Add(
-                            _sqlExpressionFactory.ApplyTypeMapping(
-                                argument,
-                                typeof(Geometry).IsAssignableFrom(argument.Type)
-                                    ? _typeMappingSource.FindMapping(argument.Type, storeType)
-                                    : _typeMappingSource.FindMapping(argument.Type)));
-                    }
-
-                    var resultTypeMapping = typeof(Geometry).IsAssignableFrom(method.ReturnType)
-                        ? _typeMappingSource.FindMapping(method.ReturnType, storeType)
-                        : _typeMappingSource.FindMapping(method.ReturnType);
-
                     return _sqlExpressionFactory.LessThanOrEqual(
-                        ReturnDistance(
+                        GetDistanceCallBySrid(
                             instance,
-                            typeMappedArguments[0],
-                            _distanceForGeographicalDistance.ReturnType,
-                            resultTypeMapping),
-                        typeMappedArguments[1]);
+                            arguments[0],
+                            _distance.ReturnType,
+                            _typeMappingSource.FindMapping(_distance.ReturnType)),
+                        arguments[1]);
                 }
             }
 
@@ -164,12 +154,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
         // If the distance should be calculated, use `ST_Distance_Sphere()` for SRID 4326 and
         // `ST_Distance()` for all other cases.
-        private SqlExpression ReturnDistance(
+        private SqlExpression GetDistanceCallBySrid(
             SqlExpression left,
             SqlExpression right,
             Type resultType,
             RelationalTypeMapping resultTypeMapping)
-            => _sqlExpressionFactory.Case(
+        {
+            return _sqlExpressionFactory.Case(
                 new[]
                 {
                     new CaseWhenClause(
@@ -180,16 +171,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                                 typeof(int),
                                 _typeMappingSource.FindMapping(typeof(int))),
                             _sqlExpressionFactory.Constant(4326)),
-                        _sqlExpressionFactory.Function(
-                            "ST_Distance_Sphere",
-                            new [] {left, right},
+                        MySqlSpatialDbFunctionsExtensionsMethodTranslator.GetStDistanceSphereFunctionCall(
+                            left,
+                            right,
+                            SpatialDistanceAlgorithm.Native,
                             resultType,
-                            resultTypeMapping)),
+                            resultTypeMapping,
+                            _sqlExpressionFactory,
+                            _options)),
                 },
-                _sqlExpressionFactory.Function(
-                    "ST_Distance",
-                    new [] {left, right},
+                MySqlSpatialDbFunctionsExtensionsMethodTranslator.GetStDistanceFunctionCall(
+                    left,
+                    right,
                     resultType,
-                    resultTypeMapping));
+                    resultTypeMapping,
+                    _sqlExpressionFactory));
+        }
     }
 }

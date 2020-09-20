@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
@@ -26,11 +25,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public virtual void Distance(bool isAsync)
+        [ConditionalFact]
+        public virtual void Distance()
         {
-            const double expectedGreatCircleDistance = 8117916.968066435; // return of ST_Distance_Sphere() for SRID 4326
+            const double expectedGreatCircleDistance = 8117916.968066435; // result of ST_Distance_Sphere() for SRID 4326
 
             using var context = CreateContext();
 
@@ -41,12 +39,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 .ToList();
 
             var deviation = Math.Abs(cities.Single().Distance - expectedGreatCircleDistance) / expectedGreatCircleDistance;
-            Assert.True(deviation < 0.01); // adjust for MariaDB
+            Assert.True(deviation < 0.01);
         }
 
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public virtual void IsWithinDistance(bool isAsync)
+        [ConditionalFact]
+        public virtual void IsWithinDistance()
         {
             const double expectedGreatCircleDistance = 8117916.968066435 + 100_000; // +100 km
 
@@ -58,8 +55,90 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                             c.Location.IsWithinDistance(seattle.Location, expectedGreatCircleDistance))
                 .ToList();
 
-            Assert.Equal(1, cities.Count);
+            Assert.Single(cities);
             Assert.Equal("Berlin", cities[0].Name);
+        }
+
+        [ConditionalFact]
+        public virtual void SpatialDistancePlanar()
+        {
+            const double expectedPlanarDistance = 135.82593753560775; // result of ST_Distance() for SRID 0
+
+            using var context = CreateContext();
+
+            var seattle = context.Cities.First(c => c.Name == "Seattle");
+            var cities = context.Cities
+                .Where(c => c.Name == "Berlin")
+                .Select(c => new
+                {
+                    Distance = EF.Functions.SpatialDistancePlanar(c.Location, seattle.Location),
+                })
+                .ToList();
+
+            var deviation = Math.Abs(cities.Single().Distance - expectedPlanarDistance) / expectedPlanarDistance;
+            Assert.True(deviation < 0.01);
+        }
+
+        [ConditionalFact]
+        public virtual void SpatialDistanceSphere_Native()
+        {
+            const double expectedGreatCircleDistance = 8117916.968066435; // result of ST_Distance_Sphere() for SRID 4326
+
+            using var context = CreateContext();
+
+            var seattle = context.Cities.First(c => c.Name == "Seattle");
+            var cities = context.Cities
+                .Where(c => c.Name == "Berlin")
+                .Select(c => new
+                {
+                    Distance = c.Location.Distance(seattle.Location),
+                    DistanceNative = EF.Functions.SpatialDistanceSphere(c.Location, seattle.Location, SpatialDistanceAlgorithm.Native)
+                })
+                .ToList();
+
+            var deviation = Math.Abs(cities.Single().DistanceNative - expectedGreatCircleDistance) / expectedGreatCircleDistance;
+            Assert.Equal(cities.Single().Distance, cities.Single().DistanceNative);
+            Assert.True(deviation < 0.01);
+        }
+
+        [ConditionalFact]
+        public virtual void SpatialDistanceSphere_Andoyer()
+        {
+            const double expectedGreatCircleDistance = 8117916.968066435; // result of ST_Distance_Sphere() for SRID 4326
+
+            using var context = CreateContext();
+
+            var seattle = context.Cities.First(c => c.Name == "Seattle");
+            var cities = context.Cities
+                .Where(c => c.Name == "Berlin")
+                .Select(c => new
+                {
+                    Distance = EF.Functions.SpatialDistanceSphere(c.Location, seattle.Location, SpatialDistanceAlgorithm.Andoyer),
+                })
+                .ToList();
+
+            var deviation = Math.Abs(cities.Single().Distance - expectedGreatCircleDistance) / expectedGreatCircleDistance;
+            Assert.True(deviation < 0.01);
+        }
+
+        [ConditionalFact]
+        public virtual void SpatialDistanceSphere_Haversine()
+        {
+            const double expectedGreatCircleDistance = 8117916.968066435; // result of ST_Distance_Sphere() for SRID 4326
+
+            using var context = CreateContext();
+
+            var seattle = context.Cities.First(c => c.Name == "Seattle");
+            var cities = context.Cities
+                .Where(c => c.Name == "Berlin")
+                .Select(c => new
+                {
+                    Distance = EF.Functions.SpatialDistanceSphere(c.Location, seattle.Location, SpatialDistanceAlgorithm.Haversine),
+                })
+                .ToList();
+
+            var deviation = Math.Abs(cities.Single().Distance - expectedGreatCircleDistance) / expectedGreatCircleDistance;
+            Assert.True(deviation < 0.01);
         }
 
         private SpatialGeographyContext CreateContext() => Fixture.CreateContext();
