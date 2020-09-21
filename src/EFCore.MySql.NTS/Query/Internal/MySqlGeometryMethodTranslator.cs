@@ -6,10 +6,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 using NetTopologySuite.Geometries;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -24,7 +27,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.ConvexHull), Type.EmptyTypes), "ST_ConvexHull" },
             { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Difference), new[] { typeof(Geometry) }), "ST_Difference" },
             { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Disjoint), new[] { typeof(Geometry) }), "ST_Disjoint" },
-            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Distance), new[] { typeof(Geometry) }), "ST_Distance" },
             { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.EqualsTopologically), new[] { typeof(Geometry) }), "ST_Equals" },
             { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Intersection), new[] { typeof(Geometry) }), "ST_Intersection" },
             { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Intersects), new[] { typeof(Geometry) }), "ST_Intersects" },
@@ -49,15 +51,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         private static readonly MethodInfo _isWithinDistance = typeof(Geometry).GetRuntimeMethod(
             nameof(Geometry.IsWithinDistance), new[] { typeof(Geometry), typeof(double) });
 
+        private static readonly MethodInfo _distance = typeof(Geometry).GetRuntimeMethod(
+            nameof(Geometry.Distance),
+            new[] { typeof(Geometry) });
+
         private readonly IRelationalTypeMappingSource _typeMappingSource;
         private readonly ISqlExpressionFactory _sqlExpressionFactory;
+        private readonly IMySqlOptions _options;
 
         public MySqlGeometryMethodTranslator(
             IRelationalTypeMappingSource typeMappingSource,
-            ISqlExpressionFactory sqlExpressionFactory)
+            ISqlExpressionFactory sqlExpressionFactory,
+            IMySqlOptions options)
         {
             _typeMappingSource = typeMappingSource;
             _sqlExpressionFactory = sqlExpressionFactory;
+            _options = options;
         }
 
         public virtual SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
@@ -119,33 +128,64 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         _typeMappingSource.FindMapping(method.ReturnType, storeType));
                 }
 
+                if (Equals(method, _distance))
+                {
+                    return GetDistanceCallBySrid(
+                        instance,
+                        arguments[0],
+                        method.ReturnType,
+                        _typeMappingSource.FindMapping(method.ReturnType, storeType));
+                }
+
                 if (Equals(method, _isWithinDistance))
                 {
-                    instance = _sqlExpressionFactory.ApplyTypeMapping(
-                        instance, _typeMappingSource.FindMapping(instance.Type, storeType));
-
-                    var typeMappedArguments = new List<SqlExpression>();
-
-                    foreach (var argument in arguments)
-                    {
-                        typeMappedArguments.Add(
-                            _sqlExpressionFactory.ApplyTypeMapping(
-                                argument,
-                                typeof(Geometry).IsAssignableFrom(argument.Type)
-                                    ? _typeMappingSource.FindMapping(argument.Type, storeType)
-                                    : _typeMappingSource.FindMapping(argument.Type)));
-                    }
-
                     return _sqlExpressionFactory.LessThanOrEqual(
-                        _sqlExpressionFactory.Function(
-                            "ST_Distance",
-                            new[] { instance, typeMappedArguments[0] },
-                            typeof(double)),
-                        typeMappedArguments[1]);
+                        GetDistanceCallBySrid(
+                            instance,
+                            arguments[0],
+                            _distance.ReturnType,
+                            _typeMappingSource.FindMapping(_distance.ReturnType)),
+                        arguments[1]);
                 }
             }
 
             return null;
+        }
+
+        // If the distance should be calculated, use `ST_Distance_Sphere()` for SRID 4326 and
+        // `ST_Distance()` for all other cases.
+        private SqlExpression GetDistanceCallBySrid(
+            SqlExpression left,
+            SqlExpression right,
+            Type resultType,
+            RelationalTypeMapping resultTypeMapping)
+        {
+            return _sqlExpressionFactory.Case(
+                new[]
+                {
+                    new CaseWhenClause(
+                        _sqlExpressionFactory.Equal(
+                            _sqlExpressionFactory.Function(
+                                "ST_SRID",
+                                new[] {left},
+                                typeof(int),
+                                _typeMappingSource.FindMapping(typeof(int))),
+                            _sqlExpressionFactory.Constant(4326)),
+                        MySqlSpatialDbFunctionsExtensionsMethodTranslator.GetStDistanceSphereFunctionCall(
+                            left,
+                            right,
+                            SpatialDistanceAlgorithm.Native,
+                            resultType,
+                            resultTypeMapping,
+                            _sqlExpressionFactory,
+                            _options)),
+                },
+                MySqlSpatialDbFunctionsExtensionsMethodTranslator.GetStDistanceFunctionCall(
+                    left,
+                    right,
+                    resultType,
+                    resultTypeMapping,
+                    _sqlExpressionFactory));
         }
     }
 }

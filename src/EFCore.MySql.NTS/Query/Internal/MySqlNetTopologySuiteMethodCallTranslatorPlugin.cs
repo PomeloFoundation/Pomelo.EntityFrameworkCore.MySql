@@ -2,9 +2,12 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -32,14 +35,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         /// </summary>
         public MySqlNetTopologySuiteMethodCallTranslatorPlugin(
             IRelationalTypeMappingSource typeMappingSource,
-            ISqlExpressionFactory sqlExpressionFactory)
+            ISqlExpressionFactory sqlExpressionFactory,
+            IMySqlOptions options)
         {
             Translators = new IMethodCallTranslator[]
             {
-                new MySqlGeometryMethodTranslator(typeMappingSource, sqlExpressionFactory),
+                new MySqlGeometryMethodTranslator(typeMappingSource, sqlExpressionFactory, options),
                 new MySqlGeometryCollectionMethodTranslator(typeMappingSource, sqlExpressionFactory),
                 new MySqlLineStringMethodTranslator(typeMappingSource, sqlExpressionFactory),
-                new MySqlPolygonMethodTranslator(typeMappingSource, sqlExpressionFactory)
+                new MySqlPolygonMethodTranslator(typeMappingSource, sqlExpressionFactory),
+                new MySqlSpatialDbFunctionsExtensionsMethodTranslator(sqlExpressionFactory, options)
             };
         }
 
