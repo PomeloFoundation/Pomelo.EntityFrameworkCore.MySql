@@ -24,7 +24,7 @@
     <UsingToolXliff>False</UsingToolXliff>
   </PropertyGroup>
   <PropertyGroup Label="Common Versions">
-    <EntityFrameworkCoreVersion>3.1.8</EntityFrameworkCoreVersion>
+    <EntityFrameworkCoreVersion>[3.1.8, 5.0.0)</EntityFrameworkCoreVersion>
   </PropertyGroup>
   <PropertyGroup Label="Dependencies">
     <!-- Runtime Dependencies -->
