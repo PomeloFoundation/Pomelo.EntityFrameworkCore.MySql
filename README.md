@@ -15,7 +15,7 @@ The following versions of MySqlConnector, EF Core and .NET Standard are compatib
 
 Pomelo.EFCore.MySql | MySqlConnector | EF Core | .NET Standard | .NET Core | .NET Framework
 -- | -- | -- | -- | -- | --
-[3.2.0](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.2.0) | 0.69.9+ (but < 1.0.0) | 3.1.x | 2.0 | 2.0+ | 4.6.1+
+[3.2.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.2.1) | 0.69.9+ (but < 1.0.0) | 3.1.x | 2.0 | 2.0+ | 4.6.1+
 [3.0.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.0.1) | 0.61.0+ (but < 1.0.0) | 3.0.x | 2.1 | 3.0+ | N/A
 [2.2.6](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/2.2.6) | 0.59.2+ (but < 1.0.0) | 2.2.6 | 2.0 | 2.0+ | 4.6.1+
 
@@ -28,7 +28,7 @@ Pomelo.EFCore.MySql | MySqlConnector | EF Core | .NET Standard | .NET Core | .NE
 
 ### Supported Databases and Versions
 
-`Pomelo.EntityFrameworkCore.MySql` is tested at least against the latest 2 minor versions of `MySQL` and `MariaDB`. Older versions and other server implementations _may_ be compatible (and likely are, at least partially) but are not officially supported or tested.
+`Pomelo.EntityFrameworkCore.MySql` is tested at least against the latest 2 minor versions of `MySQL` and `MariaDB`. Older versions and other server implementations _may_ be compatible (and likely are to a high degree) but are not officially supported or tested.
 
 Currently supported versions are:
 
@@ -43,7 +43,7 @@ Currently supported versions are:
 Milestone | Status | Release Date
 ----------|--------|-------------
 5.0.0 | In Development | TBA
-3.2.1 | Announced | 2020-09-22
+3.2.1 | Released | 2020-09-22
 3.2.0 | Released | 2020-09-15
 3.1.2 | Released | 2020-07-22
 3.1.1 | Released | 2020-01-15
@@ -83,7 +83,7 @@ show variables like 'character_set_database';
 Ensure that your `.csproj` file contains the following reference:
 
 ```xml
-<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="3.2.0" />
+<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="3.2.1" />
 ```
 
 ### 3. Services Configuration
@@ -108,7 +108,7 @@ namespace YourNamespace
                 // replace with your connection string
                 .UseMySql("Server=localhost;Database=ef;User=root;Password=1234;", mySqlOptions => mySqlOptions
                     // replace with your Server Version and Type
-                    .ServerVersion(new Version(8, 0, 18), ServerType.MySql)
+                    .ServerVersion(new Version(8, 0, 21), ServerType.MySql)
             ));
         }
     }
