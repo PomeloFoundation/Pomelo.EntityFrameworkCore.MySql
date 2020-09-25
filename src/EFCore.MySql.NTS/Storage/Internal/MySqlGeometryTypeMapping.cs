@@ -13,6 +13,7 @@ using MySql.Data.Types;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.ValueConversion.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
@@ -26,6 +27,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     public class MySqlGeometryTypeMapping<TGeometry> : RelationalGeometryTypeMapping<TGeometry, MySqlGeometry>
         where TGeometry : Geometry
     {
+        private readonly IMySqlOptions _options;
+
         // ReSharper disable once StaticMemberInGenericType
         private static readonly MethodInfo _getMySqlGeometry
             = typeof(MySqlDataReader).GetRuntimeMethod(nameof(MySqlDataReader.GetMySqlGeometry), new[] { typeof(int) });
@@ -37,11 +40,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         ///     doing so can result in application failures when updating to a new Entity Framework Core release.
         /// </summary>
         [UsedImplicitly]
-        public MySqlGeometryTypeMapping(NtsGeometryServices geometryServices, string storeType)
+        public MySqlGeometryTypeMapping(NtsGeometryServices geometryServices, string storeType, IMySqlOptions options)
             : base(
                 new GeometryValueConverter<TGeometry>(geometryServices),
                 storeType)
         {
+            _options = options;
         }
 
         /// <summary>
@@ -52,9 +56,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// </summary>
         protected MySqlGeometryTypeMapping(
             RelationalTypeMappingParameters parameters,
-            ValueConverter<TGeometry, MySqlGeometry> converter)
+            ValueConverter<TGeometry, MySqlGeometry> converter,
+            IMySqlOptions options)
             : base(parameters, converter)
         {
+            _options = options;
         }
 
         /// <summary>
@@ -64,7 +70,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         ///     doing so can result in application failures when updating to a new Entity Framework Core release.
         /// </summary>
         protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
-            => new MySqlGeometryTypeMapping<TGeometry>(parameters, SpatialConverter);
+            => new MySqlGeometryTypeMapping<TGeometry>(parameters, SpatialConverter, _options);
 
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -74,35 +80,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// </summary>
         protected override string GenerateNonNullSqlLiteral(object value)
         {
-            var builder = new StringBuilder();
-            var geometry = (Geometry)value;
-            var isDefaultSrid = geometry.SRID == 0;
-            var isGeography = geometry.SRID == 4326;
+            // We are skipping the whole "ST_GeomFromText()" call here, because MySQL 8 switches the (lon, lat)
+            // parameter order depending on what SRID is being used.
+            // Just supplying the value as a WKB hex string should work for all database servers and versions.
+            var mySqlGeometry = (MySqlGeometry)SpatialConverter.ConvertToProvider(value);
+            var hexString = BitConverter.ToString(mySqlGeometry.Value)
+                .Replace("-", string.Empty);
 
-            if (CheckEmptyValue(geometry))
-            {
-                isDefaultSrid = true;
-            }
-
-            builder
-                .Append("ST_GeomFromText")
-                .Append("('")
-                .Append(
-                    isGeography
-                        ? new MySqlGeographyWktWriter().Write(geometry)
-                        : geometry.ToText())
-                .Append("'");
-
-            if (!isDefaultSrid)
-            {
-                builder
-                    .Append(", ")
-                    .Append(geometry.SRID);
-            }
-
-            builder.Append(")");
-
-            return builder.ToString();
+            return $"X'{hexString}'";
         }
 
         /// <summary>
