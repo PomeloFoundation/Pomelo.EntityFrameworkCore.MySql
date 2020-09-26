@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
@@ -61,6 +62,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         };
 
         private readonly NtsGeometryServices _geometryServices;
+        private readonly IMySqlOptions _options;
 
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -68,11 +70,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         ///     any release. You should only use it directly in your code with extreme caution and knowing that
         ///     doing so can result in application failures when updating to a new Entity Framework Core release.
         /// </summary>
-        public MySqlNetTopologySuiteTypeMappingSourcePlugin([NotNull] NtsGeometryServices geometryServices)
+        public MySqlNetTopologySuiteTypeMappingSourcePlugin(
+            [NotNull] NtsGeometryServices geometryServices,
+            [NotNull] IMySqlOptions options)
         {
             Check.NotNull(geometryServices, nameof(geometryServices));
 
             _geometryServices = geometryServices;
+            _options = options;
         }
 
         /// <summary>
@@ -108,7 +113,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                         : (RelationalTypeMapping)Activator.CreateInstance(
                             typeof(MySqlGeometryTypeMapping<>).MakeGenericType(clrType),
                             _geometryServices,
-                            storeTypeName);
+                            storeTypeName,
+                            _options);
                 }
 
                 // Then look for the base store type name.
@@ -128,7 +134,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     var typeMapping = (RelationalTypeMapping)Activator.CreateInstance(
                         typeof(MySqlGeometryTypeMapping<>).MakeGenericType(clrType),
                         _geometryServices,
-                        storeTypeName);
+                        storeTypeName,
+                        _options);
 
                     return typeMapping.Clone(mappingInfo);
                 }
@@ -143,7 +150,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 return (RelationalTypeMapping)Activator.CreateInstance(
                     typeof(MySqlGeometryTypeMapping<>).MakeGenericType(clrType),
                     _geometryServices,
-                    mappedStoreTypeName);
+                    mappedStoreTypeName,
+                    _options);
             }
 
             return null;

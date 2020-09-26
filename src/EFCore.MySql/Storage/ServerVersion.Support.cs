@@ -88,6 +88,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string SpatialDistanceFunctionImplementsAndoyerMySqlSupportVersionString = "8.0.0-mysql";
         // public const string SpatialDistanceFunctionImplementsAndoyerMariaDbSupportVersionString = "?.?.?-mariadb";
 
+        public const string SpatialGeographicMySqlSupportVersionString = "8.0.0-mysql";
+        // public const string SpatialGeographicMariaDbSupportVersionString = "?.?.?-mariadb";
+
         // public const string ExceptInterceptMySqlSupportVersionString = "?.?.?-mysql";
         public const string ExceptInterceptMariaDbSupportVersionString = "10.3.0-mariadb";
 
@@ -128,6 +131,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string SpatialDistanceSphereFunctionSupportKey = nameof(SpatialDistanceSphereFunctionSupportKey);
         public const string SpatialSetSridFunctionSupportKey = nameof(SpatialSetSridFunctionSupportKey);
         public const string SpatialDistanceFunctionImplementsAndoyerSupportKey = nameof(SpatialDistanceFunctionImplementsAndoyerSupportKey);
+        public const string SpatialGeographicSupportKey = nameof(SpatialGeographicSupportKey);
         public const string ExceptInterceptSupportKey = nameof(ExceptInterceptSupportKey);
         public const string ExceptInterceptPrecedenceSupportKey = nameof(ExceptInterceptPrecedenceSupportKey);
         public const string JsonDataTypeEmulationSupportKey = nameof(JsonDataTypeEmulationSupportKey);
@@ -162,6 +166,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
             { SpatialDistanceSphereFunctionSupportKey, new ServerVersionSupport(SpatialDistanceSphereFunctionMySqlSupportVersionString/*, SpatialDistanceSphereFunctionMariaDbSupportVersionString*/)},
             { SpatialSetSridFunctionSupportKey, new ServerVersionSupport(SpatialSetSridFunctionMySqlSupportVersionString/*, SpatialSetSridFunctionMariaDbSupportVersionString*/)},
             { SpatialDistanceFunctionImplementsAndoyerSupportKey, new ServerVersionSupport(SpatialDistanceFunctionImplementsAndoyerMySqlSupportVersionString/*, SpatialDistanceFunctionImplementsAndoyerMariaDbSupportVersionString*/)},
+            { SpatialGeographicSupportKey, new ServerVersionSupport(SpatialGeographicMySqlSupportVersionString/*, SpatialGeographicMariaDbSupportVersionString*/)},
             { ExceptInterceptSupportKey, new ServerVersionSupport(/*ExceptInterceptMySqlSupportVersionString, */ExceptInterceptMariaDbSupportVersionString)},
             { ExceptInterceptPrecedenceSupportKey, new ServerVersionSupport(/*ExceptInterceptPrecedenceMySqlSupportVersionString, */ExceptInterceptPrecedenceMariaDbSupportVersionString)},
             { JsonDataTypeEmulationSupportKey, new ServerVersionSupport(/*JsonDataTypeEmulationMySqlSupportVersionString, */JsonDataTypeEmulationMariaDbSupportVersionString)},
@@ -196,6 +201,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public virtual bool SupportsSpatialDistanceSphereFunction => SupportMap[SpatialDistanceSphereFunctionSupportKey].IsSupported(this);
         public virtual bool SupportsSpatialSetSridFunction => SupportMap[SpatialSetSridFunctionSupportKey].IsSupported(this);
         public virtual bool SupportsSpatialDistanceFunctionImplementsAndoyer => SupportMap[SpatialSetSridFunctionSupportKey].IsSupported(this);
+        public virtual bool SupportsSpatialGeographic => SupportMap[SpatialGeographicSupportKey].IsSupported(this);
         public virtual bool SupportsExceptIntercept => SupportMap[ExceptInterceptSupportKey].IsSupported(this);
         public virtual bool SupportsExceptInterceptPrecedence => SupportMap[ExceptInterceptPrecedenceSupportKey].IsSupported(this);
         public virtual bool SupportsJsonDataTypeEmulation => SupportMap[JsonDataTypeEmulationSupportKey].IsSupported(this);
