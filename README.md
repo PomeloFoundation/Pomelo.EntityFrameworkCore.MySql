@@ -5,7 +5,7 @@
 [![Pomelo.EntityFrameworkCore.MySql package in pomelo-efcore-public feed in Azure Artifacts](https://feeds.dev.azure.com/pomelo-efcore/e81f0b59-aba4-4055-8e18-e3f1a565942e/_apis/public/Packaging/Feeds/5f202e7e-2c62-4fc1-a18c-4025a32eabc8/Packages/54935cc0-f38b-4ddb-86d6-c812a8c92988/Badge)](https://dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging?_a=package&feed=5f202e7e-2c62-4fc1-a18c-4025a32eabc8&package=54935cc0-f38b-4ddb-86d6-c812a8c92988&preferRelease=false)
 [![Join the chat at https://gitter.im/PomeloFoundation/Home](https://badges.gitter.im/PomeloFoundation/Home.svg)](https://gitter.im/PomeloFoundation/Home?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-`Pomelo.EntityFrameworkCore.MySql` is the most popular Entity Framework Core provider for MySQL compatible databases. It supports EF Core 3.1 (and lower) and uses [MySqlConnector](https://mysqlconnector.net/) for all its database server communications.
+`Pomelo.EntityFrameworkCore.MySql` is the most popular Entity Framework Core provider for MySQL compatible databases. It supports EF Core 3.1 (and lower) and uses [MySqlConnector](https://mysqlconnector.net/) for its high-performance database server communication.
 
 ## Compatibility
 
@@ -15,7 +15,7 @@ The following versions of MySqlConnector, EF Core and .NET Standard are compatib
 
 Pomelo.EFCore.MySql | MySqlConnector | EF Core | .NET Standard | .NET Core | .NET Framework
 -- | -- | -- | -- | -- | --
-[3.2.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.2.1) | 0.69.9+ (but < 1.0.0) | 3.1.x | 2.0 | 2.0+ | 4.6.1+
+[3.2.2](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.2.2) | 0.69.9+ (but < 1.0.0) | 3.1.x | 2.0 | 2.0+ | 4.6.1+
 [3.0.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.0.1) | 0.61.0+ (but < 1.0.0) | 3.0.x | 2.1 | 3.0+ | N/A
 [2.2.6](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/2.2.6) | 0.59.2+ (but < 1.0.0) | 2.2.6 | 2.0 | 2.0+ | 4.6.1+
 
@@ -43,7 +43,7 @@ Currently supported versions are:
 Milestone | Status | Release Date
 ----------|--------|-------------
 5.0.0 | In Development | TBA
-3.2.2 | Announced | 2020-09-29
+3.2.2 | Released | 2020-09-30
 3.2.1 | Released | 2020-09-22
 3.2.0 | Released | 2020-09-15
 3.1.2 | Released | 2020-07-22
@@ -71,9 +71,9 @@ To use nightly builds from our Azure DevOps feed, add a `NuGet.config` file to y
 
 ## Getting Started
 
-### 1. Recommended Server CharSet
+### 1. Recommended Character Set
 
-We recommend to set `utf8mb4` as your MySQL database default charset. This is already the server default in MySQL 8. The following statement will check your current database charset:
+We recommend to set `utf8mb4` as your MySQL database default character set. This is already the server default in MySQL 8. The following statement will check the charset of the current database:
 
 ```sql
 show variables like 'character_set_database';
@@ -84,7 +84,7 @@ show variables like 'character_set_database';
 Ensure that your `.csproj` file contains the following reference:
 
 ```xml
-<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="3.2.1" />
+<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="3.2.2" />
 ```
 
 ### 3. Services Configuration
@@ -96,20 +96,31 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
-// replace "YourNamespace" with the namespace of your application
+// Replace "YourNamespace" with the namespace of your application.
 namespace YourNamespace
 {
     public class Startup
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            // other service configurations go here
-            // replace "YourDbContext" with the class name of your DbContext
-            services.AddDbContextPool<YourDbContext>(options => options
-                // replace with your connection string
-                .UseMySql("Server=localhost;Database=ef;User=root;Password=1234;", mySqlOptions => mySqlOptions
-                    // replace with your Server Version and Type
-                    .ServerVersion(new Version(8, 0, 21), ServerType.MySql)
+            // Replace "YourDbContext" with the name of your own DbContext derived class.
+            services.AddDbContextPool<YourDbContext>(    
+                dbContextOptions => dbContextOptions
+                    .UseMySql(
+                        // Replace with your connection string.
+                        "server=localhost;user=root;password=1234;database=ef",
+                        // Replace with your server version and type.
+                        mySqlOptions => mySqlOptions
+                            .ServerVersion(new Version(8, 0, 21), ServerType.MySql)
+                            .CharSetBehavior(CharSetBehavior.NeverAppend))
+                    // Everything from this point on is optional but helps with debugging.
+                    .UseLoggerFactory(
+                        LoggerFactory.Create(
+                            logging => logging
+                                .AddConsole()
+                                .AddFilter(level => level >= LogLevel.Information)))
+                    .EnableSensitiveDataLogging()
+                    .EnableDetailedErrors();
             ));
         }
     }
