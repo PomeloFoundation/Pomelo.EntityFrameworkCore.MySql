@@ -1,6 +1,12 @@
-﻿using System;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
@@ -66,7 +72,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             => _sqlExpressionFactory = sqlExpressionFactory;
 
         /// <inheritdoc />
-        public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
+        public SqlExpression Translate(
+            SqlExpression instance,
+            MethodInfo method,
+            IReadOnlyList<SqlExpression> arguments,
+            IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             if (_supportedMethodTranslations.TryGetValue(method, out var sqlFunctionName))
             {
@@ -95,6 +105,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 return _sqlExpressionFactory.Function(
                     sqlFunctionName,
                     newArguments,
+                    nullable: true,
+                    argumentsPropagateNullability: Enumerable.Repeat(true, newArguments.Length),
                     method.ReturnType);
             }
 

@@ -1,8 +1,15 @@
-﻿using System;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using static Pomelo.EntityFrameworkCore.MySql.Utilities.Statics;
+
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
     public class MySqlDateTimeMemberTranslator : IMemberTranslator
@@ -25,7 +32,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
         }
 
-        public virtual SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType)
+        public virtual SqlExpression Translate(
+            SqlExpression instance,
+            MemberInfo member,
+            Type returnType,
+            IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             var declaringType = member.DeclaringType;
 
@@ -47,6 +58,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                                 },
                                 typeof(string))
                         },
+                        nullable: true,
+                        argumentsPropagateNullability: TrueArrays[1],
                         returnType);
 
                     if (datePart.Divisor != 1)
@@ -65,6 +78,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         return _sqlExpressionFactory.Function(
                         "DAYOFYEAR",
                         new[] { instance },
+                        nullable: true,
+                        argumentsPropagateNullability: TrueArrays[1],
                         returnType);
 
                     case nameof(DateTime.Date):
@@ -74,6 +89,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                                 instance,
                                 _sqlExpressionFactory.Fragment("date")
                             },
+                            nullable: true,
+                            argumentsPropagateNullability: TrueArrays[2],
                             returnType);
 
                     case nameof(DateTime.TimeOfDay):
@@ -84,12 +101,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                             declaringType == typeof(DateTimeOffset)
                                 ? "UTC_TIMESTAMP"
                                 : "CURRENT_TIMESTAMP",
-                            Array.Empty<SqlExpression>(), returnType);
+                            Array.Empty<SqlExpression>(),
+                            nullable: false,
+                            argumentsPropagateNullability: FalseArrays[0],
+                            returnType);
 
                     case nameof(DateTime.UtcNow):
                         return _sqlExpressionFactory.Function(
                             "UTC_TIMESTAMP",
                             Array.Empty<SqlExpression>(),
+                            nullable: false,
+                            argumentsPropagateNullability: FalseArrays[0],
                             returnType);
 
                     case nameof(DateTime.Today):
@@ -98,6 +120,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                                 ? "UTC_DATE"
                                 : "CURDATE",
                             Array.Empty<SqlExpression>(),
+                            nullable: false,
+                            argumentsPropagateNullability: FalseArrays[0],
                             returnType);
                 }
             }

@@ -127,10 +127,10 @@
     <value>Data type '{dataType}' for property '{property}' is not supported in this form. Either specify the length explicitly in the type name, for example as '{dataType}(16)', or remove the data type and use APIs such as HasMaxLength to allow EF choose the data type.</value>
   </data>
   <data name="SequenceBadType" xml:space="preserve">
-    <value>SQL Server sequences cannot be used to generate values for the property '{property}' on entity type '{entityType}' because the property type is '{propertyType}'. Sequences can only be used with integer properties.</value>
+    <value>MySQL sequences cannot be used to generate values for the property '{property}' on entity type '{entityType}' because the property type is '{propertyType}'. Sequences can only be used with integer properties.</value>
   </data>
   <data name="IndexTableRequired" xml:space="preserve">
-    <value>SQL Server requires the table name to be specified for rename index operations. Specify table name in the call to MigrationBuilder.RenameIndex.</value>
+    <value>MySQL requires the table name to be specified for rename index operations. Specify table name in the call to MigrationBuilder.RenameIndex.</value>
   </data>
   <data name="AlterMemoryOptimizedTable" xml:space="preserve">
     <value>To set memory-optimized on a table on or off the table needs to be dropped and recreated.</value>
@@ -146,7 +146,7 @@
     <comment>Warning MySqlEventId.DecimalTypeDefaultWarning string string</comment>
   </data>
   <data name="LogByteIdentityColumn" xml:space="preserve">
-    <value>The property '{property}' on entity type '{entityType}' is of type 'byte', but is set up to use a SQL Server identity column. This requires that values starting at 255 and counting down will be used for temporary key values. A temporary key value is needed for every entity inserted in a single call to 'SaveChanges'. Care must be taken that these values do not collide with real key values.</value>
+    <value>The property '{property}' on entity type '{entityType}' is of type 'byte', but is set up to use a MySQL identity column. This requires that values starting at 255 and counting down will be used for temporary key values. A temporary key value is needed for every entity inserted in a single call to 'SaveChanges'. Care must be taken that these values do not collide with real key values.</value>
     <comment>Warning MySqlEventId.ByteIdentityColumnWarning string string</comment>
   </data>
   <data name="NonKeyValueGeneration" xml:space="preserve">

@@ -1,23 +1,23 @@
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.TestModels.Inheritance;
+using Microsoft.EntityFrameworkCore.TestModels.InheritanceModel;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public class InheritanceMySqlTest : InheritanceRelationalTestBase<InheritanceMySqlFixture>
+    public class InheritanceMySqlTest : InheritanceRelationalQueryTestBase<InheritanceQueryMySqlFixture>
     {
-        public InheritanceMySqlTest(InheritanceMySqlFixture fixture, ITestOutputHelper testOutputHelper)
+        public InheritanceMySqlTest(InheritanceQueryMySqlFixture fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
         {
             Fixture.TestSqlLoggerFactory.Clear();
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
-
 
         [Fact]
         public override void FromSql_on_root()
@@ -37,10 +37,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             }
         }
 
-        [Fact(Skip = "issue #571")]
-        public override void Byte_enum_value_constant_used_in_projection()
+        [ConditionalTheory(Skip = "issue #571")]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Byte_enum_value_constant_used_in_projection(bool async)
         {
-            base.Byte_enum_value_constant_used_in_projection();
+            return base.Byte_enum_value_constant_used_in_projection(async);
         }
 
         protected override void UseTransaction(DatabaseFacade facade, IDbContextTransaction transaction)

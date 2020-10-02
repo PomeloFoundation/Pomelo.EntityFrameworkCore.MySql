@@ -170,7 +170,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 if (selectExpression.Limit == null)
                 {
                     // if we want to use Skip() without Take() we have to define the upper limit of LIMIT
-                    Sql.AppendLine().Append("LIMIT ").Append(LimitUpperBound);
+                    Sql.AppendLine().Append($"LIMIT {LimitUpperBound}");
                 }
 
                 Sql.Append(" OFFSET ");

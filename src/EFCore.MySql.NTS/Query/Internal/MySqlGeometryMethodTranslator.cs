@@ -6,10 +6,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 using NetTopologySuite.Geometries;
+using static Pomelo.EntityFrameworkCore.MySql.Utilities.Statics;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -60,7 +63,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             _sqlExpressionFactory = sqlExpressionFactory;
         }
 
-        public virtual SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
+        public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             if (typeof(Geometry).IsAssignableFrom(method.DeclaringType))
             {
@@ -100,6 +103,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     return _sqlExpressionFactory.Function(
                         functionName,
                         typeMappedArguments,
+                        nullable: true,
+                        argumentsPropagateNullability: Enumerable.Repeat(true, typeMappedArguments.Count),
                         method.ReturnType,
                         resultTypeMapping);
                 }
@@ -115,6 +120,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                                 arguments[0],
                                 _sqlExpressionFactory.Constant(1))
                         },
+                        nullable: true,
+                        argumentsPropagateNullability: TrueArrays[2],
                         method.ReturnType,
                         _typeMappingSource.FindMapping(method.ReturnType, storeType));
                 }
@@ -139,7 +146,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     return _sqlExpressionFactory.LessThanOrEqual(
                         _sqlExpressionFactory.Function(
                             "ST_Distance",
-                            new[] { instance, typeMappedArguments[0] },
+                            new[]
+                            {
+                                instance,
+                                typeMappedArguments[0]
+                            },
+                            nullable: true,
+                            argumentsPropagateNullability: TrueArrays[2],
                             typeof(double)),
                         typeMappedArguments[1]);
                 }

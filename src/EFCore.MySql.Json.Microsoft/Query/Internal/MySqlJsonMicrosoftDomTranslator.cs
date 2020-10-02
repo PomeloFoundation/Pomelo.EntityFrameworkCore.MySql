@@ -4,6 +4,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -11,6 +13,7 @@ using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Utilities;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Query.ExpressionTranslators.Internal
 {
@@ -58,7 +61,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Query.ExpressionTransl
             _jsonPocoTranslator = jsonPocoTranslator;
         }
 
-        public virtual SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType)
+        public SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             if (instance?.Type.IsGenericList() == true &&
                 member.Name == nameof(List<object>.Count) &&
@@ -83,7 +86,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Query.ExpressionTransl
             return null;
         }
 
-        public virtual SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
+        public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             if (instance != null && instance.Type.IsGenericList() && method.Name == "get_Item" && arguments.Count == 1)
             {
@@ -155,6 +158,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Query.ExpressionTransl
                 return _sqlExpressionFactory.Function(
                     "JSON_LENGTH",
                     new[] { instance },
+                    nullable: true,
+                    argumentsPropagateNullability: Statics.TrueArrays[1],
                     typeof(int));
             }
 

@@ -1,11 +1,14 @@
-﻿using System;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System;
 using System.Data;
 using System.Data.Common;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
@@ -22,12 +25,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public virtual MySqlDbType MySqlDbType { get; }
 
         // ReSharper disable once PublicConstructorInAbstractClass
-        /// <summary>
-        /// Constructs an instance of the <see cref="MySqlTypeMapping"/> class.
-        /// </summary>
-        /// <param name="storeType">The database type to map.</param>
-        /// <param name="clrType">The CLR type to map.</param>
-        /// <param name="mySqlDbType">The database type used by MySql.</param>
         public MySqlTypeMapping(
             [NotNull] string storeType,
             [NotNull] Type clrType,

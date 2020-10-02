@@ -462,11 +462,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                         size: size,
                         fixedLength: mappingInfo.IsFixedLength == true);
                 }
-
-                if (clrType.TryGetElementType(typeof(JsonObject<>)) != null)
-                {
-                    return new MySqlLegacyJsonTypeMapping(clrType);
-                }
             }
 
             return null;

@@ -1,7 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
 
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
@@ -14,7 +15,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions
     /// <summary>
     ///     A convention that configures store value generation as <see cref="ValueGenerated.OnAdd"/> on properties that are
     ///     part of the primary key and not part of any foreign keys, were configured to have a database default value
-    ///     or were configured to use a <see cref="SqlServerValueGenerationStrategy"/>.
+    ///     or were configured to use a <see cref="MySqlValueGenerationStrategy"/>.
     ///     It also configures properties as <see cref="ValueGenerated.OnAddOrUpdate"/> if they were configured as computed columns.
     /// </summary>
     public class MySqlValueGenerationConvention : RelationalValueGenerationConvention
@@ -60,7 +61,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions
         /// </summary>
         /// <param name="property"> The property. </param>
         /// <returns> The store value generation strategy to set for the given property. </returns>
-        public static new ValueGenerated? GetValueGenerated([NotNull] IProperty property)
+        protected override ValueGenerated? GetValueGenerated(IConventionProperty property)
+        {
+            var tableName = property.DeclaringEntityType.GetTableName();
+            if (tableName == null)
+            {
+                return null;
+            }
+
+            return GetValueGenerated(property, StoreObjectIdentifier.Table(tableName, property.DeclaringEntityType.GetSchema()));
+        }
+
+        /// <summary>
+        ///     Returns the store value generation strategy to set for the given property.
+        /// </summary>
+        /// <param name="property"> The property. </param>
+        /// <param name="storeObject"> The identifier of the store object. </param>
+        /// <returns> The store value generation strategy to set for the given property. </returns>
+        public static new ValueGenerated? GetValueGenerated([NotNull] IProperty property, in StoreObjectIdentifier storeObject)
         {
             var valueGenerated = RelationalValueGenerationConvention.GetValueGenerated(property);
             if (valueGenerated != null)
@@ -68,7 +86,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions
                 return valueGenerated;
             }
 
-            var valueGenerationStrategy = property.GetValueGenerationStrategy();
+            var valueGenerationStrategy = property.GetValueGenerationStrategy(storeObject);
             if (valueGenerationStrategy.HasValue)
             {
                 switch (valueGenerationStrategy.Value)

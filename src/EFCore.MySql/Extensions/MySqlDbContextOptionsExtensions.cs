@@ -9,7 +9,7 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Utilities;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore

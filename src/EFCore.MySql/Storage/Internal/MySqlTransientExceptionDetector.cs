@@ -3,12 +3,12 @@
 
 using System;
 using JetBrains.Annotations;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     /// <summary>
-    ///     Detects the exceptions caused by SQL Server transient failures.
+    ///     Detects the exceptions caused by MySQL transient failures.
     /// </summary>
     public class MySqlTransientExceptionDetector
     {

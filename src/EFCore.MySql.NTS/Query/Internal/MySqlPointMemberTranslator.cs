@@ -4,9 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using NetTopologySuite.Geometries;
+using Pomelo.EntityFrameworkCore.MySql.Utilities;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -14,7 +17,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
     {
         private static readonly IDictionary<MemberInfo, string> _geometryMemberToFunctionName = new Dictionary<MemberInfo, string>
         {
-            { typeof(Point).GetRuntimeProperty(nameof(Point.X)), "ST_X" }, { typeof(Point).GetRuntimeProperty(nameof(Point.Y)), "ST_Y" }
+            { typeof(Point).GetRuntimeProperty(nameof(Point.X)), "ST_X" },
+            { typeof(Point).GetRuntimeProperty(nameof(Point.Y)), "ST_Y" },
         };
 
         private readonly ISqlExpressionFactory _sqlExpressionFactory;
@@ -24,7 +28,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             _sqlExpressionFactory = sqlExpressionFactory;
         }
 
-        public SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType)
+        public SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             if (typeof(Point).IsAssignableFrom(member.DeclaringType))
             {
@@ -33,6 +37,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     return _sqlExpressionFactory.Function(
                         functionName,
                         new[] { instance },
+                        nullable: true,
+                        argumentsPropagateNullability: Statics.TrueArrays[1],
                         returnType);
                 }
             }

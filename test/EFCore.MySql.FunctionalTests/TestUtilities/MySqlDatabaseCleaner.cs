@@ -7,6 +7,7 @@ using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
@@ -26,7 +27,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                     loggerFactory,
                     new LoggingOptions(),
                     new DiagnosticListener("Fake"),
-                    new MySqlLoggingDefinitions()),
+                    new MySqlLoggingDefinitions(),
+                    new NullDbContextLogger()),
                 _options);
 
         protected override bool AcceptIndex(DatabaseIndex index) => false;
@@ -36,7 +38,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             => @"SET @views = NULL;
 
 SELECT GROUP_CONCAT(CONCAT('`', `TABLE_SCHEMA`, '.', `TABLE_NAME`, '`')) INTO @views
-FROM `INFORMATION_SCHEMA`.`VIEWS` 
+FROM `INFORMATION_SCHEMA`.`VIEWS`
 WHERE `TABLE_SCHEMA` = SCHEMA();
 
 SET @views = IFNULL(CONCAT('DROP VIEW IF EXISTS ', @views), 'SELECT 0');

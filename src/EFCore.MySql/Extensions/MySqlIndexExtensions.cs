@@ -1,4 +1,7 @@
-﻿using JetBrains.Annotations;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
@@ -6,7 +9,7 @@ using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 namespace Pomelo.EntityFrameworkCore.MySql.Extensions
 {
     /// <summary>
-    ///     Extension methods for <see cref="IIndex" /> for SQL Server-specific metadata.
+    ///     Extension methods for <see cref="IIndex" /> for MySQL-specific metadata.
     /// </summary>
     public static class MySqlIndexExtensions
     {
@@ -14,7 +17,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
         ///     Returns a value indicating whether the index is full text.
         /// </summary>
         /// <param name="index"> The index. </param>
-        /// <returns> <c>true</c> if the index is full text. </returns>
+        /// <returns> <see langword="true"/> if the index is full text. </returns>
         public static bool? IsFullText([NotNull] this IIndex index)
             => (bool?)index[MySqlAnnotationNames.FullTextIndex];
 
@@ -95,7 +98,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
         ///     Returns a value indicating whether the index is spartial.
         /// </summary>
         /// <param name="index"> The index. </param>
-        /// <returns> <c>true</c> if the index is spartial. </returns>
+        /// <returns> <see langword="true"/> if the index is spartial. </returns>
         public static bool? IsSpatial([NotNull] this IIndex index)
             => (bool?)index[MySqlAnnotationNames.SpatialIndex];
 

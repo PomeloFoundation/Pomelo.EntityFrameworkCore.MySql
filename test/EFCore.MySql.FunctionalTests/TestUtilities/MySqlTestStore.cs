@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.Configuration;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
 
@@ -18,7 +18,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {
     public class MySqlTestStore : RelationalTestStore
     {
-        private const int DefaultCommandTimeout = 600;
+        public const int DefaultCommandTimeout = 600;
         private const string NoBackslashEscapes = "NO_BACKSLASH_ESCAPES";
 
         private readonly string _scriptPath;
@@ -83,21 +83,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 GuidFormat = guidFormat,
             }.ConnectionString;
 
-        private static int GetCommandTimeout() => AppConfig.Config.GetValue<int>("Data:CommandTimeout", DefaultCommandTimeout);
+        private static int GetCommandTimeout() => AppConfig.Config.GetValue("Data:CommandTimeout", DefaultCommandTimeout);
 
         public override DbContextOptionsBuilder AddProviderOptions(DbContextOptionsBuilder builder)
             => _useConnectionString
                 ? builder.UseMySql(ConnectionString, x => AddOptions(x, _noBackslashEscapes))
                 : builder.UseMySql(Connection, x => AddOptions(x, _noBackslashEscapes));
 
-        public static void AddOptions(MySqlDbContextOptionsBuilder builder)
-        {
-            builder
-                .CommandTimeout(GetCommandTimeout())
+        public static MySqlDbContextOptionsBuilder AddOptions(MySqlDbContextOptionsBuilder builder)
+            => builder
                 .ServerVersion(AppConfig.ServerVersion.Version, AppConfig.ServerVersion.Type)
+                .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
+                .CommandTimeout(GetCommandTimeout())
+                .ExecutionStrategy(d => new TestMySqlRetryingExecutionStrategy(d))
                 .CharSetBehavior(CharSetBehavior.AppendToAllColumns) // TODO: Change to NerverAppend.
                 .CharSet(CharSet.Utf8Mb4);
-        }
 
         public static void AddOptions(MySqlDbContextOptionsBuilder builder, bool noBackslashEscapes)
         {

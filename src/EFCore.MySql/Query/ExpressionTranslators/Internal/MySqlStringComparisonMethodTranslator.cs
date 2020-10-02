@@ -1,12 +1,18 @@
+// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
+using static Pomelo.EntityFrameworkCore.MySql.Utilities.Statics;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
@@ -41,7 +47,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 new[] {StringComparison.Ordinal, StringComparison.CurrentCulture, StringComparison.InvariantCulture});
         }
 
-        public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
+        public SqlExpression Translate(
+            SqlExpression instance,
+            MethodInfo method,
+            IReadOnlyList<SqlExpression> arguments,
+            IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             if (Equals(method, _equalsMethodInfo) && instance != null)
             {
@@ -384,6 +394,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                         ? "LEFT"
                         : "RIGHT",
                     new[] {targetTransform(target), CharLength(prefixSuffix)},
+                    nullable: true,
+                    argumentsPropagateNullability: TrueArrays[2],
                     typeof(string),
                     stringTypeMapping),
                 prefixSuffixTransform(prefixSuffix));
@@ -431,6 +443,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 _sqlExpressionFactory.Function(
                     "LOCATE",
                     new[] {patternTransform(pattern), targetTransform(target)},
+                    nullable: true,
+                    argumentsPropagateNullability: TrueArrays[2],
                     typeof(int)),
                 _sqlExpressionFactory.Constant(0));
         }
@@ -500,6 +514,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 _sqlExpressionFactory.Function(
                     "LOCATE",
                     new[] {patternTransform(pattern), targetTransform(target)},
+                    nullable: true,
+                    argumentsPropagateNullability: TrueArrays[2],
                     typeof(int)),
                 _sqlExpressionFactory.Constant(1));
         }
@@ -540,7 +556,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             };
 
         private SqlExpression LCase(SqlExpression value)
-            => _sqlExpressionFactory.Function("LCASE", new[] {value}, value.Type, null);
+            => _sqlExpressionFactory.Function(
+                "LCASE",
+                new[]
+                {
+                    value
+                },
+                nullable: true,
+                argumentsPropagateNullability: TrueArrays[1],
+                value.Type,
+                null);
 
         private SqlExpression Utf8Bin(SqlExpression value)
             => _sqlExpressionFactory.Collate(
@@ -550,7 +575,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             );
 
         private SqlExpression CharLength(SqlExpression value)
-            => _sqlExpressionFactory.Function("CHAR_LENGTH", new[] {value}, typeof(int), null);
+            => _sqlExpressionFactory.Function(
+                "CHAR_LENGTH",
+                new[]
+                {
+                    value
+                },
+                nullable: true,
+                argumentsPropagateNullability: TrueArrays[1],
+                typeof(int),
+                null);
 
         private const char LikeEscapeChar = '\\';
 

@@ -9,7 +9,7 @@ using Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Extensions.Internal;
 namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Extensions
 {
     /// <summary>
-    ///     Extension methods for <see cref="IProperty" /> for SQL Server-specific metadata.
+    ///     Extension methods for <see cref="IProperty" /> for MySQL-specific metadata.
     /// </summary>
     public static class MySqlJsonMicrosoftPropertyExtensions
     {

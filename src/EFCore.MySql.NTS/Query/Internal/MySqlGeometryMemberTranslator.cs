@@ -5,10 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 using NetTopologySuite.Geometries;
+using static Pomelo.EntityFrameworkCore.MySql.Utilities.Statics;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -50,7 +53,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             _sqlExpressionFactory = sqlExpressionFactory;
         }
 
-        public virtual SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType)
+        public SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             if (typeof(Geometry).IsAssignableFrom(member.DeclaringType))
             {
@@ -67,6 +70,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     SqlExpression sqlExpression = _sqlExpressionFactory.Function(
                         functionName,
                         new [] {instance},
+                        nullable: true,
+                        argumentsPropagateNullability: TrueArrays[1],
                         returnType,
                         resultTypeMapping);
 
@@ -127,8 +132,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         _sqlExpressionFactory.Function(
                             "ST_GeometryType",
                             new [] {instance},
+                            nullable: true,
+                            argumentsPropagateNullability: TrueArrays[1],
                             typeof(string)),
-                        whenClauses.ToArray());
+                        whenClauses.ToArray(),
+                        null);
                 }
 
                 if (Equals(member, _srid))
@@ -136,6 +144,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     return _sqlExpressionFactory.Function(
                         "ST_SRID",
                         new [] {instance},
+                        nullable: true,
+                        argumentsPropagateNullability: TrueArrays[1],
                         returnType);
                 }
             }

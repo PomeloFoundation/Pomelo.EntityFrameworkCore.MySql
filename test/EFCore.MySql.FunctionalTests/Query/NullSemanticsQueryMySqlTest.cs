@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
@@ -29,15 +30,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [Fact(Skip = "issue #573")]
-        public override void Projecting_nullable_bool_with_coalesce()
+        public override async Task Projecting_nullable_bool_with_coalesce(bool async)
         {
-            base.Projecting_nullable_bool_with_coalesce();
+            await base.Projecting_nullable_bool_with_coalesce(async);
         }
 
         [Fact(Skip = "issue #573")]
-        public override void Projecting_nullable_bool_with_coalesce_nested()
+        public override async Task Projecting_nullable_bool_with_coalesce_nested(bool async)
         {
-            base.Projecting_nullable_bool_with_coalesce_nested();
+            await base.Projecting_nullable_bool_with_coalesce_nested(async);
         }
 
         protected override NullSemanticsContext CreateContext(bool useRelationalNulls = false)

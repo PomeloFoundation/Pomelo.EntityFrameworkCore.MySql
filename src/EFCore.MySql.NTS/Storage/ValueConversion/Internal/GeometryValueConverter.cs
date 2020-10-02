@@ -4,7 +4,7 @@
 using System.Collections.Concurrent;
 using System.IO;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using MySql.Data.Types;
+using MySqlConnector;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
@@ -24,7 +27,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
             Match = match;
             Against = against;
             SearchMode = searchMode;
-
         }
 
         public virtual MySqlMatchSearchMode SearchMode { get; }
@@ -36,24 +38,27 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         {
             Check.NotNull(visitor, nameof(visitor));
 
-            return visitor is MySqlQuerySqlGenerator mySqlQuerySqlGenerator
+            return visitor is MySqlQuerySqlGenerator mySqlQuerySqlGenerator // TODO: Move to VisitExtensions
                 ? mySqlQuerySqlGenerator.VisitMySqlMatch(this)
                 : base.Accept(visitor);
         }
 
         protected override Expression VisitChildren(ExpressionVisitor visitor)
         {
-            var newMatchExpression = (SqlExpression)visitor.Visit(Match);
-            var newAgainstExpression = (SqlExpression)visitor.Visit(Against);
+            var match = (SqlExpression)visitor.Visit(Match);
+            var against = (SqlExpression)visitor.Visit(Against);
 
-            return newMatchExpression != Match || newAgainstExpression != Against
+            return Update(match, against);
+        }
+
+        public virtual MySqlMatchExpression Update(SqlExpression match, SqlExpression against)
+            => match != Match || against != Against
                 ? new MySqlMatchExpression(
-                    newMatchExpression,
-                    newAgainstExpression,
+                    match,
+                    against,
                     SearchMode,
                     TypeMapping)
                 : this;
-        }
 
         public override bool Equals(object obj)
             => obj != null && ReferenceEquals(this, obj)
@@ -67,7 +72,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), SearchMode, Match, Against);
 
-        public override void Print(ExpressionPrinter expressionPrinter)
+        protected override void Print(ExpressionPrinter expressionPrinter)
         {
             expressionPrinter.Append("MATCH ");
             expressionPrinter.Append($"({expressionPrinter.Visit(Match)})");

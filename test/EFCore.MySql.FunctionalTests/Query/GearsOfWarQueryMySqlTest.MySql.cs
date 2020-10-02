@@ -59,11 +59,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
         [ConditionalTheory]
         [MemberData(nameof(IsAsyncData))]
-        public virtual async Task Where_bool_optimization(bool isAsync)
+        public virtual async Task Where_bool_optimization(bool async)
         {
             // Relates to MySqlBoolOptimizingExpressionVisitor.
             await AssertQuery(
-                isAsync,
+                async,
                 ss => from w in ss.Set<Weapon>()
                     where w.IsAutomatic
                     select w.Name);
@@ -76,11 +76,11 @@ WHERE `w`.`IsAutomatic` = TRUE",
 
         [ConditionalTheory]
         [MemberData(nameof(IsAsyncData))]
-        public virtual async Task Where_bool_optimization_not(bool isAsync)
+        public virtual async Task Where_bool_optimization_not(bool async)
         {
             // Relates to MySqlBoolOptimizingExpressionVisitor.
             await AssertQuery(
-                isAsync,
+                async,
                 ss => from w in ss.Set<Weapon>()
                     where !w.IsAutomatic
                     select w.Name);
@@ -94,11 +94,11 @@ WHERE `w`.`IsAutomatic` = FALSE",
 
         [ConditionalTheory]
         [MemberData(nameof(IsAsyncData))]
-        public virtual async Task Where_bool_optimization_equals_true(bool isAsync)
+        public virtual async Task Where_bool_optimization_equals_true(bool async)
         {
             // Relates to MySqlBoolOptimizingExpressionVisitor.
             await AssertQuery(
-                isAsync,
+                async,
                 ss => from w in ss.Set<Weapon>()
                     where w.IsAutomatic == true
                     select w.Name);
@@ -112,11 +112,11 @@ WHERE `w`.`IsAutomatic` = TRUE",
 
         [ConditionalTheory]
         [MemberData(nameof(IsAsyncData))]
-        public virtual async Task Where_bool_optimization_equals_false(bool isAsync)
+        public virtual async Task Where_bool_optimization_equals_false(bool async)
         {
             // Relates to MySqlBoolOptimizingExpressionVisitor.
             await AssertQuery(
-                isAsync,
+                async,
                 ss => from w in ss.Set<Weapon>()
                     where w.IsAutomatic == false
                     select w.Name);
@@ -130,11 +130,11 @@ WHERE `w`.`IsAutomatic` = FALSE",
 
         [ConditionalTheory]
         [MemberData(nameof(IsAsyncData))]
-        public virtual async Task Where_bool_optimization_not_equals_true(bool isAsync)
+        public virtual async Task Where_bool_optimization_not_equals_true(bool async)
         {
             // Relates to MySqlBoolOptimizingExpressionVisitor.
             await AssertQuery(
-                isAsync,
+                async,
                 ss => from w in ss.Set<Weapon>()
                     where w.IsAutomatic != true
                     select w.Name);
@@ -148,11 +148,11 @@ WHERE `w`.`IsAutomatic` <> TRUE",
 
         [ConditionalTheory]
         [MemberData(nameof(IsAsyncData))]
-        public virtual async Task Where_bool_optimization_not_equals_false(bool isAsync)
+        public virtual async Task Where_bool_optimization_not_equals_false(bool async)
         {
             // Relates to MySqlBoolOptimizingExpressionVisitor.
             await AssertQuery(
-                isAsync,
+                async,
                 ss => from w in ss.Set<Weapon>()
                     where w.IsAutomatic != false
                     select w.Name);
@@ -166,11 +166,11 @@ WHERE `w`.`IsAutomatic` <> FALSE",
 
         [ConditionalTheory]
         [MemberData(nameof(IsAsyncData))]
-        public virtual async Task Where_bool_optimization_not_parenthesis_equals_true(bool isAsync)
+        public virtual async Task Where_bool_optimization_not_parenthesis_equals_true(bool async)
         {
             // Relates to MySqlBoolOptimizingExpressionVisitor.
             await AssertQuery(
-                isAsync,
+                async,
                 ss => from w in ss.Set<Weapon>()
                     where !(w.IsAutomatic == true)
                     select w.Name);
@@ -184,11 +184,11 @@ WHERE `w`.`IsAutomatic` <> TRUE",
 
         [ConditionalTheory]
         [MemberData(nameof(IsAsyncData))]
-        public virtual async Task Where_bool_optimization_not_parenthesis_equals_false(bool isAsync)
+        public virtual async Task Where_bool_optimization_not_parenthesis_equals_false(bool async)
         {
             // Relates to MySqlBoolOptimizingExpressionVisitor.
             await AssertQuery(
-                isAsync,
+                async,
                 ss => from w in ss.Set<Weapon>()
                     where !(w.IsAutomatic == false)
                     select w.Name);

@@ -46,7 +46,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                 dataType, property);
 
         /// <summary>
-        ///     SQL Server sequences cannot be used to generate values for the property '{property}' on entity type '{entityType}' because the property type is '{propertyType}'. Sequences can only be used with integer properties.
+        ///     MySQL sequences cannot be used to generate values for the property '{property}' on entity type '{entityType}' because the property type is '{propertyType}'. Sequences can only be used with integer properties.
         /// </summary>
         public static string SequenceBadType([CanBeNull] object property, [CanBeNull] object entityType, [CanBeNull] object propertyType)
             => string.Format(
@@ -54,7 +54,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                 property, entityType, propertyType);
 
         /// <summary>
-        ///     SQL Server requires the table name to be specified for rename index operations. Specify table name in the call to MigrationBuilder.RenameIndex.
+        ///     MySQL requires the table name to be specified for rename index operations. Specify table name in the call to MigrationBuilder.RenameIndex.
         /// </summary>
         public static string IndexTableRequired
             => GetString("IndexTableRequired");
@@ -196,7 +196,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         }
 
         /// <summary>
-        ///     The property '{property}' on entity type '{entityType}' is of type 'byte', but is set up to use a SQL Server identity column. This requires that values starting at 255 and counting down will be used for temporary key values. A temporary key value is needed for every entity inserted in a single call to 'SaveChanges'. Care must be taken that these values do not collide with real key values.
+        ///     The property '{property}' on entity type '{entityType}' is of type 'byte', but is set up to use a MySQL identity column. This requires that values starting at 255 and counting down will be used for temporary key values. A temporary key value is needed for every entity inserted in a single call to 'SaveChanges'. Care must be taken that these values do not collide with real key values.
         /// </summary>
         public static EventDefinition<string, string> LogByteIdentityColumn([NotNull] IDiagnosticsLogger logger)
         {
