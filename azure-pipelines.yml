@@ -308,24 +308,28 @@ jobs:
       if [ "$pack" = "true" ]; then
         ./dotnet-env.sh dotnet pack \
           -c Release \
+          -o "$(Build.ArtifactStagingDirectory)"
           "/p:OfficialBuildId=$(Build.BuildNumber)" \
           "/p:DotNetFinalVersionKind=$final_version_kind" \
           "/p:ContinuousIntegrationBuild=true" \
           src/EFCore.MySql/
         ./dotnet-env.sh dotnet pack \
           -c Release \
+          -o "$(Build.ArtifactStagingDirectory)"
           "/p:OfficialBuildId=$(Build.BuildNumber)" \
           "/p:DotNetFinalVersionKind=$final_version_kind" \
           "/p:ContinuousIntegrationBuild=true" \
           src/EFCore.MySql.NTS/
         ./dotnet-env.sh dotnet pack \
           -c Release \
+          -o "$(Build.ArtifactStagingDirectory)"
           "/p:OfficialBuildId=$(Build.BuildNumber)" \
           "/p:DotNetFinalVersionKind=$final_version_kind" \
           "/p:ContinuousIntegrationBuild=true" \
           src/EFCore.MySql.Json.Microsoft/
         ./dotnet-env.sh dotnet pack \
           -c Release \
+          -o "$(Build.ArtifactStagingDirectory)"
           "/p:OfficialBuildId=$(Build.BuildNumber)" \
           "/p:DotNetFinalVersionKind=$final_version_kind" \
           "/p:ContinuousIntegrationBuild=true" \
@@ -366,7 +370,7 @@ jobs:
       command: push
       nuGetFeedType: external
       publishFeedCredentials: PomeloEFCoreNuget
-      packagesToPush: artifacts/**/*.nupkg
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
     condition: and( succeededOrFailed(), eq(variables['Pack.Pack'],'true'), or( eq(variables['Pack.Wip'],'true'), variables['BuildSucceeded'], eq(variables['Pack.BuildFailedOverride'],'true') ) )
   - task: NuGetCommand@2
     displayName: "Nuget Push nuget.org"
@@ -374,5 +378,5 @@ jobs:
       command: push
       nuGetFeedType: external
       publishFeedCredentials: NugetOrg-PomeloFoundation-AllPackages-PushNew
-      packagesToPush: artifacts/**/*.nupkg
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
     condition: and( succeededOrFailed(), eq(variables['Pack.NugetOrg'],'true'), or ( variables['BuildSucceeded'], eq(variables['Pack.BuildFailedOverride'],'true') ) )
