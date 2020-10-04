@@ -13,8 +13,9 @@ variables:
   mariadb_sql_mode: STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
-  dotnet_version: 3.1.x
-  dotnet_ef_tools_version: 3.1.8
+  dotnet_version: 5.0.100-preview.8.20417.9
+  dotnet_ef_tools_version: 5.0.0-rc.1.20451.13
+  allowPreviewVersions: true
 
 # TODO: Simplify (PWSH for most cases etc.)
 jobs:
@@ -54,6 +55,7 @@ jobs:
     displayName: 'Use .NET Core SDK'
     inputs:
       version: $(dotnet_version)
+      includePreviewVersions: $(allowPreviewVersions)
   - bash: |
       set -e
       sudo systemctl stop mysql
@@ -180,6 +182,7 @@ jobs:
     displayName: 'Use .NET Core SDK'
     inputs:
       version: $(dotnet_version)
+      includePreviewVersions: $(allowPreviewVersions)
   - pwsh: |
       choco install mysql
 
