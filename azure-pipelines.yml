@@ -308,28 +308,28 @@ jobs:
       if [ "$pack" = "true" ]; then
         ./dotnet-env.sh dotnet pack \
           -c Release \
-          -o "$(Build.ArtifactStagingDirectory)"
+          -o "$(Build.ArtifactStagingDirectory)" \
           "/p:OfficialBuildId=$(Build.BuildNumber)" \
           "/p:DotNetFinalVersionKind=$final_version_kind" \
           "/p:ContinuousIntegrationBuild=true" \
           src/EFCore.MySql/
         ./dotnet-env.sh dotnet pack \
           -c Release \
-          -o "$(Build.ArtifactStagingDirectory)"
+          -o "$(Build.ArtifactStagingDirectory)" \
           "/p:OfficialBuildId=$(Build.BuildNumber)" \
           "/p:DotNetFinalVersionKind=$final_version_kind" \
           "/p:ContinuousIntegrationBuild=true" \
           src/EFCore.MySql.NTS/
         ./dotnet-env.sh dotnet pack \
           -c Release \
-          -o "$(Build.ArtifactStagingDirectory)"
+          -o "$(Build.ArtifactStagingDirectory)" \
           "/p:OfficialBuildId=$(Build.BuildNumber)" \
           "/p:DotNetFinalVersionKind=$final_version_kind" \
           "/p:ContinuousIntegrationBuild=true" \
           src/EFCore.MySql.Json.Microsoft/
         ./dotnet-env.sh dotnet pack \
           -c Release \
-          -o "$(Build.ArtifactStagingDirectory)"
+          -o "$(Build.ArtifactStagingDirectory)" \
           "/p:OfficialBuildId=$(Build.BuildNumber)" \
           "/p:DotNetFinalVersionKind=$final_version_kind" \
           "/p:ContinuousIntegrationBuild=true" \
