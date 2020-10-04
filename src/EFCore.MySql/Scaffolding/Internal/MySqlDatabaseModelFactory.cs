@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
@@ -246,7 +247,7 @@ ORDER BY
                                 ? ConvertDefaultValueFromMariaDbToMySql(defaultValue)
                                 : defaultValue;
 
-                            ValueGenerated valueGenerated;
+                            ValueGenerated? valueGenerated;
 
                             if (extra.IndexOf("auto_increment", StringComparison.Ordinal) >= 0)
                             {
@@ -282,7 +283,10 @@ ORDER BY
                             }
                             else
                             {
-                                valueGenerated = ValueGenerated.Never;
+                                // Using `null` results in `ValueGeneratedNever()` being output for primary keys without
+                                // auto increment as desired, while explicitly using `ValueGenerated.Never` results in
+                                // no value generated output at all.
+                                valueGenerated = null;
                             }
 
                             defaultValue = FilterClrDefaults(dataType, nullable, defaultValue);
