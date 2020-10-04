@@ -32,6 +32,7 @@
   </PropertyGroup>
   <PropertyGroup Label="Dependencies">
     <!-- EFCore.MySql Dependencies -->
+    <MicrosoftEntityFrameworkCoreVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreVersion>
     <MicrosoftEntityFrameworkCoreRelationalVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreRelationalVersion>
     <MySqlConnectorVersion>1.0.1</MySqlConnectorVersion>
     <PomeloJsonObjectVersion>2.2.1</PomeloJsonObjectVersion>

@@ -20,8 +20,9 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(LocalEFCoreRepository)' == ''">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="$(MicrosoftEntityFrameworkCoreVersion)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(MicrosoftEntityFrameworkCoreRelationalVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" Version="$(MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational.Tests" Version="$(MicrosoftEntityFrameworkCoreRelationalTestsVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="$(MicrosoftEntityFrameworkCoreDesignVersion)" />
   </ItemGroup>
 
