@@ -28,13 +28,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         private static readonly Lazy<ServerVersion> _lazyServerVersion = new Lazy<ServerVersion>(() =>
             !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("SERVER_VERSION"))
                 ? new ServerVersion(Environment.GetEnvironmentVariable("SERVER_VERSION"))
-                : new ServerVersion(AppConfig.Config["Data:ServerVersion"]));
+                : new ServerVersion(Config["Data:ServerVersion"]));
 
         public static IConfigurationRoot Config => _lazyConfig.Value;
 
         private static readonly Lazy<IConfigurationRoot> _lazyConfig = new Lazy<IConfigurationRoot>(() =>
             new ConfigurationBuilder()
-                .SetBasePath(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath))
+                .SetBasePath(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().Location).LocalPath))
                 .AddJsonFile("config.json")
                 .Build());
     }

@@ -1,8 +1,10 @@
-﻿using System;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System;
 using System.Diagnostics;
 using System.Linq.Expressions;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
@@ -18,10 +20,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         public MySqlSqlTranslatingExpressionVisitor(
             RelationalSqlTranslatingExpressionVisitorDependencies dependencies,
-            IModel model,
+            QueryCompilationContext queryCompilationContext,
             QueryableMethodTranslatingExpressionVisitor queryableMethodTranslatingExpressionVisitor,
             [CanBeNull] IMySqlJsonPocoTranslator jsonPocoTranslator)
-            : base(dependencies, model, queryableMethodTranslatingExpressionVisitor)
+            : base(dependencies, queryCompilationContext, queryableMethodTranslatingExpressionVisitor)
         {
             _jsonPocoTranslator = jsonPocoTranslator;
             _sqlExpressionFactory = (MySqlSqlExpressionFactory)Dependencies.SqlExpressionFactory;
@@ -52,7 +54,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                         : traversal.Clone(
                             traversal.ReturnsText,
                             unaryExpression.Type,
-                            _sqlExpressionFactory.FindMapping(unaryExpression.Type));
+                            Dependencies.TypeMappingSource.FindMapping(unaryExpression.Type));
                 }
             }
 

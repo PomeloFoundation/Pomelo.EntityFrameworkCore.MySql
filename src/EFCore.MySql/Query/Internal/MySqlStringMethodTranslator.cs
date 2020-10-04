@@ -1,11 +1,15 @@
-﻿using System;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
+using static Pomelo.EntityFrameworkCore.MySql.Utilities.Statics;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -70,7 +74,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
         }
 
-        public virtual SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
+        public virtual SqlExpression Translate(
+            SqlExpression instance,
+            MethodInfo method,
+            IReadOnlyList<SqlExpression> arguments,
+            IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             if (_indexOfMethodInfo.Equals(method))
             {
@@ -90,6 +98,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         _sqlExpressionFactory.ApplyTypeMapping(arguments[0], stringTypeMapping),
                         _sqlExpressionFactory.ApplyTypeMapping(arguments[1], stringTypeMapping)
                     },
+                    nullable: true,
+                    argumentsPropagateNullability: TrueArrays[3],
                     method.ReturnType,
                     stringTypeMapping);
             }
@@ -100,6 +110,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 return _sqlExpressionFactory.Function(
                     _toLowerMethodInfo.Equals(method) ? "LOWER" : "UPPER",
                     new[] { instance },
+                    nullable: true,
+                    argumentsPropagateNullability: TrueArrays[1],
                     method.ReturnType,
                     instance.TypeMapping);
             }
@@ -116,6 +128,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                             _sqlExpressionFactory.Constant(1)),
                         arguments[1]
                     },
+                    nullable: true,
+                    argumentsPropagateNullability: TrueArrays[3],
                     method.ReturnType,
                     instance.TypeMapping);
             }
@@ -220,6 +234,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         length,
                         padString
                     },
+                    nullable: true,
+                    argumentsPropagateNullability: TrueArrays[3],
                     returnType)
                 : null;
 
@@ -268,6 +284,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     sqlArguments.ToArray(),
                     typeof(string)),
                 },
+                nullable: true,
+                argumentsPropagateNullability: TrueArrays[1],
                 typeof(string));
         }
     }

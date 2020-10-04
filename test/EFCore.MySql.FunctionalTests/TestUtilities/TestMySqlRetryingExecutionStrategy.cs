@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {

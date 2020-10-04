@@ -65,7 +65,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         {
             try
             {
-                return await operation(Dependencies.CurrentContext.Context, state, cancellationToken);
+                return await operation(Dependencies.CurrentContext.Context, state, cancellationToken)
+                    .ConfigureAwait(false);
             }
             catch (Exception ex) when (ExecutionStrategy.CallOnWrappedException(ex, MySqlTransientExceptionDetector.ShouldRetryOn))
             {

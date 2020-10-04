@@ -24,20 +24,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             base.OnModelCreating(modelBuilder, context);
 
-            var northwindContext = (NorthwindRelationalContext)context;
-
-            modelBuilder
-                .Entity<OrderQuery>()
-                .HasNoKey()
-                .ToQuery(() => northwindContext.Orders
-                    .FromSqlRaw("select * from `Orders`")
-                    .Select(o => new OrderQuery { CustomerID = o.CustomerID }));
-
-            modelBuilder
-                .Entity<CustomerView>()
-                .HasNoKey()
-                .ToQuery(() => northwindContext.CustomerQueries.FromSqlInterpolated(
-                    $"SELECT CONCAT(`c`.`CustomerID`, {string.Empty}) as CustomerID, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region` FROM `Customers` AS `c`"));
+            // var northwindContext = (NorthwindRelationalContext)context;
+            //
+            // modelBuilder
+            //     .Entity<OrderQuery>()
+            //     .HasNoKey()
+            //     .ToQuery(() => northwindContext.Orders
+            //         .FromSqlRaw("select * from `Orders`")
+            //         .Select(o => new OrderQuery { CustomerID = o.CustomerID }));
+            //
+            // modelBuilder
+            //     .Entity<CustomerView>()
+            //     .HasNoKey()
+            //     .ToQuery(() => northwindContext.CustomerQueries.FromSqlInterpolated(
+            //         $"SELECT CONCAT(`c`.`CustomerID`, {string.Empty}) as CustomerID, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region` FROM `Customers` AS `c`"));
         }
     }
 }

@@ -35,9 +35,9 @@ WHERE `a`.`Name` LIKE '% Garden Party'");
 
         [ConditionalTheory]
         [MemberData(nameof(IsAsyncData))]
-        public override async Task Where_query_escapes_literal(bool isAsync)
+        public override async Task Where_query_escapes_literal(bool async)
         {
-            await base.Where_query_escapes_literal(isAsync);
+            await base.Where_query_escapes_literal(async);
 
             AssertSql(
                 @"SELECT `a`.`ArtistId`, `a`.`Name`
@@ -47,9 +47,9 @@ WHERE `a`.`Name` = 'Back\\slasher''s'");
 
         [ConditionalTheory]
         [MemberData(nameof(IsAsyncData))]
-        public override async Task Where_query_escapes_parameter(bool isAsync)
+        public override async Task Where_query_escapes_parameter(bool async)
         {
-            await base.Where_query_escapes_parameter(isAsync);
+            await base.Where_query_escapes_parameter(async);
 
             AssertSql(
                 @"@__artistName_0='Back\slasher's' (Size = 4000)
@@ -61,9 +61,9 @@ WHERE `a`.`Name` = @__artistName_0");
 
         [ConditionalTheory]
         [MemberData(nameof(IsAsyncData))]
-        public override async Task Where_contains_query_escapes(bool isAsync)
+        public override async Task Where_contains_query_escapes(bool async)
         {
-            await base.Where_contains_query_escapes(isAsync);
+            await base.Where_contains_query_escapes(async);
 
             AssertSql(
                 @"SELECT `a`.`ArtistId`, `a`.`Name`

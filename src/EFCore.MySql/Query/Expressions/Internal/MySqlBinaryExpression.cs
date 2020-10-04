@@ -1,3 +1,6 @@
+// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
 using System;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
@@ -10,6 +13,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 {
     public enum MySqlBinaryExpressionOperatorType
     {
+        /// <summary>
+        /// TODO
+        /// </summary>
         IntegerDivision,
     }
 
@@ -37,7 +43,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         public virtual SqlExpression Right { get; }
 
         protected override Expression Accept(ExpressionVisitor visitor)
-            => visitor is MySqlQuerySqlGenerator mySqlQuerySqlGenerator
+            => visitor is MySqlQuerySqlGenerator mySqlQuerySqlGenerator // TODO: Move to VisitExtensions
                 ? mySqlQuerySqlGenerator.VisitMySqlBinaryExpression(this)
                 : base.Accept(visitor);
 
@@ -54,7 +60,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
                 ? new MySqlBinaryExpression(OperatorType, left, right, Type, TypeMapping)
                 : this;
 
-        public override void Print(ExpressionPrinter expressionPrinter)
+        protected override void Print(ExpressionPrinter expressionPrinter)
         {
             var requiresBrackets = RequiresBrackets(Left);
 

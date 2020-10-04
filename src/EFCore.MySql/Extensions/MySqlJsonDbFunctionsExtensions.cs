@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System;
 using JetBrains.Annotations;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 
@@ -11,124 +14,138 @@ namespace Microsoft.EntityFrameworkCore
     public static class MySqlJsonDbFunctionsExtensions
     {
         /// <summary>
-        /// Checks if <paramref name="json"/> contains <paramref name="contained"/> as top-level entries.
+        /// Checks if <paramref name="json"/> contains <paramref name="candidate"/>.
         /// </summary>
         /// <param name="_">DbFunctions instance</param>
         /// <param name="json">
-        /// A JSON column or value. Can be a <see cref="JsonDocument"/>, a string property mapped to JSON,
-        /// or a user POCO mapped to JSON.
+        /// A JSON column or value. Can be a JSON DOM object, a string property mapped to JSON, or a user POCO mapped to JSON.
         /// </param>
-        /// <param name="contained">
-        /// A JSON column or value. Can be a <see cref="JsonDocument"/>, a string, or a user POCO mapped to JSON.
+        /// <param name="candidate">
+        /// A JSON column or value. Can be a JSON DOM object, a string, or a user POCO mapped to JSON.
         /// </param>
-        /// <remarks>
-        /// This operation is only supported with MySQL <c>json</c>, not <c>json</c>.
-        ///
-        /// See https://www.TODO.org/docs/current/functions-json.html.
-        /// </remarks>
         public static bool JsonContains(
             [CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] object candidate)
             => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonContains)));
 
         /// <summary>
-        /// Checks if <paramref name="json"/> contains <paramref name="contained"/> as top-level entries.
+        /// Checks if <paramref name="json"/> contains <paramref name="candidate"/> at a specific <paramref name="path"/>.
         /// </summary>
         /// <param name="_">DbFunctions instance</param>
         /// <param name="json">
-        /// A JSON column or value. Can be a <see cref="JsonDocument"/>, a string property mapped to JSON,
-        /// or a user POCO mapped to JSON.
+        /// A JSON column or value. Can be a DOM object, a string property mapped to JSON, or a user POCO mapped to JSON.
         /// </param>
-        /// <param name="contained">
-        /// A JSON column or value. Can be a <see cref="JsonDocument"/>, a string, or a user POCO mapped to JSON.
+        /// <param name="candidate">
+        /// A JSON column or value. Can be a JSON DOM object, a string, or a user POCO mapped to JSON.
         /// </param>
-        /// <remarks>
-        /// This operation is only supported with MySQL <c>json</c>, not <c>json</c>.
-        ///
-        /// See https://www.TODO.org/docs/current/functions-json.html.
-        /// </remarks>
+        /// <param name="path">
+        /// A string containing a valid JSON path (staring with `$`).
+        /// </param>
         public static bool JsonContains(
             [CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] object candidate, [CanBeNull] string path)
             => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonContains)));
 
         /// <summary>
-        /// Checks if <paramref name="key"/> exists as a top-level key within <paramref name="json"/>.
+        /// Checks if <paramref name="path"/> exists within <paramref name="json"/>.
         /// </summary>
         /// <param name="_">DbFunctions instance</param>
         /// <param name="json">
-        /// A JSON column or value. Can be a <see cref="JsonDocument"/>, a string, or a user POCO mapped to JSON.
+        /// A JSON column or value. Can be a DOM object, a string property mapped to JSON, or a user POCO mapped to JSON.
         /// </param>
-        /// <param name="key">A key to be checked inside <paramref name="json"/>.</param>
-        /// <remarks>
-        /// This operation is only supported with MySQL <c>json</c>, not <c>json</c>.
-        ///
-        /// See https://www.TODO.org/docs/current/functions-json.html.
-        /// </remarks>
+        /// <param name="path">A path to be checked inside <paramref name="json"/>.</param>
         public static bool JsonContainsPath([CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] string path)
             => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonContainsPath)));
 
         /// <summary>
-        /// Checks if any of the given <paramref name="keys"/> exist as top-level keys within <paramref name="json"/>.
+        /// Checks if any of the given <paramref name="paths"/> exist within <paramref name="json"/>.
         /// </summary>
         /// <param name="_">DbFunctions instance</param>
         /// <param name="json">
-        /// A JSON column or value. Can be a <see cref="JsonDocument"/>, a string, or a user POCO mapped to JSON.
+        /// A JSON column or value. Can be a DOM object, a string property mapped to JSON, or a user POCO mapped to JSON.
         /// </param>
-        /// <param name="keys">A set of keys to be checked inside <paramref name="json"/>.</param>
-        /// <remarks>
-        /// This operation is only supported with MySQL <c>json</c>, not <c>json</c>.
-        ///
-        /// See https://www.TODO.org/docs/current/functions-json.html.
-        /// </remarks>
+        /// <param name="paths">A set of paths to be checked inside <paramref name="json"/>.</param>
         public static bool JsonContainsPathAny([CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] params string[] paths)
             => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonContainsPathAny)));
 
         /// <summary>
-        /// Checks if all of the given <paramref name="keys"/> exist as top-level keys within <paramref name="json"/>.
+        /// Checks if all of the given <paramref name="paths"/> exist within <paramref name="json"/>.
         /// </summary>
         /// <param name="_">DbFunctions instance</param>
         /// <param name="json">
-        /// A JSON column or value. Can be a <see cref="JsonDocument"/>, a string, or a user POCO mapped to JSON.
+        /// A JSON column or value. Can be a DOM object, a string property mapped to JSON, or a user POCO mapped to JSON.
         /// </param>
-        /// <param name="keys">A set of keys to be checked inside <paramref name="json"/>.</param>
-        /// <remarks>
-        /// This operation is only supported with MySQL <c>json</c>, not <c>json</c>.
-        ///
-        /// See https://www.TODO.org/docs/current/functions-json.html.
-        /// </remarks>
+        /// <param name="paths">A set of paths to be checked inside <paramref name="json"/>.</param>
         public static bool JsonContainsPathAll([CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] params string[] paths)
             => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonContainsPathAll)));
 
         /// <summary>
         /// Returns the type of the outermost JSON value as a text string.
-        /// Possible types are object, array, string, number, boolean, and null.
         /// </summary>
         /// <param name="_">DbFunctions instance</param>
         /// <param name="json">
-        /// A JSON column or value. Can be a <see cref="JsonDocument"/>, a string, or a user POCO mapped to JSON.
+        /// A JSON column or value. Can be a DOM object, a string property mapped to JSON, or a user POCO mapped to JSON.
         /// </param>
-        /// <remarks>
-        /// See https://www.TODO.org/docs/current/functions-json.html.
-        /// </remarks>
+        /// <returns> The JSON type as a text string. </returns>
+        /// <remarks> For possible return values see: https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-type </remarks>
         public static string JsonType([CanBeNull] this DbFunctions _, [NotNull] object json)
             => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonType)));
 
-        // JSON_SEARCH(json_doc, one_or_all, search_str[, escape_char[, path] ...])
+        /// <summary>
+        /// Checks if <paramref name="json"/> contains <paramref name="searchString"/>.
+        /// </summary>
+        /// <param name="_">DbFunctions instance</param>
+        /// <param name="json">
+        /// A JSON column or value. Can be a JSON DOM object, a string property mapped to JSON, or a user POCO mapped to JSON.
+        /// </param>
+        /// <param name="searchString">
+        /// The string to search for.
+        /// </param>
         public static bool JsonSearchAny([CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] string searchString)
             => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonSearchAny)));
 
+        /// <summary>
+        /// Checks if <paramref name="json"/> contains <paramref name="searchString"/> under <paramref name="path"/>.
+        /// </summary>
+        /// <param name="_">DbFunctions instance</param>
+        /// <param name="json">
+        /// A JSON column or value. Can be a JSON DOM object, a string property mapped to JSON, or a user POCO mapped to JSON.
+        /// </param>
+        /// <param name="searchString">
+        /// The string to search for.
+        /// </param>
+        /// <param name="path">
+        /// A string containing a valid JSON path (staring with `$`).
+        /// </param>
         public static bool JsonSearchAny([CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] string searchString, string path)
             => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonSearchAny)));
 
+        /// <summary>
+        /// Checks if <paramref name="json"/> contains <paramref name="searchString"/> under <paramref name="path"/>.
+        /// </summary>
+        /// <param name="_">DbFunctions instance</param>
+        /// <param name="json">
+        /// A JSON column or value. Can be a JSON DOM object, a string property mapped to JSON, or a user POCO mapped to JSON.
+        /// </param>
+        /// <param name="searchString">
+        /// The string to search for.
+        /// </param>
+        /// <param name="path">
+        /// A string containing a valid JSON path (staring with `$`).
+        /// </param>
+        /// <param name="escapeChar">
+        /// Can be `null`, an empty string or a one character wide string used for escaping characters in <paramref name="searchString"/>.
+        /// </param>
         public static bool JsonSearchAny([CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] string searchString, string path, string escapeChar)
             => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonSearchAny)));
 
-        public static bool JsonSearchAll([CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] string searchString)
-            => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonSearchAll)));
-
-        public static bool JsonSearchAll([CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] string searchString, string path)
-            => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonSearchAll)));
-
-        public static bool JsonSearchAll([CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] string searchString, string path, string escapeChar)
-            => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonSearchAll)));
+        // These methods make no sense as long as they only return true or false, because they would return
+        // the same result as JsonSearchAny would.
+        // public static bool JsonSearchAll([CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] string searchString)
+        //     => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonSearchAll)));
+        //
+        // public static bool JsonSearchAll([CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] string searchString, string path)
+        //     => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonSearchAll)));
+        //
+        // public static bool JsonSearchAll([CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] string searchString, string path, string escapeChar)
+        //     => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonSearchAll)));
     }
 }

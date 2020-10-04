@@ -1,14 +1,19 @@
 <Project>
   <PropertyGroup Label="Version settings">
-    <VersionPrefix>3.2.0</VersionPrefix>
+    <VersionPrefix>5.0.0</VersionPrefix>
     <!--
       Use the following values for the different release types:
+          - "alpha"
+          - "beta"
+          - "rc"
+          - "rtm"
+          - "servicing"
           - "preview" to match preview releases upstream (EF Core)
           - "rc" targeting a public release of EF Core
           - "rtm" for the initial public release of a major/minor version
           - "servicing" for a release containig fixes for a previously published major/minior version
     -->
-    <PreReleaseVersionLabel>rtm</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel>alpha</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
     <IncludeSourceRevisionInInformationalVersion>False</IncludeSourceRevisionInInformationalVersion>
     <!--
@@ -19,35 +24,32 @@
     <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
   </PropertyGroup>
   <PropertyGroup Label="Arcade settings">
-    <!-- Opt-in to using the ref assembly version bundled with Arcade. -->
-    <UsingToolNetFrameworkReferenceAssemblies>True</UsingToolNetFrameworkReferenceAssemblies>
     <UsingToolXliff>False</UsingToolXliff>
   </PropertyGroup>
   <PropertyGroup Label="Common Versions">
-    <EntityFrameworkCoreVersion>3.1.8</EntityFrameworkCoreVersion>
+    <EntityFrameworkCoreVersion>5.0.0-rc.1.20451.13</EntityFrameworkCoreVersion>
+    <DotnetRuntimeVersion>5.0.0-rc.1.20451.14</DotnetRuntimeVersion>
   </PropertyGroup>
   <PropertyGroup Label="Dependencies">
-    <!-- Runtime Dependencies -->
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.1.8</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCoreAppInternalPackageVersion>3.1.8-servicing.20420.1</MicrosoftNETCoreAppInternalPackageVersion>
     <!-- EFCore.MySql Dependencies -->
+    <MicrosoftEntityFrameworkCoreVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreVersion>
     <MicrosoftEntityFrameworkCoreRelationalVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MySqlConnectorVersion>[0.69.9, 1.0.0)</MySqlConnectorVersion>
+    <MySqlConnectorVersion>1.0.1</MySqlConnectorVersion>
     <PomeloJsonObjectVersion>2.2.1</PomeloJsonObjectVersion>
-    <MicrosoftExtensionsCachingMemoryVersion>3.1.8</MicrosoftExtensionsCachingMemoryVersion>
-    <MicrosoftExtensionsDependencyInjection>3.1.8</MicrosoftExtensionsDependencyInjection>
-    <SystemDiagnosticsDiagnosticSourceVersion>4.7.1</SystemDiagnosticsDiagnosticSourceVersion>
-    <MicrosoftExtensionsLoggingVersion>3.1.8</MicrosoftExtensionsLoggingVersion>
-    <MicrosoftBclAsyncInterfacesVersion>1.1.1</MicrosoftBclAsyncInterfacesVersion>
+    <MicrosoftExtensionsCachingMemoryVersion>$(DotnetRuntimeVersion)</MicrosoftExtensionsCachingMemoryVersion>
+    <MicrosoftExtensionsDependencyInjection>$(DotnetRuntimeVersion)</MicrosoftExtensionsDependencyInjection>
+    <SystemDiagnosticsDiagnosticSourceVersion>$(DotnetRuntimeVersion)</SystemDiagnosticsDiagnosticSourceVersion>
+    <MicrosoftExtensionsLoggingVersion>$(DotnetRuntimeVersion)</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftBclAsyncInterfacesVersion>$(DotnetRuntimeVersion)</MicrosoftBclAsyncInterfacesVersion>
     <MicrosoftBclHashCodeVersion>1.1.0</MicrosoftBclHashCodeVersion>
-    <MicrosoftExtensionsHostFactoryResolverSourcesVersion>3.1.8-servicing.20411.1</MicrosoftExtensionsHostFactoryResolverSourcesVersion>
-    <MicrosoftExtensionsConfigurationVersion>3.1.8</MicrosoftExtensionsConfigurationVersion>
-    <SystemCollectionsImmutableVersion>1.7.1</SystemCollectionsImmutableVersion>
-    <SystemComponentModelAnnotationsVersion>4.7.0</SystemComponentModelAnnotationsVersion>
+    <MicrosoftExtensionsHostFactoryResolverSourcesVersion>$(DotnetRuntimeVersion)</MicrosoftExtensionsHostFactoryResolverSourcesVersion>
+    <MicrosoftExtensionsConfigurationVersion>$(DotnetRuntimeVersion)</MicrosoftExtensionsConfigurationVersion>
+    <SystemCollectionsImmutableVersion>$(DotnetRuntimeVersion)</SystemCollectionsImmutableVersion>
+    <SystemComponentModelAnnotationsVersion>$(DotnetRuntimeVersion)</SystemComponentModelAnnotationsVersion>
     <!-- EFCore.MySql.NTS Dependencies -->
     <NetTopologySuiteVersion>2.1.0</NetTopologySuiteVersion>
     <!-- EFCore.MySql.Json.Microsoft Dependencies -->
-    <SystemTextJsonVersion>4.6.0</SystemTextJsonVersion> <!-- Does not lead to build warnings in user projects, due to
+    <SystemTextJsonVersion>$(DotnetRuntimeVersion)</SystemTextJsonVersion> <!-- 4.6.0 does not lead to build warnings in user projects, due to
                                                               some strange System.Text.Json made internal reference to
                                                               version 4.0.1.2 instead of 4.0.1.0.
                                                               CHECK again for .NET 5. -->
@@ -61,28 +63,23 @@
     <XunitRunnerConsolePackageVersion>2.4.1</XunitRunnerConsolePackageVersion>
     <XunitXmlTestLoggerPackageVersion>2.1.26</XunitXmlTestLoggerPackageVersion>
     <MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>
+    <MicrosoftEntityFrameworkCoreRelationalTestsVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreRelationalTestsVersion>
     <!-- EFCoreMySqlFunctionalTests Dependencies -->
     <MicrosoftEntityFrameworkCoreDesignVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreDesignVersion>
-    <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>3.1.8</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
-    <MicrosoftExtensionsConfigurationFileExtensionsVersion>3.1.8</MicrosoftExtensionsConfigurationFileExtensionsVersion>
-    <MicrosoftExtensionsConfigurationJsonVersion>3.0.3</MicrosoftExtensionsConfigurationJsonVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>$(DotnetRuntimeVersion)</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
+    <MicrosoftExtensionsConfigurationFileExtensionsVersion>$(DotnetRuntimeVersion)</MicrosoftExtensionsConfigurationFileExtensionsVersion>
+    <MicrosoftExtensionsConfigurationJsonVersion>$(DotnetRuntimeVersion)</MicrosoftExtensionsConfigurationJsonVersion>
+    <MicrosoftExtensionsConfigurationBinderVersion>$(DotnetRuntimeVersion)</MicrosoftExtensionsConfigurationBinderVersion>
     <SystemComponentModelTypeConverterVersion>4.3.0</SystemComponentModelTypeConverterVersion>
     <CastleCoreVersion>4.4.1</CastleCoreVersion>
     <!-- EFCoreMySqlIntegrationTests Dependencies -->
-    <MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>3.1.8</MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>
-    <MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>3.1.8</MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>
+    <MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>5.0.0-rc.1.20451.15</MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>
+    <MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>5.0.0-rc.1.20451.15</MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>
     <!-- EFCoreMySqlTests Dependencies -->
     <MicrosoftEntityFrameworkCoreDesignVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreDesignVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>3.7.0</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>3.1.6</MicrosoftExtensionsDependencyModelPackageVersion>
     <MoqVersion>4.14.5</MoqVersion>
     <NewtonsoftJsonPackageVersion>12.0.3</NewtonsoftJsonPackageVersion>
-  </PropertyGroup>
-  <PropertyGroup Label="Dependency version settings">
-    <!--
-      Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
-      All Runtime.$rid packages should have the same version.
-    -->
-    <MicrosoftNETCoreAppRuntimeVersion>$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</MicrosoftNETCoreAppRuntimeVersion>
   </PropertyGroup>
 </Project>

@@ -1,4 +1,7 @@
-﻿using System.Data.Common;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System.Data.Common;
 using JetBrains.Annotations;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal

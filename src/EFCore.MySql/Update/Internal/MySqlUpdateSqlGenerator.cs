@@ -15,19 +15,6 @@ using Pomelo.EntityFrameworkCore.MySql.Extensions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
 {
-    /// <summary>
-    ///     <para>
-    ///         This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///         the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///         any release. You should only use it directly in your code with extreme caution and knowing that
-    ///         doing so can result in application failures when updating to a new Entity Framework Core release.
-    ///     </para>
-    ///     <para>
-    ///         The service lifetime is <see cref="ServiceLifetime.Singleton"/>. This means a single instance
-    ///         is used by many <see cref="DbContext"/> instances. The implementation must be thread-safe.
-    ///         This service cannot depend on services registered as <see cref="ServiceLifetime.Scoped"/>.
-    ///     </para>
-    /// </summary>
     public class MySqlUpdateSqlGenerator : UpdateSqlGenerator, IMySqlUpdateSqlGenerator
     {
         /// <summary>
@@ -117,11 +104,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
 
             AppendInsertCommandHeader(commandStringBuilder, name, schema, writeOperations);
             AppendValuesHeader(commandStringBuilder, writeOperations);
-            AppendValues(commandStringBuilder, writeOperations);
+            AppendValues(commandStringBuilder, name, schema, writeOperations);
             for (var i = 1; i < modificationCommands.Count; i++)
             {
                 commandStringBuilder.Append(",").AppendLine();
-                AppendValues(commandStringBuilder, modificationCommands[i].ColumnModifications.Where(o => o.IsWrite).ToList());
+                AppendValues(commandStringBuilder, name, schema, modificationCommands[i].ColumnModifications.Where(o => o.IsWrite).ToList());
             }
             commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
 
@@ -141,9 +128,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
 
         protected override void AppendValues(
             [NotNull] StringBuilder commandStringBuilder,
+            [NotNull] string name,
+            [CanBeNull] string schema,
             [NotNull] IReadOnlyList<ColumnModification> operations)
         {
-            base.AppendValues(commandStringBuilder, operations);
+            base.AppendValues(commandStringBuilder, name, schema, operations);
 
             if (operations.Count == 0)
             {

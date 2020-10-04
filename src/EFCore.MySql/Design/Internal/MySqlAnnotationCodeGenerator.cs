@@ -19,12 +19,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
         {
         }
 
-        public override bool IsHandledByConvention(IModel model, IAnnotation annotation)
+        protected override bool IsHandledByConvention(IModel model, IAnnotation annotation)
         {
             return true;
         }
 
-        public override MethodCallCodeFragment GenerateFluentApi(IProperty property, IAnnotation annotation)
+        protected override MethodCallCodeFragment GenerateFluentApi(IProperty property, IAnnotation annotation)
         {
             Check.NotNull(property, nameof(property));
             Check.NotNull(annotation, nameof(annotation));

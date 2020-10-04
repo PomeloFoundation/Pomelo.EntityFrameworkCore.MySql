@@ -1,3 +1,6 @@
+// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
 namespace Pomelo.EntityFrameworkCore.MySql.Internal
 {
     public class MySqlDefaultDataTypeMappings
@@ -92,25 +95,70 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
 
     public enum MySqlBooleanType
     {
+        /// <summary>
+        /// TODO
+        /// </summary>
         None = -1,
+
+        /// <summary>
+        /// TODO
+        /// </summary>
         Default = 0,
+
+        /// <summary>
+        /// TODO
+        /// </summary>
         TinyInt1 = 1,
+
+        /// <summary>
+        /// TODO
+        /// </summary>
         Bit1 = 2
     }
 
     public enum MySqlDateTimeType
     {
+        /// <summary>
+        /// TODO
+        /// </summary>
         Default = 0,
+
+        /// <summary>
+        /// TODO
+        /// </summary>
         DateTime = 1,
+
+        /// <summary>
+        /// TODO
+        /// </summary>
         DateTime6 = 2,
+
+        /// <summary>
+        /// TODO
+        /// </summary>
         Timestamp6 = 3,
+
+        /// <summary>
+        /// TODO
+        /// </summary>
         Timestamp = 4,
     }
 
     public enum MySqlTimeSpanType
     {
+        /// <summary>
+        /// TODO
+        /// </summary>
         Default = 0,
+
+        /// <summary>
+        /// TODO
+        /// </summary>
         Time = 1,
+
+        /// <summary>
+        /// TODO
+        /// </summary>
         Time6 = 2,
     }
 }

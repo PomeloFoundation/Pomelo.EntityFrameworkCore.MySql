@@ -4,13 +4,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 using NetTopologySuite.Geometries;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using static Pomelo.EntityFrameworkCore.MySql.Utilities.Statics;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -39,7 +41,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             _options = options;
         }
 
-        public virtual SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType)
+        public SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             if (_memberToFunctionName.TryGetValue(member, out var functionName))
             {
@@ -56,17 +58,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     ? (SqlExpression)_sqlExpressionFactory.Function(
                         functionName,
                         new[] {instance},
+                        nullable: true,
+                        argumentsPropagateNullability: TrueArrays[1],
                         returnType,
                         resultTypeMapping)
                     : _sqlExpressionFactory.AndAlso(
                         _sqlExpressionFactory.Function(
                             "ST_IsClosed",
                             new[] {instance},
+                            nullable: true,
+                            argumentsPropagateNullability: TrueArrays[1],
                             returnType,
                             resultTypeMapping),
                         _sqlExpressionFactory.Function(
                             "ST_IsSimple",
                             new[] {instance},
+                            nullable: true,
+                            argumentsPropagateNullability: TrueArrays[1],
                             returnType,
                             resultTypeMapping)
                     );

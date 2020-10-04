@@ -1,11 +1,14 @@
-﻿
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
 using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
+using static Pomelo.EntityFrameworkCore.MySql.Utilities.Statics;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -34,7 +37,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
         }
 
-        public virtual SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
+        public virtual SqlExpression Translate(
+            SqlExpression instance,
+            MethodInfo method,
+            IReadOnlyList<SqlExpression> arguments,
+            IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             if (_methodInfoDatePartMapping.TryGetValue(method, out var datePart))
             {
@@ -56,6 +63,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                                 _sqlExpressionFactory.Fragment(datePart)
                             }, typeof(string))
                         },
+                        nullable: true,
+                        argumentsPropagateNullability: TrueArrays[2],
                         instance.Type,
                         instance.TypeMapping);
             }

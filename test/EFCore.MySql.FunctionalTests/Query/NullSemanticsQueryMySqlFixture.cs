@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.TestUtilities;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public class NullSemanticsQueryMySqlFixture : NullSemanticsQueryRelationalFixture
+    public class NullSemanticsQueryMySqlFixture : NullSemanticsQueryFixtureBase
     {
         protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
     }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models;
 using Microsoft.EntityFrameworkCore;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Attributes;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Xunit;

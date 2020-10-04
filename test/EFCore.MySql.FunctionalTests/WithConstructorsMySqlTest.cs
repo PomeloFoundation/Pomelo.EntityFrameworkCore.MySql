@@ -1,9 +1,7 @@
-using System.Linq;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
@@ -25,12 +23,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
             {
                 base.OnModelCreating(modelBuilder, context);
-
                 modelBuilder.Entity<BlogQuery>()
                     .HasNoKey()
-                    .ToQuery(() => context
-                        .Set<BlogQuery>()
-                        .FromSqlRaw("select * from `Blog`"));
+                    .ToSqlQuery("select * from `Blog`");
             }
         }
     }

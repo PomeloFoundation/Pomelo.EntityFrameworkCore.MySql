@@ -1,4 +1,7 @@
-﻿using JetBrains.Annotations;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
@@ -6,7 +9,7 @@ using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 namespace Pomelo.EntityFrameworkCore.MySql.Extensions
 {
     /// <summary>
-    ///     Extension methods for <see cref="IKey" /> for SQL Server-specific metadata.
+    ///     Extension methods for <see cref="IKey" /> for MySQL-specific metadata.
     /// </summary>
     public static class MySqlKeyExtensions
     {

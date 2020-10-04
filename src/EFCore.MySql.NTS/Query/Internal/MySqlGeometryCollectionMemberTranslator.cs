@@ -3,9 +3,12 @@
 
 using System;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using NetTopologySuite.Geometries;
+using static Pomelo.EntityFrameworkCore.MySql.Utilities.Statics;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -19,13 +22,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             _sqlExpressionFactory = sqlExpressionFactory;
         }
 
-        public virtual SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType)
+        public SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             if (Equals(member, _count))
             {
                 return _sqlExpressionFactory.Function(
                     "ST_NumGeometries",
                     new [] {instance},
+                    nullable: true,
+                    argumentsPropagateNullability: TrueArrays[1],
                     returnType);
             }
 

@@ -1,6 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
@@ -21,11 +23,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         }
 
         public virtual RelationalSqlTranslatingExpressionVisitor Create(
-            IModel model,
+            QueryCompilationContext queryCompilationContext,
             QueryableMethodTranslatingExpressionVisitor queryableMethodTranslatingExpressionVisitor)
             => new MySqlSqlTranslatingExpressionVisitor(
                 _dependencies,
-                model,
+                queryCompilationContext,
                 queryableMethodTranslatingExpressionVisitor,
                 _jsonPocoTranslator);
     }

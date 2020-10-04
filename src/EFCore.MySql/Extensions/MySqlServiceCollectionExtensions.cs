@@ -19,6 +19,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Migrations;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
@@ -38,7 +40,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<IRelationalTypeMappingSource, MySqlTypeMappingSource>()
                 .TryAdd<IRelationalTransactionFactory, MySqlRelationalTransactionFactory>()
                 .TryAdd<ISqlGenerationHelper, MySqlSqlGenerationHelper>()
-                .TryAdd<IMigrationsAnnotationProvider, MySqlMigrationsAnnotationProvider>()
+                .TryAdd<IRelationalAnnotationProvider, MySqlAnnotationProvider>()
                 .TryAdd<IProviderConventionSetBuilder, MySqlConventionSetBuilder>()
                 .TryAdd<IModelValidator, MySqlModelValidator>()
                 .TryAdd<IUpdateSqlGenerator, MySqlUpdateSqlGenerator>()
@@ -55,9 +57,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<IMethodCallTranslatorProvider, MySqlMethodCallTranslatorProvider>()
                 .TryAdd<IMemberTranslatorProvider, MySqlMemberTranslatorProvider>()
                 .TryAdd<IQuerySqlGeneratorFactory, MySqlQuerySqlGeneratorFactory>()
+                .TryAdd<IRelationalParameterBasedSqlProcessorFactory, MySqlParameterBasedSqlProcessorFactory>()
                 .TryAdd<ISqlExpressionFactory, MySqlSqlExpressionFactory>()
                 .TryAdd<IRelationalSqlTranslatingExpressionVisitorFactory, MySqlSqlTranslatingExpressionVisitorFactory>()
                 .TryAdd<IQueryTranslationPostprocessorFactory, MySqlQueryTranslationPostprocessorFactory>()
+                .TryAdd<IQueryCompilationContextFactory, MySqlQueryCompilationContextFactory>()
                 .TryAdd<IMigrationsModelDiffer, MySqlMigrationsModelDiffer>()
                 .TryAddProviderSpecificServices(m => m
                     .TryAddSingleton<IMySqlOptions, MySqlOptions>()

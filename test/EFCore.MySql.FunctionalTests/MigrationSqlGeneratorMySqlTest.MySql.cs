@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using NetTopologySuite.Geometries;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
@@ -6,7 +7,7 @@ using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
-    public partial class MigrationSqlGeneratorMySqlTest
+    public partial class MySqlMigrationsSqlGeneratorTest : MigrationsSqlGeneratorTestBase
     {
         [ConditionalFact]
         public virtual void DropUniqueConstraintOperation_temporarily_drops_foreign_keys()

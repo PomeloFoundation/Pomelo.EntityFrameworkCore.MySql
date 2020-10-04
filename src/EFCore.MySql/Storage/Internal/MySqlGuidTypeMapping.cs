@@ -1,6 +1,9 @@
+// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
 using System;
 using Microsoft.EntityFrameworkCore.Storage;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Utilities;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
@@ -52,7 +55,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     throw new ArgumentOutOfRangeException();
             }
         }
-        
+
         private static string GetStoreType(MySqlGuidFormat guidFormat)
         {
             switch (guidFormat)

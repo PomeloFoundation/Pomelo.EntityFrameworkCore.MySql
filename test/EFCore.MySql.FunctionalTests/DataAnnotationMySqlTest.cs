@@ -64,7 +64,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
             var property = GetProperty<ColumnKeyAnnotationClass2>(modelBuilder, "PersonFirstName");
 
-            var storeType = property.FindRelationalMapping().StoreType;
+            var storeType = property.GetRelationalTypeMapping().StoreType;
 
             Assert.Equal("varchar(64) CHARACTER SET utf8mb4", storeType);
 
@@ -77,7 +77,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
             var property = GetProperty<TimestampAndMaxlen>(modelBuilder, "MaxTimestamp");
 
-            var storeTypeNameBase = property.FindRelationalMapping().StoreTypeNameBase;
+            var storeTypeNameBase = property.GetRelationalTypeMapping().StoreTypeNameBase;
 
             Assert.Equal("timestamp", storeTypeNameBase);
 
