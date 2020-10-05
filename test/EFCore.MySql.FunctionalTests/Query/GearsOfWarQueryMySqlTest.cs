@@ -33,7 +33,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         [MemberData(nameof(IsAsyncData))]
         public override Task Where_datetimeoffset_now(bool async)
         {
-            return AssertQuery<Mission>(
+            return AssertQuery(
                 async,
                 ss => from m in ss.Set<Mission>()
                     where m.Timeline != DateTimeOffset.Now
@@ -54,7 +54,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         [MemberData(nameof(IsAsyncData))]
         public override Task Where_datetimeoffset_utcnow(bool async)
         {
-            return AssertQuery<Mission>(
+            return AssertQuery(
                 async,
                 ss => from m in ss.Set<Mission>()
                     where m.Timeline != DateTimeOffset.UtcNow
@@ -75,7 +75,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         [MemberData(nameof(IsAsyncData))]
         public override Task Where_datetimeoffset_date_component(bool async)
         {
-            return AssertQuery<Mission>(
+            return AssertQuery(
                 async,
                 ss => from m in ss.Set<Mission>()
                     where m.Timeline.Date > new DateTimeOffset().Date
@@ -98,7 +98,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         [MemberData(nameof(IsAsyncData))]
         public override Task Where_datetimeoffset_year_component(bool async)
         {
-            return AssertQuery<Mission>(
+            return AssertQuery(
                 async,
                 ss => from m in ss.Set<Mission>()
                     where m.Timeline.Year == 2
@@ -120,7 +120,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         [MemberData(nameof(IsAsyncData))]
         public override Task Where_datetimeoffset_month_component(bool async)
         {
-            return AssertQuery<Mission>(
+            return AssertQuery(
                 async,
                 ss => from m in ss.Set<Mission>()
                     where m.Timeline.Month == 1
@@ -142,7 +142,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         [MemberData(nameof(IsAsyncData))]
         public override Task Where_datetimeoffset_dayofyear_component(bool async)
         {
-            return AssertQuery<Mission>(
+            return AssertQuery(
                 async,
                 ss => from m in ss.Set<Mission>()
                     where m.Timeline.DayOfYear == 2
@@ -164,7 +164,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         [MemberData(nameof(IsAsyncData))]
         public override Task Where_datetimeoffset_day_component(bool async)
         {
-            return AssertQuery<Mission>(
+            return AssertQuery(
                 async,
                 ss => from m in ss.Set<Mission>()
                     where m.Timeline.Day == 2
@@ -186,7 +186,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         [MemberData(nameof(IsAsyncData))]
         public override Task Where_datetimeoffset_hour_component(bool async)
         {
-            return AssertQuery<Mission>(
+            return AssertQuery(
                 async,
                 ss => from m in ss.Set<Mission>()
                     where m.Timeline.Hour == 10
@@ -208,7 +208,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         [MemberData(nameof(IsAsyncData))]
         public override Task Where_datetimeoffset_minute_component(bool async)
         {
-            return AssertQuery<Mission>(
+            return AssertQuery(
                 async,
                 ss => from m in ss.Set<Mission>()
                     where m.Timeline.Minute == 0
@@ -230,7 +230,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         [MemberData(nameof(IsAsyncData))]
         public override Task Where_datetimeoffset_second_component(bool async)
         {
-            return AssertQuery<Mission>(
+            return AssertQuery(
                 async,
                 ss => from m in ss.Set<Mission>()
                     where m.Timeline.Second == 0
@@ -252,7 +252,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         [MemberData(nameof(IsAsyncData))]
         public override Task Where_datetimeoffset_millisecond_component(bool async)
         {
-            return AssertQuery<Mission>(
+            return AssertQuery(
                 async,
                 ss => from m in ss.Set<Mission>()
                     where m.Timeline.Millisecond == 0
@@ -344,7 +344,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         [MemberData(nameof(IsAsyncData))]
         public override Task Time_of_day_datetimeoffset(bool async)
         {
-            return AssertQueryScalar<TimeSpan>(
+            return AssertQueryScalar(
                 async,
                 ss => from m in ss.Set<Mission>()
                     select m.Timeline.TimeOfDay,
@@ -360,9 +360,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             var dto = new DateTimeOffset(599898024001234567, new TimeSpan(1, 30, 0));
             var start = dto.AddDays(-1);
             var end = dto.AddDays(1);
-            var dates = new DateTimeOffset[] {dto};
+            var dates = new[] {dto};
 
-            return AssertQuery<Mission>(
+            return AssertQuery(
                 async,
                 ss => ss.Set<Mission>()
                     .Where(
