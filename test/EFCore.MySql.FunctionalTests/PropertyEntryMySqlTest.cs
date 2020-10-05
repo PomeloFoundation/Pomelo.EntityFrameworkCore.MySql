@@ -15,13 +15,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.Property_entry_original_value_is_set();
 
             AssertSql(
-                @"SELECT `e`.`Id`, `e`.`EngineSupplierId`, `e`.`Name`, `t`.`Id`, `t`.`StorageLocation_Latitude`, `t`.`StorageLocation_Longitude`
+                @"SELECT `e`.`Id`, `e`.`EngineSupplierId`, `e`.`Name`, `e`.`StorageLocation_Latitude`, `e`.`StorageLocation_Longitude`
 FROM `Engines` AS `e`
-LEFT JOIN (
-    SELECT `e0`.`Id`, `e0`.`StorageLocation_Latitude`, `e0`.`StorageLocation_Longitude`
-    FROM `Engines` AS `e0`
-    WHERE `e0`.`StorageLocation_Longitude` IS NOT NULL AND `e0`.`StorageLocation_Latitude` IS NOT NULL
-) AS `t` ON `e`.`Id` = `t`.`Id`
 ORDER BY `e`.`Id`
 LIMIT 1",
                 //
@@ -29,8 +24,8 @@ LIMIT 1",
 @p2='1'
 @p0='FO 108X' (Size = 4000)
 @p3='ChangedEngine' (Size = 4000)
-@p4='47.64491'
-@p5='-122.128101'
+@p4='47.64491' (Nullable = true)
+@p5='-122.128101' (Nullable = true)
 
 UPDATE `Engines` SET `Name` = @p0
 WHERE `Id` = @p1 AND `EngineSupplierId` = @p2 AND `Name` = @p3 AND `StorageLocation_Latitude` = @p4 AND `StorageLocation_Longitude` = @p5;

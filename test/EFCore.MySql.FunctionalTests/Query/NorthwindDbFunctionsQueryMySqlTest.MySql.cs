@@ -9,8 +9,7 @@ using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public partial class NorthwindDbFunctionsQueryMySqlTest : NorthwindDbFunctionsQueryRelationalTestBase<
-        NorthwindQueryMySqlFixture<NoopModelCustomizer>>
+    public partial class NorthwindDbFunctionsQueryMySqlTest
     {
         [ConditionalFact]
         public virtual void DateDiff_Year()

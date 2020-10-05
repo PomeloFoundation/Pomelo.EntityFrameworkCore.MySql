@@ -19,14 +19,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
     public class BuiltInDataTypesMySqlTest :
         BuiltInDataTypesTestBase<BuiltInDataTypesMySqlTest.BuiltInDataTypesMySqlFixture>
     {
-        private readonly ITestOutputHelper _testOutputHelper;
-
         public BuiltInDataTypesMySqlTest(BuiltInDataTypesMySqlFixture fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
         {
-            _testOutputHelper = testOutputHelper;
-            fixture.TestSqlLoggerFactory.Clear();
-            fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
+            Fixture.TestSqlLoggerFactory.Clear();
+            //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
         // Blocked by EF #11929
@@ -952,8 +949,7 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
         [ConditionalFact]
         public virtual void Columns_have_expected_data_types()
         {
-            var maxKeyLength = AppConfig.ServerVersion.MaxKeyLength;
-            var actual = QueryForColumnTypes(CreateContext(), _testOutputHelper);
+            var actual = QueryForColumnTypes(CreateContext());
 
             var expected = $@"Animal.Id ---> [int] [Precision = 10 Scale = 0]
 AnimalDetails.AnimalId ---> [nullable int] [Precision = 10 Scale = 0]
@@ -1264,7 +1260,7 @@ UnicodeDataTypes.StringUnicode ---> [nullable longtext] [MaxLength = -1]
             Assert.Equal(expected, actual, ignoreLineEndingDifferences: true, ignoreCase: true, ignoreWhiteSpaceDifferences: true);
         }
 
-        public static string QueryForColumnTypes(DbContext context, ITestOutputHelper testOutputHelper = null)
+        public static string QueryForColumnTypes(DbContext context)
         {
             const string query
                 = @"SELECT

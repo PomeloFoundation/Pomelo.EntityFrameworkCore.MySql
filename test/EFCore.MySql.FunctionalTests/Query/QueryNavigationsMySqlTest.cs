@@ -16,7 +16,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             ITestOutputHelper testOutputHelper)
             : base(fixture)
         {
-            fixture.TestSqlLoggerFactory.Clear();
+            ClearLog();
+            //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
         [ConditionalTheory(Skip = "Issue #573")]
@@ -94,5 +95,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             return base.Select_collection_FirstOrDefault_project_anonymous_type_client_eval(async);
         }
+
+        private void AssertSql(params string[] expected)
+            => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
+
+        protected override void ClearLog()
+            => Fixture.TestSqlLoggerFactory.Clear();
     }
 }

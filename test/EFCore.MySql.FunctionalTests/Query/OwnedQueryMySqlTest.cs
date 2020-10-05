@@ -10,7 +10,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         public OwnedQueryMySqlTest(OwnedQueryMySqlFixture fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
         {
-            Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
+            //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
         public class OwnedQueryMySqlFixture : RelationalOwnedQueryFixture

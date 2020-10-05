@@ -17,7 +17,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             : base(fixture)
         {
             ClearLog();
-            Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
+            //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
         [SupportedServerVersionTheory(ServerVersion.ExceptInterceptSupportKey)]
@@ -198,5 +198,8 @@ FROM (
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
+
+        protected override void ClearLog()
+            => Fixture.TestSqlLoggerFactory.Clear();
     }
 }

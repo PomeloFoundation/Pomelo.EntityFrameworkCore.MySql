@@ -16,7 +16,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             ITestOutputHelper testOutputHelper)
             : base(fixture)
         {
-            Fixture.TestSqlLoggerFactory.Clear();
+            ClearLog();
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
@@ -31,5 +31,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return Assert.ThrowsAsync<InvalidOperationException>(
                 () => base.GroupBy_Property_Select_LongCount_with_predicate(async));
         }
+
+        private void AssertSql(params string[] expected)
+            => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
+
+        protected override void ClearLog()
+            => Fixture.TestSqlLoggerFactory.Clear();
     }
 }
