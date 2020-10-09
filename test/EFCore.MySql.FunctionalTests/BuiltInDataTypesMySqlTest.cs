@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -24,6 +26,66 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
             Fixture.TestSqlLoggerFactory.Clear();
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
+        }
+
+        public override void Object_to_string_conversion()
+        {
+            using var context = CreateContext();
+            var expected = context.Set<BuiltInDataTypes>()
+                .Where(e => e.Id == 13)
+                .AsEnumerable()
+                .Select(
+                    b => new
+                    {
+                        Sbyte = b.TestSignedByte.ToString(),
+                        Byte = b.TestByte.ToString(),
+                        Short = b.TestInt16.ToString(),
+                        Ushort = b.TestUnsignedInt16.ToString(),
+                        Int = b.TestInt32.ToString(),
+                        Uint = b.TestUnsignedInt32.ToString(),
+                        Long = b.TestInt64.ToString(),
+                        Ulong = b.TestUnsignedInt64.ToString(),
+                        Decimal = b.TestDecimal.ToString(CultureInfo.InvariantCulture), // needed for cultures with decimal separator other than point
+                        Char = b.TestCharacter.ToString()
+                    })
+                .First();
+
+            Fixture.ListLoggerFactory.Clear();
+
+            var query = context.Set<BuiltInDataTypes>()
+                .Where(e => e.Id == 13)
+                .Select(
+                    b => new
+                    {
+                        Sbyte = b.TestSignedByte.ToString(),
+                        Byte = b.TestByte.ToString(),
+                        Short = b.TestInt16.ToString(),
+                        Ushort = b.TestUnsignedInt16.ToString(),
+                        Int = b.TestInt32.ToString(),
+                        Uint = b.TestUnsignedInt32.ToString(),
+                        Long = b.TestInt64.ToString(),
+                        Ulong = b.TestUnsignedInt64.ToString(),
+                        Float = b.TestSingle.ToString(),
+                        Double = b.TestDouble.ToString(),
+                        Decimal = b.TestDecimal.ToString(),
+                        Char = b.TestCharacter.ToString(),
+                        DateTime = b.TestDateTime.ToString(),
+                        DateTimeOffset = b.TestDateTimeOffset.ToString(),
+                        TimeSpan = b.TestTimeSpan.ToString()
+                    })
+                .ToList();
+
+            var actual = Assert.Single(query);
+            Assert.Equal(expected.Sbyte, actual.Sbyte);
+            Assert.Equal(expected.Byte, actual.Byte);
+            Assert.Equal(expected.Short, actual.Short);
+            Assert.Equal(expected.Ushort, actual.Ushort);
+            Assert.Equal(expected.Int, actual.Int);
+            Assert.Equal(expected.Uint, actual.Uint);
+            Assert.Equal(expected.Long, actual.Long);
+            Assert.Equal(expected.Ulong, actual.Ulong);
+            Assert.Equal(expected.Decimal.TrimEnd('0'), actual.Decimal.TrimEnd('0')); // might have different scales
+            Assert.Equal(expected.Char, actual.Char);
         }
 
         // Blocked by EF #11929
@@ -464,8 +526,8 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
 @p9='73'
 @p10='D' (Nullable = false) (Size = 20)
 @p11='A' (Nullable = false) (Size = 1)
-@p12='2015-01-02T10:11:12' (DbType = Date)
-@p13='2019-01-02T14:11:12' (DbType = DateTime)
+@p12='2015-01-02T10:11:12.0000000' (DbType = Date)
+@p13='2019-01-02T14:11:12.0000000' (DbType = DateTime)
 @p14='2016-01-02T11:11:12.0000000+00:00'
 @p15='2017-01-02T12:11:12.0000000+02:00'
 @p16='81.1'
@@ -631,8 +693,8 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
 @p7='D' (Size = 1)
 @p8='G' (Size = 1)
 @p9='A' (Size = 1)
-@p10='2015-01-02T10:11:12' (Nullable = true) (DbType = Date)
-@p11='2019-01-02T14:11:12' (Nullable = true) (DbType = DateTime)
+@p10='2015-01-02T10:11:12.0000000' (Nullable = true) (DbType = Date)
+@p11='2019-01-02T14:11:12.0000000' (Nullable = true) (DbType = DateTime)
 @p12='2016-01-02T11:11:12.0000000+00:00' (Nullable = true) (Size = 6)
 @p13='2017-01-02T12:11:12.0000000+06:00' (Nullable = true) (Size = 6)
 @p14='81.1' (Nullable = true)
@@ -1070,6 +1132,8 @@ BuiltInNullableDataTypesShadow.TestNullableUnsignedInt16 ---> [nullable smallint
 BuiltInNullableDataTypesShadow.TestNullableUnsignedInt32 ---> [nullable int] [Precision = 10 Scale = 0]
 BuiltInNullableDataTypesShadow.TestNullableUnsignedInt64 ---> [nullable bigint] [Precision = 20 Scale = 0]
 BuiltInNullableDataTypesShadow.TestString ---> [nullable longtext] [MaxLength = -1]
+DateTimeEnclosure.DateTimeOffset ---> [nullable datetime] [Precision = 6]
+DateTimeEnclosure.Id ---> [int] [Precision = 10 Scale = 0]
 EmailTemplate.Id ---> [char] [MaxLength = 36]
 EmailTemplate.TemplateType ---> [int] [Precision = 10 Scale = 0]
 MappedDataTypes.BoolAsBit ---> [bit] [Precision = 1]

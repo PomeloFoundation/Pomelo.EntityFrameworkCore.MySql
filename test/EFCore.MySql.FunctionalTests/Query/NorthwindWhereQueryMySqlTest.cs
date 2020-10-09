@@ -45,13 +45,6 @@ WHERE CURRENT_TIMESTAMP() <> @__myDatetime_0");
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE UTC_TIMESTAMP() <> @__myDatetime_0");
-
-            AssertSql(
-                @"@__myDatetime_0='2015-04-10T00:00:00' (DbType = DateTime)
-
-SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`
-WHERE (UTC_TIMESTAMP() <> @__myDatetime_0) OR UTC_TIMESTAMP() IS NULL");
         }
 
         [ConditionalTheory]

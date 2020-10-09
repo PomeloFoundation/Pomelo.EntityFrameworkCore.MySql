@@ -32,6 +32,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
         }
 
+        protected override string Schema { get; } = null;
+
         [ConditionalFact]
         public virtual void DefaultValue_not_generated_for_text_column()
         {
