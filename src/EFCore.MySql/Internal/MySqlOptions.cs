@@ -20,7 +20,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         {
             ConnectionSettings = new MySqlConnectionSettings();
             ServerVersion = new ServerVersion(null);
-            CharSetBehavior = CharSetBehavior.AppendToAllColumns;
+            CharSetBehavior = CharSetBehavior.AppendToAllColumns; // TODO: Change to `NeverAppend` for EF Core 5.
 
             // We do not use the MySQL versions's default, but explicitly use `utf8mb4`
             // if not changed by the user.
@@ -157,15 +157,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         {
             defaultDataTypeMappings ??= DefaultDataTypeMappings;
 
-            if (connectionSettings.TreatTinyAsBoolean ||
+            // Explicitly set MySqlDefaultDataTypeMappings values take precedence over connection string options.
+            if (connectionSettings.TreatTinyAsBoolean.HasValue &&
                 defaultDataTypeMappings.ClrBoolean == MySqlBooleanType.Default)
             {
-                defaultDataTypeMappings = defaultDataTypeMappings.WithClrBoolean(MySqlBooleanType.TinyInt1);
-            }
-            else if (defaultDataTypeMappings.ClrBoolean != MySqlBooleanType.Bit1 &&
-                     defaultDataTypeMappings.ClrBoolean != MySqlBooleanType.None)
-            {
-                defaultDataTypeMappings = defaultDataTypeMappings.WithClrBoolean(MySqlBooleanType.Bit1);
+                defaultDataTypeMappings = defaultDataTypeMappings.WithClrBoolean(
+                    connectionSettings.TreatTinyAsBoolean.Value
+                        ? MySqlBooleanType.TinyInt1
+                        : MySqlBooleanType.Bit1);
             }
 
             if (defaultDataTypeMappings.ClrDateTime == MySqlDateTimeType.Default)

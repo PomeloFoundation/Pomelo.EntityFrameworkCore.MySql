@@ -92,7 +92,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
 
     public enum MySqlBooleanType
     {
-        None = -1,
+        None = -1, // TODO: Remove in EF Core 5; see MySqlTypeMappingTest.Bool_with_MySqlBooleanType_None_maps_to_null()
         Default = 0,
         TinyInt1 = 1,
         Bit1 = 2
