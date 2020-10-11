@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.NetworkInformation;
-using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design.Internal;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Storage.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Xunit;
 
@@ -379,24 +375,88 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Storage
 
         #endregion Ranges
 */
+        [Fact]
+        public void Bool_with_MySqlBooleanType_None_maps_to_null()
+        {
+            // TODO: EF Core 5
+            // If MySqlBooleanType.None is used, the intention was to not map System.Boolean at all, but EF Core
+            // successfully substitutes System.Boolean with System.Int32 and then maps it to INT.
+            // So for EF Core 5, we should remove the MySqlBooleanType.None option altogether.
+            var options = GetOptions(b => b.DefaultDataTypeMappings(m => m.WithClrBoolean(MySqlBooleanType.None)));
+            var mapping = GetMapping(typeof(bool), options);
+
+            Assert.Equal("int", mapping.StoreType);
+        }
+
+        [Fact]
+        public void Bool_with_MySqlBooleanType_Default_maps_to_tinyint1()
+        {
+            var options = GetOptions(b => b.DefaultDataTypeMappings(m => m.WithClrBoolean(MySqlBooleanType.Default)));
+            var mapping = GetMapping(typeof(bool), options);
+
+            Assert.Equal("tinyint(1)", mapping.StoreType);
+        }
+
+        [Fact]
+        public void Bool_with_MySqlBooleanType_TinyInt1_maps_to_tinyint1()
+        {
+            var options = GetOptions(b => b.DefaultDataTypeMappings(m => m.WithClrBoolean(MySqlBooleanType.TinyInt1)));
+            var mapping = GetMapping(typeof(bool), options);
+
+            Assert.Equal("tinyint(1)", mapping.StoreType);
+        }
+
+        [Fact]
+        public void Bool_with_MySqlBooleanType_Bit1_maps_to_bit1()
+        {
+            var options = GetOptions(b => b.DefaultDataTypeMappings(m => m.WithClrBoolean(MySqlBooleanType.Bit1)));
+            var mapping = GetMapping(typeof(bool), options);
+
+            Assert.Equal("bit(1)", mapping.StoreType);
+        }
+
+        [Fact]
+        public void Bit1_with_MySqlBooleanType_Default_maps_to_UInt64()
+        {
+            var options = GetOptions(b => b.DefaultDataTypeMappings(m => m.WithClrBoolean(MySqlBooleanType.Default)));
+            var mapping = GetMapping("bit(1)", options);
+
+            Assert.Equal(typeof(ulong), mapping.ClrType);
+        }
+
         #region Support
 
-        private static readonly MySqlTypeMappingSource Mapper = new MySqlTypeMappingSource(
-            new TypeMappingSourceDependencies(
-                new ValueConverterSelector(new ValueConverterSelectorDependencies()),
-                Array.Empty<ITypeMappingSourcePlugin>()),
-            new RelationalTypeMappingSourceDependencies(
-                Array.Empty<IRelationalTypeMappingSourcePlugin>()),
-            new MySqlOptions()
-        );
+        private static MySqlTypeMappingSource GetMapper(MySqlOptions options = null)
+            => new MySqlTypeMappingSource(
+                new TypeMappingSourceDependencies(
+                    new ValueConverterSelector(new ValueConverterSelectorDependencies()),
+                    Array.Empty<ITypeMappingSourcePlugin>()),
+                new RelationalTypeMappingSourceDependencies(
+                    Array.Empty<IRelationalTypeMappingSourcePlugin>()),
+                options ?? new MySqlOptions());
 
-        private static RelationalTypeMapping GetMapping(string storeType) => Mapper.FindMapping(storeType);
+        private static RelationalTypeMapping GetMapping(string storeType, MySqlOptions options = null)
+            => GetMapper(options).FindMapping(storeType);
 
-        private static RelationalTypeMapping GetMapping(Type clrType) => (RelationalTypeMapping)Mapper.FindMapping(clrType);
+        private static RelationalTypeMapping GetMapping(Type clrType, MySqlOptions options = null)
+            => (RelationalTypeMapping)GetMapper(options).FindMapping(clrType);
 
-        private static readonly CSharpHelper CsHelper = new CSharpHelper(Mapper);
+        private static CSharpHelper GetCsHelper(MySqlOptions options = null)
+            => new CSharpHelper(GetMapper(options));
 
-        private static string CodeLiteral(object value) => CsHelper.UnknownLiteral(value);
+        private static string CodeLiteral(object value, MySqlOptions options = null)
+            => GetCsHelper(options).UnknownLiteral(value);
+
+        private static MySqlOptions GetOptions(Action<MySqlDbContextOptionsBuilder> builder)
+        {
+            var mySqlOptions = new MySqlOptions();
+            mySqlOptions.Initialize(
+                new DbContextOptionsBuilder()
+                    .UseMySql("Server=foo", builder)
+                    .Options);
+
+            return mySqlOptions;
+        }
 
         #endregion Support
     }

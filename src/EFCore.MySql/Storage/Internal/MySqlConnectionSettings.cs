@@ -1,7 +1,9 @@
 // Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
+using System;
 using System.Data.Common;
+using System.Linq;
 using MySql.Data.MySqlClient;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
@@ -32,11 +34,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 GuidFormat = csb.GuidFormat;
             }
 
-            TreatTinyAsBoolean = csb.TreatTinyAsBoolean;
+            // It would be nice to have access to a public and currently non-existing
+            // MySqlConnectionStringOption.TreatTinyAsBoolean.HasValue() method, so we can safely find out, whether
+            // TreatTinyAsBoolean has been explicitly set or not.
+            var treatTinyAsBooleanKeys = new[] {"Treat Tiny As Boolean", "TreatTinyAsBoolean"};
+            TreatTinyAsBoolean = treatTinyAsBooleanKeys.Any(k => csb.ContainsKey(k))
+                ? (bool?)csb.TreatTinyAsBoolean
+                : null;
         }
 
         public virtual MySqlGuidFormat GuidFormat { get; }
-        public virtual bool TreatTinyAsBoolean { get; }
+        public virtual bool? TreatTinyAsBoolean { get; }
 
         protected bool Equals(MySqlConnectionSettings other)
         {
@@ -65,11 +73,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         }
 
         public override int GetHashCode()
-        {
-            unchecked
-            {
-                return ((int)GuidFormat * 397) ^ TreatTinyAsBoolean.GetHashCode();
-            }
-        }
+            => HashCode.Combine(
+                GuidFormat,
+                TreatTinyAsBoolean);
     }
 }
