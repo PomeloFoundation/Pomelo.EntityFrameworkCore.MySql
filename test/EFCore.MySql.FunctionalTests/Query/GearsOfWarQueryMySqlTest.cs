@@ -1,15 +1,10 @@
 using System;
-using System.Threading.Tasks;
 using System.Linq;
-using Microsoft.EntityFrameworkCore.Infrastructure;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestModels.GearsOfWarModel;
-using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Extensions;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -17,388 +12,44 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public partial class GearsOfWarQueryMySqlTest : GearsOfWarQueryTestBase<GearsOfWarQueryMySqlFixture>
     {
-        private readonly MySqlTypeMappingSource _typeMappingSource;
-
         public GearsOfWarQueryMySqlTest(GearsOfWarQueryMySqlFixture fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
         {
             using var context = CreateContext();
-            _typeMappingSource = (MySqlTypeMappingSource)context.GetService<IRelationalTypeMappingSource>();
 
             Fixture.TestSqlLoggerFactory.Clear();
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task Where_datetimeoffset_now(bool async)
-        {
-            return AssertQuery(
-                async,
-                ss => from m in ss.Set<Mission>()
-                    where m.Timeline != DateTimeOffset.Now
-                    select m,
-                ss => from m in ss.Set<Mission>()
-                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource) != DateTimeOffset.Now
-                    select new Mission()
-                    {
-                        Id = m.Id,
-                        CodeName = m.CodeName,
-                        Rating = m.Rating,
-                        Timeline = m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource),
-                        ParticipatingSquads = m.ParticipatingSquads,
-                    });
-        }
-
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task Where_datetimeoffset_utcnow(bool async)
-        {
-            return AssertQuery(
-                async,
-                ss => from m in ss.Set<Mission>()
-                    where m.Timeline != DateTimeOffset.UtcNow
-                    select m,
-                ss => from m in ss.Set<Mission>()
-                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource) != DateTimeOffset.UtcNow
-                    select new Mission()
-                    {
-                        Id = m.Id,
-                        CodeName = m.CodeName,
-                        Rating = m.Rating,
-                        Timeline = m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource),
-                        ParticipatingSquads = m.ParticipatingSquads,
-                    });
-        }
-
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task Where_datetimeoffset_date_component(bool async)
-        {
-            return AssertQuery(
-                async,
-                ss => from m in ss.Set<Mission>()
-                    where m.Timeline.Date > new DateTimeOffset().Date
-                    select m,
-                ss => from m in ss.Set<Mission>()
-                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)
-                        .Date > new DateTimeOffset().SimulateDatabaseRoundtrip(_typeMappingSource)
-                        .Date
-                    select new Mission()
-                    {
-                        Id = m.Id,
-                        CodeName = m.CodeName,
-                        Rating = m.Rating,
-                        Timeline = m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource),
-                        ParticipatingSquads = m.ParticipatingSquads,
-                    });
-        }
-
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task Where_datetimeoffset_year_component(bool async)
-        {
-            return AssertQuery(
-                async,
-                ss => from m in ss.Set<Mission>()
-                    where m.Timeline.Year == 2
-                    select m,
-                ss => from m in ss.Set<Mission>()
-                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)
-                        .Year == 2
-                    select new Mission()
-                    {
-                        Id = m.Id,
-                        CodeName = m.CodeName,
-                        Rating = m.Rating,
-                        Timeline = m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource),
-                        ParticipatingSquads = m.ParticipatingSquads,
-                    });
-        }
-
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task Where_datetimeoffset_month_component(bool async)
-        {
-            return AssertQuery(
-                async,
-                ss => from m in ss.Set<Mission>()
-                    where m.Timeline.Month == 1
-                    select m,
-                ss => from m in ss.Set<Mission>()
-                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)
-                        .Month == 1
-                    select new Mission()
-                    {
-                        Id = m.Id,
-                        CodeName = m.CodeName,
-                        Rating = m.Rating,
-                        Timeline = m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource),
-                        ParticipatingSquads = m.ParticipatingSquads,
-                    });
-        }
-
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task Where_datetimeoffset_dayofyear_component(bool async)
-        {
-            return AssertQuery(
-                async,
-                ss => from m in ss.Set<Mission>()
-                    where m.Timeline.DayOfYear == 2
-                    select m,
-                ss => from m in ss.Set<Mission>()
-                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)
-                        .DayOfYear == 2
-                    select new Mission()
-                    {
-                        Id = m.Id,
-                        CodeName = m.CodeName,
-                        Rating = m.Rating,
-                        Timeline = m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource),
-                        ParticipatingSquads = m.ParticipatingSquads,
-                    });
-        }
-
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task Where_datetimeoffset_day_component(bool async)
-        {
-            return AssertQuery(
-                async,
-                ss => from m in ss.Set<Mission>()
-                    where m.Timeline.Day == 2
-                    select m,
-                ss => from m in ss.Set<Mission>()
-                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)
-                        .Day == 2
-                    select new Mission()
-                    {
-                        Id = m.Id,
-                        CodeName = m.CodeName,
-                        Rating = m.Rating,
-                        Timeline = m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource),
-                        ParticipatingSquads = m.ParticipatingSquads,
-                    });
-        }
-
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task Where_datetimeoffset_hour_component(bool async)
-        {
-            return AssertQuery(
-                async,
-                ss => from m in ss.Set<Mission>()
-                    where m.Timeline.Hour == 10
-                    select m,
-                ss => from m in ss.Set<Mission>()
-                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)
-                        .Hour == 10
-                    select new Mission()
-                    {
-                        Id = m.Id,
-                        CodeName = m.CodeName,
-                        Rating = m.Rating,
-                        Timeline = m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource),
-                        ParticipatingSquads = m.ParticipatingSquads,
-                    });
-        }
-
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task Where_datetimeoffset_minute_component(bool async)
-        {
-            return AssertQuery(
-                async,
-                ss => from m in ss.Set<Mission>()
-                    where m.Timeline.Minute == 0
-                    select m,
-                ss => from m in ss.Set<Mission>()
-                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)
-                        .Minute == 0
-                    select new Mission()
-                    {
-                        Id = m.Id,
-                        CodeName = m.CodeName,
-                        Rating = m.Rating,
-                        Timeline = m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource),
-                        ParticipatingSquads = m.ParticipatingSquads,
-                    });
-        }
-
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task Where_datetimeoffset_second_component(bool async)
-        {
-            return AssertQuery(
-                async,
-                ss => from m in ss.Set<Mission>()
-                    where m.Timeline.Second == 0
-                    select m,
-                ss => from m in ss.Set<Mission>()
-                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)
-                        .Second == 0
-                    select new Mission()
-                    {
-                        Id = m.Id,
-                        CodeName = m.CodeName,
-                        Rating = m.Rating,
-                        Timeline = m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource),
-                        ParticipatingSquads = m.ParticipatingSquads,
-                    });
-        }
-
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task Where_datetimeoffset_millisecond_component(bool async)
-        {
-            return AssertQuery(
-                async,
-                ss => from m in ss.Set<Mission>()
-                    where m.Timeline.Millisecond == 0
-                    select m,
-                ss => from m in ss.Set<Mission>()
-                    where m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)
-                        .Millisecond == 0
-                    select new Mission()
-                    {
-                        Id = m.Id,
-                        CodeName = m.CodeName,
-                        Rating = m.Rating,
-                        Timeline = m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource),
-                        ParticipatingSquads = m.ParticipatingSquads,
-                    });
-        }
-
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task DateTimeOffset_DateAdd_AddYears(bool async)
-        {
-            return AssertQueryScalar(
-                async,
-                ss => from m in ss.Set<Mission>()
-                    select m.Timeline.AddYears(1));
-        }
-
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task DateTimeOffset_DateAdd_AddMonths(bool async)
-        {
-            return AssertQueryScalar(
-                async,
-                ss => from m in ss.Set<Mission>()
-                    select m.Timeline.AddMonths(1));
-        }
-
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task DateTimeOffset_DateAdd_AddDays(bool async)
-        {
-            return AssertQueryScalar(
-                async,
-                ss => from m in ss.Set<Mission>()
-                    select m.Timeline.AddDays(1));
-        }
-
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task DateTimeOffset_DateAdd_AddHours(bool async)
-        {
-            return AssertQueryScalar(
-                async,
-                ss => from m in ss.Set<Mission>()
-                    select m.Timeline.AddHours(1));
-        }
-
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task DateTimeOffset_DateAdd_AddMinutes(bool async)
-        {
-            return AssertQueryScalar(
-                async,
-                ss => from m in ss.Set<Mission>()
-                    select m.Timeline.AddMinutes(1));
-        }
-
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task DateTimeOffset_DateAdd_AddSeconds(bool async)
-        {
-            return AssertQueryScalar(
-                async,
-                ss => from m in ss.Set<Mission>()
-                    select m.Timeline.AddSeconds(1));
-        }
-
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task DateTimeOffset_DateAdd_AddMilliseconds(bool async)
-        {
-            return AssertQueryScalar(
-                async,
-                ss => from m in ss.Set<Mission>()
-                    select m.Timeline.AddMilliseconds(300));
-        }
-
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task Time_of_day_datetimeoffset(bool async)
-        {
-            return AssertQueryScalar(
-                async,
-                ss => from m in ss.Set<Mission>()
-                    select m.Timeline.TimeOfDay,
-                ss => from m in ss.Set<Mission>()
-                    select m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)
-                        .TimeOfDay);
-        }
-
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
         public override Task DateTimeOffset_Contains_Less_than_Greater_than(bool async)
         {
-            var dto = new DateTimeOffset(599898024001234567, new TimeSpan(1, 30, 0));
+            var dto = GearsOfWarQueryMySqlFixture.GetExpectedValue(new DateTimeOffset(599898024001234567, new TimeSpan(1, 30, 0)));
             var start = dto.AddDays(-1);
             var end = dto.AddDays(1);
-            var dates = new[] {dto};
+            var dates = new[] { dto };
 
             return AssertQuery(
                 async,
-                ss => ss.Set<Mission>()
-                    .Where(
-                        m => start <= m.Timeline.Date &&
-                             m.Timeline < end &&
-                             dates.Contains(m.Timeline)),
-                ss => ss.Set<Mission>()
-                    .Where(
-                        m => start.SimulateDatabaseRoundtrip(_typeMappingSource) <= m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)
-                                 .Date &&
-                             m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource) < end.SimulateDatabaseRoundtrip(_typeMappingSource) &&
-                             dates.Select(d => d.SimulateDatabaseRoundtrip(_typeMappingSource))
-                                 .Contains(m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource)))
-                    .Select(
-                        m => new Mission()
-                        {
-                            Id = m.Id,
-                            CodeName = m.CodeName,
-                            Rating = m.Rating,
-                            Timeline = m.Timeline.SimulateDatabaseRoundtrip(_typeMappingSource),
-                            ParticipatingSquads = m.ParticipatingSquads,
-                        }));
+                ss => ss.Set<Mission>().Where(
+                    m => start <= m.Timeline.Date && m.Timeline < end && dates.Contains(m.Timeline)));
         }
 
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task DateTimeOffset_Date_returns_datetime(bool async)
+        public override Task Where_datetimeoffset_milliseconds_parameter_and_constant(bool async)
         {
-            var dateTimeOffset = new DateTimeOffset(2, 3, 1, 8, 0, 0, new TimeSpan(-5, 0, 0));
+            var dateTimeOffset = GearsOfWarQueryMySqlFixture.GetExpectedValue(new DateTimeOffset(599898024001234567, new TimeSpan(1, 30, 0)));
 
-            return AssertQuery(
+            // Literal where clause
+            var p = Expression.Parameter(typeof(Mission), "i");
+            var dynamicWhere = Expression.Lambda<Func<Mission, bool>>(
+                Expression.Equal(
+                    Expression.Property(p, "Timeline"),
+                    Expression.Constant(dateTimeOffset)
+                ), p);
+
+            return AssertCount(
                 async,
-                ss => ss.Set<Mission>()
-                    .Where(m => m.Timeline.Date >= dateTimeOffset.Date),
-                elementAsserter: AssertMission
-            );
+                ss => ss.Set<Mission>().Where(dynamicWhere),
+                ss => ss.Set<Mission>().Where(m => m.Timeline == dateTimeOffset));
         }
 
         [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
@@ -638,36 +289,5 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             return base.Take_without_orderby_followed_by_orderBy_is_pushed_down2(async);
         }
-
-        private void AssertMission(Mission e, Mission a)
-        {
-            Assert.Equal(e == null, a == null);
-
-            if (a != null)
-            {
-                Assert.Equal(e.Id, a.Id);
-                Assert.Equal(e.CodeName, a.CodeName);
-                Assert.Equal(e.Rating, a.Rating);
-
-                // The max. resolution for DateTime values in MySQL are 6 decimal places.
-                // However, .NET's DateTime has a resolution of 7 decimal places.
-                const int mySqlMaxMillisecondDecimalPlaces = 6;
-                var decimalPlacesFactor = (int)Math.Pow(10, 7 - mySqlMaxMillisecondDecimalPlaces);
-
-                Assert.Equal(
-                    new DateTimeOffset((long)(Math.Truncate((decimal)e.Timeline.Ticks / decimalPlacesFactor) * decimalPlacesFactor), e.Timeline.Offset).UtcDateTime,
-                    a.Timeline.UtcDateTime);
-            }
-        }
-
-        protected Task AssertQueryScalar(
-            bool async,
-            Func<ISetSource, IQueryable<DateTimeOffset>> query,
-            bool assertOrder = false) => AssertQueryScalar(
-            async,
-            query,
-            ms => query(ms)
-                .Select(d => d.SimulateDatabaseRoundtrip(_typeMappingSource)),
-            assertOrder);
     }
 }
