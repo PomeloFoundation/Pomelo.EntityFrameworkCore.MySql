@@ -58,7 +58,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 }
             }
 
-            return base.VisitUnary(unaryExpression);
+            var expression = base.VisitUnary(unaryExpression);
+
+            // MySQL implicitly casts numbers used in BITWISE NOT operations (~ operator) to BIGINT UNSIGNED.
+            // We need to cast them back, to get the expected result.
+            if (expression is SqlUnaryExpression sqlUnaryExpression &&
+                sqlUnaryExpression.OperatorType == ExpressionType.Not &&
+                sqlUnaryExpression.Type != typeof(bool))
+            {
+                return _sqlExpressionFactory.Convert(
+                    sqlUnaryExpression,
+                    sqlUnaryExpression.Type,
+                    sqlUnaryExpression.TypeMapping);
+            }
+
+            return expression;
         }
 
         protected override Expression VisitBinary(BinaryExpression binaryExpression)
