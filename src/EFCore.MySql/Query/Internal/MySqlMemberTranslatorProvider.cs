@@ -17,6 +17,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 new IMemberTranslator[] {
                     new MySqlDateTimeMemberTranslator(sqlExpressionFactory),
                     new MySqlStringMemberTranslator(sqlExpressionFactory),
+                    new MySqlTimeSpanMemberTranslator(sqlExpressionFactory),
                 });
         }
     }
