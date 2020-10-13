@@ -272,12 +272,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         }
 
         protected override Expression VisitSqlUnary(SqlUnaryExpression sqlUnaryExpression)
-        {
-            if (sqlUnaryExpression.OperatorType != ExpressionType.Convert)
-            {
-                return base.VisitSqlUnary(sqlUnaryExpression);
-            }
+            => sqlUnaryExpression.OperatorType == ExpressionType.Convert
+                ? VisitConvert(sqlUnaryExpression)
+                : base.VisitSqlUnary(sqlUnaryExpression);
 
+        private SqlUnaryExpression VisitConvert(SqlUnaryExpression sqlUnaryExpression)
+        {
             var typeMapping = sqlUnaryExpression.TypeMapping;
 
             var storeTypeLower = typeMapping.StoreType.ToLower();
@@ -292,6 +292,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                         break;
                     }
                 }
+
                 if (castMapping != null)
                 {
                     break;
@@ -301,6 +302,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             if (castMapping == null)
             {
                 throw new InvalidOperationException($"Cannot cast from type '{typeMapping.StoreType}'");
+            }
+
+            if (castMapping == "binary")
+            {
+                Sql.Append("UNHEX(HEX(");
+                Visit(sqlUnaryExpression.Operand);
+                Sql.Append("))");
+
+                return sqlUnaryExpression;
             }
 
             if (castMapping == "signed" && storeTypeLower.Contains("unsigned"))

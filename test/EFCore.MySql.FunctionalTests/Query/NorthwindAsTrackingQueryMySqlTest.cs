@@ -9,6 +9,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         public NorthwindAsTrackingQueryMySqlTest(NorthwindQueryMySqlFixture<NoopModelCustomizer> fixture)
             : base(fixture)
         {
+            Fixture.TestSqlLoggerFactory.Clear();
+            //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
     }
 }

@@ -10,6 +10,8 @@ using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using static Pomelo.EntityFrameworkCore.MySql.Utilities.Statics;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
@@ -34,9 +36,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         {
             if (unaryExpression.NodeType == ExpressionType.ArrayLength)
             {
-                return TranslationFailed(unaryExpression.Operand, Visit(unaryExpression.Operand), out var sqlOperand)
-                    ? null
-                    : _jsonPocoTranslator?.TranslateArrayLength(sqlOperand);
+                if (TranslationFailed(unaryExpression.Operand, Visit(unaryExpression.Operand), out var sqlOperand))
+                {
+                    return null;
+                }
+
+                if (sqlOperand.Type == typeof(byte[]) &&
+                    (sqlOperand.TypeMapping == null || sqlOperand.TypeMapping is MySqlByteArrayTypeMapping))
+                {
+                    return _sqlExpressionFactory.Function(
+                        "LENGTH",
+                        new[] {sqlOperand},
+                        nullable: true,
+                        argumentsPropagateNullability: TrueArrays[1],
+                        typeof(int));
+                }
+
+                return _jsonPocoTranslator?.TranslateArrayLength(sqlOperand);
             }
 
             // Make explicit casts implicit if they are applied to a JSON traversal object.
@@ -58,7 +74,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 }
             }
 
-            return base.VisitUnary(unaryExpression);
+            var expression = base.VisitUnary(unaryExpression);
+
+            // MySQL implicitly casts numbers used in BITWISE NOT operations (~ operator) to BIGINT UNSIGNED.
+            // We need to cast them back, to get the expected result.
+            if (expression is SqlUnaryExpression sqlUnaryExpression &&
+                sqlUnaryExpression.OperatorType == ExpressionType.Not &&
+                sqlUnaryExpression.Type != typeof(bool))
+            {
+                return _sqlExpressionFactory.Convert(
+                    sqlUnaryExpression,
+                    sqlUnaryExpression.Type,
+                    sqlUnaryExpression.TypeMapping);
+            }
+
+            return expression;
         }
 
         protected override Expression VisitBinary(BinaryExpression binaryExpression)

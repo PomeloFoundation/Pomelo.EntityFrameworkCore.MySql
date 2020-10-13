@@ -28,6 +28,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             => Environment.NewLine;
 
         protected virtual string Sql { get; set; }
+        protected virtual string Schema { get; } = "dbo"; // ADDED
 
         [ConditionalFact]
         public void All_tests_must_be_overriden()
@@ -167,7 +168,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 new RenameTableOperation
                 {
                     Name = "People",
-                    Schema = "dbo",
+                    Schema = Schema,
                     NewName = "Person"
                 });
 
@@ -178,9 +179,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 new RenameTableOperation
                 {
                     Name = "People",
-                    Schema = "dbo",
+                    Schema = Schema,
                     NewName = "Person",
-                    NewSchema = "dbo"
+                    NewSchema = Schema
                 });
 
         [ConditionalFact]
@@ -236,7 +237,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             => Generate(
                 new InsertDataOperation
                 {
-                    Schema = "dbo",
+                    Schema = Schema,
                     Table = "People",
                     Columns = new[] { "Id", "Full Name", "Geometry" },
                     ColumnTypes = new[] { "int", "varchar(40)", GetGeometryCollectionStoreType() },
@@ -291,14 +292,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         [ConditionalFact]
         public void InsertDataOperation_throws_for_missing_column_types()
             => Assert.Equal(
-                RelationalStrings.InsertDataOperationNoModel("dbo.People"),
+                RelationalStrings.InsertDataOperationNoModel((string.IsNullOrEmpty(Schema) ? null : Schema + ".") + "People"),
                 Assert.Throws<InvalidOperationException>(
                     () =>
                         Generate(
                             new InsertDataOperation
                             {
                                 Table = "People",
-                                Schema = "dbo",
+                                Schema = Schema,
                                 Columns = new[] { "First Name" },
                                 Values = new object[,] { { "John" } }
                             })).Message);
@@ -306,14 +307,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         [ConditionalFact]
         public virtual void InsertDataOperation_throws_for_unsupported_column_types()
             => Assert.Equal(
-                RelationalStrings.UnsupportedDataOperationStoreType("char[]", "dbo.People.First Name"),
+                RelationalStrings.UnsupportedDataOperationStoreType("char[]", (string.IsNullOrEmpty(Schema) ? null : Schema + ".") + "People.First Name"),
                 Assert.Throws<InvalidOperationException>(
                     () =>
                         Generate(
                             new InsertDataOperation
                             {
                                 Table = "People",
-                                Schema = "dbo",
+                                Schema = Schema,
                                 Columns = new[] { "First Name" },
                                 ColumnTypes = new[] { "char[]" },
                                 Values = new object[,] { { null } }
@@ -352,7 +353,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         [ConditionalFact]
         public void InsertDataOperation_throws_for_missing_entity_type()
             => Assert.Equal(
-                RelationalStrings.DataOperationNoTable("dbo.People"),
+                RelationalStrings.DataOperationNoTable((string.IsNullOrEmpty(Schema) ? null : Schema + ".") + "People"),
                 Assert.Throws<InvalidOperationException>(
                     () =>
                         Generate(
@@ -360,7 +361,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                             new InsertDataOperation
                             {
                                 Table = "People",
-                                Schema = "dbo",
+                                Schema = Schema,
                                 Columns = new[] { "First Name" },
                                 Values = new object[,] { { "John" } }
                             })).Message);
@@ -698,14 +699,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 new CreateTableOperation
                 {
                     Name = "TestLineBreaks",
-                    Schema = "dbo",
+                    Schema = Schema,
                     Columns =
                     {
                         new AddColumnOperation
                         {
                             Name = "TestDefaultValue",
                             Table = "TestLineBreaks",
-                            Schema = "dbo",
+                            Schema = Schema,
                             ClrType = typeof(string),
                             DefaultValue = "\r\nVarious Line\rBreaks\n",
                             IsUnicode = isUnicode

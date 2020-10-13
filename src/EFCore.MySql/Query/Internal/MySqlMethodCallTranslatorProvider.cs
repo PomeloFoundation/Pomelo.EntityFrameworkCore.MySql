@@ -21,17 +21,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
             AddTranslators(new IMethodCallTranslator[]
             {
+                new MySqlByteArrayMethodTranslator(sqlExpressionFactory),
                 new MySqlConvertTranslator(sqlExpressionFactory),
                 new MySqlDateTimeMethodTranslator(sqlExpressionFactory),
                 new MySqlDateDiffFunctionsTranslator(sqlExpressionFactory),
+                new MySqlDbFunctionsExtensionsMethodTranslator(sqlExpressionFactory, options),
+                new MySqlJsonDbFunctionsTranslator(sqlExpressionFactory, typeMappingSource),
                 new MySqlMathMethodTranslator(sqlExpressionFactory),
                 new MySqlNewGuidTranslator(sqlExpressionFactory),
                 new MySqlObjectToStringTranslator(sqlExpressionFactory),
-                new MySqlStringMethodTranslator(sqlExpressionFactory),
-                new MySqlStringComparisonMethodTranslator(sqlExpressionFactory),
                 new MySqlRegexIsMatchTranslator(sqlExpressionFactory),
-                new MySqlDbFunctionsExtensionsMethodTranslator(sqlExpressionFactory, options),
-                new MySqlJsonDbFunctionsTranslator(sqlExpressionFactory, typeMappingSource)
+                new MySqlStringComparisonMethodTranslator(sqlExpressionFactory),
+                new MySqlStringMethodTranslator(sqlExpressionFactory),
             });
         }
     }

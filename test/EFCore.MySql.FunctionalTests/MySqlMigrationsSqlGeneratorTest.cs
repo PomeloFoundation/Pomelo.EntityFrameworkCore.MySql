@@ -32,6 +32,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
         }
 
+        protected override string Schema { get; } = null;
+
         [ConditionalFact]
         public virtual void DefaultValue_not_generated_for_text_column()
         {
@@ -643,9 +645,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        // The test data we're using is geographic but is represented in NTS as a GeometryCollection
         protected override string GetGeometryCollectionStoreType()
-            => "geometry";
+            => "geometrycollection";
 
         [ConditionalFact]
         public virtual void AddColumnOperation_with_charSet_annotation()

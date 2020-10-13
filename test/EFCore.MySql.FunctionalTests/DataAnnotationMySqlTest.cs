@@ -1,8 +1,6 @@
-using System;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -99,34 +97,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.ConcurrencyCheckAttribute_throws_if_value_in_database_changed();
 
             AssertSql(
-                @"SELECT `s`.`UniqueNo`, `s`.`MaxLengthProperty`, `s`.`Name`, `s`.`RowVersion`, `t`.`UniqueNo`, `t`.`AdditionalDetails_Name`, `t0`.`UniqueNo`, `t0`.`Details_Name`
+                @"SELECT `s`.`Unique_No`, `s`.`MaxLengthProperty`, `s`.`Name`, `s`.`RowVersion`, `s`.`AdditionalDetails_Name`, `s`.`Details_Name`
 FROM `Sample` AS `s`
-LEFT JOIN (
-    SELECT `s0`.`UniqueNo`, `s0`.`AdditionalDetails_Name`
-    FROM `Sample` AS `s0`
-    WHERE `s0`.`AdditionalDetails_Name` IS NOT NULL
-) AS `t` ON `s`.`UniqueNo` = `t`.`UniqueNo`
-LEFT JOIN (
-    SELECT `s1`.`UniqueNo`, `s1`.`Details_Name`
-    FROM `Sample` AS `s1`
-    WHERE `s1`.`Details_Name` IS NOT NULL
-) AS `t0` ON `s`.`UniqueNo` = `t0`.`UniqueNo`
-WHERE `s`.`UniqueNo` = 1
+WHERE `s`.`Unique_No` = 1
 LIMIT 1",
                 //
-                @"SELECT `s`.`UniqueNo`, `s`.`MaxLengthProperty`, `s`.`Name`, `s`.`RowVersion`, `t`.`UniqueNo`, `t`.`AdditionalDetails_Name`, `t0`.`UniqueNo`, `t0`.`Details_Name`
+                @"SELECT `s`.`Unique_No`, `s`.`MaxLengthProperty`, `s`.`Name`, `s`.`RowVersion`, `s`.`AdditionalDetails_Name`, `s`.`Details_Name`
 FROM `Sample` AS `s`
-LEFT JOIN (
-    SELECT `s0`.`UniqueNo`, `s0`.`AdditionalDetails_Name`
-    FROM `Sample` AS `s0`
-    WHERE `s0`.`AdditionalDetails_Name` IS NOT NULL
-) AS `t` ON `s`.`UniqueNo` = `t`.`UniqueNo`
-LEFT JOIN (
-    SELECT `s1`.`UniqueNo`, `s1`.`Details_Name`
-    FROM `Sample` AS `s1`
-    WHERE `s1`.`Details_Name` IS NOT NULL
-) AS `t0` ON `s`.`UniqueNo` = `t0`.`UniqueNo`
-WHERE `s`.`UniqueNo` = 1
+WHERE `s`.`Unique_No` = 1
 LIMIT 1",
                 //
                 @"@p2='1'
@@ -135,7 +113,7 @@ LIMIT 1",
 @p3='00000001-0000-0000-0000-000000000001'
 
 UPDATE `Sample` SET `Name` = @p0, `RowVersion` = @p1
-WHERE `UniqueNo` = @p2 AND `RowVersion` = @p3;
+WHERE `Unique_No` = @p2 AND `RowVersion` = @p3;
 SELECT ROW_COUNT();",
                 //
                 @"@p2='1'
@@ -144,7 +122,7 @@ SELECT ROW_COUNT();",
 @p3='00000001-0000-0000-0000-000000000001'
 
 UPDATE `Sample` SET `Name` = @p0, `RowVersion` = @p1
-WHERE `UniqueNo` = @p2 AND `RowVersion` = @p3;
+WHERE `Unique_No` = @p2 AND `RowVersion` = @p3;
 SELECT ROW_COUNT();");
         }
 
@@ -152,7 +130,8 @@ SELECT ROW_COUNT();");
         {
             base.DatabaseGeneratedAttribute_autogenerates_values_when_set_to_identity();
 
-            AssertSql(@"@p0=NULL (Size = 10)
+            AssertSql(
+                @"@p0=NULL (Size = 10)
 @p1='Third' (Nullable = false) (Size = 4000)
 @p2='00000000-0000-0000-0000-000000000003'
 @p3='Third Additional Name' (Size = 4000)
@@ -160,9 +139,9 @@ SELECT ROW_COUNT();");
 
 INSERT INTO `Sample` (`MaxLengthProperty`, `Name`, `RowVersion`, `AdditionalDetails_Name`, `Details_Name`)
 VALUES (@p0, @p1, @p2, @p3, @p4);
-SELECT `UniqueNo`
+SELECT `Unique_No`
 FROM `Sample`
-WHERE ROW_COUNT() = 1 AND `UniqueNo` = LAST_INSERT_ID();");
+WHERE ROW_COUNT() = 1 AND `Unique_No` = LAST_INSERT_ID();");
         }
 
 
@@ -170,17 +149,9 @@ WHERE ROW_COUNT() = 1 AND `UniqueNo` = LAST_INSERT_ID();");
         {
             base.RequiredAttribute_for_navigation_throws_while_inserting_null_value();
 
-            AssertSql(@"@p0=NULL (DbType = Int32)
-@p1='1'
-
-INSERT INTO `BookDetails` (`AdditionalBookDetailsId`, `AnotherBookId`)
-VALUES (@p0, @p1);
-SELECT `Id`
-FROM `BookDetails`
-WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();",
-                //////////////////
+            AssertSql(
                 @"@p0=NULL (DbType = Int32)
-@p1=NULL (Nullable = false) (DbType = Int32)
+@p1='1'
 
 INSERT INTO `BookDetails` (`AdditionalBookDetailsId`, `AnotherBookId`)
 VALUES (@p0, @p1);
@@ -193,7 +164,8 @@ WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();");
         {
             base.RequiredAttribute_for_property_throws_while_inserting_null_value();
 
-            AssertSql(@"@p0=NULL (Size = 10)
+            AssertSql(
+                @"@p0=NULL (Size = 10)
 @p1='ValidString' (Nullable = false) (Size = 4000)
 @p2='00000000-0000-0000-0000-000000000001'
 @p3='Two' (Size = 4000)
@@ -201,24 +173,10 @@ WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();");
 
 INSERT INTO `Sample` (`MaxLengthProperty`, `Name`, `RowVersion`, `AdditionalDetails_Name`, `Details_Name`)
 VALUES (@p0, @p1, @p2, @p3, @p4);
-SELECT `UniqueNo`
+SELECT `Unique_No`
 FROM `Sample`
-WHERE ROW_COUNT() = 1 AND `UniqueNo` = LAST_INSERT_ID();",
-                ///////////////////
-                @"@p0=NULL (Size = 10)
-@p1=NULL (Nullable = false) (Size = 4000)
-@p2='00000000-0000-0000-0000-000000000002'
-@p3='Two' (Size = 4000)
-@p4='One' (Size = 4000)
-
-INSERT INTO `Sample` (`MaxLengthProperty`, `Name`, `RowVersion`, `AdditionalDetails_Name`, `Details_Name`)
-VALUES (@p0, @p1, @p2, @p3, @p4);
-SELECT `UniqueNo`
-FROM `Sample`
-WHERE ROW_COUNT() = 1 AND `UniqueNo` = LAST_INSERT_ID();");
+WHERE ROW_COUNT() = 1 AND `Unique_No` = LAST_INSERT_ID();");
         }
-
-        private static readonly string _eol = Environment.NewLine;
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);

@@ -18,7 +18,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             : base(fixture)
         {
             ClearLog();
-            Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
+            //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
         [ConditionalTheory]
@@ -27,11 +27,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             await base.Where_datetime_now(async);
 
             AssertSql(
-                @"@__myDatetime_0='2015-04-10T00:00:00' (DbType = DateTime)
+                @"@__myDatetime_0='2015-04-10T00:00:00.0000000' (DbType = DateTime)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (CURRENT_TIMESTAMP() <> @__myDatetime_0) OR CURRENT_TIMESTAMP() IS NULL");
+WHERE CURRENT_TIMESTAMP() <> @__myDatetime_0");
         }
 
         [ConditionalTheory]
@@ -40,11 +40,11 @@ WHERE (CURRENT_TIMESTAMP() <> @__myDatetime_0) OR CURRENT_TIMESTAMP() IS NULL");
             await base.Where_datetime_utcnow(async);
 
             AssertSql(
-                @"@__myDatetime_0='2015-04-10T00:00:00' (DbType = DateTime)
+                @"@__myDatetime_0='2015-04-10T00:00:00.0000000' (DbType = DateTime)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (UTC_TIMESTAMP() <> @__myDatetime_0) OR UTC_TIMESTAMP() IS NULL");
+WHERE UTC_TIMESTAMP() <> @__myDatetime_0");
         }
 
         [ConditionalTheory]
@@ -55,7 +55,7 @@ WHERE (UTC_TIMESTAMP() <> @__myDatetime_0) OR UTC_TIMESTAMP() IS NULL");
             AssertSql(
                 @"SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
 FROM `Employees` AS `e`
-WHERE (CONVERT(CURRENT_TIMESTAMP(), date) = CURDATE()) OR (CONVERT(CURRENT_TIMESTAMP(), date) IS NULL AND CURDATE() IS NULL)");
+WHERE CONVERT(CURRENT_TIMESTAMP(), date) = CURDATE()");
         }
 
         [ConditionalTheory]
@@ -64,7 +64,7 @@ WHERE (CONVERT(CURRENT_TIMESTAMP(), date) = CURDATE()) OR (CONVERT(CURRENT_TIMES
             await base.Where_datetime_date_component(async);
 
             AssertSql(
-                @"@__myDatetime_0='1998-05-04T00:00:00' (DbType = DateTime)
+                @"@__myDatetime_0='1998-05-04T00:00:00.0000000' (DbType = DateTime)
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
@@ -177,7 +177,7 @@ WHERE CHAR_LENGTH(`c`.`City`) = 6");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE ((LOCATE('Sea', `c`.`City`) - 1) <> -1) OR LOCATE('Sea', `c`.`City`) IS NULL");
+WHERE ((LOCATE('Sea', `c`.`City`) - 1) <> -1) OR `c`.`City` IS NULL");
         }
 
         [ConditionalTheory]
@@ -232,5 +232,8 @@ WHERE SUBSTRING(`c`.`City`, 1 + 1, 2) = 'ea'");
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
+
+        protected override void ClearLog()
+            => Fixture.TestSqlLoggerFactory.Clear();
     }
 }

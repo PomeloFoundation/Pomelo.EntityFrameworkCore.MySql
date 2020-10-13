@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -24,6 +23,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         private static readonly MethodInfo[] _supportedMethods
             = new []
                 {
+                    nameof(Convert.ToBoolean),
                     nameof(Convert.ToByte),
                     nameof(Convert.ToDecimal),
                     nameof(Convert.ToDouble),
@@ -50,13 +50,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             MethodInfo method,
             IReadOnlyList<SqlExpression> arguments,
             IDiagnosticsLogger<DbLoggerCategory.Query> logger)
-        {
-            // Delegate conversion to CAST() handling.
-            return _supportedMethods.Contains(method)
+            => _supportedMethods.Contains(method)
                 ? _sqlExpressionFactory.Convert(
                     arguments[0],
                     method.ReturnType)
                 : null;
-        }
     }
 }

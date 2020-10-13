@@ -308,7 +308,7 @@ LIMIT 2");
             AssertSql(
                 @"SELECT `j`.`Id`, `j`.`CustomerJObject`, `j`.`CustomerJToken`
 FROM `JsonEntities` AS `j`
-WHERE JSON_UNQUOTE(JSON_EXTRACT(`j`.`CustomerJToken`, '$.Name')) IS NOT NULL AND (JSON_UNQUOTE(JSON_EXTRACT(`j`.`CustomerJToken`, '$.Name')) LIKE 'J%')
+WHERE JSON_UNQUOTE(JSON_EXTRACT(`j`.`CustomerJToken`, '$.Name')) LIKE 'J%'
 LIMIT 2");
         }
 

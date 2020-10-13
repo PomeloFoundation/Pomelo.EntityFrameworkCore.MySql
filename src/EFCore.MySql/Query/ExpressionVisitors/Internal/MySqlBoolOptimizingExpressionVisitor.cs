@@ -1,9 +1,12 @@
 // Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
@@ -12,84 +15,212 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
     /// "WHERE `boolColumn`" doesn't use available indices, while "WHERE `boolColumn` = TRUE" does.
     /// See https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1104
     /// </summary>
-    public class MySqlBoolOptimizingExpressionVisitor : ExpressionVisitor
+    public class MySqlBoolOptimizingExpressionVisitor : SqlExpressionVisitor
     {
+        private bool _optimize;
         private readonly ISqlExpressionFactory _sqlExpressionFactory;
-        private bool _skipExplicitTrueValue;
 
-        public MySqlBoolOptimizingExpressionVisitor(ISqlExpressionFactory sqlExpressionFactory)
+        public MySqlBoolOptimizingExpressionVisitor(
+            ISqlExpressionFactory sqlExpressionFactory)
         {
             _sqlExpressionFactory = sqlExpressionFactory;
         }
 
-        protected override Expression VisitExtension(Expression extensionExpression)
+        private Expression ApplyConversion(SqlExpression sqlExpression, bool condition)
         {
-            return extensionExpression switch
+            if (_optimize &&
+                sqlExpression is ColumnExpression &&
+                sqlExpression.TypeMapping is MySqlBoolTypeMapping &&
+                sqlExpression.Type == typeof(bool)/* &&
+                condition*/)
             {
-                ProjectionExpression projectionExpression => VisitProjectionExpression(projectionExpression),
-                ColumnExpression columnExpression => VisitColumn(columnExpression),
-                SqlUnaryExpression sqlUnaryExpression => VisitSqlUnaryExpression(sqlUnaryExpression),
-                SqlBinaryExpression sqlBinaryExpression => VisitSqlBinaryExpression(sqlBinaryExpression),
-                ShapedQueryExpression shapedQueryExpression => shapedQueryExpression.Update(Visit(shapedQueryExpression.QueryExpression), shapedQueryExpression.ShaperExpression),
-                _ => base.VisitExtension(extensionExpression)
-            };
-        }
-
-        protected virtual Expression VisitProjectionExpression(ProjectionExpression projectionExpression)
-        {
-            var oldSkipExplicitTrueValue = _skipExplicitTrueValue;
-
-            try
-            {
-                _skipExplicitTrueValue = true;
-                return projectionExpression.Update((SqlExpression)Visit(projectionExpression.Expression));
-            }
-            finally
-            {
-                _skipExplicitTrueValue = oldSkipExplicitTrueValue;
-            }
-        }
-
-        private Expression VisitSqlUnaryExpression(SqlUnaryExpression sqlUnaryExpression)
-        {
-            var oldSkipExplicitTrueValue = _skipExplicitTrueValue;
-
-            // Optimize translation of the following expressions:
-            //     context.Table.Where(t => !t.BoolColumn)
-            //         translate to: `boolColumn` = FALSE
-            //         instead of:   NOT(`boolColumn` = TRUE)
-            // Translating to "NOT(`boolColumn`)" would not use indices in MySQL 5.7.
-            if (sqlUnaryExpression.OperatorType == ExpressionType.Not &&
-                sqlUnaryExpression.Operand is ColumnExpression columnExpression &&
-                columnExpression.TypeMapping is MySqlBoolTypeMapping &&
-                columnExpression.Type == typeof(bool))
-            {
-                _skipExplicitTrueValue = true;
-
-                try
-                {
-                    var newOperand = (SqlExpression)Visit(sqlUnaryExpression.Operand);
-
-                    return _sqlExpressionFactory.MakeBinary(
-                        ExpressionType.Equal,
-                        newOperand,
-                        _sqlExpressionFactory.Constant(false),
-                        sqlUnaryExpression.TypeMapping);
-                }
-                finally
-                {
-                    _skipExplicitTrueValue = oldSkipExplicitTrueValue;
-                }
+                return _sqlExpressionFactory.Equal(sqlExpression, _sqlExpressionFactory.Constant(true));
             }
 
-            return sqlUnaryExpression.Update((SqlExpression)Visit(sqlUnaryExpression.Operand));
+            return sqlExpression;
         }
 
-        private Expression VisitSqlBinaryExpression(SqlBinaryExpression sqlBinaryExpression)
+        protected override Expression VisitCase(CaseExpression caseExpression)
         {
-            var oldSkipExplicitTrueValue = _skipExplicitTrueValue;
+            Check.NotNull(caseExpression, nameof(caseExpression));
+
+            var parentOptimize = _optimize;
+
+            var testIsCondition = caseExpression.Operand == null;
+            _optimize = false;
+            var operand = (SqlExpression)Visit(caseExpression.Operand);
+            var whenClauses = new List<CaseWhenClause>();
+            foreach (var whenClause in caseExpression.WhenClauses)
+            {
+                _optimize = testIsCondition;
+                var test = (SqlExpression)Visit(whenClause.Test);
+                _optimize = false;
+                var result = (SqlExpression)Visit(whenClause.Result);
+                whenClauses.Add(new CaseWhenClause(test, result));
+            }
+
+            _optimize = false;
+            var elseResult = (SqlExpression)Visit(caseExpression.ElseResult);
+
+            _optimize = parentOptimize;
+
+            return ApplyConversion(caseExpression.Update(operand, whenClauses, elseResult), condition: false);
+        }
+
+        protected override Expression VisitCollate(CollateExpression collateExpression)
+        {
+            Check.NotNull(collateExpression, nameof(collateExpression));
+
+            var parentOptimize = _optimize;
+            _optimize = false;
+            var operand = (SqlExpression)Visit(collateExpression.Operand);
+            _optimize = parentOptimize;
+
+            return ApplyConversion(collateExpression.Update(operand), condition: false);
+        }
+
+        protected override Expression VisitColumn(ColumnExpression columnExpression)
+        {
+            Check.NotNull(columnExpression, nameof(columnExpression));
+
+            return ApplyConversion(columnExpression, condition: false);
+        }
+
+        protected override Expression VisitDistinct(DistinctExpression distinctExpression)
+        {
+            Check.NotNull(distinctExpression, nameof(distinctExpression));
+
+            var parentOptimize = _optimize;
+            _optimize = false;
+            var operand = (SqlExpression)Visit(distinctExpression.Operand);
+            _optimize = parentOptimize;
+
+            return ApplyConversion(distinctExpression.Update(operand), condition: false);
+        }
+
+        protected override Expression VisitExists(ExistsExpression existsExpression)
+        {
+            Check.NotNull(existsExpression, nameof(existsExpression));
+
+            var parentOptimize = _optimize;
+            _optimize = false;
+            var subquery = (SelectExpression)Visit(existsExpression.Subquery);
+            _optimize = parentOptimize;
+
+            return ApplyConversion(existsExpression.Update(subquery), condition: true);
+        }
+
+        protected override Expression VisitFromSql(FromSqlExpression fromSqlExpression)
+        {
+            Check.NotNull(fromSqlExpression, nameof(fromSqlExpression));
+
+            return fromSqlExpression;
+        }
+
+        protected override Expression VisitIn(InExpression inExpression)
+        {
+            Check.NotNull(inExpression, nameof(inExpression));
+
+            var parentOptimize = _optimize;
+
+            _optimize = false;
+            var item = (SqlExpression)Visit(inExpression.Item);
+            var subquery = (SelectExpression)Visit(inExpression.Subquery);
+            var values = (SqlExpression)Visit(inExpression.Values);
+            _optimize = parentOptimize;
+
+            return ApplyConversion(inExpression.Update(item, values, subquery), condition: true);
+        }
+
+        protected override Expression VisitLike(LikeExpression likeExpression)
+        {
+            Check.NotNull(likeExpression, nameof(likeExpression));
+
+            var parentOptimize = _optimize;
+            _optimize = false;
+            var match = (SqlExpression)Visit(likeExpression.Match);
+            var pattern = (SqlExpression)Visit(likeExpression.Pattern);
+            var escapeChar = (SqlExpression)Visit(likeExpression.EscapeChar);
+            _optimize = parentOptimize;
+
+            return ApplyConversion(likeExpression.Update(match, pattern, escapeChar), condition: true);
+        }
+
+        protected override Expression VisitSelect(SelectExpression selectExpression)
+        {
+            Check.NotNull(selectExpression, nameof(selectExpression));
+
+            var changed = false;
+            var parentOptimize = _optimize;
+
+            var projections = new List<ProjectionExpression>();
+            _optimize = false;
+            foreach (var item in selectExpression.Projection)
+            {
+                var updatedProjection = (ProjectionExpression)Visit(item);
+                projections.Add(updatedProjection);
+                changed |= updatedProjection != item;
+            }
+
+            var tables = new List<TableExpressionBase>();
+            foreach (var table in selectExpression.Tables)
+            {
+                var newTable = (TableExpressionBase)Visit(table);
+                changed |= newTable != table;
+                tables.Add(newTable);
+            }
+
+            _optimize = true;
+            var predicate = (SqlExpression)Visit(selectExpression.Predicate);
+            changed |= predicate != selectExpression.Predicate;
+
+            var groupBy = new List<SqlExpression>();
+            _optimize = false;
+            foreach (var groupingKey in selectExpression.GroupBy)
+            {
+                var newGroupingKey = (SqlExpression)Visit(groupingKey);
+                changed |= newGroupingKey != groupingKey;
+                groupBy.Add(newGroupingKey);
+            }
+
+            _optimize = true;
+            var havingExpression = (SqlExpression)Visit(selectExpression.Having);
+            changed |= havingExpression != selectExpression.Having;
+
+            var orderings = new List<OrderingExpression>();
+            _optimize = false;
+            foreach (var ordering in selectExpression.Orderings)
+            {
+                var orderingExpression = (SqlExpression)Visit(ordering.Expression);
+                changed |= orderingExpression != ordering.Expression;
+                orderings.Add(ordering.Update(orderingExpression));
+            }
+
+            var offset = (SqlExpression)Visit(selectExpression.Offset);
+            changed |= offset != selectExpression.Offset;
+
+            var limit = (SqlExpression)Visit(selectExpression.Limit);
+            changed |= limit != selectExpression.Limit;
+
+            _optimize = parentOptimize;
+
+            return changed
+                ? selectExpression.Update(
+                    projections, tables, predicate, groupBy, havingExpression, orderings, limit, offset)
+                : selectExpression;
+        }
+
+        protected override Expression VisitSqlBinary(SqlBinaryExpression sqlBinaryExpression)
+        {
+            Check.NotNull(sqlBinaryExpression, nameof(sqlBinaryExpression));
+
+            var parentOptimize = _optimize;
             var columnExpression = sqlBinaryExpression.Left as ColumnExpression ?? sqlBinaryExpression.Right as ColumnExpression;
             var sqlConstantExpression = sqlBinaryExpression.Left as SqlConstantExpression ?? sqlBinaryExpression.Right as SqlConstantExpression;
+
+            // TODO: Simplify for .NET 5, due to the already existing bool expression optimizations performed by `SqlNullabilityProcessor`.
+            //       This custom logic can probably be removed completely.
+            //       See `GearsOfWarQueryMySqlTest`.
 
             // Optimize translation of the following expressions:
             //     context.Table.Where(t => t.BoolColumn == true)
@@ -104,7 +235,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             //     context.Table.Where(t => t.BoolColumn != false)
             //         translate to: `boolColumn` <> FALSE
             //         instead of:   (`boolColumn` = TRUE) <> FALSE
-            if (!_skipExplicitTrueValue &&
+            if (_optimize &&
                 (sqlBinaryExpression.OperatorType == ExpressionType.Equal || sqlBinaryExpression.OperatorType == ExpressionType.NotEqual) &&
                 columnExpression != null &&
                 sqlConstantExpression != null &&
@@ -113,31 +244,340 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 sqlConstantExpression.TypeMapping is MySqlBoolTypeMapping &&
                 sqlConstantExpression.Type == typeof(bool))
             {
-                _skipExplicitTrueValue = true;
+                _optimize = false;
+            }
+            else
+            {
+                switch (sqlBinaryExpression.OperatorType)
+                {
+                    // Only logical operations need conditions on both sides
+                    case ExpressionType.AndAlso:
+                    case ExpressionType.OrElse:
+                        _optimize = true;
+                        break;
+                    default:
+                        _optimize = false;
+                        break;
+                }
             }
 
-            try
-            {
-                var newLeft = (SqlExpression)Visit(sqlBinaryExpression.Left);
-                var newRight = (SqlExpression)Visit(sqlBinaryExpression.Right);
+            var newLeft = (SqlExpression)Visit(sqlBinaryExpression.Left);
+            var newRight = (SqlExpression)Visit(sqlBinaryExpression.Right);
 
-                return _sqlExpressionFactory.MakeBinary(
-                    sqlBinaryExpression.OperatorType,
-                    newLeft,
-                    newRight,
-                    sqlBinaryExpression.TypeMapping);
-            }
-            finally
-            {
-                _skipExplicitTrueValue = oldSkipExplicitTrueValue;
-            }
+            _optimize = parentOptimize;
+
+            sqlBinaryExpression = sqlBinaryExpression.Update(newLeft, newRight);
+
+            var condition = sqlBinaryExpression.OperatorType == ExpressionType.AndAlso
+                            || sqlBinaryExpression.OperatorType == ExpressionType.OrElse
+                            || sqlBinaryExpression.OperatorType == ExpressionType.Equal
+                            || sqlBinaryExpression.OperatorType == ExpressionType.NotEqual
+                            || sqlBinaryExpression.OperatorType == ExpressionType.GreaterThan
+                            || sqlBinaryExpression.OperatorType == ExpressionType.GreaterThanOrEqual
+                            || sqlBinaryExpression.OperatorType == ExpressionType.LessThan
+                            || sqlBinaryExpression.OperatorType == ExpressionType.LessThanOrEqual;
+
+            return ApplyConversion(sqlBinaryExpression, condition);
         }
 
-        protected virtual Expression VisitColumn(ColumnExpression columnExpression)
-            => columnExpression.TypeMapping is MySqlBoolTypeMapping &&
-               columnExpression.Type == typeof(bool) &&
-               !_skipExplicitTrueValue
-                ? (Expression)_sqlExpressionFactory.Equal(columnExpression, _sqlExpressionFactory.Constant(true))
-                : columnExpression;
+        protected override Expression VisitSqlUnary(SqlUnaryExpression sqlUnaryExpression)
+        {
+            Check.NotNull(sqlUnaryExpression, nameof(sqlUnaryExpression));
+
+            var parentOptimize = _optimize;
+            bool resultCondition;
+            switch (sqlUnaryExpression.OperatorType)
+            {
+                case ExpressionType.Not
+                    when sqlUnaryExpression.Type == typeof(bool):
+                    _optimize = true;
+                    resultCondition = true;
+                    break;
+
+                case ExpressionType.Not:
+                    _optimize = false;
+                    resultCondition = false;
+                    break;
+
+                case ExpressionType.Convert:
+                case ExpressionType.Negate:
+                    _optimize = false;
+                    resultCondition = false;
+                    break;
+
+                case ExpressionType.Equal:
+                case ExpressionType.NotEqual:
+                    _optimize = false;
+                    resultCondition = true;
+                    break;
+
+                default:
+                    throw new InvalidOperationException("Unknown operator type encountered in SqlUnaryExpression.");
+            }
+
+            SqlExpression expression;
+
+            // TODO: Simplify for .NET 5, due to the already existing bool expression optimizations performed by `SqlNullabilityProcessor`.
+            //       This custom logic can probably be removed completely.
+            //       See `GearsOfWarQueryMySqlTest`.
+
+            // Optimize translation of the following expressions:
+            //     context.Table.Where(t => !t.BoolColumn)
+            //         translate to: `boolColumn` = FALSE
+            //         instead of:   NOT(`boolColumn` = TRUE)
+            // Translating to "NOT(`boolColumn`)" would not use indices in MySQL 5.7.
+            if (sqlUnaryExpression.OperatorType == ExpressionType.Not &&
+                sqlUnaryExpression.Operand is ColumnExpression columnExpression &&
+                columnExpression.TypeMapping is MySqlBoolTypeMapping &&
+                columnExpression.Type == typeof(bool))
+            {
+                _optimize = false;
+
+                expression = _sqlExpressionFactory.MakeBinary(
+                    ExpressionType.Equal,
+                    (SqlExpression)Visit(sqlUnaryExpression.Operand),
+                    _sqlExpressionFactory.Constant(false),
+                    sqlUnaryExpression.TypeMapping);
+            }
+            else
+            {
+                expression = sqlUnaryExpression.Update((SqlExpression)Visit(sqlUnaryExpression.Operand));
+            }
+
+            _optimize = parentOptimize;
+
+            return ApplyConversion(expression, condition: resultCondition);
+        }
+
+        protected override Expression VisitSqlConstant(SqlConstantExpression sqlConstantExpression)
+        {
+            Check.NotNull(sqlConstantExpression, nameof(sqlConstantExpression));
+
+            return ApplyConversion(sqlConstantExpression, condition: false);
+        }
+
+        protected override Expression VisitSqlFragment(SqlFragmentExpression sqlFragmentExpression)
+        {
+            Check.NotNull(sqlFragmentExpression, nameof(sqlFragmentExpression));
+
+            return sqlFragmentExpression;
+        }
+
+        protected override Expression VisitSqlFunction(SqlFunctionExpression sqlFunctionExpression)
+        {
+            Check.NotNull(sqlFunctionExpression, nameof(sqlFunctionExpression));
+
+            var parentOptimize = _optimize;
+            _optimize = false;
+            var instance = (SqlExpression)Visit(sqlFunctionExpression.Instance);
+            SqlExpression[] arguments = default;
+            if (!sqlFunctionExpression.IsNiladic)
+            {
+                arguments = new SqlExpression[sqlFunctionExpression.Arguments.Count];
+                for (var i = 0; i < arguments.Length; i++)
+                {
+                    arguments[i] = (SqlExpression)Visit(sqlFunctionExpression.Arguments[i]);
+                }
+            }
+
+            _optimize = parentOptimize;
+            var newFunction = sqlFunctionExpression.Update(instance, arguments);
+
+            var condition = string.Equals(sqlFunctionExpression.Name, "FREETEXT")
+                || string.Equals(sqlFunctionExpression.Name, "CONTAINS");
+
+            return ApplyConversion(newFunction, condition);
+        }
+
+        protected override Expression VisitTableValuedFunction(TableValuedFunctionExpression tableValuedFunctionExpression)
+        {
+            Check.NotNull(tableValuedFunctionExpression, nameof(tableValuedFunctionExpression));
+
+            var parentOptimize = _optimize;
+            _optimize = false;
+
+            var arguments = new SqlExpression[tableValuedFunctionExpression.Arguments.Count];
+            for (var i = 0; i < arguments.Length; i++)
+            {
+                arguments[i] = (SqlExpression)Visit(tableValuedFunctionExpression.Arguments[i]);
+            }
+
+            _optimize = parentOptimize;
+            return tableValuedFunctionExpression.Update(arguments);
+        }
+
+        protected override Expression VisitSqlParameter(SqlParameterExpression sqlParameterExpression)
+        {
+            Check.NotNull(sqlParameterExpression, nameof(sqlParameterExpression));
+
+            return ApplyConversion(sqlParameterExpression, condition: false);
+        }
+
+        protected override Expression VisitTable(TableExpression tableExpression)
+        {
+            Check.NotNull(tableExpression, nameof(tableExpression));
+
+            return tableExpression;
+        }
+
+        protected override Expression VisitProjection(ProjectionExpression projectionExpression)
+        {
+            Check.NotNull(projectionExpression, nameof(projectionExpression));
+
+            var expression = (SqlExpression)Visit(projectionExpression.Expression);
+
+            return projectionExpression.Update(expression);
+        }
+
+        protected override Expression VisitOrdering(OrderingExpression orderingExpression)
+        {
+            Check.NotNull(orderingExpression, nameof(orderingExpression));
+
+            var expression = (SqlExpression)Visit(orderingExpression.Expression);
+
+            return orderingExpression.Update(expression);
+        }
+
+        protected override Expression VisitCrossJoin(CrossJoinExpression crossJoinExpression)
+        {
+            Check.NotNull(crossJoinExpression, nameof(crossJoinExpression));
+
+            var parentOptimize = _optimize;
+            _optimize = false;
+            var table = (TableExpressionBase)Visit(crossJoinExpression.Table);
+            _optimize = parentOptimize;
+
+            return crossJoinExpression.Update(table);
+        }
+
+        protected override Expression VisitCrossApply(CrossApplyExpression crossApplyExpression)
+        {
+            Check.NotNull(crossApplyExpression, nameof(crossApplyExpression));
+
+            var parentOptimize = _optimize;
+            _optimize = false;
+            var table = (TableExpressionBase)Visit(crossApplyExpression.Table);
+            _optimize = parentOptimize;
+
+            return crossApplyExpression.Update(table);
+        }
+
+        protected override Expression VisitOuterApply(OuterApplyExpression outerApplyExpression)
+        {
+            Check.NotNull(outerApplyExpression, nameof(outerApplyExpression));
+
+            var parentOptimize = _optimize;
+            _optimize = false;
+            var table = (TableExpressionBase)Visit(outerApplyExpression.Table);
+            _optimize = parentOptimize;
+
+            return outerApplyExpression.Update(table);
+        }
+
+        protected override Expression VisitInnerJoin(InnerJoinExpression innerJoinExpression)
+        {
+            Check.NotNull(innerJoinExpression, nameof(innerJoinExpression));
+
+            var parentOptimize = _optimize;
+            _optimize = false;
+            var table = (TableExpressionBase)Visit(innerJoinExpression.Table);
+            _optimize = true;
+            var joinPredicate = (SqlExpression)Visit(innerJoinExpression.JoinPredicate);
+            _optimize = parentOptimize;
+
+            return innerJoinExpression.Update(table, joinPredicate);
+        }
+
+        protected override Expression VisitLeftJoin(LeftJoinExpression leftJoinExpression)
+        {
+            Check.NotNull(leftJoinExpression, nameof(leftJoinExpression));
+
+            var parentOptimize = _optimize;
+            _optimize = false;
+            var table = (TableExpressionBase)Visit(leftJoinExpression.Table);
+            _optimize = true;
+            var joinPredicate = (SqlExpression)Visit(leftJoinExpression.JoinPredicate);
+            _optimize = parentOptimize;
+
+            return leftJoinExpression.Update(table, joinPredicate);
+        }
+
+        protected override Expression VisitScalarSubquery(ScalarSubqueryExpression scalarSubqueryExpression)
+        {
+            Check.NotNull(scalarSubqueryExpression, nameof(scalarSubqueryExpression));
+
+            var parentOptimize = _optimize;
+            var subquery = (SelectExpression)Visit(scalarSubqueryExpression.Subquery);
+            _optimize = parentOptimize;
+
+            return ApplyConversion(scalarSubqueryExpression.Update(subquery), condition: false);
+        }
+
+        protected override Expression VisitRowNumber(RowNumberExpression rowNumberExpression)
+        {
+            Check.NotNull(rowNumberExpression, nameof(rowNumberExpression));
+
+            var parentOptimize = _optimize;
+            _optimize = false;
+            var changed = false;
+            var partitions = new List<SqlExpression>();
+            foreach (var partition in rowNumberExpression.Partitions)
+            {
+                var newPartition = (SqlExpression)Visit(partition);
+                changed |= newPartition != partition;
+                partitions.Add(newPartition);
+            }
+
+            var orderings = new List<OrderingExpression>();
+            foreach (var ordering in rowNumberExpression.Orderings)
+            {
+                var newOrdering = (OrderingExpression)Visit(ordering);
+                changed |= newOrdering != ordering;
+                orderings.Add(newOrdering);
+            }
+
+            _optimize = parentOptimize;
+
+            return ApplyConversion(rowNumberExpression.Update(partitions, orderings), condition: false);
+        }
+
+        protected override Expression VisitExcept(ExceptExpression exceptExpression)
+        {
+            Check.NotNull(exceptExpression, nameof(exceptExpression));
+
+            var parentOptimize = _optimize;
+            _optimize = false;
+            var source1 = (SelectExpression)Visit(exceptExpression.Source1);
+            var source2 = (SelectExpression)Visit(exceptExpression.Source2);
+            _optimize = parentOptimize;
+
+            return exceptExpression.Update(source1, source2);
+        }
+
+        protected override Expression VisitIntersect(IntersectExpression intersectExpression)
+        {
+            Check.NotNull(intersectExpression, nameof(intersectExpression));
+
+            var parentOptimize = _optimize;
+            _optimize = false;
+            var source1 = (SelectExpression)Visit(intersectExpression.Source1);
+            var source2 = (SelectExpression)Visit(intersectExpression.Source2);
+            _optimize = parentOptimize;
+
+            return intersectExpression.Update(source1, source2);
+        }
+
+        protected override Expression VisitUnion(UnionExpression unionExpression)
+        {
+            Check.NotNull(unionExpression, nameof(unionExpression));
+
+            var parentOptimize = _optimize;
+            _optimize = false;
+            var source1 = (SelectExpression)Visit(unionExpression.Source1);
+            var source2 = (SelectExpression)Visit(unionExpression.Source2);
+            _optimize = parentOptimize;
+
+            return unionExpression.Update(source1, source2);
+        }
     }
 }

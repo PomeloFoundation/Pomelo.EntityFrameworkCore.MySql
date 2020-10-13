@@ -8,8 +8,7 @@ using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public partial class NorthwindMiscellaneousQueryMySqlTest : NorthwindMiscellaneousQueryRelationalTestBase<
-        NorthwindQueryMySqlFixture<NoopModelCustomizer>>
+    public partial class NorthwindMiscellaneousQueryMySqlTest
     {
         [SupportedServerVersionLessThanTheory(ServerVersion.WindowFunctionsSupportKey)]
         [MemberData(nameof(IsAsyncData))]

@@ -15,7 +15,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             : base(fixture)
         {
             ClearLog();
-            Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
+            //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
         [ConditionalTheory]
@@ -24,12 +24,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             await base.Sum_with_coalesce(async);
 
             AssertSql(
-                @"SELECT SUM(COALESCE(`p`.`UnitPrice`, 0.0))
+                @"SELECT COALESCE(SUM(COALESCE(`p`.`UnitPrice`, 0.0)), 0.0)
 FROM `Products` AS `p`
 WHERE `p`.`ProductID` < 40");
         }
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
+
+        protected override void ClearLog()
+            => Fixture.TestSqlLoggerFactory.Clear();
     }
 }

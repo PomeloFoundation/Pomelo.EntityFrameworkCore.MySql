@@ -6,18 +6,25 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
     public class MySqlParameterBasedSqlProcessor : RelationalParameterBasedSqlProcessor
     {
+        private readonly IMySqlOptions _options;
         private readonly SqlNullabilityProcessor _sqlNullabilityProcessor;
 
         public MySqlParameterBasedSqlProcessor(
             [NotNull] RelationalParameterBasedSqlProcessorDependencies dependencies,
-            bool useRelationalNulls)
+            bool useRelationalNulls,
+            IMySqlOptions options)
             : base(dependencies, useRelationalNulls)
-            => _sqlNullabilityProcessor = new MySqlSqlNullabilityProcessor(dependencies, useRelationalNulls);
+        {
+            _options = options;
+            _sqlNullabilityProcessor = new MySqlSqlNullabilityProcessor(dependencies, useRelationalNulls);
+        }
 
         /// <inheritdoc />
         protected override SelectExpression ProcessSqlNullability(
@@ -26,7 +33,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             Check.NotNull(selectExpression, nameof(selectExpression));
             Check.NotNull(parametersValues, nameof(parametersValues));
 
-            return _sqlNullabilityProcessor.Process(selectExpression, parametersValues, out canCache);
+            selectExpression = _sqlNullabilityProcessor.Process(selectExpression, parametersValues, out canCache);
+
+            if (_options.IndexOptimizedBooleanColumns)
+            {
+                selectExpression = (SelectExpression)new MySqlBoolOptimizingExpressionVisitor(Dependencies.SqlExpressionFactory).Visit(selectExpression);
+            }
+
+            return selectExpression;
         }
     }
 }

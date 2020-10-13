@@ -46,9 +46,6 @@
     <Reference Include="Microsoft.EntityFrameworkCore.Relational">
       <HintPath>$(LocalEFCoreRepository)\artifacts\bin\EFCore.Relational.Tests\Debug\$(LegacyTargetFramework)\Microsoft.EntityFrameworkCore.Relational.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.Relational.Tests">
-      <HintPath>$(LocalEFCoreRepository)\artifacts\bin\EFCore.Design.Tests\Debug\$(LegacyTargetFramework)\Microsoft.EntityFrameworkCore.Relational.Tests.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests">
       <HintPath>$(LocalEFCoreRepository)\artifacts\bin\EFCore.Relational.Tests\Debug\$(LegacyTargetFramework)\Microsoft.EntityFrameworkCore.Relational.Specification.Tests.dll</HintPath>
     </Reference>
