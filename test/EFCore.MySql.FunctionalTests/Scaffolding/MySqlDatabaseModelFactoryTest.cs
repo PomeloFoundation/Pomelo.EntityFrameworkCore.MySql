@@ -14,7 +14,6 @@ using System.Diagnostics;
 using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.Extensions.DependencyInjection;
-using NetTopologySuite.Geometries;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 
@@ -628,10 +627,75 @@ CREATE INDEX `IX_IceCreams_Brand_Name` ON `IceCreams` (`Name`, `Brand`(20));
                     var index = Assert.Single(dbModel.Tables.Single().Indexes);
 
                     Assert.Equal("IceCreams", index.Table.Name);
+                    Assert.Equal("IX_IceCreams_Brand_Name", index.Name);
                     Assert.Equal(2, index.Columns.Count);
                     Assert.Equal("Name", index.Columns[0].Name);
                     Assert.Equal("Brand", index.Columns[1].Name);
                     Assert.Equal(new [] { 0, 20 }, index.FindAnnotation(MySqlAnnotationNames.IndexPrefixLength)?.Value);
+                },
+                @"DROP TABLE IF EXISTS `IceCreams`;");
+        }
+
+        [Fact]
+        public void Prefix_lengths_for_multiple_indexes_same_colums()
+        {
+            Test(
+                @"
+CREATE TABLE `IceCreams` (
+    `IceCreamId` int NOT NULL,
+    `Brand` varchar(255) NOT NULL,
+    `Name` varchar(255) NOT NULL,
+    PRIMARY KEY (`IceCreamId`)
+);
+
+CREATE INDEX `IX_IceCreams_Brand_Name_1` ON `IceCreams` (`Name`, `Brand`(20));
+CREATE UNIQUE INDEX `IX_IceCreams_Brand_Name_2` ON `IceCreams` (`Brand`(40), `Name`(120));
+",
+                Enumerable.Empty<string>(),
+                Enumerable.Empty<string>(),
+                dbModel =>
+                {
+                    var index = Assert.Single(dbModel.Tables.Single().Indexes);
+
+                    Assert.Equal("IceCreams", index.Table.Name);
+                    Assert.Equal("IX_IceCreams_Brand_Name_1", index.Name);
+                    Assert.True(index.IsUnique);
+                    Assert.Equal(2, index.Columns.Count);
+                    Assert.Equal("Name", index.Columns[0].Name);
+                    Assert.Equal("Brand", index.Columns[1].Name);
+                    Assert.Equal(new [] { 0, 40 }, index[MySqlAnnotationNames.IndexPrefixLength]);
+                },
+                @"DROP TABLE IF EXISTS `IceCreams`;");
+        }
+
+        [Fact]
+        public void Prefix_lengths_for_multiple_indexes_same_columns_without_prefix_lengths()
+        {
+            Test(
+                @"
+CREATE TABLE `IceCreams` (
+    `IceCreamId` int NOT NULL,
+    `Brand` varchar(255) NOT NULL,
+    `Name` varchar(255) NOT NULL,
+    PRIMARY KEY (`IceCreamId`)
+);
+
+CREATE INDEX `IX_IceCreams_Brand_Name_1` ON `IceCreams` (`Name`(120), `Brand`(20));
+CREATE UNIQUE INDEX `IX_IceCreams_Brand_Name_2` ON `IceCreams` (`Brand`, `Name`);
+",
+                Enumerable.Empty<string>(),
+                Enumerable.Empty<string>(),
+                dbModel =>
+                {
+                    var index = Assert.Single(dbModel.Tables.Single().Indexes);
+
+                    Assert.Equal("IceCreams", index.Table.Name);
+                    Assert.Equal("IX_IceCreams_Brand_Name_1", index.Name);
+                    Assert.True(index.IsUnique);
+                    Assert.Equal(2, index.Columns.Count);
+                    Assert.Equal("Name", index.Columns[0].Name);
+                    Assert.Equal("Brand", index.Columns[1].Name);
+                    Assert.Null(index[MySqlAnnotationNames.IndexPrefixLength]);
                 },
                 @"DROP TABLE IF EXISTS `IceCreams`;");
         }
