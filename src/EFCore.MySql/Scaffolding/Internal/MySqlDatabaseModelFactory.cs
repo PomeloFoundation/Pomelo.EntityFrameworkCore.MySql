@@ -496,26 +496,67 @@ ORDER BY
                         {
                             try
                             {
-                                var index = new DatabaseIndex
-                                {
-                                    Table = table, Name = reader.GetValueOrDefault<string>("INDEX_NAME"),
-                                    IsUnique = !reader.GetValueOrDefault<bool>("NON_UNIQUE"),
-                                };
+                                var columns = reader.GetValueOrDefault<string>("COLUMNS").Split(',').Select(s => GetColumn(table, s)).ToList();
 
-                                foreach (var column in reader.GetValueOrDefault<string>("COLUMNS").Split(','))
-                                {
-                                    index.Columns.Add(table.Columns.Single(y => y.Name == column));
-                                }
+                                // Reuse an existing index over the same columns, to workaround an EF Core
+                                // bug (EF#11846 and #1189).
+                                // The columns could be in a different order.
+                                var index = table.Indexes.FirstOrDefault(
+                                                i => i.Columns
+                                                    .OrderBy(c => c.Name)
+                                                    .SequenceEqual(columns.OrderBy(c => c.Name))) ??
+                                            new DatabaseIndex
+                                            {
+                                                Table = table,
+                                                Name = reader.GetValueOrDefault<string>("INDEX_NAME"),
+                                            };
+
+                                index.IsUnique |= !reader.GetValueOrDefault<bool>("NON_UNIQUE");
 
                                 var prefixLengths = reader.GetValueOrDefault<string>("SUB_PARTS")
                                     .Split(',')
                                     .Select(int.Parse)
                                     .ToArray();
 
-                                if (prefixLengths.Length > 1 ||
-                                    prefixLengths.Length == 1 && prefixLengths[0] > 0)
+                                var hasPrefixLengths = prefixLengths.Any(n => n > 0);
+                                if (hasPrefixLengths)
                                 {
-                                    index[MySqlAnnotationNames.IndexPrefixLength] = prefixLengths;
+                                    if (index.Columns.Count <= 0)
+                                    {
+                                        // If this is the first time an index with this set of columns is being defined,
+                                        // then use whatever prefices have been declared.
+                                        index[MySqlAnnotationNames.IndexPrefixLength] = prefixLengths;
+                                    }
+                                    else
+                                    {
+                                        // Use no prefix length at all or the highest prefix length for a given column
+                                        // from all indexes with the same set of columns.
+                                        var existingPrefixLengths = (int[])index[MySqlAnnotationNames.IndexPrefixLength];
+
+                                        // Bring the prefix length in the same column order used for the already
+                                        // existing prefix lengths from a previous index with the same set of columns.
+                                        var newPrefixLengths = index.Columns
+                                            .Select(indexColumn => columns.IndexOf(indexColumn))
+                                            .Select(
+                                                i => i < prefixLengths.Length
+                                                    ? prefixLengths[i]
+                                                    : 0)
+                                            .Zip(
+                                                existingPrefixLengths, (l, r) => l == 0 || r == 0
+                                                    ? 0
+                                                    : Math.Max(l, r))
+                                            .ToArray();
+
+                                        index[MySqlAnnotationNames.IndexPrefixLength] = newPrefixLengths.Any(p => p > 0)
+                                            ? newPrefixLengths
+                                            : null;
+                                    }
+                                }
+                                else
+                                {
+                                    // If any index (with the same columns) is defined without index prefices at all,
+                                    // then don't use any prefices.
+                                    index[MySqlAnnotationNames.IndexPrefixLength] = null;
                                 }
 
                                 var indexType = reader.GetValueOrDefault<string>("INDEX_TYPE");
@@ -530,7 +571,15 @@ ORDER BY
                                     index[MySqlAnnotationNames.FullTextIndex] = true;
                                 }
 
-                                table.Indexes.Add(index);
+                                if (index.Columns.Count <= 0)
+                                {
+                                    foreach (var column in columns)
+                                    {
+                                        index.Columns.Add(column);
+                                    }
+
+                                    table.Indexes.Add(index);
+                                }
                             }
                             catch (Exception ex)
                             {
@@ -613,5 +662,13 @@ ORDER BY
                 "NO ACTION" => ReferentialAction.NoAction,
                 _ => null
             };
+
+        private DatabaseColumn GetColumn(DatabaseTable table, string columnName)
+            => FindColumn(table, columnName) ??
+               throw new InvalidOperationException($"Could not find column '{columnName}' in table '{table.Name}'.");
+
+        private DatabaseColumn FindColumn(DatabaseTable table, string columnName)
+            => table.Columns.SingleOrDefault(c => string.Equals(c.Name, columnName, StringComparison.Ordinal)) ??
+               table.Columns.SingleOrDefault(c => string.Equals(c.Name, columnName, StringComparison.OrdinalIgnoreCase));
     }
 }
