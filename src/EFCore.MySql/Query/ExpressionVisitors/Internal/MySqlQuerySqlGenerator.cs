@@ -304,6 +304,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 throw new InvalidOperationException($"Cannot cast from type '{typeMapping.StoreType}'");
             }
 
+            if (castMapping == "binary")
+            {
+                Sql.Append("UNHEX(HEX(");
+                Visit(sqlUnaryExpression.Operand);
+                Sql.Append("))");
+
+                return sqlUnaryExpression;
+            }
+
             if (castMapping == "signed" && storeTypeLower.Contains("unsigned"))
             {
                 castMapping = "unsigned";
