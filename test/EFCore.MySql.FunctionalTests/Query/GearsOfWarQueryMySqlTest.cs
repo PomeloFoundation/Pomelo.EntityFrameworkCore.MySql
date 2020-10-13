@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.GearsOfWarModel;
@@ -50,6 +51,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 async,
                 ss => ss.Set<Mission>().Where(dynamicWhere),
                 ss => ss.Set<Mission>().Where(m => m.Timeline == dateTimeOffset));
+        }
+
+        // TODO: Implement strategy as discussed with @roji (including emails) for EF Core 5.
+        [ConditionalTheory(Skip = "#996")]
+        public override Task Client_member_and_unsupported_string_Equals_in_the_same_query(bool async)
+        {
+            return base.Client_member_and_unsupported_string_Equals_in_the_same_query(async);
         }
 
         [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]

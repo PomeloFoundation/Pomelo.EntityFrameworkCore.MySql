@@ -645,9 +645,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Sql);
         }
 
-        // The test data we're using is geographic but is represented in NTS as a GeometryCollection
         protected override string GetGeometryCollectionStoreType()
-            => "geometry";
+            => "geometrycollection";
 
         [ConditionalFact]
         public virtual void AddColumnOperation_with_charSet_annotation()
