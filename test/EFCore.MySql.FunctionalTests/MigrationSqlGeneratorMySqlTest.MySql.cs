@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using NetTopologySuite.Geometries;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Xunit;
 
@@ -108,6 +110,93 @@ ALTER TABLE `Cars` ADD CONSTRAINT `FK_Cars_LicensePlates_LicensePlateNumber` FOR
 );
 ",
                 Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        public virtual void CreateTable_MySqlSchemaBehavior_Throw()
+        {
+            Assert.Throws<InvalidOperationException>(
+                () =>
+                    Generate(
+                        options => options.SchemaBehavior(MySqlSchemaBehavior.Throw),
+                        buildAction: null,
+                        resetSchema: false,
+                        new CreateTableOperation
+                        {
+                            Name = "IceCreamShops",
+                            Schema = "IceCreamInc",
+                            Columns =
+                            {
+                                new AddColumnOperation
+                                {
+                                    Name = "Name",
+                                    ClrType = typeof(string),
+                                    ColumnType = "varchar(255)",
+                                }
+                            }
+                        }));
+        }
+
+        [ConditionalFact]
+        public virtual void CreateTable_MySqlSchemaBehavior_Ignore()
+        {
+            Generate(
+                options => options.SchemaBehavior(MySqlSchemaBehavior.Ignore),
+                buildAction: null,
+                resetSchema: false,
+                new CreateTableOperation
+                {
+                    Name = "IceCreamShops",
+                    Schema = "IceCreamInc",
+                    Columns =
+                    {
+                        new AddColumnOperation
+                        {
+                            Name = "Name",
+                            ClrType = typeof(string),
+                            ColumnType = "varchar(255)",
+                        }
+                    }
+                });
+
+            Assert.Equal(
+                @"CREATE TABLE `IceCreamShops` (
+    `Name` varchar(255) NOT NULL
+);",
+                Sql.Trim(),
+                ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        public virtual void CreateTable_MySqlSchemaBehavior_Translate()
+        {
+            Generate(
+                options => options.SchemaBehavior(
+                    MySqlSchemaBehavior.Translate,
+                    (schemaName, objectName) => $"{schemaName}_{objectName}"),
+                buildAction: null,
+                resetSchema: false,
+                new CreateTableOperation
+                {
+                    Name = "IceCreamShops",
+                    Schema = "IceCreamInc",
+                    Columns =
+                    {
+                        new AddColumnOperation
+                        {
+                            Name = "Name",
+                            ClrType = typeof(string),
+                            ColumnType = "varchar(255)",
+                        }
+                    }
+                });
+
+            Assert.Equal(
+                @"CREATE TABLE `IceCreamInc_IceCreamShops` (
+    `Name` varchar(255) NOT NULL
+);",
+                Sql.Trim(),
                 ignoreLineEndingDifferences: true);
         }
 

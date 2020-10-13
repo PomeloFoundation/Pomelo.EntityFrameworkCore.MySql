@@ -31,6 +31,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         public IServiceProvider CreateContextServices(CharSetBehavior charSetBehavior, CharSet charSet)
             => ((IInfrastructure<IServiceProvider>)new DbContext(CreateOptions(charSetBehavior, charSet))).Instance;
 
+        public IServiceProvider CreateContextServices(Action<MySqlDbContextOptionsBuilder> builder)
+            => ((IInfrastructure<IServiceProvider>)new DbContext(CreateOptions(builder))).Instance;
+
         public ModelBuilder CreateConventionBuilder(IServiceProvider contextServices)
         {
             var conventionSet = contextServices.GetRequiredService<IConventionSetBuilder>()
@@ -40,21 +43,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         }
 
         public DbContextOptions CreateOptions(ServerVersion serverVersion)
-        {
-            var optionsBuilder = new DbContextOptionsBuilder();
-            optionsBuilder.UseMySql("Database=DummyDatabase", b => b.ServerVersion(serverVersion));
-
-            return optionsBuilder.Options;
-        }
+            => CreateOptions(b => b.ServerVersion(serverVersion));
 
         public DbContextOptions CreateOptions(CharSetBehavior charSetBehavior, CharSet charSet)
-        {
-            var optionsBuilder = new DbContextOptionsBuilder();
-            optionsBuilder.UseMySql("Database=DummyDatabase", b => b
-                .CharSetBehavior(charSetBehavior)
-                .CharSet(charSet));
+            => CreateOptions(
+                b => b.CharSetBehavior(charSetBehavior)
+                    .CharSet(charSet));
 
-            return optionsBuilder.Options;
-        }
+        public DbContextOptions CreateOptions(Action<MySqlDbContextOptionsBuilder> builder)
+            => new DbContextOptionsBuilder()
+                .UseMySql("Database=DummyDatabase", builder)
+                .Options;
     }
 }
