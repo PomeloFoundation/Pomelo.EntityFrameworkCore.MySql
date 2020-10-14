@@ -435,14 +435,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 return _sqlExpressionFactory.Like(target, _sqlExpressionFactory.Constant(null, stringTypeMapping));
             }
 
-            // LOCATE('foo', 'barfoobar') > 0
+            // 'foo' = '' OR LOCATE('foo', 'barfoobar') > 0
             // Using an empty pattern `LOCATE('', 'barfoobar')` returns 1.
-            return _sqlExpressionFactory.GreaterThan(
-                _sqlExpressionFactory.NullableFunction(
-                    "LOCATE",
-                    new[] {patternTransform(pattern), targetTransform(target)},
-                    typeof(int)),
-                _sqlExpressionFactory.Constant(0));
+            return _sqlExpressionFactory.OrElse(
+                _sqlExpressionFactory.Equal(
+                    pattern,
+                    _sqlExpressionFactory.Constant(string.Empty, stringTypeMapping)),
+                _sqlExpressionFactory.GreaterThan(
+                    _sqlExpressionFactory.NullableFunction(
+                        "LOCATE",
+                        new[] {patternTransform(pattern), targetTransform(target)},
+                        typeof(int)),
+                        _sqlExpressionFactory.Constant(0)));
         }
 
         public SqlExpression MakeIndexOfExpression(
