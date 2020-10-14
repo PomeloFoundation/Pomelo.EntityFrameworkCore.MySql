@@ -385,35 +385,26 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
         /// <param name="model"> The target model which may be <see langword="null"/> if the operations exist without a model. </param>
         /// <param name="builder"> The command builder to use to build the commands. </param>
         protected override void Generate(
-            CreateSequenceOperation operation,
-            IModel model,
-            MigrationCommandListBuilder builder)
+            [NotNull] CreateSequenceOperation operation,
+            [CanBeNull] IModel model,
+            [NotNull] MigrationCommandListBuilder builder)
         {
             Check.NotNull(operation, nameof(operation));
-            Check.NotNull(builder, nameof(builder));
 
-            builder
-                .Append("CREATE SEQUENCE ")
-                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name, operation.Schema));
-
-            if (operation.ClrType != typeof(long))
+            // "CREATE SEQUENCE"  supported only in MariaDb from 10.3.
+            // However, "CREATE SEQUENCE name AS type" expression is currently not supported.
+            // The base MigrationsSqlGenerator.Generate method generates that expression.
+            // Also, when creating a sequence current version of MariaDb doesn't tolerate "NO MINVALUE"
+            // when specifying "STARTS WITH" so, StartValue mus be set accordingly.
+            // https://github.com/aspnet/EntityFrameworkCore/blob/master/src/EFCore.Relational/Migrations/MigrationsSqlGenerator.cs#L535-L543
+            var oldValue = operation.ClrType;
+            operation.ClrType = typeof(long);
+            if (operation.StartValue <= 0 )
             {
-                var typeMapping = Dependencies.TypeMappingSource.GetMapping(operation.ClrType);
-
-                builder
-                    .Append(" AS ")
-                    .Append(typeMapping.StoreType);
+                operation.MinValue = operation.StartValue;
             }
-
-            builder
-                .Append(" START WITH ")
-                .Append(IntegerConstant(operation.StartValue));
-
-            SequenceOptions(operation, model, builder);
-
-            builder.AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
-
-            EndStatement(builder);
+            base.Generate(operation, model, builder);
+            operation.ClrType = oldValue;
         }
 
         /// <summary>
@@ -718,43 +709,46 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
         /// <param name="model"> The target model which may be <see langword="null"/> if the operations exist without a model. </param>
         /// <param name="builder"> The command builder to use to add the SQL fragment. </param>
         protected override void SequenceOptions(
-            string schema,
-            string name,
-            SequenceOperation operation,
-            IModel model,
-            MigrationCommandListBuilder builder)
+             [CanBeNull] string schema,
+             [NotNull] string name,
+             [NotNull] SequenceOperation operation,
+             [CanBeNull] IModel model,
+             [NotNull] MigrationCommandListBuilder builder)
         {
             Check.NotEmpty(name, nameof(name));
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
+            var intTypeMapping = Dependencies.TypeMappingSource.GetMapping(typeof(int));
+            var longTypeMapping = Dependencies.TypeMappingSource.GetMapping(typeof(long));
+
             builder
                 .Append(" INCREMENT BY ")
-                .Append(IntegerConstant(operation.IncrementBy));
+                .Append(intTypeMapping.GenerateSqlLiteral(operation.IncrementBy));
 
-            if (operation.MinValue.HasValue)
+            if (operation.MinValue != null)
             {
                 builder
                     .Append(" MINVALUE ")
-                    .Append(IntegerConstant(operation.MinValue.Value));
+                    .Append(longTypeMapping.GenerateSqlLiteral(operation.MinValue));
             }
             else
             {
                 builder.Append(" NO MINVALUE");
             }
 
-            if (operation.MaxValue.HasValue)
+            if (operation.MaxValue != null)
             {
                 builder
                     .Append(" MAXVALUE ")
-                    .Append(IntegerConstant(operation.MaxValue.Value));
+                    .Append(longTypeMapping.GenerateSqlLiteral(operation.MaxValue));
             }
             else
             {
                 builder.Append(" NO MAXVALUE");
             }
 
-            builder.Append(operation.IsCyclic ? " CYCLE" : " NO CYCLE");
+            builder.Append(operation.IsCyclic ? " CYCLE" : " NOCYCLE");
         }
 
         /// <summary>
