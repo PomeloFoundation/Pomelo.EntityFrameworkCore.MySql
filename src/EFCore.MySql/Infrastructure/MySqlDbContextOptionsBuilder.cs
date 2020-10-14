@@ -71,7 +71,7 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
         public virtual MySqlDbContextOptionsBuilder EnableRetryOnFailure(
             int maxRetryCount,
             TimeSpan maxRetryDelay,
-            [NotNull] ICollection<int> errorNumbersToAdd)
+            [CanBeNull] ICollection<int> errorNumbersToAdd)
             => ExecutionStrategy(c => new MySqlRetryingExecutionStrategy(c, maxRetryCount, maxRetryDelay, errorNumbersToAdd));
 
         /// <summary>
