@@ -420,7 +420,9 @@ LIMIT 2");
         public void JsonSearchAll()
         {
             using var ctx = CreateContext();
+#pragma warning disable 618
             var count = ctx.JsonEntities.Count(e => EF.Functions.JsonSearchAll(e.CustomerElement, "%o%"));
+#pragma warning restore 618
 
             Assert.Equal(3, count);
             AssertSql(
@@ -433,7 +435,9 @@ WHERE JSON_SEARCH(`j`.`CustomerElement`, 'all', '%o%') IS NOT NULL");
         public void JsonSearchAll_with_path()
         {
             using var ctx = CreateContext();
+#pragma warning disable 618
             var count = ctx.JsonEntities.Count(e => EF.Functions.JsonSearchAll(e.CustomerElement, "%o%", "$.Name"));
+#pragma warning restore 618
 
             Assert.Equal(2, count);
             AssertSql(
