@@ -15,6 +15,7 @@ using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
@@ -734,6 +735,108 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 );" + EOL,
                 Sql,
                 ignoreLineEndingDifferences: true);
+        }
+
+
+        [SupportedServerVersionFact(ServerVersion.SequencesSupportKey)]
+        public virtual void AlterSequenceOperation_with_minValue_and_maxValue()
+        {
+            Generate(
+                new AlterSequenceOperation {
+                    Name = "MySequence",
+                    Schema = Schema,
+                    IncrementBy=1,
+                    IsCyclic=false,
+                    MinValue = 10,
+                    MaxValue = 20
+                });
+
+            Assert.Equal(
+               @"ALTER SEQUENCE `MySequence` INCREMENT BY 1 MINVALUE 10 MAXVALUE 20 NOCYCLE;" + EOL,
+               Sql,
+               ignoreLineEndingDifferences: true);
+        }
+
+        [SupportedServerVersionFact(ServerVersion.SequencesSupportKey)]
+        public virtual void AlterSequenceOperation_without_minValue_and_maxValue()
+        {
+            Generate(
+                new AlterSequenceOperation
+                {
+                    Name = "MySequence",
+                    Schema = Schema,
+                    IncrementBy = 1,
+                    IsCyclic = false
+                });
+
+            Assert.Equal(
+               @"ALTER SEQUENCE `MySequence` INCREMENT BY 1 NO MINVALUE NO MAXVALUE NOCYCLE;" + EOL,
+               Sql,
+               ignoreLineEndingDifferences: true);
+
+        }
+
+        [SupportedServerVersionFact(ServerVersion.SequencesSupportKey)]
+        public virtual void CreateSequenceOperation_with_minValue_and_maxValue()
+        {
+            Generate(
+              new CreateSequenceOperation
+              {
+                  Name = "MySequence",
+                  Schema = Schema,
+                  IncrementBy = 1,
+                  IsCyclic = false,
+                  StartValue=10,
+                  MinValue = 10,
+                  MaxValue = 20
+              });
+
+            Assert.Equal(
+               @"CREATE SEQUENCE `MySequence` START WITH 10 INCREMENT BY 1 MINVALUE 10 MAXVALUE 20 NOCYCLE;" + EOL,
+               Sql,
+               ignoreLineEndingDifferences: true);
+        }
+
+        [SupportedServerVersionFact(ServerVersion.SequencesSupportKey)]
+        public virtual void CreateSequenceOperation_with_minValue_and_maxValue_not_long()
+        {
+            throw(new Exception("MariaDb Sequences can be only long"));
+        }
+
+        [SupportedServerVersionFact(ServerVersion.SequencesSupportKey)]
+        public virtual void CreateSequenceOperation_without_minValue_and_maxValue()
+        {
+
+            Generate(
+              new CreateSequenceOperation
+              {
+                  Name = "MySequence",
+                  Schema = Schema,
+                  IncrementBy = 1,
+                  IsCyclic = false
+              });
+
+            Assert.Equal(
+               @"CREATE SEQUENCE `MySequence` START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE NOCYCLE;" + EOL,
+               Sql,
+               ignoreLineEndingDifferences: true);
+        }
+
+        [SupportedServerVersionFact(ServerVersion.SequencesSupportKey)]
+        public virtual void DropSequenceOperation()
+        {
+
+            Generate(
+             new DropSequenceOperation
+             {
+                 Name = "MySequence",
+                 Schema = Schema
+             });
+
+            Assert.Equal(
+               @"DROP SEQUENCE `MySequence`;" + EOL,
+               Sql,
+               ignoreLineEndingDifferences: true);
         }
 
         private void Generate(

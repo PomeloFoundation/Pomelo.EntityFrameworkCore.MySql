@@ -1,4 +1,5 @@
-﻿using Pomelo.EntityFrameworkCore.MySql.Storage;
+﻿using System.Collections.Generic;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Xunit;
 
@@ -17,7 +18,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attribu
 
             if (!serverVersionSupport.IsSupported(currentVersion) && string.IsNullOrEmpty(Skip))
             {
-                Skip = $"Test is supported only on {serverVersionSupport.SupportedServerVersions} and higher.";
+                Skip = $"Test is supported only on {serverVersionSupport.SupportedServerVersions.Join()} and higher.";
             }
         }
     }
