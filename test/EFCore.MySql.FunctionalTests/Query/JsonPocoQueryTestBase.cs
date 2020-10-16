@@ -308,6 +308,57 @@ LIMIT 2");
         #region Functions
 
         [Fact]
+        public void JsonQuote_JsonUnquote()
+        {
+            using var ctx = CreateContext();
+
+            var count = ctx.JsonEntities.Count(e =>
+                EF.Functions.JsonUnquote(EF.Functions.JsonQuote(e.Customer.Name)) == @"Joe");
+
+            Assert.Equal(1, count);
+            AssertSql(
+                $@"SELECT COUNT(*)
+FROM `JsonEntities` AS `j`
+WHERE JSON_UNQUOTE(JSON_QUOTE(JSON_UNQUOTE(JSON_EXTRACT(`j`.`Customer`, '$.Name')))) = 'Joe'");
+        }
+
+        [Fact]
+        public void JsonExtract()
+        {
+            using var ctx = CreateContext();
+
+            var name = @"""Joe""";
+            var count = ctx.JsonEntities.Count(e =>
+                EF.Functions.JsonExtract<string>(e.Customer, "$.Name") == name);
+
+            Assert.Equal(1, count);
+            AssertSql(
+                $@"@__name_1='""Joe""'
+
+SELECT COUNT(*)
+FROM `JsonEntities` AS `j`
+WHERE JSON_EXTRACT(`j`.`Customer`, '$.Name') = {InsertJsonConvert("@__name_1")}");
+        }
+
+        [Fact]
+        public void JsonExtract_JsonUnquote()
+        {
+            using var ctx = CreateContext();
+
+            var name = @"Joe";
+            var count = ctx.JsonEntities.Count(e =>
+                EF.Functions.JsonUnquote(EF.Functions.JsonExtract<string>(e.Customer, "$.Name")) == name);
+
+            Assert.Equal(1, count);
+            AssertSql(
+                $@"@__name_1='Joe' (Size = 4000)
+
+SELECT COUNT(*)
+FROM `JsonEntities` AS `j`
+WHERE JSON_UNQUOTE(JSON_EXTRACT(`j`.`Customer`, '$.Name')) = @__name_1");
+        }
+
+        [Fact]
         public abstract void JsonContains_with_json_element();
 
         [Fact]
