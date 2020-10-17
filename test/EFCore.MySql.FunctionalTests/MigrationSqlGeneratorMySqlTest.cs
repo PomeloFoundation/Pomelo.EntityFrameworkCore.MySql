@@ -4,6 +4,7 @@ using System.Reflection;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -1007,6 +1008,20 @@ ALTER TABLE `People` DROP PRIMARY KEY;".Replace("\r", string.Empty).Replace("\n"
 
         protected override void Generate(params MigrationOperation[] operations)
             => base.Generate(ResetSchema(operations));
+
+        protected virtual void Generate(Action<MySqlDbContextOptionsBuilder> builder, Action<ModelBuilder> buildAction = null, bool resetSchema = true, params MigrationOperation[] operations)
+        {
+            var services = MySqlTestHelpers.Instance.CreateContextServices(builder);
+            var modelBuilder = MySqlTestHelpers.Instance.CreateConventionBuilder(services);
+            buildAction?.Invoke(modelBuilder);
+
+            var batch = services.GetRequiredService<IMigrationsSqlGenerator>()
+                .Generate(resetSchema ? ResetSchema(operations) : operations, modelBuilder.Model);
+
+            Sql = string.Join(
+                EOL,
+                batch.Select(b => b.CommandText));
+        }
 
         protected override void Generate(Action<ModelBuilder> buildAction, params MigrationOperation[] operations)
         {

@@ -16,6 +16,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
 {
     public class MySqlOptions : IMySqlOptions
     {
+        private static readonly MySqlSchemaNameTranslator _ignoreSchemaNameTranslator = (_, objectName) => objectName;
+
         public MySqlOptions()
         {
             ConnectionSettings = new MySqlConnectionSettings();
@@ -52,7 +54,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             ReplaceLineBreaksWithCharFunction = mySqlOptions.ReplaceLineBreaksWithCharFunction;
             DefaultDataTypeMappings = ApplyDefaultDataTypeMappings(mySqlOptions.DefaultDataTypeMappings, ConnectionSettings);
             SchemaNameTranslator = mySqlOptions.SchemaNameTranslator ?? (mySqlOptions.SchemaBehavior == MySqlSchemaBehavior.Ignore
-                ? new MySqlSchemaNameTranslator((_, objectName) => objectName)
+                ? _ignoreSchemaNameTranslator
                 : null);
             IndexOptimizedBooleanColumns = mySqlOptions.IndexOptimizedBooleanColumns;
             JsonChangeTrackingOptions = mySqlJsonOptions?.JsonChangeTrackingOptions ?? default;
@@ -128,7 +130,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                         nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
             }
 
-            if (!Equals(SchemaNameTranslator, mySqlOptions.SchemaNameTranslator))
+            if (!Equals(
+                SchemaNameTranslator,
+                mySqlOptions.SchemaBehavior == MySqlSchemaBehavior.Ignore
+                    ? _ignoreSchemaNameTranslator
+                    : SchemaNameTranslator))
             {
                 throw new InvalidOperationException(
                     CoreStrings.SingletonOptionChanged(
