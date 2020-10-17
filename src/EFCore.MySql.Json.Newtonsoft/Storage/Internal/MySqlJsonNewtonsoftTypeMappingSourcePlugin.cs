@@ -56,7 +56,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Storage.Internal
                 return _jsonStringValueConverter.Value;
             }
 
-            return (ValueConverter)Activator.CreateInstance(typeof(MySqlJsonNewtonsoftPocoValueConverter<>).MakeGenericType(clrType));
+            return (ValueConverter)Activator.CreateInstance(
+                typeof(MySqlJsonNewtonsoftPocoValueConverter<>).MakeGenericType(clrType));
         }
 
         protected override ValueComparer GetValueComparer(Type clrType)

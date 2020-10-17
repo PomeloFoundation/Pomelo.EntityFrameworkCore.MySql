@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
@@ -15,7 +13,6 @@ using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
@@ -338,10 +335,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             // An exception is the JSON data type, when used in conjunction with a parameter (like `JsonDocument`).
             // JSON parameters like that will be serialized to string and supplied as a string parameter to MySQL
             // (at least this seems to be the case currently with MySqlConnector). To make assignments and comparisons
-            // between JSON columns and JSON parameters (supplied as string) work, the string needs to be explicitly
-            // converted to JSON.
-            if (!castMapping.Equals(sqlUnaryExpression.Operand.TypeMapping.StoreType, StringComparison.OrdinalIgnoreCase) ||
-                castMapping == "json")
+            // between JSON columns and JSON parameters (supplied as string) work on server implementations that support
+            // a JSON store type, the string needs to be explicitly converted to JSON.
+            if (castMapping == "json" && !_options.ServerVersion.SupportsJsonDataTypeEmulation ||
+                !castMapping.Equals(sqlUnaryExpression.Operand.TypeMapping.StoreType, StringComparison.OrdinalIgnoreCase))
             {
                 if (useDecimalToDoubleWorkaround)
                 {

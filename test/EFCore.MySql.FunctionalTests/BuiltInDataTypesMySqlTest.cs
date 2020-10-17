@@ -288,7 +288,7 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
                 Assert.Same(entity, context.Set<MappedNullableDataTypes>().Single(e => e.Int == 999 && e.IntAsYear == param62));
 
                 var param63 = @"{""a"": ""b""}";
-                Assert.Same(entity, context.Set<MappedNullableDataTypes>().Single(e => e.Int == 999 && e.StringAsJson == param63));
+                Assert.Same(entity, context.Set<MappedNullableDataTypes>().Single(e => e.Int == 999 && e.StringAsJson == (MySqlJsonString)param63));
             }
         }
 
@@ -483,7 +483,7 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
 @p25='128'
 @p26='79'
 @p27='Your' (Nullable = false) (Size = 10) (DbType = StringFixedLength)
-@p28='{""a"": ""b""}' (Nullable = false)
+@p28='{""a"": ""b""}' (Nullable = false) (Size = 4000)
 @p29='arm' (Nullable = false) (Size = 4000)
 @p30='anyone!' (Nullable = false) (Size = 4000)
 @p31='strong' (Nullable = false) (Size = 10) (DbType = StringFixedLength)
@@ -652,7 +652,7 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
 @p25='-128' (Nullable = true)
 @p26='79' (Nullable = true)
 @p27='C' (Size = 20) (DbType = StringFixedLength)
-@p28='{""a"": ""b""}'
+@p28='{""a"": ""b""}' (Size = 4000)
 @p29='anyone!' (Size = 4000)
 @p30='Your' (Size = 20) (DbType = StringFixedLength)
 @p31='Gumball Rules OK!' (Size = 4000)
@@ -816,7 +816,7 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
 @p25=NULL (DbType = SByte)
 @p26=NULL (DbType = Int16)
 @p27=NULL (Size = 20) (DbType = StringFixedLength)
-@p28=NULL
+@p28=NULL (Size = 4000)
 @p29=NULL (Size = 4000)
 @p30=NULL (Size = 20) (DbType = StringFixedLength)
 @p31=NULL (Size = 4000)

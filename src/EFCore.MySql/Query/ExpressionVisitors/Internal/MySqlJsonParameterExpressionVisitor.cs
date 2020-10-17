@@ -27,24 +27,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         protected virtual SqlExpression VisitParameter(SqlParameterExpression sqlParameterExpression)
         {
-            SqlExpression expression = sqlParameterExpression;
-
             if (sqlParameterExpression.TypeMapping is MySqlJsonTypeMapping)
             {
-                var typeMapping = _sqlExpressionFactory.FindMapping(expression.Type, "json");
+                var typeMapping = _sqlExpressionFactory.FindMapping(sqlParameterExpression.Type, "json");
 
                 // MySQL has a real JSON datatype, and string parameters need to be converted to it.
                 // MariaDB defines the JSON datatype just as a synonym for LONGTEXT.
                 if (!_options.ServerVersion.SupportsJsonDataTypeEmulation)
                 {
-                    expression = _sqlExpressionFactory.Convert(
+                    return _sqlExpressionFactory.Convert(
                         sqlParameterExpression,
-                        sqlParameterExpression.Type,
-                        typeMapping);
+                        typeMapping.ClrType, // will be typeof(string) when `sqlParameterExpression.Type`
+                        typeMapping);        // is typeof(MySqlJsonString)
                 }
             }
 
-            return expression;
+            return sqlParameterExpression;
         }
     }
 }

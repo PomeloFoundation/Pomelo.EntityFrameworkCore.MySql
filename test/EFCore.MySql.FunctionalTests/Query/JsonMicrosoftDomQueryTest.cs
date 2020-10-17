@@ -79,7 +79,7 @@ FROM `JsonEntities` AS `j`
 WHERE `j`.`Id` = @__p_0
 LIMIT 1",
                 //
-                $@"{InsertJsonDocument(@"@__expected_0='{""ID"":""00000000-0000-0000-0000-000000000000"",""Age"":25,""Name"":""Joe"",""IsVip"":false,""Orders"":[{""Price"":99.5,""ShippingDate"":""2019-10-01"",""ShippingAddress"":""Some address 1""},{""Price"":23.1,""ShippingDate"":""2019-10-10"",""ShippingAddress"":""Some address 2""}],""Statistics"":{""Nested"":{""IntArray"":[3,4],""SomeProperty"":10,""SomeNullableInt"":20,""SomeNullableGuid"":""d5f2685d-e5c4-47e5-97aa-d0266154eb2d""},""Visits"":4,""Purchases"":3}}'", @"@__expected_0='{""Name"":""Joe"",""Age"":25,""ID"":""00000000-0000-0000-0000-000000000000"",""IsVip"":false,""Statistics"":{""Visits"":4,""Purchases"":3,""Nested"":{""SomeProperty"":10,""SomeNullableInt"":20,""SomeNullableGuid"":""d5f2685d-e5c4-47e5-97aa-d0266154eb2d"",""IntArray"":[3,4]}},""Orders"":[{""Price"":99.5,""ShippingAddress"":""Some address 1"",""ShippingDate"":""2019-10-01""},{""Price"":23.1,""ShippingAddress"":""Some address 2"",""ShippingDate"":""2019-10-10""}]}'")}
+                $@"{InsertJsonDocument(@"@__expected_0='{""ID"":""00000000-0000-0000-0000-000000000000"",""Age"":25,""Name"":""Joe"",""IsVip"":false,""Orders"":[{""Price"":99.5,""ShippingDate"":""2019-10-01"",""ShippingAddress"":""Some address 1""},{""Price"":23.1,""ShippingDate"":""2019-10-10"",""ShippingAddress"":""Some address 2""}],""Statistics"":{""Nested"":{""IntArray"":[3,4],""SomeProperty"":10,""SomeNullableInt"":20,""SomeNullableGuid"":""d5f2685d-e5c4-47e5-97aa-d0266154eb2d""},""Visits"":4,""Purchases"":3}}'", @"@__expected_0='{""Name"":""Joe"",""Age"":25,""ID"":""00000000-0000-0000-0000-000000000000"",""IsVip"":false,""Statistics"":{""Visits"":4,""Purchases"":3,""Nested"":{""SomeProperty"":10,""SomeNullableInt"":20,""SomeNullableGuid"":""d5f2685d-e5c4-47e5-97aa-d0266154eb2d"",""IntArray"":[3,4]}},""Orders"":[{""Price"":99.5,""ShippingAddress"":""Some address 1"",""ShippingDate"":""2019-10-01""},{""Price"":23.1,""ShippingAddress"":""Some address 2"",""ShippingDate"":""2019-10-10""}]}'")} (Size = 4000)
 
 SELECT `j`.`Id`, `j`.`CustomerDocument`, `j`.`CustomerElement`
 FROM `JsonEntities` AS `j`
@@ -103,7 +103,7 @@ FROM `JsonEntities` AS `j`
 WHERE `j`.`Id` = @__p_0
 LIMIT 1",
                 //
-                $@"{InsertJsonDocument(@"@__expected_0='{""ID"":""00000000-0000-0000-0000-000000000000"",""Age"":25,""Name"":""Joe"",""IsVip"":false,""Orders"":[{""Price"":99.5,""ShippingDate"":""2019-10-01"",""ShippingAddress"":""Some address 1""},{""Price"":23.1,""ShippingDate"":""2019-10-10"",""ShippingAddress"":""Some address 2""}],""Statistics"":{""Nested"":{""IntArray"":[3,4],""SomeProperty"":10,""SomeNullableInt"":20,""SomeNullableGuid"":""d5f2685d-e5c4-47e5-97aa-d0266154eb2d""},""Visits"":4,""Purchases"":3}}'", @"@__expected_0='{""Name"":""Joe"",""Age"":25,""ID"":""00000000-0000-0000-0000-000000000000"",""IsVip"":false,""Statistics"":{""Visits"":4,""Purchases"":3,""Nested"":{""SomeProperty"":10,""SomeNullableInt"":20,""SomeNullableGuid"":""d5f2685d-e5c4-47e5-97aa-d0266154eb2d"",""IntArray"":[3,4]}},""Orders"":[{""Price"":99.5,""ShippingAddress"":""Some address 1"",""ShippingDate"":""2019-10-01""},{""Price"":23.1,""ShippingAddress"":""Some address 2"",""ShippingDate"":""2019-10-10""}]}'")} (Nullable = false)
+                $@"{InsertJsonDocument(@"@__expected_0='{""ID"":""00000000-0000-0000-0000-000000000000"",""Age"":25,""Name"":""Joe"",""IsVip"":false,""Orders"":[{""Price"":99.5,""ShippingDate"":""2019-10-01"",""ShippingAddress"":""Some address 1""},{""Price"":23.1,""ShippingDate"":""2019-10-10"",""ShippingAddress"":""Some address 2""}],""Statistics"":{""Nested"":{""IntArray"":[3,4],""SomeProperty"":10,""SomeNullableInt"":20,""SomeNullableGuid"":""d5f2685d-e5c4-47e5-97aa-d0266154eb2d""},""Visits"":4,""Purchases"":3}}'", @"@__expected_0='{""Name"":""Joe"",""Age"":25,""ID"":""00000000-0000-0000-0000-000000000000"",""IsVip"":false,""Statistics"":{""Visits"":4,""Purchases"":3,""Nested"":{""SomeProperty"":10,""SomeNullableInt"":20,""SomeNullableGuid"":""d5f2685d-e5c4-47e5-97aa-d0266154eb2d"",""IntArray"":[3,4]}},""Orders"":[{""Price"":99.5,""ShippingAddress"":""Some address 1"",""ShippingDate"":""2019-10-01""},{""Price"":23.1,""ShippingAddress"":""Some address 2"",""ShippingDate"":""2019-10-10""}]}'")} (Nullable = false) (Size = 4000)
 
 SELECT `j`.`Id`, `j`.`CustomerDocument`, `j`.`CustomerElement`
 FROM `JsonEntities` AS `j`
@@ -335,17 +335,29 @@ WHERE JSON_UNQUOTE(JSON_QUOTE(JSON_UNQUOTE(JSON_EXTRACT(`j`.`CustomerElement`, '
         {
             using var ctx = CreateContext();
 
-            var name = @"""Joe""";
             var count = ctx.JsonEntities.Count(e =>
-                EF.Functions.JsonExtract<string>(e.CustomerElement, "$.Name") == name);
+                EF.Functions.JsonExtract<string>(e.CustomerElement, "$.Name") == @"Joe");
 
             Assert.Equal(1, count);
             AssertSql(
-                $@"@__name_1='""Joe""'
-
-SELECT COUNT(*)
+                $@"SELECT COUNT(*)
 FROM `JsonEntities` AS `j`
-WHERE JSON_EXTRACT(`j`.`CustomerElement`, '$.Name') = {InsertJsonConvert("@__name_1")}");
+WHERE JSON_EXTRACT(`j`.`CustomerElement`, '$.Name') = 'Joe'");
+        }
+
+        [Fact]
+        public void JsonExtract_equals_operands_flipped()
+        {
+            using var ctx = CreateContext();
+
+            var count = ctx.JsonEntities.Count(e =>
+                @"Joe" == EF.Functions.JsonExtract<string>(e.CustomerElement, "$.Name"));
+
+            Assert.Equal(1, count);
+            AssertSql(
+                $@"SELECT COUNT(*)
+FROM `JsonEntities` AS `j`
+WHERE 'Joe' = JSON_EXTRACT(`j`.`CustomerElement`, '$.Name')");
         }
 
         [Fact]
@@ -376,7 +388,7 @@ WHERE JSON_UNQUOTE(JSON_EXTRACT(`j`.`CustomerElement`, '$.Name')) = @__name_1");
 
             Assert.Equal(1, count);
             AssertSql(
-                $@"@__element_1='{{""Name"":""Joe"",""Age"":25}}' (Nullable = false)
+                $@"@__element_1='{{""Name"":""Joe"",""Age"":25}}' (Nullable = false) (Size = 4000)
 
 SELECT COUNT(*)
 FROM `JsonEntities` AS `j`

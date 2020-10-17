@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -177,8 +176,48 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 MySqlBinaryExpression e => ApplyTypeMappingOnMySqlBinary(e, typeMapping),
                 MySqlMatchExpression e => ApplyTypeMappingOnMatch(e),
                 MySqlJsonArrayIndexExpression e => e.ApplyTypeMapping(typeMapping),
+                SqlBinaryExpression e => ApplyTypeMappingOnSqlBinary(e, typeMapping),
                 _ => base.ApplyTypeMapping(sqlExpression, typeMapping)
             };
+        }
+
+        private SqlBinaryExpression ApplyTypeMappingOnSqlBinary(SqlBinaryExpression sqlBinaryExpression, RelationalTypeMapping typeMapping)
+        {
+            var left = sqlBinaryExpression.Left;
+            var right = sqlBinaryExpression.Right;
+
+            var newSqlBinaryExpression = (SqlBinaryExpression)base.ApplyTypeMapping(sqlBinaryExpression, typeMapping);
+
+            // Handle the special case, that a JSON value is compared to a string (e.g. when used together with
+            // JSON_EXTRACT()).
+            // The string argument should not be interpreted as a JSON value, which it normally would due to inference
+            // if its type mapping hasn't been explicitly set before, but just as a string.
+            if (newSqlBinaryExpression.Left.TypeMapping is MySqlJsonTypeMapping newLeftTypeMapping &&
+                newLeftTypeMapping.ClrType == typeof(string) &&
+                right.TypeMapping is null &&
+                right.Type == typeof(string))
+            {
+                newSqlBinaryExpression = new SqlBinaryExpression(
+                    sqlBinaryExpression.OperatorType,
+                    ApplyTypeMapping(left, newLeftTypeMapping),
+                    ApplyTypeMapping(right, _typeMappingSource.FindMapping(right.Type)),
+                    newSqlBinaryExpression.Type,
+                    newSqlBinaryExpression.TypeMapping);
+            }
+            else if (newSqlBinaryExpression.Right.TypeMapping is MySqlJsonTypeMapping newRightTypeMapping &&
+                     newRightTypeMapping.ClrType == typeof(string) &&
+                     left.TypeMapping is null &&
+                     left.Type == typeof(string))
+            {
+                newSqlBinaryExpression = new SqlBinaryExpression(
+                    sqlBinaryExpression.OperatorType,
+                    ApplyTypeMapping(left, _typeMappingSource.FindMapping(left.Type)),
+                    ApplyTypeMapping(right, newRightTypeMapping),
+                    newSqlBinaryExpression.Type,
+                    newSqlBinaryExpression.TypeMapping);
+            }
+
+            return newSqlBinaryExpression;
         }
 
         private MySqlComplexFunctionArgumentExpression ApplyTypeMappingOnComplexFunctionArgument(MySqlComplexFunctionArgumentExpression complexFunctionArgumentExpression)

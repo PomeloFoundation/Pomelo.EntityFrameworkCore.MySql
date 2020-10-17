@@ -1,6 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using JetBrains.Annotations;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
@@ -13,6 +15,21 @@ namespace Microsoft.EntityFrameworkCore
     /// </summary>
     public static class MySqlJsonDbFunctionsExtensions
     {
+        /// <summary>
+        /// Explicitly converts <paramref name="value"/> to JSON.
+        /// </summary>
+        /// <param name="_">DbFunctions instance</param>
+        /// <param name="value">
+        /// The string to convert to JSON.
+        /// </param>
+        /// <returns> The JSON value. </returns>
+        /// <remarks>
+        /// Translates <paramref name="value"/> to `CAST(value as json)` where appropriate on server implementations
+        /// that support the `json` store type.
+        /// </remarks>
+        public static MySqlJsonString AsJson([CanBeNull] this DbFunctions _, [NotNull] string value)
+            => value;
+
         /// <summary>
         /// Returns the type of the outermost JSON value as a text string.
         /// </summary>

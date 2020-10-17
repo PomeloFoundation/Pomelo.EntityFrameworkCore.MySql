@@ -62,6 +62,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 
             var result = method.Name switch
             {
+                nameof(MySqlJsonDbFunctionsExtensions.AsJson)
+                    => _sqlExpressionFactory.ApplyTypeMapping(
+                        args[0],
+                        _sqlExpressionFactory.FindMapping(method.ReturnType, "json")),
                 nameof(MySqlJsonDbFunctionsExtensions.JsonType)
                     => _sqlExpressionFactory.Function(
                         "JSON_TYPE",

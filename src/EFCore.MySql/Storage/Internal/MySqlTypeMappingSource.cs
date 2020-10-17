@@ -7,6 +7,7 @@ using System.Data;
 using System.Linq;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
@@ -128,17 +129,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             // String mappings depend on the MySqlOptions.NoBackslashEscapes setting:
             //
 
-            _charUnicode = new MySqlStringTypeMapping("char", DbType.StringFixedLength, _options, fixedLength: true);
-            _varcharUnicode = new MySqlStringTypeMapping("varchar", DbType.String, _options);
-            _tinytextUnicode = new MySqlStringTypeMapping("tinytext", DbType.String, _options);
-            _textUnicode = new MySqlStringTypeMapping("text", DbType.String, _options);
-            _mediumtextUnicode = new MySqlStringTypeMapping("mediumtext", DbType.String, _options);
-            _longtextUnicode = new MySqlStringTypeMapping("longtext", DbType.String, _options);
+            _charUnicode = new MySqlStringTypeMapping("char", _options, fixedLength: true);
+            _varcharUnicode = new MySqlStringTypeMapping("varchar", _options);
+            _tinytextUnicode = new MySqlStringTypeMapping("tinytext", _options);
+            _textUnicode = new MySqlStringTypeMapping("text", _options);
+            _mediumtextUnicode = new MySqlStringTypeMapping("mediumtext", _options);
+            _longtextUnicode = new MySqlStringTypeMapping("longtext", _options);
 
-            _nchar = new MySqlStringTypeMapping("nchar", DbType.StringFixedLength, _options, fixedLength: true);
-            _nvarchar = new MySqlStringTypeMapping("nvarchar", DbType.String, _options);
+            _nchar = new MySqlStringTypeMapping("nchar", _options, fixedLength: true);
+            _nvarchar = new MySqlStringTypeMapping("nvarchar", _options);
 
-            _enum = new MySqlStringTypeMapping("enum", DbType.String, _options);
+            _enum = new MySqlStringTypeMapping("enum", _options);
 
             _guid = MySqlGuidTypeMapping.IsValidGuidFormat(_options.ConnectionSettings.GuidFormat)
                 ? new MySqlGuidTypeMapping(_options.ConnectionSettings.GuidFormat)
@@ -251,6 +252,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                             MySqlDateTimeType.Timestamp => _timeStampOffset,
                             _ => _dateTimeOffset,
                         }},
+
+                    // json
+                    { typeof(MySqlJsonString), _jsonDefaultString }
                 };
 
             // Boolean
@@ -346,7 +350,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 }
 
                 if (storeTypeName.Equals("json", StringComparison.OrdinalIgnoreCase) &&
-                    (clrType == null || clrType == typeof(string)))
+                    (clrType == null || clrType == typeof(string) || clrType == typeof(MySqlJsonString)))
                 {
                     return _jsonDefaultString;
                 }
@@ -420,14 +424,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                         size = null;
                     }
 
-                    var dbType = isUnicode
-                        ? isFixedLength
-                            ? DbType.StringFixedLength
-                            : DbType.String
-                        : isFixedLength
-                            ? DbType.AnsiStringFixedLength
-                            : DbType.AnsiString;
-
                     return new MySqlStringTypeMapping(
                         size == null
                             ? "longtext" + charSetSuffix
@@ -437,7 +433,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                               (isFixedLength
                                   ? "char("
                                   : "varchar(") + size + ")" + charSetSuffix,
-                        dbType,
                         _options,
                         isUnicode,
                         size,
