@@ -37,12 +37,13 @@ namespace Microsoft.Extensions.DependencyInjection
             var builder = new EntityFrameworkRelationalServicesBuilder(serviceCollection)
                 .TryAdd<LoggingDefinitions, MySqlLoggingDefinitions>()
                 .TryAdd<IDatabaseProvider, DatabaseProvider<MySqlOptionsExtension>>()
+                //.TryAdd<IValueGeneratorCache>(p => p.GetService<IMySqlValueGeneratorCache>())
                 .TryAdd<IRelationalTypeMappingSource, MySqlTypeMappingSource>()
-                .TryAdd<IRelationalTransactionFactory, MySqlRelationalTransactionFactory>()
                 .TryAdd<ISqlGenerationHelper, MySqlSqlGenerationHelper>()
                 .TryAdd<IRelationalAnnotationProvider, MySqlAnnotationProvider>()
-                .TryAdd<IProviderConventionSetBuilder, MySqlConventionSetBuilder>()
                 .TryAdd<IModelValidator, MySqlModelValidator>()
+                .TryAdd<IProviderConventionSetBuilder, MySqlConventionSetBuilder>()
+                //.TryAdd<IRelationalValueBufferFactoryFactory, TypedRelationalValueBufferFactoryFactory>() // What is that?
                 .TryAdd<IUpdateSqlGenerator, MySqlUpdateSqlGenerator>()
                 .TryAdd<IModificationCommandBatchFactory, MySqlModificationCommandBatchFactory>()
                 .TryAdd<IValueGeneratorSelector, MySqlValueGeneratorSelector>()
@@ -52,21 +53,26 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<IHistoryRepository, MySqlHistoryRepository>()
                 .TryAdd<ICompiledQueryCacheKeyGenerator, MySqlCompiledQueryCacheKeyGenerator>()
                 .TryAdd<IExecutionStrategyFactory, MySqlExecutionStrategyFactory>()
-                .TryAdd<ISingletonOptions, IMySqlOptions>(p => p.GetService<IMySqlOptions>())
                 .TryAdd<IMigrator, MySqlMigrator>()
                 .TryAdd<IMethodCallTranslatorProvider, MySqlMethodCallTranslatorProvider>()
                 .TryAdd<IMemberTranslatorProvider, MySqlMemberTranslatorProvider>()
+                .TryAdd<IEvaluatableExpressionFilter, MySqlEvaluatableExpressionFilter>()
                 .TryAdd<IQuerySqlGeneratorFactory, MySqlQuerySqlGeneratorFactory>()
+                .TryAdd<IRelationalSqlTranslatingExpressionVisitorFactory, MySqlSqlTranslatingExpressionVisitorFactory>()
                 .TryAdd<IRelationalParameterBasedSqlProcessorFactory, MySqlParameterBasedSqlProcessorFactory>()
                 .TryAdd<ISqlExpressionFactory, MySqlSqlExpressionFactory>()
-                .TryAdd<IRelationalSqlTranslatingExpressionVisitorFactory, MySqlSqlTranslatingExpressionVisitorFactory>()
-                .TryAdd<IQueryTranslationPostprocessorFactory, MySqlQueryTranslationPostprocessorFactory>()
+                .TryAdd<ISingletonOptions, IMySqlOptions>(p => p.GetService<IMySqlOptions>())
+                //.TryAdd<IValueConverterSelector, MySqlValueConverterSelector>()
                 .TryAdd<IQueryCompilationContextFactory, MySqlQueryCompilationContextFactory>()
+                .TryAdd<IQueryTranslationPostprocessorFactory, MySqlQueryTranslationPostprocessorFactory>()
                 .TryAdd<IMigrationsModelDiffer, MySqlMigrationsModelDiffer>()
+                .TryAdd<IRelationalTransactionFactory, MySqlRelationalTransactionFactory>() // CHECK: Still needed?
                 .TryAddProviderSpecificServices(m => m
+                    //.TryAddSingleton<IMySqlValueGeneratorCache, MySqlValueGeneratorCache>()
                     .TryAddSingleton<IMySqlOptions, MySqlOptions>()
-                    .TryAddScoped<IMySqlRelationalConnection, MySqlRelationalConnection>()
-                    .TryAddScoped<IMySqlUpdateSqlGenerator, MySqlUpdateSqlGenerator>());
+                    //.TryAddScoped<IMySqlSequenceValueGeneratorFactory, MySqlSequenceValueGeneratorFactory>()
+                    .TryAddScoped<IMySqlUpdateSqlGenerator, MySqlUpdateSqlGenerator>()
+                    .TryAddScoped<IMySqlRelationalConnection, MySqlRelationalConnection>());
 
             builder.TryAddCoreServices();
 

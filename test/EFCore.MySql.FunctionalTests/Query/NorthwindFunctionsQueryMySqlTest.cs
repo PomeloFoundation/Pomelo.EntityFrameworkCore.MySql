@@ -126,7 +126,7 @@ WHERE `c`.`ContactName` LIKE '%M%'");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0");
+WHERE (`c`.`ContactName` = '') OR (LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0)");
         }
 
         [ConditionalTheory]
@@ -137,7 +137,7 @@ WHERE LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0");
+WHERE (`c`.`ContactName` = '') OR (LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0)");
         }
 
         [ConditionalTheory]
@@ -425,7 +425,10 @@ WHERE TRIM('O' FROM `c`.`ContactTitle`) = 'wner'");
         {
             await base.String_FirstOrDefault_MethodCall(async);
 
-            AssertSql("TODO");
+            AssertSql(
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE SUBSTRING(`c`.`ContactName`, 1, 1) = 'A'");
         }
 
         public override async Task String_Contains_constant_with_whitespace(bool async)
@@ -447,14 +450,17 @@ WHERE `c`.`ContactName` LIKE '%     %'");
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE LOCATE(@__pattern_0, `c`.`ContactName`) > 0");
+WHERE (@__pattern_0 = '') OR (LOCATE(@__pattern_0, `c`.`ContactName`) > 0)");
         }
 
         public override async Task String_LastOrDefault_MethodCall(bool async)
         {
             await base.String_LastOrDefault_MethodCall(async);
 
-            AssertSql("TODO");
+            AssertSql(
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE SUBSTRING(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`), 1) = 's'");
         }
 
         public override async Task Where_math_abs3(bool async)

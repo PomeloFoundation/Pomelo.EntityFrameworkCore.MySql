@@ -15,6 +15,7 @@ using Pomelo.EntityFrameworkCore.MySql.Extensions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
 {
+    // TODO: Revamp
     public class MySqlUpdateSqlGenerator : UpdateSqlGenerator, IMySqlUpdateSqlGenerator
     {
         /// <summary>
@@ -115,6 +116,26 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
             return ResultSetMapping.NoResultSet;
         }
 
+        protected override void AppendInsertCommandHeader(
+            [NotNull] StringBuilder commandStringBuilder,
+            [NotNull] string name,
+            [CanBeNull] string schema,
+            [NotNull] IReadOnlyList<ColumnModification> operations)
+        {
+            Check.NotNull(commandStringBuilder, nameof(commandStringBuilder));
+            Check.NotEmpty(name, nameof(name));
+            Check.NotNull(operations, nameof(operations));
+
+            base.AppendInsertCommandHeader(commandStringBuilder, name, schema, operations);
+
+            if (operations.Count <= 0)
+            {
+                // An empty column and value list signales MySQL that only default values should be used.
+                // If not all columns have default values defined, an error occurs if STRICT_ALL_TABLES has been set.
+                commandStringBuilder.Append(" ()");
+            }
+        }
+
         protected override void AppendValuesHeader(
             [NotNull] StringBuilder commandStringBuilder,
             [NotNull] IReadOnlyList<ColumnModification> operations)
@@ -134,7 +155,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
         {
             base.AppendValues(commandStringBuilder, name, schema, operations);
 
-            if (operations.Count == 0)
+            if (operations.Count <= 0)
             {
                 commandStringBuilder.Append("()");
             }

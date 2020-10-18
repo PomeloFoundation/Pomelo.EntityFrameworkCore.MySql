@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
@@ -184,6 +186,17 @@ LIMIT 18446744073709551610 OFFSET @__p_1");
 SELECT DISTINCT EXTRACT(year FROM `o`.`OrderDate`)
 FROM `Orders` AS `o`
 WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__nextYear_0)");
+        }
+
+        public override Task Entity_equality_orderby_subquery(bool async)
+        {
+            // Ordering in the base test is arbitrary.
+            return AssertQuery(
+                async,
+                ss => ss.Set<Customer>().OrderBy(c => c.Orders.OrderBy(o => o.OrderID).FirstOrDefault()).ThenBy(c => c.CustomerID),
+                ss => ss.Set<Customer>().OrderBy(c => c.Orders.FirstOrDefault() == null ? (int?)null : c.Orders.OrderBy(o => o.OrderID).FirstOrDefault().OrderID).ThenBy(c => c.CustomerID),
+                entryCount: 91,
+                assertOrder: true);
         }
 
         [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]

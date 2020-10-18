@@ -80,7 +80,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions
         /// <returns> The store value generation strategy to set for the given property. </returns>
         public static new ValueGenerated? GetValueGenerated([NotNull] IProperty property, in StoreObjectIdentifier storeObject)
         {
-            var valueGenerated = RelationalValueGenerationConvention.GetValueGenerated(property);
+            var valueGenerated = RelationalValueGenerationConvention.GetValueGenerated(property, storeObject);
             if (valueGenerated != null)
             {
                 return valueGenerated;
