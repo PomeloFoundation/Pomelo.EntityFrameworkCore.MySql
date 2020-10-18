@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public partial class NorthwindSelectQueryMySqlTest : NorthwindSelectQueryRelationalTestBase<
-        NorthwindQueryMySqlFixture<NoopModelCustomizer>>
+    public partial class NorthwindSelectQueryMySqlTest
     {
         [SupportedServerVersionLessThanTheory(ServerVersion.CrossApplySupportKey)]
         [MemberData(nameof(IsAsyncData))]

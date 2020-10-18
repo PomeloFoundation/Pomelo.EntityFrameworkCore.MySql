@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
@@ -10,7 +12,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
+using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
@@ -30,9 +34,335 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                         new MySqlDbContextOptionsBuilder(new DbContextOptionsBuilder()).UseNetTopologySuite())
                     .OptionsBuilder).Options)
         {
+            //MigrationsSqlGeneratorTestBase
         }
 
         protected override string Schema { get; } = null;
+
+        public override void AddColumnOperation_with_unicode_overridden()
+        {
+            base.AddColumnOperation_with_unicode_overridden();
+
+            AssertSql(
+                @"ALTER TABLE `Person` ADD `Name` longtext CHARACTER SET utf8mb4 NULL;");
+        }
+
+        public override void AddColumnOperation_with_unicode_no_model()
+        {
+            base.AddColumnOperation_with_unicode_no_model();
+
+            AssertSql(
+                @"ALTER TABLE `Person` ADD `Name` longtext CHARACTER SET utf8mb4 NULL;");
+        }
+
+        public override void AddColumnOperation_with_fixed_length_no_model()
+        {
+            base.AddColumnOperation_with_fixed_length_no_model();
+
+            AssertSql(
+                @"ALTER TABLE `Person` ADD `Name` char(100) CHARACTER SET utf8mb4 NULL;");
+        }
+
+        public override void AddColumnOperation_with_maxLength_no_model()
+        {
+            base.AddColumnOperation_with_maxLength_no_model();
+
+            AssertSql(
+                @"ALTER TABLE `Person` ADD `Name` varchar(30) CHARACTER SET utf8mb4 NULL;");
+        }
+
+        public override void AddColumnOperation_with_precision_and_scale_overridden()
+        {
+            base.AddColumnOperation_with_precision_and_scale_overridden();
+
+            AssertSql(
+                @"ALTER TABLE `Person` ADD `Pi` decimal(15,10) NOT NULL;");
+        }
+
+        public override void AddColumnOperation_with_precision_and_scale_no_model()
+        {
+            base.AddColumnOperation_with_precision_and_scale_no_model();
+
+            AssertSql(
+                @"ALTER TABLE `Person` ADD `Pi` decimal(20,7) NOT NULL;");
+        }
+
+        public override void AddForeignKeyOperation_without_principal_columns()
+        {
+            base.AddForeignKeyOperation_without_principal_columns();
+
+            AssertSql(
+                @"ALTER TABLE `People` ADD FOREIGN KEY (`SpouseId`) REFERENCES `People`;");
+        }
+
+        public override void AlterColumnOperation_without_column_type()
+        {
+            base.AlterColumnOperation_without_column_type();
+
+            AssertSql(
+                @"ALTER TABLE `People` MODIFY COLUMN `LuckyNumber` int NOT NULL;");
+        }
+
+        public override void RenameTableOperation_legacy()
+        {
+            base.RenameTableOperation_legacy();
+
+            AssertSql(
+                @"ALTER TABLE `People` RENAME `Person`;");
+        }
+
+        public override void RenameTableOperation()
+        {
+            base.RenameTableOperation();
+
+            AssertSql(
+                @"ALTER TABLE `People` RENAME `Person`;");
+        }
+
+        public override void InsertDataOperation_all_args_spatial()
+        {
+            base.InsertDataOperation_all_args_spatial();
+
+            AssertSql(
+                @"INSERT INTO `People` (`Id`, `Full Name`, `Geometry`)
+VALUES (0, NULL, NULL);
+INSERT INTO `People` (`Id`, `Full Name`, `Geometry`)
+VALUES (1, 'Daenerys Targaryen', NULL);
+INSERT INTO `People` (`Id`, `Full Name`, `Geometry`)
+VALUES (2, 'John Snow', NULL);
+INSERT INTO `People` (`Id`, `Full Name`, `Geometry`)
+VALUES (3, 'Arya Stark', NULL);
+INSERT INTO `People` (`Id`, `Full Name`, `Geometry`)
+VALUES (4, 'Harry Strickland', NULL);
+INSERT INTO `People` (`Id`, `Full Name`, `Geometry`)
+VALUES (5, 'The Imp', NULL);
+INSERT INTO `People` (`Id`, `Full Name`, `Geometry`)
+VALUES (6, 'The Kingslayer', NULL);
+INSERT INTO `People` (`Id`, `Full Name`, `Geometry`)
+VALUES (7, 'Aemon Targaryen', X'E61000000107000000080000000102000000040000009A9999999999F13F9A999999999901409A999999999901409A999999999901409A999999999901409A9999999999F13F6666666666661C40CDCCCCCCCCCC1C400102000000040000006666666666661C40CDCCCCCCCCCC1C403333333333333440333333333333344033333333333334409A9999999999F13F6666666666865140CDCCCCCCCC8C514001040000000300000001010000009A9999999999F13F9A9999999999014001010000009A999999999901409A9999999999014001010000009A999999999901409A9999999999F13F010300000001000000040000009A9999999999F13F9A999999999901409A999999999901409A999999999901409A999999999901409A9999999999F13F9A9999999999F13F9A99999999990140010300000001000000040000003333333333332440333333333333344033333333333334403333333333333440333333333333344033333333333324403333333333332440333333333333344001010000009A9999999999F13F9A999999999901400105000000020000000102000000040000009A9999999999F13F9A999999999901409A999999999901409A999999999901409A999999999901409A9999999999F13F6666666666661C40CDCCCCCCCCCC1C400102000000040000006666666666661C40CDCCCCCCCCCC1C403333333333333440333333333333344033333333333334409A9999999999F13F6666666666865140CDCCCCCCCC8C51400106000000020000000103000000010000000400000033333333333324403333333333333440333333333333344033333333333334403333333333333440333333333333244033333333333324403333333333333440010300000001000000040000009A9999999999F13F9A999999999901409A999999999901409A999999999901409A999999999901409A9999999999F13F9A9999999999F13F9A99999999990140');");
+        }
+
+        public override void InsertDataOperation_required_args()
+        {
+            base.InsertDataOperation_required_args();
+
+            AssertSql(
+                @"INSERT INTO `People` (`First Name`)
+VALUES ('John');");
+        }
+
+        public override void InsertDataOperation_required_args_composite()
+        {
+            base.InsertDataOperation_required_args_composite();
+
+            AssertSql(
+                @"INSERT INTO `People` (`First Name`, `Last Name`)
+VALUES ('John', 'Snow');");
+        }
+
+        public override void InsertDataOperation_required_args_multiple_rows()
+        {
+            base.InsertDataOperation_required_args_multiple_rows();
+
+            AssertSql(
+                @"INSERT INTO `People` (`First Name`)
+VALUES ('John');
+INSERT INTO `People` (`First Name`)
+VALUES ('Daenerys');");
+        }
+
+        public override void InsertDataOperation_throws_for_unsupported_column_types()
+        {
+            base.InsertDataOperation_throws_for_unsupported_column_types();
+        }
+
+        public override void DeleteDataOperation_all_args()
+        {
+            base.DeleteDataOperation_all_args();
+
+            AssertSql(
+                @"DELETE FROM `People`
+WHERE `First Name` = 'Hodor';
+SELECT ROW_COUNT();
+
+DELETE FROM `People`
+WHERE `First Name` = 'Daenerys';
+SELECT ROW_COUNT();
+
+DELETE FROM `People`
+WHERE `First Name` = 'John';
+SELECT ROW_COUNT();
+
+DELETE FROM `People`
+WHERE `First Name` = 'Arya';
+SELECT ROW_COUNT();
+
+DELETE FROM `People`
+WHERE `First Name` = 'Harry';
+SELECT ROW_COUNT();");
+        }
+
+        public override void DeleteDataOperation_all_args_composite()
+        {
+            base.DeleteDataOperation_all_args_composite();
+
+            AssertSql(
+                @"DELETE FROM `People`
+WHERE `First Name` = 'Hodor' AND `Last Name` IS NULL;
+SELECT ROW_COUNT();
+
+DELETE FROM `People`
+WHERE `First Name` = 'Daenerys' AND `Last Name` = 'Targaryen';
+SELECT ROW_COUNT();
+
+DELETE FROM `People`
+WHERE `First Name` = 'John' AND `Last Name` = 'Snow';
+SELECT ROW_COUNT();
+
+DELETE FROM `People`
+WHERE `First Name` = 'Arya' AND `Last Name` = 'Stark';
+SELECT ROW_COUNT();
+
+DELETE FROM `People`
+WHERE `First Name` = 'Harry' AND `Last Name` = 'Strickland';
+SELECT ROW_COUNT();");
+        }
+
+        public override void DeleteDataOperation_required_args()
+        {
+            base.DeleteDataOperation_required_args();
+
+            AssertSql(
+                @"DELETE FROM `People`
+WHERE `Last Name` = 'Snow';
+SELECT ROW_COUNT();");
+        }
+
+        public override void DeleteDataOperation_required_args_composite()
+        {
+            base.DeleteDataOperation_required_args_composite();
+
+            AssertSql(
+                @"DELETE FROM `People`
+WHERE `First Name` = 'John' AND `Last Name` = 'Snow';
+SELECT ROW_COUNT();");
+        }
+
+        public override void UpdateDataOperation_all_args()
+        {
+            base.UpdateDataOperation_all_args();
+
+            AssertSql(
+                @"UPDATE `People` SET `Birthplace` = 'Winterfell', `House Allegiance` = 'Stark', `Culture` = 'Northmen'
+WHERE `First Name` = 'Hodor';
+SELECT ROW_COUNT();
+
+UPDATE `People` SET `Birthplace` = 'Dragonstone', `House Allegiance` = 'Targaryen', `Culture` = 'Valyrian'
+WHERE `First Name` = 'Daenerys';
+SELECT ROW_COUNT();");
+        }
+
+        public override void UpdateDataOperation_all_args_composite()
+        {
+            base.UpdateDataOperation_all_args_composite();
+
+            AssertSql(
+                @"UPDATE `People` SET `House Allegiance` = 'Stark'
+WHERE `First Name` = 'Hodor' AND `Last Name` IS NULL;
+SELECT ROW_COUNT();
+
+UPDATE `People` SET `House Allegiance` = 'Targaryen'
+WHERE `First Name` = 'Daenerys' AND `Last Name` = 'Targaryen';
+SELECT ROW_COUNT();");
+        }
+
+        public override void UpdateDataOperation_all_args_composite_multi()
+        {
+            base.UpdateDataOperation_all_args_composite_multi();
+
+            AssertSql(
+                @"UPDATE `People` SET `Birthplace` = 'Winterfell', `House Allegiance` = 'Stark', `Culture` = 'Northmen'
+WHERE `First Name` = 'Hodor' AND `Last Name` IS NULL;
+SELECT ROW_COUNT();
+
+UPDATE `People` SET `Birthplace` = 'Dragonstone', `House Allegiance` = 'Targaryen', `Culture` = 'Valyrian'
+WHERE `First Name` = 'Daenerys' AND `Last Name` = 'Targaryen';
+SELECT ROW_COUNT();");
+        }
+
+        public override void UpdateDataOperation_all_args_multi()
+        {
+            base.UpdateDataOperation_all_args_multi();
+
+            AssertSql(
+                @"UPDATE `People` SET `Birthplace` = 'Dragonstone', `House Allegiance` = 'Targaryen', `Culture` = 'Valyrian'
+WHERE `First Name` = 'Daenerys';
+SELECT ROW_COUNT();");
+        }
+
+        public override void UpdateDataOperation_required_args()
+        {
+            base.UpdateDataOperation_required_args();
+
+            AssertSql(
+                @"UPDATE `People` SET `House Allegiance` = 'Targaryen'
+WHERE `First Name` = 'Daenerys';
+SELECT ROW_COUNT();");
+        }
+
+        public override void UpdateDataOperation_required_args_multiple_rows()
+        {
+            base.UpdateDataOperation_required_args_multiple_rows();
+
+            AssertSql(
+                @"UPDATE `People` SET `House Allegiance` = 'Stark'
+WHERE `First Name` = 'Hodor';
+SELECT ROW_COUNT();
+
+UPDATE `People` SET `House Allegiance` = 'Targaryen'
+WHERE `First Name` = 'Daenerys';
+SELECT ROW_COUNT();");
+        }
+
+        public override void UpdateDataOperation_required_args_composite()
+        {
+            base.UpdateDataOperation_required_args_composite();
+
+            AssertSql(
+                @"UPDATE `People` SET `House Allegiance` = 'Targaryen'
+WHERE `First Name` = 'Daenerys' AND `Last Name` = 'Targaryen';
+SELECT ROW_COUNT();");
+        }
+
+        public override void UpdateDataOperation_required_args_composite_multi()
+        {
+            base.UpdateDataOperation_required_args_composite_multi();
+
+            AssertSql(
+                @"UPDATE `People` SET `Birthplace` = 'Dragonstone', `House Allegiance` = 'Targaryen', `Culture` = 'Valyrian'
+WHERE `First Name` = 'Daenerys' AND `Last Name` = 'Targaryen';
+SELECT ROW_COUNT();");
+        }
+
+        public override void UpdateDataOperation_required_args_multi()
+        {
+            base.UpdateDataOperation_required_args_multi();
+
+            AssertSql(
+                @"UPDATE `People` SET `Birthplace` = 'Dragonstone', `House Allegiance` = 'Targaryen', `Culture` = 'Valyrian'
+WHERE `First Name` = 'Daenerys';
+SELECT ROW_COUNT();");
+        }
+
+        public override void DefaultValue_with_line_breaks(bool isUnicode)
+        {
+            base.DefaultValue_with_line_breaks(isUnicode);
+
+            AssertSql(
+                @"CREATE TABLE `TestLineBreaks` (
+    `TestDefaultValue` longtext CHARACTER SET utf8mb4 NOT NULL
+);");
+        }
 
         [ConditionalFact]
         public virtual void DefaultValue_not_generated_for_text_column()
@@ -734,6 +1064,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 );" + EOL,
                 Sql,
                 ignoreLineEndingDifferences: true);
+        }
+
+        protected new void AssertSql(string expected)
+        {
+            var testSqlLoggerFactory = new TestSqlLoggerFactory();
+            var logger = testSqlLoggerFactory.CreateLogger(nameof(MySqlMigrationsSqlGeneratorTest));
+            logger.Log(
+                LogLevel.Information,
+                RelationalEventId.CommandExecuted.Id,
+                new List<KeyValuePair<string, object>>
+                {
+                    new KeyValuePair<string, object>("commandText", Sql.Trim()),
+                    new KeyValuePair<string, object>("parameters", string.Empty)
+                }.AsReadOnly(),
+                null,
+                (pairs, exception) => (string) pairs.First(kvp => kvp.Key == "commandText").Value);
+            testSqlLoggerFactory.AssertBaseline(new[] {expected});
         }
 
         private void Generate(
