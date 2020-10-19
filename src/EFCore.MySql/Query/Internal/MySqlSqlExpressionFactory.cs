@@ -207,6 +207,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 right,
                 typeMapping);
 
+        public virtual MySqlBinaryExpression NonOptimizedEqual(
+            SqlExpression left,
+            SqlExpression right,
+            RelationalTypeMapping typeMapping = null)
+            => MakeBinary(
+                MySqlBinaryExpressionOperatorType.NonOptimizedEqual,
+                left,
+                right,
+                typeMapping);
+
         #endregion Expression factory methods
 
         public virtual MySqlBinaryExpression MakeBinary(
@@ -349,16 +359,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
             switch (sqlBinaryExpression.OperatorType)
             {
+                case MySqlBinaryExpressionOperatorType.NonOptimizedEqual:
+                    inferredTypeMapping = ExpressionExtensions.InferTypeMapping(left, right)
+                                          // We avoid object here since the result does not get typeMapping from outside.
+                                          ?? (left.Type != typeof(object)
+                                              ? _typeMappingSource.FindMapping(left.Type)
+                                              : _typeMappingSource.FindMapping(right.Type));
+                    resultType = typeof(bool);
+                    resultTypeMapping = _boolTypeMapping;
+                    break;
+
                 case MySqlBinaryExpressionOperatorType.IntegerDivision:
-                {
                     inferredTypeMapping = typeMapping ?? ExpressionExtensions.InferTypeMapping(left, right);
-                    resultType = left.Type;
+                    resultType = inferredTypeMapping?.ClrType ?? left.Type;
                     resultTypeMapping = inferredTypeMapping;
-                }
-                break;
+                    break;
 
                 default:
-                    throw new InvalidOperationException("Incorrect OperatorType for MySqlBinaryExpression");
+                    throw new InvalidOperationException($"Incorrect {nameof(MySqlBinaryExpression.OperatorType)} for {nameof(MySqlBinaryExpression)}");
             }
 
             return new MySqlBinaryExpression(

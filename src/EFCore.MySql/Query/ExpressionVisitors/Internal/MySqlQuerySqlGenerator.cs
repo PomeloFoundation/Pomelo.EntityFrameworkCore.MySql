@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
@@ -15,7 +13,6 @@ using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
@@ -421,23 +418,30 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         public Expression VisitMySqlBinaryExpression(MySqlBinaryExpression mySqlBinaryExpression)
         {
-            Sql.Append("(");
-            Visit(mySqlBinaryExpression.Left);
-            Sql.Append(")");
-
-            switch (mySqlBinaryExpression.OperatorType)
+            if (mySqlBinaryExpression.OperatorType == MySqlBinaryExpressionOperatorType.NonOptimizedEqual)
             {
-                case MySqlBinaryExpressionOperatorType.IntegerDivision:
-                    Sql.Append(" DIV ");
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException();
+                Visit(_sqlExpressionFactory.Equal(mySqlBinaryExpression.Left, mySqlBinaryExpression.Right));
             }
+            else
+            {
+                Sql.Append("(");
+                Visit(mySqlBinaryExpression.Left);
+                Sql.Append(")");
 
-            Sql.Append("(");
-            Visit(mySqlBinaryExpression.Right);
-            Sql.Append(")");
+                switch (mySqlBinaryExpression.OperatorType)
+                {
+                    case MySqlBinaryExpressionOperatorType.IntegerDivision:
+                        Sql.Append(" DIV ");
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
+                Sql.Append("(");
+                Visit(mySqlBinaryExpression.Right);
+                Sql.Append(")");
+            }
 
             return mySqlBinaryExpression;
         }

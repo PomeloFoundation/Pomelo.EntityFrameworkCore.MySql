@@ -17,6 +17,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         /// TODO
         /// </summary>
         IntegerDivision,
+
+        /// <summary>
+        /// Use to force an equals expression, that will not be optimized by EF Core.
+        /// Can be used, to force a `value = TRUE` expression.
+        /// </summary>
+        NonOptimizedEqual,
     }
 
     public class MySqlBinaryExpression : SqlExpression
@@ -81,6 +87,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
                 case MySqlBinaryExpressionOperatorType.IntegerDivision:
                     expressionPrinter.Append(" DIV ");
                     break;
+                case MySqlBinaryExpressionOperatorType.NonOptimizedEqual:
+                    expressionPrinter.Append(" = ");
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
             requiresBrackets = RequiresBrackets(Right);
