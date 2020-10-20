@@ -52,30 +52,32 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 return _jsonPocoTranslator?.TranslateArrayLength(sqlOperand);
             }
 
+            var visitedExpression = base.VisitUnary(unaryExpression);
+            if (visitedExpression == null)
+            {
+                return null;
+            }
+
             // Make explicit casts implicit if they are applied to a JSON traversal object.
             // It is pretty common for Newtonsoft.Json objects to be cast to other types (e.g. casting from
             // JToken to JArray to check an arrays length via the JContainer.Count property).
-            if (unaryExpression.NodeType == ExpressionType.Convert ||
-                unaryExpression.NodeType == ExpressionType.ConvertChecked)
+            if (visitedExpression is SqlUnaryExpression visitedUnaryExpression &&
+                visitedUnaryExpression.Operand is MySqlJsonTraversalExpression traversal &&
+                unaryExpression.NodeType == visitedUnaryExpression.NodeType &&
+                (unaryExpression.NodeType == ExpressionType.Convert ||
+                 unaryExpression.NodeType == ExpressionType.ConvertChecked))
             {
-                var visitedOperand = Visit(unaryExpression.Operand);
-
-                if (visitedOperand is MySqlJsonTraversalExpression traversal)
-                {
-                    return unaryExpression.Type == typeof(object)
-                        ? visitedOperand
-                        : traversal.Clone(
-                            traversal.ReturnsText,
-                            unaryExpression.Type,
-                            Dependencies.TypeMappingSource.FindMapping(unaryExpression.Type));
-                }
+                return unaryExpression.Type == typeof(object)
+                    ? traversal
+                    : traversal.Clone(
+                        traversal.ReturnsText,
+                        unaryExpression.Type,
+                        Dependencies.TypeMappingSource.FindMapping(unaryExpression.Type));
             }
-
-            var expression = base.VisitUnary(unaryExpression);
 
             // MySQL implicitly casts numbers used in BITWISE NOT operations (~ operator) to BIGINT UNSIGNED.
             // We need to cast them back, to get the expected result.
-            if (expression is SqlUnaryExpression sqlUnaryExpression &&
+            if (visitedExpression is SqlUnaryExpression sqlUnaryExpression &&
                 sqlUnaryExpression.OperatorType == ExpressionType.Not &&
                 sqlUnaryExpression.Type != typeof(bool))
             {
@@ -85,7 +87,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                     sqlUnaryExpression.TypeMapping);
             }
 
-            return expression;
+            return visitedExpression;
         }
 
         protected override Expression VisitBinary(BinaryExpression binaryExpression)
