@@ -65,7 +65,7 @@ WHERE `j`.`CustomerJson` = '{""Name"":""Test customer"",""Age"":80,""IsVip"":fal
         {
             using var ctx = CreateContext();
             var expected = ctx.JsonEntities.Find(1).CustomerJson;
-            var actual = ctx.JsonEntities.Single(e => e.CustomerJson == expected).CustomerJson;
+            var actual = ctx.JsonEntities.Single(e => e.CustomerJson == EF.Functions.AsJson(expected)).CustomerJson;
 
             Assert.Equal(actual, expected);
             AssertSql(
@@ -76,15 +76,90 @@ FROM `JsonEntities` AS `j`
 WHERE `j`.`Id` = @__p_0
 LIMIT 1",
                 //
-                $@"{InsertJsonDocument(@"@__expected_0='{""Age"":25,""Name"":""Joe"",""IsVip"":false,""Orders"":[{""Price"":99.5,""ShippingDate"":""2019-10-01"",""ShippingAddress"":""Some address 1""},{""Price"":23,""ShippingDate"":""2019-10-10"",""ShippingAddress"":""Some address 2""}],""Statistics"":{""Nested"":{""IntArray"":[3,4],""SomeProperty"":10},""Visits"":4,""Purchases"":3}}'", @"@__expected_0='{""Name"":""Joe"",""Age"":25,""IsVip"":false,""Statistics"":{""Visits"":4,""Purchases"":3,""Nested"":{""SomeProperty"":10,""IntArray"":[3,4]}},""Orders"":[{""Price"":99.5,""ShippingAddress"":""Some address 1"",""ShippingDate"":""2019-10-01""},{""Price"":23,""ShippingAddress"":""Some address 2"",""ShippingDate"":""2019-10-10""}]}'")}
+                $@"{InsertJsonDocument(@"@__AsJson_0='{""Age"":25,""Name"":""Joe"",""IsVip"":false,""Orders"":[{""Price"":99.5,""ShippingDate"":""2019-10-01"",""ShippingAddress"":""Some address 1""},{""Price"":23,""ShippingDate"":""2019-10-10"",""ShippingAddress"":""Some address 2""}],""Statistics"":{""Nested"":{""IntArray"":[3,4],""SomeProperty"":10},""Visits"":4,""Purchases"":3}}'", @"@__AsJson_0='{""Name"":""Joe"",""Age"":25,""IsVip"":false,""Statistics"":{""Visits"":4,""Purchases"":3,""Nested"":{""SomeProperty"":10,""IntArray"":[3,4]}},""Orders"":[{""Price"":99.5,""ShippingAddress"":""Some address 1"",""ShippingDate"":""2019-10-01""},{""Price"":23,""ShippingAddress"":""Some address 2"",""ShippingDate"":""2019-10-10""}]}'")} (Size = 4000)
 
 SELECT `j`.`Id`, `j`.`CustomerJson`
 FROM `JsonEntities` AS `j`
-WHERE `j`.`CustomerJson` = {InsertJsonConvert("@__expected_0")}
+WHERE {InsertJsonConvert("`j`.`CustomerJson`")} = {InsertJsonConvert("@__AsJson_0")}
+LIMIT 2");
+        }
+
+        [Fact]
+        public void Parameter_cast_MySqlJsonString()
+        {
+            using var ctx = CreateContext();
+            var expected = ctx.JsonEntities.Find(1).CustomerJson;
+            var actual = ctx.JsonEntities.Single(e => e.CustomerJson == (MySqlJsonString)expected).CustomerJson;
+
+            Assert.Equal(actual, expected);
+            AssertSql(
+                @"@__p_0='1'
+
+SELECT `j`.`Id`, `j`.`CustomerJson`
+FROM `JsonEntities` AS `j`
+WHERE `j`.`Id` = @__p_0
+LIMIT 1",
+                //
+                $@"{InsertJsonDocument(@"@__p_0='{""Age"":25,""Name"":""Joe"",""IsVip"":false,""Orders"":[{""Price"":99.5,""ShippingDate"":""2019-10-01"",""ShippingAddress"":""Some address 1""},{""Price"":23,""ShippingDate"":""2019-10-10"",""ShippingAddress"":""Some address 2""}],""Statistics"":{""Nested"":{""IntArray"":[3,4],""SomeProperty"":10},""Visits"":4,""Purchases"":3}}'", @"@__p_0='{""Name"":""Joe"",""Age"":25,""IsVip"":false,""Statistics"":{""Visits"":4,""Purchases"":3,""Nested"":{""SomeProperty"":10,""IntArray"":[3,4]}},""Orders"":[{""Price"":99.5,""ShippingAddress"":""Some address 1"",""ShippingDate"":""2019-10-01""},{""Price"":23,""ShippingAddress"":""Some address 2"",""ShippingDate"":""2019-10-10""}]}'")} (Size = 4000)
+
+SELECT `j`.`Id`, `j`.`CustomerJson`
+FROM `JsonEntities` AS `j`
+WHERE {InsertJsonConvert("`j`.`CustomerJson`")} = {InsertJsonConvert("@__p_0")}
 LIMIT 2");
         }
 
         #region Functions
+
+        [Fact]
+        public void JsonExtract()
+        {
+            using var ctx = CreateContext();
+
+            var count = ctx.JsonEntities.Count(e =>
+                EF.Functions.JsonExtract<string>(e.CustomerJson, "$.Name") == @"Joe");
+
+            Assert.Equal(1, count);
+            AssertSql(
+                $@"SELECT COUNT(*)
+FROM `JsonEntities` AS `j`
+WHERE JSON_EXTRACT(`j`.`CustomerJson`, '$.Name') = 'Joe'");
+        }
+
+        [Fact]
+        public void JsonExtract_JsonUnquote()
+        {
+            using var ctx = CreateContext();
+
+            var name = @"Joe";
+            var count = ctx.JsonEntities.Count(e =>
+                EF.Functions.JsonUnquote(EF.Functions.JsonExtract<string>(e.CustomerJson, "$.Name")) == name);
+
+            Assert.Equal(1, count);
+            AssertSql(
+                $@"@__name_1='Joe' (Size = 4000)
+
+SELECT COUNT(*)
+FROM `JsonEntities` AS `j`
+WHERE JSON_UNQUOTE(JSON_EXTRACT(`j`.`CustomerJson`, '$.Name')) = @__name_1");
+        }
+
+        [Fact]
+        public void JsonExtract_JsonUnquote_JsonQuote()
+        {
+            using var ctx = CreateContext();
+
+            var name = @"""Joe""";
+            var count = ctx.JsonEntities.Count(e =>
+                EF.Functions.JsonQuote(EF.Functions.JsonUnquote(EF.Functions.JsonExtract<string>(e.CustomerJson, "$.Name"))) == name);
+
+            Assert.Equal(1, count);
+            AssertSql(
+                $@"@__name_1='""Joe""' (Size = 4000)
+
+SELECT COUNT(*)
+FROM `JsonEntities` AS `j`
+WHERE JSON_QUOTE(JSON_UNQUOTE(JSON_EXTRACT(`j`.`CustomerJson`, '$.Name'))) = @__name_1");
+        }
 
         [Fact]
         public void JsonContains_with_string()

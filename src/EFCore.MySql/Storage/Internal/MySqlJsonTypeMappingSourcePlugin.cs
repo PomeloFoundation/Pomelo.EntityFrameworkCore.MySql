@@ -3,6 +3,7 @@
 
 using System;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -26,6 +27,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         {
             var clrType = mappingInfo.ClrType;
             var storeTypeName = mappingInfo.StoreTypeName;
+
+            if (clrType == typeof(MySqlJsonString))
+            {
+                clrType = typeof(string);
+                storeTypeName = "json";
+            }
 
             if (storeTypeName != null)
             {

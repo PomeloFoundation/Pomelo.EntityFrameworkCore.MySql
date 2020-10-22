@@ -27,7 +27,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
             Assert.Equal(1, count);
             AssertSql(
-                $@"@__element_1='{{""Name"":""Joe"",""Age"":25}}'
+                $@"@__element_1='{{""Name"":""Joe"",""Age"":25}}' (Size = 4000)
 
 SELECT COUNT(*)
 FROM `JsonEntities` AS `j`

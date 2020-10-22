@@ -68,7 +68,7 @@ FROM `JsonEntities` AS `j`
 WHERE `j`.`Id` = @__p_0
 LIMIT 1",
                 //
-                $@"@__expected_0='{{""Name"":""Joe"",""Age"":25,""ID"":""00000000-0000-0000-0000-000000000000"",""is_vip"":false,""Statistics"":{{""Visits"":4,""Purchases"":3,""Nested"":{{""SomeProperty"":10,""SomeNullableInt"":20,""IntArray"":[3,4],""SomeNullableGuid"":""d5f2685d-e5c4-47e5-97aa-d0266154eb2d""}}}},""Orders"":[{{""Price"":99.5,""ShippingAddress"":""Some address 1"",""ShippingDate"":""2019-10-01T00:00:00""}},{{""Price"":23.1,""ShippingAddress"":""Some address 2"",""ShippingDate"":""2019-10-10T00:00:00""}}]}}'
+                $@"@__expected_0='{{""Name"":""Joe"",""Age"":25,""ID"":""00000000-0000-0000-0000-000000000000"",""is_vip"":false,""Statistics"":{{""Visits"":4,""Purchases"":3,""Nested"":{{""SomeProperty"":10,""SomeNullableInt"":20,""IntArray"":[3,4],""SomeNullableGuid"":""d5f2685d-e5c4-47e5-97aa-d0266154eb2d""}}}},""Orders"":[{{""Price"":99.5,""ShippingAddress"":""Some address 1"",""ShippingDate"":""2019-10-01T00:00:00""}},{{""Price"":23.1,""ShippingAddress"":""Some address 2"",""ShippingDate"":""2019-10-10T00:00:00""}}]}}' (Size = 4000)
 
 SELECT `j`.`Id`, `j`.`Customer`, `j`.`ToplevelArray`
 FROM `JsonEntities` AS `j`
@@ -306,6 +306,57 @@ LIMIT 2");
         }
 
         #region Functions
+
+        [Fact]
+        public void JsonQuote_JsonUnquote()
+        {
+            using var ctx = CreateContext();
+
+            var count = ctx.JsonEntities.Count(e =>
+                EF.Functions.JsonUnquote(EF.Functions.JsonQuote(e.Customer.Name)) == @"Joe");
+
+            Assert.Equal(1, count);
+            AssertSql(
+                $@"SELECT COUNT(*)
+FROM `JsonEntities` AS `j`
+WHERE JSON_UNQUOTE(JSON_QUOTE(JSON_UNQUOTE(JSON_EXTRACT(`j`.`Customer`, '$.Name')))) = 'Joe'");
+        }
+
+        [Fact]
+        public void JsonExtract()
+        {
+            using var ctx = CreateContext();
+
+            var name = @"Joe";
+            var count = ctx.JsonEntities.Count(e =>
+                EF.Functions.JsonExtract<string>(e.Customer, "$.Name") == name);
+
+            Assert.Equal(1, count);
+            AssertSql(
+                $@"@__name_1='Joe' (Size = 4000)
+
+SELECT COUNT(*)
+FROM `JsonEntities` AS `j`
+WHERE JSON_EXTRACT(`j`.`Customer`, '$.Name') = @__name_1");
+        }
+
+        [Fact]
+        public void JsonExtract_JsonUnquote()
+        {
+            using var ctx = CreateContext();
+
+            var name = @"Joe";
+            var count = ctx.JsonEntities.Count(e =>
+                EF.Functions.JsonUnquote(EF.Functions.JsonExtract<string>(e.Customer, "$.Name")) == name);
+
+            Assert.Equal(1, count);
+            AssertSql(
+                $@"@__name_1='Joe' (Size = 4000)
+
+SELECT COUNT(*)
+FROM `JsonEntities` AS `j`
+WHERE JSON_UNQUOTE(JSON_EXTRACT(`j`.`Customer`, '$.Name')) = @__name_1");
+        }
 
         [Fact]
         public abstract void JsonContains_with_json_element();

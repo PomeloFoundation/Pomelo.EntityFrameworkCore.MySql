@@ -2,7 +2,9 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Data.Common;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -39,7 +41,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             => new MySqlJsonTypeMapping<T>(parameters, MySqlDbType, Options);
     }
 
-    public abstract class MySqlJsonTypeMapping : MySqlTypeMapping
+    public abstract class MySqlJsonTypeMapping : MySqlStringTypeMapping
     {
         [NotNull]
         protected IMySqlOptions Options { get; }
@@ -51,11 +53,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             [CanBeNull] ValueComparer valueComparer,
             [NotNull] IMySqlOptions options)
             : base(
-                storeType,
-                clrType,
+                new RelationalTypeMappingParameters(
+                    new CoreTypeMappingParameters(
+                        clrType,
+                        valueConverter,
+                        valueComparer),
+                    storeType,
+                    unicode: true),
                 MySqlDbType.JSON,
-                valueConverter: valueConverter,
-                valueComparer: valueComparer)
+                options,
+                false)
         {
             if (storeType != "json")
             {
@@ -69,12 +76,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             RelationalTypeMappingParameters parameters,
             MySqlDbType mySqlDbType,
             IMySqlOptions options)
-            : base(parameters, mySqlDbType)
+            : base(parameters, mySqlDbType, options, false)
         {
             Options = options;
         }
 
-        protected override string GenerateNonNullSqlLiteral(object value)
-            => MySqlStringTypeMapping.EscapeSqlLiteralWithLineBreaks((string)value, Options);
+        protected override void ConfigureParameter(DbParameter parameter)
+        {
+            base.ConfigureParameter(parameter);
+
+            // MySqlConnector does not know how to handle our custom MySqlJsonString type, that could be used when a
+            // string parameter is explicitly cast to it.
+            if (parameter.Value is MySqlJsonString mySqlJsonString)
+            {
+                parameter.Value = (string)mySqlJsonString;
+            }
+        }
     }
 }
