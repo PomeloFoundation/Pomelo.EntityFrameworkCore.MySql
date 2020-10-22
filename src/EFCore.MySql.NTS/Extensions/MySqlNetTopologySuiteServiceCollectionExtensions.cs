@@ -35,7 +35,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAddProviderSpecificServices(
                     x => x.TryAddSingletonEnumerable<IRelationalTypeMappingSourcePlugin, MySqlNetTopologySuiteTypeMappingSourcePlugin>()
                         .TryAddSingletonEnumerable<IMethodCallTranslatorPlugin, MySqlNetTopologySuiteMethodCallTranslatorPlugin>()
-                        .TryAddSingletonEnumerable<IMemberTranslatorPlugin, MySqlNetTopologySuiteMemberTranslatorPlugin>());
+                        .TryAddSingletonEnumerable<IMemberTranslatorPlugin, MySqlNetTopologySuiteMemberTranslatorPlugin>()
+                        .TryAddSingletonEnumerable<IMySqlEvaluatableExpressionFilter, MySqlNetTopologySuiteEvaluatableExpressionFilter>());
 
             return serviceCollection;
         }
