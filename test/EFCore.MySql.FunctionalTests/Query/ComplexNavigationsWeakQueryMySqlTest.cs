@@ -50,5 +50,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             return base.SelectMany_with_outside_reference_to_joined_table_correctly_translated_to_apply(async);
         }
+
+        [SupportedServerVersionLessThanTheory("8.0.22-mysql", Skip = "https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1210")]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Select_multiple_nav_prop_reference_optional(bool isAsync)
+        {
+            return base.Select_multiple_nav_prop_reference_optional(isAsync);
+        }
+
+        [SupportedServerVersionLessThanTheory("8.0.22-mysql", Skip = "https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1210")]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Optional_navigation_propagates_nullability_to_manually_created_left_join2(bool isAsync)
+        {
+            return base.Optional_navigation_propagates_nullability_to_manually_created_left_join2(isAsync);
+        }
     }
 }
