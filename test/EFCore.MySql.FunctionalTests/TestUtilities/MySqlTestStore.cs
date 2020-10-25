@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {
@@ -74,7 +75,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         }
 
         public static string CreateConnectionString(string name, bool noBackslashEscapes = false, MySqlGuidFormat guidFormat = MySqlGuidFormat.Default)
-            => new MySqlConnectionStringBuilder(AppConfig.Config["Data:ConnectionString"])
+            => new MySqlConnectionStringBuilder(AppConfig.ConnectionString)
             {
                 Database = name,
                 DefaultCommandTimeout = (uint)GetCommandTimeout(),

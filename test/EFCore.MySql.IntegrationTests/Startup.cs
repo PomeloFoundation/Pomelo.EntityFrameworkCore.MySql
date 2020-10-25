@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Buffers;
-using System.Data.Common;
-using System.Diagnostics;
 using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -13,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 
 namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
 {
@@ -61,7 +60,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
                     mysqlOptions =>
                     {
                         mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize);
-                        mysqlOptions.ServerVersion(AppConfig.Config["Data:ServerVersion"]);
+                        mysqlOptions.ServerVersion(AppConfig.ServerVersion);
                         if (AppConfig.EfRetryOnFailure > 0)
                         {
                             mysqlOptions.EnableRetryOnFailure(AppConfig.EfRetryOnFailure, TimeSpan.FromSeconds(5), null);
@@ -72,7 +71,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
 
         private static string GetConnectionString()
         {
-            var csb = new MySqlConnectionStringBuilder(AppConfig.Config["Data:ConnectionString"]);
+            var csb = new MySqlConnectionStringBuilder(AppConfig.ConnectionString);
 
             if (AppConfig.EfDatabase != null)
             {

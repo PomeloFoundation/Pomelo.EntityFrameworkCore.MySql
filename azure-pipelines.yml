@@ -24,27 +24,22 @@ jobs:
     matrix:
       MySQL 8.0.21:
         DOCKER_IMAGE: mysql:8.0.21 # MySQL 8.0.22 is broken, so we explicitly use the latest working one here
-        SERVER_VERSION: 8.0.21-mysql
         SQL_MODE: $(mysql_current_sql_mode)
         INTEGRATION_TESTS: "true"
       MySQL 5.7.32:
         DOCKER_IMAGE: mysql:5.7.32
-        SERVER_VERSION: 5.7.32-mysql
         SQL_MODE: $(mysql_legacy_sql_mode)
         INTEGRATION_TESTS: "true"
       MariaDB 10.5.5:
         DOCKER_IMAGE: mariadb:10.5.5
-        SERVER_VERSION: 10.5.5-mariadb
         SQL_MODE: $(mariadb_sql_mode)
         INTEGRATION_TESTS: "false"
       MariaDB 10.4.14:
         DOCKER_IMAGE: mariadb:10.4.14
-        SERVER_VERSION: 10.4.14-mariadb
         SQL_MODE: $(mariadb_sql_mode)
         INTEGRATION_TESTS: "false"
       MariaDB 10.3.24:
         DOCKER_IMAGE: mariadb:10.3.24
-        SERVER_VERSION: 10.3.24-mariadb
         SQL_MODE: $(mariadb_sql_mode)
         INTEGRATION_TESTS: "false"
   pool:

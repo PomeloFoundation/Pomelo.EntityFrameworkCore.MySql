@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Abstractions;
+using static Pomelo.EntityFrameworkCore.MySql.Tests.AppConfig;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
@@ -952,7 +953,7 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
         [ConditionalFact]
         public virtual void Columns_have_expected_data_types()
         {
-            var maxKeyLength = AppConfig.ServerVersion.MaxKeyLength;
+            var maxKeyLength = ServerVersion.MaxKeyLength;
             var actual = QueryForColumnTypes(CreateContext(), _testOutputHelper);
 
             var expected = $@"Animal.Id ---> [int] [Precision = 10 Scale = 0]
@@ -1104,7 +1105,7 @@ MappedDataTypes.SByteAsSmallint ---> [smallint] [Precision = 5 Scale = 0]
 MappedDataTypes.SByteAsTinyint ---> [tinyint] [Precision = 3 Scale = 0]
 MappedDataTypes.ShortAsSmallint ---> [smallint] [Precision = 5 Scale = 0]
 MappedDataTypes.StringAsChar ---> [char] [MaxLength = 10]
-MappedDataTypes.StringAsJson ---> [{(AppConfig.ServerVersion.SupportsJsonDataTypeEmulation ? "longtext] [MaxLength = -1" : "json")}]
+MappedDataTypes.StringAsJson ---> [{(ServerVersion.SupportsJsonDataTypeEmulation ? "longtext] [MaxLength = -1" : "json")}]
 MappedDataTypes.StringAsLongtext ---> [longtext] [MaxLength = -1]
 MappedDataTypes.StringAsMediumtext ---> [mediumtext] [MaxLength = 16777215]
 MappedDataTypes.StringAsNChar ---> [char] [MaxLength = 10]
@@ -1149,7 +1150,7 @@ MappedNullableDataTypes.SByteAsSmallint ---> [nullable smallint] [Precision = 5 
 MappedNullableDataTypes.SbyteAsTinyint ---> [nullable tinyint] [Precision = 3 Scale = 0]
 MappedNullableDataTypes.ShortAsSmallint ---> [nullable smallint] [Precision = 5 Scale = 0]
 MappedNullableDataTypes.StringAsChar ---> [nullable char] [MaxLength = 20]
-MappedNullableDataTypes.StringAsJson ---> [nullable {(AppConfig.ServerVersion.SupportsJsonDataTypeEmulation ? "longtext] [MaxLength = -1" : "json")}]
+MappedNullableDataTypes.StringAsJson ---> [nullable {(ServerVersion.SupportsJsonDataTypeEmulation ? "longtext] [MaxLength = -1" : "json")}]
 MappedNullableDataTypes.StringAsMediumtext ---> [nullable mediumtext] [MaxLength = 8388607]
 MappedNullableDataTypes.StringAsNChar ---> [nullable char] [MaxLength = 20]
 MappedNullableDataTypes.StringAsNtext ---> [nullable text] [MaxLength = 65535]

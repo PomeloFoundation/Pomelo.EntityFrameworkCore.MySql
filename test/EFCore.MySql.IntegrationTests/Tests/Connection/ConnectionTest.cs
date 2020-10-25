@@ -1,13 +1,14 @@
 ﻿using System.Threading.Tasks;
 using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models;
 using MySql.Data.MySqlClient;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Connection
 {
     public class ConnectionTest
     {
-        private static readonly MySqlConnection Connection = new MySqlConnection(AppConfig.Config["Data:ConnectionString"]);
+        private static readonly MySqlConnection Connection = new MySqlConnection(AppConfig.ConnectionString);
 
         private static AppDbScope NewDbScope(bool reuseConnection)
         {
