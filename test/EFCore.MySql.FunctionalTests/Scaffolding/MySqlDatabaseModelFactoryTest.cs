@@ -459,10 +459,10 @@ CREATE TABLE `IceCreams` (
                 {
                     var pk = dbModel.Tables.Single().PrimaryKey;
 
-                    Assert.Equal("IceCreams", pk.Table.Name);
+                    Assert.Equal("IceCreams", pk.Table.Name, StringComparer.OrdinalIgnoreCase);
                     Assert.Equal(2, pk.Columns.Count);
-                    Assert.Equal("Name", pk.Columns[0].Name);
-                    Assert.Equal("Brand", pk.Columns[1].Name);
+                    Assert.Equal("Name", pk.Columns[0].Name, StringComparer.OrdinalIgnoreCase);
+                    Assert.Equal("Brand", pk.Columns[1].Name, StringComparer.OrdinalIgnoreCase);
                     Assert.Equal(new [] { 0, 20 }, pk.FindAnnotation(MySqlAnnotationNames.IndexPrefixLength)?.Value);
                 },
                 @"DROP TABLE IF EXISTS `IceCreams`;");
@@ -627,11 +627,11 @@ CREATE INDEX `IX_IceCreams_Brand_Name` ON `IceCreams` (`Name`, `Brand`(20));
                 {
                     var index = Assert.Single(dbModel.Tables.Single().Indexes);
 
-                    Assert.Equal("IceCreams", index.Table.Name);
-                    Assert.Equal("IX_IceCreams_Brand_Name", index.Name);
+                    Assert.Equal("IceCreams", index.Table.Name, StringComparer.OrdinalIgnoreCase);
+                    Assert.Equal("IX_IceCreams_Brand_Name", index.Name, StringComparer.OrdinalIgnoreCase);
                     Assert.Equal(2, index.Columns.Count);
-                    Assert.Equal("Name", index.Columns[0].Name);
-                    Assert.Equal("Brand", index.Columns[1].Name);
+                    Assert.Equal("Name", index.Columns[0].Name, StringComparer.OrdinalIgnoreCase);
+                    Assert.Equal("Brand", index.Columns[1].Name, StringComparer.OrdinalIgnoreCase);
                     Assert.Equal(new [] { 0, 20 }, index.FindAnnotation(MySqlAnnotationNames.IndexPrefixLength)?.Value);
                 },
                 @"DROP TABLE IF EXISTS `IceCreams`;");
@@ -658,12 +658,12 @@ CREATE UNIQUE INDEX `IX_IceCreams_Brand_Name_2` ON `IceCreams` (`Brand`(40), `Na
                 {
                     var index = Assert.Single(dbModel.Tables.Single().Indexes);
 
-                    Assert.Equal("IceCreams", index.Table.Name);
-                    Assert.Equal("IX_IceCreams_Brand_Name_1", index.Name);
+                    Assert.Equal("IceCreams", index.Table.Name, StringComparer.OrdinalIgnoreCase);
+                    Assert.Equal("IX_IceCreams_Brand_Name_1", index.Name, StringComparer.OrdinalIgnoreCase);
                     Assert.True(index.IsUnique);
                     Assert.Equal(2, index.Columns.Count);
-                    Assert.Equal("Name", index.Columns[0].Name);
-                    Assert.Equal("Brand", index.Columns[1].Name);
+                    Assert.Equal("Name", index.Columns[0].Name, StringComparer.OrdinalIgnoreCase);
+                    Assert.Equal("Brand", index.Columns[1].Name, StringComparer.OrdinalIgnoreCase);
                     Assert.Equal(new [] { 0, 40 }, index[MySqlAnnotationNames.IndexPrefixLength]);
                 },
                 @"DROP TABLE IF EXISTS `IceCreams`;");
@@ -690,12 +690,12 @@ CREATE UNIQUE INDEX `IX_IceCreams_Brand_Name_2` ON `IceCreams` (`Brand`, `Name`)
                 {
                     var index = Assert.Single(dbModel.Tables.Single().Indexes);
 
-                    Assert.Equal("IceCreams", index.Table.Name);
-                    Assert.Equal("IX_IceCreams_Brand_Name_1", index.Name);
+                    Assert.Equal("IceCreams", index.Table.Name, StringComparer.OrdinalIgnoreCase);
+                    Assert.Equal("IX_IceCreams_Brand_Name_1", index.Name, StringComparer.OrdinalIgnoreCase);
                     Assert.True(index.IsUnique);
                     Assert.Equal(2, index.Columns.Count);
-                    Assert.Equal("Name", index.Columns[0].Name);
-                    Assert.Equal("Brand", index.Columns[1].Name);
+                    Assert.Equal("Name", index.Columns[0].Name, StringComparer.OrdinalIgnoreCase);
+                    Assert.Equal("Brand", index.Columns[1].Name, StringComparer.OrdinalIgnoreCase);
                     Assert.Null(index[MySqlAnnotationNames.IndexPrefixLength]);
                 },
                 @"DROP TABLE IF EXISTS `IceCreams`;");
@@ -719,9 +719,9 @@ CREATE FULLTEXT INDEX `IX_IceCreams_Name` ON `IceCreams` (`Name`);",
                 {
                     var index = Assert.Single(dbModel.Tables.Single().Indexes);
 
-                    Assert.Equal("IceCreams", index.Table.Name);
+                    Assert.Equal("IceCreams", index.Table.Name, StringComparer.OrdinalIgnoreCase);
                     Assert.Equal(1, index.Columns.Count);
-                    Assert.Equal("Name", index.Columns[0].Name);
+                    Assert.Equal("Name", index.Columns[0].Name, StringComparer.OrdinalIgnoreCase);
                     Assert.Equal(true, index.FindAnnotation(MySqlAnnotationNames.FullTextIndex)?.Value);
                 },
                 @"DROP TABLE IF EXISTS `IceCreams`;");
@@ -745,9 +745,9 @@ CREATE SPATIAL INDEX `IX_IceCreams_Location` ON `IceCreamShop` (`Location`);",
                 {
                     var index = Assert.Single(dbModel.Tables.Single().Indexes);
 
-                    Assert.Equal("IceCreamShop", index.Table.Name);
+                    Assert.Equal("IceCreamShop", index.Table.Name, StringComparer.OrdinalIgnoreCase);
                     Assert.Equal(1, index.Columns.Count);
-                    Assert.Equal("Location", index.Columns[0].Name);
+                    Assert.Equal("Location", index.Columns[0].Name, StringComparer.OrdinalIgnoreCase);
                     Assert.Equal(true, index.FindAnnotation(MySqlAnnotationNames.SpatialIndex)?.Value);
                 },
                 @"DROP TABLE IF EXISTS `IceCreamShop`;");
