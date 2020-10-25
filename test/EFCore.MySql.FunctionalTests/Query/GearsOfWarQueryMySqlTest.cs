@@ -639,13 +639,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Take_without_orderby_followed_by_orderBy_is_pushed_down2(isAsync);
         }
 
-        [SupportedServerVersionLessThanTheory("8.0.22-mysql", Skip = "https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1210")]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task Correlated_collections_on_left_join_with_null_value(bool isAsync)
-        {
-            return base.Correlated_collections_on_left_join_with_null_value(isAsync);
-        }
-
         private void AssertMission(Mission e, Mission a)
         {
             Assert.Equal(e == null, a == null);
