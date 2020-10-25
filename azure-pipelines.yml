@@ -22,14 +22,14 @@ jobs:
 - job: Linux
   strategy:
     matrix:
-      MySQL 8.0.18:
-        DOCKER_IMAGE: mysql:8.0.18
-        SERVER_VERSION: 8.0.18-mysql
+      MySQL 8.0.21:
+        DOCKER_IMAGE: mysql:8.0.21 # MySQL 8.0.22 is broken, so we explicitly use the latest working one here
+        SERVER_VERSION: 8.0.21-mysql
         SQL_MODE: $(mysql_current_sql_mode)
         INTEGRATION_TESTS: "true"
-      MySQL 5.7.27:
-        DOCKER_IMAGE: mysql:5.7.27
-        SERVER_VERSION: 5.7.27-mysql
+      MySQL 5.7.32:
+        DOCKER_IMAGE: mysql:5.7.32
+        SERVER_VERSION: 5.7.32-mysql
         SQL_MODE: $(mysql_legacy_sql_mode)
         INTEGRATION_TESTS: "true"
       MariaDB 10.5.5:
@@ -37,14 +37,14 @@ jobs:
         SERVER_VERSION: 10.5.5-mariadb
         SQL_MODE: $(mariadb_sql_mode)
         INTEGRATION_TESTS: "false"
-      MariaDB 10.4.10:
-        DOCKER_IMAGE: mariadb:10.4.10
-        SERVER_VERSION: 10.4.10-mariadb
+      MariaDB 10.4.14:
+        DOCKER_IMAGE: mariadb:10.4.14
+        SERVER_VERSION: 10.4.14-mariadb
         SQL_MODE: $(mariadb_sql_mode)
         INTEGRATION_TESTS: "false"
-      MariaDB 10.3.18:
-        DOCKER_IMAGE: mariadb:10.3.20
-        SERVER_VERSION: 10.3.20-mariadb
+      MariaDB 10.3.24:
+        DOCKER_IMAGE: mariadb:10.3.24
+        SERVER_VERSION: 10.3.24-mariadb
         SQL_MODE: $(mariadb_sql_mode)
         INTEGRATION_TESTS: "false"
   pool:
@@ -175,13 +175,23 @@ jobs:
     mysql_ini_path: C:\tools\mysql\current\my.ini
     mysql_data_path: C:\ProgramData\MySQL\data
     mysql_service_name: MySQL
+    mysql_server_version: 8.0.21 # MySQL 8.0.22 is broken, so we explicitly use the latest working one here
   steps:
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK'
     inputs:
       version: $(dotnet_version)
   - pwsh: |
-      choco install mysql
+      if ("$(mysql_server_version)" -eq "")
+      {
+        echo "Chocolatey command: choco install mysql"
+        choco install mysql
+      }
+      else
+      {
+        echo "Chocolatey command: choco install mysql --version=$(mysql_server_version)"
+        choco install mysql --version=$(mysql_server_version)
+      }
 
       Stop-Service $(mysql_service_name)
       "lower_case_table_names=$(lower_case_table_names)" >> $(mysql_ini_path)
