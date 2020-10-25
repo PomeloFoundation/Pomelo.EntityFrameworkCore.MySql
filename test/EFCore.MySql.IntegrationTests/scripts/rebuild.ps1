@@ -12,6 +12,8 @@ function Insert-Content ($file) {
     }
 }
 
+dotnet tool restore;
+
 Push-Location (Join-Path (Split-Path $MyInvocation.MyCommand.Path) "../")
 
 Remove-Item (Join-Path "Migrations" "*.cs")

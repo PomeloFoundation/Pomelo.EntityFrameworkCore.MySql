@@ -16,6 +16,7 @@ using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 
 // ReSharper disable InconsistentNaming
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Scaffolding

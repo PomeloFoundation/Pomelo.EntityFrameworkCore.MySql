@@ -2,7 +2,9 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Data;
 using System.Text.RegularExpressions;
+using MySql.Data.MySqlClient;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage
@@ -68,5 +70,27 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
 
         public override string ToString()
             => Version + "-" + (Type == ServerType.MariaDb ? "mariadb" : "mysql");
+
+        public static ServerVersion AutoDetect(string connectionString)
+        {
+            using var connection = new MySqlConnection(
+                new MySqlConnectionStringBuilder(connectionString)
+                {
+                    Database = string.Empty
+                }.ConnectionString);
+            connection.Open();
+            return new ServerVersion(connection.ServerVersion);
+        }
+
+        public static ServerVersion AutoDetect(MySqlConnection connection)
+        {
+            using var clonedConnection = connection.CloneWith(
+                new MySqlConnectionStringBuilder(connection.ConnectionString)
+                {
+                    Database = string.Empty
+                }.ConnectionString);
+            clonedConnection.Open();
+            return new ServerVersion(clonedConnection.ServerVersion);
+        }
     }
 }

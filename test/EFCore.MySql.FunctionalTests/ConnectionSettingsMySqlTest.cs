@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MySql.Data.MySqlClient;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
@@ -33,7 +33,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
-            
+
             context.SimpleGuidEntities.Add(new SimpleGuidEntity { GuidValue = new Guid("850368D8-93EA-4023-ACC7-6FA6E4C3B27F") });
             context.SaveChanges();
 
@@ -53,7 +53,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         private readonly IServiceProvider _serviceProvider = new ServiceCollection()
             .AddEntityFrameworkMySql()
             .BuildServiceProvider();
-        
+
         protected ConnectionSettingsContext CreateContext(MySqlGuidFormat guidFormat)
             => new ConnectionSettingsContext(_serviceProvider, "ConnectionSettings", guidFormat);
     }
