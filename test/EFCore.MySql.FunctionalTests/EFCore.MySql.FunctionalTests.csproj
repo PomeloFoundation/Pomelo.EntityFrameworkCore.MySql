@@ -69,6 +69,7 @@
 
   <ItemGroup>
     <Compile Include="..\..\src\Shared\*.cs" />
+    <Compile Remove="TestResults\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -87,6 +88,10 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="TestResults\**" />
+  </ItemGroup>
+  
   <Target Name="CheckConfigFile" BeforeTargets="Build">
     <Error Condition="!Exists('config.json')" Text="The &quot;config.json&quot; file could not be found. This file is mandatory to run the &quot;$(ProjectName)&quot; tests and needs to be created and configured after cloning the repository. The necessary setup steps are described in the &quot;README.md&quot; file, that is located in the base directory of the &quot;$(ProjectName)&quot; project." />
   </Target>
