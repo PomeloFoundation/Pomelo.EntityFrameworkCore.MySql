@@ -1,4 +1,6 @@
+using System;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
@@ -49,6 +51,30 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         public override Task SelectMany_with_outside_reference_to_joined_table_correctly_translated_to_apply(bool async)
         {
             return base.SelectMany_with_outside_reference_to_joined_table_correctly_translated_to_apply(async);
+        }
+
+        [ConditionalTheory(Skip = "https://bugs.mysql.com/bug.php?id=101276")]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Filtered_include_complex_three_level_with_middle_having_filter1(bool async)
+        {
+            return base.Filtered_include_complex_three_level_with_middle_having_filter1(async);
+        }
+
+        [ConditionalTheory(Skip = "https://bugs.mysql.com/bug.php?id=101276")]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Filtered_include_complex_three_level_with_middle_having_filter2(bool async)
+        {
+            return base.Filtered_include_complex_three_level_with_middle_having_filter2(async);
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public override async Task SelectMany_with_navigation_and_Distinct(bool async)
+        {
+            var message = (await Assert.ThrowsAsync<InvalidOperationException>(
+                () => base.SelectMany_with_navigation_and_Distinct(async))).Message;
+
+            Assert.Equal(RelationalStrings.InsufficientInformationToIdentifyOuterElementOfCollectionJoin, message);
         }
     }
 }

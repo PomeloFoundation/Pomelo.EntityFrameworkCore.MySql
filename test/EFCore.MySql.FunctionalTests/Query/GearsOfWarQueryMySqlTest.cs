@@ -297,5 +297,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             return base.Take_without_orderby_followed_by_orderBy_is_pushed_down2(async);
         }
+
+        [SupportedServerVersionTheory("8.0.22-mysql")]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Subquery_projecting_nullable_scalar_contains_nullable_value_needs_null_expansion(bool async)
+        {
+            return base.Subquery_projecting_nullable_scalar_contains_nullable_value_needs_null_expansion(async);
+        }
+
+        [SupportedServerVersionTheory("8.0.22-mysql")]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Subquery_projecting_non_nullable_scalar_contains_non_nullable_value_doesnt_need_null_expansion(bool async)
+        {
+            return base.Subquery_projecting_non_nullable_scalar_contains_non_nullable_value_doesnt_need_null_expansion(async);
+        }
     }
 }

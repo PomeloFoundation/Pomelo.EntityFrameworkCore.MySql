@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
@@ -52,27 +53,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 return _jsonPocoTranslator?.TranslateArrayLength(sqlOperand);
             }
 
-            var visitedExpression = base.VisitUnary(unaryExpression);
-            if (visitedExpression == null)
-            {
-                return null;
-            }
 
             // Make explicit casts implicit if they are applied to a JSON traversal object.
             // It is pretty common for Newtonsoft.Json objects to be cast to other types (e.g. casting from
             // JToken to JArray to check an arrays length via the JContainer.Count property).
-            if (visitedExpression is SqlUnaryExpression visitedUnaryExpression &&
-                visitedUnaryExpression.Operand is MySqlJsonTraversalExpression traversal &&
-                unaryExpression.NodeType == visitedUnaryExpression.NodeType &&
-                (unaryExpression.NodeType == ExpressionType.Convert ||
-                 unaryExpression.NodeType == ExpressionType.ConvertChecked))
+            if (unaryExpression.NodeType == ExpressionType.Convert ||
+                unaryExpression.NodeType == ExpressionType.ConvertChecked)
             {
-                return unaryExpression.Type == typeof(object)
-                    ? traversal
-                    : traversal.Clone(
-                        traversal.ReturnsText,
-                        unaryExpression.Type,
-                        Dependencies.TypeMappingSource.FindMapping(unaryExpression.Type));
+                var visitedOperand = Visit(unaryExpression.Operand);
+                if (visitedOperand is MySqlJsonTraversalExpression traversal)
+                {
+                    return unaryExpression.Type == typeof(object)
+                        ? traversal
+                        : traversal.Clone(
+                            traversal.ReturnsText,
+                            unaryExpression.Type,
+                            Dependencies.TypeMappingSource.FindMapping(unaryExpression.Type));
+                }
+
+                ResetTranslationErrorDetails();
+            }
+
+            var visitedExpression = base.VisitUnary(unaryExpression);
+            if (visitedExpression == null)
+            {
+                return null;
             }
 
             // MySQL implicitly casts numbers used in BITWISE NOT operations (~ operator) to BIGINT UNSIGNED.
@@ -101,10 +106,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 }
 
                 // Try translating ArrayIndex inside json column
-                return _jsonPocoTranslator?.TranslateMemberAccess(
+                var expression = _jsonPocoTranslator?.TranslateMemberAccess(
                     sqlLeft,
                     _sqlExpressionFactory.JsonArrayIndex(sqlRight),
                     binaryExpression.Type);
+
+                if (expression != null)
+                {
+                    return expression;
+                }
             }
 
             var visitedExpression = (SqlExpression)base.VisitBinary(binaryExpression);
@@ -144,6 +154,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return false;
         }
 
+        protected virtual void ResetTranslationErrorDetails()
+        {
+            // When we try translating an expression and later decide that we want to discard the result, we need to remove any translation
+            // error details, or those details might end up more than once in generated exceptions down the stack.
+            //
+            // We use a workaround here, that will result in the TranslationErrorDetails being set to `null` again.
+            // Otherwise, we would need to override  TranslationErrorDetails, AddTranslationErrorDetails and Translate, reimplement the
+            // TranslationErrorDetails functionality and maintain everything just to support resetting the TranslationErrorDetails property.
+            base.Translate(Expression.Constant(0));
+        }
+
         #region Copied from RelationalSqlTranslatingExpressionVisitor
 
         private static Expression TryRemoveImplicitConvert(Expression expression)
@@ -175,7 +196,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
             return expression;
         }
-
 
         [DebuggerStepThrough]
         private bool TranslationFailed(Expression original, Expression translation, out SqlExpression castTranslation)

@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
@@ -203,6 +205,16 @@ FROM `Orders` AS `o`");
         {
             return base.SelectMany_with_collection_being_correlated_subquery_which_references_inner_and_outer_entity(async);
         }
+
+        public override Task Reverse_without_explicit_ordering_throws(bool async)
+            => AssertTranslationFailedWithDetails(
+                () => base.Reverse_without_explicit_ordering_throws(async), RelationalStrings.MissingOrderingInSqlExpression);
+
+        public override async Task Projecting_after_navigation_and_distinct_throws(bool async)
+            => Assert.Equal(
+                RelationalStrings.InsufficientInformationToIdentifyOuterElementOfCollectionJoin,
+                (await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => base.Projecting_after_navigation_and_distinct_throws(async))).Message);
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);

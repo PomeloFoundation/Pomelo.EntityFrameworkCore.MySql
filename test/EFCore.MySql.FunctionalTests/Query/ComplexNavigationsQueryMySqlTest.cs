@@ -63,5 +63,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             return base.SelectMany_with_outside_reference_to_joined_table_correctly_translated_to_apply(async);
         }
+
+        [ConditionalTheory(Skip = "https://bugs.mysql.com/bug.php?id=101276")]
+        public override Task Filtered_include_complex_three_level_with_middle_having_filter1(bool async)
+        {
+            return base.Filtered_include_complex_three_level_with_middle_having_filter1(async);
+        }
+
+        [ConditionalTheory(Skip = "https://bugs.mysql.com/bug.php?id=101276")]
+        public override Task Filtered_include_complex_three_level_with_middle_having_filter2(bool async)
+        {
+            return base.Filtered_include_complex_three_level_with_middle_having_filter2(async);
+        }
     }
 }

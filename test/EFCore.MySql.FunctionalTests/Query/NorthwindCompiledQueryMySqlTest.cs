@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -74,6 +75,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     () => query(context, new[] {"ANATR"})
                         .ToListAsync());
             }
+        }
+
+        public override void MakeBinary_does_not_throw_for_unsupported_operator()
+        {
+            Assert.Equal(
+                CoreStrings.TranslationFailed("DbSet<Customer>()    .Where(c => c.CustomerID == (string)(__parameters[0]))"),
+                Assert.Throws<InvalidOperationException>(
+                    () => base.MakeBinary_does_not_throw_for_unsupported_operator()).Message.Replace("\r", "").Replace("\n", ""));
         }
 
         private void AssertSql(params string[] expected)

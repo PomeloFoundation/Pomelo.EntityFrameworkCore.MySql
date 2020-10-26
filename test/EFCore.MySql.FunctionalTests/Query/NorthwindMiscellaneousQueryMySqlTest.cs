@@ -224,6 +224,16 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
             return base.SelectMany_correlated_subquery_hard(async);
         }
 
+        // TODO: EF Core 5
+        [ConditionalTheory(Skip = "https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/996")]
+        public override Task Using_string_Equals_with_StringComparison_throws_informative_error(bool async)
+            => base.Using_string_Equals_with_StringComparison_throws_informative_error(async);
+
+        // TODO: EF Core 5
+        [ConditionalTheory(Skip = "https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/996")]
+        public override Task Using_static_string_Equals_with_StringComparison_throws_informative_error(bool async)
+            => base.Using_static_string_Equals_with_StringComparison_throws_informative_error(async);
+
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
