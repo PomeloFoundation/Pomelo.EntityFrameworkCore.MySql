@@ -43,6 +43,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string CrossApplyMySqlSupportVersionString = "8.0.14-mysql";
         // public const string CrossApplyMariaDbSupportVersionString = "?.?.?-mariadb"; // MDEV-19078, MDEV-6373
 
+        public const string OuterReferenceInMultiLevelSubqueryMySqlSupportVersionString = "8.0.14-mysql"; // Exact version has ne been verified yet
+        // public const string OuterReferenceInMultiLevelSubqueryMariaDbSupportVersionString = "?.?.?-mariadb";
+
         // public const string FloatCastMySqlSupportVersionString = "8.0.17-mysql"; // The implemented support drops some decimal places and rounds.
         // public const string FloatCastMariaDbSupportVersionString = "10.4.5-mariadb"; // The implemented support drops some decimal places and rounds.
 
@@ -115,7 +118,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string WindowFunctionsSupportKey = nameof(WindowFunctionsSupportKey);
         public const string OuterApplySupportKey = nameof(OuterApplySupportKey);
         public const string CrossApplySupportKey = nameof(CrossApplySupportKey);
-        public const string FloatCastSupportKey = nameof(FloatCastSupportKey);
+        public const string OuterReferenceInMultiLevelSubquerySupportKey = nameof(OuterReferenceInMultiLevelSubquerySupportKey);
         public const string DoubleCastSupportKey = nameof(DoubleCastSupportKey);
         public const string JsonSupportKey = nameof(JsonSupportKey);
         public const string GeneratedColumnsSupportKey = nameof(GeneratedColumnsSupportKey);
@@ -151,6 +154,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
             { WindowFunctionsSupportKey, new ServerVersionSupport(WindowFunctionsMySqlSupportVersionString, WindowFunctionsMariaDbSupportVersionString) },
             { OuterApplySupportKey, new ServerVersionSupport(OuterApplyMySqlSupportVersionString/*, OuterApplyMariaDbSupportVersionString*/) },
             { CrossApplySupportKey, new ServerVersionSupport(CrossApplyMySqlSupportVersionString/*, CrossApplyMariaDbSupportVersionString*/) },
+            { OuterReferenceInMultiLevelSubquerySupportKey, new ServerVersionSupport(OuterReferenceInMultiLevelSubqueryMySqlSupportVersionString/*, OuterReferenceInMultiLevelSubqueryMariaDbSupportVersionString*/) },
             { DoubleCastSupportKey, new ServerVersionSupport(DoubleCastMySqlSupportVersionString, DoubleCastMariaDbSupportVersionString) },
             { JsonSupportKey, new ServerVersionSupport(JsonMySqlSupportVersionString/*, JsonMariaDbSupportVersionString*/) },
             { GeneratedColumnsSupportKey, new ServerVersionSupport(GeneratedColumnsMySqlSupportVersionString, GeneratedColumnsMariaDbSupportVersionString) },
@@ -187,6 +191,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public virtual bool SupportsDoubleCast => SupportMap[DoubleCastSupportKey].IsSupported(this);
         public virtual bool SupportsOuterApply => SupportMap[OuterApplySupportKey].IsSupported(this);
         public virtual bool SupportsCrossApply => SupportMap[CrossApplySupportKey].IsSupported(this);
+        public virtual bool SupportsOuterReferenceInMultiLevelSubquery => SupportMap[OuterReferenceInMultiLevelSubquerySupportKey].IsSupported(this);
         public virtual bool SupportsJson => SupportMap[JsonSupportKey].IsSupported(this);
         public virtual bool SupportsGeneratedColumns => SupportMap[GeneratedColumnsSupportKey].IsSupported(this);
         public virtual bool SupportsNullableGeneratedColumns => SupportMap[NullableGeneratedColumnsSupportKey].IsSupported(this);

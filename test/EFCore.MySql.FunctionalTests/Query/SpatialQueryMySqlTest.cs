@@ -57,15 +57,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         public override Task Relate(bool async)
             => base.Relate(async);
 
-        [ConditionalTheory(Skip = "The M coordinate is currently not supported by MySQL and MariaDB.")]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task M(bool async)
-            => base.M(async);
+        #region Not supported by MySQL and MariaDB
 
-        [ConditionalTheory(Skip = "The Z coordinate is currently not supported by MySQL and MariaDB.")]
-        [MemberData(nameof(IsAsyncData))]
-        public override Task Z(bool async)
-            => base.Z(async);
+        public override Task Buffer_quadrantSegments(bool async) => Task.CompletedTask;
+        public override Task CoveredBy(bool async) => Task.CompletedTask; // Could be implemented using `MBRCoveredBy`
+        public override Task Covers(bool async) => Task.CompletedTask;
+        public override Task M(bool async) => Task.CompletedTask;
+        public override Task Normalized(bool async) => Task.CompletedTask;
+        public override Task Reverse(bool async) => Task.CompletedTask;
+        public override Task Union_void(bool async) => Task.CompletedTask;
+        public override Task Z(bool async) => Task.CompletedTask;
+
+        #endregion
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);

@@ -60,6 +60,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Client_member_and_unsupported_string_Equals_in_the_same_query(async);
         }
 
+        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
+        public override Task Subquery_projecting_non_nullable_scalar_contains_non_nullable_value_doesnt_need_null_expansion_negated(bool async)
+        {
+            return base.Subquery_projecting_non_nullable_scalar_contains_non_nullable_value_doesnt_need_null_expansion_negated(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
+        public override Task Subquery_projecting_nullable_scalar_contains_nullable_value_needs_null_expansion_negated(bool async)
+        {
+            return base.Subquery_projecting_nullable_scalar_contains_nullable_value_needs_null_expansion_negated(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
+        public override Task SelectMany_predicate_with_non_equality_comparison_with_Take_doesnt_convert_to_join(bool async)
+        {
+            return base.SelectMany_predicate_with_non_equality_comparison_with_Take_doesnt_convert_to_join(async);
+        }
+
         [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Correlated_collections_inner_subquery_predicate_references_outer_qsre(bool async)

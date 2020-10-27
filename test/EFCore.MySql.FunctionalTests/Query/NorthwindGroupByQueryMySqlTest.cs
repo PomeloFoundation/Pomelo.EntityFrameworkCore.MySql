@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -17,6 +18,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             ClearLog();
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        public override Task Select_uncorrelated_collection_with_groupby_works(bool async)
+        {
+            return base.Select_uncorrelated_collection_with_groupby_works(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        public override Task Select_uncorrelated_collection_with_groupby_multiple_collections_work(bool async)
+        {
+            return base.Select_uncorrelated_collection_with_groupby_multiple_collections_work(async);
         }
 
         [ConditionalTheory(Skip = "Does not work when using ONLY_FULL_GROUP_BY. See https://github.com/dotnet/efcore/issues/19027")]

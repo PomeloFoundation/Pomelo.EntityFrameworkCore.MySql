@@ -157,6 +157,7 @@ FROM `Orders` AS `o`");
             return base.SelectMany_correlated_with_outer_3(async);
         }
 
+        // TODO:
         // [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
         [ConditionalTheory(Skip = "Leads to a different result set in CI on Linux with MySQL 8.0.17. TODO: Needs investigation!")]
         public override Task SelectMany_correlated_with_outer_4(bool async)
@@ -165,9 +166,33 @@ FROM `Orders` AS `o`");
         }
 
         [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        public override Task SelectMany_correlated_with_outer_5(bool async)
+        {
+            return base.SelectMany_correlated_with_outer_5(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        public override Task SelectMany_correlated_with_outer_6(bool async)
+        {
+            return base.SelectMany_correlated_with_outer_6(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        public override Task SelectMany_correlated_with_outer_7(bool async)
+        {
+            return base.SelectMany_correlated_with_outer_7(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
         public override Task Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault_2(bool async)
         {
             return base.Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault_2(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        public override Task Select_nested_collection_deep(bool async)
+        {
+            return base.Select_nested_collection_deep(async);
         }
 
         [SupportedServerVersionFact(ServerVersion.OuterApplySupportKey)]

@@ -218,6 +218,24 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
             return base.AsQueryable_in_query_server_evals(async);
         }
 
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        public override Task DefaultIfEmpty_in_subquery_nested_filter_order_comparison(bool async)
+        {
+            return base.DefaultIfEmpty_in_subquery_nested_filter_order_comparison(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        public override Task Select_correlated_subquery_ordered(bool async)
+        {
+            return base.Select_correlated_subquery_ordered(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        public override Task Select_subquery_recursive_trivial(bool async)
+        {
+            return base.Select_subquery_recursive_trivial(async);
+        }
+
         [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
         public override Task SelectMany_correlated_subquery_hard(bool async)
         {
@@ -233,6 +251,12 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
         [ConditionalTheory(Skip = "https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/996")]
         public override Task Using_static_string_Equals_with_StringComparison_throws_informative_error(bool async)
             => base.Using_static_string_Equals_with_StringComparison_throws_informative_error(async);
+
+        [SupportedServerVersionTheory(ServerVersion.OuterReferenceInMultiLevelSubquerySupportKey)]
+        public override Task DefaultIfEmpty_Sum_over_collection_navigation(bool async)
+        {
+            return base.DefaultIfEmpty_Sum_over_collection_navigation(async);
+        }
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
