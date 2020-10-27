@@ -126,7 +126,7 @@ WHERE `c`.`ContactName` LIKE '%M%'");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` = '') OR (LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0)");
+WHERE (`c`.`ContactName` LIKE '') OR (LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0)");
         }
 
         [ConditionalTheory]
@@ -137,7 +137,7 @@ WHERE (`c`.`ContactName` = '') OR (LOCATE(`c`.`ContactName`, `c`.`ContactName`) 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` = '') OR (LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0)");
+WHERE (`c`.`ContactName` LIKE '') OR (LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0)");
         }
 
         [ConditionalTheory]
@@ -450,7 +450,7 @@ WHERE `c`.`ContactName` LIKE '%     %'");
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (@__pattern_0 = '') OR (LOCATE(@__pattern_0, `c`.`ContactName`) > 0)");
+WHERE (@__pattern_0 LIKE '') OR (LOCATE(@__pattern_0, `c`.`ContactName`) > 0)");
         }
 
         public override async Task String_LastOrDefault_MethodCall(bool async)

@@ -435,10 +435,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 return _sqlExpressionFactory.Like(target, _sqlExpressionFactory.Constant(null, stringTypeMapping));
             }
 
-            // 'foo' = '' OR LOCATE('foo', 'barfoobar') > 0
+            // 'foo' LIKE '' OR LOCATE('foo', 'barfoobar') > 0
+            // This cannot be "'   ' = '' OR ..", because '   ' would be trimmed to '' when using equals, but not when using LIKE.
             // Using an empty pattern `LOCATE('', 'barfoobar')` returns 1.
             return _sqlExpressionFactory.OrElse(
-                _sqlExpressionFactory.Equal(
+                _sqlExpressionFactory.Like(
                     pattern,
                     _sqlExpressionFactory.Constant(string.Empty, stringTypeMapping)),
                 _sqlExpressionFactory.GreaterThan(
