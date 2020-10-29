@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.GearsOfWarModel;
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -72,10 +73,14 @@ WHERE NOT (`w`.`IsAutomatic`)");
                     select w.Name);
 
             string[] keys = {"IX_Weapons_IsAutomatic"};
-            AssertKeyUsage(AssertSql(
-                @"SELECT `w`.`Name`
+            AssertKeyUsage(
+                AssertSql(
+                    @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
-WHERE `w`.`IsAutomatic`"), keys);
+WHERE `w`.`IsAutomatic`"),
+                AppConfig.ServerVersion.SupportsImplicitBoolCheckUsesIndex
+                    ? keys
+                    : null);
         }
 
         [ConditionalTheory]
@@ -90,10 +95,14 @@ WHERE `w`.`IsAutomatic`"), keys);
                     select w.Name);
 
             string[] keys = {"IX_Weapons_IsAutomatic"};
-            AssertKeyUsage(AssertSql(
-                @"SELECT `w`.`Name`
+            AssertKeyUsage(
+                AssertSql(
+                    @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
-WHERE NOT (`w`.`IsAutomatic`)"), keys);
+WHERE NOT (`w`.`IsAutomatic`)"),
+                AppConfig.ServerVersion.SupportsImplicitBoolCheckUsesIndex
+                    ? keys
+                    : null);
         }
 
         [ConditionalTheory]
@@ -108,10 +117,14 @@ WHERE NOT (`w`.`IsAutomatic`)"), keys);
                     select w.Name);
 
             string[] keys = {"IX_Weapons_IsAutomatic"};
-            AssertKeyUsage(AssertSql(
-                @"SELECT `w`.`Name`
+            AssertKeyUsage(
+                AssertSql(
+                    @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
-WHERE NOT (`w`.`IsAutomatic`)"), keys);
+WHERE NOT (`w`.`IsAutomatic`)"),
+                AppConfig.ServerVersion.SupportsImplicitBoolCheckUsesIndex
+                    ? keys
+                    : null);
         }
 
         [ConditionalTheory]
@@ -126,10 +139,14 @@ WHERE NOT (`w`.`IsAutomatic`)"), keys);
                     select w.Name);
 
             string[] keys = {"IX_Weapons_IsAutomatic"};
-            AssertKeyUsage(AssertSql(
-                @"SELECT `w`.`Name`
+            AssertKeyUsage(
+                AssertSql(
+                    @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
-WHERE `w`.`IsAutomatic`"), keys);
+WHERE `w`.`IsAutomatic`"),
+                AppConfig.ServerVersion.SupportsImplicitBoolCheckUsesIndex
+                    ? keys
+                    : null);
         }
 
         [ConditionalTheory]
@@ -144,10 +161,14 @@ WHERE `w`.`IsAutomatic`"), keys);
                     select w.Name);
 
             string[] keys = {"IX_Weapons_IsAutomatic"};
-            AssertKeyUsage(AssertSql(
-                @"SELECT `w`.`Name`
+            AssertKeyUsage(
+                AssertSql(
+                    @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
-WHERE NOT (`w`.`IsAutomatic`)"), keys);
+WHERE NOT (`w`.`IsAutomatic`)"),
+                AppConfig.ServerVersion.SupportsImplicitBoolCheckUsesIndex
+                    ? keys
+                    : null);
         }
 
         [ConditionalTheory]
@@ -162,10 +183,14 @@ WHERE NOT (`w`.`IsAutomatic`)"), keys);
                     select w.Name);
 
             string[] keys = {"IX_Weapons_IsAutomatic"};
-            AssertKeyUsage(AssertSql(
-                @"SELECT `w`.`Name`
+            AssertKeyUsage(
+                AssertSql(
+                    @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
-WHERE `w`.`IsAutomatic`"), keys);
+WHERE `w`.`IsAutomatic`"),
+                AppConfig.ServerVersion.SupportsImplicitBoolCheckUsesIndex
+                    ? keys
+                    : null);
         }
 
         private string AssertSql(string expected)
@@ -179,7 +204,8 @@ WHERE `w`.`IsAutomatic`"), keys);
 
         private void AssertKeyUsage(string sql, params string[] keys)
         {
-            if (keys.Length <= 0)
+            if (keys == null ||
+                keys.Length <= 0)
             {
                 return;
             }

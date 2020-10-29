@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public class ComplexNavigationsWeakQueryMySqlTest : ComplexNavigationsWeakQueryTestBase<ComplexNavigationsWeakQueryMySqlFixture>
+    public class ComplexNavigationsWeakQueryMySqlTest : ComplexNavigationsWeakQueryRelationalTestBase<ComplexNavigationsWeakQueryMySqlFixture>
     {
         public ComplexNavigationsWeakQueryMySqlTest(ComplexNavigationsWeakQueryMySqlFixture fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
@@ -19,35 +19,276 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
-        [MemberData(nameof(IsAsyncData))]
         public override Task Including_reference_navigation_and_projecting_collection_navigation_2(bool async)
         {
             return base.Including_reference_navigation_and_projecting_collection_navigation_2(async);
         }
 
         [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
-        [MemberData(nameof(IsAsyncData))]
         public override Task Lift_projection_mapping_when_pushing_down_subquery(bool async)
         {
             return base.Lift_projection_mapping_when_pushing_down_subquery(async);
         }
 
         [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
-        [MemberData(nameof(IsAsyncData))]
         public override Task SelectMany_with_navigation_filter_paging_and_explicit_DefaultIfEmpty(bool async)
         {
             return base.SelectMany_with_navigation_filter_paging_and_explicit_DefaultIfEmpty(async);
         }
 
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Select_subquery_single_nested_subquery(bool async)
+        {
+            await base.Select_subquery_single_nested_subquery(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Select_subquery_single_nested_subquery2(bool async)
+        {
+            await base.Select_subquery_single_nested_subquery2(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_include_basic_OrderBy_Take(bool async)
+        {
+            await base.Filtered_include_basic_OrderBy_Take(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_include_basic_OrderBy_Skip(bool async)
+        {
+            await base.Filtered_include_basic_OrderBy_Skip(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_include_basic_OrderBy_Skip_Take(bool async)
+        {
+            await base.Filtered_include_basic_OrderBy_Skip_Take(async);
+        }
+
+        [SupportedServerVersionFact(ServerVersion.WindowFunctionsSupportKey)]
+        public override void Filtered_include_Skip_without_OrderBy()
+        {
+            base.Filtered_include_Skip_without_OrderBy();
+        }
+
+        [SupportedServerVersionFact(ServerVersion.WindowFunctionsSupportKey)]
+        public override void Filtered_include_Take_without_OrderBy()
+        {
+            base.Filtered_include_Take_without_OrderBy();
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_include_on_ThenInclude(bool async)
+        {
+            await base.Filtered_include_on_ThenInclude(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_include_after_reference_navigation(bool async)
+        {
+            await base.Filtered_include_after_reference_navigation(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_include_after_different_filtered_include_same_level(bool async)
+        {
+            await base.Filtered_include_after_different_filtered_include_same_level(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_include_same_filter_set_on_same_navigation_twice(bool async)
+        {
+            await base.Filtered_include_same_filter_set_on_same_navigation_twice(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_include_and_non_filtered_include_on_same_navigation1(bool async)
+        {
+            await base.Filtered_include_and_non_filtered_include_on_same_navigation1(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_include_and_non_filtered_include_on_same_navigation2(bool async)
+        {
+            await base.Filtered_include_and_non_filtered_include_on_same_navigation2(async);
+        }
+
+        [SupportedServerVersionFact(ServerVersion.WindowFunctionsSupportKey)]
+        public override void Filtered_include_variable_used_inside_filter()
+        {
+            base.Filtered_include_variable_used_inside_filter();
+        }
+
+        [SupportedServerVersionFact(ServerVersion.WindowFunctionsSupportKey)]
+        public override void Filtered_include_context_accessed_inside_filter()
+        {
+            base.Filtered_include_context_accessed_inside_filter();
+        }
+
+        [SupportedServerVersionFact(ServerVersion.WindowFunctionsSupportKey)]
+        public override void Filtered_include_context_accessed_inside_filter_correlated()
+        {
+            base.Filtered_include_context_accessed_inside_filter_correlated();
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_include_OrderBy_split(bool async)
+        {
+            await base.Filtered_include_OrderBy_split(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_ThenInclude_OrderBy_split(bool async)
+        {
+            await base.Filtered_ThenInclude_OrderBy_split(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_include_ThenInclude_OrderBy_split(bool async)
+        {
+            await base.Filtered_include_ThenInclude_OrderBy_split(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_include_basic_OrderBy_Take_split(bool async)
+        {
+            await base.Filtered_include_basic_OrderBy_Take_split(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_include_basic_OrderBy_Skip_split(bool async)
+        {
+            await base.Filtered_include_basic_OrderBy_Skip_split(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_include_basic_OrderBy_Skip_Take_split(bool async)
+        {
+            await base.Filtered_include_basic_OrderBy_Skip_Take_split(async);
+        }
+
+        [SupportedServerVersionFact(ServerVersion.WindowFunctionsSupportKey)]
+        public override void Filtered_include_Skip_without_OrderBy_split()
+        {
+            base.Filtered_include_Skip_without_OrderBy_split();
+        }
+
+        [SupportedServerVersionFact(ServerVersion.WindowFunctionsSupportKey)]
+        public override void Filtered_include_Take_without_OrderBy_split()
+        {
+            base.Filtered_include_Take_without_OrderBy_split();
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_include_on_ThenInclude_split(bool async)
+        {
+            await base.Filtered_include_on_ThenInclude_split(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_include_after_reference_navigation_split(bool async)
+        {
+            await base.Filtered_include_after_reference_navigation_split(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_include_after_different_filtered_include_same_level_split(bool async)
+        {
+            await base.Filtered_include_after_different_filtered_include_same_level_split(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_include_after_different_filtered_include_different_level_split(bool async)
+        {
+            await base.Filtered_include_after_different_filtered_include_different_level_split(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_include_same_filter_set_on_same_navigation_twice_split(bool async)
+        {
+            await base.Filtered_include_same_filter_set_on_same_navigation_twice_split(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_include_and_non_filtered_include_on_same_navigation1_split(bool async)
+        {
+            await base.Filtered_include_and_non_filtered_include_on_same_navigation1_split(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_include_and_non_filtered_include_on_same_navigation2_split(bool async)
+        {
+            await base.Filtered_include_and_non_filtered_include_on_same_navigation2_split(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_include_complex_three_level_with_middle_having_filter1_split(bool async)
+        {
+            await base.Filtered_include_complex_three_level_with_middle_having_filter1_split(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override async Task Filtered_include_complex_three_level_with_middle_having_filter2_split(bool async)
+        {
+            await base.Filtered_include_complex_three_level_with_middle_having_filter2_split(async);
+        }
+
+        [SupportedServerVersionFact(ServerVersion.WindowFunctionsSupportKey)]
+        public override void Filtered_include_variable_used_inside_filter_split()
+        {
+            base.Filtered_include_variable_used_inside_filter_split();
+        }
+
+        [SupportedServerVersionFact(ServerVersion.WindowFunctionsSupportKey)]
+        public override void Filtered_include_context_accessed_inside_filter_split()
+        {
+            base.Filtered_include_context_accessed_inside_filter_split();
+        }
+
+        [SupportedServerVersionFact(ServerVersion.WindowFunctionsSupportKey)]
+        public override void Filtered_include_context_accessed_inside_filter_correlated_split()
+        {
+            base.Filtered_include_context_accessed_inside_filter_correlated_split();
+        }
+
+        [SupportedServerVersionFact(ServerVersion.WindowFunctionsSupportKey)]
+        public override void Filtered_include_is_considered_loaded_split()
+        {
+            base.Filtered_include_is_considered_loaded_split();
+        }
+
+        [SupportedServerVersionFact(ServerVersion.WindowFunctionsSupportKey)]
+        public override void Filtered_include_is_considered_loaded()
+        {
+            base.Filtered_include_is_considered_loaded();
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override Task Filtered_include_and_non_filtered_include_followed_by_then_include_on_same_navigation_split(bool async)
+        {
+            return base.Filtered_include_and_non_filtered_include_followed_by_then_include_on_same_navigation_split(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override Task Filtered_include_multiple_multi_level_includes_with_first_level_using_filter_include_on_one_of_the_chains_only_split(bool async)
+        {
+            return base.Filtered_include_multiple_multi_level_includes_with_first_level_using_filter_include_on_one_of_the_chains_only_split(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override Task Filtered_include_same_filter_set_on_same_navigation_twice_followed_by_ThenIncludes_split(bool async)
+        {
+            return base.Filtered_include_same_filter_set_on_same_navigation_twice_followed_by_ThenIncludes_split(async);
+        }
+
         [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
-        [MemberData(nameof(IsAsyncData))]
         public override Task Project_collection_navigation_nested_with_take(bool async)
         {
             return base.Project_collection_navigation_nested_with_take(async);
         }
 
         [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
-        [MemberData(nameof(IsAsyncData))]
         public override Task SelectMany_with_outside_reference_to_joined_table_correctly_translated_to_apply(bool async)
         {
             return base.SelectMany_with_outside_reference_to_joined_table_correctly_translated_to_apply(async);
@@ -84,21 +325,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [ConditionalTheory(Skip = "https://bugs.mysql.com/bug.php?id=101276")]
-        [MemberData(nameof(IsAsyncData))]
         public override Task Filtered_include_complex_three_level_with_middle_having_filter1(bool async)
         {
             return base.Filtered_include_complex_three_level_with_middle_having_filter1(async);
         }
 
         [ConditionalTheory(Skip = "https://bugs.mysql.com/bug.php?id=101276")]
-        [MemberData(nameof(IsAsyncData))]
         public override Task Filtered_include_complex_three_level_with_middle_having_filter2(bool async)
         {
             return base.Filtered_include_complex_three_level_with_middle_having_filter2(async);
         }
 
         [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
         public override async Task SelectMany_with_navigation_and_Distinct(bool async)
         {
             var message = (await Assert.ThrowsAsync<InvalidOperationException>(

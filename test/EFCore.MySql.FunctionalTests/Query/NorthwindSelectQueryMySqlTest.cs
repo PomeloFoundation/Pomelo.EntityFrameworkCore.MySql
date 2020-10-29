@@ -138,6 +138,12 @@ FROM `Orders` AS `o`");
             return base.Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault(async);
         }
 
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override Task Project_keyless_entity_FirstOrDefault_without_orderby(bool async)
+        {
+            return base.Project_keyless_entity_FirstOrDefault_without_orderby(async);
+        }
+
         [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
         public override Task SelectMany_correlated_with_outer_1(bool async)
         {

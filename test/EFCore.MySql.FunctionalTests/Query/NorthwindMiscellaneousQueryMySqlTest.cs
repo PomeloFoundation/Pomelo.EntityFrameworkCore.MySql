@@ -205,6 +205,36 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
             return base.SelectMany_Joined_Take(async);
         }
 
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override Task Anonymous_projection_skip_empty_collection_FirstOrDefault(bool async)
+        {
+            return base.Anonymous_projection_skip_empty_collection_FirstOrDefault(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override Task Anonymous_projection_skip_take_empty_collection_FirstOrDefault(bool async)
+        {
+            return base.Anonymous_projection_skip_take_empty_collection_FirstOrDefault(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override Task Anonymous_projection_take_empty_collection_FirstOrDefault(bool async)
+        {
+            return base.Anonymous_projection_take_empty_collection_FirstOrDefault(async);
+        }
+
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override Task Single_non_scalar_projection_after_skip_uses_join(bool async)
+        {
+            return base.Single_non_scalar_projection_after_skip_uses_join(async);
+        }
+
+        [SupportedServerVersionFact(ServerVersion.WindowFunctionsSupportKey)]
+        public override void Select_Subquery_Single()
+        {
+            base.Select_Subquery_Single();
+        }
+
         [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
         public override Task Complex_nested_query_doesnt_try_binding_to_grandparent_when_parent_returns_complex_result(bool async)
         {

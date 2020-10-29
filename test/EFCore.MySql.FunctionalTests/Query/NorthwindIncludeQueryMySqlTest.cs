@@ -31,6 +31,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Include_duplicate_collection(async);
         }
 
+        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        public override Task Include_in_let_followed_by_FirstOrDefault(bool async)
+        {
+            return base.Include_in_let_followed_by_FirstOrDefault(async);
+        }
+
         [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
         public override Task Include_collection_with_cross_apply_with_filter(bool async)
         {
