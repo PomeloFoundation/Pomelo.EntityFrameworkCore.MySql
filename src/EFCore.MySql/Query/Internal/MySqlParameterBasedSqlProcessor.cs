@@ -40,6 +40,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 selectExpression = (SelectExpression)new MySqlBoolOptimizingExpressionVisitor(Dependencies.SqlExpressionFactory).Visit(selectExpression);
             }
 
+            // Run the compatibility checks as late in the query pipeline (before the actual SQL translation happens) as reasonable.
+            selectExpression = (SelectExpression)new MySqlCompatibilityExpressionVisitor(_options).Visit(selectExpression);
+
             return selectExpression;
         }
     }

@@ -43,7 +43,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string CrossApplyMySqlSupportVersionString = "8.0.14-mysql";
         // public const string CrossApplyMariaDbSupportVersionString = "?.?.?-mariadb"; // MDEV-19078, MDEV-6373
 
-        public const string OuterReferenceInMultiLevelSubqueryMySqlSupportVersionString = "8.0.14-mysql"; // Exact version has ne been verified yet
+        public const string OuterReferenceInMultiLevelSubqueryMySqlSupportVersionString = "8.0.14-mysql"; // Exact version has not been verified yet
         // public const string OuterReferenceInMultiLevelSubqueryMariaDbSupportVersionString = "?.?.?-mariadb";
 
         // public const string FloatCastMySqlSupportVersionString = "8.0.17-mysql"; // The implemented support drops some decimal places and rounds.
@@ -106,6 +106,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         // public const string JsonDataTypeEmulationMySqlSupportVersionString = "5.7.8-mysql";
         public const string JsonDataTypeEmulationMariaDbSupportVersionString = "10.2.4-mariadb"; // JSON_COMPACT was added in 10.2.4, though most other functions where added in 10.2.3
 
+        public const string ImplicitBoolCheckUsesIndexMySqlSupportVersionString = "8.0.0-mysql"; // Exact version has not been verified yet
+        public const string ImplicitBoolCheckUsesIndexMariaDbSupportVersionString = "10.0.0-mariadb"; // Exact version has not been verified yet
+
         #endregion
 
         #region SupportMap keys for test attributes
@@ -141,6 +144,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string ExceptInterceptSupportKey = nameof(ExceptInterceptSupportKey);
         public const string ExceptInterceptPrecedenceSupportKey = nameof(ExceptInterceptPrecedenceSupportKey);
         public const string JsonDataTypeEmulationSupportKey = nameof(JsonDataTypeEmulationSupportKey);
+        public const string ImplicitBoolCheckUsesIndexSupportKey = nameof(ImplicitBoolCheckUsesIndexSupportKey);
 
         #endregion
 
@@ -177,6 +181,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
             { ExceptInterceptSupportKey, new ServerVersionSupport(/*ExceptInterceptMySqlSupportVersionString, */ExceptInterceptMariaDbSupportVersionString)},
             { ExceptInterceptPrecedenceSupportKey, new ServerVersionSupport(/*ExceptInterceptPrecedenceMySqlSupportVersionString, */ExceptInterceptPrecedenceMariaDbSupportVersionString)},
             { JsonDataTypeEmulationSupportKey, new ServerVersionSupport(/*JsonDataTypeEmulationMySqlSupportVersionString, */JsonDataTypeEmulationMariaDbSupportVersionString)},
+            { ImplicitBoolCheckUsesIndexSupportKey, new ServerVersionSupport(ImplicitBoolCheckUsesIndexMySqlSupportVersionString, ImplicitBoolCheckUsesIndexMariaDbSupportVersionString)},
         };
 
         #region Support checks for provider code
@@ -213,6 +218,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public virtual bool SupportsExceptIntercept => SupportMap[ExceptInterceptSupportKey].IsSupported(this);
         public virtual bool SupportsExceptInterceptPrecedence => SupportMap[ExceptInterceptPrecedenceSupportKey].IsSupported(this);
         public virtual bool SupportsJsonDataTypeEmulation => SupportMap[JsonDataTypeEmulationSupportKey].IsSupported(this);
+        public virtual bool SupportsImplicitBoolCheckUsesIndex => SupportMap[ImplicitBoolCheckUsesIndexSupportKey].IsSupported(this);
 
         #endregion
 
