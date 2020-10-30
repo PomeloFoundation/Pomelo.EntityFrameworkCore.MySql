@@ -13,7 +13,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        // TODO:
+        // TODO: CanExecuteQueryString
         // protected override bool CanExecuteQueryString => true;
     }
 }

@@ -3,16 +3,16 @@ using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public class TPTManyToManyNoTrackingQueryMySqlTest : TPTManyToManyNoTrackingQueryRelationalTestBase<TPTManyToManyQueryMySqlFixture>
+    public class TPTManyToManyQueryMySqlTest : TPTManyToManyQueryRelationalTestBase<TPTManyToManyQueryMySqlFixture>
     {
-        public TPTManyToManyNoTrackingQueryMySqlTest(TPTManyToManyQueryMySqlFixture fixture, ITestOutputHelper testOutputHelper)
+        public TPTManyToManyQueryMySqlTest(TPTManyToManyQueryMySqlFixture fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
         {
             Fixture.TestSqlLoggerFactory.Clear();
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        // TODO: TPTManyToManyQueryMySqlTest
+        // TODO: CanExecuteQueryString
         // protected override bool CanExecuteQueryString => true;
     }
 }
