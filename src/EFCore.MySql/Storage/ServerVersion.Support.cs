@@ -32,7 +32,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string JsonMariaDbSupportVersionString = "10.2.4-mariadb";
 
         public const string RenameColumnMySqlSupportVersionString = "8.0.0-mysql";
-        // public const string RenameColumnMariaDbSupportVersionString = "?.?.?-mariadb";
+        public const string RenameColumnMariaDbSupportVersionString = "10.5.2-mariadb";
 
         public const string WindowFunctionsMySqlSupportVersionString = "8.0.0-mysql";
         public const string WindowFunctionsMariaDbSupportVersionString = "10.2.0-mariadb";
@@ -154,7 +154,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
             { DateTime6SupportKey, new ServerVersionSupport(DateTime6MySqlSupportVersionString, DateTime6MariaDbSupportVersionString) },
             { LargerKeyLengthSupportKey, new ServerVersionSupport(LargerKeyLengthMySqlSupportVersionString, LargerKeyLengthMariaDbSupportVersionString) },
             { RenameIndexSupportKey, new ServerVersionSupport(RenameIndexMySqlSupportVersionString/*, RenameIndexMariaDbSupportVersionString*/) },
-            { RenameColumnSupportKey, new ServerVersionSupport(RenameColumnMySqlSupportVersionString/*, RenameColumnMariaDbSupportVersionString*/) },
+            { RenameColumnSupportKey, new ServerVersionSupport(RenameColumnMySqlSupportVersionString, RenameColumnMariaDbSupportVersionString) },
             { WindowFunctionsSupportKey, new ServerVersionSupport(WindowFunctionsMySqlSupportVersionString, WindowFunctionsMariaDbSupportVersionString) },
             { OuterApplySupportKey, new ServerVersionSupport(OuterApplyMySqlSupportVersionString/*, OuterApplyMariaDbSupportVersionString*/) },
             { CrossApplySupportKey, new ServerVersionSupport(CrossApplyMySqlSupportVersionString/*, CrossApplyMariaDbSupportVersionString*/) },
