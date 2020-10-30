@@ -1,14 +1,14 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.GearsOfWarModel;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public class GearsOfWarQueryMySqlFixture : GearsOfWarQueryRelationalFixture, IQueryFixtureBase
+    public class TPTGearsOfWarQueryMySqlFixture : TPTGearsOfWarQueryRelationalFixture, IQueryFixtureBase
     {
         protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
 

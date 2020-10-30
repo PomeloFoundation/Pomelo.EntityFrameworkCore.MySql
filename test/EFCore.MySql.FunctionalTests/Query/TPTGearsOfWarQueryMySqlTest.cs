@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -11,9 +11,11 @@ using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public partial class GearsOfWarQueryMySqlTest : GearsOfWarQueryRelationalTestBase<GearsOfWarQueryMySqlFixture>
+    public class TPTGearsOfWarQueryMySqlTest : TPTGearsOfWarQueryRelationalTestBase<TPTGearsOfWarQueryMySqlFixture>
     {
-        public GearsOfWarQueryMySqlTest(GearsOfWarQueryMySqlFixture fixture, ITestOutputHelper testOutputHelper)
+#pragma warning disable IDE0060 // Remove unused parameter
+        public TPTGearsOfWarQueryMySqlTest(TPTGearsOfWarQueryMySqlFixture fixture, ITestOutputHelper testOutputHelper)
+#pragma warning restore IDE0060 // Remove unused parameter
             : base(fixture)
         {
             Fixture.TestSqlLoggerFactory.Clear();
