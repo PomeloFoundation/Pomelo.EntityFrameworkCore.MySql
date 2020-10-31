@@ -28,25 +28,25 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     () => base.Include_collection_with_last_no_orderby(async))).Message);
 
 
-        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.CrossApplySupportKey)]
         public override Task Include_collection_with_cross_apply_with_filter(bool async)
         {
             return base.Include_collection_with_cross_apply_with_filter(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         public override Task Include_collection_with_outer_apply_with_filter(bool async)
         {
             return base.Include_collection_with_outer_apply_with_filter(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         public override Task Include_collection_with_outer_apply_with_filter_non_equality(bool async)
         {
             return base.Include_collection_with_outer_apply_with_filter_non_equality(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         public override Task Filtered_include_with_multiple_ordering(bool async)
         {
             return base.Filtered_include_with_multiple_ordering(async);

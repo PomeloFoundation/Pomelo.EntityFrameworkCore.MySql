@@ -18,12 +18,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.SpatialBoundaryFunctionSupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.SpatialBoundaryFunctionSupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Boundary(bool async)
             => base.Boundary(async);
 
-        [SupportedServerVersionTheory(ServerVersion.SpatialFunctionAdditionsSupportKey, Skip = "MySQL is unable to work with different SRIDs.")]
+        [SupportedServerVersionCondition(ServerVersion.SpatialFunctionAdditionsSupportKey, Skip = "MySQL is unable to work with different SRIDs.")]
         [MemberData(nameof(IsAsyncData))]
         public override Task Distance_constant_srid_4326(bool async)
             => base.Distance_constant_srid_4326(async);
@@ -37,22 +37,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     e => new { e.Id, GeometryType = e.Point == null ? null : e.Point.GeometryType.ToLower() }),
                 elementSorter: x => x.Id);
 
-        [SupportedServerVersionTheory(ServerVersion.SpatialPointOnSurfaceFunctionSupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.SpatialPointOnSurfaceFunctionSupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task InteriorPoint(bool async)
             => base.InteriorPoint(async);
 
-        [SupportedServerVersionTheory(ServerVersion.SpatialIsValidFunctionSupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.SpatialIsValidFunctionSupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task IsValid(bool async)
             => base.IsValid(async);
 
-        [SupportedServerVersionTheory(ServerVersion.SpatialPointOnSurfaceFunctionSupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.SpatialPointOnSurfaceFunctionSupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task PointOnSurface(bool async)
             => base.PointOnSurface(async);
 
-        [SupportedServerVersionTheory(ServerVersion.SpatialRelateFunctionSupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.SpatialRelateFunctionSupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Relate(bool async)
             => base.Relate(async);

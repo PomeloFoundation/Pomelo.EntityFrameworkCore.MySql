@@ -58,228 +58,228 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Client_member_and_unsupported_string_Equals_in_the_same_query(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.CrossApplySupportKey)]
         public override Task Subquery_projecting_non_nullable_scalar_contains_non_nullable_value_doesnt_need_null_expansion_negated(bool async)
         {
             return base.Subquery_projecting_non_nullable_scalar_contains_non_nullable_value_doesnt_need_null_expansion_negated(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.CrossApplySupportKey)]
         public override Task Subquery_projecting_nullable_scalar_contains_nullable_value_needs_null_expansion_negated(bool async)
         {
             return base.Subquery_projecting_nullable_scalar_contains_nullable_value_needs_null_expansion_negated(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.CrossApplySupportKey)]
         public override Task SelectMany_predicate_with_non_equality_comparison_with_Take_doesnt_convert_to_join(bool async)
         {
             return base.SelectMany_predicate_with_non_equality_comparison_with_Take_doesnt_convert_to_join(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Correlated_collections_inner_subquery_predicate_references_outer_qsre(bool async)
         {
             return base.Correlated_collections_inner_subquery_predicate_references_outer_qsre(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Correlated_collections_inner_subquery_selector_references_outer_qsre(bool async)
         {
             return base.Correlated_collections_inner_subquery_selector_references_outer_qsre(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey, Skip = "https://bugs.mysql.com/bug.php?id=96946")]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey, Skip = "https://bugs.mysql.com/bug.php?id=96946")]
         [MemberData(nameof(IsAsyncData))]
         public override Task Outer_parameter_in_join_key_inner_and_outer(bool async)
         {
             return base.Outer_parameter_in_join_key_inner_and_outer(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey, Skip = "https://bugs.mysql.com/bug.php?id=96946")]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey, Skip = "https://bugs.mysql.com/bug.php?id=96946")]
         [MemberData(nameof(IsAsyncData))]
         public override Task Outer_parameter_in_group_join_with_DefaultIfEmpty(bool async)
         {
             return base.Outer_parameter_in_group_join_with_DefaultIfEmpty(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey, Skip = "https://bugs.mysql.com/bug.php?id=96946")]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey, Skip = "https://bugs.mysql.com/bug.php?id=96946")]
         [MemberData(nameof(IsAsyncData))]
         public override Task Outer_parameter_in_join_key(bool async)
         {
             return base.Outer_parameter_in_join_key(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Correlated_collections_nested_inner_subquery_references_outer_qsre_two_levels_up(bool async)
         {
             return base.Correlated_collections_nested_inner_subquery_references_outer_qsre_two_levels_up(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Select_subquery_distinct_firstordefault(bool async)
         {
             return base.Select_subquery_distinct_firstordefault(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Select_subquery_distinct_singleordefault_boolean1(bool async)
         {
             return base.Select_subquery_distinct_singleordefault_boolean1(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Select_subquery_distinct_singleordefault_boolean_empty1(bool async)
         {
             return base.Select_subquery_distinct_singleordefault_boolean_empty1(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Select_subquery_distinct_singleordefault_boolean_with_pushdown(bool async)
         {
             return base.Select_subquery_distinct_singleordefault_boolean_with_pushdown(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Select_subquery_distinct_singleordefault_boolean_empty_with_pushdown(bool async)
         {
             return base.Select_subquery_distinct_singleordefault_boolean_empty_with_pushdown(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Where_subquery_distinct_first_boolean(bool async)
         {
             return base.Where_subquery_distinct_first_boolean(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Where_subquery_distinct_singleordefault_boolean1(bool async)
         {
             return base.Where_subquery_distinct_singleordefault_boolean1(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Where_subquery_distinct_singleordefault_boolean_with_pushdown(bool async)
         {
             return base.Where_subquery_distinct_singleordefault_boolean_with_pushdown(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Correlated_collections_nested_inner_subquery_references_outer_qsre_one_level_up(bool async)
         {
             return base.Correlated_collections_nested_inner_subquery_references_outer_qsre_one_level_up(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Project_collection_navigation_nested_with_take_composite_key(bool async)
         {
             return base.Project_collection_navigation_nested_with_take_composite_key(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.WindowFunctionsSupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Project_entity_and_collection_element(bool async)
         {
             return base.Project_entity_and_collection_element(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.WindowFunctionsSupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Project_one_value_type_with_client_projection_from_empty_collection(bool async)
         {
             return base.Project_one_value_type_with_client_projection_from_empty_collection(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.WindowFunctionsSupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Select_subquery_projecting_multiple_constants_inside_anonymous(bool async)
         {
             return base.Select_subquery_projecting_multiple_constants_inside_anonymous(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.WindowFunctionsSupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Select_subquery_projecting_single_constant_inside_anonymous(bool async)
         {
             return base.Select_subquery_projecting_single_constant_inside_anonymous(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.WindowFunctionsSupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Select_subquery_projecting_single_constant_null_of_non_mapped_type(bool async)
         {
             return base.Select_subquery_projecting_single_constant_null_of_non_mapped_type(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.WindowFunctionsSupportKey)]
         [MemberData(nameof(IsAsyncData))]
         public override Task Select_subquery_projecting_single_constant_of_non_mapped_type(bool async)
         {
             return base.Select_subquery_projecting_single_constant_of_non_mapped_type(async);
         }
 
-        [SupportedServerVersionTheory("8.0.18-mysql", Skip = "TODO: Pinpoint exact version number! Referencing outer column from WHERE subquery does not work in previous versions. Inverse of #573")]
+        [SupportedServerVersionCondition("8.0.18-mysql", Skip = "TODO: Pinpoint exact version number! Referencing outer column from WHERE subquery does not work in previous versions. Inverse of #573")]
         [MemberData(nameof(IsAsyncData))]
         public override Task Where_subquery_distinct_firstordefault_boolean(bool async)
         {
             return base.Where_subquery_distinct_firstordefault_boolean(async);
         }
 
-        [SupportedServerVersionTheory("8.0.18-mysql", Skip = "TODO: Pinpoint exact version number! Referencing outer column from WHERE subquery does not work in previous versions. Inverse of #573")]
+        [SupportedServerVersionCondition("8.0.18-mysql", Skip = "TODO: Pinpoint exact version number! Referencing outer column from WHERE subquery does not work in previous versions. Inverse of #573")]
         [MemberData(nameof(IsAsyncData))]
         public override Task Where_subquery_distinct_firstordefault_boolean_with_pushdown(bool async)
         {
             return base.Where_subquery_distinct_firstordefault_boolean_with_pushdown(async);
         }
 
-        [SupportedServerVersionTheory("8.0.18-mysql", Skip = "TODO: Pinpoint exact version number! Referencing outer column from WHERE subquery does not work in previous versions. Inverse of #573")]
+        [SupportedServerVersionCondition("8.0.18-mysql", Skip = "TODO: Pinpoint exact version number! Referencing outer column from WHERE subquery does not work in previous versions. Inverse of #573")]
         [MemberData(nameof(IsAsyncData))]
         public override Task Where_subquery_distinct_lastordefault_boolean(bool async)
         {
             return base.Where_subquery_distinct_lastordefault_boolean(async);
         }
 
-        [SupportedServerVersionTheory("8.0.18-mysql", Skip = "TODO: Pinpoint exact version number! Referencing outer column from WHERE subquery does not work in previous versions. Inverse of #573")]
+        [SupportedServerVersionCondition("8.0.18-mysql", Skip = "TODO: Pinpoint exact version number! Referencing outer column from WHERE subquery does not work in previous versions. Inverse of #573")]
         [MemberData(nameof(IsAsyncData))]
         public override Task Where_subquery_distinct_last_boolean(bool async)
         {
             return base.Where_subquery_distinct_last_boolean(async);
         }
 
-        [SupportedServerVersionTheory("8.0.18-mysql", Skip = "TODO: Pinpoint exact version number! Referencing outer column from WHERE subquery does not work in previous versions. Inverse of #573")]
+        [SupportedServerVersionCondition("8.0.18-mysql", Skip = "TODO: Pinpoint exact version number! Referencing outer column from WHERE subquery does not work in previous versions. Inverse of #573")]
         [MemberData(nameof(IsAsyncData))]
         public override Task Where_subquery_distinct_orderby_firstordefault_boolean(bool async)
         {
             return base.Where_subquery_distinct_orderby_firstordefault_boolean(async);
         }
 
-        [SupportedServerVersionTheory("8.0.18-mysql", Skip = "TODO: Pinpoint exact version number! Referencing outer column from WHERE subquery does not work in previous versions. Inverse of #573")]
+        [SupportedServerVersionCondition("8.0.18-mysql", Skip = "TODO: Pinpoint exact version number! Referencing outer column from WHERE subquery does not work in previous versions. Inverse of #573")]
         [MemberData(nameof(IsAsyncData))]
         public override Task Where_subquery_distinct_orderby_firstordefault_boolean_with_pushdown(bool async)
         {
             return base.Where_subquery_distinct_orderby_firstordefault_boolean_with_pushdown(async);
         }
 
-        [SupportedServerVersionLessThanTheory("5.6.0", Skip = "https://bugs.mysql.com/bug.php?id=96947")]
+        [SupportedServerVersionLessThanCondition("5.6.0", Skip = "https://bugs.mysql.com/bug.php?id=96947")]
         [MemberData(nameof(IsAsyncData))]
         public override Task Correlated_collections_basic_projecting_constant(bool async)
         {
             return base.Correlated_collections_basic_projecting_constant(async);
         }
 
-        [SupportedServerVersionLessThanTheory("5.6.0", Skip = "https://bugs.mysql.com/bug.php?id=96947")]
+        [SupportedServerVersionLessThanCondition("5.6.0", Skip = "https://bugs.mysql.com/bug.php?id=96947")]
         [MemberData(nameof(IsAsyncData))]
         public override Task Correlated_collections_basic_projecting_constant_bool(bool async)
         {
@@ -314,14 +314,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Take_without_orderby_followed_by_orderBy_is_pushed_down2(async);
         }
 
-        [SupportedServerVersionTheory("8.0.22-mysql")]
+        [SupportedServerVersionCondition("8.0.22-mysql")]
         [MemberData(nameof(IsAsyncData))]
         public override Task Subquery_projecting_nullable_scalar_contains_nullable_value_needs_null_expansion(bool async)
         {
             return base.Subquery_projecting_nullable_scalar_contains_nullable_value_needs_null_expansion(async);
         }
 
-        [SupportedServerVersionTheory("8.0.22-mysql")]
+        [SupportedServerVersionCondition("8.0.22-mysql")]
         [MemberData(nameof(IsAsyncData))]
         public override Task Subquery_projecting_non_nullable_scalar_contains_non_nullable_value_doesnt_need_null_expansion(bool async)
         {

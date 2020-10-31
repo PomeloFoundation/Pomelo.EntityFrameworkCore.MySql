@@ -199,74 +199,74 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
                 assertOrder: true);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.WindowFunctionsSupportKey)]
         public override Task SelectMany_Joined_Take(bool async)
         {
             return base.SelectMany_Joined_Take(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.WindowFunctionsSupportKey)]
         public override Task Anonymous_projection_skip_empty_collection_FirstOrDefault(bool async)
         {
             return base.Anonymous_projection_skip_empty_collection_FirstOrDefault(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.WindowFunctionsSupportKey)]
         public override Task Anonymous_projection_skip_take_empty_collection_FirstOrDefault(bool async)
         {
             return base.Anonymous_projection_skip_take_empty_collection_FirstOrDefault(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.WindowFunctionsSupportKey)]
         public override Task Anonymous_projection_take_empty_collection_FirstOrDefault(bool async)
         {
             return base.Anonymous_projection_take_empty_collection_FirstOrDefault(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.WindowFunctionsSupportKey)]
         public override Task Single_non_scalar_projection_after_skip_uses_join(bool async)
         {
             return base.Single_non_scalar_projection_after_skip_uses_join(async);
         }
 
-        [SupportedServerVersionFact(ServerVersion.WindowFunctionsSupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.WindowFunctionsSupportKey)]
         public override void Select_Subquery_Single()
         {
             base.Select_Subquery_Single();
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         public override Task Complex_nested_query_doesnt_try_binding_to_grandparent_when_parent_returns_complex_result(bool async)
         {
             // MySql.Data.MySqlClient.MySqlException: Reference 'CustomerID' not supported (forward reference in item list)
             return Assert.ThrowsAsync<MySqlException>(() => base.Complex_nested_query_doesnt_try_binding_to_grandparent_when_parent_returns_complex_result(async));
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         public override Task AsQueryable_in_query_server_evals(bool async)
         {
             return base.AsQueryable_in_query_server_evals(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         public override Task DefaultIfEmpty_in_subquery_nested_filter_order_comparison(bool async)
         {
             return base.DefaultIfEmpty_in_subquery_nested_filter_order_comparison(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         public override Task Select_correlated_subquery_ordered(bool async)
         {
             return base.Select_correlated_subquery_ordered(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         public override Task Select_subquery_recursive_trivial(bool async)
         {
             return base.Select_subquery_recursive_trivial(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.CrossApplySupportKey)]
         public override Task SelectMany_correlated_subquery_hard(bool async)
         {
             return base.SelectMany_correlated_subquery_hard(async);
@@ -282,7 +282,7 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
         public override Task Using_static_string_Equals_with_StringComparison_throws_informative_error(bool async)
             => base.Using_static_string_Equals_with_StringComparison_throws_informative_error(async);
 
-        [SupportedServerVersionTheory(ServerVersion.OuterReferenceInMultiLevelSubquerySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterReferenceInMultiLevelSubquerySupportKey)]
         public override Task DefaultIfEmpty_Sum_over_collection_navigation(bool async)
         {
             return base.DefaultIfEmpty_Sum_over_collection_navigation(async);

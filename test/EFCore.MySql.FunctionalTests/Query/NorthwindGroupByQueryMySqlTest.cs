@@ -20,13 +20,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         public override Task Select_uncorrelated_collection_with_groupby_works(bool async)
         {
             return base.Select_uncorrelated_collection_with_groupby_works(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         public override Task Select_uncorrelated_collection_with_groupby_multiple_collections_work(bool async)
         {
             return base.Select_uncorrelated_collection_with_groupby_multiple_collections_work(async);
@@ -38,7 +38,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.GroupBy_scalar_subquery(async);
         }
 
-        [SupportedServerVersionTheory("8.0.22-mysql", "0.0.0-mariadb")]
+        [SupportedServerVersionCondition("8.0.22-mysql", "0.0.0-mariadb")]
         public override Task GroupBy_group_Where_Select_Distinct_aggregate(bool async)
         {
             // See https://github.com/mysql-net/MySqlConnector/issues/898.

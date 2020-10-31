@@ -31,31 +31,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Include_duplicate_collection(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.WindowFunctionsSupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.WindowFunctionsSupportKey)]
         public override Task Include_in_let_followed_by_FirstOrDefault(bool async)
         {
             return base.Include_in_let_followed_by_FirstOrDefault(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.CrossApplySupportKey)]
         public override Task Include_collection_with_cross_apply_with_filter(bool async)
         {
             return base.Include_collection_with_cross_apply_with_filter(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         public override Task Include_collection_with_outer_apply_with_filter(bool async)
         {
             return base.Include_collection_with_outer_apply_with_filter(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         public override Task Include_collection_with_outer_apply_with_filter_non_equality(bool async)
         {
             return base.Include_collection_with_outer_apply_with_filter_non_equality(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         public override Task Filtered_include_with_multiple_ordering(bool async)
         {
             return base.Filtered_include_with_multiple_ordering(async);
@@ -85,7 +85,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 async,
                 ss => (from c1 in ss.Set<Customer>().Include(c => c.Orders).OrderBy(c => c.CustomerID).ThenBy(c => c.Orders.FirstOrDefault() != null ? c.Orders.FirstOrDefault().CustomerID : null).Take(2)
                     from c2 in ss.Set<Customer>().Include(c => c.Orders).OrderBy(c => c.CustomerID).ThenBy(c => c.Orders.FirstOrDefault() != null ? c.Orders.FirstOrDefault().CustomerID : null).Skip(2).Take(2)
-                    select new { c1, c2 }).Take(1),
+                    select new { c1, c2 }).OrderBy(t => t.c1.CustomerID).ThenBy(t => t.c2.CustomerID).Take(1),
                 elementSorter: e => (e.c1.CustomerID, e.c2.CustomerID),
                 elementAsserter: (e, a) =>
                 {
@@ -103,7 +103,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 async,
                 ss => (from c1 in ss.Set<Customer>().Include(c => c.Orders).OrderBy(c => c.CustomerID).ThenBy(c => c.Orders.FirstOrDefault() != null ? c.Orders.FirstOrDefault().CustomerID : null).Take(2)
                     from c2 in ss.Set<Customer>().OrderBy(c => c.CustomerID).Skip(2).Take(2)
-                    select new { c1, c2 }).Take(1),
+                    select new { c1, c2 }).OrderBy(t => t.c1.CustomerID).ThenBy(t => t.c2.CustomerID).Take(1),
                 elementSorter: e => (e.c1.CustomerID, e.c2.CustomerID),
                 elementAsserter: (e, a) =>
                 {

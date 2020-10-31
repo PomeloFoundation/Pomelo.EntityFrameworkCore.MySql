@@ -31,7 +31,7 @@ FROM `Products` AS `p`
 WHERE `p`.`ProductID` < 40");
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         public override Task Multiple_collection_navigation_with_FirstOrDefault_chained(bool async)
         {
             return base.Multiple_collection_navigation_with_FirstOrDefault_chained(async);
