@@ -27,6 +27,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 (await Assert.ThrowsAsync<InvalidOperationException>(
                     () => base.Include_collection_with_last_no_orderby(async))).Message);
 
+        [SupportedServerVersionCondition(ServerVersion.WindowFunctionsSupportKey)]
+        public override Task Include_in_let_followed_by_FirstOrDefault(bool async)
+        {
+            return base.Include_in_let_followed_by_FirstOrDefault(async);
+        }
 
         [SupportedServerVersionCondition(ServerVersion.CrossApplySupportKey)]
         public override Task Include_collection_with_cross_apply_with_filter(bool async)

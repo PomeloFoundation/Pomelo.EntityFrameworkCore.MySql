@@ -16,6 +16,30 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
+        [SupportedServerVersionCondition(ServerVersion.WindowFunctionsSupportKey)]
+        public override Task SelectMany_correlated_subquery_take(bool async)
+        {
+            return base.SelectMany_correlated_subquery_take(async);
+        }
+
+        [SupportedServerVersionCondition(ServerVersion.WindowFunctionsSupportKey)]
+        public override Task Distinct_SelectMany_correlated_subquery_take(bool async)
+        {
+            return base.Distinct_SelectMany_correlated_subquery_take(async);
+        }
+
+        [SupportedServerVersionCondition(ServerVersion.WindowFunctionsSupportKey)]
+        public override Task Distinct_SelectMany_correlated_subquery_take_2(bool async)
+        {
+            return base.Distinct_SelectMany_correlated_subquery_take_2(async);
+        }
+
+        [SupportedServerVersionCondition(ServerVersion.WindowFunctionsSupportKey)]
+        public override Task Take_SelectMany_correlated_subquery_take(bool async)
+        {
+            return base.Take_SelectMany_correlated_subquery_take(async);
+        }
+
         [SupportedServerVersionCondition(ServerVersion.CrossApplySupportKey)]
         public override Task SelectMany_with_client_eval(bool async)
         {
