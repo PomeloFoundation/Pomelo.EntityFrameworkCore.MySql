@@ -2,13 +2,15 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Xunit;
 
 #nullable enable
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
-    // Made internal to skip all tests.
+    [SupportedServerVersionCondition(ServerVersion.RenameColumnSupportKey)]
     public class MigrationsInfrastructureMySqlTest : MigrationsInfrastructureTestBase<MigrationsInfrastructureMySqlTest.MigrationsInfrastructureMySqlFixture>
     {
         public MigrationsInfrastructureMySqlTest(MigrationsInfrastructureMySqlFixture fixture)
