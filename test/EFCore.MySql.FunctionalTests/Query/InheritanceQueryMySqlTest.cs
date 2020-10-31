@@ -15,7 +15,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [ConditionalTheory(Skip = "https://github.com/mysql-net/MySqlConnector/pull/896")]
-        [MemberData(nameof(IsAsyncData))]
         public override Task Byte_enum_value_constant_used_in_projection(bool async)
         {
             return base.Byte_enum_value_constant_used_in_projection(async);

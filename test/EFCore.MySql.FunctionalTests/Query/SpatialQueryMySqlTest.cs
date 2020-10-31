@@ -19,17 +19,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [SupportedServerVersionCondition(ServerVersion.SpatialBoundaryFunctionSupportKey)]
-        [MemberData(nameof(IsAsyncData))]
         public override Task Boundary(bool async)
             => base.Boundary(async);
 
         [SupportedServerVersionCondition(ServerVersion.SpatialFunctionAdditionsSupportKey, Skip = "MySQL is unable to work with different SRIDs.")]
-        [MemberData(nameof(IsAsyncData))]
         public override Task Distance_constant_srid_4326(bool async)
             => base.Distance_constant_srid_4326(async);
 
         [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
         public override Task GeometryType(bool async)
             => AssertQuery(
                 async,
@@ -38,22 +35,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 elementSorter: x => x.Id);
 
         [SupportedServerVersionCondition(ServerVersion.SpatialPointOnSurfaceFunctionSupportKey)]
-        [MemberData(nameof(IsAsyncData))]
         public override Task InteriorPoint(bool async)
             => base.InteriorPoint(async);
 
         [SupportedServerVersionCondition(ServerVersion.SpatialIsValidFunctionSupportKey)]
-        [MemberData(nameof(IsAsyncData))]
         public override Task IsValid(bool async)
             => base.IsValid(async);
 
         [SupportedServerVersionCondition(ServerVersion.SpatialPointOnSurfaceFunctionSupportKey)]
-        [MemberData(nameof(IsAsyncData))]
         public override Task PointOnSurface(bool async)
             => base.PointOnSurface(async);
 
         [SupportedServerVersionCondition(ServerVersion.SpatialRelateFunctionSupportKey)]
-        [MemberData(nameof(IsAsyncData))]
         public override Task Relate(bool async)
             => base.Relate(async);
 

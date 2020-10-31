@@ -25,7 +25,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
         public override Task Include_duplicate_collection(bool async)
         {
             return base.Include_duplicate_collection(async);
