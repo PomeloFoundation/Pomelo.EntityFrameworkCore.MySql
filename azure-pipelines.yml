@@ -23,14 +23,14 @@ jobs:
 - job: Linux
   strategy:
     matrix:
-      MySQL 8.0.18:
-        DOCKER_IMAGE: mysql:8.0.18
-        SERVER_VERSION: 8.0.18-mysql
+      MySQL 8.0.21:
+        DOCKER_IMAGE: mysql:8.0.21 # MySQL 8.0.22 is broken, so we explicitly use the latest working one here
+        SERVER_VERSION: 8.0.21-mysql
         SQL_MODE: $(mysql_current_sql_mode)
         INTEGRATION_TESTS: "true"
-      MySQL 5.7.27:
-        DOCKER_IMAGE: mysql:5.7.27
-        SERVER_VERSION: 5.7.27-mysql
+      MySQL 5.7.32:
+        DOCKER_IMAGE: mysql:5.7.32
+        SERVER_VERSION: 5.7.32-mysql
         SQL_MODE: $(mysql_legacy_sql_mode)
         INTEGRATION_TESTS: "true"
       MariaDB 10.5.5:
@@ -38,14 +38,14 @@ jobs:
         SERVER_VERSION: 10.5.5-mariadb
         SQL_MODE: $(mariadb_sql_mode)
         INTEGRATION_TESTS: "false"
-      MariaDB 10.4.10:
-        DOCKER_IMAGE: mariadb:10.4.10
-        SERVER_VERSION: 10.4.10-mariadb
+      MariaDB 10.4.14:
+        DOCKER_IMAGE: mariadb:10.4.14
+        SERVER_VERSION: 10.4.14-mariadb
         SQL_MODE: $(mariadb_sql_mode)
         INTEGRATION_TESTS: "false"
-      MariaDB 10.3.18:
-        DOCKER_IMAGE: mariadb:10.3.20
-        SERVER_VERSION: 10.3.20-mariadb
+      MariaDB 10.3.24:
+        DOCKER_IMAGE: mariadb:10.3.24
+        SERVER_VERSION: 10.3.24-mariadb
         SQL_MODE: $(mariadb_sql_mode)
         INTEGRATION_TESTS: "false"
   pool:
@@ -61,9 +61,8 @@ jobs:
       sudo systemctl stop mysql
       docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -p 3306:3306 -d $DOCKER_IMAGE
     displayName: Install Database Server
-  - bash: |
-      ./dotnet-env.sh dotnet --info
-    displayName: .NET Core Information
+  - bash: ./dotnet-env.sh dotnet --info
+    displayName: .NET Information
   - bash: |
       set -e
       cp test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
@@ -117,6 +116,11 @@ jobs:
     continueOnError: true
   - bash: ./dotnet-env.sh dotnet test test/EFCore.MySql.FunctionalTests -c Release --logger trx --verbosity detailed
     displayName: Functional Tests
+    continueOnError: true
+  - pwsh: |
+      Get-ChildItem QueryBaseline.txt -Recurse | % { $_.FullName }
+      Get-Content QueryBaseline.txt -ErrorAction Ignore
+    displayName: Show Query Baseline
     continueOnError: true
   - bash: ./dotnet-env.sh dotnet run --project test/EFCore.MySql.IntegrationTests -c Release testMigrate
     displayName: Integration Tests applying migrations
@@ -177,6 +181,8 @@ jobs:
     mysql_ini_path: C:\tools\mysql\current\my.ini
     mysql_data_path: C:\ProgramData\MySQL\data
     mysql_service_name: MySQL
+    mysql_server_version: 8.0.21 # MySQL 8.0.22 is broken, so we explicitly use the latest working one here
+    SERVER_VERSION: $(mysql_server_version)-mysql
   steps:
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK'
@@ -184,7 +190,16 @@ jobs:
       version: $(dotnet_version)
       includePreviewVersions: $(allowPreviewVersions)
   - pwsh: |
-      choco install mysql
+      if ("$(mysql_server_version)" -eq "")
+      {
+        echo "Chocolatey command: choco install mysql"
+        choco install mysql
+      }
+      else
+      {
+        echo "Chocolatey command: choco install mysql --version=$(mysql_server_version)"
+        choco install mysql --version=$(mysql_server_version)
+      }
 
       Stop-Service $(mysql_service_name)
       "lower_case_table_names=$(lower_case_table_names)" >> $(mysql_ini_path)
@@ -195,8 +210,7 @@ jobs:
       mysql -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
       mysql -h localhost -u root -pPassword12! -e "SELECT @@version;"
     displayName: Install Database Server
-  - pwsh: |
-      .\dotnet-env.ps1 dotnet --info
+  - pwsh: .\dotnet-env.ps1 dotnet --info
     displayName: .NET Core Information
   - pwsh: |
       cp test\EFCore.MySql.FunctionalTests\config.json.example test\EFCore.MySql.FunctionalTests\config.json
@@ -231,6 +245,11 @@ jobs:
     continueOnError: true
   - pwsh: .\dotnet-env.ps1 dotnet test test\EFCore.MySql.FunctionalTests -c Release --logger trx --verbosity detailed
     displayName: Functional Tests
+    continueOnError: true
+  - pwsh: |
+      Get-ChildItem QueryBaseline.txt -Recurse | % { $_.FullName }
+      Get-Content QueryBaseline.txt -ErrorAction Ignore
+    displayName: Show Query Baseline
     continueOnError: true
   - pwsh: .\dotnet-env.ps1 dotnet run --project test\EFCore.MySql.IntegrationTests -c Release testMigrate
     displayName: Integration Tests applying migration

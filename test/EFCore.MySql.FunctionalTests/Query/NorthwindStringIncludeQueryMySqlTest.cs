@@ -81,7 +81,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 async,
                 ss => (from c1 in ss.Set<Customer>().Include(c => c.Orders).OrderBy(c => c.CustomerID).ThenBy(c => c.Orders.FirstOrDefault() != null ? c.Orders.FirstOrDefault().CustomerID : null).Take(2)
                     from c2 in ss.Set<Customer>().Include(c => c.Orders).OrderBy(c => c.CustomerID).ThenBy(c => c.Orders.FirstOrDefault() != null ? c.Orders.FirstOrDefault().CustomerID : null).Skip(2).Take(2)
-                    select new { c1, c2 }).Take(1),
+                    select new { c1, c2 }).OrderBy(t => t.c1.CustomerID).ThenBy(t => t.c2.CustomerID).Take(1),
                 elementSorter: e => (e.c1.CustomerID, e.c2.CustomerID),
                 elementAsserter: (e, a) =>
                 {
