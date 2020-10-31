@@ -21,14 +21,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             ISqlExpressionFactory sqlExpressionFactory,
             IMySqlOptions options)
         {
+            var mySqlSqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
+
             Translators = new IMemberTranslator[]
             {
-                new MySqlGeometryMemberTranslator(typeMappingSource, sqlExpressionFactory),
-                new MySqlGeometryCollectionMemberTranslator(sqlExpressionFactory),
-                new MySqlLineStringMemberTranslator(typeMappingSource, sqlExpressionFactory, options),
-                new MySqlMultiLineStringMemberTranslator(sqlExpressionFactory),
-                new MySqlPointMemberTranslator(sqlExpressionFactory),
-                new MySqlPolygonMemberTranslator(typeMappingSource, sqlExpressionFactory)
+                new MySqlGeometryMemberTranslator(typeMappingSource, mySqlSqlExpressionFactory),
+                new MySqlGeometryCollectionMemberTranslator(mySqlSqlExpressionFactory),
+                new MySqlLineStringMemberTranslator(typeMappingSource, mySqlSqlExpressionFactory, options),
+                new MySqlMultiLineStringMemberTranslator(mySqlSqlExpressionFactory),
+                new MySqlPointMemberTranslator(mySqlSqlExpressionFactory),
+                new MySqlPolygonMemberTranslator(typeMappingSource, mySqlSqlExpressionFactory)
             };
         }
 

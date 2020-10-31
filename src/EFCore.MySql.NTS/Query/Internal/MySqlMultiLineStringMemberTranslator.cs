@@ -9,16 +9,15 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 using NetTopologySuite.Geometries;
-using static Pomelo.EntityFrameworkCore.MySql.Utilities.Statics;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
     public class MySqlMultiLineStringMemberTranslator : IMemberTranslator
     {
         private static readonly MemberInfo _isClosed = typeof(MultiLineString).GetRuntimeProperty(nameof(MultiLineString.IsClosed));
-        private readonly ISqlExpressionFactory _sqlExpressionFactory;
+        private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
-        public MySqlMultiLineStringMemberTranslator(ISqlExpressionFactory sqlExpressionFactory)
+        public MySqlMultiLineStringMemberTranslator(MySqlSqlExpressionFactory sqlExpressionFactory)
         {
             _sqlExpressionFactory = sqlExpressionFactory;
         }
@@ -27,12 +26,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         {
             if (Equals(member, _isClosed))
             {
-                SqlExpression sqlExpression = _sqlExpressionFactory.Function(
+                SqlExpression sqlExpression = _sqlExpressionFactory.NullableFunction(
                     "ST_IsClosed",
                     new [] {instance},
-                    nullable: true,
-                    argumentsPropagateNullability: TrueArrays[1],
-                    returnType);
+                    returnType,
+                    false);
 
                 // ST_IsRing and others returns TRUE for a NULL value in MariaDB, which is inconsistent with NTS' implementation.
                 // We return the following instead:

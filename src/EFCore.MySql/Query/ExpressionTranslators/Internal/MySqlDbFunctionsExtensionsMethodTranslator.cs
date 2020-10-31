@@ -10,9 +10,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
-using static Pomelo.EntityFrameworkCore.MySql.Utilities.Statics;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
@@ -22,7 +20,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
     /// </summary>
     public class MySqlDbFunctionsExtensionsMethodTranslator : IMethodCallTranslator
     {
-        private readonly IMySqlOptions _options;
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
         private static readonly Type[] _supportedLikeTypes = {
@@ -111,12 +108,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 
         private static readonly MethodInfo _unhexMethodInfo = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(nameof(MySqlDbFunctionsExtensions.Unhex), new[] {typeof(DbFunctions), typeof(string)});
 
-        public MySqlDbFunctionsExtensionsMethodTranslator(
-            ISqlExpressionFactory sqlExpressionFactory,
-            IMySqlOptions options)
+        public MySqlDbFunctionsExtensionsMethodTranslator(ISqlExpressionFactory sqlExpressionFactory)
         {
             _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
-            _options = options;
         }
 
         /// <summary>
@@ -183,22 +177,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 
             if (_hexMethodInfos.Any(m => Equals(method, m)))
             {
-                return _sqlExpressionFactory.Function(
+                return _sqlExpressionFactory.NullableFunction(
                     "HEX",
                     new[] {arguments[1]},
-                    nullable: true,
-                    argumentsPropagateNullability: TrueArrays[1],
                     typeof(string));
             }
 
-            if (method == _unhexMethodInfo)
+            if (Equals(method, _unhexMethodInfo))
             {
-                return _sqlExpressionFactory.Function(
+                return _sqlExpressionFactory.NullableFunction(
                     "UNHEX",
                     new[] {arguments[1]},
-                    nullable: true,
-                    argumentsPropagateNullability: TrueArrays[1],
-                    typeof(string));
+                    typeof(string),
+                    false);
             }
 
             return null;

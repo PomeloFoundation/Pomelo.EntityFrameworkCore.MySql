@@ -136,16 +136,5 @@ namespace Microsoft.EntityFrameworkCore
         /// </param>
         public static bool JsonSearchAny([CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] string searchString, string path, string escapeChar)
             => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonSearchAny)));
-
-        // These methods make no sense as long as they only return true or false, because they would return
-        // the same result as JsonSearchAny would.
-        // public static bool JsonSearchAll([CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] string searchString)
-        //     => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonSearchAll)));
-        //
-        // public static bool JsonSearchAll([CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] string searchString, string path)
-        //     => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonSearchAll)));
-        //
-        // public static bool JsonSearchAll([CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] string searchString, string path, string escapeChar)
-        //     => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonSearchAll)));
     }
 }

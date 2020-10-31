@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using static Pomelo.EntityFrameworkCore.MySql.Utilities.Statics;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -51,22 +50,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                        && ((double)sqlConstant.Value >= int.MaxValue
                            || (double)sqlConstant.Value <= int.MinValue)
                     ? null
-                    : _sqlExpressionFactory.Function(
+                    : _sqlExpressionFactory.NullableFunction(
                         "DATE_ADD",
                         new[]
                         {
                             instance,
-                            _sqlExpressionFactory.ComplexFunctionArgument(new SqlExpression[]
-                            {
-                                _sqlExpressionFactory.Fragment("INTERVAL"),
-                                _sqlExpressionFactory.Convert(arguments[0], typeof(int)),
-                                _sqlExpressionFactory.Fragment(datePart)
-                            }, typeof(string))
+                            _sqlExpressionFactory.ComplexFunctionArgument(
+                                new SqlExpression[]
+                                {
+                                    _sqlExpressionFactory.Fragment("INTERVAL"),
+                                    _sqlExpressionFactory.Convert(arguments[0], typeof(int)),
+                                    _sqlExpressionFactory.Fragment(datePart)
+                                }, typeof(string))
                         },
-                        nullable: true,
-                        argumentsPropagateNullability: TrueArrays[2],
                         instance.Type,
-                        instance.TypeMapping);
+                        instance.TypeMapping,
+                        true,
+                        new[] {true, false});
             }
 
             return null;

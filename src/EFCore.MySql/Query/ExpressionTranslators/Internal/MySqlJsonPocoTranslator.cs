@@ -11,7 +11,6 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
-using static Pomelo.EntityFrameworkCore.MySql.Utilities.Statics;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
@@ -96,13 +95,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         public virtual SqlExpression TranslateArrayLength([NotNull] SqlExpression expression)
             => expression is MySqlJsonTraversalExpression ||
                expression is ColumnExpression columnExpression && columnExpression.TypeMapping is MySqlJsonTypeMapping
-                ? _sqlExpressionFactory.Function(
+                ? _sqlExpressionFactory.NullableFunction(
                     "JSON_LENGTH",
                     new[] {expression},
-                    nullable: true,
-                    argumentsPropagateNullability: TrueArrays[1],
                     typeof(int),
-                    _intTypeMapping)
+                    _intTypeMapping,
+                    false)
                 : null;
 
         private SqlExpression ConvertFromJsonExtract(SqlExpression expression, Type returnType)

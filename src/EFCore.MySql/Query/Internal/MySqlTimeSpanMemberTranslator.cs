@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using Pomelo.EntityFrameworkCore.MySql.Utilities;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -24,9 +23,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             };
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
-        public MySqlTimeSpanMemberTranslator(ISqlExpressionFactory sqlExpressionFactory)
+        public MySqlTimeSpanMemberTranslator(MySqlSqlExpressionFactory sqlExpressionFactory)
         {
-            _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
+            _sqlExpressionFactory = sqlExpressionFactory;
         }
 
         public virtual SqlExpression Translate(
@@ -41,7 +40,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             if (declaringType == typeof(TimeSpan) &&
                 _datePartMapping.TryGetValue(memberName, out var datePart))
             {
-                var extract = _sqlExpressionFactory.Function(
+                var extract = _sqlExpressionFactory.NullableFunction(
                     "EXTRACT",
                     new[]
                     {
@@ -52,9 +51,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                             },
                             typeof(string))
                     },
-                    nullable: true,
-                    argumentsPropagateNullability: Statics.TrueArrays[1],
-                    returnType);
+                    returnType,
+                    false);
 
                 if (datePart.Divisor != 1)
                 {

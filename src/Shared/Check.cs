@@ -5,12 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.EntityFrameworkCore.Internal;
+using CA = System.Diagnostics.CodeAnalysis;
 
-// ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Utilities
 {
     [DebuggerStepThrough]
@@ -19,28 +17,13 @@ namespace Microsoft.EntityFrameworkCore.Utilities
         [ContractAnnotation("value:null => halt")]
         public static T NotNull<T>([NoEnumeration] T value, [InvokerParameterName] [NotNull] string parameterName)
         {
-            if (value == null)
+#pragma warning disable IDE0041 // Use 'is null' check
+            if (ReferenceEquals(value, null))
+#pragma warning restore IDE0041 // Use 'is null' check
             {
                 NotEmpty(parameterName, nameof(parameterName));
 
                 throw new ArgumentNullException(parameterName);
-            }
-
-            return value;
-        }
-
-        [ContractAnnotation("value:null => halt")]
-        public static T NotNull<T>(
-            [NoEnumeration] T value,
-            [InvokerParameterName] [NotNull] string parameterName,
-            [NotNull] string propertyName)
-        {
-            if (value == null)
-            {
-                NotEmpty(parameterName, nameof(parameterName));
-                NotEmpty(propertyName, nameof(propertyName));
-
-                throw new ArgumentException(CoreStrings.ArgumentPropertyNull(propertyName, parameterName));
             }
 
             return value;
@@ -55,7 +38,7 @@ namespace Microsoft.EntityFrameworkCore.Utilities
             {
                 NotEmpty(parameterName, nameof(parameterName));
 
-                throw new ArgumentException(CoreStrings.ArgumentPropertyNull(value, parameterName));
+                throw new ArgumentException(AbstractionsStrings.CollectionArgumentIsEmpty(parameterName));
             }
 
             return value;
@@ -71,7 +54,7 @@ namespace Microsoft.EntityFrameworkCore.Utilities
             }
             else if (value.Trim().Length == 0)
             {
-                e = new ArgumentException(CoreStrings.ArgumentPropertyNull(value, parameterName));
+                e = new ArgumentException(AbstractionsStrings.ArgumentIsEmpty(parameterName));
             }
 
             if (e != null)
@@ -86,12 +69,12 @@ namespace Microsoft.EntityFrameworkCore.Utilities
 
         public static string NullButNotEmpty(string value, [InvokerParameterName] [NotNull] string parameterName)
         {
-            if (value is object
+            if (!(value is null)
                 && value.Length == 0)
             {
                 NotEmpty(parameterName, nameof(parameterName));
 
-                throw new ArgumentException(CoreStrings.ArgumentPropertyNull(value, parameterName));
+                throw new ArgumentException(AbstractionsStrings.ArgumentIsEmpty(parameterName));
             }
 
             return value;
@@ -112,29 +95,29 @@ namespace Microsoft.EntityFrameworkCore.Utilities
             return value;
         }
 
-        public static T IsDefined<T>(T value, [InvokerParameterName] [NotNull] string parameterName)
-            where T : struct
+        public static IReadOnlyList<string> HasNoEmptyElements(
+            IReadOnlyList<string> value,
+            [InvokerParameterName] [NotNull] string parameterName)
         {
-            if (!Enum.IsDefined(typeof(T), value))
+            NotNull(value, parameterName);
+
+            if (value.Any(s => string.IsNullOrWhiteSpace(s)))
             {
                 NotEmpty(parameterName, nameof(parameterName));
 
-                throw new ArgumentException(CoreStrings.InvalidEnumValue(parameterName, typeof(T)));
+                throw new ArgumentException(AbstractionsStrings.CollectionArgumentHasEmptyElements(parameterName));
             }
 
             return value;
         }
 
-        public static Type ValidEntityType(Type value, [InvokerParameterName] [NotNull] string parameterName)
+        [Conditional("DEBUG")]
+        public static void DebugAssert([CA.DoesNotReturnIfAttribute(false)] bool condition, string message)
         {
-            if (!value.GetTypeInfo().IsClass)
+            if (!condition)
             {
-                NotEmpty(parameterName, nameof(parameterName));
-
-                throw new ArgumentException(CoreStrings.InvalidEntityType(value));
+                throw new Exception($"Check.DebugAssert failed: {message}");
             }
-
-            return value;
         }
     }
 }

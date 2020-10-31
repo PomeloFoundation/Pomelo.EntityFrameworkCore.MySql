@@ -22,13 +22,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             ISqlExpressionFactory sqlExpressionFactory,
             IMySqlOptions options)
         {
+            var mySqlSqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
+
             Translators = new IMethodCallTranslator[]
             {
-                new MySqlGeometryMethodTranslator(typeMappingSource, sqlExpressionFactory, options),
-                new MySqlGeometryCollectionMethodTranslator(typeMappingSource, sqlExpressionFactory),
-                new MySqlLineStringMethodTranslator(typeMappingSource, sqlExpressionFactory),
-                new MySqlPolygonMethodTranslator(typeMappingSource, sqlExpressionFactory),
-                new MySqlSpatialDbFunctionsExtensionsMethodTranslator(typeMappingSource, sqlExpressionFactory, options)
+                new MySqlGeometryMethodTranslator(typeMappingSource, mySqlSqlExpressionFactory, options),
+                new MySqlGeometryCollectionMethodTranslator(typeMappingSource, mySqlSqlExpressionFactory),
+                new MySqlLineStringMethodTranslator(typeMappingSource, mySqlSqlExpressionFactory),
+                new MySqlPolygonMethodTranslator(typeMappingSource, mySqlSqlExpressionFactory),
+                new MySqlSpatialDbFunctionsExtensionsMethodTranslator(typeMappingSource, mySqlSqlExpressionFactory, options)
             };
         }
 
