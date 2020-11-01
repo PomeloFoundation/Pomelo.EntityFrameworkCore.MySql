@@ -11,7 +11,6 @@ using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
-using static Pomelo.EntityFrameworkCore.MySql.Utilities.Statics;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
@@ -44,11 +43,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 if (sqlOperand.Type == typeof(byte[]) &&
                     (sqlOperand.TypeMapping == null || sqlOperand.TypeMapping is MySqlByteArrayTypeMapping))
                 {
-                    return _sqlExpressionFactory.Function(
+                    return _sqlExpressionFactory.NullableFunction(
                         "LENGTH",
                         new[] {sqlOperand},
-                        nullable: true,
-                        argumentsPropagateNullability: TrueArrays[1],
                         typeof(int));
                 }
 

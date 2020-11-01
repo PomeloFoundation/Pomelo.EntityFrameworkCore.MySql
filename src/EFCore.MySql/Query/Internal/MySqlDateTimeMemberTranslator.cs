@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using static Pomelo.EntityFrameworkCore.MySql.Utilities.Statics;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -47,7 +46,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
                 if (_datePartMapping.TryGetValue(memberName, out var datePart))
                 {
-                    var extract = _sqlExpressionFactory.Function(
+                    var extract = _sqlExpressionFactory.NullableFunction(
                         "EXTRACT",
                         new[]
                         {
@@ -58,9 +57,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                                 },
                                 typeof(string))
                         },
-                        nullable: true,
-                        argumentsPropagateNullability: TrueArrays[1],
-                        returnType);
+                        returnType,
+                        false);
 
                     if (datePart.Divisor != 1)
                     {
@@ -75,53 +73,45 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 switch (memberName)
                 {
                     case nameof(DateTime.DayOfYear):
-                        return _sqlExpressionFactory.Function(
+                        return _sqlExpressionFactory.NullableFunction(
                         "DAYOFYEAR",
                         new[] { instance },
-                        nullable: true,
-                        argumentsPropagateNullability: TrueArrays[1],
-                        returnType);
+                        returnType,
+                        false);
 
                     case nameof(DateTime.Date):
-                        return _sqlExpressionFactory.Function(
+                        return _sqlExpressionFactory.NullableFunction(
                             "CONVERT",
                             new[]{
                                 instance,
                                 _sqlExpressionFactory.Fragment("date")
                             },
-                            nullable: true,
-                            argumentsPropagateNullability: TrueArrays[2],
-                            returnType);
+                            returnType,
+                            false);
 
                     case nameof(DateTime.TimeOfDay):
                         return _sqlExpressionFactory.Convert(instance, returnType);
 
                     case nameof(DateTime.Now):
-                        return _sqlExpressionFactory.Function(
+                        return _sqlExpressionFactory.NonNullableFunction(
                             declaringType == typeof(DateTimeOffset)
                                 ? "UTC_TIMESTAMP"
                                 : "CURRENT_TIMESTAMP",
                             Array.Empty<SqlExpression>(),
-                            nullable: false,
-                            argumentsPropagateNullability: FalseArrays[0],
                             returnType);
 
                     case nameof(DateTime.UtcNow):
-                        return _sqlExpressionFactory.Function(
+                        return _sqlExpressionFactory.NonNullableFunction(
                             "UTC_TIMESTAMP",
                             Array.Empty<SqlExpression>(),
-                            nullable: false,
-                            argumentsPropagateNullability: FalseArrays[0],
                             returnType);
 
                     case nameof(DateTime.Today):
-                        return _sqlExpressionFactory.Function(
+                        return _sqlExpressionFactory.NonNullableFunction(
                             declaringType == typeof(DateTimeOffset)
                                 ? "UTC_DATE"
                                 : "CURDATE",
                             Array.Empty<SqlExpression>(),
-                            nullable: false,
-                            argumentsPropagateNullability: FalseArrays[0],
                             returnType);
                 }
             }

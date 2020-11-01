@@ -8,16 +8,15 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using NetTopologySuite.Geometries;
-using static Pomelo.EntityFrameworkCore.MySql.Utilities.Statics;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
     public class MySqlGeometryCollectionMemberTranslator : IMemberTranslator
     {
         private static readonly MemberInfo _count = typeof(GeometryCollection).GetRuntimeProperty(nameof(GeometryCollection.Count));
-        private readonly ISqlExpressionFactory _sqlExpressionFactory;
+        private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
-        public MySqlGeometryCollectionMemberTranslator(ISqlExpressionFactory sqlExpressionFactory)
+        public MySqlGeometryCollectionMemberTranslator(MySqlSqlExpressionFactory sqlExpressionFactory)
         {
             _sqlExpressionFactory = sqlExpressionFactory;
         }
@@ -26,12 +25,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         {
             if (Equals(member, _count))
             {
-                return _sqlExpressionFactory.Function(
+                // Returns NULL for an empty geometry argument.
+                return _sqlExpressionFactory.NullableFunction(
                     "ST_NumGeometries",
                     new [] {instance},
-                    nullable: true,
-                    argumentsPropagateNullability: TrueArrays[1],
-                    returnType);
+                    returnType,
+                    false);
             }
 
             return null;

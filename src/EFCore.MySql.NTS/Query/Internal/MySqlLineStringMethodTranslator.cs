@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 using NetTopologySuite.Geometries;
-using static Pomelo.EntityFrameworkCore.MySql.Utilities.Statics;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -19,11 +18,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             nameof(LineString.GetPointN), new[] { typeof(int) });
 
         private readonly IRelationalTypeMappingSource _typeMappingSource;
-        private readonly ISqlExpressionFactory _sqlExpressionFactory;
+        private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
         public MySqlLineStringMethodTranslator(
             IRelationalTypeMappingSource typeMappingSource,
-            ISqlExpressionFactory sqlExpressionFactory)
+            MySqlSqlExpressionFactory sqlExpressionFactory)
         {
             _typeMappingSource = typeMappingSource;
             _sqlExpressionFactory = sqlExpressionFactory;
@@ -33,7 +32,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         {
             if (Equals(method, _getPointN))
             {
-                return _sqlExpressionFactory.Function(
+                return _sqlExpressionFactory.NullableFunction(
                     "ST_PointN",
                     new[]
                     {
@@ -42,10 +41,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                             arguments[0],
                             _sqlExpressionFactory.Constant(1))
                     },
-                    nullable: true,
-                    argumentsPropagateNullability: TrueArrays[2],
                     method.ReturnType,
-                    _typeMappingSource.FindMapping(method.ReturnType, instance.TypeMapping.StoreType));
+                    _typeMappingSource.FindMapping(method.ReturnType, instance.TypeMapping.StoreType),
+                    false);
             }
 
             return null;

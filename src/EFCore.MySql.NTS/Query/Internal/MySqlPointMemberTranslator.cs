@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using NetTopologySuite.Geometries;
-using Pomelo.EntityFrameworkCore.MySql.Utilities;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -21,9 +20,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             { typeof(Point).GetRuntimeProperty(nameof(Point.Y)), "ST_Y" },
         };
 
-        private readonly ISqlExpressionFactory _sqlExpressionFactory;
+        private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
-        public MySqlPointMemberTranslator(ISqlExpressionFactory sqlExpressionFactory)
+        public MySqlPointMemberTranslator(MySqlSqlExpressionFactory sqlExpressionFactory)
         {
             _sqlExpressionFactory = sqlExpressionFactory;
         }
@@ -34,11 +33,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             {
                 if (_geometryMemberToFunctionName.TryGetValue(member, out var functionName))
                 {
-                    return _sqlExpressionFactory.Function(
+                    return _sqlExpressionFactory.NullableFunction(
                         functionName,
                         new[] { instance },
-                        nullable: true,
-                        argumentsPropagateNullability: Statics.TrueArrays[1],
                         returnType);
                 }
             }

@@ -10,19 +10,20 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
     public class MySqlByteArrayMethodTranslator : IMethodCallTranslator
     {
-        private readonly ISqlExpressionFactory _sqlExpressionFactory;
+        private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
         private static readonly MethodInfo _containsMethod = typeof(Enumerable)
             .GetTypeInfo()
             .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
             .Single(m => m.Name == nameof(Enumerable.Contains) && m.GetParameters().Length == 2);
 
-        public MySqlByteArrayMethodTranslator([NotNull] ISqlExpressionFactory sqlExpressionFactory)
+        public MySqlByteArrayMethodTranslator([NotNull] MySqlSqlExpressionFactory sqlExpressionFactory)
         {
             _sqlExpressionFactory = sqlExpressionFactory;
         }
@@ -49,11 +50,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     : _sqlExpressionFactory.Convert(arguments[1], typeof(byte[]), sourceTypeMapping);
 
                 return _sqlExpressionFactory.GreaterThan(
-                    _sqlExpressionFactory.Function(
+                    _sqlExpressionFactory.NullableFunction(
                         "LOCATE",
                         new[] { value, source },
-                        nullable: true,
-                        argumentsPropagateNullability: new[] { true, true },
                         typeof(int)),
                     _sqlExpressionFactory.Constant(0));
             }

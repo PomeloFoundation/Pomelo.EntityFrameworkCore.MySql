@@ -14,7 +14,7 @@ using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Query.ExpressionTranslators.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Query.Internal
 {
     public class MySqlJsonNewtonsoftDomTranslator : IMemberTranslator, IMethodCallTranslator
     {

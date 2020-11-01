@@ -7,15 +7,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using static Pomelo.EntityFrameworkCore.MySql.Utilities.Statics;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
     public class MySqlStringMemberTranslator : IMemberTranslator
     {
-        private readonly ISqlExpressionFactory _sqlExpressionFactory;
+        private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
-        public MySqlStringMemberTranslator(ISqlExpressionFactory sqlExpressionFactory)
+        public MySqlStringMemberTranslator(MySqlSqlExpressionFactory sqlExpressionFactory)
         {
             _sqlExpressionFactory = sqlExpressionFactory;
         }
@@ -29,11 +28,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             if (member.Name == nameof(string.Length)
                 && instance?.Type == typeof(string))
             {
-                return _sqlExpressionFactory.Function(
+                return _sqlExpressionFactory.NullableFunction(
                     "CHAR_LENGTH",
                     new[] { instance },
-                    nullable: true,
-                    argumentsPropagateNullability: TrueArrays[1],
                     returnType);
             }
 

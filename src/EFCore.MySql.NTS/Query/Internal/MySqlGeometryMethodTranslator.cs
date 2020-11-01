@@ -14,37 +14,36 @@ using Microsoft.EntityFrameworkCore.Storage;
 using NetTopologySuite.Geometries;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
-using static Pomelo.EntityFrameworkCore.MySql.Utilities.Statics;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
     public class MySqlGeometryMethodTranslator : IMethodCallTranslator
     {
-        private static readonly IDictionary<MethodInfo, string> _methodToFunctionName = new Dictionary<MethodInfo, string>
+        private static readonly IDictionary<MethodInfo, (string Name, bool OnlyNullByArgs)> _methodToFunctionName = new Dictionary<MethodInfo, (string Name, bool OnlyNullByArgs)>
         {
-            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.AsBinary), Type.EmptyTypes), "ST_AsBinary" },
-            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.AsText), Type.EmptyTypes), "ST_AsText" },
-            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Buffer), new[] { typeof(double) }), "ST_Buffer" },
-            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Contains), new[] { typeof(Geometry) }), "ST_Contains" },
-            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.ConvexHull), Type.EmptyTypes), "ST_ConvexHull" },
-            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Difference), new[] { typeof(Geometry) }), "ST_Difference" },
-            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Disjoint), new[] { typeof(Geometry) }), "ST_Disjoint" },
-            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.EqualsTopologically), new[] { typeof(Geometry) }), "ST_Equals" },
-            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Intersection), new[] { typeof(Geometry) }), "ST_Intersection" },
-            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Intersects), new[] { typeof(Geometry) }), "ST_Intersects" },
-            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Overlaps), new[] { typeof(Geometry) }), "ST_Overlaps" },
-            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.SymmetricDifference), new[] { typeof(Geometry) }), "ST_SymDifference" },
-            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.ToBinary), Type.EmptyTypes), "ST_AsBinary" },
-            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.ToText), Type.EmptyTypes), "ST_AsText" },
-            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Union), new[] { typeof(Geometry) }), "ST_Union" },
-            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Within), new[] { typeof(Geometry) }), "ST_Within" }
+            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.AsBinary), Type.EmptyTypes), ("ST_AsBinary", true ) },
+            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.AsText), Type.EmptyTypes), ("ST_AsText", true ) },
+            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Buffer), new[] { typeof(double) }), ("ST_Buffer", true ) },
+            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Contains), new[] { typeof(Geometry) }), ("ST_Contains", false ) },
+            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.ConvexHull), Type.EmptyTypes), ("ST_ConvexHull", false ) },
+            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Difference), new[] { typeof(Geometry) }), ("ST_Difference", true ) },
+            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Disjoint), new[] { typeof(Geometry) }), ("ST_Disjoint", false ) },
+            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.EqualsTopologically), new[] { typeof(Geometry) }), ("ST_Equals", true ) },
+            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Intersection), new[] { typeof(Geometry) }), ("ST_Intersection", true ) },
+            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Intersects), new[] { typeof(Geometry) }), ("ST_Intersects", false ) },
+            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Overlaps), new[] { typeof(Geometry) }), ("ST_Overlaps", false ) },
+            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.SymmetricDifference), new[] { typeof(Geometry) }), ("ST_SymDifference", true ) },
+            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.ToBinary), Type.EmptyTypes), ("ST_AsBinary", true ) },
+            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.ToText), Type.EmptyTypes), ("ST_AsText", true ) },
+            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Union), new[] { typeof(Geometry) }), ("ST_Union", true ) },
+            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Within), new[] { typeof(Geometry) }), ("ST_Within", false ) }
         };
 
-        private static readonly IDictionary<MethodInfo, string> _geometryMethodToFunctionName = new Dictionary<MethodInfo, string>
+        private static readonly IDictionary<MethodInfo, (string Name, bool OnlyNullByArgs)> _geometryMethodToFunctionName = new Dictionary<MethodInfo, (string Name, bool OnlyNullByArgs)>
         {
-            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Crosses), new[] { typeof(Geometry) }), "ST_Crosses" },
-            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Relate), new[] { typeof(Geometry), typeof(string) }), "ST_Relate" },
-            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Touches), new[] { typeof(Geometry) }), "ST_Touches" }
+            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Crosses), new[] { typeof(Geometry) }), ("ST_Crosses", false ) },
+            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Relate), new[] { typeof(Geometry), typeof(string) }), ("ST_Relate", false ) },
+            { typeof(Geometry).GetRuntimeMethod(nameof(Geometry.Touches), new[] { typeof(Geometry) }), ("ST_Touches", false ) }
         };
 
         private static readonly MethodInfo _getGeometryN = typeof(Geometry).GetRuntimeMethod(
@@ -58,12 +57,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             new[] { typeof(Geometry) });
 
         private readonly IRelationalTypeMappingSource _typeMappingSource;
-        private readonly ISqlExpressionFactory _sqlExpressionFactory;
+        private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
         private readonly IMySqlOptions _options;
 
         public MySqlGeometryMethodTranslator(
             IRelationalTypeMappingSource typeMappingSource,
-            ISqlExpressionFactory sqlExpressionFactory,
+            MySqlSqlExpressionFactory sqlExpressionFactory,
             IMySqlOptions options)
         {
             _typeMappingSource = typeMappingSource;
@@ -82,8 +81,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 Debug.Assert(typeMapping != null, "At least one argument must have typeMapping.");
                 var storeType = typeMapping.StoreType;
 
-                if (_methodToFunctionName.TryGetValue(method, out var functionName) ||
-                    _geometryMethodToFunctionName.TryGetValue(method, out functionName))
+                if (_methodToFunctionName.TryGetValue(method, out var mapping) ||
+                    _geometryMethodToFunctionName.TryGetValue(method, out mapping))
                 {
                     instance = _sqlExpressionFactory.ApplyTypeMapping(
                         instance,
@@ -108,18 +107,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         ? _typeMappingSource.FindMapping(method.ReturnType, storeType)
                         : _typeMappingSource.FindMapping(method.ReturnType);
 
-                    return _sqlExpressionFactory.Function(
-                        functionName,
+                    return _sqlExpressionFactory.NullableFunction(
+                        mapping.Name,
                         typeMappedArguments,
-                        nullable: true,
-                        argumentsPropagateNullability: Enumerable.Repeat(true, typeMappedArguments.Count),
                         method.ReturnType,
-                        resultTypeMapping);
+                        resultTypeMapping,
+                        mapping.OnlyNullByArgs);
                 }
 
                 if (Equals(method, _getGeometryN))
                 {
-                    return _sqlExpressionFactory.Function(
+                    return _sqlExpressionFactory.NullableFunction(
                         "ST_GeometryN",
                         new[]
                         {
@@ -128,10 +126,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                                 arguments[0],
                                 _sqlExpressionFactory.Constant(1))
                         },
-                        nullable: true,
-                        argumentsPropagateNullability: TrueArrays[2],
                         method.ReturnType,
-                        _typeMappingSource.FindMapping(method.ReturnType, storeType));
+                        _typeMappingSource.FindMapping(method.ReturnType, storeType),
+                        false);
                 }
 
                 if (Equals(method, _distance))
@@ -171,13 +168,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 {
                     new CaseWhenClause(
                         _sqlExpressionFactory.Equal(
-                            _sqlExpressionFactory.Function(
+                            _sqlExpressionFactory.NullableFunction(
                                 "ST_SRID",
                                 new[] {left},
-                                nullable: true,
-                                argumentsPropagateNullability: TrueArrays[1],
-                                typeof(int),
-                                _typeMappingSource.FindMapping(typeof(int))),
+                                typeof(int)),
                             _sqlExpressionFactory.Constant(4326)),
                         MySqlSpatialDbFunctionsExtensionsMethodTranslator.GetStDistanceSphereFunctionCall(
                             left,

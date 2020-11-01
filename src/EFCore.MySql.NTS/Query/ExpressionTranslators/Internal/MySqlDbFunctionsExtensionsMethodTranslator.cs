@@ -12,7 +12,6 @@ using Microsoft.EntityFrameworkCore.Storage;
 using NetTopologySuite.Geometries;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
-using static Pomelo.EntityFrameworkCore.MySql.Utilities.Statics;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
@@ -31,10 +30,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 
         public MySqlSpatialDbFunctionsExtensionsMethodTranslator(
             IRelationalTypeMappingSource typeMappingSource,
-            ISqlExpressionFactory sqlExpressionFactory,
+            MySqlSqlExpressionFactory sqlExpressionFactory,
             IMySqlOptions options)
         {
-            _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
+            _sqlExpressionFactory = sqlExpressionFactory;
             _typeMappingSource = typeMappingSource;
             _options = options;
         }
@@ -63,11 +62,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                         {
                             new CaseWhenClause(
                                 _sqlExpressionFactory.Equal(
-                                    _sqlExpressionFactory.Function(
+                                    _sqlExpressionFactory.NullableFunction(
                                         "ST_SRID",
                                         new[] {arguments[1]},
-                                        nullable: true,
-                                        argumentsPropagateNullability: TrueArrays[1],
                                         typeof(int)),
                                     _sqlExpressionFactory.Constant(0)),
                                 GetStDistanceFunctionCall(
@@ -116,33 +113,27 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         private static SqlFunctionExpression SetSrid(
             SqlExpression geometry,
             int srid,
-            ISqlExpressionFactory sqlExpressionFactory,
+            MySqlSqlExpressionFactory sqlExpressionFactory,
             IMySqlOptions options)
             => options.ServerVersion.SupportsSpatialSetSridFunction
-                ? sqlExpressionFactory.Function(
+                ? sqlExpressionFactory.NullableFunction(
                     "ST_SRID",
                     new[]
                     {
                         geometry,
                         sqlExpressionFactory.Constant(srid)
                     },
-                    nullable: true,
-                    argumentsPropagateNullability: TrueArrays[1],
                     typeof(int))
-                : sqlExpressionFactory.Function(
+                : sqlExpressionFactory.NullableFunction(
                     "ST_GeomFromWKB",
                     new SqlExpression[]
                     {
-                        sqlExpressionFactory.Function(
+                        sqlExpressionFactory.NullableFunction(
                             "ST_AsBinary",
                             new[] {geometry},
-                            nullable: true,
-                            argumentsPropagateNullability: TrueArrays[1],
                             typeof(byte[])),
                         sqlExpressionFactory.Constant(srid)
                     },
-                    nullable: true,
-                    argumentsPropagateNullability: TrueArrays[2],
                     geometry.Type);
 
         public static SqlExpression GetStDistanceFunctionCall(
@@ -150,15 +141,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             SqlExpression right,
             Type resultType,
             RelationalTypeMapping resultTypeMapping,
-            ISqlExpressionFactory sqlExpressionFactory)
+            MySqlSqlExpressionFactory sqlExpressionFactory)
         {
-            return sqlExpressionFactory.Function(
+            // Returns null for empty geometry arguments.
+            return sqlExpressionFactory.NullableFunction(
                 "ST_Distance",
                 new[] {left, right},
-                nullable: true,
-                argumentsPropagateNullability: TrueArrays[2],
                 resultType,
-                resultTypeMapping);
+                resultTypeMapping,
+                false);
         }
 
         public static SqlExpression GetStDistanceSphereFunctionCall(
@@ -167,20 +158,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             SpatialDistanceAlgorithm algorithm,
             Type resultType,
             RelationalTypeMapping resultTypeMapping,
-            ISqlExpressionFactory sqlExpressionFactory,
+            MySqlSqlExpressionFactory sqlExpressionFactory,
             IMySqlOptions options)
         {
             if (options.ServerVersion.SupportsSpatialDistanceSphereFunction)
             {
                 if (algorithm == SpatialDistanceAlgorithm.Native)
                 {
-                    return sqlExpressionFactory.Function(
+                    // Returns null for empty geometry arguments.
+                    return sqlExpressionFactory.NullableFunction(
                         "ST_Distance_Sphere",
                         new[] {left, right},
-                        nullable: true,
-                        argumentsPropagateNullability: TrueArrays[2],
                         resultType,
-                        resultTypeMapping);
+                        resultTypeMapping,
+                        false);
                 }
 
                 if (algorithm == SpatialDistanceAlgorithm.Andoyer &&
@@ -195,11 +186,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                         {
                             new CaseWhenClause(
                                 sqlExpressionFactory.Equal(
-                                    sqlExpressionFactory.Function(
+                                    sqlExpressionFactory.NullableFunction(
                                         "ST_SRID",
                                         new[] {left},
-                                        nullable: true,
-                                        argumentsPropagateNullability: TrueArrays[1],
                                         typeof(int)),
                                     sqlExpressionFactory.Constant(4326)),
                                 GetStDistanceFunctionCall(
@@ -225,11 +214,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                         {
                             new CaseWhenClause(
                                 sqlExpressionFactory.Equal(
-                                    sqlExpressionFactory.Function(
+                                    sqlExpressionFactory.NullableFunction(
                                         "ST_SRID",
                                         new[] {left},
-                                        nullable: true,
-                                        argumentsPropagateNullability: TrueArrays[1],
                                         typeof(int)),
                                     sqlExpressionFactory.Constant(0)),
                                 GetHaversineDistance(
@@ -258,7 +245,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             SqlExpression left,
             SqlExpression right,
             Type resultType,
-            ISqlExpressionFactory sqlExpressionFactory)
+            MySqlSqlExpressionFactory sqlExpressionFactory)
         {
             // HAVERSINE = 6371000 * 2 * ASIN(
             //     SQRT(
@@ -273,20 +260,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 sqlExpressionFactory.Constant(6370986.0), // see https://postgis.net/docs/manual-1.4/ST_Distance_Sphere.html
                 sqlExpressionFactory.Multiply(
                     sqlExpressionFactory.Constant(2.0),
-                    sqlExpressionFactory.Function(
+                    sqlExpressionFactory.NullableFunction(
                         "ASIN",
                         new[]
                         {
-                            sqlExpressionFactory.Function(
+                            sqlExpressionFactory.NullableFunction(
                                 "SQRT",
                                 new[]
                                 {
                                     sqlExpressionFactory.Add(
-                                        sqlExpressionFactory.Function(
+                                        sqlExpressionFactory.NullableFunction(
                                             "POWER",
                                             new SqlExpression[]
                                             {
-                                                sqlExpressionFactory.Function(
+                                                sqlExpressionFactory.NullableFunction(
                                                     "SIN",
                                                     new[]
                                                     {
@@ -294,88 +281,66 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                                                             sqlExpressionFactory.Divide(
                                                                 sqlExpressionFactory.Multiply(
                                                                     sqlExpressionFactory.Subtract(
-                                                                        sqlExpressionFactory.Function(
+                                                                        sqlExpressionFactory.NullableFunction(
                                                                             "ST_Y",
                                                                             new[] {right},
-                                                                            nullable: true,
-                                                                            argumentsPropagateNullability: TrueArrays[1],
                                                                             resultType),
-                                                                        sqlExpressionFactory.Function(
+                                                                        sqlExpressionFactory.NullableFunction(
                                                                             "ST_Y",
                                                                             new[] {left},
-                                                                            nullable: true,
-                                                                            argumentsPropagateNullability: TrueArrays[1],
                                                                             resultType)),
-                                                                    sqlExpressionFactory.Function(
+                                                                    sqlExpressionFactory.NonNullableFunction(
                                                                         "PI",
                                                                         Array.Empty<SqlExpression>(),
-                                                                        nullable: false,
-                                                                        argumentsPropagateNullability: FalseArrays[0],
                                                                         resultType)),
                                                                 sqlExpressionFactory.Constant(180.0)),
                                                             sqlExpressionFactory.Constant(2.0))
                                                     },
-                                                    nullable: true,
-                                                    argumentsPropagateNullability: TrueArrays[1],
                                                     resultType),
                                                 sqlExpressionFactory.Constant(2),
                                             },
-                                            nullable: true,
-                                            argumentsPropagateNullability: TrueArrays[2],
                                             resultType),
                                         sqlExpressionFactory.Multiply(
-                                            sqlExpressionFactory.Function(
+                                            sqlExpressionFactory.NullableFunction(
                                                 "COS",
                                                 new[]
                                                 {
                                                     sqlExpressionFactory.Divide(
                                                         sqlExpressionFactory.Multiply(
-                                                            sqlExpressionFactory.Function(
+                                                            sqlExpressionFactory.NullableFunction(
                                                                 "ST_Y",
                                                                 new[] {left},
-                                                                nullable: true,
-                                                                argumentsPropagateNullability: TrueArrays[1],
                                                                 resultType),
-                                                            sqlExpressionFactory.Function(
+                                                            sqlExpressionFactory.NonNullableFunction(
                                                                 "PI",
                                                                 Array.Empty<SqlExpression>(),
-                                                                nullable: false,
-                                                                argumentsPropagateNullability: FalseArrays[0],
                                                                 resultType)),
                                                         sqlExpressionFactory.Constant(180.0)),
                                                 },
-                                                nullable: true,
-                                                argumentsPropagateNullability: TrueArrays[1],
                                                 resultType),
                                             sqlExpressionFactory.Multiply(
-                                                sqlExpressionFactory.Function(
+                                                sqlExpressionFactory.NullableFunction(
                                                     "COS",
                                                     new[]
                                                     {
                                                         sqlExpressionFactory.Divide(
                                                             sqlExpressionFactory.Multiply(
-                                                                sqlExpressionFactory.Function(
+                                                                sqlExpressionFactory.NullableFunction(
                                                                     "ST_Y",
                                                                     new[] {right},
-                                                                    nullable: true,
-                                                                    argumentsPropagateNullability: TrueArrays[1],
                                                                     resultType),
-                                                                sqlExpressionFactory.Function(
+                                                                sqlExpressionFactory.NonNullableFunction(
                                                                     "PI",
                                                                     Array.Empty<SqlExpression>(),
-                                                                    nullable: false,
-                                                                    argumentsPropagateNullability: FalseArrays[0],
                                                                     resultType)),
                                                             sqlExpressionFactory.Constant(180.0)),
                                                     },
-                                                    nullable: true,
-                                                    argumentsPropagateNullability: TrueArrays[1],
                                                     resultType),
-                                                sqlExpressionFactory.Function(
+                                                sqlExpressionFactory.NullableFunction(
                                                     "POWER",
                                                     new SqlExpression[]
                                                     {
-                                                        sqlExpressionFactory.Function(
+                                                        sqlExpressionFactory.NullableFunction(
                                                             "SIN",
                                                             new[]
                                                             {
@@ -383,77 +348,59 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                                                                     sqlExpressionFactory.Divide(
                                                                         sqlExpressionFactory.Multiply(
                                                                             sqlExpressionFactory.Subtract(
-                                                                                sqlExpressionFactory.Function(
+                                                                                sqlExpressionFactory.NullableFunction(
                                                                                     "ST_X",
                                                                                     new[] {right},
-                                                                                    nullable: true,
-                                                                                    argumentsPropagateNullability: TrueArrays[1],
                                                                                     resultType),
-                                                                                sqlExpressionFactory.Function(
+                                                                                sqlExpressionFactory.NullableFunction(
                                                                                     "ST_X",
                                                                                     new[] {left},
-                                                                                    nullable: true,
-                                                                                    argumentsPropagateNullability: TrueArrays[1],
                                                                                     resultType)),
-                                                                            sqlExpressionFactory.Function(
+                                                                            sqlExpressionFactory.NonNullableFunction(
                                                                                 "PI",
                                                                                 Array.Empty<SqlExpression>(),
-                                                                                nullable: false,
-                                                                                argumentsPropagateNullability: FalseArrays[0],
                                                                                 resultType)),
                                                                         sqlExpressionFactory.Constant(180.0)),
                                                                     sqlExpressionFactory.Constant(2.0))
                                                             },
-                                                            nullable: true,
-                                                            argumentsPropagateNullability: TrueArrays[1],
                                                             resultType),
                                                         sqlExpressionFactory.Constant(2),
                                                     },
-                                                    nullable: true,
-                                                    argumentsPropagateNullability: TrueArrays[2],
                                                     resultType))))
                                 },
-                                nullable: true,
-                                argumentsPropagateNullability: TrueArrays[1],
-                                resultType)
+                                resultType,
+                                false)
                         },
-                        nullable: true,
-                        argumentsPropagateNullability: TrueArrays[1],
-                        resultType)));
+                        resultType,
+                        false)));
         }
 
         private static SqlExpression GetAndoyerDistance(
             SqlExpression left,
             SqlExpression right,
             Type resultType,
-            ISqlExpressionFactory sqlExpressionFactory)
+            MySqlSqlExpressionFactory sqlExpressionFactory)
         {
             SqlExpression toDegrees(SqlExpression coord)
                 => sqlExpressionFactory.Divide(
                     sqlExpressionFactory.Multiply(
                         coord,
-                        sqlExpressionFactory.Function(
+                        sqlExpressionFactory.NonNullableFunction(
                             "PI",
                             Array.Empty<SqlExpression>(),
-                            nullable: false,
-                            argumentsPropagateNullability: FalseArrays[0],
                             resultType)),
                     sqlExpressionFactory.Constant(180.0));
 
             SqlExpression xCoord(SqlExpression point)
-                => sqlExpressionFactory.Function(
+                => sqlExpressionFactory.NullableFunction(
                     "ST_X",
                     new[] {point},
-                    nullable: true,
-                    argumentsPropagateNullability: TrueArrays[1],
                     resultType);
 
             SqlExpression yCoord(SqlExpression point)
-                => sqlExpressionFactory.Function(
+                => sqlExpressionFactory.NullableFunction(
                     "ST_Y",
                     new[] {point},
-                    nullable: true,
-                    argumentsPropagateNullability: TrueArrays[1],
                     resultType);
 
             var c0 = sqlExpressionFactory.Constant(0.0);
@@ -484,95 +431,71 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     lat2),
                 c2);
 
-            var sinG2 = sqlExpressionFactory.Function(
+            var sinG2 = sqlExpressionFactory.NullableFunction(
                 "POWER",
                 new SqlExpression[]
                 {
-                    sqlExpressionFactory.Function(
+                    sqlExpressionFactory.NullableFunction(
                         "SIN",
                         new[] {g},
-                        nullable: true,
-                        argumentsPropagateNullability: TrueArrays[1],
                         resultType),
                     c2Int
                 },
-                nullable: true,
-                argumentsPropagateNullability: TrueArrays[2],
                 resultType);
-            var cosG2 = sqlExpressionFactory.Function(
+            var cosG2 = sqlExpressionFactory.NullableFunction(
                 "POWER",
                 new SqlExpression[]
                 {
-                    sqlExpressionFactory.Function(
+                    sqlExpressionFactory.NullableFunction(
                         "COS",
                         new[] {g},
-                        nullable: true,
-                        argumentsPropagateNullability: TrueArrays[1],
                         resultType),
                     c2Int
                 },
-                nullable: true,
-                argumentsPropagateNullability: TrueArrays[2],
                 resultType);
-            var sinF2 = sqlExpressionFactory.Function(
+            var sinF2 = sqlExpressionFactory.NullableFunction(
                 "POWER",
                 new SqlExpression[]
                 {
-                    sqlExpressionFactory.Function(
+                    sqlExpressionFactory.NullableFunction(
                         "SIN",
                         new[] {f},
-                        nullable: true,
-                        argumentsPropagateNullability: TrueArrays[1],
                         resultType),
                     c2Int
                 },
-                nullable: true,
-                argumentsPropagateNullability: TrueArrays[2],
                 resultType);
-            var cosF2 = sqlExpressionFactory.Function(
+            var cosF2 = sqlExpressionFactory.NullableFunction(
                 "POWER",
                 new SqlExpression[]
                 {
-                    sqlExpressionFactory.Function(
+                    sqlExpressionFactory.NullableFunction(
                         "COS",
                         new[] {f},
-                        nullable: true,
-                        argumentsPropagateNullability: TrueArrays[1],
                         resultType),
                     c2Int
                 },
-                nullable: true,
-                argumentsPropagateNullability: TrueArrays[2],
                 resultType);
-            var sinL2 = sqlExpressionFactory.Function(
+            var sinL2 = sqlExpressionFactory.NullableFunction(
                 "POWER",
                 new SqlExpression[]
                 {
-                    sqlExpressionFactory.Function(
+                    sqlExpressionFactory.NullableFunction(
                         "SIN",
                         new[] {lambda},
-                        nullable: true,
-                        argumentsPropagateNullability: TrueArrays[1],
                         resultType),
                     c2Int
                 },
-                nullable: true,
-                argumentsPropagateNullability: TrueArrays[2],
                 resultType);
-            var cosL2 = sqlExpressionFactory.Function(
+            var cosL2 = sqlExpressionFactory.NullableFunction(
                 "POWER",
                 new SqlExpression[]
                 {
-                    sqlExpressionFactory.Function(
+                    sqlExpressionFactory.NullableFunction(
                         "COS",
                         new[] {lambda},
-                        nullable: true,
-                        argumentsPropagateNullability: TrueArrays[1],
                         resultType),
                     c2Int
                 },
-                nullable: true,
-                argumentsPropagateNullability: TrueArrays[2],
                 resultType);
 
             var s = sqlExpressionFactory.Add(
@@ -588,29 +511,25 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 sqlExpressionFactory.Subtract(radiusA, radiusB),
                 radiusA);
 
-            var omega = sqlExpressionFactory.Function(
+            var omega = sqlExpressionFactory.NullableFunction(
                 "ATAN",
                 new[]
                 {
-                    sqlExpressionFactory.Function(
+                    sqlExpressionFactory.NullableFunction(
                         "SQRT",
                         new[] {sqlExpressionFactory.Divide(s, c)},
-                        nullable: true,
-                        argumentsPropagateNullability: TrueArrays[1],
-                        resultType)
+                        resultType,
+                        false)
                 },
-                nullable: true,
-                argumentsPropagateNullability: TrueArrays[1],
                 resultType);
             var r3 = sqlExpressionFactory.Divide(
                 sqlExpressionFactory.Multiply(
                     c3,
-                    sqlExpressionFactory.Function(
+                    sqlExpressionFactory.NullableFunction(
                         "SQRT",
                         new[] {sqlExpressionFactory.Multiply(s, c)},
-                        nullable: true,
-                        argumentsPropagateNullability: TrueArrays[1],
-                        resultType)),
+                        resultType,
+                        false)),
                 omega);
             var d = sqlExpressionFactory.Multiply(
                 sqlExpressionFactory.Multiply(c2, omega),

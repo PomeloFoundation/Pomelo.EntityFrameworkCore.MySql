@@ -3,13 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
-using static Pomelo.EntityFrameworkCore.MySql.Utilities.Statics;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -67,6 +67,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         private static readonly MethodInfo _padRightWithTwoArgs
             = typeof(string).GetRuntimeMethod(nameof(string.PadRight), new[] { typeof(int), typeof(char) });
 
+        private static readonly MethodInfo _firstOrDefaultMethodInfoWithoutArgs
+            = typeof(Enumerable).GetRuntimeMethods().Single(
+                m => m.Name == nameof(Enumerable.FirstOrDefault)
+                     && m.GetParameters().Length == 1).MakeGenericMethod(typeof(char));
+
+        private static readonly MethodInfo _lastOrDefaultMethodInfoWithoutArgs
+            = typeof(Enumerable).GetRuntimeMethods().Single(
+                m => m.Name == nameof(Enumerable.LastOrDefault)
+                     && m.GetParameters().Length == 1).MakeGenericMethod(typeof(char));
+
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
         public MySqlStringMethodTranslator(ISqlExpressionFactory sqlExpressionFactory)
@@ -90,7 +100,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             {
                 var stringTypeMapping = ExpressionExtensions.InferTypeMapping(instance, arguments[0], arguments[1]);
 
-                return _sqlExpressionFactory.Function(
+                return _sqlExpressionFactory.NullableFunction(
                     "REPLACE",
                     new[]
                     {
@@ -98,8 +108,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         _sqlExpressionFactory.ApplyTypeMapping(arguments[0], stringTypeMapping),
                         _sqlExpressionFactory.ApplyTypeMapping(arguments[1], stringTypeMapping)
                     },
-                    nullable: true,
-                    argumentsPropagateNullability: TrueArrays[3],
                     method.ReturnType,
                     stringTypeMapping);
             }
@@ -107,18 +115,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             if (_toLowerMethodInfo.Equals(method)
                 || _toUpperMethodInfo.Equals(method))
             {
-                return _sqlExpressionFactory.Function(
+                return _sqlExpressionFactory.NullableFunction(
                     _toLowerMethodInfo.Equals(method) ? "LOWER" : "UPPER",
                     new[] { instance },
-                    nullable: true,
-                    argumentsPropagateNullability: TrueArrays[1],
                     method.ReturnType,
                     instance.TypeMapping);
             }
 
             if (_substringMethodInfo.Equals(method))
             {
-                return _sqlExpressionFactory.Function(
+                return _sqlExpressionFactory.NullableFunction(
                     "SUBSTRING",
                     new[]
                     {
@@ -128,8 +134,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                             _sqlExpressionFactory.Constant(1)),
                         arguments[1]
                     },
-                    nullable: true,
-                    argumentsPropagateNullability: TrueArrays[3],
                     method.ReturnType,
                     instance.TypeMapping);
             }
@@ -222,21 +226,44 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     method.ReturnType);
             }
 
+            if (_firstOrDefaultMethodInfoWithoutArgs.Equals(method))
+            {
+                return _sqlExpressionFactory.NullableFunction(
+                    "SUBSTRING",
+                    new[] { arguments[0], _sqlExpressionFactory.Constant(1), _sqlExpressionFactory.Constant(1) },
+                    method.ReturnType);
+            }
+
+            if (_lastOrDefaultMethodInfoWithoutArgs.Equals(method))
+            {
+                return _sqlExpressionFactory.NullableFunction(
+                    "SUBSTRING",
+                    new[]
+                    {
+                        arguments[0],
+                        _sqlExpressionFactory.NullableFunction(
+                            "CHAR_LENGTH",
+                            new[] {arguments[0]},
+                            typeof(int)),
+                        _sqlExpressionFactory.Constant(1)
+                    },
+                    method.ReturnType);
+            }
+
             return null;
         }
 
         private SqlExpression TranslatePadLeftRight(bool leftPad, SqlExpression instance, SqlExpression length, SqlExpression padString, Type returnType)
             => length is SqlConstantExpression && padString is SqlConstantExpression
-                ? _sqlExpressionFactory.Function(
+                ? _sqlExpressionFactory.NullableFunction(
                     leftPad ? "LPAD" : "RPAD",
                     new[] {
                         instance,
                         length,
                         padString
                     },
-                    nullable: true,
-                    argumentsPropagateNullability: TrueArrays[3],
-                    returnType)
+                    returnType,
+                    false)
                 : null;
 
         private SqlExpression ProcessTrimMethod(SqlExpression instance, SqlExpression trimChar, string locationSpecifier)
@@ -278,14 +305,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
             sqlArguments.Add(instance);
 
-            return _sqlExpressionFactory.Function(
+            return _sqlExpressionFactory.NullableFunction(
                 "TRIM",
                 new[] { _sqlExpressionFactory.ComplexFunctionArgument(
                     sqlArguments.ToArray(),
                     typeof(string)),
                 },
-                nullable: true,
-                argumentsPropagateNullability: TrueArrays[1],
                 typeof(string));
         }
     }

@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using static Pomelo.EntityFrameworkCore.MySql.Utilities.Statics;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -190,9 +189,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     "MICROSECOND"
                 }
             };
-        private readonly ISqlExpressionFactory _sqlExpressionFactory;
+        private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
-        public MySqlDateDiffFunctionsTranslator(ISqlExpressionFactory sqlExpressionFactory)
+        public MySqlDateDiffFunctionsTranslator(MySqlSqlExpressionFactory sqlExpressionFactory)
         {
             _sqlExpressionFactory = sqlExpressionFactory;
         }
@@ -212,7 +211,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 startDate = _sqlExpressionFactory.ApplyTypeMapping(startDate, typeMapping);
                 endDate = _sqlExpressionFactory.ApplyTypeMapping(endDate, typeMapping);
 
-                return _sqlExpressionFactory.Function(
+                return _sqlExpressionFactory.NullableFunction(
                     "TIMESTAMPDIFF",
                     new[]
                     {
@@ -220,9 +219,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         startDate,
                         endDate
                     },
-                    nullable: true,
-                    argumentsPropagateNullability: TrueArrays[3],
-                    typeof(int));
+                    typeof(int),
+                    typeMapping: null,
+                    onlyNullWhenAnyNullPropagatingArgumentIsNull: true,
+                    argumentsPropagateNullability: new []{false, true, true});
             }
 
             return null;

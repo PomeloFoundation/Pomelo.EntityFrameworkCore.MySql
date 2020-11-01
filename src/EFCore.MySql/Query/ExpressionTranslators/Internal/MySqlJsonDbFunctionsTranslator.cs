@@ -15,7 +15,6 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
-using static Pomelo.EntityFrameworkCore.MySql.Utilities.Statics;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
@@ -64,55 +63,41 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             var result = method.Name switch
             {
                 nameof(MySqlJsonDbFunctionsExtensions.JsonType)
-                => _sqlExpressionFactory.Function(
+                => _sqlExpressionFactory.NullableFunction(
                     "JSON_TYPE",
                     new[] {args[0]},
-                    nullable: true,
-                    argumentsPropagateNullability: TrueArrays[1],
                     typeof(string)),
                 nameof(MySqlJsonDbFunctionsExtensions.JsonContains)
-                => _sqlExpressionFactory.Function(
+                => _sqlExpressionFactory.NullableFunction(
                     "JSON_CONTAINS",
                     args.Length >= 3
                         ? new[] {Json(args[0]), args[1], args[2]}
                         : new[] {Json(args[0]), args[1]},
-                    nullable: true,
-                    argumentsPropagateNullability: args.Length >= 3
-                        ? TrueArrays[3]
-                        : TrueArrays[2],
                     typeof(bool)),
                 nameof(MySqlJsonDbFunctionsExtensions.JsonContainsPath)
-                => _sqlExpressionFactory.Function(
+                => _sqlExpressionFactory.NullableFunction(
                     "JSON_CONTAINS_PATH",
                     new[] {Json(args[0]), _sqlExpressionFactory.Constant("one"), args[1]},
-                    nullable: true,
-                    argumentsPropagateNullability: new []{true, false, true},
                     typeof(bool)),
                 nameof(MySqlJsonDbFunctionsExtensions.JsonContainsPathAny)
-                => _sqlExpressionFactory.Function(
+                => _sqlExpressionFactory.NullableFunction(
                     "JSON_CONTAINS_PATH",
                     Array.Empty<SqlExpression>()
                         .Append(Json(args[0]))
                         .Append(_sqlExpressionFactory.Constant("one"))
                         .Concat(DeconstructParamsArray(args[1])),
-                    nullable: true,
-                    argumentsPropagateNullability: new []{true, false}
-                        .Concat(Enumerable.Repeat(true, DeconstructParamsArray(args[1]).Count())),
                     typeof(bool)),
                 nameof(MySqlJsonDbFunctionsExtensions.JsonContainsPathAll)
-                => _sqlExpressionFactory.Function(
+                => _sqlExpressionFactory.NullableFunction(
                     "JSON_CONTAINS_PATH",
                     Array.Empty<SqlExpression>()
                         .Append(Json(args[0]))
                         .Append(_sqlExpressionFactory.Constant("all"))
                         .Concat(DeconstructParamsArray(args[1])),
-                    nullable: true,
-                    argumentsPropagateNullability: new []{true, false}
-                        .Concat(Enumerable.Repeat(true, DeconstructParamsArray(args[1]).Count())),
                     typeof(bool)),
                 nameof(MySqlJsonDbFunctionsExtensions.JsonSearchAny)
                 => (SqlExpression)_sqlExpressionFactory.IsNotNull(
-                    _sqlExpressionFactory.Function(
+                    _sqlExpressionFactory.NullableFunction(
                         "JSON_SEARCH",
                         Array.Empty<SqlExpression>()
                             .Append(Json(args[0]))
@@ -122,28 +107,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                                 ? args[3]
                                 : _sqlExpressionFactory.Constant(null, RelationalTypeMapping.NullMapping))
                             .AppendIfTrue(args.Length >= 3, () => args[2]),
-                        nullable: true,
-                        argumentsPropagateNullability: new[]{true, false, true}
-                            .AppendIfTrue(args.Length >= 3, () => false)
-                            .AppendIfTrue(args.Length >= 3, () => true),
-                        typeof(bool))),
-                // nameof(MySqlJsonDbFunctionsExtensions.JsonSearchAll)
-                // => _sqlExpressionFactory.IsNotNull(
-                //     _sqlExpressionFactory.Function(
-                //         "JSON_SEARCH",
-                //         Array.Empty<SqlExpression>()
-                //             .Append(Json(args[0]))
-                //             .Append(_sqlExpressionFactory.Constant("all"))
-                //             .Append(args[1])
-                //             .AppendIfTrue(args.Length >= 3, () => args.Length >= 4
-                //                 ? args[3]
-                //                 : _sqlExpressionFactory.Constant(null, RelationalTypeMapping.NullMapping))
-                //             .AppendIfTrue(args.Length >= 3, () => args[2]),
-                //         nullable: true,
-                //         argumentsPropagateNullability: new[]{true, false, true}
-                //             .AppendIfTrue(args.Length >= 3, () => false)
-                //             .AppendIfTrue(args.Length >= 3, () => true),
-                //         typeof(bool))) as SqlExpression,
+                        typeof(bool),
+                        null,
+                        false)), // JSON_SEARCH can return null even if all arguments are not null
                 _ => null
             };
 

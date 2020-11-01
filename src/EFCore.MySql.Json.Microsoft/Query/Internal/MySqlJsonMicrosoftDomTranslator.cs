@@ -13,9 +13,8 @@ using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Utilities;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Query.ExpressionTranslators.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Query.Internal
 {
     public class MySqlJsonMicrosoftDomTranslator : IMemberTranslator, IMethodCallTranslator
     {
@@ -155,12 +154,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Query.ExpressionTransl
 
             if (method == _getArrayLength)
             {
-                return _sqlExpressionFactory.Function(
+                // Could return NULL if the path is not found, but we would be alright to throw then.
+                return _sqlExpressionFactory.NullableFunction(
                     "JSON_LENGTH",
                     new[] { instance },
-                    nullable: true,
-                    argumentsPropagateNullability: Statics.TrueArrays[1],
-                    typeof(int));
+                    typeof(int),
+                    false);
             }
 
             if (method.Name.StartsWith("TryGet") && arguments.Count == 0)
