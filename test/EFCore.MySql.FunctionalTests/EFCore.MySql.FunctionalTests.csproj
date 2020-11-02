@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Shared\*.cs" />
+    <Compile Include="..\Shared\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

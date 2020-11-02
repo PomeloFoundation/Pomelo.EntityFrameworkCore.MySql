@@ -304,7 +304,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                                          operandUnary.OperatorType == ExpressionType.Convert &&
                                          castMapping.Equals(GetCastStoreType(operandUnary.TypeMapping), StringComparison.OrdinalIgnoreCase);
 
-            if (castMapping == "json" ||
+            if (castMapping == "json" && !_options.ServerVersion.SupportsJsonDataTypeEmulation ||
                 !castMapping.Equals(sqlUnaryExpression.Operand.TypeMapping.StoreType, StringComparison.OrdinalIgnoreCase) &&
                 !sameInnerCastStoreType)
             {

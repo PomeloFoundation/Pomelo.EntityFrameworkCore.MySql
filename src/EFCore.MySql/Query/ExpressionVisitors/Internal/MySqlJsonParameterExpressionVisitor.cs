@@ -21,10 +21,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             _options = options;
         }
 
-        //             return extensionExpression is ShapedQueryExpression shapedQueryExpression
-        // ? shapedQueryExpression.UpdateShaperExpression(Visit(shapedQueryExpression.ShaperExpression))
-        // : base.VisitExtension(extensionExpression);
-
         protected override Expression VisitExtension(Expression extensionExpression)
             => extensionExpression switch
             {

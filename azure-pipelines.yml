@@ -14,7 +14,6 @@ variables:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   dotnet_version: 5.0.100-preview.8.20417.9
-  dotnet_ef_tools_version: 5.0.0-rc.1.20451.13
   allowPreviewVersions: true
 
 # TODO: Simplify (PWSH for most cases etc.)
@@ -98,7 +97,7 @@ jobs:
     continueOnError: true
     failOnStderr: false
   - bash: |
-      ./dotnet-env.sh dotnet tool install --global dotnet-ef --version $(dotnet_ef_tools_version)
+      ./dotnet-env.sh dotnet tool restore
       ./dotnet-env.sh dotnet ef --version
     displayName: Install EF Core Tools
   - bash: |
@@ -228,7 +227,7 @@ jobs:
     continueOnError: true
     ignoreLASTEXITCODE: true
   - pwsh: |
-      .\dotnet-env.ps1 dotnet tool install --global dotnet-ef --version $(dotnet_ef_tools_version)
+      .\dotnet-env.ps1 dotnet tool restore
       .\dotnet-env.ps1 dotnet ef --version
     displayName: Install EF Core Tools
   - pwsh: |

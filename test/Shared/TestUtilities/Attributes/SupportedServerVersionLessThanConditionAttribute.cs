@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes
+namespace Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class SupportedServerVersionLessThanConditionAttribute : Attribute, ITestCondition
