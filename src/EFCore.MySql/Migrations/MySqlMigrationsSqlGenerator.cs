@@ -574,9 +574,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             }
         }
 
-        protected virtual string[] GetColumns([NotNull] IEnumerable<IProperty> properties)
-            => properties.Select(p => p.GetColumnName()).ToArray();
-
         /// <summary>
         ///     Builds commands for the given <see cref="DropForeignKeyOperation" /> by making calls on the given
         ///     <see cref="MigrationCommandListBuilder" />.

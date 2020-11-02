@@ -25,7 +25,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     async,
                     ss => ss.Set<Customer>().Include(c => c.Orders),
                     entryCount: 8
-                ), RelationalStrings.MissingOrderingInSqlExpression);
+                ), RelationalStrings.MissingOrderingInSelectExpression);
 
         [SupportedServerVersionCondition(ServerVersion.CrossApplySupportKey)]
         public override Task Include_collection_with_cross_apply_with_filter(bool async)

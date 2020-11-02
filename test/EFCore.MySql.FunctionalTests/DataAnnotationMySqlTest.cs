@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
-    public class DataAnnotationMySqlTest : DataAnnotationTestBase<DataAnnotationMySqlTest.DataAnnotationMySqlFixture>
+    public class DataAnnotationMySqlTest : DataAnnotationRelationalTestBase<DataAnnotationMySqlTest.DataAnnotationMySqlFixture>
     {
         // ReSharper disable once UnusedParameter.Local
         public DataAnnotationMySqlTest(DataAnnotationMySqlFixture fixture, ITestOutputHelper testOutputHelper)
@@ -25,33 +25,45 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
         public override ModelBuilder Non_public_annotations_are_enabled()
         {
-            var modelBuilder = base.Non_public_annotations_are_enabled();
+            var modelBuilder = CreateModelBuilder();
 
-            var relational = GetProperty<PrivateMemberAnnotationClass>(modelBuilder, "PersonFirstName");
-            Assert.Equal("dsdsd", relational.GetColumnName());
-            Assert.Equal("nvarchar(128)", relational.GetColumnType());
+            modelBuilder.Entity<PrivateMemberAnnotationClass>().Property(
+                    PrivateMemberAnnotationClass.PersonFirstNameExpr)
+                .HasColumnType("varchar(128)");
+
+            Validate(modelBuilder);
+
+            Assert.True(GetProperty<PrivateMemberAnnotationClass>(modelBuilder, "PersonFirstName").IsPrimaryKey());
 
             return modelBuilder;
         }
 
         public override ModelBuilder Field_annotations_are_enabled()
         {
-            var modelBuilder = base.Field_annotations_are_enabled();
+            var modelBuilder = CreateModelBuilder();
 
-            var relational = GetProperty<FieldAnnotationClass>(modelBuilder, "_personFirstName");
-            Assert.Equal("dsdsd", relational.GetColumnName());
-            Assert.Equal("nvarchar(128)", relational.GetColumnType());
+            modelBuilder.Entity<FieldAnnotationClass>()
+                .Property<string>("_personFirstName")
+                .HasColumnType("varchar(128)");
+
+            Validate(modelBuilder);
+
+            Assert.True(GetProperty<FieldAnnotationClass>(modelBuilder, "_personFirstName").IsPrimaryKey());
 
             return modelBuilder;
         }
 
         public override ModelBuilder Key_and_column_work_together()
         {
-            var modelBuilder = base.Key_and_column_work_together();
+            var modelBuilder = CreateModelBuilder();
 
-            var relational = GetProperty<ColumnKeyAnnotationClass1>(modelBuilder, "PersonFirstName");
-            Assert.Equal("dsdsd", relational.GetColumnName());
-            Assert.Equal("nvarchar(128)", relational.GetColumnType());
+            modelBuilder.Entity<ColumnKeyAnnotationClass1>()
+                .Property(c => c.PersonFirstName)
+                .HasColumnType("varchar(128)");
+
+            Validate(modelBuilder);
+
+            Assert.True(GetProperty<ColumnKeyAnnotationClass1>(modelBuilder, "PersonFirstName").IsPrimaryKey());
 
             return modelBuilder;
         }
@@ -147,7 +159,7 @@ WHERE ROW_COUNT() = 1 AND `Unique_No` = LAST_INSERT_ID();");
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
-        public class DataAnnotationMySqlFixture : DataAnnotationFixtureBase
+        public class DataAnnotationMySqlFixture : DataAnnotationRelationalFixtureBase
         {
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
             public TestSqlLoggerFactory TestSqlLoggerFactory => (TestSqlLoggerFactory)ServiceProvider.GetRequiredService<ILoggerFactory>();

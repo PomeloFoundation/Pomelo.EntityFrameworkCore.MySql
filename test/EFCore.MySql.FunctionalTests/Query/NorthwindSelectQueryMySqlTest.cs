@@ -239,7 +239,7 @@ FROM `Orders` AS `o`");
 
         public override Task Reverse_without_explicit_ordering_throws(bool async)
             => AssertTranslationFailedWithDetails(
-                () => base.Reverse_without_explicit_ordering_throws(async), RelationalStrings.MissingOrderingInSqlExpression);
+                () => base.Reverse_without_explicit_ordering_throws(async), RelationalStrings.MissingOrderingInSelectExpression);
 
         public override async Task Projecting_after_navigation_and_distinct_throws(bool async)
             => Assert.Equal(
