@@ -1,6 +1,11 @@
-﻿using System;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System;
 using System.Reflection;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
@@ -28,7 +33,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             _boolTypeMapping = _typeMappingSource.FindMapping(typeof(bool));
         }
 
-        public virtual SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType)
+        public virtual SqlExpression Translate(
+            SqlExpression instance,
+            MemberInfo member,
+            Type returnType,
+            IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             if (instance?.TypeMapping is MySqlJsonTypeMapping ||
                 instance is MySqlJsonTraversalExpression)
@@ -86,16 +95,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         public virtual SqlExpression TranslateArrayLength([NotNull] SqlExpression expression)
             => expression is MySqlJsonTraversalExpression ||
                expression is ColumnExpression columnExpression && columnExpression.TypeMapping is MySqlJsonTypeMapping
-                ? _sqlExpressionFactory.Function(
+                ? _sqlExpressionFactory.NullableFunction(
                     "JSON_LENGTH",
                     new[] {expression},
                     typeof(int),
-                    _intTypeMapping)
+                    _intTypeMapping,
+                    false)
                 : null;
 
         private SqlExpression ConvertFromJsonExtract(SqlExpression expression, Type returnType)
             => returnType == typeof(bool)
-                ? _sqlExpressionFactory.Equal(
+                ? _sqlExpressionFactory.NonOptimizedEqual(
                     expression,
                     _sqlExpressionFactory.Constant(true, _boolTypeMapping))
                 : expression;

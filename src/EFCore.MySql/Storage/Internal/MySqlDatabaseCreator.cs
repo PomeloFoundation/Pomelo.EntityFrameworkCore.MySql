@@ -10,25 +10,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
-    /// <summary>
-    ///     <para>
-    ///         This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///         the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///         any release. You should only use it directly in your code with extreme caution and knowing that
-    ///         doing so can result in application failures when updating to a new Entity Framework Core release.
-    ///     </para>
-    ///     <para>
-    ///         The service lifetime is <see cref="ServiceLifetime.Scoped"/>. This means that each
-    ///         <see cref="DbContext"/> instance will use its own instance of this service.
-    ///         The implementation may depend on other services registered with any lifetime.
-    ///         The implementation does not need to be thread-safe.
-    ///     </para>
-    /// </summary>
     public class MySqlDatabaseCreator : RelationalDatabaseCreator
     {
         private readonly IMySqlRelationalConnection _relationalConnection;
@@ -124,18 +110,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         ///     doing so can result in application failures when updating to a new Entity Framework Core release.
         /// </summary>
         public override Task<bool> HasTablesAsync(CancellationToken cancellationToken = default)
-            => Dependencies.ExecutionStrategyFactory.Create().ExecuteAsync(
-                _relationalConnection,
-                async (connection, ct) => Convert.ToInt64(await CreateHasTablesCommand() // MySQL returns a Int64, MariaDb returns a Int32
-                                              .ExecuteScalarAsync(
-                                                  new RelationalCommandParameterObject(
-                                                      connection,
-                                                      null,
-                                                      null,
-                                                      Dependencies.CurrentContext.Context,
-                                                      Dependencies.CommandLogger),
-                                                  cancellationToken: ct)) != 0,
-                cancellationToken);
+            => Dependencies.ExecutionStrategyFactory.Create()
+                .ExecuteAsync(
+                    _relationalConnection,
+                    async (connection, ct) => Convert.ToInt64(
+                        await CreateHasTablesCommand() // MySQL returns a Int64, MariaDb returns a Int32
+                            .ExecuteScalarAsync(
+                                new RelationalCommandParameterObject(
+                                    connection,
+                                    null,
+                                    null,
+                                    Dependencies.CurrentContext.Context,
+                                    Dependencies.CommandLogger),
+                                cancellationToken: ct)
+                            .ConfigureAwait(false)) != 0,
+                    cancellationToken);
 
         private IRelationalCommand CreateHasTablesCommand()
             => _rawSqlCommandBuilder
@@ -243,7 +232,8 @@ WHERE table_type = 'BASE TABLE' AND table_schema = '" + _relationalConnection.Db
                                     throw;
                                 }
 
-                                await _relationalConnection.OpenAsync(ct, errorsExpected: true);
+                                await _relationalConnection.OpenAsync(ct, errorsExpected: true)
+                                    .ConfigureAwait(false);
 
                                 _relationalConnection.Close();
                             }
@@ -329,10 +319,10 @@ WHERE table_type = 'BASE TABLE' AND table_schema = '" + _relationalConnection.Db
         }
 
         // Clear connection pools in case there are active connections that are pooled
-        private static void ClearAllPools() => global::MySql.Data.MySqlClient.MySqlConnection.ClearAllPools();
+        private static void ClearAllPools() => global::MySqlConnector.MySqlConnection.ClearAllPools();
 
         // Clear connection pool for the database connection since after the 'create database' call, a previously
         // invalid connection may now be valid.
-        private void ClearPool() => global::MySql.Data.MySqlClient.MySqlConnection.ClearPool((global::MySql.Data.MySqlClient.MySqlConnection)_relationalConnection.DbConnection);
+        private void ClearPool() => global::MySqlConnector.MySqlConnection.ClearPool((global::MySqlConnector.MySqlConnection)_relationalConnection.DbConnection);
     }
 }

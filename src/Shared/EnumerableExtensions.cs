@@ -3,6 +3,8 @@
 
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
 namespace System.Collections.Generic
@@ -17,6 +19,19 @@ namespace System.Collections.Generic
             this IEnumerable<T> source, Func<T, T, bool> comparer)
             where T : class
             => source.Distinct(new DynamicEqualityComparer<T>(comparer));
+
+        public static async Task<List<TSource>> ToListAsync<TSource>(
+            this IAsyncEnumerable<TSource> source,
+            CancellationToken cancellationToken = default)
+        {
+            var list = new List<TSource>();
+            await foreach (var element in source.WithCancellation(cancellationToken))
+            {
+                list.Add(element);
+            }
+
+            return list;
+        }
 
         private sealed class DynamicEqualityComparer<T> : IEqualityComparer<T>
             where T : class

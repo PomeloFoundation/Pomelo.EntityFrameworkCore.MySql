@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
@@ -147,6 +147,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
                 Assert.Equal(-1, actual);
             }
+        }
+
+        public override void Query_with_DbParameters_interpolated()
+        {
+            var city = CreateDbParameter("city", "London");
+            var contactTitle = CreateDbParameter("contactTitle", "Sales Representative");
+
+            using var context = CreateContext();
+            var actual = context.Database
+                .ExecuteSqlInterpolated(
+                    $@"SELECT COUNT(*) FROM `Customers` WHERE `City` = {city} AND `ContactTitle` = {contactTitle}");
+
+            Assert.Equal(-1, actual);
         }
 
         protected override DbParameter CreateDbParameter(string name, object value)

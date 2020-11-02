@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 
@@ -103,7 +103,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         }
 
         protected override bool SupportsAmbientTransactions => true;
-        public override bool IsMultipleActiveResultSetsEnabled => false;
+
+        // CHECK: Is this obsolete or has it been moved somewhere else?
+        // public override bool IsMultipleActiveResultSetsEnabled => false;
 
         public override void EnlistTransaction(Transaction transaction)
         {
@@ -140,13 +142,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         public override async Task<bool> OpenAsync(CancellationToken cancellationToken, bool errorsExpected = false)
         {
-            var result = await base.OpenAsync(cancellationToken, errorsExpected);
+            var result = await base.OpenAsync(cancellationToken, errorsExpected)
+                .ConfigureAwait(false);
 
             if (result)
             {
                 if (_mySqlOptionsExtension.UpdateSqlModeOnOpen && _mySqlOptionsExtension.NoBackslashEscapes)
                 {
-                    await AddSqlModeAsync(NoBackslashEscapes);
+                    await AddSqlModeAsync(NoBackslashEscapes)
+                        .ConfigureAwait(false);
                 }
             }
 

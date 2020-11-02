@@ -1,3 +1,6 @@
+// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
 using System;
 using System.Linq;
 using System.Linq.Expressions;
@@ -49,7 +52,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         ///     Dispatches to the specific visit method for this node type.
         /// </summary>
         protected override Expression Accept(ExpressionVisitor visitor)
-            => visitor is MySqlQuerySqlGenerator mySqlQuerySqlGenerator
+            => visitor is MySqlQuerySqlGenerator mySqlQuerySqlGenerator // TODO: Move to VisitExtensions
                 ? mySqlQuerySqlGenerator.VisitMySqlCollateExpression(this)
                 : base.Accept(visitor);
 
@@ -68,12 +71,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         /// </remarks>
         protected override Expression VisitChildren(ExpressionVisitor visitor)
         {
-            var newValueExpression = visitor.VisitAndConvert(_valueExpression, nameof(VisitChildren));
+            // CHECK: VisitAndConvert
+            var valueExpression = visitor.VisitAndConvert(_valueExpression, nameof(VisitChildren));
 
-            return newValueExpression != _valueExpression && newValueExpression != null
-                ? new MySqlCollateExpression(newValueExpression, _charset, _collation, TypeMapping)
-                : this;
+            return Update(valueExpression);
         }
+
+        public virtual MySqlCollateExpression Update(SqlExpression valueExpression)
+            => valueExpression != _valueExpression &&
+               valueExpression != null
+                ? new MySqlCollateExpression(valueExpression, _charset, _collation, TypeMapping)
+                : this;
 
         /// <summary>
         ///     Tests if this object is considered equal to another.
@@ -130,7 +138,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         public override string ToString() =>
             $"{_valueExpression} COLLATE {_collation}";
 
-        public override void Print(ExpressionPrinter expressionPrinter)
+        protected override void Print(ExpressionPrinter expressionPrinter)
         {
             expressionPrinter.Append(ToString()); // TODO: ist this correct?
         }

@@ -281,7 +281,7 @@ LIMIT 2");
             AssertSql(
                 @"SELECT `j`.`Id`, `j`.`CustomerDocument`, `j`.`CustomerElement`
 FROM `JsonEntities` AS `j`
-WHERE JSON_UNQUOTE(JSON_EXTRACT(`j`.`CustomerElement`, '$.Name')) IS NOT NULL AND (JSON_UNQUOTE(JSON_EXTRACT(`j`.`CustomerElement`, '$.Name')) LIKE 'J%')
+WHERE JSON_UNQUOTE(JSON_EXTRACT(`j`.`CustomerElement`, '$.Name')) LIKE 'J%'
 LIMIT 2");
         }
 
@@ -315,69 +315,6 @@ LIMIT 2");
         }
 
         #region Functions
-
-        [Fact]
-        public void JsonQuote_JsonUnquote()
-        {
-            using var ctx = CreateContext();
-
-            var count = ctx.JsonEntities.Count(e =>
-                EF.Functions.JsonUnquote(EF.Functions.JsonQuote(e.CustomerElement.GetProperty("Name").GetString())) == @"Joe");
-
-            Assert.Equal(1, count);
-            AssertSql(
-                $@"SELECT COUNT(*)
-FROM `JsonEntities` AS `j`
-WHERE JSON_UNQUOTE(JSON_QUOTE(JSON_UNQUOTE(JSON_EXTRACT(`j`.`CustomerElement`, '$.Name')))) = 'Joe'");
-        }
-
-        [Fact]
-        public void JsonExtract()
-        {
-            using var ctx = CreateContext();
-
-            var count = ctx.JsonEntities.Count(e =>
-                EF.Functions.JsonExtract<string>(e.CustomerElement, "$.Name") == @"Joe");
-
-            Assert.Equal(1, count);
-            AssertSql(
-                $@"SELECT COUNT(*)
-FROM `JsonEntities` AS `j`
-WHERE JSON_EXTRACT(`j`.`CustomerElement`, '$.Name') = 'Joe'");
-        }
-
-        [Fact]
-        public void JsonExtract_equals_operands_flipped()
-        {
-            using var ctx = CreateContext();
-
-            var count = ctx.JsonEntities.Count(e =>
-                @"Joe" == EF.Functions.JsonExtract<string>(e.CustomerElement, "$.Name"));
-
-            Assert.Equal(1, count);
-            AssertSql(
-                $@"SELECT COUNT(*)
-FROM `JsonEntities` AS `j`
-WHERE 'Joe' = JSON_EXTRACT(`j`.`CustomerElement`, '$.Name')");
-        }
-
-        [Fact]
-        public void JsonExtract_JsonUnquote()
-        {
-            using var ctx = CreateContext();
-
-            var name = @"Joe";
-            var count = ctx.JsonEntities.Count(e =>
-                EF.Functions.JsonUnquote(EF.Functions.JsonExtract<string>(e.CustomerElement, "$.Name")) == name);
-
-            Assert.Equal(1, count);
-            AssertSql(
-                $@"@__name_1='Joe' (Size = 4000)
-
-SELECT COUNT(*)
-FROM `JsonEntities` AS `j`
-WHERE JSON_UNQUOTE(JSON_EXTRACT(`j`.`CustomerElement`, '$.Name')) = @__name_1");
-        }
 
         [Fact]
         public void JsonContains_with_json_element()
@@ -480,35 +417,31 @@ WHERE JSON_SEARCH(`j`.`CustomerElement`, 'one', 'J%', NULL, '$.Name') IS NOT NUL
 LIMIT 2");
         }
 
-        [Fact]
-        public void JsonSearchAll()
-        {
-            using var ctx = CreateContext();
-#pragma warning disable 618
-            var count = ctx.JsonEntities.Count(e => EF.Functions.JsonSearchAll(e.CustomerElement, "%o%"));
-#pragma warning restore 618
-
-            Assert.Equal(3, count);
-            AssertSql(
-                $@"SELECT COUNT(*)
-FROM `JsonEntities` AS `j`
-WHERE JSON_SEARCH(`j`.`CustomerElement`, 'all', '%o%') IS NOT NULL");
-        }
-
-        [Fact]
-        public void JsonSearchAll_with_path()
-        {
-            using var ctx = CreateContext();
-#pragma warning disable 618
-            var count = ctx.JsonEntities.Count(e => EF.Functions.JsonSearchAll(e.CustomerElement, "%o%", "$.Name"));
-#pragma warning restore 618
-
-            Assert.Equal(2, count);
-            AssertSql(
-                @"SELECT COUNT(*)
-FROM `JsonEntities` AS `j`
-WHERE JSON_SEARCH(`j`.`CustomerElement`, 'all', '%o%', NULL, '$.Name') IS NOT NULL");
-        }
+//         [Fact]
+//         public void JsonSearchAll()
+//         {
+//             using var ctx = CreateContext();
+//             var count = ctx.JsonEntities.Count(e => EF.Functions.JsonSearchAll(e.CustomerElement, "%o%"));
+//
+//             Assert.Equal(3, count);
+//             AssertSql(
+//                 $@"SELECT COUNT(*)
+// FROM `JsonEntities` AS `j`
+// WHERE JSON_SEARCH(`j`.`CustomerElement`, 'all', '%o%') IS NOT NULL");
+//         }
+//
+//         [Fact]
+//         public void JsonSearchAll_with_path()
+//         {
+//             using var ctx = CreateContext();
+//             var count = ctx.JsonEntities.Count(e => EF.Functions.JsonSearchAll(e.CustomerElement, "%o%", "$.Name"));
+//
+//             Assert.Equal(2, count);
+//             AssertSql(
+//                 @"SELECT COUNT(*)
+// FROM `JsonEntities` AS `j`
+// WHERE JSON_SEARCH(`j`.`CustomerElement`, 'all', '%o%', NULL, '$.Name') IS NOT NULL");
+//         }
 
         #endregion Functions
 

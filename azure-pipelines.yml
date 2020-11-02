@@ -13,8 +13,8 @@ variables:
   mariadb_sql_mode: STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
-  dotnet_version: 3.1.x
-  dotnet_ef_tools_version: 3.1.8
+  dotnet_version: 5.0.100-preview.8.20417.9
+  allowPreviewVersions: true
 
 # TODO: Simplify (PWSH for most cases etc.)
 jobs:
@@ -49,14 +49,14 @@ jobs:
     displayName: 'Use .NET Core SDK'
     inputs:
       version: $(dotnet_version)
+      includePreviewVersions: $(allowPreviewVersions)
   - bash: |
       set -e
       sudo systemctl stop mysql
       docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -p 3306:3306 -d $DOCKER_IMAGE
     displayName: Install Database Server
-  - bash: |
-      ./dotnet-env.sh dotnet --info
-    displayName: .NET Core Information
+  - bash: ./dotnet-env.sh dotnet --info
+    displayName: .NET Information
   - bash: |
       set -e
       cp test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
@@ -97,7 +97,7 @@ jobs:
     continueOnError: true
     failOnStderr: false
   - bash: |
-      ./dotnet-env.sh dotnet tool install --global dotnet-ef --version $(dotnet_ef_tools_version)
+      ./dotnet-env.sh dotnet tool restore
       ./dotnet-env.sh dotnet ef --version
     displayName: Install EF Core Tools
   - bash: |
@@ -110,6 +110,11 @@ jobs:
     continueOnError: true
   - bash: ./dotnet-env.sh dotnet test test/EFCore.MySql.FunctionalTests -c Release --logger trx --verbosity detailed
     displayName: Functional Tests
+    continueOnError: true
+  - pwsh: |
+      Get-ChildItem QueryBaseline.txt -Recurse | % { $_.FullName }
+      Get-Content QueryBaseline.txt -ErrorAction Ignore
+    displayName: Show Query Baseline
     continueOnError: true
   - bash: ./dotnet-env.sh dotnet run --project test/EFCore.MySql.IntegrationTests -c Release testMigrate
     displayName: Integration Tests applying migrations
@@ -176,6 +181,7 @@ jobs:
     displayName: 'Use .NET Core SDK'
     inputs:
       version: $(dotnet_version)
+      includePreviewVersions: $(allowPreviewVersions)
   - pwsh: |
       if ("$(mysql_server_version)" -eq "")
       {
@@ -197,9 +203,8 @@ jobs:
       mysql -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
       mysql -h localhost -u root -pPassword12! -e "SELECT @@version;"
     displayName: Install Database Server
-  - pwsh: |
-      .\dotnet-env.ps1 dotnet --info
-    displayName: .NET Core Information
+  - pwsh: .\dotnet-env.ps1 dotnet --info
+    displayName: .NET Information
   - pwsh: |
       cp test\EFCore.MySql.FunctionalTests\config.json.example test\EFCore.MySql.FunctionalTests\config.json
       cp test\EFCore.MySql.IntegrationTests\appsettings.ci.json test\EFCore.MySql.IntegrationTests\appsettings.json
@@ -222,7 +227,7 @@ jobs:
     continueOnError: true
     ignoreLASTEXITCODE: true
   - pwsh: |
-      .\dotnet-env.ps1 dotnet tool install --global dotnet-ef --version $(dotnet_ef_tools_version)
+      .\dotnet-env.ps1 dotnet tool restore
       .\dotnet-env.ps1 dotnet ef --version
     displayName: Install EF Core Tools
   - pwsh: |
@@ -233,6 +238,11 @@ jobs:
     continueOnError: true
   - pwsh: .\dotnet-env.ps1 dotnet test test\EFCore.MySql.FunctionalTests -c Release --logger trx --verbosity detailed
     displayName: Functional Tests
+    continueOnError: true
+  - pwsh: |
+      Get-ChildItem QueryBaseline.txt -Recurse | % { $_.FullName }
+      Get-Content QueryBaseline.txt -ErrorAction Ignore
+    displayName: Show Query Baseline
     continueOnError: true
   - pwsh: .\dotnet-env.ps1 dotnet run --project test\EFCore.MySql.IntegrationTests -c Release testMigrate
     displayName: Integration Tests applying migration
@@ -310,24 +320,28 @@ jobs:
       if [ "$pack" = "true" ]; then
         ./dotnet-env.sh dotnet pack \
           -c Release \
+          -o "$(Build.ArtifactStagingDirectory)" \
           "/p:OfficialBuildId=$(Build.BuildNumber)" \
           "/p:DotNetFinalVersionKind=$final_version_kind" \
           "/p:ContinuousIntegrationBuild=true" \
           src/EFCore.MySql/
         ./dotnet-env.sh dotnet pack \
           -c Release \
+          -o "$(Build.ArtifactStagingDirectory)" \
           "/p:OfficialBuildId=$(Build.BuildNumber)" \
           "/p:DotNetFinalVersionKind=$final_version_kind" \
           "/p:ContinuousIntegrationBuild=true" \
           src/EFCore.MySql.NTS/
         ./dotnet-env.sh dotnet pack \
           -c Release \
+          -o "$(Build.ArtifactStagingDirectory)" \
           "/p:OfficialBuildId=$(Build.BuildNumber)" \
           "/p:DotNetFinalVersionKind=$final_version_kind" \
           "/p:ContinuousIntegrationBuild=true" \
           src/EFCore.MySql.Json.Microsoft/
         ./dotnet-env.sh dotnet pack \
           -c Release \
+          -o "$(Build.ArtifactStagingDirectory)" \
           "/p:OfficialBuildId=$(Build.BuildNumber)" \
           "/p:DotNetFinalVersionKind=$final_version_kind" \
           "/p:ContinuousIntegrationBuild=true" \
@@ -368,7 +382,7 @@ jobs:
       command: push
       nuGetFeedType: external
       publishFeedCredentials: PomeloEFCoreNuget
-      packagesToPush: artifacts/**/*.nupkg
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
     condition: and( succeededOrFailed(), eq(variables['Pack.Pack'],'true'), or( eq(variables['Pack.Wip'],'true'), variables['BuildSucceeded'], eq(variables['Pack.BuildFailedOverride'],'true') ) )
   - task: NuGetCommand@2
     displayName: "Nuget Push nuget.org"
@@ -376,5 +390,5 @@ jobs:
       command: push
       nuGetFeedType: external
       publishFeedCredentials: NugetOrg-PomeloFoundation-AllPackages-PushNew
-      packagesToPush: artifacts/**/*.nupkg
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
     condition: and( succeededOrFailed(), eq(variables['Pack.NugetOrg'],'true'), or ( variables['BuildSucceeded'], eq(variables['Pack.BuildFailedOverride'],'true') ) )

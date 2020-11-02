@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore.Diagnostics;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal
 {

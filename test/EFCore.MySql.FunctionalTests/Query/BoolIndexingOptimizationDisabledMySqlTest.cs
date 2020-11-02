@@ -8,8 +8,10 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.GearsOfWarModel;
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 using Xunit.Abstractions;
+
 // ReSharper disable NegativeEqualityExpression
 // ReSharper disable RedundantBoolCompare
 
@@ -70,11 +72,15 @@ WHERE NOT (`w`.`IsAutomatic`)");
                     where w.IsAutomatic == true
                     select w.Name);
 
-            AssertSingleStatementWithKeyUsage(
-                @"SELECT `w`.`Name`
+            string[] keys = {"IX_Weapons_IsAutomatic"};
+            AssertKeyUsage(
+                AssertSql(
+                    @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
-WHERE `w`.`IsAutomatic` = TRUE",
-                "IX_Weapons_IsAutomatic");
+WHERE `w`.`IsAutomatic`"),
+                AppConfig.ServerVersion.SupportsImplicitBoolCheckUsesIndex
+                    ? keys
+                    : null);
         }
 
         [ConditionalTheory]
@@ -88,11 +94,15 @@ WHERE `w`.`IsAutomatic` = TRUE",
                     where w.IsAutomatic == false
                     select w.Name);
 
-            AssertSingleStatementWithKeyUsage(
-                @"SELECT `w`.`Name`
+            string[] keys = {"IX_Weapons_IsAutomatic"};
+            AssertKeyUsage(
+                AssertSql(
+                    @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
-WHERE `w`.`IsAutomatic` = FALSE",
-                "IX_Weapons_IsAutomatic");
+WHERE NOT (`w`.`IsAutomatic`)"),
+                AppConfig.ServerVersion.SupportsImplicitBoolCheckUsesIndex
+                    ? keys
+                    : null);
         }
 
         [ConditionalTheory]
@@ -106,11 +116,15 @@ WHERE `w`.`IsAutomatic` = FALSE",
                     where w.IsAutomatic != true
                     select w.Name);
 
-            AssertSingleStatementWithKeyUsage(
-                @"SELECT `w`.`Name`
+            string[] keys = {"IX_Weapons_IsAutomatic"};
+            AssertKeyUsage(
+                AssertSql(
+                    @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
-WHERE `w`.`IsAutomatic` <> TRUE",
-                "IX_Weapons_IsAutomatic");
+WHERE NOT (`w`.`IsAutomatic`)"),
+                AppConfig.ServerVersion.SupportsImplicitBoolCheckUsesIndex
+                    ? keys
+                    : null);
         }
 
         [ConditionalTheory]
@@ -124,11 +138,15 @@ WHERE `w`.`IsAutomatic` <> TRUE",
                     where w.IsAutomatic != false
                     select w.Name);
 
-            AssertSingleStatementWithKeyUsage(
-                @"SELECT `w`.`Name`
+            string[] keys = {"IX_Weapons_IsAutomatic"};
+            AssertKeyUsage(
+                AssertSql(
+                    @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
-WHERE `w`.`IsAutomatic` <> FALSE",
-                "IX_Weapons_IsAutomatic");
+WHERE `w`.`IsAutomatic`"),
+                AppConfig.ServerVersion.SupportsImplicitBoolCheckUsesIndex
+                    ? keys
+                    : null);
         }
 
         [ConditionalTheory]
@@ -142,11 +160,15 @@ WHERE `w`.`IsAutomatic` <> FALSE",
                     where !(w.IsAutomatic == true)
                     select w.Name);
 
-            AssertSingleStatementWithKeyUsage(
-                @"SELECT `w`.`Name`
+            string[] keys = {"IX_Weapons_IsAutomatic"};
+            AssertKeyUsage(
+                AssertSql(
+                    @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
-WHERE `w`.`IsAutomatic` <> TRUE",
-                "IX_Weapons_IsAutomatic");
+WHERE NOT (`w`.`IsAutomatic`)"),
+                AppConfig.ServerVersion.SupportsImplicitBoolCheckUsesIndex
+                    ? keys
+                    : null);
         }
 
         [ConditionalTheory]
@@ -160,20 +182,30 @@ WHERE `w`.`IsAutomatic` <> TRUE",
                     where !(w.IsAutomatic == false)
                     select w.Name);
 
-            AssertSingleStatementWithKeyUsage(
-                @"SELECT `w`.`Name`
+            string[] keys = {"IX_Weapons_IsAutomatic"};
+            AssertKeyUsage(
+                AssertSql(
+                    @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
-WHERE `w`.`IsAutomatic` <> FALSE",
-                "IX_Weapons_IsAutomatic");
+WHERE `w`.`IsAutomatic`"),
+                AppConfig.ServerVersion.SupportsImplicitBoolCheckUsesIndex
+                    ? keys
+                    : null);
         }
 
+        private string AssertSql(string expected)
+        {
+            Fixture.TestSqlLoggerFactory.AssertBaseline(new [] {expected});
+            return expected;
+        }
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
         private void AssertKeyUsage(string sql, params string[] keys)
         {
-            if (keys.Length <= 0)
+            if (keys == null ||
+                keys.Length <= 0)
             {
                 return;
             }
@@ -202,12 +234,6 @@ WHERE `w`.`IsAutomatic` <> FALSE",
             }
 
             Assert.Empty(keys.Except(keysUsed, StringComparer.OrdinalIgnoreCase));
-        }
-
-        private void AssertSingleStatementWithKeyUsage(string expected, params string[] keys)
-        {
-            AssertSql(expected);
-            AssertKeyUsage(expected, keys);
         }
 
         protected GearsOfWarContext CreateContext() => Fixture.CreateContext();

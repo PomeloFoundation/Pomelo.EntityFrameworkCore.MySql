@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
@@ -15,30 +17,27 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
     /// </summary>
     public class MySqlObjectToStringTranslator : IMethodCallTranslator
     {
-        private const int DefaultLength = 127;
-
-        private static readonly Dictionary<Type, string> _typeMapping
-            = new Dictionary<Type, string>
-            {
-                { typeof(int), "CHAR(11)" },
-                { typeof(long), "CHAR(20)" },
-                { typeof(DateTime), $"CHAR({DefaultLength})" },
-                { typeof(Guid), "CHAR(36)" },
-                { typeof(bool), "CHAR(5)" },
-                { typeof(byte), "CHAR(3)" },
-                { typeof(byte[]), $"CHAR({DefaultLength})" },
-                { typeof(double), $"CHAR({DefaultLength})" },
-                { typeof(DateTimeOffset), $"CHAR({DefaultLength})" },
-                { typeof(char), "CHAR(1)" },
-                { typeof(short), "CHAR(6)" },
-                { typeof(float), $"CHAR({DefaultLength})" },
-                { typeof(decimal), $"CHAR({DefaultLength})" },
-                { typeof(TimeSpan), $"CHAR({DefaultLength})" },
-                { typeof(uint), "CHAR(10)" },
-                { typeof(ushort), "CHAR(5)" },
-                { typeof(ulong), "CHAR(19)" },
-                { typeof(sbyte), "CHAR(4)" }
-            };
+        private static readonly List<Type> _supportedTypes = new List<Type>
+        {
+            typeof(int),
+            typeof(long),
+            typeof(DateTime),
+            typeof(Guid),
+            typeof(bool),
+            typeof(byte),
+            typeof(byte[]),
+            typeof(double),
+            typeof(DateTimeOffset),
+            typeof(char),
+            typeof(short),
+            typeof(float),
+            typeof(decimal),
+            typeof(TimeSpan),
+            typeof(uint),
+            typeof(ushort),
+            typeof(ulong),
+            typeof(sbyte),
+        };
         private readonly ISqlExpressionFactory _sqlExpressionFactory;
 
         public MySqlObjectToStringTranslator(ISqlExpressionFactory sqlExpressionFactory)
@@ -46,24 +45,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             _sqlExpressionFactory = sqlExpressionFactory;
         }
 
-        public virtual SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
+        public virtual SqlExpression Translate(
+            SqlExpression instance,
+            MethodInfo method,
+            IReadOnlyList<SqlExpression> arguments,
+            IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             // Translates parameterless Object.ToString() calls.
             return method.Name == nameof(ToString)
                    && arguments.Count == 0
                    && instance != null
-                   && _typeMapping.TryGetValue(
-                       instance.Type
-                           .UnwrapNullableType(),
-                       out var storeType)
-                ? _sqlExpressionFactory.Function(
-                    "CONVERT",
-                    new[]
-                    {
-                        instance,
-                        _sqlExpressionFactory.Fragment(storeType)
-                    },
-                    typeof(string))
+                   && _supportedTypes.Contains(instance.Type.UnwrapNullableType())
+                ? _sqlExpressionFactory.Convert(instance, typeof(string))
                 : null;
         }
     }

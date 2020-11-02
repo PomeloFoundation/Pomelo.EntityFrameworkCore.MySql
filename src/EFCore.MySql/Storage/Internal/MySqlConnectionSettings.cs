@@ -4,7 +4,7 @@
 using System;
 using System.Data.Common;
 using System.Linq;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {

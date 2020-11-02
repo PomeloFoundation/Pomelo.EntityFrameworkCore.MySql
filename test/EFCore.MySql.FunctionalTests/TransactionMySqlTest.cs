@@ -3,22 +3,17 @@ using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
-    public class TransactionMySqlTest : TransactionTestBase<TransactionMySqlTest.TransactionMySqlFixture>, IDisposable
+    public class TransactionMySqlTest : TransactionTestBase<TransactionMySqlTest.TransactionMySqlFixture>
     {
         public TransactionMySqlTest(TransactionMySqlFixture fixture)
             : base(fixture)
         {
-            TestMySqlRetryingExecutionStrategy.Suspended = true;
         }
 
-        public void Dispose()
-        {
-            TestMySqlRetryingExecutionStrategy.Suspended = false;
-        }
-        
         protected override bool SnapshotSupported => false;
         protected override bool AmbientTransactionsSupported => true;
         protected override bool DirtyReadsOccur => false;
@@ -27,7 +22,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
             var options = Fixture.AddOptions(
                     new DbContextOptionsBuilder()
-                        .UseMySql(TestStore.ConnectionString, MySqlTestStore.AddOptions))
+                        .UseMySql(
+                            TestStore.ConnectionString,
+                            b => MySqlTestStore.AddOptions(b).ExecutionStrategy(c => new MySqlExecutionStrategy(c))))
                 .UseInternalServiceProvider(Fixture.ServiceProvider);
 
             return new DbContext(options.Options);
@@ -39,21 +36,28 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
             public override void Reseed()
             {
-                using (var context = CreateContext())
-                {
-                    context.Set<TransactionCustomer>().RemoveRange(context.Set<TransactionCustomer>());
-                    context.SaveChanges();
+                using var context = CreateContext();
+                context.Set<TransactionCustomer>().RemoveRange(context.Set<TransactionCustomer>());
+                context.Set<TransactionOrder>().RemoveRange(context.Set<TransactionOrder>());
+                context.SaveChanges();
 
-                    Seed(context);
-                }
+                base.Seed(context);
             }
 
             public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
             {
-                new MySqlDbContextOptionsBuilder(base.AddOptions(builder))
-                    .MaxBatchSize(1);
+                new MySqlDbContextOptionsBuilder(
+                        base.AddOptions(builder))
+                    .ExecutionStrategy(c => new MySqlExecutionStrategy(c));
                 return builder;
             }
+
+            // public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
+            // {
+            //     new MySqlDbContextOptionsBuilder(base.AddOptions(builder))
+            //         .MaxBatchSize(1);
+            //     return builder;
+            // }
         }
     }
 }

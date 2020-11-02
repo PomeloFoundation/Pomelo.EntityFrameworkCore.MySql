@@ -43,13 +43,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
         [ConditionalTheory]
         [MemberData(nameof(IsAsyncData))]
-        public virtual async Task Where_query_escapes_literal(bool isAsync)
+        public virtual async Task Where_query_escapes_literal(bool async)
         {
             using (var context = CreateContext())
             {
                 var query = context.Artists.Where(c => c.Name == @"Back\slasher's");
 
-                var artists = isAsync
+                var artists = async
                     ? await query.ToListAsync()
                     : query.ToList();
 
@@ -59,7 +59,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
         [ConditionalTheory]
         [MemberData(nameof(IsAsyncData))]
-        public virtual async Task Where_query_escapes_parameter(bool isAsync)
+        public virtual async Task Where_query_escapes_parameter(bool async)
         {
             using (var context = CreateContext())
             {
@@ -67,7 +67,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
                 var query = context.Artists.Where(c => c.Name == artistName);
 
-                var artists = isAsync
+                var artists = async
                     ? await query.ToListAsync()
                     : query.ToList();
 
@@ -77,7 +77,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
         [ConditionalTheory]
         [MemberData(nameof(IsAsyncData))]
-        public virtual async Task Where_contains_query_escapes(bool isAsync)
+        public virtual async Task Where_contains_query_escapes(bool async)
         {
             using (var context = CreateContext())
             {
@@ -89,7 +89,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
                 var query = context.Artists.Where(a => artistNames.Contains(a.Name));
 
-                var artists = isAsync
+                var artists = async
                     ? await query.ToListAsync()
                     : query.ToList();
 

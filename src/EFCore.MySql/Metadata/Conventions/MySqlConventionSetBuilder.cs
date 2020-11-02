@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
 
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,7 +48,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
 
         /// <summary>
         ///     <para>
-        ///         Call this method to build a <see cref="ConventionSet" /> for SQL Server when using
+        ///         Call this method to build a <see cref="ConventionSet" /> for MySQL when using
         ///         the <see cref="ModelBuilder" /> outside of <see cref="DbContext.OnModelCreating" />.
         ///     </para>
         ///     <para>

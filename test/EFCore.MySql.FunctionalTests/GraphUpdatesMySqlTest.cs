@@ -1,16 +1,101 @@
+using System.Linq;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
-    public abstract class GraphUpdatesMySqlTest
+    public class GraphUpdatesMySqlTest
     {
+        public class ClientCascade : GraphUpdatesMySqlTestBase<ClientCascade.MySqlFixture>
+        {
+            public ClientCascade(MySqlFixture fixture)
+                : base(fixture)
+            {
+            }
+
+            protected override void UseTransaction(DatabaseFacade facade, IDbContextTransaction transaction)
+                => facade.UseTransaction(transaction.GetDbTransaction());
+
+            public class MySqlFixture : GraphUpdatesMySqlFixtureBase
+            {
+                public override bool NoStoreCascades
+                    => true;
+
+                protected override string StoreName { get; } = "GraphClientCascadeUpdatesTest";
+
+                protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
+                {
+                    base.OnModelCreating(modelBuilder, context);
+
+                    foreach (var foreignKey in modelBuilder.Model
+                        .GetEntityTypes()
+                        .SelectMany(e => e.GetDeclaredForeignKeys())
+                        .Where(e => e.DeleteBehavior == DeleteBehavior.Cascade))
+                    {
+                        foreignKey.DeleteBehavior = DeleteBehavior.ClientCascade;
+                    }
+                }
+            }
+        }
+
+        public class ClientNoAction : GraphUpdatesMySqlTestBase<ClientNoAction.MySqlFixture>
+        {
+            public ClientNoAction(MySqlFixture fixture)
+                : base(fixture)
+            {
+            }
+
+            protected override void UseTransaction(DatabaseFacade facade, IDbContextTransaction transaction)
+                => facade.UseTransaction(transaction.GetDbTransaction());
+
+            public class MySqlFixture : GraphUpdatesMySqlFixtureBase
+            {
+                public override bool ForceClientNoAction
+                    => true;
+
+                protected override string StoreName { get; } = "GraphClientNoActionUpdatesTest";
+
+                protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
+                {
+                    base.OnModelCreating(modelBuilder, context);
+
+                    foreach (var foreignKey in modelBuilder.Model
+                        .GetEntityTypes()
+                        .SelectMany(e => e.GetDeclaredForeignKeys()))
+                    {
+                        foreignKey.DeleteBehavior = DeleteBehavior.ClientNoAction;
+                    }
+                }
+            }
+        }
+
+        // TODO: UseIdentityColumns()
+        // public class Identity : GraphUpdatesMySqlTestBase<Identity.MySqlFixture>
+        // {
+        //     public Identity(MySqlFixture fixture)
+        //         : base(fixture)
+        //     {
+        //     }
+        //
+        //     protected override void UseTransaction(DatabaseFacade facade, IDbContextTransaction transaction)
+        //         => facade.UseTransaction(transaction.GetDbTransaction());
+        //
+        //     public class MySqlFixture : GraphUpdatesMySqlFixtureBase
+        //     {
+        //         protected override string StoreName { get; } = "GraphIdentityUpdatesTest";
+        //
+        //         protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
+        //         {
+        //             modelBuilder.UseIdentityColumns();
+        //
+        //             base.OnModelCreating(modelBuilder, context);
+        //         }
+        //     }
+        // }
+
         public abstract class GraphUpdatesMySqlTestBase<TFixture> : GraphUpdatesTestBase<TFixture>
             where TFixture : GraphUpdatesMySqlTestBase<TFixture>.GraphUpdatesMySqlFixtureBase, new()
         {
@@ -19,108 +104,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             {
             }
 
+            protected override IQueryable<Root> ModifyQueryRoot(IQueryable<Root> query)
+                => query.AsSplitQuery();
+
             protected override void UseTransaction(DatabaseFacade facade, IDbContextTransaction transaction)
                 => facade.UseTransaction(transaction.GetDbTransaction());
 
             public abstract class GraphUpdatesMySqlFixtureBase : GraphUpdatesFixtureBase
             {
-                public TestSqlLoggerFactory TestSqlLoggerFactory => (TestSqlLoggerFactory)ServiceProvider.GetRequiredService<ILoggerFactory>();
-                protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
-                protected virtual bool AutoDetectChanges => false;
+                public TestSqlLoggerFactory TestSqlLoggerFactory
+                    => (TestSqlLoggerFactory)ListLoggerFactory;
 
-                public override PoolableDbContext CreateContext()
-                {
-                    var context = base.CreateContext();
-                    context.ChangeTracker.AutoDetectChangesEnabled = AutoDetectChanges;
-
-                    return context;
-                }
-            }
-        }
-
-        public class SnapshotNotifications
-            : GraphUpdatesMySqlTestBase<SnapshotNotifications.SnapshotNotificationsFixture>
-        {
-            public SnapshotNotifications(SnapshotNotificationsFixture fixture, ITestOutputHelper testOutputHelper)
-                : base(fixture)
-            {
-                //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
-            }
-
-            public class SnapshotNotificationsFixture : GraphUpdatesMySqlFixtureBase
-            {
-                protected override string StoreName { get; } = "GraphUpdatesSnapshotTest";
-                protected override bool AutoDetectChanges => true;
-
-                protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
-                {
-                    modelBuilder.HasChangeTrackingStrategy(ChangeTrackingStrategy.Snapshot);
-
-                    base.OnModelCreating(modelBuilder, context);
-                }
-            }
-        }
-
-        public class ChangedNotifications
-            : GraphUpdatesMySqlTestBase<ChangedNotifications.ChangedNotificationsFixture>
-        {
-            public ChangedNotifications(ChangedNotificationsFixture fixture)
-                : base(fixture)
-            {
-            }
-
-            public class ChangedNotificationsFixture : GraphUpdatesMySqlFixtureBase
-            {
-                protected override string StoreName { get; } = "GraphUpdatesChangedTest";
-
-                protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
-                {
-                    modelBuilder.HasChangeTrackingStrategy(ChangeTrackingStrategy.ChangedNotifications);
-
-                    base.OnModelCreating(modelBuilder, context);
-                }
-            }
-        }
-
-        public class ChangedChangingNotifications
-            : GraphUpdatesMySqlTestBase<ChangedChangingNotifications.ChangedChangingNotificationsFixture>
-        {
-            public ChangedChangingNotifications(ChangedChangingNotificationsFixture fixture)
-                : base(fixture)
-            {
-            }
-
-            public class ChangedChangingNotificationsFixture : GraphUpdatesMySqlFixtureBase
-            {
-                protected override string StoreName { get; } = "GraphUpdatesFullTest";
-
-                protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
-                {
-                    modelBuilder.HasChangeTrackingStrategy(ChangeTrackingStrategy.ChangingAndChangedNotifications);
-
-                    base.OnModelCreating(modelBuilder, context);
-                }
-            }
-        }
-
-        public class FullWithOriginalsNotifications
-            : GraphUpdatesMySqlTestBase<FullWithOriginalsNotifications.FullWithOriginalsNotificationsFixture>
-        {
-            public FullWithOriginalsNotifications(FullWithOriginalsNotificationsFixture fixture)
-                : base(fixture)
-            {
-            }
-
-            public class FullWithOriginalsNotificationsFixture : GraphUpdatesMySqlFixtureBase
-            {
-                protected override string StoreName { get; } = "GraphUpdatesOriginalsTest";
-
-                protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
-                {
-                    modelBuilder.HasChangeTrackingStrategy(ChangeTrackingStrategy.ChangingAndChangedNotificationsWithOriginalValues);
-
-                    base.OnModelCreating(modelBuilder, context);
-                }
+                protected override ITestStoreFactory TestStoreFactory
+                    => MySqlTestStoreFactory.Instance;
             }
         }
     }

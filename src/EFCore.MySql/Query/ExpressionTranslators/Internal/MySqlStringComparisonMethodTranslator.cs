@@ -1,8 +1,13 @@
+// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
@@ -41,7 +46,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 new[] {StringComparison.Ordinal, StringComparison.CurrentCulture, StringComparison.InvariantCulture});
         }
 
-        public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
+        public SqlExpression Translate(
+            SqlExpression instance,
+            MethodInfo method,
+            IReadOnlyList<SqlExpression> arguments,
+            IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             if (Equals(method, _equalsMethodInfo) && instance != null)
             {
@@ -379,7 +388,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 
             // The prefix is non-constant, we use LEFT to extract the substring and compare.
             return _sqlExpressionFactory.Equal(
-                _sqlExpressionFactory.Function(
+                _sqlExpressionFactory.NullableFunction(
                     startsWith
                         ? "LEFT"
                         : "RIGHT",
@@ -414,6 +423,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                             patternTransform(_sqlExpressionFactory.Constant('%' + EscapeLikePattern(constantPatternString) + '%')));
                 }
 
+                // TODO: EF Core 5
                 // https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/996#issuecomment-607876040
                 // Can return NULL in .NET 5 after https://github.com/dotnet/efcore/issues/20498 has been fixed.
                 // `something LIKE NULL` always returns `NULL`. We will return `false`, to indicate, that no match
@@ -425,14 +435,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 return _sqlExpressionFactory.Like(target, _sqlExpressionFactory.Constant(null, stringTypeMapping));
             }
 
-            // LOCATE('foo', 'barfoobar') > 0
+            // 'foo' LIKE '' OR LOCATE('foo', 'barfoobar') > 0
+            // This cannot be "'   ' = '' OR ..", because '   ' would be trimmed to '' when using equals, but not when using LIKE.
             // Using an empty pattern `LOCATE('', 'barfoobar')` returns 1.
-            return _sqlExpressionFactory.GreaterThan(
-                _sqlExpressionFactory.Function(
-                    "LOCATE",
-                    new[] {patternTransform(pattern), targetTransform(target)},
-                    typeof(int)),
-                _sqlExpressionFactory.Constant(0));
+            return _sqlExpressionFactory.OrElse(
+                _sqlExpressionFactory.Like(
+                    pattern,
+                    _sqlExpressionFactory.Constant(string.Empty, stringTypeMapping)),
+                _sqlExpressionFactory.GreaterThan(
+                    _sqlExpressionFactory.NullableFunction(
+                        "LOCATE",
+                        new[] {patternTransform(pattern), targetTransform(target)},
+                        typeof(int)),
+                        _sqlExpressionFactory.Constant(0)));
         }
 
         public SqlExpression MakeIndexOfExpression(
@@ -497,7 +512,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             // LOCATE('foo', 'barfoobar') - 1
             // Using an empty pattern `LOCATE('', 'barfoobar') - 1` returns 0.
             return _sqlExpressionFactory.Subtract(
-                _sqlExpressionFactory.Function(
+                _sqlExpressionFactory.NullableFunction(
                     "LOCATE",
                     new[] {patternTransform(pattern), targetTransform(target)},
                     typeof(int)),
@@ -540,7 +555,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             };
 
         private SqlExpression LCase(SqlExpression value)
-            => _sqlExpressionFactory.Function("LCASE", new[] {value}, value.Type, null);
+            => _sqlExpressionFactory.NullableFunction(
+                "LCASE",
+                new[] {value},
+                value.Type);
 
         private SqlExpression Utf8Bin(SqlExpression value)
             => _sqlExpressionFactory.Collate(
@@ -550,7 +568,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             );
 
         private SqlExpression CharLength(SqlExpression value)
-            => _sqlExpressionFactory.Function("CHAR_LENGTH", new[] {value}, typeof(int), null);
+            => _sqlExpressionFactory.NullableFunction(
+                "CHAR_LENGTH",
+                new[] {value},
+                typeof(int));
 
         private const char LikeEscapeChar = '\\';
 

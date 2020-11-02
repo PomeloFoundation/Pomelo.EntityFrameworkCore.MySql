@@ -4,24 +4,10 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
-    /// <summary>
-    ///     <para>
-    ///         This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///         the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///         any release. You should only use it directly in your code with extreme caution and knowing that
-    ///         doing so can result in application failures when updating to a new Entity Framework Core release.
-    ///     </para>
-    ///     <para>
-    ///         The service lifetime is <see cref="ServiceLifetime.Singleton" />. This means a single instance
-    ///         is used by many <see cref="DbContext" /> instances. The implementation must be thread-safe.
-    ///         This service cannot depend on services registered as <see cref="ServiceLifetime.Scoped" />.
-    ///     </para>
-    /// </summary>
     public class MySqlNetTopologySuiteMemberTranslatorPlugin : IMemberTranslatorPlugin
     {
         /// <summary>
@@ -35,14 +21,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             ISqlExpressionFactory sqlExpressionFactory,
             IMySqlOptions options)
         {
+            var mySqlSqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
+
             Translators = new IMemberTranslator[]
             {
-                new MySqlGeometryMemberTranslator(typeMappingSource, sqlExpressionFactory),
-                new MySqlGeometryCollectionMemberTranslator(sqlExpressionFactory),
-                new MySqlLineStringMemberTranslator(typeMappingSource, sqlExpressionFactory, options),
-                new MySqlMultiLineStringMemberTranslator(sqlExpressionFactory),
-                new MySqlPointMemberTranslator(sqlExpressionFactory),
-                new MySqlPolygonMemberTranslator(typeMappingSource, sqlExpressionFactory)
+                new MySqlGeometryMemberTranslator(typeMappingSource, mySqlSqlExpressionFactory),
+                new MySqlGeometryCollectionMemberTranslator(mySqlSqlExpressionFactory),
+                new MySqlLineStringMemberTranslator(typeMappingSource, mySqlSqlExpressionFactory, options),
+                new MySqlMultiLineStringMemberTranslator(mySqlSqlExpressionFactory),
+                new MySqlPointMemberTranslator(mySqlSqlExpressionFactory),
+                new MySqlPolygonMemberTranslator(typeMappingSource, mySqlSqlExpressionFactory)
             };
         }
 

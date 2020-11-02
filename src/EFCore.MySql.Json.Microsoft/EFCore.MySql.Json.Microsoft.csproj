@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>JSON support using System.Text.Json for Pomelo's MySQL provider for Entity Framework Core.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>$(DefaultNetStandardTargetFramework)</TargetFramework>
     <MinClientVersion>3.6</MinClientVersion>
     <AssemblyName>Pomelo.EntityFrameworkCore.MySql.Json.Microsoft</AssemblyName>
     <RootNamespace>Pomelo.EntityFrameworkCore.MySql.Json.Microsoft</RootNamespace>
@@ -39,18 +39,20 @@
     <PackageReference Include="MySqlConnector" Version="$(MySqlConnectorVersion)" />
   </ItemGroup>
 
+  <!-- TODO: Can be removed because it is already contained in EFCore.MySql. -->
   <ItemGroup Condition="'$(LocalEFCoreRepository)' == ''">
-    <!-- TODO: Add Microsoft.EntityFrameworkCore as well for .NET 5. Makes it easier for users. -->
     <!-- PrivateAssets="none" is set to flow the EF Core analyzer to users referencing this package https://github.com/aspnet/EntityFrameworkCore/pull/11350 -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(MicrosoftEntityFrameworkCoreRelationalVersion)" PrivateAssets="none" />
   </ItemGroup>
 
+  <!-- TODO: Can be removed because it is already contained in EFCore.MySql. -->
   <ItemGroup Condition="'$(LocalMySqlConnectorRepository)' != ''">
     <Reference Include="MySqlConnector">
-      <HintPath>$(LocalMySqlConnectorRepository)\src\MySqlConnector\bin\Debug\netstandard2.0\MySqlConnector.dll</HintPath>
+      <HintPath>$(LocalMySqlConnectorRepository)\src\MySqlConnector\bin\Debug\$(TargetFramework)\MySqlConnector.dll</HintPath>
     </Reference>
   </ItemGroup>
 
+  <!-- TODO: Can be removed because it is already contained in EFCore.MySql. -->
   <!-- TODO: Check, whether the following references are really all in use. -->
   <ItemGroup Condition="'$(LocalEFCoreRepository)' != ''">
     <Reference Include="Microsoft.EntityFrameworkCore">

@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Xunit;
 using Microsoft.EntityFrameworkCore.Internal;
 using System.Diagnostics;
+using Microsoft.EntityFrameworkCore.Diagnostics.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,12 +40,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Scaffolding
 
             try
             {
-                var logger = new DiagnosticsLogger<DbLoggerCategory.Scaffolding>(
+                var databaseModelFactory = new MySqlDatabaseModelFactory(
+                    new DiagnosticsLogger<DbLoggerCategory.Scaffolding>(
                         Fixture.ListLoggerFactory,
                         new LoggingOptions(),
                         new DiagnosticListener("Fake"),
-                        new MySqlLoggingDefinitions());
-                var databaseModelFactory = new MySqlDatabaseModelFactory(logger, Fixture.ServiceProvider.GetService<IMySqlOptions>());
+                        new MySqlLoggingDefinitions(),
+                        new NullDbContextLogger()),
+                    Fixture.ServiceProvider.GetService<IMySqlOptions>());
 
                 var databaseModel = databaseModelFactory.Create(Fixture.TestStore.ConnectionString,
                     new DatabaseModelFactoryOptions(tables, schemas));

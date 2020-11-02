@@ -33,7 +33,7 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
             => WithOption(e => e.WithServerVersion(new ServerVersion(serverVersion)));
 
         /// <summary>
-        ///     Configures the target <see cref="ServerVersion"/>.
+        ///     Configures the target <see cref="Pomelo.EntityFrameworkCore.MySql.Storage.ServerVersion"/>.
         /// </summary>
         public virtual MySqlDbContextOptionsBuilder ServerVersion(ServerVersion serverVersion)
             => WithOption(e => e.WithServerVersion(serverVersion));
@@ -71,7 +71,7 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
         public virtual MySqlDbContextOptionsBuilder EnableRetryOnFailure(
             int maxRetryCount,
             TimeSpan maxRetryDelay,
-            [NotNull] ICollection<int> errorNumbersToAdd)
+            [CanBeNull] ICollection<int> errorNumbersToAdd)
             => ExecutionStrategy(c => new MySqlRetryingExecutionStrategy(c, maxRetryCount, maxRetryDelay, errorNumbersToAdd));
 
         /// <summary>

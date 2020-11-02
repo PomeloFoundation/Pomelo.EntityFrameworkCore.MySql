@@ -1,11 +1,13 @@
-﻿
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
 using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -34,7 +36,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
         }
 
-        public virtual SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
+        public virtual SqlExpression Translate(
+            SqlExpression instance,
+            MethodInfo method,
+            IReadOnlyList<SqlExpression> arguments,
+            IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             if (_methodInfoDatePartMapping.TryGetValue(method, out var datePart))
             {
@@ -44,20 +50,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                        && ((double)sqlConstant.Value >= int.MaxValue
                            || (double)sqlConstant.Value <= int.MinValue)
                     ? null
-                    : _sqlExpressionFactory.Function(
+                    : _sqlExpressionFactory.NullableFunction(
                         "DATE_ADD",
                         new[]
                         {
                             instance,
-                            _sqlExpressionFactory.ComplexFunctionArgument(new SqlExpression[]
-                            {
-                                _sqlExpressionFactory.Fragment("INTERVAL"),
-                                _sqlExpressionFactory.Convert(arguments[0], typeof(int)),
-                                _sqlExpressionFactory.Fragment(datePart)
-                            }, typeof(string))
+                            _sqlExpressionFactory.ComplexFunctionArgument(
+                                new SqlExpression[]
+                                {
+                                    _sqlExpressionFactory.Fragment("INTERVAL"),
+                                    _sqlExpressionFactory.Convert(arguments[0], typeof(int)),
+                                    _sqlExpressionFactory.Fragment(datePart)
+                                }, typeof(string))
                         },
                         instance.Type,
-                        instance.TypeMapping);
+                        instance.TypeMapping,
+                        true,
+                        new[] {true, false});
             }
 
             return null;

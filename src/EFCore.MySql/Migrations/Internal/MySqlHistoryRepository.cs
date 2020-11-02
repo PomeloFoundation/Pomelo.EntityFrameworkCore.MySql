@@ -58,7 +58,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         }
 
         /// <summary>
-        ///     Overridden by database providers to generate a SQL Script that will <c>BEGIN</c> a block
+        ///     Overridden by database providers to generate a SQL Script that will `BEGIN` a block
         ///     of SQL if and only if the migration with the given identifier does not already exist in the history table.
         /// </summary>
         /// <param name="migrationId"> The migration identifier. </param>
@@ -72,7 +72,7 @@ BEGIN
 ";
 
         /// <summary>
-        ///     Overridden by database providers to generate a SQL Script that will <c>BEGIN</c> a block
+        ///     Overridden by database providers to generate a SQL Script that will `BEGIN` a block
         ///     of SQL if and only if the migration with the given identifier already exists in the history table.
         /// </summary>
         /// <param name="migrationId"> The migration identifier. </param>
@@ -86,7 +86,7 @@ BEGIN
 ";
 
         /// <summary>
-        ///     Overridden by database providers to generate a SQL script to <c>END</c> the SQL block.
+        ///     Overridden by database providers to generate a SQL script to `END` the SQL block.
         /// </summary>
         /// <returns> The generated SQL. </returns>
         public override string GetEndIfScript() => $@"

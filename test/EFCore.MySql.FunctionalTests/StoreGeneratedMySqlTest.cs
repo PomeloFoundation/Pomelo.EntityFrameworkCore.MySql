@@ -105,8 +105,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 modelBuilder.Entity<WithNullableBackingFields>(
                     b =>
                     {
-                        b.Property(e => e.NullableBackedBool).HasDefaultValue(true);
-                        b.Property(e => e.NullableBackedInt).HasDefaultValue(-1);
+                        b.Property(e => e.NullableBackedBoolTrueDefault).HasDefaultValue(true);
+                        b.Property(e => e.NullableBackedIntNonZeroDefault).HasDefaultValue(-1);
+                        b.Property(e => e.NullableBackedBoolFalseDefault).HasDefaultValue(false);
+                        b.Property(e => e.NullableBackedIntZeroDefault).HasDefaultValue(0);
+                    });
+
+                modelBuilder.Entity<WithObjectBackingFields>(
+                    b =>
+                    {
+                        b.Property(e => e.NullableBackedBoolTrueDefault).HasDefaultValue(true);
+                        b.Property(e => e.NullableBackedIntNonZeroDefault).HasDefaultValue(-1);
+                        b.Property(e => e.NullableBackedBoolFalseDefault).HasDefaultValue(false);
+                        b.Property(e => e.NullableBackedIntZeroDefault).HasDefaultValue(0);
                     });
 
                 base.OnModelCreating(modelBuilder, context);

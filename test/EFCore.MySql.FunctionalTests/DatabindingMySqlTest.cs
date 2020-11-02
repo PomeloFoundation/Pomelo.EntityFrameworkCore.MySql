@@ -8,5 +8,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             : base(fixture)
         {
         }
+
+        public override void DbSet_Local_calls_DetectChanges()
+        {
+            base.DbSet_Local_calls_DetectChanges();
+        }
     }
 }
