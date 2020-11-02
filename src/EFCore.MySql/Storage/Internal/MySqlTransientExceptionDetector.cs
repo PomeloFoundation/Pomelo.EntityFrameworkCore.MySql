@@ -10,7 +10,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     /// <summary>
     ///     Detects the exceptions caused by MySQL transient failures.
     /// </summary>
-    public class MySqlTransientExceptionDetector
+    public static class MySqlTransientExceptionDetector
     {
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
