@@ -353,14 +353,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         [ConditionalFact]
         public void InsertDataOperation_throws_for_missing_entity_type()
             => Assert.Equal(
-                RelationalStrings.DataOperationNoTable((string.IsNullOrEmpty(Schema) ? null : Schema + ".") + "People"),
+                RelationalStrings.DataOperationNoTable((string.IsNullOrEmpty(Schema) ? null : Schema + ".") + "Persons"),
                 Assert.Throws<InvalidOperationException>(
                     () =>
                         Generate(
                             CreateGotModel,
                             new InsertDataOperation
                             {
-                                Table = "People",
+                                Table = "Persons",
                                 Schema = Schema,
                                 Columns = new[] { "First Name" },
                                 Values = new object[,] { { "John" } }

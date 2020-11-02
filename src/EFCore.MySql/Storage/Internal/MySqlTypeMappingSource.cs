@@ -27,7 +27,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         // integers
         private readonly SByteTypeMapping _tinyint = new SByteTypeMapping("tinyint", DbType.SByte);
-        private readonly MySqlByteTypeMapping _utinyint = new MySqlByteTypeMapping("tinyint unsigned");
+        private readonly ByteTypeMapping _utinyint = new ByteTypeMapping("tinyint unsigned", DbType.Byte);
         private readonly ShortTypeMapping _smallint = new ShortTypeMapping("smallint", DbType.Int16);
         private readonly UShortTypeMapping _usmallint = new UShortTypeMapping("smallint unsigned", DbType.UInt16);
         private readonly IntTypeMapping _int = new IntTypeMapping("int", DbType.Int32);

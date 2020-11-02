@@ -144,40 +144,6 @@ FROM `Sample`
 WHERE ROW_COUNT() = 1 AND `Unique_No` = LAST_INSERT_ID();");
         }
 
-
-        public override void RequiredAttribute_for_navigation_throws_while_inserting_null_value()
-        {
-            base.RequiredAttribute_for_navigation_throws_while_inserting_null_value();
-
-            AssertSql(
-                @"@p0=NULL (DbType = Int32)
-@p1='1'
-
-INSERT INTO `BookDetails` (`AdditionalBookDetailsId`, `AnotherBookId`)
-VALUES (@p0, @p1);
-SELECT `Id`
-FROM `BookDetails`
-WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();");
-        }
-
-        public override void RequiredAttribute_for_property_throws_while_inserting_null_value()
-        {
-            base.RequiredAttribute_for_property_throws_while_inserting_null_value();
-
-            AssertSql(
-                @"@p0=NULL (Size = 10)
-@p1='ValidString' (Nullable = false) (Size = 4000)
-@p2='00000000-0000-0000-0000-000000000001'
-@p3='Two' (Size = 4000)
-@p4='One' (Size = 4000)
-
-INSERT INTO `Sample` (`MaxLengthProperty`, `Name`, `RowVersion`, `AdditionalDetails_Name`, `Details_Name`)
-VALUES (@p0, @p1, @p2, @p3, @p4);
-SELECT `Unique_No`
-FROM `Sample`
-WHERE ROW_COUNT() = 1 AND `Unique_No` = LAST_INSERT_ID();");
-        }
-
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 

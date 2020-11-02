@@ -569,8 +569,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
 
                     b.HasIndex("TeacherId");
 
-                    b.ToTable("PersonKid");
-
                     b.HasDiscriminator().HasValue("PersonKid");
                 });
 
@@ -582,17 +580,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
 
                     b.Property<bool>("OnPta");
 
-                    b.ToTable("PersonParent");
-
                     b.HasDiscriminator().HasValue("PersonParent");
                 });
 
             modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.PersonTeacher", b =>
                 {
                     b.HasBaseType("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.Person");
-
-
-                    b.ToTable("PersonTeacher");
 
                     b.HasDiscriminator().HasValue("PersonTeacher");
                 });

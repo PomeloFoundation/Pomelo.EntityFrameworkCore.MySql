@@ -105,7 +105,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 
         private SqlExpression ConvertFromJsonExtract(SqlExpression expression, Type returnType)
             => returnType == typeof(bool)
-                ? _sqlExpressionFactory.Equal(
+                ? _sqlExpressionFactory.NonOptimizedEqual(
                     expression,
                     _sqlExpressionFactory.Constant(true, _boolTypeMapping))
                 : expression;

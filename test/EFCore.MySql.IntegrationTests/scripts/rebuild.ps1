@@ -15,6 +15,7 @@ function Insert-Content ($file) {
 Push-Location (Join-Path (Split-Path $MyInvocation.MyCommand.Path) "../")
 
 Remove-Item (Join-Path "Migrations" "*.cs")
+.\scripts\dotnet-ef.ps1 --info
 .\scripts\dotnet-ef.ps1 database drop -f
 .\scripts\dotnet-ef.ps1 migrations add initial
 

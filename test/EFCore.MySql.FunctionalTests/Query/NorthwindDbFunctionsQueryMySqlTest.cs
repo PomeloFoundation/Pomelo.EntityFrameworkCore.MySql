@@ -19,12 +19,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        protected override string CaseInsensitiveCollation
-            => "latin1_general_ci";
-
-        protected override string CaseSensitiveCollation
-            => "latin1_general_cs";
-
         public override async Task Like_literal(bool async)
         {
             using (var context = CreateContext())
@@ -59,6 +53,12 @@ WHERE `c`.`ContactName` LIKE `c`.`ContactName`");
 FROM `Customers` AS `c`
 WHERE `c`.`ContactName` LIKE '!%' ESCAPE '!'");
         }
+
+        protected override string CaseInsensitiveCollation
+            => "utf8mb4_general_ci";
+
+        protected override string CaseSensitiveCollation
+            => "utf8mb4_bin";
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);

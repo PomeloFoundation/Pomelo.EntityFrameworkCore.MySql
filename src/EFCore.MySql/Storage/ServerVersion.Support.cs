@@ -32,7 +32,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string JsonMariaDbSupportVersionString = "10.2.4-mariadb";
 
         public const string RenameColumnMySqlSupportVersionString = "8.0.0-mysql";
-        // public const string RenameColumnMariaDbSupportVersionString = "?.?.?-mariadb";
+        public const string RenameColumnMariaDbSupportVersionString = "10.5.2-mariadb";
 
         public const string WindowFunctionsMySqlSupportVersionString = "8.0.0-mysql";
         public const string WindowFunctionsMariaDbSupportVersionString = "10.2.0-mariadb";
@@ -42,6 +42,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
 
         public const string CrossApplyMySqlSupportVersionString = "8.0.14-mysql";
         // public const string CrossApplyMariaDbSupportVersionString = "?.?.?-mariadb"; // MDEV-19078, MDEV-6373
+
+        public const string OuterReferenceInMultiLevelSubqueryMySqlSupportVersionString = "8.0.14-mysql"; // Exact version has not been verified yet
+        // public const string OuterReferenceInMultiLevelSubqueryMariaDbSupportVersionString = "?.?.?-mariadb";
 
         // public const string FloatCastMySqlSupportVersionString = "8.0.17-mysql"; // The implemented support drops some decimal places and rounds.
         // public const string FloatCastMariaDbSupportVersionString = "10.4.5-mariadb"; // The implemented support drops some decimal places and rounds.
@@ -103,6 +106,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         // public const string JsonDataTypeEmulationMySqlSupportVersionString = "5.7.8-mysql";
         public const string JsonDataTypeEmulationMariaDbSupportVersionString = "10.2.4-mariadb"; // JSON_COMPACT was added in 10.2.4, though most other functions where added in 10.2.3
 
+        public const string ImplicitBoolCheckUsesIndexMySqlSupportVersionString = "8.0.0-mysql"; // Exact version has not been verified yet
+        public const string ImplicitBoolCheckUsesIndexMariaDbSupportVersionString = "10.0.0-mariadb"; // Exact version has not been verified yet
+
         #endregion
 
         #region SupportMap keys for test attributes
@@ -115,7 +121,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string WindowFunctionsSupportKey = nameof(WindowFunctionsSupportKey);
         public const string OuterApplySupportKey = nameof(OuterApplySupportKey);
         public const string CrossApplySupportKey = nameof(CrossApplySupportKey);
-        public const string FloatCastSupportKey = nameof(FloatCastSupportKey);
+        public const string OuterReferenceInMultiLevelSubquerySupportKey = nameof(OuterReferenceInMultiLevelSubquerySupportKey);
         public const string DoubleCastSupportKey = nameof(DoubleCastSupportKey);
         public const string JsonSupportKey = nameof(JsonSupportKey);
         public const string GeneratedColumnsSupportKey = nameof(GeneratedColumnsSupportKey);
@@ -138,6 +144,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string ExceptInterceptSupportKey = nameof(ExceptInterceptSupportKey);
         public const string ExceptInterceptPrecedenceSupportKey = nameof(ExceptInterceptPrecedenceSupportKey);
         public const string JsonDataTypeEmulationSupportKey = nameof(JsonDataTypeEmulationSupportKey);
+        public const string ImplicitBoolCheckUsesIndexSupportKey = nameof(ImplicitBoolCheckUsesIndexSupportKey);
 
         #endregion
 
@@ -147,10 +154,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
             { DateTime6SupportKey, new ServerVersionSupport(DateTime6MySqlSupportVersionString, DateTime6MariaDbSupportVersionString) },
             { LargerKeyLengthSupportKey, new ServerVersionSupport(LargerKeyLengthMySqlSupportVersionString, LargerKeyLengthMariaDbSupportVersionString) },
             { RenameIndexSupportKey, new ServerVersionSupport(RenameIndexMySqlSupportVersionString/*, RenameIndexMariaDbSupportVersionString*/) },
-            { RenameColumnSupportKey, new ServerVersionSupport(RenameColumnMySqlSupportVersionString/*, RenameColumnMariaDbSupportVersionString*/) },
+            { RenameColumnSupportKey, new ServerVersionSupport(RenameColumnMySqlSupportVersionString, RenameColumnMariaDbSupportVersionString) },
             { WindowFunctionsSupportKey, new ServerVersionSupport(WindowFunctionsMySqlSupportVersionString, WindowFunctionsMariaDbSupportVersionString) },
             { OuterApplySupportKey, new ServerVersionSupport(OuterApplyMySqlSupportVersionString/*, OuterApplyMariaDbSupportVersionString*/) },
             { CrossApplySupportKey, new ServerVersionSupport(CrossApplyMySqlSupportVersionString/*, CrossApplyMariaDbSupportVersionString*/) },
+            { OuterReferenceInMultiLevelSubquerySupportKey, new ServerVersionSupport(OuterReferenceInMultiLevelSubqueryMySqlSupportVersionString/*, OuterReferenceInMultiLevelSubqueryMariaDbSupportVersionString*/) },
             { DoubleCastSupportKey, new ServerVersionSupport(DoubleCastMySqlSupportVersionString, DoubleCastMariaDbSupportVersionString) },
             { JsonSupportKey, new ServerVersionSupport(JsonMySqlSupportVersionString/*, JsonMariaDbSupportVersionString*/) },
             { GeneratedColumnsSupportKey, new ServerVersionSupport(GeneratedColumnsMySqlSupportVersionString, GeneratedColumnsMariaDbSupportVersionString) },
@@ -173,6 +181,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
             { ExceptInterceptSupportKey, new ServerVersionSupport(/*ExceptInterceptMySqlSupportVersionString, */ExceptInterceptMariaDbSupportVersionString)},
             { ExceptInterceptPrecedenceSupportKey, new ServerVersionSupport(/*ExceptInterceptPrecedenceMySqlSupportVersionString, */ExceptInterceptPrecedenceMariaDbSupportVersionString)},
             { JsonDataTypeEmulationSupportKey, new ServerVersionSupport(/*JsonDataTypeEmulationMySqlSupportVersionString, */JsonDataTypeEmulationMariaDbSupportVersionString)},
+            { ImplicitBoolCheckUsesIndexSupportKey, new ServerVersionSupport(ImplicitBoolCheckUsesIndexMySqlSupportVersionString, ImplicitBoolCheckUsesIndexMariaDbSupportVersionString)},
         };
 
         #region Support checks for provider code
@@ -187,6 +196,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public virtual bool SupportsDoubleCast => SupportMap[DoubleCastSupportKey].IsSupported(this);
         public virtual bool SupportsOuterApply => SupportMap[OuterApplySupportKey].IsSupported(this);
         public virtual bool SupportsCrossApply => SupportMap[CrossApplySupportKey].IsSupported(this);
+        public virtual bool SupportsOuterReferenceInMultiLevelSubquery => SupportMap[OuterReferenceInMultiLevelSubquerySupportKey].IsSupported(this);
         public virtual bool SupportsJson => SupportMap[JsonSupportKey].IsSupported(this);
         public virtual bool SupportsGeneratedColumns => SupportMap[GeneratedColumnsSupportKey].IsSupported(this);
         public virtual bool SupportsNullableGeneratedColumns => SupportMap[NullableGeneratedColumnsSupportKey].IsSupported(this);
@@ -208,6 +218,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public virtual bool SupportsExceptIntercept => SupportMap[ExceptInterceptSupportKey].IsSupported(this);
         public virtual bool SupportsExceptInterceptPrecedence => SupportMap[ExceptInterceptPrecedenceSupportKey].IsSupported(this);
         public virtual bool SupportsJsonDataTypeEmulation => SupportMap[JsonDataTypeEmulationSupportKey].IsSupported(this);
+        public virtual bool SupportsImplicitBoolCheckUsesIndex => SupportMap[ImplicitBoolCheckUsesIndexSupportKey].IsSupported(this);
 
         #endregion
 

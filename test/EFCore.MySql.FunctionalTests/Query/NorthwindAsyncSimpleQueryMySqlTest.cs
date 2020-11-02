@@ -20,11 +20,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        [SupportedServerVersionFact(ServerVersion.ExceptInterceptSupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.ExceptInterceptSupportKey)]
         public override async Task Intersect_non_entity()
             => await base.Intersect_non_entity();
 
-        [SupportedServerVersionFact(ServerVersion.ExceptInterceptSupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.ExceptInterceptSupportKey)]
         public override async Task Except_non_entity()
             => await base.Except_non_entity();
     }

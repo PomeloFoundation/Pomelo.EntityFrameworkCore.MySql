@@ -211,21 +211,6 @@ WHERE `o`.`OrderID` LIKE '!%' ESCAPE '!'");
         }
 
         [ConditionalFact]
-        public virtual void Like_Client_InvariantCulture_nullable()
-        {
-            Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("zh-CN");
-            DateTime? exampleDate = new DateTime(2019, 8, 1, 18, 32, 6);
-
-            Assert.True(EF.Functions.Like(exampleDate, "08/01/2019%"));
-
-            double? d = 12.34D;
-            Assert.True(EF.Functions.Like(d, "12.3%"));
-
-            byte[] b = {0x30, 0x31};
-            Assert.True(EF.Functions.Like(b, "30%"));
-        }
-
-        [ConditionalFact]
         public virtual void Hex()
         {
             using (var context = CreateContext())

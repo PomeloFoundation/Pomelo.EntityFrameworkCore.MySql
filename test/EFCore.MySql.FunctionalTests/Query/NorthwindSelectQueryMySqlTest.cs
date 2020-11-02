@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
@@ -136,51 +138,82 @@ FROM `Orders` AS `o`");
             return base.Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.WindowFunctionsSupportKey)]
+        public override Task Project_keyless_entity_FirstOrDefault_without_orderby(bool async)
+        {
+            return base.Project_keyless_entity_FirstOrDefault_without_orderby(async);
+        }
+
+        [SupportedServerVersionCondition(ServerVersion.CrossApplySupportKey)]
         public override Task SelectMany_correlated_with_outer_1(bool async)
         {
             return base.SelectMany_correlated_with_outer_1(async);
         }
 
-        // [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
+        // [SupportedServerVersionCondition(ServerVersion.CrossApplySupportKey)]
         [ConditionalTheory(Skip = "Leads to a different result set in CI on Linux with MySQL 8.0.17. TODO: Needs investigation!")]
         public override Task SelectMany_correlated_with_outer_2(bool async)
         {
             return base.SelectMany_correlated_with_outer_2(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         public override Task SelectMany_correlated_with_outer_3(bool async)
         {
             return base.SelectMany_correlated_with_outer_3(async);
         }
 
-        // [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
+        // TODO:
+        // [SupportedServerVersionCondition(ServerVersion.CrossApplySupportKey)ey)]
         [ConditionalTheory(Skip = "Leads to a different result set in CI on Linux with MySQL 8.0.17. TODO: Needs investigation!")]
         public override Task SelectMany_correlated_with_outer_4(bool async)
         {
             return base.SelectMany_correlated_with_outer_4(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
+        public override Task SelectMany_correlated_with_outer_5(bool async)
+        {
+            return base.SelectMany_correlated_with_outer_5(async);
+        }
+
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
+        public override Task SelectMany_correlated_with_outer_6(bool async)
+        {
+            return base.SelectMany_correlated_with_outer_6(async);
+        }
+
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
+        public override Task SelectMany_correlated_with_outer_7(bool async)
+        {
+            return base.SelectMany_correlated_with_outer_7(async);
+        }
+
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         public override Task Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault_2(bool async)
         {
             return base.Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault_2(async);
         }
 
-        [SupportedServerVersionFact(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
+        public override Task Select_nested_collection_deep(bool async)
+        {
+            return base.Select_nested_collection_deep(async);
+        }
+
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         public override void Select_nested_collection_multi_level()
         {
             base.Select_nested_collection_multi_level();
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         public override Task Project_single_element_from_collection_with_OrderBy_Distinct_and_FirstOrDefault_followed_by_projecting_length(bool async)
         {
             return base.Project_single_element_from_collection_with_OrderBy_Distinct_and_FirstOrDefault_followed_by_projecting_length(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
         public override Task Project_single_element_from_collection_with_OrderBy_Take_and_SingleOrDefault(bool async)
         {
             return base.Project_single_element_from_collection_with_OrderBy_Take_and_SingleOrDefault(async);
@@ -192,17 +225,27 @@ FROM `Orders` AS `o`");
             return AssertTranslationFailed(() => base.Member_binding_after_ctor_arguments_fails_with_client_eval(async));
         }
 
-        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.CrossApplySupportKey)]
         public override Task SelectMany_whose_selector_references_outer_source(bool async)
         {
             return base.SelectMany_whose_selector_references_outer_source(async);
         }
 
-        [SupportedServerVersionTheory(ServerVersion.CrossApplySupportKey)]
+        [SupportedServerVersionCondition(ServerVersion.CrossApplySupportKey)]
         public override Task SelectMany_with_collection_being_correlated_subquery_which_references_inner_and_outer_entity(bool async)
         {
             return base.SelectMany_with_collection_being_correlated_subquery_which_references_inner_and_outer_entity(async);
         }
+
+        public override Task Reverse_without_explicit_ordering_throws(bool async)
+            => AssertTranslationFailedWithDetails(
+                () => base.Reverse_without_explicit_ordering_throws(async), RelationalStrings.MissingOrderingInSqlExpression);
+
+        public override async Task Projecting_after_navigation_and_distinct_throws(bool async)
+            => Assert.Equal(
+                RelationalStrings.InsufficientInformationToIdentifyOuterElementOfCollectionJoin,
+                (await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => base.Projecting_after_navigation_and_distinct_throws(async))).Message);
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);

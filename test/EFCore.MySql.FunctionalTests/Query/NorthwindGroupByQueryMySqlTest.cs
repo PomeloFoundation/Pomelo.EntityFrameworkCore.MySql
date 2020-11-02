@@ -1,7 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -10,7 +11,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
     public class NorthwindGroupByQueryMySqlTest : NorthwindGroupByQueryRelationalTestBase<
         NorthwindQueryMySqlFixture<NoopModelCustomizer>>
     {
-        // ReSharper disable once UnusedParameter.Local
         public NorthwindGroupByQueryMySqlTest(
             NorthwindQueryMySqlFixture<NoopModelCustomizer> fixture,
             ITestOutputHelper testOutputHelper)
@@ -20,16 +20,29 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        public override Task GroupBy_Property_Select_Count_with_predicate(bool async)
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
+        public override Task Select_uncorrelated_collection_with_groupby_works(bool async)
         {
-            return Assert.ThrowsAsync<InvalidOperationException>(
-                () => base.GroupBy_Property_Select_Count_with_predicate(async));
+            return base.Select_uncorrelated_collection_with_groupby_works(async);
         }
 
-        public override Task GroupBy_Property_Select_LongCount_with_predicate(bool async)
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
+        public override Task Select_uncorrelated_collection_with_groupby_multiple_collections_work(bool async)
         {
-            return Assert.ThrowsAsync<InvalidOperationException>(
-                () => base.GroupBy_Property_Select_LongCount_with_predicate(async));
+            return base.Select_uncorrelated_collection_with_groupby_multiple_collections_work(async);
+        }
+
+        [ConditionalTheory(Skip = "Does not work when using ONLY_FULL_GROUP_BY. See https://github.com/dotnet/efcore/issues/19027")]
+        public override Task GroupBy_scalar_subquery(bool async)
+        {
+            return base.GroupBy_scalar_subquery(async);
+        }
+
+        [SupportedServerVersionCondition("8.0.22-mysql", "0.0.0-mariadb")]
+        public override Task GroupBy_group_Where_Select_Distinct_aggregate(bool async)
+        {
+            // See https://github.com/mysql-net/MySqlConnector/issues/898.
+            return base.GroupBy_group_Where_Select_Distinct_aggregate(async);
         }
 
         private void AssertSql(params string[] expected)

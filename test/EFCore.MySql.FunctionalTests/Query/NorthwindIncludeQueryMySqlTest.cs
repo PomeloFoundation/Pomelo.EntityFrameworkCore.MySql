@@ -1,6 +1,11 @@
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Attributes;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -20,120 +25,92 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
         public override Task Include_duplicate_collection(bool async)
         {
             return base.Include_duplicate_collection(async);
         }
 
-        // [ConditionalTheory]
-        // [InlineData(false)]
-        // [InlineData(true)]
-        // public override void Include_duplicate_collection_result_operator(bool useString)
-        // {
-        //     using (var context = CreateContext())
-        //     {
-        //         var customers
-        //             = useString
-        //                 ? (from c1 in context.Set<Customer>()
-        //                        .Include("Orders")
-        //                        .OrderBy(c => c.CustomerID)
-        //                        .Take(2)
-        //                    from c2 in context.Set<Customer>()
-        //                        .Include("Orders")
-        //                        .OrderBy(c => c.CustomerID)
-        //                        .Skip(2)
-        //                        .Take(2)
-        //                    select new
-        //                    {
-        //                        c1,
-        //                        c2
-        //                    })
-        //                 .OrderBy(p => p.c1) // <-- needs explicit sorting
-        //                 .ThenBy(p => p.c2) // <-- needs explicit sorting
-        //                 .Take(1)
-        //                 .ToList()
-        //                 : (from c1 in context.Set<Customer>()
-        //                        .Include(c => c.Orders)
-        //                        .OrderBy(c => c.CustomerID)
-        //                        .Take(2)
-        //                    from c2 in context.Set<Customer>()
-        //                        .Include(c => c.Orders)
-        //                        .OrderBy(c => c.CustomerID)
-        //                        .Skip(2)
-        //                        .Take(2)
-        //                    select new
-        //                    {
-        //                        c1,
-        //                        c2
-        //                    })
-        //                 .OrderBy(p => p.c1) // <-- needs explicit sorting
-        //                 .ThenBy(p => p.c2) // <-- needs explicit sorting
-        //                 .Take(1)
-        //                 .ToList();
-        //
-        //         Assert.Single(customers);
-        //         Assert.Equal(6, customers.SelectMany(c => c.c1.Orders).Count());
-        //         Assert.True(customers.SelectMany(c => c.c1.Orders).All(o => o.Customer != null));
-        //         Assert.Equal(7, customers.SelectMany(c => c.c2.Orders).Count());
-        //         Assert.True(customers.SelectMany(c => c.c2.Orders).All(o => o.Customer != null));
-        //         Assert.Equal(15, context.ChangeTracker.Entries().Count());
-        //
-        //         foreach (var customer in customers.Select(e => e.c1))
-        //         {
-        //             CheckIsLoaded(
-        //                 context,
-        //                 customer,
-        //                 ordersLoaded: true,
-        //                 orderDetailsLoaded: false,
-        //                 productLoaded: false);
-        //         }
-        //
-        //         foreach (var customer in customers.Select(e => e.c2))
-        //         {
-        //             CheckIsLoaded(
-        //                 context,
-        //                 customer,
-        //                 ordersLoaded: true,
-        //                 orderDetailsLoaded: false,
-        //                 productLoaded: false);
-        //         }
-        //     }
-        // }
-        //
-        // private static void CheckIsLoaded(
-        //     NorthwindContext context,
-        //     Customer customer,
-        //     bool ordersLoaded,
-        //     bool orderDetailsLoaded,
-        //     bool productLoaded)
-        // {
-        //     context.ChangeTracker.AutoDetectChangesEnabled = false;
-        //
-        //     Assert.Equal(ordersLoaded, context.Entry(customer).Collection(e => e.Orders).IsLoaded);
-        //     if (customer.Orders != null)
-        //     {
-        //         foreach (var order in customer.Orders)
-        //         {
-        //             Assert.Equal(ordersLoaded, context.Entry(order).Reference(e => e.Customer).IsLoaded);
-        //
-        //             Assert.Equal(orderDetailsLoaded, context.Entry(order).Collection(e => e.OrderDetails).IsLoaded);
-        //             if (order.OrderDetails != null)
-        //             {
-        //                 foreach (var orderDetail in order.OrderDetails)
-        //                 {
-        //                     Assert.Equal(orderDetailsLoaded, context.Entry(orderDetail).Reference(e => e.Order).IsLoaded);
-        //
-        //                     Assert.Equal(productLoaded, context.Entry(orderDetail).Reference(e => e.Product).IsLoaded);
-        //                     if (orderDetail.Product != null)
-        //                     {
-        //                         Assert.False(context.Entry(orderDetail.Product).Collection(e => e.OrderDetails).IsLoaded);
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+        [SupportedServerVersionCondition(ServerVersion.WindowFunctionsSupportKey)]
+        public override Task Include_in_let_followed_by_FirstOrDefault(bool async)
+        {
+            return base.Include_in_let_followed_by_FirstOrDefault(async);
+        }
+
+        [SupportedServerVersionCondition(ServerVersion.CrossApplySupportKey)]
+        public override Task Include_collection_with_cross_apply_with_filter(bool async)
+        {
+            return base.Include_collection_with_cross_apply_with_filter(async);
+        }
+
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
+        public override Task Include_collection_with_outer_apply_with_filter(bool async)
+        {
+            return base.Include_collection_with_outer_apply_with_filter(async);
+        }
+
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
+        public override Task Include_collection_with_outer_apply_with_filter_non_equality(bool async)
+        {
+            return base.Include_collection_with_outer_apply_with_filter_non_equality(async);
+        }
+
+        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
+        public override Task Filtered_include_with_multiple_ordering(bool async)
+        {
+            return base.Filtered_include_with_multiple_ordering(async);
+        }
+
+        public override Task Include_collection_with_multiple_conditional_order_by(bool async)
+        {
+            // The order of `Orders` can be different, becaues it is not explicitly sorted.
+            // This is the case on MariaDB.
+            return AssertQuery(
+                async,
+                ss => ss.Set<Order>()
+                    .Include(c => c.OrderDetails)
+                    .OrderBy(o => o.OrderID > 0)
+                    .ThenBy(o => o.Customer != null ? o.Customer.City : string.Empty)
+                    .ThenBy(o => o.OrderID)
+                    .Take(5),
+                elementAsserter: (e, a) => AssertInclude(e, a, new ExpectedInclude<Order>(o => o.OrderDetails)),
+                entryCount: 14);
+        }
+
+        public override Task Include_duplicate_collection_result_operator(bool async)
+        {
+            // The order of `Orders` can be different, becaues it is not explicitly sorted.
+            // This is the case on MariaDB.
+            return AssertQuery(
+                async,
+                ss => (from c1 in ss.Set<Customer>().Include(c => c.Orders).OrderBy(c => c.CustomerID).ThenBy(c => c.Orders.FirstOrDefault() != null ? c.Orders.FirstOrDefault().CustomerID : null).Take(2)
+                    from c2 in ss.Set<Customer>().Include(c => c.Orders).OrderBy(c => c.CustomerID).ThenBy(c => c.Orders.FirstOrDefault() != null ? c.Orders.FirstOrDefault().CustomerID : null).Skip(2).Take(2)
+                    select new { c1, c2 }).OrderBy(t => t.c1.CustomerID).ThenBy(t => t.c2.CustomerID).Take(1),
+                elementSorter: e => (e.c1.CustomerID, e.c2.CustomerID),
+                elementAsserter: (e, a) =>
+                {
+                    AssertInclude(e.c1, a.c1, new ExpectedInclude<Customer>(c => c.Orders));
+                    AssertInclude(e.c2, a.c2, new ExpectedInclude<Customer>(c => c.Orders));
+                },
+                entryCount: 15);
+        }
+
+        public override Task Include_duplicate_collection_result_operator2(bool async)
+        {
+            // The order of `Orders` can be different, becaues it is not explicitly sorted.
+            // This is the case on MariaDB.
+            return AssertQuery(
+                async,
+                ss => (from c1 in ss.Set<Customer>().Include(c => c.Orders).OrderBy(c => c.CustomerID).ThenBy(c => c.Orders.FirstOrDefault() != null ? c.Orders.FirstOrDefault().CustomerID : null).Take(2)
+                    from c2 in ss.Set<Customer>().OrderBy(c => c.CustomerID).Skip(2).Take(2)
+                    select new { c1, c2 }).OrderBy(t => t.c1.CustomerID).ThenBy(t => t.c2.CustomerID).Take(1),
+                elementSorter: e => (e.c1.CustomerID, e.c2.CustomerID),
+                elementAsserter: (e, a) =>
+                {
+                    AssertInclude(e.c1, a.c1, new ExpectedInclude<Customer>(c => c.Orders));
+                    AssertEqual(e.c2, a.c2);
+                },
+                entryCount: 8);
+        }
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);

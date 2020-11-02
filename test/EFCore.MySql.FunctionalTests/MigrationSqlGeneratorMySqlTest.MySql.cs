@@ -28,8 +28,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
 ALTER TABLE `Cars` DROP KEY `AK_Cars_LicensePlateNumber`;
 
-ALTER TABLE `Cars` ADD CONSTRAINT `FK_Cars_LicensePlates_LicensePlateNumber` FOREIGN KEY (`LicensePlateNumber`) REFERENCES `LicensePlates` (`LicensePlateNumber`) ON DELETE CASCADE;
-");
+ALTER TABLE `Cars` ADD CONSTRAINT `FK_Cars_LicensePlates_LicensePlateNumber` FOREIGN KEY (`LicensePlateNumber`) REFERENCES `LicensePlates` (`LicensePlateNumber`) ON DELETE CASCADE;");
         }
 
         [ConditionalFact]
@@ -52,8 +51,7 @@ ALTER TABLE `Cars` ADD CONSTRAINT `FK_Cars_LicensePlates_LicensePlateNumber` FOR
 CALL POMELO_BEFORE_DROP_PRIMARY_KEY(NULL, 'Cars');
 ALTER TABLE `Cars` DROP PRIMARY KEY;
 
-ALTER TABLE `Cars` ADD CONSTRAINT `FK_Cars_LicensePlates_LicensePlateNumber` FOREIGN KEY (`LicensePlateNumber`) REFERENCES `LicensePlates` (`LicensePlateNumber`) ON DELETE CASCADE;
-");
+ALTER TABLE `Cars` ADD CONSTRAINT `FK_Cars_LicensePlates_LicensePlateNumber` FOREIGN KEY (`LicensePlateNumber`) REFERENCES `LicensePlates` (`LicensePlateNumber`) ON DELETE CASCADE;");
         }
 
         [ConditionalFact]

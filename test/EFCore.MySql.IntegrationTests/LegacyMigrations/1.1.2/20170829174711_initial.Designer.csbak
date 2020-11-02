@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -15,6 +15,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
+#pragma warning disable 612,618
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.1");
 
@@ -552,8 +553,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
 
                     b.HasIndex("TeacherId");
 
-                    b.ToTable("PersonKid");
-
                     b.HasDiscriminator().HasValue("PersonKid");
                 });
 
@@ -565,17 +564,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
 
                     b.Property<bool>("OnPta");
 
-                    b.ToTable("PersonParent");
-
                     b.HasDiscriminator().HasValue("PersonParent");
                 });
 
             modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.PersonTeacher", b =>
                 {
                     b.HasBaseType("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.Person");
-
-
-                    b.ToTable("PersonTeacher");
 
                     b.HasDiscriminator().HasValue("PersonTeacher");
                 });
@@ -664,6 +658,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                         .WithMany("Students")
                         .HasForeignKey("TeacherId");
                 });
+#pragma warning restore 612, 618
         }
     }
 }
