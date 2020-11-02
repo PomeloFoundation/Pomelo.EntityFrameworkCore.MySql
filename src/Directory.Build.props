@@ -2,5 +2,13 @@
   <Import Project="..\Directory.Build.props" />
   <PropertyGroup>
     <NoWarn>$(NoWarn);EF1001</NoWarn>
+    <IsPackable>True</IsPackable>
+    <IncludeSymbols>True</IncludeSymbols>
+    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)..\rulesets\EFCore.ruleset</CodeAnalysisRuleSet>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.0.0" PrivateAssets="All" />
+    <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="All" />
+  </ItemGroup>
 </Project>

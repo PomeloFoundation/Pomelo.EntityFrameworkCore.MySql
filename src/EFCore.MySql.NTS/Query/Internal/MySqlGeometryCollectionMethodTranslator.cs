@@ -3,6 +3,8 @@
 
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -14,21 +16,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
     {
         private static readonly MethodInfo _item = typeof(GeometryCollection).GetRuntimeProperty("Item").GetMethod;
         private readonly IRelationalTypeMappingSource _typeMappingSource;
-        private readonly ISqlExpressionFactory _sqlExpressionFactory;
+        private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
         public MySqlGeometryCollectionMethodTranslator(
             IRelationalTypeMappingSource typeMappingSource,
-            ISqlExpressionFactory sqlExpressionFactory)
+            MySqlSqlExpressionFactory sqlExpressionFactory)
         {
             _typeMappingSource = typeMappingSource;
             _sqlExpressionFactory = sqlExpressionFactory;
         }
 
-        public virtual SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
+        public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             if (Equals(method, _item))
             {
-                return _sqlExpressionFactory.Function(
+                // Returns NULL for an empty geometry argument.
+                return _sqlExpressionFactory.NullableFunction(
                     "ST_GeometryN",
                     new[]
                     {
@@ -38,7 +41,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                             _sqlExpressionFactory.Constant(1))
                     },
                     method.ReturnType,
-                    _typeMappingSource.FindMapping(typeof(Geometry), instance.TypeMapping.StoreType));
+                    _typeMappingSource.FindMapping(typeof(Geometry), instance.TypeMapping.StoreType),
+                    false);
             }
 
             return null;

@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -14,61 +16,62 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
     public class MySqlGeometryMemberTranslator : IMemberTranslator
     {
-        private static readonly IDictionary<MemberInfo, string> _memberToFunctionName = new Dictionary<MemberInfo, string>
+        private static readonly IDictionary<MemberInfo, (string Name, bool OnlyNullByArgs)> _memberToFunctionName = new Dictionary<MemberInfo, (string Name, bool OnlyNullByArgs)>
         {
-            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.Area)), "ST_Area" },
-            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.Dimension)), "ST_Dimension" },
-            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.GeometryType)), "ST_GeometryType" },
-            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.IsEmpty)), "ST_IsEmpty" },
-            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.IsValid)), "ST_IsValid" },
-            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.Length)), "ST_Length" },
-            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.NumGeometries)), "ST_NumGeometries" },
-            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.NumPoints)), "ST_NumPoints" }
+            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.Area)), ("ST_Area", false) },
+            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.Dimension)), ("ST_Dimension", true) },
+            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.GeometryType)), ("ST_GeometryType", true) },
+            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.IsEmpty)), ("ST_IsEmpty", true) },
+            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.IsValid)), ("ST_IsValid", true) },
+            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.Length)), ("ST_Length", false) },
+            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.NumGeometries)), ("ST_NumGeometries", false) },
+            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.NumPoints)), ("ST_NumPoints", false) }
         };
 
-        private static readonly IDictionary<MemberInfo, string> _geometryMemberToFunctionName = new Dictionary<MemberInfo, string>
+        private static readonly IDictionary<MemberInfo, (string Name, bool OnlyNullByArgs)> _geometryMemberToFunctionName = new Dictionary<MemberInfo, (string Name, bool OnlyNullByArgs)>
         {
-            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.Boundary)), "ST_Boundary" },
-            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.Centroid)), "ST_Centroid" },
-            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.Envelope)), "ST_Envelope" },
-            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.InteriorPoint)), "ST_PointOnSurface" },
-            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.IsSimple)), "ST_IsSimple" },
-            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.PointOnSurface)), "ST_PointOnSurface" }
+            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.Boundary)), ("ST_Boundary", false) },
+            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.Centroid)), ("ST_Centroid", false) },
+            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.Envelope)), ("ST_Envelope", true) },
+            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.InteriorPoint)), ("ST_PointOnSurface", false) },
+            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.IsSimple)), ("ST_IsSimple", true) },
+            { typeof(Geometry).GetRuntimeProperty(nameof(Geometry.PointOnSurface)), ("ST_PointOnSurface", false) }
         };
 
         private static readonly MemberInfo _ogcGeometryType = typeof(Geometry).GetRuntimeProperty(nameof(Geometry.OgcGeometryType));
         private static readonly MemberInfo _srid = typeof(Geometry).GetRuntimeProperty(nameof(Geometry.SRID));
 
         private readonly IRelationalTypeMappingSource _typeMappingSource;
-        private readonly ISqlExpressionFactory _sqlExpressionFactory;
+        private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
         public MySqlGeometryMemberTranslator(
             IRelationalTypeMappingSource typeMappingSource,
-            ISqlExpressionFactory sqlExpressionFactory)
+            MySqlSqlExpressionFactory sqlExpressionFactory)
         {
             _typeMappingSource = typeMappingSource;
             _sqlExpressionFactory = sqlExpressionFactory;
         }
 
-        public virtual SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType)
+        public SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             if (typeof(Geometry).IsAssignableFrom(member.DeclaringType))
             {
-                Debug.Assert(instance.TypeMapping != null, "Instance must have typeMapping assigned.");
+                Debug.Assert(instance.TypeMapping != null, $"Instance must have {nameof(SqlExpression.TypeMapping)} assigned.");
                 var storeType = instance.TypeMapping.StoreType;
 
-                if (_memberToFunctionName.TryGetValue(member, out var functionName) ||
-                    _geometryMemberToFunctionName.TryGetValue(member, out functionName))
+                if (_memberToFunctionName.TryGetValue(member, out var mapping) ||
+                    _geometryMemberToFunctionName.TryGetValue(member, out mapping))
                 {
                     var resultTypeMapping = typeof(Geometry).IsAssignableFrom(returnType)
                         ? _typeMappingSource.FindMapping(returnType, storeType)
                         : _typeMappingSource.FindMapping(returnType);
 
-                    SqlExpression sqlExpression = _sqlExpressionFactory.Function(
-                        functionName,
+                    SqlExpression sqlExpression = _sqlExpressionFactory.NullableFunction(
+                        mapping.Name,
                         new [] {instance},
                         returnType,
-                        resultTypeMapping);
+                        resultTypeMapping,
+                        mapping.OnlyNullByArgs);
 
                     // ST_IsRing and others returns TRUE for a NULL value in MariaDB, which is inconsistent with NTS' implementation.
                     // We return the following instead:
@@ -124,16 +127,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     };
 
                     return _sqlExpressionFactory.Case(
-                        _sqlExpressionFactory.Function(
+                        _sqlExpressionFactory.NullableFunction(
                             "ST_GeometryType",
                             new [] {instance},
                             typeof(string)),
-                        whenClauses.ToArray());
+                        whenClauses.ToArray(),
+                        null);
                 }
 
                 if (Equals(member, _srid))
                 {
-                    return _sqlExpressionFactory.Function(
+                    return _sqlExpressionFactory.NullableFunction(
                         "ST_SRID",
                         new [] {instance},
                         returnType);

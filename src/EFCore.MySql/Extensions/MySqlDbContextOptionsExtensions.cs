@@ -9,7 +9,7 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Utilities;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
@@ -18,6 +18,33 @@ namespace Microsoft.EntityFrameworkCore
     //       not with SqlServer.
     public static class MySqlDbContextOptionsExtensions
     {
+        /// <summary>
+        ///     <para>
+        ///         Configures the context to connect to a MySQL compatible database, but without initially setting any
+        ///         <see cref="DbConnection" /> or connection string.
+        ///     </para>
+        ///     <para>
+        ///         The connection or connection string must be set before the <see cref="DbContext" /> is used to connect
+        ///         to a database. Set a connection using <see cref="RelationalDatabaseFacadeExtensions.SetDbConnection" />.
+        ///         Set a connection string using <see cref="RelationalDatabaseFacadeExtensions.SetConnectionString" />.
+        ///     </para>
+        /// </summary>
+        /// <param name="optionsBuilder"> The builder being used to configure the context. </param>
+        /// <param name="mySqlOptionsAction">An optional action to allow additional MySQL specific configuration.</param>
+        /// <returns> The options builder so that further configuration can be chained. </returns>
+        public static DbContextOptionsBuilder UseMySql(
+            [NotNull] this DbContextOptionsBuilder optionsBuilder,
+            [CanBeNull] Action<MySqlDbContextOptionsBuilder> mySqlOptionsAction = null)
+        {
+            Check.NotNull(optionsBuilder, nameof(optionsBuilder));
+
+            ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(GetOrCreateExtension(optionsBuilder));
+            ConfigureWarnings(optionsBuilder);
+            mySqlOptionsAction?.Invoke(new MySqlDbContextOptionsBuilder(optionsBuilder));
+
+            return optionsBuilder;
+        }
+
         public static DbContextOptionsBuilder UseMySql(
             [NotNull] this DbContextOptionsBuilder optionsBuilder,
             [NotNull] string connectionString,

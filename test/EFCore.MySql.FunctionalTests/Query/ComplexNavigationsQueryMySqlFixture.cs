@@ -6,6 +6,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class ComplexNavigationsQueryMySqlFixture : ComplexNavigationsQueryRelationalFixtureBase
     {
-        protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
+        protected override ITestStoreFactory TestStoreFactory
+            => MySqlTestStoreFactory.Instance;
     }
 }

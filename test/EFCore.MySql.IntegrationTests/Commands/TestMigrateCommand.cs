@@ -1,7 +1,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
-using MySql.Data.MySqlClient;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using MySqlConnector;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands{
@@ -40,7 +39,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands{
 
             _db.Database.EnsureDeleted();
             Console.Write("Create blank database...");
-            var csb = new MySqlConnectionStringBuilder(AppConfig.ConnectionString);
+            var csb = new MySqlConnectionStringBuilder(AppConfig.Config["Data:ConnectionString"]);
             var dbName = "`" + csb.Database.Replace('`', ' ') + "`";
             csb.Database = "";
             using (var connection = new MySqlConnection(csb.ConnectionString)){

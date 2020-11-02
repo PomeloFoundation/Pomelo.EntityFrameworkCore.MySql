@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System;
 using System.Linq.Expressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query;
@@ -45,7 +48,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         public override int GetHashCode()
             => HashCode.Combine(base.GetHashCode(), Expression);
 
-        public override void Print(ExpressionPrinter expressionPrinter)
+        protected override void Print(ExpressionPrinter expressionPrinter)
         {
             expressionPrinter.Append("[");
             expressionPrinter.Visit(Expression);

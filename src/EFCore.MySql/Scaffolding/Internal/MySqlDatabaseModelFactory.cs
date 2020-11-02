@@ -17,7 +17,7 @@ using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.Logging;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
@@ -412,9 +412,6 @@ ORDER BY
      AND `INDEX_NAME` = 'PRIMARY'
      GROUP BY `INDEX_NAME`;";
 
-        /// <remarks>
-        /// Primary keys are handled as in <see cref="GetConstraints"/>, not here
-        /// </remarks>
         protected virtual void GetPrimaryKeys(
             DbConnection connection,
             IReadOnlyList<DatabaseTable> tables)
@@ -476,9 +473,6 @@ ORDER BY
      AND `INDEX_NAME` <> 'PRIMARY'
      GROUP BY `INDEX_NAME`, `NON_UNIQUE`, `INDEX_TYPE`;";
 
-        /// <remarks>
-        /// Primary keys are handled as in <see cref="GetConstraints"/>, not here
-        /// </remarks>
         protected virtual void GetIndexes(
             DbConnection connection,
             IReadOnlyList<DatabaseTable> tables,

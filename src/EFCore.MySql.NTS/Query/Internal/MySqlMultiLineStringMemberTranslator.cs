@@ -3,6 +3,8 @@
 
 using System;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -13,21 +15,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
     public class MySqlMultiLineStringMemberTranslator : IMemberTranslator
     {
         private static readonly MemberInfo _isClosed = typeof(MultiLineString).GetRuntimeProperty(nameof(MultiLineString.IsClosed));
-        private readonly ISqlExpressionFactory _sqlExpressionFactory;
+        private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
-        public MySqlMultiLineStringMemberTranslator(ISqlExpressionFactory sqlExpressionFactory)
+        public MySqlMultiLineStringMemberTranslator(MySqlSqlExpressionFactory sqlExpressionFactory)
         {
             _sqlExpressionFactory = sqlExpressionFactory;
         }
 
-        public virtual SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType)
+        public SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             if (Equals(member, _isClosed))
             {
-                SqlExpression sqlExpression = _sqlExpressionFactory.Function(
+                SqlExpression sqlExpression = _sqlExpressionFactory.NullableFunction(
                     "ST_IsClosed",
                     new [] {instance},
-                    returnType);
+                    returnType,
+                    false);
 
                 // ST_IsRing and others returns TRUE for a NULL value in MariaDB, which is inconsistent with NTS' implementation.
                 // We return the following instead:

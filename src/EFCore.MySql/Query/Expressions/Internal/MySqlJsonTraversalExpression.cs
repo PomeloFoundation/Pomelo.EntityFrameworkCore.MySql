@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -82,7 +85,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
                 newPath[i] = Path[i];
             }
             newPath[newPath.Length - 1] = pathComponent;
-            return new MySqlJsonTraversalExpression(Expression, newPath, ReturnsText, returnType, typeMapping);
+            return new MySqlJsonTraversalExpression(Expression, newPath, ReturnsText, returnType.UnwrapNullableType(), typeMapping);
         }
 
         public override bool Equals(object obj) => Equals(obj as MySqlJsonTraversalExpression);
@@ -97,7 +100,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Expression, Path);
 
-        public override void Print(ExpressionPrinter expressionPrinter)
+        protected override void Print(ExpressionPrinter expressionPrinter)
         {
             expressionPrinter.Visit(Expression);
             expressionPrinter.Append(ReturnsText ? "->>" : "->");

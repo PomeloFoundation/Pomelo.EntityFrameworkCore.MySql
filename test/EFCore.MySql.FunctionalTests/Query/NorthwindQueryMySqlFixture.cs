@@ -1,4 +1,3 @@
-using System.Linq;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -24,20 +23,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             base.OnModelCreating(modelBuilder, context);
 
-            var northwindContext = (NorthwindRelationalContext)context;
-
-            modelBuilder
-                .Entity<OrderQuery>()
-                .HasNoKey()
-                .ToQuery(() => northwindContext.Orders
-                    .FromSqlRaw("select * from `Orders`")
-                    .Select(o => new OrderQuery { CustomerID = o.CustomerID }));
-
-            modelBuilder
-                .Entity<CustomerView>()
-                .HasNoKey()
-                .ToQuery(() => northwindContext.CustomerQueries.FromSqlInterpolated(
-                    $"SELECT CONCAT(`c`.`CustomerID`, {string.Empty}) as CustomerID, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region` FROM `Customers` AS `c`"));
+            modelBuilder.Entity<CustomerQuery>().ToSqlQuery("SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region` FROM `Customers` AS `c`");
+            modelBuilder.Entity<OrderQuery>().ToSqlQuery(@"select * from `Orders`");
         }
     }
 }

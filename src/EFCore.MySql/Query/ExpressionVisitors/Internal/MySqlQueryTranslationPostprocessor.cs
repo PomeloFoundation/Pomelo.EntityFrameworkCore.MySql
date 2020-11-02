@@ -1,4 +1,7 @@
-﻿using System.Linq.Expressions;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
@@ -26,13 +29,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         {
             query = base.Process(query);
 
-            if (_options.IndexOptimizedBooleanColumns)
-            {
-                query = new MySqlBoolOptimizingExpressionVisitor(SqlExpressionFactory).Visit(query);
-            }
-
             query = new MySqlJsonParameterExpressionVisitor(_sqlExpressionFactory, _options).Visit(query);
-            query = new MySqlCompatibilityExpressionVisitor(_options).Visit(query);
 
             return query;
         }

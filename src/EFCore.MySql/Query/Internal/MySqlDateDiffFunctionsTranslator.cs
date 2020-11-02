@@ -1,11 +1,13 @@
-﻿using System;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using Microsoft.EntityFrameworkCore.Utilities;
-using Pomelo.EntityFrameworkCore.MySql.Extensions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -187,14 +189,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     "MICROSECOND"
                 }
             };
-        private readonly ISqlExpressionFactory _sqlExpressionFactory;
+        private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
-        public MySqlDateDiffFunctionsTranslator(ISqlExpressionFactory sqlExpressionFactory)
+        public MySqlDateDiffFunctionsTranslator(MySqlSqlExpressionFactory sqlExpressionFactory)
         {
             _sqlExpressionFactory = sqlExpressionFactory;
         }
 
-        public virtual SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
+        public virtual SqlExpression Translate(
+            SqlExpression instance,
+            MethodInfo method,
+            IReadOnlyList<SqlExpression> arguments,
+            IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             if (_methodInfoDateDiffMapping.TryGetValue(method, out var datePart))
             {
@@ -205,7 +211,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 startDate = _sqlExpressionFactory.ApplyTypeMapping(startDate, typeMapping);
                 endDate = _sqlExpressionFactory.ApplyTypeMapping(endDate, typeMapping);
 
-                return _sqlExpressionFactory.Function(
+                return _sqlExpressionFactory.NullableFunction(
                     "TIMESTAMPDIFF",
                     new[]
                     {
@@ -213,7 +219,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         startDate,
                         endDate
                     },
-                    typeof(int));
+                    typeof(int),
+                    typeMapping: null,
+                    onlyNullWhenAnyNullPropagatingArgumentIsNull: true,
+                    argumentsPropagateNullability: new []{false, true, true});
             }
 
             return null;

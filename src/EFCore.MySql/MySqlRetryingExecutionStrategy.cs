@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 //ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
@@ -77,9 +77,7 @@ namespace Microsoft.EntityFrameworkCore
             : base(context,
                 maxRetryCount,
                 maxRetryDelay)
-        {
-            _additionalErrorNumbers = errorNumbersToAdd;
-        }
+            => _additionalErrorNumbers = errorNumbersToAdd;
 
         /// <summary>
         ///     Creates a new instance of <see cref="MySqlRetryingExecutionStrategy" />.
@@ -94,24 +92,11 @@ namespace Microsoft.EntityFrameworkCore
             TimeSpan maxRetryDelay,
             [CanBeNull] ICollection<int> errorNumbersToAdd)
             : base(dependencies, maxRetryCount, maxRetryDelay)
-        {
-            _additionalErrorNumbers = errorNumbersToAdd;
-        }
+            => _additionalErrorNumbers = errorNumbersToAdd;
 
         protected override bool ShouldRetryOn(Exception exception)
-        {
-            if (_additionalErrorNumbers != null)
-            {
-                if (exception is MySqlException mySqlException)
-                {
-                    if (_additionalErrorNumbers.Contains(mySqlException.Number))
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return MySqlTransientExceptionDetector.ShouldRetryOn(exception);
-        }
+            => exception is MySqlException mySqlException &&
+               _additionalErrorNumbers?.Contains(mySqlException.Number) == true
+               || MySqlTransientExceptionDetector.ShouldRetryOn(exception);
     }
 }

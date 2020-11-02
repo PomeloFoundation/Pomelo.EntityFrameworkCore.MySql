@@ -27,28 +27,30 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         }
 
         public virtual SqlExpression Match { get; }
-
         public virtual SqlExpression Pattern { get; }
 
         protected override Expression Accept(ExpressionVisitor visitor)
         {
             Check.NotNull(visitor, nameof(visitor));
 
-            return visitor is MySqlQuerySqlGenerator mySqlQuerySqlGenerator
+            return visitor is MySqlQuerySqlGenerator mySqlQuerySqlGenerator // TODO: Move to VisitExtensions
                 ? mySqlQuerySqlGenerator.VisitMySqlRegexp(this)
                 : base.Accept(visitor);
         }
 
         protected override Expression VisitChildren(ExpressionVisitor visitor)
         {
-            var newMatchExpression = (SqlExpression)visitor.Visit(Match);
-            var newPatternExpression = (SqlExpression)visitor.Visit(Pattern);
+            var match = (SqlExpression)visitor.Visit(Match);
+            var pattern = (SqlExpression)visitor.Visit(Pattern);
 
-            return newMatchExpression != Match
-                   || newPatternExpression != Pattern
-                ? new MySqlRegexpExpression(newMatchExpression, newPatternExpression, TypeMapping)
-                : this;
+            return Update(match, pattern);
         }
+
+        public virtual MySqlRegexpExpression Update(SqlExpression match, SqlExpression pattern)
+            => match != Match ||
+               pattern != Pattern
+                ? new MySqlRegexpExpression(match, pattern, TypeMapping)
+                : this;
 
         public override bool Equals(object obj)
         {
@@ -82,7 +84,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 
         public override string ToString() => $"{Match} REGEXP {Pattern}";
 
-        public override void Print(ExpressionPrinter expressionPrinter)
+        protected override void Print(ExpressionPrinter expressionPrinter)
             => expressionPrinter.Append(ToString());
     }
 }

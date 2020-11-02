@@ -22,7 +22,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             : base(fixture)
         {
             Fixture.TestSqlLoggerFactory.Clear();
-            Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
+            //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
         [ConditionalFact]
@@ -210,8 +210,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             public TestSqlLoggerFactory TestSqlLoggerFactory
                 => (TestSqlLoggerFactory)ServiceProvider.GetRequiredService<ILoggerFactory>();
 
-            public QueryAsserterBase QueryAsserter { get; set; }
-
             public virtual GeometryFactory GeometryFactory
                 => LazyInitializer.EnsureInitialized(
                     ref _geometryFactory,
@@ -249,6 +247,42 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
             protected override void Seed(SpatialGeographyContext context)
                 => SpatialGeographyContext.Seed(context, GeometryFactory);
+
+            public Func<DbContext> GetContextCreator()
+                => CreateContext;
+
+            // CHECK: Unused?
+            public ISetSource GetExpectedData()
+                => new SpatialGeographyData(_geometryFactory);
+
+            // CHECK: Unused?
+            public IReadOnlyDictionary<Type, object> GetEntitySorters()
+                => new Dictionary<Type, Func<object, object>>
+                {
+                    { typeof(SpatialGeographyContext.City), e => ((SpatialGeographyContext.City)e)?.CityId },
+                }.ToDictionary(e => e.Key, e => (object)e.Value);
+
+            // CHECK: Unused?
+            public IReadOnlyDictionary<Type, object> GetEntityAsserters()
+                => new Dictionary<Type, Action<object, object>>
+                {
+                    {
+                        typeof(SpatialGeographyContext.City), (e, a) =>
+                        {
+                            Assert.Equal(e == null, a == null);
+
+                            if (a != null)
+                            {
+                                var ee = (SpatialGeographyContext.City)e;
+                                var aa = (SpatialGeographyContext.City)a;
+
+                                Assert.Equal(ee.CityId, aa.CityId);
+                                Assert.Equal(ee.Name, aa.Name);
+                                Assert.Equal(ee.Location, aa.Location);
+                            }
+                        }
+                    },
+                }.ToDictionary(e => e.Key, e => (object)e.Value);
         }
     }
 }

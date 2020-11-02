@@ -1,3 +1,6 @@
+// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
 using System;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
@@ -10,9 +13,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
 {
@@ -25,12 +27,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         };
 
         private readonly IMigrationsAssembly _migrationsAssembly;
+        [NotNull] private readonly IHistoryRepository _historyRepository;
         private readonly IRawSqlCommandBuilder _rawSqlCommandBuilder;
+        [NotNull] private readonly ISqlGenerationHelper _sqlGenerationHelper;
         private readonly ICurrentDbContext _currentContext;
         private readonly IDiagnosticsLogger<DbLoggerCategory.Database.Command> _commandLogger;
-
-        private bool _generateScript;
-        private bool _isIdempotent;
 
         public MySqlMigrator(
             [NotNull] IMigrationsAssembly migrationsAssembly,
@@ -42,6 +43,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
             [NotNull] IRelationalConnection connection,
             [NotNull] ISqlGenerationHelper sqlGenerationHelper,
             [NotNull] ICurrentDbContext currentContext,
+            [NotNull] IConventionSetBuilder conventionSetBuilder,
             [NotNull] IDiagnosticsLogger<DbLoggerCategory.Migrations> logger,
             [NotNull] IDiagnosticsLogger<DbLoggerCategory.Database.Command> commandLogger,
             [NotNull] IDatabaseProvider databaseProvider)
@@ -55,66 +57,87 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                 connection,
                 sqlGenerationHelper,
                 currentContext,
+                conventionSetBuilder,
                 logger,
                 commandLogger,
                 databaseProvider)
         {
             _migrationsAssembly = migrationsAssembly;
+            _historyRepository = historyRepository;
             _rawSqlCommandBuilder = rawSqlCommandBuilder;
+            _sqlGenerationHelper = sqlGenerationHelper;
             _currentContext = currentContext;
             _commandLogger = commandLogger;
         }
 
-        protected override IReadOnlyList<MigrationCommand> GenerateUpSql(Migration migration)
+        protected override IReadOnlyList<MigrationCommand> GenerateUpSql(
+            Migration migration,
+            MigrationsSqlGenerationOptions options = MigrationsSqlGenerationOptions.Default)
         {
-            var commands = base.GenerateUpSql(migration);
+            var commands = base.GenerateUpSql(migration, options);
 
-            return _generateScript && _isIdempotent
+            return options.HasFlag(MigrationsSqlGenerationOptions.Script) &&
+                   options.HasFlag(MigrationsSqlGenerationOptions.Idempotent)
                 ? commands
                 : WrapWithCustomCommands(
                     migration.UpOperations,
-                    commands.ToList());
+                    commands.ToList(),
+                    options);
         }
 
         protected override IReadOnlyList<MigrationCommand> GenerateDownSql(
             Migration migration,
-            Migration previousMigration)
+            Migration previousMigration,
+            MigrationsSqlGenerationOptions options = MigrationsSqlGenerationOptions.Default)
         {
-            var commands = base.GenerateDownSql(migration, previousMigration);
+            var commands = base.GenerateDownSql(migration, previousMigration, options);
 
-            return _generateScript && _isIdempotent
+            return options.HasFlag(MigrationsSqlGenerationOptions.Script) &&
+                   options.HasFlag(MigrationsSqlGenerationOptions.Idempotent)
                 ? commands
                 : WrapWithCustomCommands(
                     migration.DownOperations,
-                    commands.ToList());
+                    commands.ToList(),
+                    options);
         }
 
-        public override void Migrate(string targetMigration = null)
+        public override string GenerateScript(
+            string fromMigration = null,
+            string toMigration = null,
+            MigrationsSqlGenerationOptions options = MigrationsSqlGenerationOptions.Default)
         {
-            _generateScript = false;
-            _isIdempotent = false;
-            base.Migrate(targetMigration);
-        }
+            var script = base.GenerateScript(fromMigration, toMigration, options);
 
-        public override Task MigrateAsync(string targetMigration = null, CancellationToken cancellationToken = new CancellationToken())
-        {
-            _generateScript = false;
-            _isIdempotent = false;
-            return base.MigrateAsync(targetMigration, cancellationToken);
-        }
-
-        public override string GenerateScript(string fromMigration = null, string toMigration = null, bool idempotent = false)
-        {
-            _generateScript = true;
-            _isIdempotent = idempotent;
-
-            if (!idempotent)
+            if (!options.HasFlag(MigrationsSqlGenerationOptions.Idempotent))
             {
-                return base.GenerateScript(fromMigration, toMigration, false);
+                return script;
             }
 
-            IEnumerable<string> appliedMigrations;
+            // Add helper stored procedures after database creation, but before applying migrations.
+            // Remove them after all migrations have been apllied.
+            var createScript = new StringBuilder(_historyRepository.GetCreateIfNotExistsScript())
+                .Append(_sqlGenerationHelper.BatchTerminator)
+                .ToString();
 
+            var operations = GetIdempotentScriptMigrationOperations(fromMigration, toMigration);
+            var builder = new StringBuilder();
+
+            if (script.StartsWith(createScript))
+            {
+                script = script.Remove(0, createScript.Length);
+                builder.Append(createScript);
+            }
+
+            builder.AppendJoin(string.Empty, GetMigrationCommandTexts(operations, true, options));
+            builder.Append(script);
+            builder.AppendJoin(string.Empty, GetMigrationCommandTexts(operations, false, options));
+
+            return builder.ToString();
+        }
+
+        private List<MigrationOperation> GetIdempotentScriptMigrationOperations(string fromMigration, string toMigration)
+        {
+            IEnumerable<string> appliedMigrations;
             if (string.IsNullOrEmpty(fromMigration)
                 || fromMigration == Migration.InitialDatabase)
             {
@@ -135,26 +158,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                 out var migrationsToRevert,
                 out var actualTargetMigration);
 
-            var operations = migrationsToApply
+            return migrationsToApply
                 .SelectMany(x => x.UpOperations)
                 .Concat(migrationsToRevert.SelectMany(x => x.DownOperations))
                 .ToList();
-
-            var builder = new StringBuilder();
-
-            builder.AppendJoin(string.Empty, GetMigrationCommandTexts(operations, true));
-            builder.Append(base.GenerateScript(fromMigration, toMigration, true));
-            builder.AppendJoin(string.Empty, GetMigrationCommandTexts(operations, false));
-
-            return builder.ToString();
         }
 
         private IReadOnlyList<MigrationCommand> WrapWithCustomCommands(
             IReadOnlyList<MigrationOperation> migrationOperations,
-            List<MigrationCommand> migrationCommands)
+            List<MigrationCommand> migrationCommands,
+            MigrationsSqlGenerationOptions options)
         {
-            var beginCommandTexts = GetMigrationCommandTexts(migrationOperations, true);
-            var endCommandTexts = GetMigrationCommandTexts(migrationOperations, false);
+            var beginCommandTexts = GetMigrationCommandTexts(migrationOperations, true, options);
+            var endCommandTexts = GetMigrationCommandTexts(migrationOperations, false, options);
 
             migrationCommands.InsertRange(0, beginCommandTexts.Select(t => new MigrationCommand(
                 _rawSqlCommandBuilder.Build(t),
@@ -169,9 +185,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
             return migrationCommands;
         }
 
-        private string[] GetMigrationCommandTexts(IReadOnlyList<MigrationOperation> migrationOperations, bool beginTexts)
+        private string[] GetMigrationCommandTexts(
+            IReadOnlyList<MigrationOperation> migrationOperations,
+            bool beginTexts,
+            MigrationsSqlGenerationOptions options)
             => GetCustomCommands(migrationOperations)
-                .Select(t => PrepareString(beginTexts ? t.Item1 : t.Item2))
+                .Select(t => PrepareString(beginTexts ? t.Item1 : t.Item2, options))
                 .ToArray();
 
         private static IReadOnlyList<Tuple<string, string>> GetCustomCommands(IReadOnlyList<MigrationOperation> migrationOperations)
@@ -196,9 +215,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
             return commandText;
         }
 
-        private string PrepareString(string str)
+        private string PrepareString(string str, MigrationsSqlGenerationOptions options)
         {
-            str = _generateScript
+            str = options.HasFlag(MigrationsSqlGenerationOptions.Script)
                 ? str
                 : CleanUpScriptSpecificPseudoStatements(str);
 
@@ -206,17 +225,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                 .Replace("\r", string.Empty)
                 .Replace("\n", Environment.NewLine);
 
-            str += _generateScript
+            str += options.HasFlag(MigrationsSqlGenerationOptions.Script)
                 ? Environment.NewLine + (
-                      _isIdempotent
+                      options.HasFlag(MigrationsSqlGenerationOptions.Idempotent)
                           ? Environment.NewLine
                           : string.Empty)
                 : string.Empty;
 
             return str;
         }
-
-        #region BeforeDropPrimaryKey
 
         private const string BeforeDropPrimaryKeyMigrationBegin = @"DROP PROCEDURE IF EXISTS `POMELO_BEFORE_DROP_PRIMARY_KEY`;
 DELIMITER //
@@ -257,12 +274,7 @@ BEGIN
 	END IF;
 END //
 DELIMITER ;";
-
         private const string BeforeDropPrimaryKeyMigrationEnd = @"DROP PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`;";
-
-        #endregion BeforeDropPrimaryKey
-
-        #region AfterAddPrimaryKey
 
         private const string AfterAddPrimaryKeyMigrationBegin = @"DROP PROCEDURE IF EXISTS `POMELO_AFTER_ADD_PRIMARY_KEY`;
 DELIMITER //
@@ -305,10 +317,6 @@ BEGIN
 	END IF;
 END //
 DELIMITER ;";
-
         private const string AfterAddPrimaryKeyMigrationEnd = @"DROP PROCEDURE `POMELO_AFTER_ADD_PRIMARY_KEY`;";
-
-        #endregion AfterAddPrimaryKey
     }
 }
-

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -12,7 +14,7 @@ using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Query.ExpressionTranslators.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Query.Internal
 {
     public class MySqlJsonNewtonsoftDomTranslator : IMemberTranslator, IMethodCallTranslator
     {
@@ -34,7 +36,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Query.ExpressionTrans
             _jsonPocoTranslator = jsonPocoTranslator;
         }
 
-        public virtual SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType)
+        public SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             if (instance?.Type.IsGenericList() == true &&
                 member.Name == nameof(List<object>.Count) &&
@@ -72,7 +74,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Query.ExpressionTrans
             return null;
         }
 
-        public virtual SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
+        public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             var traversal = GetTraversalExpression(instance, arguments);
             if (traversal == null)
@@ -166,7 +168,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Query.ExpressionTrans
 
         private SqlExpression ConvertFromJsonExtract(SqlExpression expression, Type returnType)
             => returnType == typeof(bool)
-                ? _sqlExpressionFactory.Equal(
+                ? _sqlExpressionFactory.NonOptimizedEqual(
                     expression,
                     _sqlExpressionFactory.Constant(true, _typeMappingSource.FindMapping(typeof(bool))))
                 : expression;

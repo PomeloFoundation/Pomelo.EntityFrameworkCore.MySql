@@ -4,6 +4,7 @@ cd ../
 
 set -e
 rm -f Migrations/*.cs
+./scripts/dotnet-ef.sh --info
 ./scripts/dotnet-ef.sh database drop -f
 ./scripts/dotnet-ef.sh migrations add initial
 

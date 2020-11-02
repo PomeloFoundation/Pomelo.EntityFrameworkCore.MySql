@@ -1,8 +1,14 @@
-﻿using System;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
     public class MySqlDateTimeMemberTranslator : IMemberTranslator
@@ -25,7 +31,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
         }
 
-        public virtual SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType)
+        public virtual SqlExpression Translate(
+            SqlExpression instance,
+            MemberInfo member,
+            Type returnType,
+            IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             var declaringType = member.DeclaringType;
 
@@ -36,7 +46,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
                 if (_datePartMapping.TryGetValue(memberName, out var datePart))
                 {
-                    var extract = _sqlExpressionFactory.Function(
+                    var extract = _sqlExpressionFactory.NullableFunction(
                         "EXTRACT",
                         new[]
                         {
@@ -47,7 +57,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                                 },
                                 typeof(string))
                         },
-                        returnType);
+                        returnType,
+                        false);
 
                     if (datePart.Divisor != 1)
                     {
@@ -62,38 +73,41 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 switch (memberName)
                 {
                     case nameof(DateTime.DayOfYear):
-                        return _sqlExpressionFactory.Function(
+                        return _sqlExpressionFactory.NullableFunction(
                         "DAYOFYEAR",
                         new[] { instance },
-                        returnType);
+                        returnType,
+                        false);
 
                     case nameof(DateTime.Date):
-                        return _sqlExpressionFactory.Function(
+                        return _sqlExpressionFactory.NullableFunction(
                             "CONVERT",
                             new[]{
                                 instance,
                                 _sqlExpressionFactory.Fragment("date")
                             },
-                            returnType);
+                            returnType,
+                            false);
 
                     case nameof(DateTime.TimeOfDay):
                         return _sqlExpressionFactory.Convert(instance, returnType);
 
                     case nameof(DateTime.Now):
-                        return _sqlExpressionFactory.Function(
+                        return _sqlExpressionFactory.NonNullableFunction(
                             declaringType == typeof(DateTimeOffset)
                                 ? "UTC_TIMESTAMP"
                                 : "CURRENT_TIMESTAMP",
-                            Array.Empty<SqlExpression>(), returnType);
+                            Array.Empty<SqlExpression>(),
+                            returnType);
 
                     case nameof(DateTime.UtcNow):
-                        return _sqlExpressionFactory.Function(
+                        return _sqlExpressionFactory.NonNullableFunction(
                             "UTC_TIMESTAMP",
                             Array.Empty<SqlExpression>(),
                             returnType);
 
                     case nameof(DateTime.Today):
-                        return _sqlExpressionFactory.Function(
+                        return _sqlExpressionFactory.NonNullableFunction(
                             declaringType == typeof(DateTimeOffset)
                                 ? "UTC_DATE"
                                 : "CURDATE",

@@ -1,10 +1,14 @@
-﻿using System;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
-using System.Text;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
@@ -63,6 +67,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         private static readonly MethodInfo _padRightWithTwoArgs
             = typeof(string).GetRuntimeMethod(nameof(string.PadRight), new[] { typeof(int), typeof(char) });
 
+        private static readonly MethodInfo _firstOrDefaultMethodInfoWithoutArgs
+            = typeof(Enumerable).GetRuntimeMethods().Single(
+                m => m.Name == nameof(Enumerable.FirstOrDefault)
+                     && m.GetParameters().Length == 1).MakeGenericMethod(typeof(char));
+
+        private static readonly MethodInfo _lastOrDefaultMethodInfoWithoutArgs
+            = typeof(Enumerable).GetRuntimeMethods().Single(
+                m => m.Name == nameof(Enumerable.LastOrDefault)
+                     && m.GetParameters().Length == 1).MakeGenericMethod(typeof(char));
+
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
         public MySqlStringMethodTranslator(ISqlExpressionFactory sqlExpressionFactory)
@@ -70,7 +84,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
         }
 
-        public virtual SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
+        public virtual SqlExpression Translate(
+            SqlExpression instance,
+            MethodInfo method,
+            IReadOnlyList<SqlExpression> arguments,
+            IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             if (_indexOfMethodInfo.Equals(method))
             {
@@ -82,7 +100,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             {
                 var stringTypeMapping = ExpressionExtensions.InferTypeMapping(instance, arguments[0], arguments[1]);
 
-                return _sqlExpressionFactory.Function(
+                return _sqlExpressionFactory.NullableFunction(
                     "REPLACE",
                     new[]
                     {
@@ -97,7 +115,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             if (_toLowerMethodInfo.Equals(method)
                 || _toUpperMethodInfo.Equals(method))
             {
-                return _sqlExpressionFactory.Function(
+                return _sqlExpressionFactory.NullableFunction(
                     _toLowerMethodInfo.Equals(method) ? "LOWER" : "UPPER",
                     new[] { instance },
                     method.ReturnType,
@@ -106,7 +124,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
             if (_substringMethodInfo.Equals(method))
             {
-                return _sqlExpressionFactory.Function(
+                return _sqlExpressionFactory.NullableFunction(
                     "SUBSTRING",
                     new[]
                     {
@@ -208,19 +226,44 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     method.ReturnType);
             }
 
+            if (_firstOrDefaultMethodInfoWithoutArgs.Equals(method))
+            {
+                return _sqlExpressionFactory.NullableFunction(
+                    "SUBSTRING",
+                    new[] { arguments[0], _sqlExpressionFactory.Constant(1), _sqlExpressionFactory.Constant(1) },
+                    method.ReturnType);
+            }
+
+            if (_lastOrDefaultMethodInfoWithoutArgs.Equals(method))
+            {
+                return _sqlExpressionFactory.NullableFunction(
+                    "SUBSTRING",
+                    new[]
+                    {
+                        arguments[0],
+                        _sqlExpressionFactory.NullableFunction(
+                            "CHAR_LENGTH",
+                            new[] {arguments[0]},
+                            typeof(int)),
+                        _sqlExpressionFactory.Constant(1)
+                    },
+                    method.ReturnType);
+            }
+
             return null;
         }
 
         private SqlExpression TranslatePadLeftRight(bool leftPad, SqlExpression instance, SqlExpression length, SqlExpression padString, Type returnType)
             => length is SqlConstantExpression && padString is SqlConstantExpression
-                ? _sqlExpressionFactory.Function(
+                ? _sqlExpressionFactory.NullableFunction(
                     leftPad ? "LPAD" : "RPAD",
                     new[] {
                         instance,
                         length,
                         padString
                     },
-                    returnType)
+                    returnType,
+                    false)
                 : null;
 
         private SqlExpression ProcessTrimMethod(SqlExpression instance, SqlExpression trimChar, string locationSpecifier)
@@ -262,7 +305,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
             sqlArguments.Add(instance);
 
-            return _sqlExpressionFactory.Function(
+            return _sqlExpressionFactory.NullableFunction(
                 "TRIM",
                 new[] { _sqlExpressionFactory.ComplexFunctionArgument(
                     sqlArguments.ToArray(),

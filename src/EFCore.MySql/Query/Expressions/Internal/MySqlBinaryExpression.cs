@@ -1,3 +1,6 @@
+// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
 using System;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
@@ -10,7 +13,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 {
     public enum MySqlBinaryExpressionOperatorType
     {
+        /// <summary>
+        /// TODO
+        /// </summary>
         IntegerDivision,
+
+        /// <summary>
+        /// Use to force an equals expression, that will not be optimized by EF Core.
+        /// Can be used, to force a `value = TRUE` expression.
+        /// </summary>
+        NonOptimizedEqual,
     }
 
     public class MySqlBinaryExpression : SqlExpression
@@ -37,7 +49,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         public virtual SqlExpression Right { get; }
 
         protected override Expression Accept(ExpressionVisitor visitor)
-            => visitor is MySqlQuerySqlGenerator mySqlQuerySqlGenerator
+            => visitor is MySqlQuerySqlGenerator mySqlQuerySqlGenerator // TODO: Move to VisitExtensions
                 ? mySqlQuerySqlGenerator.VisitMySqlBinaryExpression(this)
                 : base.Accept(visitor);
 
@@ -54,7 +66,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
                 ? new MySqlBinaryExpression(OperatorType, left, right, Type, TypeMapping)
                 : this;
 
-        public override void Print(ExpressionPrinter expressionPrinter)
+        protected override void Print(ExpressionPrinter expressionPrinter)
         {
             var requiresBrackets = RequiresBrackets(Left);
 
@@ -75,6 +87,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
                 case MySqlBinaryExpressionOperatorType.IntegerDivision:
                     expressionPrinter.Append(" DIV ");
                     break;
+                case MySqlBinaryExpressionOperatorType.NonOptimizedEqual:
+                    expressionPrinter.Append(" = ");
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
             requiresBrackets = RequiresBrackets(Right);

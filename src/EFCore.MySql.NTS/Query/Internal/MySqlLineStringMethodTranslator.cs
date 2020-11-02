@@ -3,6 +3,8 @@
 
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -16,21 +18,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             nameof(LineString.GetPointN), new[] { typeof(int) });
 
         private readonly IRelationalTypeMappingSource _typeMappingSource;
-        private readonly ISqlExpressionFactory _sqlExpressionFactory;
+        private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
         public MySqlLineStringMethodTranslator(
             IRelationalTypeMappingSource typeMappingSource,
-            ISqlExpressionFactory sqlExpressionFactory)
+            MySqlSqlExpressionFactory sqlExpressionFactory)
         {
             _typeMappingSource = typeMappingSource;
             _sqlExpressionFactory = sqlExpressionFactory;
         }
 
-        public virtual SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
+        public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             if (Equals(method, _getPointN))
             {
-                return _sqlExpressionFactory.Function(
+                return _sqlExpressionFactory.NullableFunction(
                     "ST_PointN",
                     new[]
                     {
@@ -40,7 +42,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                             _sqlExpressionFactory.Constant(1))
                     },
                     method.ReturnType,
-                    _typeMappingSource.FindMapping(method.ReturnType, instance.TypeMapping.StoreType));
+                    _typeMappingSource.FindMapping(method.ReturnType, instance.TypeMapping.StoreType),
+                    false);
             }
 
             return null;

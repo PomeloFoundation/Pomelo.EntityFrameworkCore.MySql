@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Query.ExpressionTranslators.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Query.Internal
 {
     public class MySqlJsonMicrosoftPocoTranslator : MySqlJsonPocoTranslator
     {

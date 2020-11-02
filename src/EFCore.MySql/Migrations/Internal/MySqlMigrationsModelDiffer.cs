@@ -1,6 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
@@ -33,23 +34,37 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         {
         }
 
-        protected override IEnumerable<MigrationOperation> Add(IProperty target, DiffContext diffContext, bool inline = false)
+        // CHECK: Can we somehow get rid of this, by moving it somewhere else (e.g. to MySqlMigrationsSqlGenerator)?
+        protected override IEnumerable<MigrationOperation> Add(IColumn target, DiffContext diffContext, bool inline = false)
         {
-            if (target.FindTypeMapping() is RelationalTypeMapping storeType)
+            if (!inline)
             {
-                var valueGenerationStrategy = MySqlValueGenerationStrategyCompatibility.GetValueGenerationStrategy(MigrationsAnnotations.For(target).ToArray());
+                foreach (var propertyMapping in target.PropertyMappings)
+                {
+                    if (propertyMapping.Property.FindTypeMapping() is RelationalTypeMapping storeType)
+                    {
+                        var valueGenerationStrategy = MySqlValueGenerationStrategyCompatibility.GetValueGenerationStrategy(
+                            target.GetAnnotations()
+                                .ToArray());
 
-                // Ensure that null will be set for the columns default value, if CURRENT_TIMESTAMP has been required,
-                // or when the store type of the column does not support default values at all.
-                inline = inline ||
-                         (storeType.StoreTypeNameBase == "datetime" ||
-                          storeType.StoreTypeNameBase == "timestamp") &&
-                         (valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn ||
-                          valueGenerationStrategy == MySqlValueGenerationStrategy.ComputedColumn) ||
-                         storeType.StoreTypeNameBase.Contains("text") ||
-                         storeType.StoreTypeNameBase.Contains("blob") ||
-                         storeType.StoreTypeNameBase == "geometry" ||
-                         storeType.StoreTypeNameBase == "json";
+                        // Ensure that null will be set for the columns default value, if CURRENT_TIMESTAMP has been required,
+                        // or when the store type of the column does not support default values at all.
+                        inline = inline ||
+                                 (storeType.StoreTypeNameBase == "datetime" ||
+                                  storeType.StoreTypeNameBase == "timestamp") &&
+                                 (valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn ||
+                                  valueGenerationStrategy == MySqlValueGenerationStrategy.ComputedColumn) ||
+                                 storeType.StoreTypeNameBase.Contains("text") ||
+                                 storeType.StoreTypeNameBase.Contains("blob") ||
+                                 storeType.StoreTypeNameBase == "geometry" ||
+                                 storeType.StoreTypeNameBase == "json";
+
+                        if (inline)
+                        {
+                            break;
+                        }
+                    }
+                }
             }
 
             return base.Add(target, diffContext, inline);

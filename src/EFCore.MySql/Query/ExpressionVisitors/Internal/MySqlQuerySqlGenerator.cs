@@ -9,6 +9,7 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
@@ -167,7 +168,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 if (selectExpression.Limit == null)
                 {
                     // if we want to use Skip() without Take() we have to define the upper limit of LIMIT
-                    Sql.AppendLine().Append("LIMIT ").Append(LimitUpperBound);
+                    Sql.AppendLine().Append($"LIMIT {LimitUpperBound}");
                 }
 
                 Sql.Append(" OFFSET ");
@@ -269,77 +270,53 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         }
 
         protected override Expression VisitSqlUnary(SqlUnaryExpression sqlUnaryExpression)
+            => sqlUnaryExpression.OperatorType == ExpressionType.Convert
+                ? VisitConvert(sqlUnaryExpression)
+                : base.VisitSqlUnary(sqlUnaryExpression);
+
+        private SqlUnaryExpression VisitConvert(SqlUnaryExpression sqlUnaryExpression)
         {
-            if (sqlUnaryExpression.OperatorType != ExpressionType.Convert)
+            var castMapping = GetCastStoreType(sqlUnaryExpression.TypeMapping);
+
+            if (castMapping == "binary")
             {
-                return base.VisitSqlUnary(sqlUnaryExpression);
+                Sql.Append("UNHEX(HEX(");
+                Visit(sqlUnaryExpression.Operand);
+                Sql.Append("))");
+                return sqlUnaryExpression;
             }
 
-            var typeMapping = sqlUnaryExpression.TypeMapping;
-
-            var storeTypeLower = typeMapping.StoreType.ToLower();
-            string castMapping = null;
-            foreach (var kvp in _castMappings)
-            {
-                foreach (var storeType in kvp.Value)
-                {
-                    if (storeTypeLower.StartsWith(storeType))
-                    {
-                        castMapping = kvp.Key;
-                        break;
-                    }
-                }
-                if (castMapping != null)
-                {
-                    break;
-                }
-            }
-
-            if (castMapping == null)
-            {
-                throw new InvalidOperationException($"Cannot cast from type '{typeMapping.StoreType}'");
-            }
-
-            if (castMapping == "signed" && storeTypeLower.Contains("unsigned"))
-            {
-                castMapping = "unsigned";
-            }
-
-            // FLOAT and DOUBLE are supported by CAST() as of MySQL 8.0.17.
-            // For server versions before that, a workaround is applied, that casts to a DECIMAL,
-            // that is then added to 0e0, which results in a DOUBLE.
-            // As of MySQL 8.0.18, a FLOAT cast might unnecessarily drop decimal places and round,
-            // so we just keep casting to double instead. MySqlConnector ensures, that a System.Single
-            // will be returned if expected, even if we return a DOUBLE.
-            // REF: https://stackoverflow.com/a/32991084/2618319
-
-            var useDecimalToDoubleWorkaround = false;
-
-            if (castMapping.StartsWith("float") &&
-                !_options.ServerVersion.SupportsFloatCast)
-            {
-                castMapping = "double";
-            }
-
-            if (castMapping.StartsWith("double") &&
-                !_options.ServerVersion.SupportsDoubleCast)
-            {
-                useDecimalToDoubleWorkaround = true;
-                castMapping = "decimal(65,30)";
-            }
-
-            // There needs to be no CAST() applied between the exact same store type. This could happen, if
+            // There needs to be no CAST() applied between the exact same store type. This could happen, e.g. if
             // `System.DateTime` and `System.DateTimeOffset` are used in conjunction, because both use different type
             // mappings, but map to the same store type (e.g. `datetime(6)`).
+            //
+            // There also is no need for a double CAST() to the same type. Due to only rudimentary CAST() support in
+            // MySQL, the final store type of a CAST() operation might be different than the store type of the type
+            // mapping of the expression (e.g. "float" will be cast to "double"). So we optimize these cases too.
             //
             // An exception is the JSON data type, when used in conjunction with a parameter (like `JsonDocument`).
             // JSON parameters like that will be serialized to string and supplied as a string parameter to MySQL
             // (at least this seems to be the case currently with MySqlConnector). To make assignments and comparisons
-            // between JSON columns and JSON parameters (supplied as string) work on server implementations that support
-            // a JSON store type, the string needs to be explicitly converted to JSON.
-            if (castMapping == "json" && !_options.ServerVersion.SupportsJsonDataTypeEmulation ||
-                !castMapping.Equals(sqlUnaryExpression.Operand.TypeMapping.StoreType, StringComparison.OrdinalIgnoreCase))
+            // between JSON columns and JSON parameters (supplied as string) work, the string needs to be explicitly
+            // converted to JSON.
+
+            var sameInnerCastStoreType = sqlUnaryExpression.Operand is SqlUnaryExpression operandUnary &&
+                                         operandUnary.OperatorType == ExpressionType.Convert &&
+                                         castMapping.Equals(GetCastStoreType(operandUnary.TypeMapping), StringComparison.OrdinalIgnoreCase);
+
+            if (castMapping == "json" ||
+                !castMapping.Equals(sqlUnaryExpression.Operand.TypeMapping.StoreType, StringComparison.OrdinalIgnoreCase) &&
+                !sameInnerCastStoreType)
             {
+                var useDecimalToDoubleWorkaround = false;
+
+                if (castMapping.StartsWith("double") &&
+                    !_options.ServerVersion.SupportsDoubleCast)
+                {
+                    useDecimalToDoubleWorkaround = true;
+                    castMapping = "decimal(65,30)";
+                }
+
                 if (useDecimalToDoubleWorkaround)
                 {
                     Sql.Append("(");
@@ -369,6 +346,54 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             }
 
             return sqlUnaryExpression;
+        }
+
+        private string GetCastStoreType(RelationalTypeMapping typeMapping)
+        {
+            var storeTypeLower = typeMapping.StoreType.ToLower();
+            string castMapping = null;
+            foreach (var kvp in _castMappings)
+            {
+                foreach (var storeType in kvp.Value)
+                {
+                    if (storeTypeLower.StartsWith(storeType))
+                    {
+                        castMapping = kvp.Key;
+                        break;
+                    }
+                }
+
+                if (castMapping != null)
+                {
+                    break;
+                }
+            }
+
+            if (castMapping == null)
+            {
+                throw new InvalidOperationException($"Cannot cast from type '{typeMapping.StoreType}'");
+            }
+
+            if (castMapping == "signed" && storeTypeLower.Contains("unsigned"))
+            {
+                castMapping = "unsigned";
+            }
+
+            // FLOAT and DOUBLE are supported by CAST() as of MySQL 8.0.17.
+            // For server versions before that, a workaround is applied, that casts to a DECIMAL,
+            // that is then added to 0e0, which results in a DOUBLE.
+            // As of MySQL 8.0.18, a FLOAT cast might unnecessarily drop decimal places and round,
+            // so we just keep casting to double instead. MySqlConnector ensures, that a System.Single
+            // will be returned if expected, even if we return a DOUBLE.
+            // REF: https://stackoverflow.com/a/32991084/2618319
+
+            if (castMapping.StartsWith("float") &&
+                !_options.ServerVersion.SupportsFloatCast)
+            {
+                castMapping = "double";
+            }
+
+            return castMapping;
         }
 
         public Expression VisitMySqlComplexFunctionArgumentExpression(MySqlComplexFunctionArgumentExpression mySqlComplexFunctionArgumentExpression)
@@ -408,23 +433,30 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         public Expression VisitMySqlBinaryExpression(MySqlBinaryExpression mySqlBinaryExpression)
         {
-            Sql.Append("(");
-            Visit(mySqlBinaryExpression.Left);
-            Sql.Append(")");
-
-            switch (mySqlBinaryExpression.OperatorType)
+            if (mySqlBinaryExpression.OperatorType == MySqlBinaryExpressionOperatorType.NonOptimizedEqual)
             {
-                case MySqlBinaryExpressionOperatorType.IntegerDivision:
-                    Sql.Append(" DIV ");
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException();
+                Visit(_sqlExpressionFactory.Equal(mySqlBinaryExpression.Left, mySqlBinaryExpression.Right));
             }
+            else
+            {
+                Sql.Append("(");
+                Visit(mySqlBinaryExpression.Left);
+                Sql.Append(")");
 
-            Sql.Append("(");
-            Visit(mySqlBinaryExpression.Right);
-            Sql.Append(")");
+                switch (mySqlBinaryExpression.OperatorType)
+                {
+                    case MySqlBinaryExpressionOperatorType.IntegerDivision:
+                        Sql.Append(" DIV ");
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
+                Sql.Append("(");
+                Visit(mySqlBinaryExpression.Right);
+                Sql.Append(")");
+            }
 
             return mySqlBinaryExpression;
         }

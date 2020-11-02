@@ -1,6 +1,9 @@
-﻿using System.Linq.Expressions;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
@@ -18,10 +21,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             _options = options;
         }
 
+        //             return extensionExpression is ShapedQueryExpression shapedQueryExpression
+        // ? shapedQueryExpression.UpdateShaperExpression(Visit(shapedQueryExpression.ShaperExpression))
+        // : base.VisitExtension(extensionExpression);
+
         protected override Expression VisitExtension(Expression extensionExpression)
             => extensionExpression switch
             {
                 SqlParameterExpression sqlParameterExpression => VisitParameter(sqlParameterExpression),
+                ShapedQueryExpression shapedQueryExpression => shapedQueryExpression.Update(Visit(shapedQueryExpression.QueryExpression), shapedQueryExpression.ShaperExpression),
                 _ => base.VisitExtension(extensionExpression)
             };
 

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -11,20 +14,20 @@ using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 namespace Pomelo.EntityFrameworkCore.MySql.Extensions
 {
     /// <summary>
-    ///     Extension methods for <see cref="IProperty" /> for SQL Server-specific metadata.
+    ///     Extension methods for <see cref="IProperty" /> for MySQL-specific metadata.
     /// </summary>
     public static class MySqlPropertyExtensions
     {
         /// <summary>
         ///     <para>
-        ///         Returns the <see cref="SqlServerValueGenerationStrategy" /> to use for the property.
+        ///         Returns the <see cref="MySqlValueGenerationStrategy" /> to use for the property.
         ///     </para>
         ///     <para>
         ///         If no strategy is set for the property, then the strategy to use will be taken from the <see cref="IModel" />.
         ///     </para>
         /// </summary>
-        /// <returns> The strategy, or <see cref="SqlServerValueGenerationStrategy.None"/> if none was set. </returns>
-        public static MySqlValueGenerationStrategy? GetValueGenerationStrategy([NotNull] this IProperty property)
+        /// <returns> The strategy, or <see cref="MySqlValueGenerationStrategy.None"/> if none was set. </returns>
+        public static MySqlValueGenerationStrategy? GetValueGenerationStrategy([NotNull] this IProperty property, StoreObjectIdentifier storeObject = default)
         {
             var annotation = property[MySqlAnnotationNames.ValueGenerationStrategy];
             if (annotation != null)
@@ -32,17 +35,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
                 return (MySqlValueGenerationStrategy?)annotation;
             }
 
-            if (property.GetDefaultValue() != null
-                || property.GetDefaultValueSql() != null
-                || property.GetComputedColumnSql() != null)
+            if (property.GetDefaultValue() != null || property.GetDefaultValueSql() != null || property.GetComputedColumnSql() != null)
             {
                 return null;
             }
 
-            if (property.ValueGenerated == ValueGenerated.Never)
+            if (storeObject != default &&
+                property.ValueGenerated == ValueGenerated.Never)
             {
-                var sharedTablePrincipalPrimaryKeyProperty = property.FindSharedTableRootPrimaryKeyProperty();
-                return sharedTablePrincipalPrimaryKeyProperty?.GetValueGenerationStrategy();
+                return property.FindSharedStoreObjectRootProperty(storeObject)
+                    ?.GetValueGenerationStrategy(storeObject);
             }
 
             if (IsCompatibleIdentityColumn(property) && property.ValueGenerated == ValueGenerated.OnAdd)
@@ -59,7 +61,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
         }
 
         /// <summary>
-        ///     Sets the <see cref="SqlServerValueGenerationStrategy" /> to use for the property.
+        ///     Sets the <see cref="MySqlValueGenerationStrategy" /> to use for the property.
         /// </summary>
         /// <param name="property"> The property. </param>
         /// <param name="value"> The strategy to use. </param>
@@ -99,7 +101,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
         ///     Returns a value indicating whether the property is compatible with <see cref="MySqlValueGenerationStrategy.IdentityColumn"/>.
         /// </summary>
         /// <param name="property"> The property. </param>
-        /// <returns> <c>true</c> if compatible. </returns>
+        /// <returns> <see langword="true"/> if compatible. </returns>
         public static bool IsCompatibleIdentityColumn(IProperty property)
         {
             var valueConverter = GetConverter(property);
@@ -114,7 +116,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
         ///     Returns a value indicating whether the property is compatible with <see cref="MySqlValueGenerationStrategy.ComputedColumn"/>.
         /// </summary>
         /// <param name="property"> The property. </param>
-        /// <returns> <c>true</c> if compatible. </returns>
+        /// <returns> <see langword="true"/> if compatible. </returns>
         public static bool IsCompatibleComputedColumn(IProperty property)
         {
             var type = property.ClrType;

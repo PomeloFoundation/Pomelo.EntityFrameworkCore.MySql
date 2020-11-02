@@ -159,39 +159,8 @@ WHERE MATCH (`h`.`Name`) AGAINST ('First' WITH QUERY EXPANSION)");
 
         public abstract class MatchQueryMySqlFixtureBase : SharedStoreFixtureBase<PoolableDbContext>, IQueryFixtureBase
         {
-            protected MatchQueryMySqlFixtureBase()
-            {
-                var entitySorters = new Dictionary<Type, Func<dynamic, object>>
-                {
-                    {typeof(Herb), e => e?.Id}
-                }.ToDictionary(e => e.Key, e => (object)e.Value);
-
-                var entityAsserters = new Dictionary<Type, Action<dynamic, dynamic>>
-                {
-                    {
-                        typeof(Herb), (e, a) =>
-                        {
-                            Assert.Equal(e == null, a == null);
-                            if (a != null)
-                            {
-                                Assert.Equal(e.Id, a.Id);
-                                Assert.Equal(e.Name, a.Name);
-                            }
-                        }
-                    }
-                }.ToDictionary(e => e.Key, e => (object)e.Value);
-
-                QueryAsserter = new QueryAsserter<PoolableDbContext>(
-                    CreateContext,
-                    new MatchQueryData(),
-                    entitySorters,
-                    entityAsserters);
-            }
-
             protected override string StoreName { get; } = "MatchQueryTest";
             public TestSqlLoggerFactory TestSqlLoggerFactory => (TestSqlLoggerFactory)ListLoggerFactory;
-
-            public QueryAsserterBase QueryAsserter { get; set; }
 
             protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
             {
@@ -215,6 +184,38 @@ WHERE MATCH (`h`.`Name`) AGAINST ('First' WITH QUERY EXPANSION)");
                 context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
                 return context;
             }
+
+            public Func<DbContext> GetContextCreator()
+                => CreateContext;
+
+            public ISetSource GetExpectedData()
+                => new MatchQueryData();
+
+            public IReadOnlyDictionary<Type, object> GetEntitySorters()
+                => new Dictionary<Type, Func<object, object>>
+                {
+                    { typeof(Herb), e => ((Herb)e)?.Id },
+                }.ToDictionary(e => e.Key, e => (object)e.Value);
+
+            public IReadOnlyDictionary<Type, object> GetEntityAsserters()
+                => new Dictionary<Type, Action<object, object>>
+                {
+                    {
+                        typeof(Herb), (e, a) =>
+                        {
+                            Assert.Equal(e == null, a == null);
+
+                            if (a != null)
+                            {
+                                var ee = (Herb)e;
+                                var aa = (Herb)a;
+
+                                Assert.Equal(ee.Id, aa.Id);
+                                Assert.Equal(ee.Name, aa.Name);
+                            }
+                        }
+                    },
+                }.ToDictionary(e => e.Key, e => (object)e.Value);
         }
 
         public class MatchQueryData : ISetSource

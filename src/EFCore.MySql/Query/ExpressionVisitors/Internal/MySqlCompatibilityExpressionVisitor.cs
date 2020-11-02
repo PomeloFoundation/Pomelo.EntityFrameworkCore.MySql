@@ -1,7 +1,11 @@
-﻿using System;
+﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Licensed under the MIT. See LICENSE in the project root for license information.
+
+using System;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
@@ -17,27 +21,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         }
 
         protected override Expression VisitExtension(Expression extensionExpression)
-        {
-            switch (extensionExpression)
+            => extensionExpression switch
             {
-                case RowNumberExpression rowNumberExpression:
-                    return VisitRowNumber(rowNumberExpression);
-
-                case CrossApplyExpression crossApplyExpression:
-                    return VisitCrossApply(crossApplyExpression);
-
-                case OuterApplyExpression outerApplyExpression:
-                    return VisitOuterApply(outerApplyExpression);
-
-                case ExceptExpression exceptExpression:
-                    return VisitExcept(exceptExpression);
-
-                case IntersectExpression intersectExpression:
-                    return VisitIntercept(intersectExpression);
-            }
-
-            return base.VisitExtension(extensionExpression);
-        }
+                RowNumberExpression rowNumberExpression => VisitRowNumber(rowNumberExpression),
+                CrossApplyExpression crossApplyExpression => VisitCrossApply(crossApplyExpression),
+                OuterApplyExpression outerApplyExpression => VisitOuterApply(outerApplyExpression),
+                ExceptExpression exceptExpression => VisitExcept(exceptExpression),
+                IntersectExpression intersectExpression => VisitIntercept(intersectExpression),
+                ShapedQueryExpression shapedQueryExpression => shapedQueryExpression.Update(Visit(shapedQueryExpression.QueryExpression), shapedQueryExpression.ShaperExpression),
+                _ => base.VisitExtension(extensionExpression)
+            };
 
         protected virtual Expression VisitRowNumber(RowNumberExpression rowNumberExpression)
             => CheckSupport(rowNumberExpression, _options.ServerVersion.SupportsWindowFunctions);

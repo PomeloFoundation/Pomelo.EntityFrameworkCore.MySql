@@ -4,8 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -16,22 +17,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
     public class MySqlLineStringMemberTranslator : IMemberTranslator
     {
-        private static readonly IDictionary<MemberInfo, string> _memberToFunctionName = new Dictionary<MemberInfo, string>
+        private static readonly IDictionary<MemberInfo, (string Name, bool OnlyNullByArgs)> _memberToFunctionName = new Dictionary<MemberInfo, (string Name, bool OnlyNullByArgs)>
         {
-            { typeof(LineString).GetRuntimeProperty(nameof(LineString.Count)), "ST_NumPoints" },
-            { typeof(LineString).GetRuntimeProperty(nameof(LineString.EndPoint)), "ST_EndPoint" },
-            { typeof(LineString).GetRuntimeProperty(nameof(LineString.IsClosed)), "ST_IsClosed" },
-            { typeof(LineString).GetRuntimeProperty(nameof(LineString.StartPoint)), "ST_StartPoint" },
-            { typeof(LineString).GetRuntimeProperty(nameof(LineString.IsRing)), "ST_IsRing" }
+            { typeof(LineString).GetRuntimeProperty(nameof(LineString.Count)), ("ST_NumPoints", false) },
+            { typeof(LineString).GetRuntimeProperty(nameof(LineString.EndPoint)), ("ST_EndPoint", false) },
+            { typeof(LineString).GetRuntimeProperty(nameof(LineString.IsClosed)), ("ST_IsClosed", false) },
+            { typeof(LineString).GetRuntimeProperty(nameof(LineString.StartPoint)), ("ST_StartPoint", false) },
+            { typeof(LineString).GetRuntimeProperty(nameof(LineString.IsRing)), ("ST_IsRing", false) }
         };
 
         private readonly IRelationalTypeMappingSource _typeMappingSource;
-        private readonly ISqlExpressionFactory _sqlExpressionFactory;
+        private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
         private readonly IMySqlOptions _options;
 
         public MySqlLineStringMemberTranslator(
             IRelationalTypeMappingSource typeMappingSource,
-            ISqlExpressionFactory sqlExpressionFactory,
+            MySqlSqlExpressionFactory sqlExpressionFactory,
             IMySqlOptions options)
         {
             _typeMappingSource = typeMappingSource;
@@ -39,9 +40,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             _options = options;
         }
 
-        public virtual SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType)
+        public SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
-            if (_memberToFunctionName.TryGetValue(member, out var functionName))
+            if (_memberToFunctionName.TryGetValue(member, out var mapping))
             {
                 Debug.Assert(instance.TypeMapping != null, "Instance must have typeMapping assigned.");
                 var storeType = instance.TypeMapping.StoreType;
@@ -51,20 +52,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     : _typeMappingSource.FindMapping(returnType);
 
                 // Emulate ST_IsRing if not supported.
-                var sqlExpression = functionName != "ST_IsRing" ||
+                var sqlExpression = mapping.Name != "ST_IsRing" ||
                                   _options.ServerVersion.SupportsSpatialIsRingFunction
-                    ? (SqlExpression)_sqlExpressionFactory.Function(
-                        functionName,
+                    ? (SqlExpression)_sqlExpressionFactory.NullableFunction(
+                        mapping.Name,
                         new[] {instance},
                         returnType,
-                        resultTypeMapping)
+                        resultTypeMapping,
+                        mapping.OnlyNullByArgs)
                     : _sqlExpressionFactory.AndAlso(
-                        _sqlExpressionFactory.Function(
+                        _sqlExpressionFactory.NullableFunction(
                             "ST_IsClosed",
                             new[] {instance},
                             returnType,
-                            resultTypeMapping),
-                        _sqlExpressionFactory.Function(
+                            resultTypeMapping,
+                            false),
+                        _sqlExpressionFactory.NullableFunction(
                             "ST_IsSimple",
                             new[] {instance},
                             returnType,
