@@ -1,10 +1,6 @@
 using System;
-using System.Globalization;
 using System.Linq;
-using System.Threading;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.EntityFrameworkCore.TestUtilities;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
@@ -228,14 +224,6 @@ WHERE HEX(`o`.`CustomerID`) = '56494E4554'");
         }
 
         [ConditionalFact]
-        public virtual void Hex_client_eval()
-        {
-            var hex = EF.Functions.Hex("VINET");
-
-            Assert.Equal("56494E4554", hex);
-        }
-
-        [ConditionalFact]
         public virtual void Unhex()
         {
             using (var context = CreateContext())
@@ -250,48 +238,6 @@ WHERE HEX(`o`.`CustomerID`) = '56494E4554'");
 FROM `Orders` AS `o`
 WHERE UNHEX(HEX(`o`.`CustomerID`)) = 'VINET'");
             }
-        }
-
-        [ConditionalFact]
-        public virtual void Unhex_client_eval()
-        {
-            var unhex = EF.Functions.Unhex("56494E4554");
-
-            Assert.Equal("VINET", unhex);
-        }
-
-        [Fact]
-        public void JsonQuote_client_eval()
-        {
-            var quoted = EF.Functions.JsonQuote("first\\\"second\"\tthird");
-
-            Assert.Equal(@"""first\\\""second\""\tthird""", quoted);
-        }
-
-        [Fact]
-        public void JsonUnquote_client_eval()
-        {
-            var unquoted = EF.Functions.JsonUnquote(@"""first\\\""second\""\tthird""");
-
-            Assert.Equal("first\\\"second\"\tthird", unquoted);
-        }
-
-        [Fact]
-        public void JsonUnquote_client_eval_unicode()
-        {
-            var unquoted = EF.Functions.JsonUnquote(@"""a\u003da""");
-
-            Assert.Equal("a=a", unquoted);
-        }
-
-        [Fact]
-        public void JsonUnquote_client_eval_throws()
-        {
-            Assert.Equal(
-                "The JSON string is not well formed.",
-                Assert.Throws<ArgumentException>(
-                        () => EF.Functions.JsonUnquote(@"""a\u3da"""))
-                    .Message);
         }
     }
 }

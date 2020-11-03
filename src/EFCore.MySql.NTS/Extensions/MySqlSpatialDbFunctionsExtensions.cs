@@ -1,7 +1,7 @@
 ﻿using System;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using NetTopologySuite.Geometries;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
@@ -48,9 +48,7 @@ namespace Microsoft.EntityFrameworkCore
             [CanBeNull] this DbFunctions _,
             Geometry g1,
             Geometry g2)
-        {
-            throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(SpatialDistancePlanar)));
-        }
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(SpatialDistancePlanar)));
 
         /// <summary>
         ///     Returns the mimimum spherical distance between Point or MultiPoint arguments on a sphere in meters,
@@ -67,8 +65,6 @@ namespace Microsoft.EntityFrameworkCore
             Geometry g1,
             Geometry g2,
             SpatialDistanceAlgorithm algorithm)
-        {
-            throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(SpatialDistanceSphere)));
-        }
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(SpatialDistanceSphere)));
     }
 }
