@@ -14,8 +14,6 @@ variables:
   max_connections: 255
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
-  dotnet_version: 5.0.100-preview.8.20417.9
-  allowPreviewVersions: true
 
 # TODO: Simplify (PWSH for most cases etc.)
 jobs:
@@ -49,8 +47,7 @@ jobs:
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK'
     inputs:
-      version: $(dotnet_version)
-      includePreviewVersions: $(allowPreviewVersions)
+      useGlobalJson: true
   - bash: |
       set -e
       sudo systemctl stop mysql
@@ -181,8 +178,7 @@ jobs:
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK'
     inputs:
-      version: $(dotnet_version)
-      includePreviewVersions: $(allowPreviewVersions)
+      useGlobalJson: true
   - pwsh: |
       if ("$(mysql_server_version)" -eq "")
       {
