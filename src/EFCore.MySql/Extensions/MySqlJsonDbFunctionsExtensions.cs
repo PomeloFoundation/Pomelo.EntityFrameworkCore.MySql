@@ -2,10 +2,8 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
-using System.Globalization;
-using System.Text;
 using JetBrains.Annotations;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
@@ -40,7 +38,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <returns> The JSON type as a text string. </returns>
         /// <remarks> For possible return values see: https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-type </remarks>
         public static string JsonType([CanBeNull] this DbFunctions _, [NotNull] object json)
-            => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonType)));
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(JsonType)));
 
         /// <summary>
         /// Quotes a string as a JSON value by wrapping it with double quote characters and escaping interior quote and
@@ -53,32 +51,7 @@ namespace Microsoft.EntityFrameworkCore
         public static string JsonQuote(
             [CanBeNull] this DbFunctions _,
             [NotNull] string value)
-        {
-            var quotedString = new StringBuilder(value.Length * 2 + 2);
-            var length = value.Length;
-
-            quotedString.Append('"');
-
-            for (var i = 0; i < length; i++)
-            {
-                quotedString.Append(
-                    value[i] switch
-                    {
-                        '"' => @"\""",
-                        '\b' => @"\b",
-                        '\f' => @"\f",
-                        '\n' => @"\n",
-                        '\r' => @"\r",
-                        '\t' => @"\t",
-                        '\\' => @"\\",
-                        _ => value[i]
-                    });
-            }
-
-            return quotedString
-                .Append('"')
-                .ToString();
-        }
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(JsonQuote)));
 
         /// <summary>
         /// Unquotes JSON value and returns the result as a `utf8mb4` string. Returns `null` if the argument is `null`.
@@ -91,120 +64,7 @@ namespace Microsoft.EntityFrameworkCore
         public static string JsonUnquote(
             [CanBeNull] this DbFunctions _,
             [NotNull] object json)
-        {
-            if (json is string jsonString)
-            {
-                var length = jsonString.Length;
-
-                if (length < 2 ||
-                    jsonString[0] != '"' ||
-                    jsonString[length - 1] != '"')
-                {
-                    return jsonString;
-                }
-
-                var unquotedString = new StringBuilder(length - 2);
-                var isEscapeSequence = false;
-                var unicodeCharNum = -1;
-                var unicodeChars = new char[4];
-
-                for (var i = 1; i < length - 1; i++)
-                {
-                    var c = jsonString[i];
-
-                    if (isEscapeSequence)
-                    {
-                        if (unicodeCharNum > -1)
-                        {
-                            if (c >= '0' && c <= '9' ||
-                                c >= 'A' && c <= 'F' ||
-                                c >= 'a' && c <= 'f')
-                            {
-                                unicodeChars[unicodeCharNum++] = c;
-
-                                if (unicodeCharNum >= 4)
-                                {
-                                    var utf8Value = ushort.Parse(new string(unicodeChars), NumberStyles.AllowHexSpecifier);
-                                    unquotedString.Append(
-                                        Encoding.UTF8.GetChars(
-                                            utf8Value <= 255
-                                                ? new[] {(byte)utf8Value}
-                                                : BitConverter.GetBytes(utf8Value)));
-                                    unicodeCharNum = -1;
-                                    isEscapeSequence = false;
-                                }
-                            }
-                            else
-                            {
-                                throw new ArgumentException("The JSON string is not well formed.");
-                            }
-                        }
-                        else if (c == '"')
-                        {
-                            unquotedString.Append('\"');
-                            isEscapeSequence = false;
-                        }
-                        else if (c == 'b')
-                        {
-                            unquotedString.Append('\b');
-                            isEscapeSequence = false;
-                        }
-                        else if (c == 'f')
-                        {
-                            unquotedString.Append('\f');
-                            isEscapeSequence = false;
-                        }
-                        else if (c == 'n')
-                        {
-                            unquotedString.Append('\n');
-                            isEscapeSequence = false;
-                        }
-                        else if (c == 'r')
-                        {
-                            unquotedString.Append('\r');
-                            isEscapeSequence = false;
-                        }
-                        else if (c == 't')
-                        {
-                            unquotedString.Append('\t');
-                            isEscapeSequence = false;
-                        }
-                        else if (c == '\\')
-                        {
-                            unquotedString.Append('\\');
-                            isEscapeSequence = false;
-                        }
-                        else if (c == 'u' &&
-                                 unicodeCharNum == -1)
-                        {
-                            unicodeCharNum = 0;
-                        }
-                        else
-                        {
-                            unquotedString.Append(c);
-                            isEscapeSequence = false;
-                        }
-                    }
-                    else if (c == '\\')
-                    {
-                        isEscapeSequence = true;
-                    }
-                    else
-                    {
-                        unquotedString.Append(c);
-                    }
-                }
-
-                if (isEscapeSequence)
-                {
-                    throw new ArgumentException("The JSON string is not well formed.");
-                }
-
-                return unquotedString.ToString();
-            }
-
-            return json.ToString();
-        }
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(JsonUnquote)));
 
         /// <summary>
         /// Returns data from a JSON document, selected from the parts of the document matched by the path arguments.
@@ -222,7 +82,7 @@ namespace Microsoft.EntityFrameworkCore
             [CanBeNull] this DbFunctions _,
             [NotNull] object json,
             [NotNull] params string[] paths)
-            => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonExtract)));
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(JsonExtract)));
 
         /// <summary>
         /// Checks if <paramref name="json"/> contains <paramref name="candidate"/>.
@@ -236,7 +96,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </param>
         public static bool JsonContains(
             [CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] object candidate)
-            => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonContains)));
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(JsonContains)));
 
         /// <summary>
         /// Checks if <paramref name="json"/> contains <paramref name="candidate"/> at a specific <paramref name="path"/>.
@@ -253,7 +113,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </param>
         public static bool JsonContains(
             [CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] object candidate, [CanBeNull] string path)
-            => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonContains)));
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(JsonContains)));
 
         /// <summary>
         /// Checks if <paramref name="path"/> exists within <paramref name="json"/>.
@@ -264,7 +124,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </param>
         /// <param name="path">A path to be checked inside <paramref name="json"/>.</param>
         public static bool JsonContainsPath([CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] string path)
-            => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonContainsPath)));
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(JsonContainsPath)));
 
         /// <summary>
         /// Checks if any of the given <paramref name="paths"/> exist within <paramref name="json"/>.
@@ -275,7 +135,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </param>
         /// <param name="paths">A set of paths to be checked inside <paramref name="json"/>.</param>
         public static bool JsonContainsPathAny([CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] params string[] paths)
-            => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonContainsPathAny)));
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(JsonContainsPathAny)));
 
         /// <summary>
         /// Checks if all of the given <paramref name="paths"/> exist within <paramref name="json"/>.
@@ -286,7 +146,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </param>
         /// <param name="paths">A set of paths to be checked inside <paramref name="json"/>.</param>
         public static bool JsonContainsPathAll([CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] params string[] paths)
-            => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonContainsPathAll)));
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(JsonContainsPathAll)));
 
         /// <summary>
         /// Checks if <paramref name="json"/> contains <paramref name="searchString"/>.
@@ -299,7 +159,7 @@ namespace Microsoft.EntityFrameworkCore
         /// The string to search for.
         /// </param>
         public static bool JsonSearchAny([CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] string searchString)
-            => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonSearchAny)));
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(JsonSearchAny)));
 
         /// <summary>
         /// Checks if <paramref name="json"/> contains <paramref name="searchString"/> under <paramref name="path"/>.
@@ -315,7 +175,7 @@ namespace Microsoft.EntityFrameworkCore
         /// A string containing a valid JSON path (staring with `$`).
         /// </param>
         public static bool JsonSearchAny([CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] string searchString, string path)
-            => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonSearchAny)));
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(JsonSearchAny)));
 
         /// <summary>
         /// Checks if <paramref name="json"/> contains <paramref name="searchString"/> under <paramref name="path"/>.
@@ -334,6 +194,6 @@ namespace Microsoft.EntityFrameworkCore
         /// Can be `null`, an empty string or a one character wide string used for escaping characters in <paramref name="searchString"/>.
         /// </param>
         public static bool JsonSearchAny([CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] string searchString, string path, string escapeChar)
-            => throw new InvalidOperationException(MySqlStrings.FunctionOnClient(nameof(JsonSearchAny)));
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(JsonSearchAny)));
     }
 }

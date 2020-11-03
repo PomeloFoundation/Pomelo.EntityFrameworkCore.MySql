@@ -77,11 +77,11 @@ FROM `JsonEntities` AS `j`
 WHERE `j`.`Id` = @__p_0
 LIMIT 1",
                 //
-                $@"{InsertJsonDocument(@"@__AsJson_0='{""Age"":25,""Name"":""Joe"",""IsVip"":false,""Orders"":[{""Price"":99.5,""ShippingDate"":""2019-10-01"",""ShippingAddress"":""Some address 1""},{""Price"":23,""ShippingDate"":""2019-10-10"",""ShippingAddress"":""Some address 2""}],""Statistics"":{""Nested"":{""IntArray"":[3,4],""SomeProperty"":10},""Visits"":4,""Purchases"":3}}'", @"@__AsJson_0='{""Name"":""Joe"",""Age"":25,""IsVip"":false,""Statistics"":{""Visits"":4,""Purchases"":3,""Nested"":{""SomeProperty"":10,""IntArray"":[3,4]}},""Orders"":[{""Price"":99.5,""ShippingAddress"":""Some address 1"",""ShippingDate"":""2019-10-01""},{""Price"":23,""ShippingAddress"":""Some address 2"",""ShippingDate"":""2019-10-10""}]}'")} (Size = 4000)
+                $@"{InsertJsonDocument(@"@__expected_1='{""Age"":25,""Name"":""Joe"",""IsVip"":false,""Orders"":[{""Price"":99.5,""ShippingDate"":""2019-10-01"",""ShippingAddress"":""Some address 1""},{""Price"":23,""ShippingDate"":""2019-10-10"",""ShippingAddress"":""Some address 2""}],""Statistics"":{""Nested"":{""IntArray"":[3,4],""SomeProperty"":10},""Visits"":4,""Purchases"":3}}'", @"@__expected_1='{""Name"":""Joe"",""Age"":25,""IsVip"":false,""Statistics"":{""Visits"":4,""Purchases"":3,""Nested"":{""SomeProperty"":10,""IntArray"":[3,4]}},""Orders"":[{""Price"":99.5,""ShippingAddress"":""Some address 1"",""ShippingDate"":""2019-10-01""},{""Price"":23,""ShippingAddress"":""Some address 2"",""ShippingDate"":""2019-10-10""}]}'")} (Size = 4000)
 
 SELECT `j`.`Id`, `j`.`CustomerJson`
 FROM `JsonEntities` AS `j`
-WHERE {InsertJsonConvert("`j`.`CustomerJson`")} = {InsertJsonConvert("@__AsJson_0")}
+WHERE {InsertJsonConvert("`j`.`CustomerJson`")} = {InsertJsonConvert("@__expected_1")}
 LIMIT 2");
         }
 
