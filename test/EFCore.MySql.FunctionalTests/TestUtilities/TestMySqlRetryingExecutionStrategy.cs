@@ -9,6 +9,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
     {
         private const bool ErrorNumberDebugMode = false;
 
+        // TODO: Check for correct MySQL error codes.
         private static readonly int[] _additionalErrorNumbers =
         {
             -1, // Physical connection is not usable
