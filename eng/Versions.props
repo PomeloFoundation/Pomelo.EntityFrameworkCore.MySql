@@ -27,8 +27,8 @@
     <UsingToolXliff>False</UsingToolXliff>
   </PropertyGroup>
   <PropertyGroup Label="Common Versions">
-    <EntityFrameworkCoreVersion>5.0.0-rc.1.20451.13</EntityFrameworkCoreVersion>
-    <DotnetRuntimeVersion>5.0.0-rc.1.20451.14</DotnetRuntimeVersion>
+    <EntityFrameworkCoreVersion>5.0.0-rc.2.20475.6</EntityFrameworkCoreVersion>
+    <DotnetRuntimeVersion>5.0.0-rc.2.20475.5</DotnetRuntimeVersion>
   </PropertyGroup>
   <PropertyGroup Label="Dependencies">
     <!-- EFCore.MySql Dependencies -->
@@ -79,7 +79,7 @@
     <MicrosoftEntityFrameworkCoreDesignVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreDesignVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>3.7.0</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>3.1.6</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MoqVersion>4.14.5</MoqVersion>
+    <MoqVersion>4.14.7</MoqVersion>
     <NewtonsoftJsonPackageVersion>12.0.3</NewtonsoftJsonPackageVersion>
   </PropertyGroup>
 </Project>

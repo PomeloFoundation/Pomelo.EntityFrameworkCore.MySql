@@ -120,6 +120,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                         b.Property(e => e.NullableBackedIntZeroDefault).HasDefaultValue(0);
                     });
 
+                modelBuilder.Entity<NonStoreGenDependent>().Property(e => e.HasTemp).HasDefaultValue(777);
+
                 base.OnModelCreating(modelBuilder, context);
             }
         }
