@@ -1,6 +1,5 @@
 <Project>
   <PropertyGroup Label="Version settings">
-    <VersionPrefix>5.0.0</VersionPrefix>
     <!--
       Use the following values for the different release types:
           - "alpha"
@@ -8,32 +7,48 @@
           - "rc"
           - "rtm"
           - "servicing"
-          - "preview" to match preview releases upstream (EF Core)
-          - "rc" targeting a public release of EF Core
-          - "rtm" for the initial public release of a major/minor version
-          - "servicing" for a release containig fixes for a previously published major/minior version
     -->
+    <VersionPrefix>5.0.0</VersionPrefix>
     <PreReleaseVersionLabel>alpha</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
-    <IncludeSourceRevisionInInformationalVersion>False</IncludeSourceRevisionInInformationalVersion>
+
     <!--
-        When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages.
-        Set to 'true' for 'rtm' and 'servicing' releases.
+      The following properties will automatically be set by CI builds when appropriate:
+        ContinuesIntegrationTimestamp
+        BuildSha
+        ContinuousIntegrationBuild (not version but SourceLink related)
     -->
-    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
-    <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
   </PropertyGroup>
-  <PropertyGroup Label="Arcade settings">
-    <UsingToolXliff>False</UsingToolXliff>
+
+  <!--
+    If no version or else version suffix has been explicitly set, we generate one in the following format:
+      alpha.1.ci.20201004T181121Z+sha.0a1b2c3
+  -->
+  <Target Name="Check Version Parameters" BeforeTargets="Build" Condition="'$(Version)' == '' And '$(VersionSuffix)' == ''">
+    <Error Condition="$(VersionPrefix)' == ''" Text="The 'VersionPrefix' property needs to be set." />
+    <Error Condition="$(PreReleaseVersionLabel)' == ''" Text="The 'PreReleaseVersionLabel' property needs to be set." />
+    <Error Condition="$(PreReleaseVersionIteration)' == ''" Text="The 'PreReleaseVersionIteration' property needs to be set." />
+
+    <PropertyGroup Label="Version Suffix Handling">
+      <VersionSuffix>$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</VersionSuffix>
+      <VersionSuffix Condition="$(ContinuesIntegrationTimestamp)' != ''">$(VersionSuffix).ci.$(ContinuesIntegrationTimestamp)</VersionSuffix>
+      <VersionSuffix Condition="$(BuildSha)' != ''">$(VersionSuffix)+sha.$(BuildSha)</VersionSuffix>
+    </PropertyGroup>
+  </Target>
+
+  <!-- TODO: Take a look at this. -->
+  <PropertyGroup>
+    <IncludeSourceRevisionInInformationalVersion>False</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
+
   <PropertyGroup Label="Common Versions">
     <EntityFrameworkCoreVersion>5.0.0-rc.2.20475.6</EntityFrameworkCoreVersion>
     <DotnetRuntimeVersion>5.0.0-rc.2.20475.5</DotnetRuntimeVersion>
   </PropertyGroup>
+
   <PropertyGroup Label="Dependencies">
     <MicrosoftSourceLinkGitHubVersion>1.0.0</MicrosoftSourceLinkGitHubVersion>
     <!-- EFCore.MySql Dependencies -->
-    <MicrosoftEntityFrameworkCoreVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreVersion>
     <MicrosoftEntityFrameworkCoreRelationalVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreRelationalVersion>
     <MySqlConnectorVersion>1.0.1</MySqlConnectorVersion>
     <PomeloJsonObjectVersion>2.2.1</PomeloJsonObjectVersion>
@@ -63,6 +78,7 @@
     <XunitRunnerVisualStudioPackageVersion>2.4.3</XunitRunnerVisualStudioPackageVersion>
     <XunitRunnerConsolePackageVersion>2.4.1</XunitRunnerConsolePackageVersion>
     <XunitXmlTestLoggerPackageVersion>2.1.26</XunitXmlTestLoggerPackageVersion>
+    <MicrosoftEntityFrameworkCoreVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreVersion>
     <MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>
     <MicrosoftEntityFrameworkCoreRelationalTestsVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreRelationalTestsVersion>
     <!-- EFCoreMySqlFunctionalTests Dependencies -->
