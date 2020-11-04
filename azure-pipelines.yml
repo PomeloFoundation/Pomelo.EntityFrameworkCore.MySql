@@ -19,11 +19,11 @@ jobs:
   displayName: Build and Test
   strategy:
     matrix:
-      MySQL 8.0.21 (Windows):
-        vmImageName: 'windows-latest'
-        databaseServerType: 'mysql'
-        databaseServerVersion: '8.0.21'
-        sqlMode: $(mysql_current_sql_mode)
+#      MySQL 8.0.21 (Windows):
+#        vmImageName: 'windows-latest'
+#        databaseServerType: 'mysql'
+#        databaseServerVersion: '8.0.21'
+#        sqlMode: $(mysql_current_sql_mode)
       MySQL 8.0.21 (Linux):
         vmImageName: 'ubuntu-latest'
         databaseServerType: 'mysql'
@@ -212,7 +212,7 @@ jobs:
 - job: NuGet
   dependsOn:
     - BuildAndTest
-  condition: and(succeededOrFailed(), ne(variables['Build.Reason'], 'PullRequest'))
+  # condition: and(succeededOrFailed(), ne(variables['Build.Reason'], 'PullRequest')) # DEBUGGING
   variables:
     buildAndTestSucceeded: $[in(dependencies.BuildAndTest.result, 'Succeeded', 'SucceededWithIssues')]
   pool:
@@ -228,6 +228,7 @@ jobs:
       $officialBuild = '$(Build.SourceBranch)' -match '^refs/tags/[0-9]+\.[0-9]+\.[0-9]+'
       $wipBuild = '$(Build.SourceBranch)' -match '^refs/heads/.*-wip$'
       $ciBuildOnly = $wipBuild -or ('$(Build.SourceBranch)' -match '^refs/heads/(?:master|.*-maint)$')
+      $ciBuildOnly = $true # DEBUGGING
       $continuesIntegrationTimestamp = Get-Date -Format yyyyMMssHHmmss
       $buildSha = '$(Build.SourceVersion)'.SubString(0, 7);
       $pack = '$(buildAndTestSucceeded)' -eq "true" -and ($officialBuild -or $ciBuildOnly) -or $wipBuild
@@ -285,12 +286,12 @@ jobs:
 #      symbolServerType: 'TeamServices'
 #      treatNotIndexedAsWarning: false
 #    condition: and(succeededOrFailed(), eq(variables['Pack.PublishSymbolsForAzureArtifacts'],'true'))
-
-  - task: NuGetCommand@2
-    displayName: "NuGet Push - nuget.org"
-    inputs:
-      command: push
-      nuGetFeedType: external
-      publishFeedCredentials: NugetOrg-PomeloFoundation-AllPackages-PushNew
-      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
-    condition: and(succeededOrFailed(), eq(variables['Pack.PushToNugetOrg'],'true'))
+#
+#  - task: NuGetCommand@2
+#    displayName: "NuGet Push - nuget.org"
+#    inputs:
+#      command: push
+#      nuGetFeedType: external
+#      publishFeedCredentials: NugetOrg-PomeloFoundation-AllPackages-PushNew
+#      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+#    condition: and(succeededOrFailed(), eq(variables['Pack.PushToNugetOrg'],'true'))
