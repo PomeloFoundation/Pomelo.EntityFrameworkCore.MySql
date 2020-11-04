@@ -21,8 +21,8 @@ try
 
   Remove-Item (Join-Path "Migrations" "*.cs")
 
-  dotnet ef database drop -f --msbuildprojectextensionspath '../../artifacts/obj/EFCore.MySql.IntegrationTests/'
-  dotnet ef migrations add initial --msbuildprojectextensionspath '../../artifacts/obj/EFCore.MySql.IntegrationTests/'
+  dotnet ef database drop -f
+  dotnet ef migrations add initial
 
   # add using System.Collections.Generic to the migration files
   Get-ChildItem (Join-Path "Migrations" "*.cs") | ForEach-Object {
@@ -33,7 +33,7 @@ try
     }
   }
 
-  dotnet ef database update --msbuildprojectextensionspath '../../artifacts/obj/EFCore.MySql.IntegrationTests/'
+  dotnet ef database update
 }
 finally
 {

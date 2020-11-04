@@ -1,12 +1,6 @@
 <Project>
-  <!-- HACK: Our test projects don't match Arcade's conventions -->
-  <PropertyGroup Condition="'$(IsUnitTestProject)' == ''">
-    <IsUnitTestProject Condition="$(MSBuildProjectName.EndsWith('.FunctionalTests'))">True</IsUnitTestProject>
-    <IsUnitTestProject Condition="$(MSBuildProjectName.EndsWith('.IntegrationTests'))">True</IsUnitTestProject>
-  </PropertyGroup>
-
-  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
-  <Import Project="eng\Development.props" Condition="Exists('eng\Development.props')" />
+  <Import Project="Versions.props" />
+  <Import Project="Development.props" Condition="Exists('Development.props')" />
 
   <PropertyGroup>
     <StrongNameKeyId>Pomelo.EntityFrameworkCore.MySql</StrongNameKeyId>
@@ -20,6 +14,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <LangVersion>8.0</LangVersion>
     <DebugType>portable</DebugType>
+    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>

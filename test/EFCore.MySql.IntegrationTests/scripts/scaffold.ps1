@@ -1,10 +1,11 @@
 #!/usr/bin/env pwsh
 
 Push-Location (Join-Path (Split-Path $MyInvocation.MyCommand.Path) "../")
-dotnet tool restore;
 
 try
 {
+  dotnet tool restore;
+
   $targetDirectoryName = "Scaffold"
   $tables = 'DataTypesSimple', 'DataTypesVariable'
 
@@ -12,7 +13,7 @@ try
   mkdir $targetDirectoryName
 
   $connectionString = dotnet run connectionString
-  $arguments = "ef", "dbcontext", "scaffold", $connectionString, "Pomelo.EntityFrameworkCore.MySql", "--msbuildprojectextensionspath", "../../artifacts/obj/EFCore.MySql.IntegrationTests/", "--output-dir", $targetDirectoryName
+  $arguments = "ef", "dbcontext", "scaffold", $connectionString, "Pomelo.EntityFrameworkCore.MySql", "--output-dir", $targetDirectoryName
 
   foreach ($table in $tables)
   {

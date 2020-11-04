@@ -24,7 +24,7 @@
     If no version or else version suffix has been explicitly set, we generate one in the following format:
       alpha.1.ci.20201004T181121Z+sha.0a1b2c3
   -->
-  <Target Name="Check Version Parameters" BeforeTargets="Build" Condition="'$(Version)' == '' And '$(VersionSuffix)' == ''">
+  <Target Name="Check Version Parameters" BeforeTargets="CoreBuild" Condition="'$(Version)' == '' And '$(VersionSuffix)' == ''">
     <Error Condition="'$(VersionPrefix)' == ''" Text="The 'VersionPrefix' property needs to be set." />
     <Error Condition="'$(PreReleaseVersionLabel)' == ''" Text="The 'PreReleaseVersionLabel' property needs to be set." />
     <Error Condition="'$(PreReleaseVersionIteration)' == ''" Text="The 'PreReleaseVersionIteration' property needs to be set." />
@@ -34,6 +34,12 @@
       <VersionSuffix Condition="'$(ContinuesIntegrationTimestamp)' != ''">$(VersionSuffix).ci.$(ContinuesIntegrationTimestamp)</VersionSuffix>
       <VersionSuffix Condition="'$(BuildSha)' != ''">$(VersionSuffix)+sha.$(BuildSha)</VersionSuffix>
     </PropertyGroup>
+  </Target>
+
+  <Target Name="Version information output" BeforeTargets="CoreBuild">
+    <Message Importance="high" Text="VersionPrefix: $(VersionPrefix)" />
+    <Message Importance="high" Text="VersionSuffix: $(VersionSuffix)" />
+    <Message Importance="high" Text="Version: $(Version)" />
   </Target>
 
   <!-- TODO: Take a look at this. -->
@@ -72,12 +78,12 @@
     <!-- EFCore.MySql.Json.Newtonsoft Dependencies -->
     <NewtonsoftJsonVersion>12.0.3</NewtonsoftJsonVersion>
     <!-- Shared Test Dependencies -->
-    <MicrosoftNETTestSdkPackageVersion>16.3.0</MicrosoftNETTestSdkPackageVersion>
-    <XunitAssertPackageVersion>2.4.1</XunitAssertPackageVersion>
-    <XunitCorePackageVersion>2.4.1</XunitCorePackageVersion>
-    <XunitRunnerVisualStudioPackageVersion>2.4.3</XunitRunnerVisualStudioPackageVersion>
-    <XunitRunnerConsolePackageVersion>2.4.1</XunitRunnerConsolePackageVersion>
-    <XunitXmlTestLoggerPackageVersion>2.1.26</XunitXmlTestLoggerPackageVersion>
+    <MicrosoftNETTestSdkVersion>16.3.0</MicrosoftNETTestSdkVersion>
+    <XunitAssertVersion>2.4.1</XunitAssertVersion>
+    <XunitCoreVersion>2.4.1</XunitCoreVersion>
+    <XunitRunnerVisualStudioVersion>2.4.3</XunitRunnerVisualStudioVersion>
+    <XunitRunnerConsoleVersion>2.4.1</XunitRunnerConsoleVersion>
+    <XunitXmlTestLoggerVersion>2.1.26</XunitXmlTestLoggerVersion>
     <MicrosoftEntityFrameworkCoreVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreVersion>
     <MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>
     <MicrosoftEntityFrameworkCoreRelationalTestsVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreRelationalTestsVersion>
@@ -94,9 +100,9 @@
     <MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>5.0.0-rc.1.20451.15</MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>
     <!-- EFCoreMySqlTests Dependencies -->
     <MicrosoftEntityFrameworkCoreDesignVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreDesignVersion>
-    <MicrosoftCodeAnalysisCSharpPackageVersion>3.7.0</MicrosoftCodeAnalysisCSharpPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>3.1.6</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftCodeAnalysisCSharpVersion>3.7.0</MicrosoftCodeAnalysisCSharpVersion>
+    <MicrosoftExtensionsDependencyModelVersion>3.1.6</MicrosoftExtensionsDependencyModelVersion>
     <MoqVersion>4.14.7</MoqVersion>
-    <NewtonsoftJsonPackageVersion>12.0.3</NewtonsoftJsonPackageVersion>
+    <NewtonsoftJsonVersion>12.0.3</NewtonsoftJsonVersion>
   </PropertyGroup>
 </Project>

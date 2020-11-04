@@ -101,4 +101,5 @@
       <CustomToolNamespace>Pomelo.EntityFrameworkCore.MySql.Internal</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
+
 </Project>

@@ -6,11 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkVersion)" />
     <!-- Using xunit.core and .assert instead of the main package because compilation fails due to warnings triggered by xunit.analyzers. -->
-    <!-- <PackageReference Include="xunit" Version="$(XunitPackageVersion)" /> -->
-    <PackageReference Include="xunit.core" Version="$(XunitCorePackageVersion)" />
-    <PackageReference Include="xunit.assert" Version="$(XunitAssertPackageVersion)" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioPackageVersion)" />
-    <PackageReference Include="xunit.runner.console" Version="$(XunitRunnerConsolePackageVersion)" />
+    <!-- <PackageReference Include="xunit" Version="$(XunitVersion)" /> -->
+    <PackageReference Include="xunit.core" Version="$(XunitCoreVersion)" />
+    <PackageReference Include="xunit.assert" Version="$(XunitAssertVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioVersion)" />
+    <PackageReference Include="xunit.runner.console" Version="$(XunitRunnerConsoleVersion)" />
   </ItemGroup>
 </Project>
