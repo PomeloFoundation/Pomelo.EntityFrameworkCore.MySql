@@ -6,10 +6,11 @@ trigger:
     include:
     - '*'
 variables:
-  mysql_current_sql_mode: ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
-  mysql_legacy_sql_mode: ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+  isPullRequest: $[eq(variables['Build.Reason'], 'PullRequest')]
+  mysqlCurrentSqlMode: ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+  mysqlLegacySqlMode: ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
   # Currently no ONLY_FULL_GROUP_BY, see #1167:
-  mariadb_sql_mode: STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+  mariadbSqlMode: STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
   max_connections: 255
   runIntegrationTests: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
@@ -19,36 +20,42 @@ jobs:
   displayName: Build and Test
   strategy:
     matrix:
-      MySQL 8.0.21 (Windows):
+      MySQL 8.0 (Windows):
         vmImageName: 'windows-latest'
         databaseServerType: 'mysql'
         databaseServerVersion: '8.0.21'
-        sqlMode: $(mysql_current_sql_mode)
-      MySQL 8.0.21 (Linux):
+        sqlMode: $(mysqlCurrentSqlMode)
+        skipTests: $(isPullRequest)
+      MySQL 8.0 (Linux):
         vmImageName: 'ubuntu-latest'
         databaseServerType: 'mysql'
         databaseServerVersion: '8.0.21'
-        sqlMode: $(mysql_current_sql_mode)
-      MySQL 5.7.32 (Linux):
+        sqlMode: $(mysqlCurrentSqlMode)
+        skipTests: false
+      MySQL 5.7 (Linux):
         vmImageName: 'ubuntu-latest'
         databaseServerType: 'mysql'
-        databaseServerVersion: '8.0.21'
-        sqlMode: $(mysql_legacy_sql_mode)
-      MariaDB 10.5.5 (Linux):
+        databaseServerVersion: '5.7.32'
+        sqlMode: $(mysqlLegacySqlMode)
+        skipTests: false
+      MariaDB 10.5 (Linux):
         vmImageName: 'ubuntu-latest'
-        databaseServerType: 'mysql'
-        databaseServerVersion: '8.0.21'
-        sqlMode: $(mariadb_sql_mode)
-      MariaDB 10.4.14 (Linux):
+        databaseServerType: 'mariadb'
+        databaseServerVersion: '10.5.5'
+        sqlMode: $(mariadbSqlMode)
+        skipTests: false
+      MariaDB 10.4 (Linux):
         vmImageName: 'ubuntu-latest'
-        databaseServerType: 'mysql'
-        databaseServerVersion: '8.0.21'
-        sqlMode: $(mariadb_sql_mode)
-      MariaDB 10.3.24 (Linux):
+        databaseServerType: 'mariadb'
+        databaseServerVersion: '10.4.14'
+        sqlMode: $(mariadbSqlMode)
+        skipTests: false
+      MariaDB 10.3 (Linux):
         vmImageName: 'ubuntu-latest'
-        databaseServerType: 'mysql'
-        databaseServerVersion: '8.0.21'
-        sqlMode: $(mariadb_sql_mode)
+        databaseServerType: 'mariadb'
+        databaseServerVersion: '10.3.24'
+        sqlMode: $(mariadbSqlMode)
+        skipTests: false
   pool:
     vmImage: $(vmImageName)
   steps:
@@ -141,68 +148,72 @@ jobs:
         ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
       }
     displayName: Build Integration Tests
+    condition: ne(variables['skipTests'], true)
   - pwsh: dotnet test --logger trx test/EFCore.MySql.Tests
     displayName: Tests
     continueOnError: true
+    condition: ne(variables['skipTests'], true)
   - pwsh: dotnet test test/EFCore.MySql.FunctionalTests -c Release --logger trx --verbosity detailed
     displayName: Functional Tests
     continueOnError: true
+    condition: ne(variables['skipTests'], true)
   - pwsh: |
       Get-ChildItem QueryBaseline.txt -Recurse | % { $_.FullName }
       Get-Content QueryBaseline.txt -ErrorAction Ignore
     displayName: Show Query Baseline
     continueOnError: true
+    condition: ne(variables['skipTests'], true)
   - pwsh: dotnet run --project test/EFCore.MySql.IntegrationTests -c Release testMigrate
     displayName: Integration Tests - Applying migrations
     continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
+    condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
   - pwsh: ./test/EFCore.MySql.IntegrationTests/scripts/scaffold.ps1
     displayName: Integration Tests - Scaffolding
     continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
+    condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
   - pwsh: |
       $env:EF_BATCH_SIZE = "1"
       dotnet test -c Release --logger trx test/EFCore.MySql.IntegrationTests
     displayName: Integration Tests - With EF_BATCH_SIZE = 1
     continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
+    condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
   - pwsh: |
       $env:EF_BATCH_SIZE = "10"
       dotnet test -c Release --logger trx test/EFCore.MySql.IntegrationTests
     displayName: Integration Tests - With EF_BATCH_SIZE = 10
     continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
+    condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
   - pwsh: |
       $env:EF_RETRY_ON_FAILURE = "3"
       dotnet test -c Release --logger trx test/EFCore.MySql.IntegrationTests
     displayName: Integration Tests - With EF_RETRY_ON_FAILURE = 3
     continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
+    condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
   - pwsh: ./test/EFCore.MySql.IntegrationTests/scripts/legacy.ps1
     displayName: Integration Tests - Legacy migrations
     continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
+    condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'), eq(variables['databaseServerType'],'mysql'))
   - pwsh: |
       $env:EF_DATABASE = "pomelo_test2"
       dotnet build ./test/EFCore.MySql.IntegrationTests -c Release
     displayName: Integration Tests - Building migrations with EF_DATABASE = pomelo_test2
     continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
+    condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
   - pwsh: |
       $env:EF_DATABASE = "pomelo_test2"
       ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
     displayName: Integration Tests - Setup migrations with EF_DATABASE = pomelo_test2
     continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
+    condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
   - pwsh: |
       $env:EF_DATABASE = "pomelo_test2"
       dotnet test -c Release --logger trx test/EFCore.MySql.IntegrationTests
     displayName: Integration Tests - With EF_DATABASE = pomelo_test2
     continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
+    condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
   - task: PublishTestResults@2
     displayName: Publish Test Results
-    condition: succeededOrFailed()
+    condition: and(ne(variables['skipTests'], true), succeededOrFailed())
     inputs:
       testResultsFormat: VSTest
       testResultsFiles: test/**/*.trx
@@ -212,7 +223,7 @@ jobs:
 - job: NuGet
   dependsOn:
     - BuildAndTest
-  condition: and(succeededOrFailed(), ne(variables['Build.Reason'], 'PullRequest'))
+  condition: and(succeededOrFailed(), ne(variables['isPullRequest'], true))
   variables:
     buildAndTestSucceeded: $[in(dependencies.BuildAndTest.result, 'Succeeded', 'SucceededWithIssues')]
   pool:
@@ -277,15 +288,13 @@ jobs:
       publishVstsFeed: 'pomelo-efcore-public'
       packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
     condition: and(succeededOrFailed(), eq(variables['Pack.PushToAzureArtifacts'],'true'))
-
-# We take a look at this once we have ensured that everything else works as expected.
-#  - task: PublishSymbols@2 # AZDO still has no snupkg support, so we need to publish the PDB files to a symbol server
-#    displayName: "Publish Symbols to Azure Artifacts Symbol Server"
-#    inputs:
-#      symbolServerType: 'TeamServices'
-#      treatNotIndexedAsWarning: false
-#    condition: and(succeededOrFailed(), eq(variables['Pack.PublishSymbolsForAzureArtifacts'],'true'))
-
+  - task: PublishSymbols@2 # AZDO still has no snupkg support, so we need to publish the PDB files to a symbol server
+    displayName: "Publish Symbols to Azure Artifacts symbol server"
+    inputs:
+      symbolServerType: 'TeamServices'
+      treatNotIndexedAsWarning: false
+      indexSources: false
+    condition: and(succeededOrFailed(), eq(variables['Pack.PublishSymbolsForAzureArtifacts'],'true'))
   - task: NuGetCommand@2
     displayName: "NuGet Push - nuget.org"
     inputs:
