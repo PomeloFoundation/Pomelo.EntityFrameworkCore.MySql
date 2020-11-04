@@ -2,7 +2,8 @@
   <Import Project="..\Directory.Build.props" />
 
   <PropertyGroup>
-    <NoWarn>$(NoWarn);EF1001</NoWarn>
+    <!-- [CS1591] Missing XML comment for publicly visible type or member 'MySqlAnnotationCodeGenerator' -->
+    <NoWarn>$(NoWarn);CS1591;EF1001</NoWarn>
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)..\rulesets\EFCore.ruleset</CodeAnalysisRuleSet>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
