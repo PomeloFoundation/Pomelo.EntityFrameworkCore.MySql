@@ -15,200 +15,200 @@ variables:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
 jobs:
-- job: BuildAndTest
-  displayName: Build and Test
-  strategy:
-    matrix:
-      MySQL 8.0.21 (Windows):
-        vmImageName: 'windows-latest'
-        databaseServerType: 'mysql'
-        databaseServerVersion: '8.0.21'
-        sqlMode: $(mysql_current_sql_mode)
-      MySQL 8.0.21 (Linux):
-        vmImageName: 'ubuntu-latest'
-        databaseServerType: 'mysql'
-        databaseServerVersion: '8.0.21'
-        sqlMode: $(mysql_current_sql_mode)
-      MySQL 5.7.32 (Linux):
-        vmImageName: 'ubuntu-latest'
-        databaseServerType: 'mysql'
-        databaseServerVersion: '8.0.21'
-        sqlMode: $(mysql_legacy_sql_mode)
-      MariaDB 10.5.5 (Linux):
-        vmImageName: 'ubuntu-latest'
-        databaseServerType: 'mysql'
-        databaseServerVersion: '8.0.21'
-        sqlMode: $(mariadb_sql_mode)
-      MariaDB 10.4.14 (Linux):
-        vmImageName: 'ubuntu-latest'
-        databaseServerType: 'mysql'
-        databaseServerVersion: '8.0.21'
-        sqlMode: $(mariadb_sql_mode)
-      MariaDB 10.3.24 (Linux):
-        vmImageName: 'ubuntu-latest'
-        databaseServerType: 'mysql'
-        databaseServerVersion: '8.0.21'
-        sqlMode: $(mariadb_sql_mode)
-  pool:
-    vmImage: $(vmImageName)
-  steps:
-  - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK'
-    inputs:
-      useGlobalJson: true
-  - pwsh: |
-      if ('$(Agent.OS)' -eq 'Windows_NT')
-      {
-        echo "Chocolatey command: choco install '$(databaseServerType)' '--version=$(databaseServerVersion)'"
-        choco install '$(databaseServerType)' '--version=$(databaseServerVersion)'
-
-        $mySqlServiceName = 'MySQL'
-        $lowerCaseTableNames = 2
-        $mySqlIniPath = 'C:\tools\mysql\current\my.ini'
-        $mySqlDataPath = 'C:\ProgramData\MySQL\data'
-
-        Stop-Service $mySqlServiceName
-        "lower_case_table_names=$lowerCaseTableNames" >> $mySqlIniPath
-        Remove-Item $mySqlDataPath/* -Recurse -Force
-        mysqld --defaults-file="$mySqlIniPath" --initialize-insecure
-        Start-Service $mySqlServiceName
-
-        mysql -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
-        mysql -h localhost -u root -pPassword12! -e "SELECT @@version;"
-      }
-      else
-      {
-        sudo systemctl stop mysql
-        docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -p 3306:3306 -d '$(databaseServerType):$(databaseServerVersion)'
-
-        $waitMinutes = 5
-        $pollingIntervalSeconds = 3
-        $startTime = Get-Date
-        $started = $false
-
-        while (!($started = docker exec mysql mysqladmin -h localhost -P 3306 -u root -pPassword12! status) -and ((Get-Date) - $startTime).TotalMinutes -lt $waitMinutes)
-        {
-          Start-Sleep -Seconds $pollingIntervalSeconds
-        }
-
-        if (!$started)
-        {
-          throw "$(databaseServerType):$(databaseServerVersion) docker container failed to start in $(waitMinutes) minutes"
-          exit 1
-        }
-      }
-    displayName: Install Database Server
-  - pwsh: |
-      if ('$(Agent.OS)' -eq 'Windows_NT')
-      {
-        mysql -h localhost -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sqlMode)'; SET GLOBAL max_connections = $(max_connections);"
-      }
-      else
-      {
-        docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sqlMode)'; SET GLOBAL max_connections = $(max_connections);"
-      }
-    displayName: Setup Database
-    ignoreLASTEXITCODE: true
-  - pwsh: |
-      if ('$(Agent.OS)' -eq 'Windows_NT')
-      {
-        mysql -h localhost -u root -pPassword12! -e 'SHOW VARIABLES;'
-      }
-      else
-      {
-        docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e 'SHOW VARIABLES;'
-      }
-      echo "Exit code: $?"
-    displayName: Database Information
-    continueOnError: true
-    failOnStderr: false
-    ignoreLASTEXITCODE: true
-  - pwsh: dotnet --info
-    displayName: .NET Information
-  - pwsh: |
-      dotnet tool restore
-      dotnet ef --version
-    displayName: Install EF Core Tools
-  - pwsh: |
-      cp test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
-      cp test/EFCore.MySql.IntegrationTests/appsettings.ci.json test/EFCore.MySql.IntegrationTests/appsettings.json
-      cp test/EFCore.MySql.IntegrationTests/config.json.example test/EFCore.MySql.IntegrationTests/config.json
-      dotnet build -c Debug
-    displayName: Setup and Build Solution
-  - pwsh: |
-      if ("$(runIntegrationTests)" -eq "true")
-      {
-        ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
-      }
-    displayName: Build Integration Tests
-  - pwsh: dotnet test --logger trx test/EFCore.MySql.Tests
-    displayName: Tests
-    continueOnError: true
-  - pwsh: dotnet test test/EFCore.MySql.FunctionalTests -c Release --logger trx --verbosity detailed
-    displayName: Functional Tests
-    continueOnError: true
-  - pwsh: |
-      Get-ChildItem QueryBaseline.txt -Recurse | % { $_.FullName }
-      Get-Content QueryBaseline.txt -ErrorAction Ignore
-    displayName: Show Query Baseline
-    continueOnError: true
-  - pwsh: dotnet run --project test/EFCore.MySql.IntegrationTests -c Release testMigrate
-    displayName: Integration Tests - Applying migrations
-    continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
-  - pwsh: ./test/EFCore.MySql.IntegrationTests/scripts/scaffold.ps1
-    displayName: Integration Tests - Scaffolding
-    continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
-  - pwsh: |
-      $env:EF_BATCH_SIZE = "1"
-      dotnet test -c Release --logger trx test/EFCore.MySql.IntegrationTests
-    displayName: Integration Tests - With EF_BATCH_SIZE = 1
-    continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
-  - pwsh: |
-      $env:EF_BATCH_SIZE = "10"
-      dotnet test -c Release --logger trx test/EFCore.MySql.IntegrationTests
-    displayName: Integration Tests - With EF_BATCH_SIZE = 10
-    continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
-  - pwsh: |
-      $env:EF_RETRY_ON_FAILURE = "3"
-      dotnet test -c Release --logger trx test/EFCore.MySql.IntegrationTests
-    displayName: Integration Tests - With EF_RETRY_ON_FAILURE = 3
-    continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
-  - pwsh: ./test/EFCore.MySql.IntegrationTests/scripts/legacy.ps1
-    displayName: Integration Tests - Legacy migrations
-    continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
-  - pwsh: |
-      $env:EF_DATABASE = "pomelo_test2"
-      dotnet build ./test/EFCore.MySql.IntegrationTests -c Release
-    displayName: Integration Tests - Building migrations with EF_DATABASE = pomelo_test2
-    continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
-  - pwsh: |
-      $env:EF_DATABASE = "pomelo_test2"
-      ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
-    displayName: Integration Tests - Setup migrations with EF_DATABASE = pomelo_test2
-    continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
-  - pwsh: |
-      $env:EF_DATABASE = "pomelo_test2"
-      dotnet test -c Release --logger trx test/EFCore.MySql.IntegrationTests
-    displayName: Integration Tests - With EF_DATABASE = pomelo_test2
-    continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
-  - task: PublishTestResults@2
-    displayName: Publish Test Results
-    condition: succeededOrFailed()
-    inputs:
-      testResultsFormat: VSTest
-      testResultsFiles: test/**/*.trx
-      testRunTitle: $(Agent.OS) $(databaseServerType):$(databaseServerVersion)
-      mergeTestResults: true
-      failTaskOnFailedTests: true
+#- job: BuildAndTest
+#  displayName: Build and Test
+#  strategy:
+#    matrix:
+#      MySQL 8.0.21 (Windows):
+#        vmImageName: 'windows-latest'
+#        databaseServerType: 'mysql'
+#        databaseServerVersion: '8.0.21'
+#        sqlMode: $(mysql_current_sql_mode)
+#      MySQL 8.0.21 (Linux):
+#        vmImageName: 'ubuntu-latest'
+#        databaseServerType: 'mysql'
+#        databaseServerVersion: '8.0.21'
+#        sqlMode: $(mysql_current_sql_mode)
+#      MySQL 5.7.32 (Linux):
+#        vmImageName: 'ubuntu-latest'
+#        databaseServerType: 'mysql'
+#        databaseServerVersion: '8.0.21'
+#        sqlMode: $(mysql_legacy_sql_mode)
+#      MariaDB 10.5.5 (Linux):
+#        vmImageName: 'ubuntu-latest'
+#        databaseServerType: 'mysql'
+#        databaseServerVersion: '8.0.21'
+#        sqlMode: $(mariadb_sql_mode)
+#      MariaDB 10.4.14 (Linux):
+#        vmImageName: 'ubuntu-latest'
+#        databaseServerType: 'mysql'
+#        databaseServerVersion: '8.0.21'
+#        sqlMode: $(mariadb_sql_mode)
+#      MariaDB 10.3.24 (Linux):
+#        vmImageName: 'ubuntu-latest'
+#        databaseServerType: 'mysql'
+#        databaseServerVersion: '8.0.21'
+#        sqlMode: $(mariadb_sql_mode)
+#  pool:
+#    vmImage: $(vmImageName)
+#  steps:
+#  - task: UseDotNet@2
+#    displayName: 'Use .NET Core SDK'
+#    inputs:
+#      useGlobalJson: true
+#  - pwsh: |
+#      if ('$(Agent.OS)' -eq 'Windows_NT')
+#      {
+#        echo "Chocolatey command: choco install '$(databaseServerType)' '--version=$(databaseServerVersion)'"
+#        choco install '$(databaseServerType)' '--version=$(databaseServerVersion)'
+#
+#        $mySqlServiceName = 'MySQL'
+#        $lowerCaseTableNames = 2
+#        $mySqlIniPath = 'C:\tools\mysql\current\my.ini'
+#        $mySqlDataPath = 'C:\ProgramData\MySQL\data'
+#
+#        Stop-Service $mySqlServiceName
+#        "lower_case_table_names=$lowerCaseTableNames" >> $mySqlIniPath
+#        Remove-Item $mySqlDataPath/* -Recurse -Force
+#        mysqld --defaults-file="$mySqlIniPath" --initialize-insecure
+#        Start-Service $mySqlServiceName
+#
+#        mysql -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
+#        mysql -h localhost -u root -pPassword12! -e "SELECT @@version;"
+#      }
+#      else
+#      {
+#        sudo systemctl stop mysql
+#        docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -p 3306:3306 -d '$(databaseServerType):$(databaseServerVersion)'
+#
+#        $waitMinutes = 5
+#        $pollingIntervalSeconds = 3
+#        $startTime = Get-Date
+#        $started = $false
+#
+#        while (!($started = docker exec mysql mysqladmin -h localhost -P 3306 -u root -pPassword12! status) -and ((Get-Date) - $startTime).TotalMinutes -lt $waitMinutes)
+#        {
+#          Start-Sleep -Seconds $pollingIntervalSeconds
+#        }
+#
+#        if (!$started)
+#        {
+#          throw "$(databaseServerType):$(databaseServerVersion) docker container failed to start in $(waitMinutes) minutes"
+#          exit 1
+#        }
+#      }
+#    displayName: Install Database Server
+#  - pwsh: |
+#      if ('$(Agent.OS)' -eq 'Windows_NT')
+#      {
+#        mysql -h localhost -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sqlMode)'; SET GLOBAL max_connections = $(max_connections);"
+#      }
+#      else
+#      {
+#        docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sqlMode)'; SET GLOBAL max_connections = $(max_connections);"
+#      }
+#    displayName: Setup Database
+#    ignoreLASTEXITCODE: true
+#  - pwsh: |
+#      if ('$(Agent.OS)' -eq 'Windows_NT')
+#      {
+#        mysql -h localhost -u root -pPassword12! -e 'SHOW VARIABLES;'
+#      }
+#      else
+#      {
+#        docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e 'SHOW VARIABLES;'
+#      }
+#      echo "Exit code: $?"
+#    displayName: Database Information
+#    continueOnError: true
+#    failOnStderr: false
+#    ignoreLASTEXITCODE: true
+#  - pwsh: dotnet --info
+#    displayName: .NET Information
+#  - pwsh: |
+#      dotnet tool restore
+#      dotnet ef --version
+#    displayName: Install EF Core Tools
+#  - pwsh: |
+#      cp test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
+#      cp test/EFCore.MySql.IntegrationTests/appsettings.ci.json test/EFCore.MySql.IntegrationTests/appsettings.json
+#      cp test/EFCore.MySql.IntegrationTests/config.json.example test/EFCore.MySql.IntegrationTests/config.json
+#      dotnet build -c Debug
+#    displayName: Setup and Build Solution
+#  - pwsh: |
+#      if ("$(runIntegrationTests)" -eq "true")
+#      {
+#        ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
+#      }
+#    displayName: Build Integration Tests
+#  - pwsh: dotnet test --logger trx test/EFCore.MySql.Tests
+#    displayName: Tests
+#    continueOnError: true
+#  - pwsh: dotnet test test/EFCore.MySql.FunctionalTests -c Release --logger trx --verbosity detailed
+#    displayName: Functional Tests
+#    continueOnError: true
+#  - pwsh: |
+#      Get-ChildItem QueryBaseline.txt -Recurse | % { $_.FullName }
+#      Get-Content QueryBaseline.txt -ErrorAction Ignore
+#    displayName: Show Query Baseline
+#    continueOnError: true
+#  - pwsh: dotnet run --project test/EFCore.MySql.IntegrationTests -c Release testMigrate
+#    displayName: Integration Tests - Applying migrations
+#    continueOnError: true
+#    condition: eq(variables['runIntegrationTests'],'true')
+#  - pwsh: ./test/EFCore.MySql.IntegrationTests/scripts/scaffold.ps1
+#    displayName: Integration Tests - Scaffolding
+#    continueOnError: true
+#    condition: eq(variables['runIntegrationTests'],'true')
+#  - pwsh: |
+#      $env:EF_BATCH_SIZE = "1"
+#      dotnet test -c Release --logger trx test/EFCore.MySql.IntegrationTests
+#    displayName: Integration Tests - With EF_BATCH_SIZE = 1
+#    continueOnError: true
+#    condition: eq(variables['runIntegrationTests'],'true')
+#  - pwsh: |
+#      $env:EF_BATCH_SIZE = "10"
+#      dotnet test -c Release --logger trx test/EFCore.MySql.IntegrationTests
+#    displayName: Integration Tests - With EF_BATCH_SIZE = 10
+#    continueOnError: true
+#    condition: eq(variables['runIntegrationTests'],'true')
+#  - pwsh: |
+#      $env:EF_RETRY_ON_FAILURE = "3"
+#      dotnet test -c Release --logger trx test/EFCore.MySql.IntegrationTests
+#    displayName: Integration Tests - With EF_RETRY_ON_FAILURE = 3
+#    continueOnError: true
+#    condition: eq(variables['runIntegrationTests'],'true')
+#  - pwsh: ./test/EFCore.MySql.IntegrationTests/scripts/legacy.ps1
+#    displayName: Integration Tests - Legacy migrations
+#    continueOnError: true
+#    condition: eq(variables['runIntegrationTests'],'true')
+#  - pwsh: |
+#      $env:EF_DATABASE = "pomelo_test2"
+#      dotnet build ./test/EFCore.MySql.IntegrationTests -c Release
+#    displayName: Integration Tests - Building migrations with EF_DATABASE = pomelo_test2
+#    continueOnError: true
+#    condition: eq(variables['runIntegrationTests'],'true')
+#  - pwsh: |
+#      $env:EF_DATABASE = "pomelo_test2"
+#      ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
+#    displayName: Integration Tests - Setup migrations with EF_DATABASE = pomelo_test2
+#    continueOnError: true
+#    condition: eq(variables['runIntegrationTests'],'true')
+#  - pwsh: |
+#      $env:EF_DATABASE = "pomelo_test2"
+#      dotnet test -c Release --logger trx test/EFCore.MySql.IntegrationTests
+#    displayName: Integration Tests - With EF_DATABASE = pomelo_test2
+#    continueOnError: true
+#    condition: eq(variables['runIntegrationTests'],'true')
+#  - task: PublishTestResults@2
+#    displayName: Publish Test Results
+#    condition: succeededOrFailed()
+#    inputs:
+#      testResultsFormat: VSTest
+#      testResultsFiles: test/**/*.trx
+#      testRunTitle: $(Agent.OS) $(databaseServerType):$(databaseServerVersion)
+#      mergeTestResults: true
+#      failTaskOnFailedTests: true
 - job: NuGet
   dependsOn:
     - BuildAndTest
@@ -285,12 +285,12 @@ jobs:
 #      symbolServerType: 'TeamServices'
 #      treatNotIndexedAsWarning: false
 #    condition: and(succeededOrFailed(), eq(variables['Pack.PublishSymbolsForAzureArtifacts'],'true'))
-
-  - task: NuGetCommand@2
-    displayName: "NuGet Push - nuget.org"
-    inputs:
-      command: push
-      nuGetFeedType: external
-      publishFeedCredentials: NugetOrg-PomeloFoundation-AllPackages-PushNew
-      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
-    condition: and(succeededOrFailed(), eq(variables['Pack.PushToNugetOrg'],'true'))
+#
+#  - task: NuGetCommand@2
+#    displayName: "NuGet Push - nuget.org"
+#    inputs:
+#      command: push
+#      nuGetFeedType: external
+#      publishFeedCredentials: NugetOrg-PomeloFoundation-AllPackages-PushNew
+#      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+#    condition: and(succeededOrFailed(), eq(variables['Pack.PushToNugetOrg'],'true'))
