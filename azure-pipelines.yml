@@ -210,8 +210,8 @@ jobs:
 #      mergeTestResults: true
 #      failTaskOnFailedTests: true
 - job: NuGet
-  dependsOn:
-    - BuildAndTest
+#  dependsOn:
+#    - BuildAndTest
   condition: and(succeededOrFailed(), ne(variables['Build.Reason'], 'PullRequest'))
   variables:
     buildAndTestSucceeded: $[in(dependencies.BuildAndTest.result, 'Succeeded', 'SucceededWithIssues')]
