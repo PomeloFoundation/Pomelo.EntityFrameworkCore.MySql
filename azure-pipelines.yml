@@ -281,7 +281,7 @@ jobs:
     displayName: "Publish Symbols to Azure Artifacts symbol server"
     inputs:
       symbolServerType: 'TeamServices'
-      # treatNotIndexedAsWarning: false
+      treatNotIndexedAsWarning: false
     condition: and(succeededOrFailed(), eq(variables['Pack.PublishSymbolsForAzureArtifacts'],'true'))
 
 #  - task: NuGetCommand@2
