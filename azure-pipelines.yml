@@ -192,7 +192,7 @@ jobs:
   - pwsh: ./test/EFCore.MySql.IntegrationTests/scripts/legacy.ps1
     displayName: Integration Tests - Legacy migrations
     continueOnError: true
-    condition: and(ne(variables['skip'], true), eq(variables['runIntegrationTests'],'true'))
+    condition: and(ne(variables['skip'], true), eq(variables['runIntegrationTests'],'true'), eq(variables['databaseServerType'],'mysql'))
   - pwsh: |
       $env:EF_DATABASE = "pomelo_test2"
       dotnet build ./test/EFCore.MySql.IntegrationTests -c Release
