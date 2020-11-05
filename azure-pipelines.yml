@@ -252,7 +252,7 @@ jobs:
 
       if ($pack)
       {
-        $arguments = 'pack', '-c', 'Release', '-o', '$(Build.ArtifactStagingDirectory)', '-p:ContinuousIntegrationBuild=true'
+        $arguments = 'pack', '-c', 'Release', '-o', '$(Build.ArtifactStagingDirectory)'
 
         if ($ciBuildOnly)
         {

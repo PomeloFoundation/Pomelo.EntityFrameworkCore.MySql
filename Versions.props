@@ -16,7 +16,6 @@
       The following properties will automatically be set by CI builds when appropriate:
         ContinuesIntegrationTimestamp
         BuildSha
-        ContinuousIntegrationBuild (not version but SourceLink related)
     -->
   </PropertyGroup>
 
