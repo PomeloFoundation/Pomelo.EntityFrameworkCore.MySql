@@ -39,10 +39,11 @@
     <Error Condition="'$(VersionPrefix)' == ''" Text="The 'VersionPrefix' property needs to be set." />
     <Error Condition="'$(PreReleaseVersionLabel)' == ''" Text="The 'PreReleaseVersionLabel' property needs to be set." />
     <Error Condition="'$(PreReleaseVersionIteration)' == ''" Text="The 'PreReleaseVersionIteration' property needs to be set." />
-
+    <!--
     <Message Importance="high" Text="VersionPrefix: $(VersionPrefix)" />
     <Message Importance="high" Text="VersionSuffix: $(VersionSuffix)" />
     <Message Importance="high" Text="Version: $(Version)" />
+    -->
   </Target>
 
   <!-- TODO: Take a look at this. -->

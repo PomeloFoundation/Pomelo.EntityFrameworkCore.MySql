@@ -31,27 +31,31 @@ jobs:
         databaseServerType: 'mysql'
         databaseServerVersion: '8.0.21'
         sqlMode: $(mysqlCurrentSqlMode)
+        skip: false
       MySQL 5.7 (Linux):
         vmImageName: 'ubuntu-latest'
         databaseServerType: 'mysql'
         databaseServerVersion: '5.7.32'
         sqlMode: $(mysqlLegacySqlMode)
+        skip: false
       MariaDB 10.5 (Linux):
         vmImageName: 'ubuntu-latest'
         databaseServerType: 'mariadb'
         databaseServerVersion: '10.5.5'
         sqlMode: $(mariadbSqlMode)
+        skip: false
       MariaDB 10.4 (Linux):
         vmImageName: 'ubuntu-latest'
         databaseServerType: 'mariadb'
         databaseServerVersion: '10.4.14'
         sqlMode: $(mariadbSqlMode)
+        skip: false
       MariaDB 10.3 (Linux):
         vmImageName: 'ubuntu-latest'
         databaseServerType: 'mariadb'
         databaseServerVersion: '10.3.24'
         sqlMode: $(mariadbSqlMode)
-  condition: ne(variables['skip'], true)
+        skip: false
   pool:
     vmImage: $(vmImageName)
   steps:
@@ -144,68 +148,72 @@ jobs:
         ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
       }
     displayName: Build Integration Tests
+    condition: ne(variables['skip'], true)
   - pwsh: dotnet test --logger trx test/EFCore.MySql.Tests
     displayName: Tests
     continueOnError: true
+    condition: ne(variables['skip'], true)
   - pwsh: dotnet test test/EFCore.MySql.FunctionalTests -c Release --logger trx --verbosity detailed
     displayName: Functional Tests
     continueOnError: true
+    condition: ne(variables['skip'], true)
   - pwsh: |
       Get-ChildItem QueryBaseline.txt -Recurse | % { $_.FullName }
       Get-Content QueryBaseline.txt -ErrorAction Ignore
     displayName: Show Query Baseline
     continueOnError: true
+    condition: ne(variables['skip'], true)
   - pwsh: dotnet run --project test/EFCore.MySql.IntegrationTests -c Release testMigrate
     displayName: Integration Tests - Applying migrations
     continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
+    condition: and(ne(variables['skip'], true), eq(variables['runIntegrationTests'],'true'))
   - pwsh: ./test/EFCore.MySql.IntegrationTests/scripts/scaffold.ps1
     displayName: Integration Tests - Scaffolding
     continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
+    condition: and(ne(variables['skip'], true), eq(variables['runIntegrationTests'],'true'))
   - pwsh: |
       $env:EF_BATCH_SIZE = "1"
       dotnet test -c Release --logger trx test/EFCore.MySql.IntegrationTests
     displayName: Integration Tests - With EF_BATCH_SIZE = 1
     continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
+    condition: and(ne(variables['skip'], true), eq(variables['runIntegrationTests'],'true'))
   - pwsh: |
       $env:EF_BATCH_SIZE = "10"
       dotnet test -c Release --logger trx test/EFCore.MySql.IntegrationTests
     displayName: Integration Tests - With EF_BATCH_SIZE = 10
     continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
+    condition: and(ne(variables['skip'], true), eq(variables['runIntegrationTests'],'true'))
   - pwsh: |
       $env:EF_RETRY_ON_FAILURE = "3"
       dotnet test -c Release --logger trx test/EFCore.MySql.IntegrationTests
     displayName: Integration Tests - With EF_RETRY_ON_FAILURE = 3
     continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
+    condition: and(ne(variables['skip'], true), eq(variables['runIntegrationTests'],'true'))
   - pwsh: ./test/EFCore.MySql.IntegrationTests/scripts/legacy.ps1
     displayName: Integration Tests - Legacy migrations
     continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
+    condition: and(ne(variables['skip'], true), eq(variables['runIntegrationTests'],'true'))
   - pwsh: |
       $env:EF_DATABASE = "pomelo_test2"
       dotnet build ./test/EFCore.MySql.IntegrationTests -c Release
     displayName: Integration Tests - Building migrations with EF_DATABASE = pomelo_test2
     continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
+    condition: and(ne(variables['skip'], true), eq(variables['runIntegrationTests'],'true'))
   - pwsh: |
       $env:EF_DATABASE = "pomelo_test2"
       ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
     displayName: Integration Tests - Setup migrations with EF_DATABASE = pomelo_test2
     continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
+    condition: and(ne(variables['skip'], true), eq(variables['runIntegrationTests'],'true'))
   - pwsh: |
       $env:EF_DATABASE = "pomelo_test2"
       dotnet test -c Release --logger trx test/EFCore.MySql.IntegrationTests
     displayName: Integration Tests - With EF_DATABASE = pomelo_test2
     continueOnError: true
-    condition: eq(variables['runIntegrationTests'],'true')
+    condition: and(ne(variables['skip'], true), eq(variables['runIntegrationTests'],'true'))
   - task: PublishTestResults@2
     displayName: Publish Test Results
-    condition: succeededOrFailed()
+    condition: and(ne(variables['skip'], true), succeededOrFailed())
     inputs:
       testResultsFormat: VSTest
       testResultsFiles: test/**/*.trx
