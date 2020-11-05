@@ -274,7 +274,7 @@ jobs:
     displayName: "NuGet Push - AZDO Feed"
     inputs:
       command: push
-      publishVstsFeed: 'Pomelo.EntityFrameworkCore.MySql/pomelo-efcore-public'
+      publishVstsFeed: 'pomelo-efcore-public'
       packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
     condition: and(succeededOrFailed(), eq(variables['Pack.PushToAzureArtifacts'],'true'))
 
