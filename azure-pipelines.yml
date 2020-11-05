@@ -277,15 +277,13 @@ jobs:
       publishVstsFeed: 'Pomelo.EntityFrameworkCore.MySql/pomelo-efcore-public'
       packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
     condition: and(succeededOrFailed(), eq(variables['Pack.PushToAzureArtifacts'],'true'))
+  - task: PublishSymbols@2 # AZDO still has no snupkg support, so we need to publish the PDB files to a symbol server
+    displayName: "Publish Symbols to Azure Artifacts symbol server"
+    inputs:
+      symbolServerType: 'TeamServices'
+      # treatNotIndexedAsWarning: false
+    condition: and(succeededOrFailed(), eq(variables['Pack.PublishSymbolsForAzureArtifacts'],'true'))
 
-# We take a look at this once we have ensured that everything else works as expected.
-#  - task: PublishSymbols@2 # AZDO still has no snupkg support, so we need to publish the PDB files to a symbol server
-#    displayName: "Publish Symbols to Azure Artifacts Symbol Server"
-#    inputs:
-#      symbolServerType: 'TeamServices'
-#      treatNotIndexedAsWarning: false
-#    condition: and(succeededOrFailed(), eq(variables['Pack.PublishSymbolsForAzureArtifacts'],'true'))
-#
 #  - task: NuGetCommand@2
 #    displayName: "NuGet Push - nuget.org"
 #    inputs:
