@@ -227,7 +227,7 @@ jobs:
   variables:
     buildAndTestSucceeded: $[in(dependencies.BuildAndTest.result, 'Succeeded', 'SucceededWithIssues')]
   pool:
-    vmImage: 'windows-latest' # necessary for PublishSymbols task
+    vmImage: 'windows-latest' # must be Windows for PublishSymbols task
   steps:
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK'
@@ -252,7 +252,7 @@ jobs:
 
       if ($pack)
       {
-        $arguments = 'pack', '-c', 'Release', '-o', '$(Build.ArtifactStagingDirectory)'
+        $arguments = 'pack', '-c', 'Release', '-o', '$(Build.ArtifactStagingDirectory)', '-p:ContinuousIntegrationBuild=true'
 
         if ($ciBuildOnly)
         {

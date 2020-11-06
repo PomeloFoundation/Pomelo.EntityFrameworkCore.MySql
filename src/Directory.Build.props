@@ -14,10 +14,10 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <IsPackable>True</IsPackable>
-    <IncludeSymbols>True</IncludeSymbols>
+    <IsPackable>true</IsPackable>
+    <IncludeSymbols>true</IncludeSymbols>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <EmbedUntrackedSources>True</EmbedUntrackedSources>
   </PropertyGroup>
 
   <ItemGroup>
