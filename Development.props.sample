@@ -4,7 +4,7 @@
       Specify the absolute path to the EntityFrameworkCore base directory,
       to compile against that version for better development and local
       debugging support.
-      
+
       Rename this file "development.props".
 
       The EFCore assemblies are being compiled with an AssemblyVersion of
@@ -18,11 +18,10 @@
 
       To achive that, run the following command in your EntityFrameworkCore
       base directory:
-      
+
       dotnet build "/p:AssemblyVersion=3.1.0.0"
     -->
     <LocalEFCoreRepository>C:\Repositories\EntityFrameworkCore</LocalEFCoreRepository>
     <LocalMySqlConnectorRepository>C:\Repositories\MySqlConnector</LocalMySqlConnectorRepository>
-    <LocalPomeloJsonObjectRepository>C:\Repositories\Pomelo.JsonObject</LocalPomeloJsonObjectRepository>
   </PropertyGroup>
 </Project>

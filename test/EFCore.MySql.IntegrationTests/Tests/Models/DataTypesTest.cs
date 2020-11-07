@@ -271,8 +271,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
 	            Assert.Null(valueDb.TypeByteArray255N);
 
 	            // json not null
-	            Assert.Equal(DataTypesVariable.EmptyJsonArray.Json, valueDb.TypeJsonArray.Json);
-	            Assert.Equal(DataTypesVariable.EmptyJsonObject.Json, valueDb.TypeJsonObject.Json);
+	            Assert.Equal(DataTypesVariable.EmptyJsonArray, valueDb.TypeJsonArray);
+	            Assert.Equal(DataTypesVariable.EmptyJsonObject, valueDb.TypeJsonObject);
 	            // json null
 	            Assert.Null(valueDb.TypeJsonArrayN);
 	            Assert.Null(valueDb.TypeJsonObjectN);
@@ -293,8 +293,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
                 byte10K[i] = (byte) 'a';
             }
 
-            var jsonArray = new JsonObject<List<string>>(new List<string> {"test"});
-            var jsonObject = new JsonObject<Dictionary<string, string>>(new Dictionary<string, string> {{"test", "test"}});
+            var jsonArray = new List<string> {"test"};
+            var jsonObject = new Dictionary<string, string> {{"test", "test"}};
 
             // test each data type with a valid value
 	        DataTypesVariable newValueMem() => new DataTypesVariable
@@ -338,11 +338,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
 	            Assert.Equal(byte255, valueDb.TypeByteArray255N);
 
 	            // json not null
-	            Assert.Equal(jsonArray.Json, valueDb.TypeJsonArray.Json);
-	            Assert.Equal(jsonObject.Json, valueDb.TypeJsonObject.Json);
+	            Assert.Equal(jsonArray, valueDb.TypeJsonArray);
+	            Assert.Equal(jsonObject, valueDb.TypeJsonObject);
 	            // json null
-	            Assert.Equal(jsonArray.Json, valueDb.TypeJsonArrayN.Json);
-	            Assert.Equal(jsonObject.Json, valueDb.TypeJsonObjectN.Json);
+	            Assert.Equal(jsonArray, valueDb.TypeJsonArrayN);
+	            Assert.Equal(jsonObject, valueDb.TypeJsonObjectN);
 	        }
 
 	        // create test data objects

@@ -104,21 +104,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models
 
 		// json not null
 		[Required]
-		public JsonObject<List<string>>               TypeJsonArray   { get; set; }
+		public List<string>               TypeJsonArray   { get; set; }
 
 		[Required]
-		public JsonObject<Dictionary<string, string>> TypeJsonObject  { get; set; }
+		public Dictionary<string, string> TypeJsonObject  { get; set; }
 
 		// json null
-		public JsonObject<List<string>>               TypeJsonArrayN  { get; set; }
+		public List<string>               TypeJsonArrayN  { get; set; }
 
-		public JsonObject<Dictionary<string, string>> TypeJsonObjectN { get; set; }
+		public Dictionary<string, string> TypeJsonObjectN { get; set; }
 
 
 	    // static method to create a new empty object
-	    public static readonly byte[] EmptyByteArray = new byte[0];
-	    public static readonly JsonObject<List<string>> EmptyJsonArray = new JsonObject<List<string>>(new List<string>());
-	    public static readonly JsonObject<Dictionary<string, string>> EmptyJsonObject = new JsonObject<Dictionary<string, string>>(new Dictionary<string, string>());
+	    public static readonly byte[] EmptyByteArray = Array.Empty<byte>();
+	    public static readonly List<string> EmptyJsonArray = new List<string>();
+	    public static readonly Dictionary<string, string> EmptyJsonObject = new Dictionary<string, string>();
 
 	    public static DataTypesVariable CreateEmpty()
 	    {

@@ -382,15 +382,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
 
                     b.Property<byte[]>("TypeByteArrayN");
 
-                    b.Property<JsonObject<List<string>>>("TypeJsonArray")
+                    b.Property<string>("TypeJsonArray")
                         .IsRequired();
 
-                    b.Property<JsonObject<List<string>>>("TypeJsonArrayN");
+                    b.Property<string>("TypeJsonArrayN");
 
-                    b.Property<JsonObject<Dictionary<string, string>>>("TypeJsonObject")
+                    b.Property<string>("TypeJsonObject")
                         .IsRequired();
 
-                    b.Property<JsonObject<Dictionary<string, string>>>("TypeJsonObjectN");
+                    b.Property<string>("TypeJsonObjectN");
 
                     b.Property<string>("TypeString")
                         .IsRequired();
@@ -424,7 +424,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                             `ContactInfo` ->> ""$.Zip""
 						)) STORED");
 
-                    b.Property<JsonObject<Dictionary<string, string>>>("ContactInfo");
+                    b.Property<string>("ContactInfo");
 
                     b.Property<string>("Email")
                         .ValueGeneratedOnAddOrUpdate()
@@ -438,7 +438,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
 						`Names` ->> ""$[0]""
 					) VIRTUAL");
 
-                    b.Property<JsonObject<List<string>>>("Names");
+                    b.Property<string>("Names");
 
                     b.HasKey("Id");
 

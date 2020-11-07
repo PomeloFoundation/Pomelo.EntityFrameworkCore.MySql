@@ -15,9 +15,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations.Design;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Microsoft.Extensions.Logging;
 using Pomelo.EntityFrameworkCore.MySql.Design.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
@@ -135,15 +133,15 @@ builder.Entity(""Pomelo.EntityFrameworkCore.MySql.Migrations.ModelSnapshotMySqlT
 
             // json not null
             [Required]
-            public JsonObject<List<string>> TypeJsonArray { get; set; }
+            public List<string> TypeJsonArray { get; set; }
 
             [Required]
-            public JsonObject<Dictionary<string, string>> TypeJsonObject { get; set; }
+            public Dictionary<string, string> TypeJsonObject { get; set; }
 
             // json null
-            public JsonObject<List<string>> TypeJsonArrayN { get; set; }
+            public List<string> TypeJsonArrayN { get; set; }
 
-            public JsonObject<Dictionary<string, string>> TypeJsonObjectN { get; set; }
+            public Dictionary<string, string> TypeJsonObjectN { get; set; }
         }
 
         protected virtual ICollection<BuildReference> GetReferences() => new List<BuildReference>

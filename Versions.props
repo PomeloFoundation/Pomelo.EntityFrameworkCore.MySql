@@ -60,7 +60,6 @@
     <!-- EFCore.MySql Dependencies -->
     <MicrosoftEntityFrameworkCoreRelationalVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreRelationalVersion>
     <MySqlConnectorVersion>1.0.1</MySqlConnectorVersion>
-    <PomeloJsonObjectVersion>2.2.1</PomeloJsonObjectVersion>
     <MicrosoftExtensionsCachingMemoryVersion>$(DotnetRuntimeVersion)</MicrosoftExtensionsCachingMemoryVersion>
     <MicrosoftExtensionsDependencyInjection>$(DotnetRuntimeVersion)</MicrosoftExtensionsDependencyInjection>
     <SystemDiagnosticsDiagnosticSourceVersion>$(DotnetRuntimeVersion)</SystemDiagnosticsDiagnosticSourceVersion>

@@ -36,6 +36,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models
         }
     }
 
+    public class ContactInfo
+    {
+        public string Email { get; set; }
+        public string Address { get; set; }
+        public string City { get; set; }
+        public string State { get; set; }
+        public string Zip { get; set; }
+    }
+
     public class GeneratedContact
     {
         public Guid Id { get; set; }
@@ -46,9 +55,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models
 
         public string Address { get; set; }
 
-        public JsonObject<List<string>> Names { get; set; }
+        public List<string> Names { get; set; }
 
-        public JsonObject<Dictionary<string, string>> ContactInfo { get; set; }
+        public ContactInfo ContactInfo { get; set; }
     }
 
     public class GeneratedTime
