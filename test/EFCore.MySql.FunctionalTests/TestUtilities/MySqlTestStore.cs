@@ -96,7 +96,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         public static MySqlDbContextOptionsBuilder AddOptions(MySqlDbContextOptionsBuilder builder)
         {
             return builder
-                .ServerVersion(AppConfig.ServerVersion.Version, AppConfig.ServerVersion.Type)
                 .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
                 .CommandTimeout(GetCommandTimeout())
                 .ExecutionStrategy(d => new TestMySqlRetryingExecutionStrategy(d))

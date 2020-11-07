@@ -43,7 +43,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         }
 
         public DbContextOptions CreateOptions(ServerVersion serverVersion)
-            => CreateOptions(b => b.ServerVersion(serverVersion));
+            => CreateOptions(b => {});
 
         public DbContextOptions CreateOptions(CharSetBehavior charSetBehavior, CharSet charSet)
             => CreateOptions(

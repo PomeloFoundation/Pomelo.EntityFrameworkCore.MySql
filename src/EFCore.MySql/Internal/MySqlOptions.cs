@@ -70,7 +70,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             {
                 throw new InvalidOperationException(
                     CoreStrings.SingletonOptionChanged(
-                        nameof(MySqlDbContextOptionsBuilder.ServerVersion),
+                        nameof(MySqlOptionsExtension.ServerVersion),
                         nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
             }
 

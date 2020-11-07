@@ -21,24 +21,6 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
         }
 
         /// <summary>
-        ///     Configures the target server version and type.
-        /// </summary>
-        public virtual MySqlDbContextOptionsBuilder ServerVersion(Version version, ServerType type)
-            => WithOption(e => e.WithServerVersion(new ServerVersion(version, type)));
-
-        /// <summary>
-        ///     Configures the target server version and type.
-        /// </summary>
-        public virtual MySqlDbContextOptionsBuilder ServerVersion(string serverVersion)
-            => WithOption(e => e.WithServerVersion(new ServerVersion(serverVersion)));
-
-        /// <summary>
-        ///     Configures the target <see cref="Pomelo.EntityFrameworkCore.MySql.Storage.ServerVersion"/>.
-        /// </summary>
-        public virtual MySqlDbContextOptionsBuilder ServerVersion(ServerVersion serverVersion)
-            => WithOption(e => e.WithServerVersion(serverVersion));
-
-        /// <summary>
         ///     Configures the Default CharSet Behavior
         /// </summary>
         public virtual MySqlDbContextOptionsBuilder CharSetBehavior(CharSetBehavior charSetBehavior)
