@@ -20,6 +20,7 @@ using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
@@ -888,6 +889,7 @@ SELECT ROW_COUNT();");
         }
 
         [ConditionalFact]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.RenameIndex))]
         public virtual void RenameIndexOperation()
         {
             var migrationBuilder = new MigrationBuilder("MySql");
@@ -923,11 +925,14 @@ SELECT ROW_COUNT();");
                 });
 
             Assert.Equal(
-                @"ALTER TABLE `Person` RENAME INDEX `IX_Person_Name` TO `IX_Person_FullName`;" + EOL,
+                AppConfig.ServerVersion.Supports.RenameIndex
+                ? @"ALTER TABLE `Person` RENAME INDEX `IX_Person_Name` TO `IX_Person_FullName`;" + EOL
+                : @"ALTER TABLE `Person` DROP INDEX `IX_Person_Name`;" + EOL + EOL + "CREATE UNIQUE INDEX `IX_Person_FullName` ON `Person` (`FullName`);" + EOL,
                 Sql);
         }
 
         [ConditionalFact]
+        [SupportedServerVersionCondition(ServerVersion.RenameColumnSupportKey)]
         public virtual void RenameColumnOperation()
         {
             var migrationBuilder = new MigrationBuilder("MySql");
@@ -961,7 +966,9 @@ SELECT ROW_COUNT();");
                 migrationBuilder.Operations.ToArray());
 
             Assert.Equal(
-                "ALTER TABLE `Person` RENAME COLUMN `Name` TO `FullName`;" + EOL,
+                AppConfig.ServerVersion.SupportsRenameColumn
+                    ? "ALTER TABLE `Person` RENAME COLUMN `Name` TO `FullName`;" + EOL
+                    : "ALTER TABLE `Person` CHANGE `Name` `FullName` longtext CHARACTER SET utf8mb4 NULL;" + EOL,
                 Sql);
         }
 
