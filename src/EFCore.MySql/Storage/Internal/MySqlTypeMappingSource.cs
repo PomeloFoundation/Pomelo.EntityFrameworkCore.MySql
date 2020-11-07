@@ -93,6 +93,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         // Scaffolding type mappings
         private readonly MySqlCodeGenerationMemberAccessTypeMapping _codeGenerationMemberAccess = new MySqlCodeGenerationMemberAccessTypeMapping();
+        private readonly MySqlCodeGenerationServerVersionCreationTypeMapping _codeGenerationServerVersionCreation = new MySqlCodeGenerationServerVersionCreationTypeMapping();
 
         private Dictionary<string, RelationalTypeMapping[]> _storeTypeMappings;
         private Dictionary<Type, RelationalTypeMapping> _clrTypeMappings;
@@ -276,7 +277,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             // Type mappings that only exist to work around the limited code generation capabilites when scaffolding:
             _scaffoldingClrTypeMappings = new Dictionary<Type, RelationalTypeMapping>
             {
-                { typeof(MySqlCodeGenerationMemberAccess), _codeGenerationMemberAccess }
+                { typeof(MySqlCodeGenerationMemberAccess), _codeGenerationMemberAccess },
+                { typeof(MySqlCodeGenerationServerVersionCreation), _codeGenerationServerVersionCreation },
             };
         }
 
@@ -456,6 +458,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     return new MySqlByteArrayTypeMapping(
                         size: size,
                         fixedLength: mappingInfo.IsFixedLength == true);
+                }
+
+                if (_scaffoldingClrTypeMappings.TryGetValue(clrType, out mapping))
+                {
+                    return mapping;
                 }
             }
 
