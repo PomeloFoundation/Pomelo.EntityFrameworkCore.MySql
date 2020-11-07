@@ -3,8 +3,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Storage
+namespace Microsoft.EntityFrameworkCore
 {
     public partial class ServerVersion
     {

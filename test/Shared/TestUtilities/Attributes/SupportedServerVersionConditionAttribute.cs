@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
 

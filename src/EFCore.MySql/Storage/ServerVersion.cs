@@ -7,7 +7,8 @@ using Microsoft.EntityFrameworkCore.Utilities;
 using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Storage
+// ReSharper disable once CheckNamespace
+namespace Microsoft.EntityFrameworkCore
 {
     public partial class ServerVersion
     {

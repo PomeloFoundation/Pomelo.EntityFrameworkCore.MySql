@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Storage;

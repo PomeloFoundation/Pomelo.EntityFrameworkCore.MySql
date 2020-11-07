@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
+using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
