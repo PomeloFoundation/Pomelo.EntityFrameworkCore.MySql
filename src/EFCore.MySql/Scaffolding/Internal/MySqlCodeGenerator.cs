@@ -39,7 +39,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
             connectionString = new MySqlScaffoldingConnectionSettings(connectionString).GetProviderCompatibleConnectionString();
 
             return new MethodCallCodeFragment(
-                nameof(MySqlDbContextOptionsExtensions.UseMySql),
+                nameof(MySqlDbContextOptionsBuilderExtensions.UseMySql),
                 providerOptions == null
                     ? new object[] {connectionString}
                     : new object[] {connectionString, new NestedClosureCodeFragment("x", providerOptions)});

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql
@@ -15,6 +16,7 @@ namespace Pomelo.EntityFrameworkCore.MySql
 
             builder.UseMySql(
                 "Server=first;",
+                AppConfig.ServerVersion,
                 options =>
                     options.DefaultDataTypeMappings(
                         mappings =>
@@ -22,6 +24,7 @@ namespace Pomelo.EntityFrameworkCore.MySql
 
             builder.UseMySql(
                 "Server=second;",
+                AppConfig.ServerVersion,
                 options =>
                     options.DefaultDataTypeMappings(
                         mappings =>
@@ -37,7 +40,7 @@ namespace Pomelo.EntityFrameworkCore.MySql
         {
             var builder = new DbContextOptionsBuilder();
 
-            builder.UseMySql("TreatTinyAsBoolean=True");
+            builder.UseMySql("TreatTinyAsBoolean=True", AppConfig.ServerVersion);
 
             var mySqlOptions = new MySqlOptions();
             mySqlOptions.Initialize(builder.Options);
@@ -50,7 +53,7 @@ namespace Pomelo.EntityFrameworkCore.MySql
         {
             var builder = new DbContextOptionsBuilder();
 
-            builder.UseMySql("TreatTinyAsBoolean=False");
+            builder.UseMySql("TreatTinyAsBoolean=False", AppConfig.ServerVersion);
 
             var mySqlOptions = new MySqlOptions();
             mySqlOptions.Initialize(builder.Options);
@@ -63,7 +66,7 @@ namespace Pomelo.EntityFrameworkCore.MySql
         {
             var builder = new DbContextOptionsBuilder();
 
-            builder.UseMySql("Server=foo");
+            builder.UseMySql("Server=foo", AppConfig.ServerVersion);
 
             var mySqlOptions = new MySqlOptions();
             mySqlOptions.Initialize(builder.Options);
@@ -78,6 +81,7 @@ namespace Pomelo.EntityFrameworkCore.MySql
 
             builder.UseMySql(
                 "TreatTinyAsBoolean=True",
+                AppConfig.ServerVersion,
                 b => b.DefaultDataTypeMappings(m => m.WithClrBoolean(MySqlBooleanType.Bit1)));
 
             var mySqlOptions = new MySqlOptions();
@@ -93,6 +97,7 @@ namespace Pomelo.EntityFrameworkCore.MySql
 
             builder.UseMySql(
                 "TreatTinyAsBoolean=False",
+                AppConfig.ServerVersion,
                 b => b.DefaultDataTypeMappings(m => m.WithClrBoolean(MySqlBooleanType.TinyInt1)));
 
             var mySqlOptions = new MySqlOptions();

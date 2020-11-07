@@ -19,6 +19,7 @@ using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
@@ -531,8 +532,7 @@ SELECT ROW_COUNT();");
             var columnType = "longtext";
             if (isIndex)
             {
-                var serverVersion = new ServerVersion();
-                var columnSize = Math.Min(serverVersion.MaxKeyLength / (charSet.MaxBytesPerChar * 2), 255);
+                var columnSize = Math.Min(AppConfig.ServerVersion.MaxKeyLength / (charSet.MaxBytesPerChar * 2), 255);
                 columnType = $"varchar({columnSize})";
             }
 

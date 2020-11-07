@@ -57,11 +57,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
         public static void ConfigureEntityFramework(IServiceCollection services)
         {
             services.AddDbContextPool<AppDb>(
-                options => options.UseMySql(GetConnectionString(),
+                options => options.UseMySql(
+                    GetConnectionString(),
+                    AppConfig.ServerVersion,
                     mysqlOptions =>
                     {
                         mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize);
-                        mysqlOptions.ServerVersion(AppConfig.ServerVersion);
                         mysqlOptions.CharSetBehavior(CharSetBehavior.NeverAppend);
                         mysqlOptions.UseNewtonsoftJson();
 

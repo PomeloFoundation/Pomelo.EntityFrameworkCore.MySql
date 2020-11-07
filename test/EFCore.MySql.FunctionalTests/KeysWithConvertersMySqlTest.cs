@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
@@ -18,7 +19,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 => MySqlTestStoreFactory.Instance;
 
             public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
-                => builder.UseMySql(b => b.MinBatchSize(1));
+                => builder.UseMySql(AppConfig.ServerVersion, b => b.MinBatchSize(1));
         }
     }
 }

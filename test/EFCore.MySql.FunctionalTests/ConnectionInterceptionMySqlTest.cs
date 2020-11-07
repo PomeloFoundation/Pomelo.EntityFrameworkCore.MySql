@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
@@ -30,7 +31,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         }
 
         protected override BadUniverseContext CreateBadUniverse(DbContextOptionsBuilder optionsBuilder)
-            => new BadUniverseContext(optionsBuilder.UseMySql(new FakeDbConnection()).Options);
+            => new BadUniverseContext(optionsBuilder.UseMySql(new FakeDbConnection(), AppConfig.ServerVersion).Options);
 
         public class FakeDbConnection : DbConnection
         {

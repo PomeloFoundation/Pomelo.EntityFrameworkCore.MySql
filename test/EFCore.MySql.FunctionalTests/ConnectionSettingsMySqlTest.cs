@@ -75,7 +75,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder
-                .UseMySql(MySqlTestStore.CreateConnectionString(_databaseName, false, _guidFormat))
+                .UseMySql(MySqlTestStore.CreateConnectionString(_databaseName, false, _guidFormat), AppConfig.ServerVersion)
                 .UseInternalServiceProvider(_serviceProvider);
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

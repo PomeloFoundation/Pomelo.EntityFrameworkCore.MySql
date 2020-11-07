@@ -229,9 +229,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                         if (Extension.ServerVersion != null)
                         {
                             builder.Append("ServerVersion ")
-                                .Append(Extension.ServerVersion.Version)
-                                .Append(" ")
-                                .Append(Extension.ServerVersion.Type)
+                                .Append(Extension.ServerVersion)
                                 .Append(" ");
                         }
 

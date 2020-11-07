@@ -3,6 +3,7 @@ using System.Linq;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
 // ReSharper disable InconsistentNaming
@@ -61,7 +62,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
                 => optionsBuilder
-                    .UseMySql(MySqlTestStore.CreateConnectionString(_databaseName, false))
+                    .UseMySql(MySqlTestStore.CreateConnectionString(_databaseName, false), AppConfig.ServerVersion)
                     .UseInternalServiceProvider(_serviceProvider);
 
             protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -21,7 +21,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         public MySqlOptions()
         {
             ConnectionSettings = new MySqlConnectionSettings();
-            ServerVersion = new ServerVersion(null);
+            ServerVersion = null;
             CharSetBehavior = CharSetBehavior.AppendToAllColumns; // TODO: Change to `NeverAppend` for EF Core 5.
 
             // We do not use the MySQL versions's default, but explicitly use `utf8mb4`
@@ -47,7 +47,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             var mySqlJsonOptions = (MySqlJsonOptionsExtension)options.Extensions.LastOrDefault(e => e is MySqlJsonOptionsExtension);
 
             ConnectionSettings = GetConnectionSettings(mySqlOptions);
-            ServerVersion = mySqlOptions.ServerVersion ?? ServerVersion;
+            ServerVersion = mySqlOptions.ServerVersion ?? throw new InvalidOperationException($"The {nameof(ServerVersion)} has not been set.");
             CharSetBehavior = mySqlOptions.NullableCharSetBehavior ?? CharSetBehavior;
             CharSet = mySqlOptions.CharSet ?? CharSet;
             NoBackslashEscapes = mySqlOptions.NoBackslashEscapes;
@@ -66,7 +66,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             var mySqlJsonOptions = (MySqlJsonOptionsExtension)options.Extensions.LastOrDefault(e => e is MySqlJsonOptionsExtension);
             var connectionSettings = GetConnectionSettings(mySqlOptions);
 
-            if (!Equals(ServerVersion, mySqlOptions.ServerVersion ?? new ServerVersion(null)))
+            if (!Equals(ServerVersion, mySqlOptions.ServerVersion))
             {
                 throw new InvalidOperationException(
                     CoreStrings.SingletonOptionChanged(

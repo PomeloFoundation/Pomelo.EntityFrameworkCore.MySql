@@ -82,14 +82,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 NoBackslashEscapes = noBackslashEscapes,
                 PersistSecurityInfo = true, // needed by some tests to not leak a broken connection into the following tests
                 GuidFormat = guidFormat,
+                AllowUserVariables = true,
+                UseAffectedRows = false,
             }.ConnectionString;
 
         private static int GetCommandTimeout() => AppConfig.Config.GetValue("Data:CommandTimeout", DefaultCommandTimeout);
 
         public override DbContextOptionsBuilder AddProviderOptions(DbContextOptionsBuilder builder)
             => _useConnectionString
-                ? builder.UseMySql(ConnectionString, x => AddOptions(x, _noBackslashEscapes))
-                : builder.UseMySql(Connection, x => AddOptions(x, _noBackslashEscapes));
+                ? builder.UseMySql(ConnectionString, AppConfig.ServerVersion, x => AddOptions(x, _noBackslashEscapes))
+                : builder.UseMySql(Connection, AppConfig.ServerVersion, x => AddOptions(x, _noBackslashEscapes));
 
         public static MySqlDbContextOptionsBuilder AddOptions(MySqlDbContextOptionsBuilder builder)
         {

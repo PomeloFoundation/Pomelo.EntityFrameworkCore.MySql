@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 
 //ReSharper disable once CheckNamespace
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
@@ -22,7 +23,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             => services.AddEntityFrameworkMySql();
 
         public override void UseProviderOptions(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder.UseMySql("Database=DummyDatabase");
+            => optionsBuilder.UseMySql("Database=DummyDatabase", AppConfig.ServerVersion);
 
         public IServiceProvider CreateContextServices(ServerVersion serverVersion)
             => ((IInfrastructure<IServiceProvider>)new DbContext(CreateOptions(serverVersion))).Instance;
@@ -51,7 +52,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 
         public DbContextOptions CreateOptions(Action<MySqlDbContextOptionsBuilder> builder)
             => new DbContextOptionsBuilder()
-                .UseMySql("Database=DummyDatabase", builder)
+                .UseMySql("Database=DummyDatabase", AppConfig.ServerVersion, builder)
                 .Options;
     }
 }

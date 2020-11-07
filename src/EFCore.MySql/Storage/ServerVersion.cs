@@ -3,6 +3,7 @@
 
 using System;
 using System.Text.RegularExpressions;
+using Microsoft.EntityFrameworkCore.Utilities;
 using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
@@ -12,7 +13,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
     {
         private static readonly Regex _versionRegex = new Regex(@"\d+\.\d+\.?(?:\d+)?");
 
-        public static readonly ServerVersion Default = new ServerVersion(new Version(8, 0, 21), ServerType.MySql);
+        public static readonly ServerVersion LatestSupportedMySqlVersion = new ServerVersion(new Version(8, 0, 21), ServerType.MySql);
+        public static readonly ServerVersion LatestSupportedMariaDbVersion = new ServerVersion(new Version(10, 5, 5), ServerType.MariaDb);
 
         public ServerVersion()
             : this(null)
@@ -21,27 +23,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
 
         public ServerVersion(string versionString)
         {
-            if (versionString != null)
+            Check.NotEmpty(versionString, nameof(versionString));
+
+            Type = versionString.ToLower().Contains("mariadb") ? ServerType.MariaDb : ServerType.MySql;
+            var semanticVersion = _versionRegex.Matches(versionString);
+            if (semanticVersion.Count > 0)
             {
-                Type = versionString.ToLower().Contains("mariadb") ? ServerType.MariaDb : ServerType.MySql;
-                var semanticVersion = _versionRegex.Matches(versionString);
-                if (semanticVersion.Count > 0)
-                {
-                    Version = Type == ServerType.MariaDb && semanticVersion.Count > 1
-                        ? Version.Parse(semanticVersion[1].Value)
-                        : Version.Parse(semanticVersion[0].Value);
-                }
-                else
-                {
-                    throw new InvalidOperationException(
-                        $"Unable to determine server version from version string '${versionString}'");
-                }
+                Version = Type == ServerType.MariaDb && semanticVersion.Count > 1
+                    ? Version.Parse(semanticVersion[1].Value)
+                    : Version.Parse(semanticVersion[0].Value);
             }
             else
             {
-                Version = Default.Version;
-                Type = Default.Type;
-                IsDefault = true;
+                throw new InvalidOperationException(
+                    $"Unable to determine server version from version string '${versionString}'");
             }
         }
 
@@ -53,22 +48,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
 
         public virtual Version Version { get; }
         public virtual ServerType Type { get; }
-        public virtual bool IsDefault { get; }
 
         public override bool Equals(object obj)
-            => !(obj is null)
-               && obj is ServerVersion version
-               && Equals(version);
+            => obj is ServerVersion version &&
+               Equals(version);
 
         private bool Equals(ServerVersion other)
             => Version.Equals(other.Version)
                && Type == other.Type;
 
         public override int GetHashCode()
-            => (Version.GetHashCode() * 397) ^ Type.GetHashCode();
+            => HashCode.Combine(Version, Type);
 
         public override string ToString()
-            => Version + "-" + (Type == ServerType.MariaDb ? "mariadb" : "mysql");
+            => $"{Version}-{(Type == ServerType.MariaDb ? "mariadb" : "mysql")}";
 
         public static ServerVersion AutoDetect(string connectionString)
         {
