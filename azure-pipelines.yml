@@ -7,6 +7,7 @@ trigger:
     - '*'
 variables:
   isPullRequest: $[eq(variables['Build.Reason'], 'PullRequest')]
+  skipWindowsTests: $[and(variables['isPullRequest'], not(contains(variables['System.PullRequest.SourceBranch'], 'windows')))]
   mysqlCurrentSqlMode: ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
   mysqlLegacySqlMode: ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
   # Currently no ONLY_FULL_GROUP_BY, see #1167:
@@ -25,7 +26,7 @@ jobs:
         databaseServerType: 'mysql'
         databaseServerVersion: '8.0.21'
         sqlMode: $(mysqlCurrentSqlMode)
-        skipTests: $[and(variables['isPullRequest'], not(or(contains(variables['Build.SourceBranchName'], 'windows'), contains(variables['Build.SourceVersionMessage'], 'windows'))))]
+        skipTests: $(skipWindowsTests)
       MySQL 8.0 (Linux):
         vmImageName: 'ubuntu-latest'
         databaseServerType: 'mysql'
@@ -59,6 +60,14 @@ jobs:
   pool:
     vmImage: $(vmImageName)
   steps:
+  - pwsh: |
+      echo "skipTests: $(skipTests)"
+      echo "skipWindowsTests: $(skipWindowsTests)"
+      echo "isPullRequest: $(isPullRequest)"
+      echo "Build.SourceBranchName: $(Build.SourceBranchName)"
+      echo "Build.SourceVersionMessage: $(Build.SourceVersionMessage)"
+      echo "System.PullRequest.SourceBranch: $(System.PullRequest.SourceBranch)"
+    displayName: Output Variables
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK'
     inputs:
