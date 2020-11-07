@@ -25,7 +25,7 @@ jobs:
         databaseServerType: 'mysql'
         databaseServerVersion: '8.0.21'
         sqlMode: $(mysqlCurrentSqlMode)
-        skipTests: $(isPullRequest)
+        skipTests: $[and(variables['isPullRequest'], not(or(contains(variables['Build.SourceBranchName'], 'windows'), contains(variables['Build.SourceVersionMessage'], 'windows'))))]
       MySQL 8.0 (Linux):
         vmImageName: 'ubuntu-latest'
         databaseServerType: 'mysql'
