@@ -16,8 +16,8 @@ try
       Copy-Item (Join-Path 'LegacyMigrations' $legacyVersion '*.csbak') 'Migrations'
       Get-ChildItem (Join-Path 'Migrations' '*.csbak') | % { Rename-Item -Path $_.FullName -NewName ([System.IO.Path]::ChangeExtension($_.Name, ".cs")) }
 
-      dotnet ef migrations add current
-      dotnet ef database update
+      dotnet ef migrations add current --verbose
+      dotnet ef database update --verbose
       dotnet test
       break;
   }

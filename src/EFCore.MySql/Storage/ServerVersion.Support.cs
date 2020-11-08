@@ -160,7 +160,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
             { CrossApplySupportKey, new ServerVersionSupport(CrossApplyMySqlSupportVersionString/*, CrossApplyMariaDbSupportVersionString*/) },
             { OuterReferenceInMultiLevelSubquerySupportKey, new ServerVersionSupport(OuterReferenceInMultiLevelSubqueryMySqlSupportVersionString/*, OuterReferenceInMultiLevelSubqueryMariaDbSupportVersionString*/) },
             { DoubleCastSupportKey, new ServerVersionSupport(DoubleCastMySqlSupportVersionString, DoubleCastMariaDbSupportVersionString) },
-            { JsonSupportKey, new ServerVersionSupport(JsonMySqlSupportVersionString/*, JsonMariaDbSupportVersionString*/) },
+            { JsonSupportKey, new ServerVersionSupport(JsonMySqlSupportVersionString, JsonMariaDbSupportVersionString) },
             { GeneratedColumnsSupportKey, new ServerVersionSupport(GeneratedColumnsMySqlSupportVersionString, GeneratedColumnsMariaDbSupportVersionString) },
             { NullableGeneratedColumnsSupportKey, new ServerVersionSupport(NullableGeneratedColumnsMySqlSupportVersionString/*, NullableGeneratedColumnsMariaDbSupportVersionString*/) },
             { DefaultCharSetUtf8Mb4SupportKey, new ServerVersionSupport(DefaultCharSetUtf8Mb4MySqlSupportVersionString/*, DefaultCharSetUtf8Mb4MariaDbSupportVersionString*/) },
