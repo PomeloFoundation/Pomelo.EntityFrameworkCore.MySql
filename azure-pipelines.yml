@@ -7,7 +7,8 @@ trigger:
     - '*'
 variables:
   isPullRequest: $[eq(variables['Build.Reason'], 'PullRequest')]
-  skipWindowsTests: $[and(variables['isPullRequest'], not(contains(variables['System.PullRequest.SourceBranch'], 'windows')))]
+  pullRequestSourceBranch: $[variables['System.PullRequest.SourceBranch']]
+  skipWindowsTests: $[and(variables['isPullRequest'], not(contains(variables['pullRequestSourceBranch'], 'windows')))]
   mysqlCurrentSqlMode: ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
   mysqlLegacySqlMode: ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
   # Currently no ONLY_FULL_GROUP_BY, see #1167:
@@ -63,10 +64,10 @@ jobs:
   - pwsh: |
       echo "skipTests: $(skipTests)"
       echo "skipWindowsTests: $(skipWindowsTests)"
+      echo "pullRequestSourceBranch: $(pullRequestSourceBranch)"
       echo "isPullRequest: $(isPullRequest)"
       echo "Build.SourceBranchName: $(Build.SourceBranchName)"
       echo "Build.SourceVersionMessage: $(Build.SourceVersionMessage)"
-      echo "System.PullRequest.SourceBranch: $(System.PullRequest.SourceBranch)"
     displayName: Output Variables
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK'
