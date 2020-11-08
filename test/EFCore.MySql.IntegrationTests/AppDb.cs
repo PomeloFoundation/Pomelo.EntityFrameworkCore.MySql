@@ -83,8 +83,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
 
             modelBuilder.Entity<DataTypesVariable>(eb =>
             {
-            // Need to specify the type until EF#12212 is fixed
-            eb.Property(e => e.TypeJsonArray).HasColumnType("json");
+                // Need to specify the type until EF#12212 is fixed
+                eb.Property(e => e.TypeJsonArray).HasColumnType("json");
                 eb.Property(e => e.TypeJsonArrayN).HasColumnType("json");
                 eb.Property(e => e.TypeJsonObject).HasColumnType("json");
                 eb.Property(e => e.TypeJsonObjectN).HasColumnType("json");
@@ -92,8 +92,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
 
             modelBuilder.Entity<GeneratedContact>(eb =>
             {
-            // Need to specify the type until EF#12212 is fixed
-            eb.Property(e => e.Names).HasColumnType("json");
+                // Need to specify the type until EF#12212 is fixed
+                eb.Property(e => e.Names).HasColumnType("json");
                 eb.Property(e => e.ContactInfo).HasColumnType("json");
             });
 

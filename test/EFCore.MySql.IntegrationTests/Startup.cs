@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
 using Newtonsoft.Json;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Tests;
 
 namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
@@ -61,6 +62,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
                     {
                         mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize);
                         mysqlOptions.ServerVersion(AppConfig.ServerVersion);
+                        mysqlOptions.CharSetBehavior(CharSetBehavior.NeverAppend);
+                        mysqlOptions.UseNewtonsoftJson();
+
                         if (AppConfig.EfRetryOnFailure > 0)
                         {
                             mysqlOptions.EnableRetryOnFailure(AppConfig.EfRetryOnFailure, TimeSpan.FromSeconds(5), null);

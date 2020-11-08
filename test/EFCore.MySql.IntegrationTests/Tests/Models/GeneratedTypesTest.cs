@@ -42,15 +42,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
 
 				var gen = new GeneratedContact
 				{
-					Names = new JsonObject<List<string>>(new List<string> {"Bob", "Bobby"}),
-					ContactInfo = new JsonObject<Dictionary<string, string>>(new Dictionary<string, string>
+					Names = new List<string> {"Bob", "Bobby"},
+					ContactInfo = new ContactInfo
 					{
-						{"Email", email},
-						{"Address", address},
-						{"City", city},
-						{"State", state},
-						{"Zip", zip},
-					}),
+						Email = email,
+						Address = address,
+						City = city,
+						State = state,
+						Zip = zip,
+					},
 				};
 
 				// test the entity after saving to the db

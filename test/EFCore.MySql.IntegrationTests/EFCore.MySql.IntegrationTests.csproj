@@ -27,10 +27,6 @@
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(LocalPomeloJsonObjectRepository)' == ''">
-    <PackageReference Include="Pomelo.JsonObject" Version="$(PomeloJsonObjectVersion)" />
-  </ItemGroup>
-
   <ItemGroup Condition="'$(LocalEFCoreRepository)' == ''">
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="$(MicrosoftEntityFrameworkCoreDesignVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" Version="$(MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion)" />
@@ -38,12 +34,6 @@
 
   <ItemGroup Condition="'$(LocalMySqlConnectorRepository)' == ''">
     <PackageReference Include="MySqlConnector" Version="$(MySqlConnectorVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(LocalPomeloJsonObjectRepository)' != ''">
-    <Reference Include="Pomelo.JsonObject">
-      <HintPath>$(LocalPomeloJsonObjectRepository)\src\Pomelo.JsonObject\bin\Debug\netstandard2.0\Pomelo.JsonObject.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup Condition="'$(LocalEFCoreRepository)' != ''">
@@ -75,6 +65,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\EFCore.MySql\EFCore.MySql.csproj" />
+    <ProjectReference Include="..\..\src\EFCore.MySql.Json.Newtonsoft\EFCore.MySql.Json.Newtonsoft.csproj" />
   </ItemGroup>
 
   <ItemGroup>

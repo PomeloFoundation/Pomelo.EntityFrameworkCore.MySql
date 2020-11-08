@@ -19,10 +19,11 @@ try
       dotnet ef migrations add current
       dotnet ef database update
       dotnet test
+      break;
   }
 }
 finally
 {
-  Remove-Item (Join-Path 'Migrations' '*.cs')
+  # Remove-Item (Join-Path 'Migrations' '*.cs')
   Pop-Location
 }

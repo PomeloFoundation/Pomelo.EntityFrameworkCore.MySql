@@ -176,10 +176,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                     TypeByteArray255 = table.Column<byte[]>(maxLength: 255, nullable: false),
                     TypeByteArray255N = table.Column<byte[]>(maxLength: 255, nullable: true),
                     TypeByteArrayN = table.Column<byte[]>(nullable: true),
-                    TypeJsonArray = table.Column<JsonObject<List<string>>>(nullable: false),
-                    TypeJsonArrayN = table.Column<JsonObject<List<string>>>(nullable: true),
-                    TypeJsonObject = table.Column<JsonObject<Dictionary<string, string>>>(nullable: false),
-                    TypeJsonObjectN = table.Column<JsonObject<Dictionary<string, string>>>(nullable: true),
+                    TypeJsonArray = table.Column<string>(nullable: false),
+                    TypeJsonArrayN = table.Column<string>(nullable: true),
+                    TypeJsonObject = table.Column<string>(nullable: false),
+                    TypeJsonObjectN = table.Column<string>(nullable: true),
                     TypeString = table.Column<string>(nullable: false),
                     TypeString255 = table.Column<string>(maxLength: 255, nullable: false),
                     TypeString255N = table.Column<string>(maxLength: 255, nullable: true),
@@ -204,7 +204,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                             `ContactInfo` ->> ""$.Zip""
 						)) STORED", nullable: true)
                         .Annotation("MySql:ValueGeneratedOnAddOrUpdate", true),
-                    ContactInfo = table.Column<JsonObject<Dictionary<string, string>>>(nullable: true),
+                    ContactInfo = table.Column<string>(nullable: true),
                     Email = table.Column<string>(type: @"VARCHAR(63) GENERATED ALWAYS AS (
 						`ContactInfo` ->> ""$.Email""
 					) VIRTUAL", nullable: true)
@@ -213,7 +213,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
 						`Names` ->> ""$[0]""
 					) VIRTUAL", nullable: true)
                         .Annotation("MySql:ValueGeneratedOnAddOrUpdate", true),
-                    Names = table.Column<JsonObject<List<string>>>(nullable: true)
+                    Names = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
