@@ -1,29 +1,28 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class SupportedServerVersionConditionAttribute : Attribute, ITestCondition
     {
-        protected ServerVersionSupport ServerVersionSupport { get; }
+        protected string[] PropertiesOrVersions { get; }
 
-        public SupportedServerVersionConditionAttribute(params string[] versionsOrKeys)
+        public SupportedServerVersionConditionAttribute(params string[] propertiesOrVersions)
         {
-            ServerVersionSupport = ServerVersion.GetSupport(versionsOrKeys);
+            PropertiesOrVersions = propertiesOrVersions;
         }
 
         public virtual ValueTask<bool> IsMetAsync()
         {
             var currentVersion = AppConfig.ServerVersion;
-            var isMet = ServerVersionSupport.IsSupported(currentVersion);
+            var isMet = PropertiesOrVersions.Any(s => currentVersion.Supports.PropertyOrVersion(s));
 
             if (!isMet && string.IsNullOrEmpty(Skip))
             {
-                Skip = $"Test is supported only on {ServerVersionSupport.SupportedServerVersions} and higher.";
+                Skip = $"The test is not supported on server version {currentVersion}.";
             }
 
             return new ValueTask<bool>(isMet);

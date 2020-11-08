@@ -46,7 +46,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 // In MySQL 5.6 and lower, unique indices have a smaller max. key size as in later version.
                 // This can lead to the following exception being thrown:
                 //     Specified key was too long; max key length is 767 bytes
-                if (!AppConfig.ServerVersion.SupportsLargerKeyLength)
+                if (!AppConfig.ServerVersion.Supports.LargerKeyLength)
                 {
                     modelBuilder.Entity<Attendee>(entity =>
                     {

@@ -341,23 +341,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         }
 
         private string GetCaseSensitiveUtf8Mb4Collation(MySqlConnection connection)
-        {
-            var serverVersion = new ServerVersion(connection.ServerVersion);
-            var modernCollationSupport = new ServerVersionSupport(new ServerVersion(new Version(8, 0), ServerType.MySql));
-
-            return modernCollationSupport.IsSupported(serverVersion)
+            => ServerVersion.AutoDetect(connection).Supports.DefaultCharSetUtf8Mb4
                 ? ModernCsCollation
                 : LegacyCsCollation;
-        }
 
         private string GetCaseInsensitiveUtf8Mb4Collation(MySqlConnection connection)
-        {
-            var serverVersion = new ServerVersion(connection.ServerVersion);
-            var modernCollationSupport = new ServerVersionSupport(new ServerVersion(new Version(8, 0), ServerType.MySql));
-
-            return modernCollationSupport.IsSupported(serverVersion)
+            => ServerVersion.AutoDetect(connection).Supports.DefaultCharSetUtf8Mb4
                 ? ModernCiCollation
                 : LegacyCiCollation;
-        }
     }
 }

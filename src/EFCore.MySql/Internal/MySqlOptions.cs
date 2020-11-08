@@ -176,7 +176,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             if (defaultDataTypeMappings.ClrDateTime == MySqlDateTimeType.Default)
             {
                 defaultDataTypeMappings = defaultDataTypeMappings.WithClrDateTime(
-                    ServerVersion.SupportsDateTime6
+                    ServerVersion.Supports.DateTime6
                         ? MySqlDateTimeType.DateTime6
                         : MySqlDateTimeType.DateTime);
             }
@@ -184,7 +184,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             if (defaultDataTypeMappings.ClrDateTimeOffset == MySqlDateTimeType.Default)
             {
                 defaultDataTypeMappings = defaultDataTypeMappings.WithClrDateTimeOffset(
-                    ServerVersion.SupportsDateTime6
+                    ServerVersion.Supports.DateTime6
                         ? MySqlDateTimeType.DateTime6
                         : MySqlDateTimeType.DateTime);
             }
@@ -192,7 +192,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             if (defaultDataTypeMappings.ClrTimeSpan == MySqlTimeSpanType.Default)
             {
                 defaultDataTypeMappings = defaultDataTypeMappings.WithClrTimeSpan(
-                    ServerVersion.SupportsDateTime6
+                    ServerVersion.Supports.DateTime6
                         ? MySqlTimeSpanType.Time6
                         : MySqlTimeSpanType.Time);
             }

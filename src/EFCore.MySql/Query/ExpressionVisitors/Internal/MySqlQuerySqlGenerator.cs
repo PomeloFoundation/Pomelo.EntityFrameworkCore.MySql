@@ -304,14 +304,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                                          operandUnary.OperatorType == ExpressionType.Convert &&
                                          castMapping.Equals(GetCastStoreType(operandUnary.TypeMapping), StringComparison.OrdinalIgnoreCase);
 
-            if (castMapping == "json" && !_options.ServerVersion.SupportsJsonDataTypeEmulation ||
+            if (castMapping == "json" && !_options.ServerVersion.Supports.JsonDataTypeEmulation ||
                 !castMapping.Equals(sqlUnaryExpression.Operand.TypeMapping.StoreType, StringComparison.OrdinalIgnoreCase) &&
                 !sameInnerCastStoreType)
             {
                 var useDecimalToDoubleWorkaround = false;
 
                 if (castMapping.StartsWith("double") &&
-                    !_options.ServerVersion.SupportsDoubleCast)
+                    !_options.ServerVersion.Supports.DoubleCast)
                 {
                     useDecimalToDoubleWorkaround = true;
                     castMapping = "decimal(65,30)";
@@ -388,7 +388,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             // REF: https://stackoverflow.com/a/32991084/2618319
 
             if (castMapping.StartsWith("float") &&
-                !_options.ServerVersion.SupportsFloatCast)
+                !_options.ServerVersion.Supports.FloatCast)
             {
                 castMapping = "double";
             }

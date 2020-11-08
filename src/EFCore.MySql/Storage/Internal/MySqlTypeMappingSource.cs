@@ -445,7 +445,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 {
                     if (mappingInfo.IsRowVersion == true)
                     {
-                        return _options.ServerVersion.SupportsDateTime6
+                        return _options.ServerVersion.Supports.DateTime6
                             ? _binaryRowVersion6
                             : _binaryRowVersion;
                     }

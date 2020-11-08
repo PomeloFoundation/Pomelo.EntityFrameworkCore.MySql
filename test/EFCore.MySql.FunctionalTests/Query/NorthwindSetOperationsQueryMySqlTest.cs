@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
@@ -21,7 +22,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        [SupportedServerVersionCondition(ServerVersion.ExceptInterceptSupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.ExceptIntercept))]
         public override async Task Intersect(bool async)
         {
             await base.Intersect(async);
@@ -36,7 +37,7 @@ FROM `Customers` AS `c0`
 WHERE `c0`.`ContactName` LIKE '%Thomas%'");
         }
 
-        [SupportedServerVersionCondition(ServerVersion.ExceptInterceptSupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.ExceptIntercept))]
         public override async Task Intersect_nested(bool async)
         {
             await base.Intersect_nested(async);
@@ -55,7 +56,7 @@ FROM `Customers` AS `c1`
 WHERE `c1`.`Fax` IS NOT NULL");
         }
 
-        [SupportedServerVersionCondition(ServerVersion.ExceptInterceptSupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.ExceptIntercept))]
         public override async Task Intersect_non_entity(bool async)
         {
             await base.Intersect_non_entity(async);
@@ -70,7 +71,7 @@ FROM `Customers` AS `c0`
 WHERE `c0`.`ContactTitle` = 'Owner'");
         }
 
-        [SupportedServerVersionCondition(ServerVersion.ExceptInterceptPrecedenceSupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.ExceptInterceptPrecedence))]
         public override async Task Union_Intersect(bool async)
         {
             await base.Union_Intersect(async);
@@ -91,7 +92,7 @@ FROM `Customers` AS `c1`
 WHERE `c1`.`ContactName` LIKE '%Thomas%'");
         }
 
-        [SupportedServerVersionCondition(ServerVersion.ExceptInterceptSupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.ExceptIntercept))]
         public override async Task Except(bool async)
         {
             await base.Except(async);
@@ -106,7 +107,7 @@ FROM `Customers` AS `c0`
 WHERE `c0`.`ContactName` LIKE '%Thomas%'");
         }
 
-        [SupportedServerVersionCondition(ServerVersion.ExceptInterceptSupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.ExceptIntercept))]
         public override async Task Except_simple_followed_by_projecting_constant(bool async)
         {
             await base.Except_simple_followed_by_projecting_constant(async);
@@ -122,7 +123,7 @@ FROM (
 ) AS `t`");
         }
 
-        [SupportedServerVersionCondition(ServerVersion.ExceptInterceptSupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.ExceptIntercept))]
         public override async Task Except_nested(bool async)
         {
             await base.Except_nested(async);
@@ -141,7 +142,7 @@ FROM `Customers` AS `c1`
 WHERE `c1`.`City` = 'Seattle'");
         }
 
-        [SupportedServerVersionCondition(ServerVersion.ExceptInterceptSupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.ExceptIntercept))]
         public override async Task Except_non_entity(bool async)
         {
             await base.Except_non_entity(async);
@@ -156,7 +157,7 @@ FROM `Customers` AS `c0`
 WHERE `c0`.`City` = 'México D.F.'");
         }
 
-        [SupportedServerVersionCondition(ServerVersion.ExceptInterceptSupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.ExceptIntercept))]
         public override async Task Select_Except_reference_projection(bool async)
         {
             await base.Select_Except_reference_projection(async);
@@ -181,7 +182,7 @@ WHERE `o0`.`CustomerID` = 'ALFKI'");
             return base.Union_Take_Union_Take(async);
         }
 
-        [SupportedServerVersionCondition(ServerVersion.ExceptInterceptSupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.ExceptIntercept))]
         public override async Task Union_Select_scalar(bool async)
         {
             await base.Union_Select_scalar(async);

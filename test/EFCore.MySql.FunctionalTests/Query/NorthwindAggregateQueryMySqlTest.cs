@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
@@ -32,7 +33,7 @@ FROM `Products` AS `p`
 WHERE `p`.`ProductID` < 40");
         }
 
-        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
         public override Task Multiple_collection_navigation_with_FirstOrDefault_chained(bool async)
         {
             return base.Multiple_collection_navigation_with_FirstOrDefault_chained(async);

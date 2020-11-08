@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit.Abstractions;
@@ -21,11 +22,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        [SupportedServerVersionCondition(ServerVersion.ExceptInterceptSupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.ExceptIntercept))]
         public override async Task Intersect_non_entity()
             => await base.Intersect_non_entity();
 
-        [SupportedServerVersionCondition(ServerVersion.ExceptInterceptSupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.ExceptIntercept))]
         public override async Task Except_non_entity()
             => await base.Except_non_entity();
     }

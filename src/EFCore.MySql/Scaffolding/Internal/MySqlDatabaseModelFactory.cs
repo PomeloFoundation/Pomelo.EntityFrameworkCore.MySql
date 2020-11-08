@@ -118,7 +118,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
                 {
                     // If we cannot determine the server version for some reason, just fall
                     // back on the latest MySQL version.
-                    serverVersion = ServerVersion.LatestSupportedMySqlVersion;
+                    serverVersion = MySqlServerVersion.LatestSupportedServerVersion;
 
                     _logger.Logger.LogWarning($"No {nameof(ServerVersion)} could be automatically detected. The latest supported {nameof(ServerVersion)} will be used.");
                 }
@@ -244,7 +244,7 @@ ORDER BY
                                 ? reader.GetValueOrDefault<uint?>("SRS_ID")
                                 : null;
 
-                            defaultValue = _options.ServerVersion.SupportsAlternativeDefaultExpression &&
+                            defaultValue = _options.ServerVersion.Supports.AlternativeDefaultExpression &&
                                            defaultValue != null
                                 ? ConvertDefaultValueFromMariaDbToMySql(defaultValue)
                                 : defaultValue;

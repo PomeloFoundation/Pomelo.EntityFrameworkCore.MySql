@@ -1635,7 +1635,7 @@ WHERE (`o`.`CustomerID` = 'ALFKI') AND ((CAST(`o`.`OrderDate` AS char) COLLATE u
         }
 
         private string CastAsDouble(string innerSql)
-            => AppConfig.ServerVersion.SupportsDoubleCast
+            => AppConfig.ServerVersion.Supports.DoubleCast
                 ? $@"CAST({innerSql} AS double)"
                 : $@"(CAST({innerSql} AS decimal(65,30)) + 0e0)";
 

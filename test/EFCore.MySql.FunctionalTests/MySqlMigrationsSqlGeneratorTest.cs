@@ -932,7 +932,7 @@ SELECT ROW_COUNT();");
         }
 
         [ConditionalFact]
-        [SupportedServerVersionCondition(ServerVersion.RenameColumnSupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.RenameColumn))]
         public virtual void RenameColumnOperation()
         {
             var migrationBuilder = new MigrationBuilder("MySql");
@@ -966,7 +966,7 @@ SELECT ROW_COUNT();");
                 migrationBuilder.Operations.ToArray());
 
             Assert.Equal(
-                AppConfig.ServerVersion.SupportsRenameColumn
+                AppConfig.ServerVersion.Supports.RenameColumn
                     ? "ALTER TABLE `Person` RENAME COLUMN `Name` TO `FullName`;" + EOL
                     : "ALTER TABLE `Person` CHANGE `Name` `FullName` longtext CHARACTER SET utf8mb4 NULL;" + EOL,
                 Sql);

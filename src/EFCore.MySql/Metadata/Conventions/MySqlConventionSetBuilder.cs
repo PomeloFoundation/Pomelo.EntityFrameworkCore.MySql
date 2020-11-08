@@ -62,7 +62,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
         {
             var serviceProvider = new ServiceCollection()
                 .AddEntityFrameworkMySql()
-                .AddDbContext<DbContext>(o => o.UseMySql("Server=.", ServerVersion.LatestSupportedMySqlVersion))
+                .AddDbContext<DbContext>(o => o.UseMySql("Server=.", MySqlServerVersion.LatestSupportedServerVersion))
                 .BuildServiceProvider();
 
             using (var serviceScope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())

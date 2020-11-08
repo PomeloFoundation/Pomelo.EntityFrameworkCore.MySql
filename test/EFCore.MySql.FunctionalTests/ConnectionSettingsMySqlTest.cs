@@ -24,7 +24,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         public virtual void Insert_and_read_Guid_value(MySqlGuidFormat guidFormat, string sqlEquivalent, string supportedServerVersion)
         {
             if (supportedServerVersion != null &&
-                !new ServerVersionSupport(new ServerVersion(supportedServerVersion)).IsSupported(AppConfig.ServerVersion))
+                !AppConfig.ServerVersion.Supports.Version(ServerVersion.FromString(supportedServerVersion)))
             {
                 return;
             }

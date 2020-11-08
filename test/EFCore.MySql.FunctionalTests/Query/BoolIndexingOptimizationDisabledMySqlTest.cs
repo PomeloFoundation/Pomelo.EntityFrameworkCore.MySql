@@ -78,7 +78,7 @@ WHERE NOT (`w`.`IsAutomatic`)");
                     @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
 WHERE `w`.`IsAutomatic`"),
-                AppConfig.ServerVersion.SupportsImplicitBoolCheckUsesIndex
+                AppConfig.ServerVersion.Supports.ImplicitBoolCheckUsesIndex
                     ? keys
                     : null);
         }
@@ -100,7 +100,7 @@ WHERE `w`.`IsAutomatic`"),
                     @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
 WHERE NOT (`w`.`IsAutomatic`)"),
-                AppConfig.ServerVersion.SupportsImplicitBoolCheckUsesIndex
+                AppConfig.ServerVersion.Supports.ImplicitBoolCheckUsesIndex
                     ? keys
                     : null);
         }
@@ -122,7 +122,7 @@ WHERE NOT (`w`.`IsAutomatic`)"),
                     @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
 WHERE NOT (`w`.`IsAutomatic`)"),
-                AppConfig.ServerVersion.SupportsImplicitBoolCheckUsesIndex
+                AppConfig.ServerVersion.Supports.ImplicitBoolCheckUsesIndex
                     ? keys
                     : null);
         }
@@ -144,7 +144,7 @@ WHERE NOT (`w`.`IsAutomatic`)"),
                     @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
 WHERE `w`.`IsAutomatic`"),
-                AppConfig.ServerVersion.SupportsImplicitBoolCheckUsesIndex
+                AppConfig.ServerVersion.Supports.ImplicitBoolCheckUsesIndex
                     ? keys
                     : null);
         }
@@ -166,7 +166,7 @@ WHERE `w`.`IsAutomatic`"),
                     @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
 WHERE NOT (`w`.`IsAutomatic`)"),
-                AppConfig.ServerVersion.SupportsImplicitBoolCheckUsesIndex
+                AppConfig.ServerVersion.Supports.ImplicitBoolCheckUsesIndex
                     ? keys
                     : null);
         }
@@ -188,7 +188,7 @@ WHERE NOT (`w`.`IsAutomatic`)"),
                     @"SELECT `w`.`Name`
 FROM `Weapons` AS `w`
 WHERE `w`.`IsAutomatic`"),
-                AppConfig.ServerVersion.SupportsImplicitBoolCheckUsesIndex
+                AppConfig.ServerVersion.Supports.ImplicitBoolCheckUsesIndex
                     ? keys
                     : null);
         }

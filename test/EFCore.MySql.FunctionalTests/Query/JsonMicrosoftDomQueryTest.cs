@@ -448,17 +448,17 @@ LIMIT 2");
         #region Support
 
         protected string InsertJsonConvert(string sqlFragment)
-            => AppConfig.ServerVersion.SupportsJsonDataTypeEmulation
+            => AppConfig.ServerVersion.Supports.JsonDataTypeEmulation
                 ? sqlFragment
                 : $"CAST({sqlFragment} AS json)";
 
         protected string InsertJsonDocument(string mySqlDocument, string mariaDbDocument)
-            => AppConfig.ServerVersion.SupportsJsonDataTypeEmulation
+            => AppConfig.ServerVersion.Supports.JsonDataTypeEmulation
                 ? mariaDbDocument
                 : mySqlDocument;
 
         protected string InsertJsonImplementation(string mySqlSqlFragment = null, string mariaDbSqlFragment = null)
-            => AppConfig.ServerVersion.SupportsJsonDataTypeEmulation
+            => AppConfig.ServerVersion.Supports.JsonDataTypeEmulation
                 ? mariaDbSqlFragment
                 : mySqlSqlFragment;
 

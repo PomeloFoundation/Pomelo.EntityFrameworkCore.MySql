@@ -33,19 +33,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             };
 
         protected virtual Expression VisitRowNumber(RowNumberExpression rowNumberExpression)
-            => CheckSupport(rowNumberExpression, _options.ServerVersion.SupportsWindowFunctions);
+            => CheckSupport(rowNumberExpression, _options.ServerVersion.Supports.WindowFunctions);
 
         protected virtual Expression VisitCrossApply(CrossApplyExpression crossApplyExpression)
-            => CheckSupport(crossApplyExpression, _options.ServerVersion.SupportsCrossApply);
+            => CheckSupport(crossApplyExpression, _options.ServerVersion.Supports.CrossApply);
 
         protected virtual Expression VisitOuterApply(OuterApplyExpression outerApplyExpression)
-            => CheckSupport(outerApplyExpression, _options.ServerVersion.SupportsOuterApply);
+            => CheckSupport(outerApplyExpression, _options.ServerVersion.Supports.OuterApply);
 
         protected virtual Expression VisitExcept(ExceptExpression exceptExpression)
-            => CheckSupport(exceptExpression, _options.ServerVersion.SupportsExceptIntercept);
+            => CheckSupport(exceptExpression, _options.ServerVersion.Supports.ExceptIntercept);
 
         protected virtual Expression VisitIntercept(IntersectExpression intersectExpression)
-            => CheckSupport(intersectExpression, _options.ServerVersion.SupportsExceptIntercept);
+            => CheckSupport(intersectExpression, _options.ServerVersion.Supports.ExceptIntercept);
 
         protected virtual Expression CheckSupport(Expression expression, bool isSupported)
             => CheckTranslated(
