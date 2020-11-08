@@ -4,7 +4,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -87,37 +86,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             Assert.Equal(expected.Ulong, actual.Ulong);
             Assert.Equal(expected.Decimal.TrimEnd('0'), actual.Decimal.TrimEnd('0')); // might have different scales
             Assert.Equal(expected.Char, actual.Char);
-        }
-
-        // Blocked by EF #11929
-        [ConditionalFact]
-        public override void Can_query_using_any_data_type()
-        {
-        }
-
-        [ConditionalFact]
-        public override void Can_query_using_any_nullable_data_type()
-        {
-        }
-
-        [ConditionalFact]
-        public override void Can_query_using_any_nullable_data_type_as_literal()
-        {
-        }
-
-        [ConditionalFact]
-        public override void Can_query_using_any_data_type_shadow()
-        {
-        }
-
-        [ConditionalFact]
-        public override void Can_query_using_any_data_type_nullable_shadow()
-        {
-        }
-
-        [ConditionalFact]
-        public override void Can_perform_query_with_ansi_strings_test()
-        {
         }
 
         [Fact]
@@ -1463,6 +1431,10 @@ UnicodeDataTypes.StringUnicode ---> [nullable longtext] [MaxLength = -1]
 
             public override bool SupportsBinaryKeys => true;
 
+            public override DateTime DefaultDateTime => new DateTime();
+
+            public override bool SupportsDecimalComparisons => false;
+
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
             public TestSqlLoggerFactory TestSqlLoggerFactory => (TestSqlLoggerFactory)ServiceProvider.GetRequiredService<ILoggerFactory>();
 
@@ -1489,10 +1461,6 @@ UnicodeDataTypes.StringUnicode ---> [nullable longtext] [MaxLength = -1]
 
                 MakeRequired<MappedDataTypes>(modelBuilder);
             }
-
-            public override DateTime DefaultDateTime => new DateTime();
-
-            public override bool SupportsDecimalComparisons => throw new NotImplementedException();
         }
 
         [Flags]
