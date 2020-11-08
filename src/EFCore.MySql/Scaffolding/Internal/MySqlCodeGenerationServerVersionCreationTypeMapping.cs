@@ -30,8 +30,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
 
         public override Expression GenerateCodeLiteral(object value)
             => value is MySqlCodeGenerationServerVersionCreation serverVersionCreation
-                ? Expression.New(
-                    typeof(ServerVersion).GetDeclaredConstructor(new[] {typeof(string)}),
+                ? Expression.Call(
+                    typeof(ServerVersion),
+                    nameof(ServerVersion.FromString),
+                    null,
                     Expression.Constant(serverVersionCreation.ServerVersion.ToString()))
                 : null;
     }

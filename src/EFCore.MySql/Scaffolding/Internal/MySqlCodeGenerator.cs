@@ -41,7 +41,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
                 nameof(MySqlDbContextOptionsBuilderExtensions.UseMySql),
                 providerOptions == null
                     ? new object[] {connectionString, new MySqlCodeGenerationServerVersionCreation(_options.ServerVersion)}
-                    : new object[] {connectionString, new NestedClosureCodeFragment("x", providerOptions)});
+                    : new object[] {connectionString, new MySqlCodeGenerationServerVersionCreation(_options.ServerVersion), new NestedClosureCodeFragment("x", providerOptions)});
         }
     }
 }
