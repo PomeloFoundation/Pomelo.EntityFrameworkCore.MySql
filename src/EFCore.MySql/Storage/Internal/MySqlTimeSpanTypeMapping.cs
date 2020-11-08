@@ -62,8 +62,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         {
             // Custom TimeSpan formats do not handle the fraction point character as gracefully as System.DateTime does.
             var literal = base.GenerateNonNullSqlLiteral(value);
-            return literal.EndsWith(".0")
-                ? "'" + literal.Substring(0, literal.Length - 2) + "'"
+            return literal.EndsWith(".")
+                ? "'" + literal.Substring(0, literal.Length - 1) + "'"
                 : "'" + literal + "'";
         }
 
@@ -80,7 +80,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         {
             var validPrecision = Math.Min(Math.Max(precision.GetValueOrDefault(), 0), 6);
             var precisionFormat = validPrecision > 0
-                ? @"\.f" + new string('F', validPrecision - 1)
+                ? @"\." + new string('F', validPrecision)
                 : null;
             return @"hh\:mm\:ss" + precisionFormat;
         }
