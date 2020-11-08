@@ -23,15 +23,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models
 
                 entity.Property(m => m.Name)
                     .ValueGeneratedOnAddOrUpdate()
-                    .HasColumnType(@"VARCHAR(63) GENERATED ALWAYS AS (`Names` ->> ""$[0]"") VIRTUAL");
+                    .HasColumnType(@"VARCHAR(63)")
+                    .HasComputedColumnSql(@"JSON_UNQUOTE(JSON_EXTRACT(`Names`, ""$[0]""))");
 
                 entity.Property(m => m.Email)
                     .ValueGeneratedOnAddOrUpdate()
-                    .HasColumnType(@"VARCHAR(63) GENERATED ALWAYS AS (`ContactInfo` ->> ""$.Email"") VIRTUAL");
+                    .HasColumnType(@"VARCHAR(63)")
+                    .HasComputedColumnSql(@"JSON_UNQUOTE(JSON_EXTRACT(`ContactInfo`, ""$.Email""))");
 
                 entity.Property(m => m.Address)
                     .ValueGeneratedOnAddOrUpdate()
-                    .HasColumnType(@"VARCHAR(63) GENERATED ALWAYS AS (CONCAT_WS(', ',	`ContactInfo` ->> ""$.Address"", `ContactInfo` ->> ""$.City"", `ContactInfo` ->> ""$.State"", `ContactInfo` ->> ""$.Zip"")) STORED");
+                    .HasColumnType(@"VARCHAR(63)")
+                    .HasComputedColumnSql(@"CONCAT_WS(', ',	JSON_UNQUOTE(JSON_EXTRACT(`ContactInfo`, ""$.Address"")), JSON_UNQUOTE(JSON_EXTRACT(`ContactInfo`, ""$.City"")), JSON_UNQUOTE(JSON_EXTRACT(`ContactInfo`, ""$.State"")), JSON_UNQUOTE(JSON_EXTRACT(`ContactInfo`, ""$.Zip"")))");
             });
         }
     }

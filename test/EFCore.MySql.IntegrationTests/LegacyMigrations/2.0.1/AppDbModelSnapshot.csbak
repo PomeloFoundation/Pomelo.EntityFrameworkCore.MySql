@@ -448,27 +448,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
 
                     b.Property<string>("Address")
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType(@"VARCHAR(63) GENERATED ALWAYS AS (
-						CONCAT_WS(', ',
-							`ContactInfo` ->> ""$.Address"",
-                            `ContactInfo` ->> ""$.City"",
-                            `ContactInfo` ->> ""$.State"",
-                            `ContactInfo` ->> ""$.Zip""
-						)) STORED");
+                        .HasColumnType("VARCHAR(63)")
+                        .HasComputedColumnSql("CONCAT_WS(', ',	JSON_UNQUOTE(JSON_EXTRACT(`ContactInfo`, \"$.Address\")), JSON_UNQUOTE(JSON_EXTRACT(`ContactInfo`, \"$.City\")), JSON_UNQUOTE(JSON_EXTRACT(`ContactInfo`, \"$.State\")), JSON_UNQUOTE(JSON_EXTRACT(`ContactInfo`, \"$.Zip\")))");
 
                     b.Property<string>("ContactInfo");
 
                     b.Property<string>("Email")
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType(@"VARCHAR(63) GENERATED ALWAYS AS (
-						`ContactInfo` ->> ""$.Email""
-					) VIRTUAL");
+                        .HasColumnType("VARCHAR(63)")
+                        .HasComputedColumnSql("JSON_UNQUOTE(JSON_EXTRACT(`ContactInfo`, \"$.Email\"))");
 
                     b.Property<string>("Name")
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType(@"VARCHAR(63) GENERATED ALWAYS AS (
-						`Names` ->> ""$[0]""
-					) VIRTUAL");
+                        .HasColumnType("VARCHAR(63)")
+                        .HasComputedColumnSql("JSON_UNQUOTE(JSON_EXTRACT(`Names`, \"$[0]\"))");
 
                     b.Property<string>("Names");
 
