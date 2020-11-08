@@ -32,7 +32,7 @@
     <MicrosoftNETCoreAppInternalPackageVersion>3.1.8-servicing.20420.1</MicrosoftNETCoreAppInternalPackageVersion>
     <!-- EFCore.MySql Dependencies -->
     <MicrosoftEntityFrameworkCoreRelationalVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MySqlConnectorVersion>[0.69.9, 1.0.0)</MySqlConnectorVersion>
+    <MySqlConnectorVersion>[0.69.10, 1.0.0)</MySqlConnectorVersion>
     <PomeloJsonObjectVersion>2.2.1</PomeloJsonObjectVersion>
     <MicrosoftExtensionsCachingMemoryVersion>3.1.8</MicrosoftExtensionsCachingMemoryVersion>
     <MicrosoftExtensionsDependencyInjection>3.1.8</MicrosoftExtensionsDependencyInjection>
