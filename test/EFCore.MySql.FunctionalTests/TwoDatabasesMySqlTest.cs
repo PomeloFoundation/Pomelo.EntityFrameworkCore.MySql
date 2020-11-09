@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
@@ -17,8 +18,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         protected override DbContextOptionsBuilder CreateTestOptions(
             DbContextOptionsBuilder optionsBuilder, bool withConnectionString = false)
             => withConnectionString
-                ? optionsBuilder.UseMySql(DummyConnectionString)
-                : optionsBuilder.UseMySql();
+                ? optionsBuilder.UseMySql(DummyConnectionString, AppConfig.ServerVersion)
+                : optionsBuilder.UseMySql(AppConfig.ServerVersion);
 
         protected override TwoDatabasesWithDataContext CreateBackingContext(string databaseName)
             => new TwoDatabasesWithDataContext(Fixture.CreateOptions(MySqlTestStore.Create(databaseName)));

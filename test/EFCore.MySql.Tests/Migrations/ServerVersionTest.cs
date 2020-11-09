@@ -1,4 +1,5 @@
 using System;
+using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Xunit;
@@ -16,16 +17,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
         [InlineData("5.1", ServerType.MySql, "5.1", false)]
         public void TestValidVersion(string input, ServerType serverType, string actualVersion, bool supportsRenameIndex)
         {
-            var serverVersion = new ServerVersion(input);
+            var serverVersion = ServerVersion.FromString(input);
             Assert.Equal(serverVersion.Type, serverType);
             Assert.Equal(serverVersion.Version, new Version(actualVersion));
-            Assert.Equal(serverVersion.SupportsRenameIndex, supportsRenameIndex);
+            Assert.Equal(serverVersion.Supports.RenameIndex, supportsRenameIndex);
         }
 
         [Fact]
         public void TestInvalidVersion()
         {
-            Assert.Throws<InvalidOperationException>(() => new ServerVersion("unknown"));
+            Assert.Throws<InvalidOperationException>(() => ServerVersion.FromString("unknown"));
         }
     }
 }

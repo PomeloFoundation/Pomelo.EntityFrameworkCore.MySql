@@ -90,7 +90,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 modelBuilder.Entity<WithBackingFields>(
                     b =>
                     {
-                        if (AppConfig.ServerVersion.SupportsGeneratedColumns)
+                        if (AppConfig.ServerVersion.Supports.GeneratedColumns)
                         {
                             b.Property(e => e.NullableAsNonNullable).HasComputedColumnSql("1");
                             b.Property(e => e.NonNullableAsNullable).HasComputedColumnSql("1");

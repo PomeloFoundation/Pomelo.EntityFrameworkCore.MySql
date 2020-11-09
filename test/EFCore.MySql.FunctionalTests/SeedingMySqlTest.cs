@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
@@ -22,7 +23,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             }
 
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-                => optionsBuilder.UseMySql(MySqlTestStore.CreateConnectionString($"Seeds{TestId}", false));
+                => optionsBuilder.UseMySql(MySqlTestStore.CreateConnectionString($"Seeds{TestId}", false), AppConfig.ServerVersion);
         }
     }
 }

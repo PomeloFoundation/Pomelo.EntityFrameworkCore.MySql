@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 
 namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
 {
@@ -61,7 +62,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
         {
             var serviceProvider = new ServiceCollection()
                 .AddEntityFrameworkMySql()
-                .AddDbContext<DbContext>(o => o.UseMySql("Server=."))
+                .AddDbContext<DbContext>(o => o.UseMySql("Server=.", MySqlServerVersion.LatestSupportedServerVersion))
                 .BuildServiceProvider();
 
             using (var serviceScope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
@@ -60,6 +59,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
             Check.NotNull(connection, nameof(connection));
             Check.NotNull(options, nameof(options));
 
+            SetupMySqlOptions(connection);
+            _logger.Logger.LogInformation($"Using {nameof(ServerVersion)} '{_options.ServerVersion}'.");
+
             var databaseModel = new DatabaseModel();
 
             var connectionStartedOpen = connection.State == ConnectionState.Open;
@@ -70,8 +72,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
 
             try
             {
-                SetupMySqlOptions(connection);
-
                 databaseModel.DatabaseName = connection.Database;
                 databaseModel.DefaultSchema = GetDefaultSchema(connection);
 
@@ -99,32 +99,34 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
 
         protected virtual void SetupMySqlOptions(DbConnection connection)
         {
-            var optionsBuilder = new DbContextOptionsBuilder();
-            optionsBuilder.UseMySql(connection, builder =>
-            {
-                // Set the actual server version from the open connection here, so we can
-                // access it from IMySqlOptions later when generating the code for the
-                // `UseMySql()` call.
-                if (_options.ServerVersion.IsDefault)
-                {
-                    try
-                    {
-                        var mySqlConnection = (MySqlConnection)connection;
-                        builder.ServerVersion(new ServerVersion(mySqlConnection.ServerVersion));
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        // If we cannot determine the server version for some reason, just fall
-                        // back on the latest one (the default).
-
-                        // TODO: Output warning.
-                    }
-                }
-            });
+            // Set the actual server version from the open connection here, so we can
+            // access it from IMySqlOptions later when generating the code for the
+            // `UseMySql()` call.
 
             if (Equals(_options, new MySqlOptions()))
             {
-                _options.Initialize(optionsBuilder.Options);
+                ServerVersion serverVersion;
+
+                _logger.Logger.LogDebug($"No explicit {nameof(ServerVersion)} was set.");
+
+                try
+                {
+                    serverVersion = ServerVersion.AutoDetect((MySqlConnection)connection);
+                    _logger.Logger.LogDebug($"{nameof(ServerVersion)} '{serverVersion}' was automatically detected.");
+                }
+                catch (InvalidOperationException)
+                {
+                    // If we cannot determine the server version for some reason, just fall
+                    // back on the latest MySQL version.
+                    serverVersion = MySqlServerVersion.LatestSupportedServerVersion;
+
+                    _logger.Logger.LogWarning($"No {nameof(ServerVersion)} could be automatically detected. The latest supported {nameof(ServerVersion)} will be used.");
+                }
+
+                _options.Initialize(
+                    new DbContextOptionsBuilder()
+                        .UseMySql(connection, serverVersion)
+                        .Options);
             }
         }
 
@@ -242,7 +244,7 @@ ORDER BY
                                 ? reader.GetValueOrDefault<uint?>("SRS_ID")
                                 : null;
 
-                            defaultValue = _options.ServerVersion.SupportsAlternativeDefaultExpression &&
+                            defaultValue = _options.ServerVersion.Supports.AlternativeDefaultExpression &&
                                            defaultValue != null
                                 ? ConvertDefaultValueFromMariaDbToMySql(defaultValue)
                                 : defaultValue;

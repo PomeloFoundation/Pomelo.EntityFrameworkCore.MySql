@@ -4,7 +4,6 @@
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
@@ -39,23 +38,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
             connectionString = new MySqlScaffoldingConnectionSettings(connectionString).GetProviderCompatibleConnectionString();
 
             return new MethodCallCodeFragment(
-                nameof(MySqlDbContextOptionsExtensions.UseMySql),
+                nameof(MySqlDbContextOptionsBuilderExtensions.UseMySql),
                 providerOptions == null
-                    ? new object[] {connectionString}
-                    : new object[] {connectionString, new NestedClosureCodeFragment("x", providerOptions)});
-        }
-
-        public override MethodCallCodeFragment GenerateProviderOptions()
-        {
-            var serverVersionCall = new MethodCallCodeFragment(
-                nameof(MySqlDbContextOptionsBuilder.ServerVersion),
-                _options.ServerVersion.ToString());
-
-            var providerOptions = base.GenerateProviderOptions();
-
-            return providerOptions == null
-                ? serverVersionCall
-                : serverVersionCall.Chain(providerOptions);
+                    ? new object[] {connectionString, new MySqlCodeGenerationServerVersionCreation(_options.ServerVersion)}
+                    : new object[] {connectionString, new MySqlCodeGenerationServerVersionCreation(_options.ServerVersion), new NestedClosureCodeFragment("x", providerOptions)});
         }
     }
 }

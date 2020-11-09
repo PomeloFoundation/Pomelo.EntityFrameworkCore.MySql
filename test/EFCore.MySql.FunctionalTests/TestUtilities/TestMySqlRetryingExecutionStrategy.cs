@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using MySqlConnector;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {
@@ -24,7 +25,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 new DbContext(
                     new DbContextOptionsBuilder()
                         .EnableServiceProviderCaching(false)
-                        .UseMySql(TestEnvironment.DefaultConnection).Options),
+                        .UseMySql(TestEnvironment.DefaultConnection, AppConfig.ServerVersion).Options),
                 DefaultMaxRetryCount, DefaultMaxDelay, _additionalErrorNumbers)
         {
         }

@@ -53,7 +53,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
                 // Emulate ST_IsRing if not supported.
                 var sqlExpression = mapping.Name != "ST_IsRing" ||
-                                  _options.ServerVersion.SupportsSpatialIsRingFunction
+                                  _options.ServerVersion.Supports.SpatialFunctionAdditions
                     ? (SqlExpression)_sqlExpressionFactory.NullableFunction(
                         mapping.Name,
                         new[] {instance},

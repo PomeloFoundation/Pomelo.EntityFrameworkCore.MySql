@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Storage
@@ -452,7 +453,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Storage
             var mySqlOptions = new MySqlOptions();
             mySqlOptions.Initialize(
                 new DbContextOptionsBuilder()
-                    .UseMySql("Server=foo", builder)
+                    .UseMySql("Server=foo", AppConfig.ServerVersion, builder)
                     .Options);
 
             return mySqlOptions;

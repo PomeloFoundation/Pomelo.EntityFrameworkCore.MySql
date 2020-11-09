@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
@@ -30,31 +31,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Include_duplicate_collection(async);
         }
 
-        [SupportedServerVersionCondition(ServerVersion.WindowFunctionsSupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override Task Include_in_let_followed_by_FirstOrDefault(bool async)
         {
             return base.Include_in_let_followed_by_FirstOrDefault(async);
         }
 
-        [SupportedServerVersionCondition(ServerVersion.CrossApplySupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
         public override Task Include_collection_with_cross_apply_with_filter(bool async)
         {
             return base.Include_collection_with_cross_apply_with_filter(async);
         }
 
-        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
         public override Task Include_collection_with_outer_apply_with_filter(bool async)
         {
             return base.Include_collection_with_outer_apply_with_filter(async);
         }
 
-        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
         public override Task Include_collection_with_outer_apply_with_filter_non_equality(bool async)
         {
             return base.Include_collection_with_outer_apply_with_filter_non_equality(async);
         }
 
-        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
         public override Task Filtered_include_with_multiple_ordering(bool async)
         {
             return base.Filtered_include_with_multiple_ordering(async);

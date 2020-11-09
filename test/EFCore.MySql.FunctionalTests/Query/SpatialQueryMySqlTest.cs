@@ -1,7 +1,9 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.SpatialModel;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
@@ -18,11 +20,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        [SupportedServerVersionCondition(ServerVersion.SpatialBoundaryFunctionSupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.SpatialFunctionAdditions))]
         public override Task Boundary(bool async)
             => base.Boundary(async);
 
-        [SupportedServerVersionCondition(ServerVersion.SpatialFunctionAdditionsSupportKey, Skip = "MySQL is unable to work with different SRIDs.")]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.SpatialFunctionAdditions), Skip = "MySQL is unable to work with different SRIDs.")]
         public override Task Distance_constant_srid_4326(bool async)
             => base.Distance_constant_srid_4326(async);
 
@@ -34,19 +36,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     e => new { e.Id, GeometryType = e.Point == null ? null : e.Point.GeometryType.ToLower() }),
                 elementSorter: x => x.Id);
 
-        [SupportedServerVersionCondition(ServerVersion.SpatialPointOnSurfaceFunctionSupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.SpatialFunctionAdditions))]
         public override Task InteriorPoint(bool async)
             => base.InteriorPoint(async);
 
-        [SupportedServerVersionCondition(ServerVersion.SpatialIsValidFunctionSupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.SpatialSupportFunctionAdditions))]
         public override Task IsValid(bool async)
             => base.IsValid(async);
 
-        [SupportedServerVersionCondition(ServerVersion.SpatialPointOnSurfaceFunctionSupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.SpatialFunctionAdditions))]
         public override Task PointOnSurface(bool async)
             => base.PointOnSurface(async);
 
-        [SupportedServerVersionCondition(ServerVersion.SpatialRelateFunctionSupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.SpatialFunctionAdditions))]
         public override Task Relate(bool async)
             => base.Relate(async);
 

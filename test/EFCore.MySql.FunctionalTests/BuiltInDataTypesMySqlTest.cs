@@ -12,9 +12,9 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 using Xunit.Abstractions;
-using static Pomelo.EntityFrameworkCore.MySql.Tests.AppConfig;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
@@ -1133,7 +1133,7 @@ MappedDataTypes.SByteAsSmallint ---> [smallint] [Precision = 5 Scale = 0]
 MappedDataTypes.SByteAsTinyint ---> [tinyint] [Precision = 3 Scale = 0]
 MappedDataTypes.ShortAsSmallint ---> [smallint] [Precision = 5 Scale = 0]
 MappedDataTypes.StringAsChar ---> [char] [MaxLength = 10]
-MappedDataTypes.StringAsJson ---> [{(ServerVersion.SupportsJsonDataTypeEmulation ? "longtext] [MaxLength = -1" : "json")}]
+MappedDataTypes.StringAsJson ---> [{(AppConfig.ServerVersion.Supports.JsonDataTypeEmulation ? "longtext] [MaxLength = -1" : "json")}]
 MappedDataTypes.StringAsLongtext ---> [longtext] [MaxLength = -1]
 MappedDataTypes.StringAsMediumtext ---> [mediumtext] [MaxLength = 16777215]
 MappedDataTypes.StringAsNChar ---> [char] [MaxLength = 10]
@@ -1178,7 +1178,7 @@ MappedNullableDataTypes.SByteAsSmallint ---> [nullable smallint] [Precision = 5 
 MappedNullableDataTypes.SbyteAsTinyint ---> [nullable tinyint] [Precision = 3 Scale = 0]
 MappedNullableDataTypes.ShortAsSmallint ---> [nullable smallint] [Precision = 5 Scale = 0]
 MappedNullableDataTypes.StringAsChar ---> [nullable char] [MaxLength = 20]
-MappedNullableDataTypes.StringAsJson ---> [nullable {(ServerVersion.SupportsJsonDataTypeEmulation ? "longtext] [MaxLength = -1" : "json")}]
+MappedNullableDataTypes.StringAsJson ---> [nullable {(AppConfig.ServerVersion.Supports.JsonDataTypeEmulation ? "longtext] [MaxLength = -1" : "json")}]
 MappedNullableDataTypes.StringAsMediumtext ---> [nullable mediumtext] [MaxLength = 8388607]
 MappedNullableDataTypes.StringAsNChar ---> [nullable char] [MaxLength = 20]
 MappedNullableDataTypes.StringAsNtext ---> [nullable text] [MaxLength = 65535]

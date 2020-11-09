@@ -455,12 +455,12 @@ WHERE JSON_TYPE(JSON_EXTRACT(`j`.`Customer`, '$.Statistics.Visits')) = 'INTEGER'
         #region Support
 
         protected string InsertJsonConvert(string sqlFragment)
-            => AppConfig.ServerVersion.SupportsJsonDataTypeEmulation
+            => AppConfig.ServerVersion.Supports.JsonDataTypeEmulation
                 ? sqlFragment
                 : $"CAST({sqlFragment} AS json)";
 
         protected string InsertJsonDocument(string mySqlDocument, string mariaDbDocument)
-            => AppConfig.ServerVersion.SupportsJsonDataTypeEmulation
+            => AppConfig.ServerVersion.Supports.JsonDataTypeEmulation
                 ? mariaDbDocument
                 : mySqlDocument;
 

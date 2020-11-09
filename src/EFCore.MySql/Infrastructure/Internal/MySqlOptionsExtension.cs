@@ -7,12 +7,10 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
 {
@@ -229,9 +227,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                         if (Extension.ServerVersion != null)
                         {
                             builder.Append("ServerVersion ")
-                                .Append(Extension.ServerVersion.Version)
-                                .Append(" ")
-                                .Append(Extension.ServerVersion.Type)
+                                .Append(Extension.ServerVersion)
                                 .Append(" ");
                         }
 
@@ -246,16 +242,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
             {
                 if (_serviceProviderHash == null)
                 {
-                    _serviceProviderHash = (base.GetServiceProviderHashCode() * 397) ^ (Extension.ServerVersion?.GetHashCode() ?? 0L);
-                    _serviceProviderHash = (_serviceProviderHash * 397) ^ (Extension.NullableCharSetBehavior?.GetHashCode() ?? 0L);
-                    _serviceProviderHash = (_serviceProviderHash * 397) ^ (Extension.CharSet?.GetHashCode() ?? 0L);
-                    _serviceProviderHash = (_serviceProviderHash * 397) ^ Extension.NoBackslashEscapes.GetHashCode();
-                    _serviceProviderHash = (_serviceProviderHash * 397) ^ Extension.UpdateSqlModeOnOpen.GetHashCode();
-                    _serviceProviderHash = (_serviceProviderHash * 397) ^ Extension.ReplaceLineBreaksWithCharFunction.GetHashCode();
-                    _serviceProviderHash = (_serviceProviderHash * 397) ^ (Extension.DefaultDataTypeMappings?.GetHashCode() ?? 0L);
-                    _serviceProviderHash = (_serviceProviderHash * 397) ^ Extension.SchemaBehavior.GetHashCode();
-                    _serviceProviderHash = (_serviceProviderHash * 397) ^ (Extension.SchemaNameTranslator?.GetHashCode() ?? 0L);
-                    _serviceProviderHash = (_serviceProviderHash * 397) ^ Extension.IndexOptimizedBooleanColumns.GetHashCode();
+                    var hashCode = new HashCode();
+                    hashCode.Add(base.GetServiceProviderHashCode());
+                    hashCode.Add(Extension.ServerVersion);
+                    hashCode.Add(Extension.NullableCharSetBehavior);
+                    hashCode.Add(Extension.CharSet);
+                    hashCode.Add(Extension.NoBackslashEscapes);
+                    hashCode.Add(Extension.UpdateSqlModeOnOpen);
+                    hashCode.Add(Extension.ReplaceLineBreaksWithCharFunction);
+                    hashCode.Add(Extension.DefaultDataTypeMappings);
+                    hashCode.Add(Extension.SchemaBehavior);
+                    hashCode.Add(Extension.SchemaNameTranslator);
+                    hashCode.Add(Extension.IndexOptimizedBooleanColumns);
+
+                    _serviceProviderHash = hashCode.ToHashCode();
                 }
 
                 return _serviceProviderHash.Value;
@@ -263,24 +263,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
 
             public override void PopulateDebugInfo(IDictionary<string, string> debugInfo)
             {
-                debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.ServerVersion)]
-                    = (Extension.ServerVersion?.GetHashCode() ?? 0L).ToString(CultureInfo.InvariantCulture);
-                debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.CharSetBehavior)]
-                    = (Extension.NullableCharSetBehavior?.GetHashCode() ?? 0L).ToString(CultureInfo.InvariantCulture);
-                debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.CharSet)]
-                    = (Extension.CharSet?.GetHashCode() ?? 0L).ToString(CultureInfo.InvariantCulture);
-                debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.DisableBackslashEscaping)]
-                    = Extension.NoBackslashEscapes.GetHashCode().ToString(CultureInfo.InvariantCulture);
-                debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.SetSqlModeOnOpen)]
-                    = Extension.UpdateSqlModeOnOpen.GetHashCode().ToString(CultureInfo.InvariantCulture);
-                debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.DisableLineBreakToCharSubstition)]
-                    = Extension.ReplaceLineBreaksWithCharFunction.GetHashCode().ToString(CultureInfo.InvariantCulture);
-                debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.DefaultDataTypeMappings)]
-                    = (Extension.DefaultDataTypeMappings?.GetHashCode() ?? 0L).ToString(CultureInfo.InvariantCulture);
-                debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.SchemaBehavior)]
-                    = Extension.SchemaBehavior.GetHashCode().ToString(CultureInfo.InvariantCulture);
-                debugInfo["MySql:" + nameof(MySqlDbContextOptionsBuilder.EnableIndexOptimizedBooleanColumns)]
-                    = Extension.IndexOptimizedBooleanColumns.GetHashCode().ToString(CultureInfo.InvariantCulture);
+                debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(Extension.ServerVersion)] = HashCode.Combine(Extension.ServerVersion).ToString(CultureInfo.InvariantCulture);
+                debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.CharSetBehavior)] = HashCode.Combine(Extension.NullableCharSetBehavior).ToString(CultureInfo.InvariantCulture);
+                debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.CharSet)] = HashCode.Combine(Extension.CharSet).ToString(CultureInfo.InvariantCulture);
+                debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.DisableBackslashEscaping)] = HashCode.Combine(Extension.NoBackslashEscapes).ToString(CultureInfo.InvariantCulture);
+                debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.SetSqlModeOnOpen)] = HashCode.Combine(Extension.UpdateSqlModeOnOpen).ToString(CultureInfo.InvariantCulture);
+                debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.DisableLineBreakToCharSubstition)] = HashCode.Combine(Extension.ReplaceLineBreaksWithCharFunction).ToString(CultureInfo.InvariantCulture);
+                debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.DefaultDataTypeMappings)] = HashCode.Combine(Extension.DefaultDataTypeMappings).ToString(CultureInfo.InvariantCulture);
+                debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.SchemaBehavior)] = HashCode.Combine(Extension.SchemaBehavior).ToString(CultureInfo.InvariantCulture);
+                debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(Extension.SchemaNameTranslator)] = HashCode.Combine(Extension.SchemaNameTranslator).ToString(CultureInfo.InvariantCulture);
+                debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.EnableIndexOptimizedBooleanColumns)] = HashCode.Combine(Extension.IndexOptimizedBooleanColumns).ToString(CultureInfo.InvariantCulture);
             }
         }
     }

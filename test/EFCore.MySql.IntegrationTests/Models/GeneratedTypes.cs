@@ -11,7 +11,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models
     {
         public static void OnModelCreating(ModelBuilder modelBuilder)
         {
-            if (!AppConfig.ServerVersion.SupportsJson)
+            if (!AppConfig.ServerVersion.Supports.Json)
             {
                 return;
             }

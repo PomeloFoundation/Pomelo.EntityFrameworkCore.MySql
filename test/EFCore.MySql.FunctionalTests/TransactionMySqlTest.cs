@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
@@ -24,6 +25,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                     new DbContextOptionsBuilder()
                         .UseMySql(
                             TestStore.ConnectionString,
+                            AppConfig.ServerVersion,
                             b => MySqlTestStore.AddOptions(b).ExecutionStrategy(c => new MySqlExecutionStrategy(c))))
                 .UseInternalServiceProvider(Fixture.ServiceProvider);
 

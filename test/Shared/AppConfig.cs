@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
@@ -53,7 +54,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests
             return string.IsNullOrEmpty(serverVersionString) ||
                    string.Equals(serverVersionString, "auto", StringComparison.OrdinalIgnoreCase)
                 ? ServerVersion.AutoDetect(ConnectionString)
-                : new ServerVersion(serverVersionString);
+                : ServerVersion.FromString(serverVersionString);
         });
 
         public static IConfigurationRoot Config => _lazyConfig.Value;

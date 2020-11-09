@@ -487,7 +487,7 @@ CREATE TABLE `IceCreamShop` (
                 {
                     var columns = dbModel.Tables.Single().Columns;
 
-                    if (AppConfig.ServerVersion.SupportsSpatialReferenceSystemRestrictedColumns)
+                    if (AppConfig.ServerVersion.Supports.SpatialReferenceSystemRestrictedColumns)
                     {
                         Assert.Equal(
                             0, columns.Single(c => c.Name == "Location")

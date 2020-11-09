@@ -2,7 +2,6 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
-using System.Data;
 using System.Data.Common;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
@@ -10,13 +9,16 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Utilities;
 using MySqlConnector;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
 {
-    // TODO: Rename to MySqlDbContextOptionsBuilderExtensions for .NET Core 5.0, which is in line with Npgsql, but
-    //       not with SqlServer.
-    public static class MySqlDbContextOptionsExtensions
+    /// <summary>
+    /// Provides extension methods on <see cref="DbContextOptionsBuilder"/> and <see cref="DbContextOptionsBuilder{T}"/>
+    /// to configure a <see cref="DbContext"/> to use with MySQL/MariaDB and Pomelo.EntityFrameworkCore.MySql.
+    /// </summary>
+    public static class MySqlDbContextOptionsBuilderExtensions
     {
         /// <summary>
         ///     <para>
@@ -30,24 +32,38 @@ namespace Microsoft.EntityFrameworkCore
         ///     </para>
         /// </summary>
         /// <param name="optionsBuilder"> The builder being used to configure the context. </param>
-        /// <param name="mySqlOptionsAction">An optional action to allow additional MySQL specific configuration.</param>
+        /// <param name="serverVersion"> The version of the database server. </param>
+        /// <param name="mySqlOptionsAction"> An optional action to allow additional MySQL specific configuration. </param>
         /// <returns> The options builder so that further configuration can be chained. </returns>
         public static DbContextOptionsBuilder UseMySql(
             [NotNull] this DbContextOptionsBuilder optionsBuilder,
+            [NotNull] ServerVersion serverVersion,
             [CanBeNull] Action<MySqlDbContextOptionsBuilder> mySqlOptionsAction = null)
         {
             Check.NotNull(optionsBuilder, nameof(optionsBuilder));
 
-            ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(GetOrCreateExtension(optionsBuilder));
+            var extension = GetOrCreateExtension(optionsBuilder)
+                .WithServerVersion(serverVersion);
+
+            ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
             ConfigureWarnings(optionsBuilder);
             mySqlOptionsAction?.Invoke(new MySqlDbContextOptionsBuilder(optionsBuilder));
 
             return optionsBuilder;
         }
 
+        /// <summary>
+        ///     Configures the context to connect to a MySQL compatible database.
+        /// </summary>
+        /// <param name="optionsBuilder"> The builder being used to configure the context. </param>
+        /// <param name="connectionString"> The connection string of the database to connect to. </param>
+        /// <param name="serverVersion"> The version of the database server used in the connection string. </param>
+        /// <param name="mySqlOptionsAction"> An optional action to allow additional MySQL specific configuration. </param>
+        /// <returns> The options builder so that further configuration can be chained. </returns>
         public static DbContextOptionsBuilder UseMySql(
             [NotNull] this DbContextOptionsBuilder optionsBuilder,
             [NotNull] string connectionString,
+            [NotNull] ServerVersion serverVersion,
             [CanBeNull] Action<MySqlDbContextOptionsBuilder> mySqlOptionsAction = null)
         {
             Check.NotNull(optionsBuilder, nameof(optionsBuilder));
@@ -60,7 +76,11 @@ namespace Microsoft.EntityFrameworkCore
             };
 
             connectionString = csb.ConnectionString;
-            var extension = (MySqlOptionsExtension)GetOrCreateExtension(optionsBuilder).WithConnectionString(connectionString);
+
+            var extension = (MySqlOptionsExtension)GetOrCreateExtension(optionsBuilder)
+                .WithServerVersion(serverVersion)
+                .WithConnectionString(connectionString);
+
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
             ConfigureWarnings(optionsBuilder);
             mySqlOptionsAction?.Invoke(new MySqlDbContextOptionsBuilder(optionsBuilder));
@@ -68,34 +88,51 @@ namespace Microsoft.EntityFrameworkCore
             return optionsBuilder;
         }
 
+        /// <summary>
+        ///     Configures the context to connect to a MySQL compatible database.
+        /// </summary>
+        /// <param name="optionsBuilder"> The builder being used to configure the context. </param>
+        /// <param name="connection">
+        ///     An existing <see cref="DbConnection" /> to be used to connect to the database. If the connection is
+        ///     in the open state then EF will not open or close the connection. If the connection is in the closed
+        ///     state then EF will open and close the connection as needed.
+        /// </param>
+        /// <param name="serverVersion"> The version of the database server used in the connection string. </param>
+        /// <param name="mySqlOptionsAction"> An optional action to allow additional MySQL specific configuration. </param>
+        /// <returns> The options builder so that further configuration can be chained. </returns>
         public static DbContextOptionsBuilder UseMySql(
             [NotNull] this DbContextOptionsBuilder optionsBuilder,
             [NotNull] DbConnection connection,
+            [NotNull] ServerVersion serverVersion,
             [CanBeNull] Action<MySqlDbContextOptionsBuilder> mySqlOptionsAction = null)
         {
             Check.NotNull(optionsBuilder, nameof(optionsBuilder));
             Check.NotNull(connection, nameof(connection));
 
             var csb = new MySqlConnectionStringBuilder(connection.ConnectionString);
-            if (csb.AllowUserVariables != true || csb.UseAffectedRows)
+
+            if (!csb.AllowUserVariables ||
+                csb.UseAffectedRows)
             {
                 try
                 {
                     csb.AllowUserVariables = true;
                     csb.UseAffectedRows = false;
-                    if (connection.State != ConnectionState.Open)
-                    {
-                        connection.ConnectionString = csb.ConnectionString;
-                    }
+
+                    connection.ConnectionString = csb.ConnectionString;
                 }
                 catch (MySqlException e)
                 {
-                    throw new InvalidOperationException("The MySql Connection string used with Pomelo.EntityFrameworkCore.MySql " +
-                        "must contain \"AllowUserVariables=true;UseAffectedRows=false\"", e);
+                    throw new InvalidOperationException(
+                        @"The connection string used with Pomelo.EntityFrameworkCore.MySql must contain ""AllowUserVariables=true;UseAffectedRows=false"".",
+                        e);
                 }
             }
 
-            var extension = (MySqlOptionsExtension)GetOrCreateExtension(optionsBuilder).WithConnection(connection);
+            var extension = (MySqlOptionsExtension)GetOrCreateExtension(optionsBuilder)
+                .WithServerVersion(serverVersion)
+                .WithConnection(connection);
+
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
             ConfigureWarnings(optionsBuilder);
             mySqlOptionsAction?.Invoke(new MySqlDbContextOptionsBuilder(optionsBuilder));
@@ -103,21 +140,69 @@ namespace Microsoft.EntityFrameworkCore
             return optionsBuilder;
         }
 
+        /// <summary>
+        ///     <para>
+        ///         Configures the context to connect to a MySQL compatible database, but without initially setting any
+        ///         <see cref="DbConnection" /> or connection string.
+        ///     </para>
+        ///     <para>
+        ///         The connection or connection string must be set before the <see cref="DbContext" /> is used to connect
+        ///         to a database. Set a connection using <see cref="RelationalDatabaseFacadeExtensions.SetDbConnection" />.
+        ///         Set a connection string using <see cref="RelationalDatabaseFacadeExtensions.SetConnectionString" />.
+        ///     </para>
+        /// </summary>
+        /// <typeparam name="TContext"> The type of context to be configured. </typeparam>
+        /// <param name="optionsBuilder"> The builder being used to configure the context. </param>
+        /// <param name="serverVersion"> The version of the database server. </param>
+        /// <param name="mySqlOptionsAction"> An optional action to allow additional MySQL specific configuration. </param>
+        /// <returns> The options builder so that further configuration can be chained. </returns>
+        public static DbContextOptionsBuilder<TContext> UseMySql<TContext>(
+            [NotNull] this DbContextOptionsBuilder<TContext> optionsBuilder,
+            [NotNull] ServerVersion serverVersion,
+            [CanBeNull] Action<MySqlDbContextOptionsBuilder> mySqlOptionsAction = null)
+            where TContext : DbContext
+            => (DbContextOptionsBuilder<TContext>)UseMySql(
+                (DbContextOptionsBuilder)optionsBuilder, serverVersion, mySqlOptionsAction);
+
+        /// <summary>
+        ///     Configures the context to connect to a MySQL compatible database.
+        /// </summary>
+        /// <typeparam name="TContext"> The type of context to be configured. </typeparam>
+        /// <param name="optionsBuilder"> The builder being used to configure the context. </param>
+        /// <param name="connectionString"> The connection string of the database to connect to. </param>
+        /// <param name="serverVersion"> The version of the database server used in the connection string. </param>
+        /// <param name="mySqlOptionsAction"> An optional action to allow additional MySQL specific configuration. </param>
+        /// <returns> The options builder so that further configuration can be chained. </returns>
         public static DbContextOptionsBuilder<TContext> UseMySql<TContext>(
             [NotNull] this DbContextOptionsBuilder<TContext> optionsBuilder,
             [NotNull] string connectionString,
+            [NotNull] ServerVersion serverVersion,
             [CanBeNull] Action<MySqlDbContextOptionsBuilder> mySqlOptionsAction = null)
             where TContext : DbContext
             => (DbContextOptionsBuilder<TContext>)UseMySql(
-                (DbContextOptionsBuilder)optionsBuilder, connectionString, mySqlOptionsAction);
+                (DbContextOptionsBuilder)optionsBuilder, connectionString, serverVersion, mySqlOptionsAction);
 
+        /// <summary>
+        ///     Configures the context to connect to a MySQL compatible database.
+        /// </summary>
+        /// <param name="optionsBuilder"> The builder being used to configure the context. </param>
+        /// <param name="connection">
+        ///     An existing <see cref="DbConnection" /> to be used to connect to the database. If the connection is
+        ///     in the open state then EF will not open or close the connection. If the connection is in the closed
+        ///     state then EF will open and close the connection as needed.
+        /// </param>
+        /// <typeparam name="TContext"> The type of context to be configured. </typeparam>
+        /// <param name="serverVersion"> The version of the database server used in the connection string. </param>
+        /// <param name="mySqlOptionsAction"> An optional action to allow additional MySQL specific configuration. </param>
+        /// <returns> The options builder so that further configuration can be chained. </returns>
         public static DbContextOptionsBuilder<TContext> UseMySql<TContext>(
             [NotNull] this DbContextOptionsBuilder<TContext> optionsBuilder,
             [NotNull] DbConnection connection,
+            [NotNull] ServerVersion serverVersion,
             [CanBeNull] Action<MySqlDbContextOptionsBuilder> mySqlOptionsAction = null)
             where TContext : DbContext
             => (DbContextOptionsBuilder<TContext>)UseMySql(
-                (DbContextOptionsBuilder)optionsBuilder, connection, mySqlOptionsAction);
+                (DbContextOptionsBuilder)optionsBuilder, connection, serverVersion, mySqlOptionsAction);
 
         private static MySqlOptionsExtension GetOrCreateExtension(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder.Options.FindExtension<MySqlOptionsExtension>()

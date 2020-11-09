@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
@@ -20,13 +22,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
         public override Task Select_uncorrelated_collection_with_groupby_works(bool async)
         {
             return base.Select_uncorrelated_collection_with_groupby_works(async);
         }
 
-        [SupportedServerVersionCondition(ServerVersion.OuterApplySupportKey)]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
         public override Task Select_uncorrelated_collection_with_groupby_multiple_collections_work(bool async)
         {
             return base.Select_uncorrelated_collection_with_groupby_multiple_collections_work(async);

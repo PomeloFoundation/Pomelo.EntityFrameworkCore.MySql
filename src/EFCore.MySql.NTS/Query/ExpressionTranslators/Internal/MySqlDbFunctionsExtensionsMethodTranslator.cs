@@ -54,8 +54,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 // CHECK: It could be faster to just manually apply the Pythagoras Theorem instead of changing the
                 //        SRID in the case where ST_SRID() does not support a second parameter yet (see
                 //        SetSrid()).
-                if (_options.ServerVersion.SupportsSpatialSupportFunctionAdditions &&
-                    _options.ServerVersion.SupportsSpatialDistanceFunctionImplementsAndoyer)
+                if (_options.ServerVersion.Supports.SpatialSupportFunctionAdditions &&
+                    _options.ServerVersion.Supports.SpatialDistanceFunctionImplementsAndoyer)
                 {
                     return _sqlExpressionFactory.Case(
                         new[]
@@ -115,7 +115,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             int srid,
             MySqlSqlExpressionFactory sqlExpressionFactory,
             IMySqlOptions options)
-            => options.ServerVersion.SupportsSpatialSetSridFunction
+            => options.ServerVersion.Supports.SpatialSetSridFunction
                 ? sqlExpressionFactory.NullableFunction(
                     "ST_SRID",
                     new[]
@@ -161,7 +161,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             MySqlSqlExpressionFactory sqlExpressionFactory,
             IMySqlOptions options)
         {
-            if (options.ServerVersion.SupportsSpatialDistanceSphereFunction)
+            if (options.ServerVersion.Supports.SpatialDistanceSphereFunction)
             {
                 if (algorithm == SpatialDistanceAlgorithm.Native)
                 {
@@ -175,7 +175,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 }
 
                 if (algorithm == SpatialDistanceAlgorithm.Andoyer &&
-                    options.ServerVersion.SupportsSpatialDistanceFunctionImplementsAndoyer)
+                    options.ServerVersion.Supports.SpatialDistanceFunctionImplementsAndoyer)
                 {
                     // The `ST_Distance()` in MySQL already uses the Andoyer algorithm, when SRID 4326 is associated
                     // with the geometry.

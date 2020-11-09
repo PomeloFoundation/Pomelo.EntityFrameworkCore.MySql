@@ -37,7 +37,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
                 // MySQL has a real JSON datatype, and string parameters need to be converted to it.
                 // MariaDB defines the JSON datatype just as a synonym for LONGTEXT.
-                if (!_options.ServerVersion.SupportsJsonDataTypeEmulation)
+                if (!_options.ServerVersion.Supports.JsonDataTypeEmulation)
                 {
                     return _sqlExpressionFactory.Convert(
                         sqlParameterExpression,
