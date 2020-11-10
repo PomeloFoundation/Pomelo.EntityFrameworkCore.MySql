@@ -22,6 +22,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
+        protected override bool CanExecuteQueryString
+            => true;
+
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.ExceptIntercept))]
         public override async Task Intersect_non_entity()
             => await base.Intersect_non_entity();

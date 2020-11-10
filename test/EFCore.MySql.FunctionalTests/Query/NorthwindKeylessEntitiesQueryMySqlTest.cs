@@ -14,6 +14,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
+        protected override bool CanExecuteQueryString
+            => true;
+
         [ConditionalFact(Skip = "https://github.com/dotnet/efcore/issues/21627")]
         public override void KeylessEntity_with_nav_defining_query()
             => base.KeylessEntity_with_nav_defining_query();

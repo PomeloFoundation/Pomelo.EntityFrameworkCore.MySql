@@ -22,6 +22,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
+        protected override bool CanExecuteQueryString
+            => true;
+
         [ConditionalTheory(Skip = "Issue #573")]
         public override Task Where_subquery_on_navigation(bool async)
         {
