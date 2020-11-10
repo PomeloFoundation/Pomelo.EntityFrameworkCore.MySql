@@ -25,6 +25,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
+        protected override bool CanExecuteQueryString
+            => true;
+
         [ConditionalTheory]
         public override Task Include_duplicate_collection(bool async)
         {

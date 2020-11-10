@@ -16,6 +16,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             Fixture.TestSqlLoggerFactory.Clear();
         }
 
+        protected override bool CanExecuteQueryString
+            => true;
+
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override Task Filtered_include_skip_navigation_order_by_split(bool async)
         {

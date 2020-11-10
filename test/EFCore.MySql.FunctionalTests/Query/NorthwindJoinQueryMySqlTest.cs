@@ -18,6 +18,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
+        protected override bool CanExecuteQueryString
+            => true;
+
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override Task SelectMany_correlated_subquery_take(bool async)
         {

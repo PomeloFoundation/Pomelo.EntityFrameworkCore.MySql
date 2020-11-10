@@ -18,6 +18,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
+        protected override bool CanExecuteQueryString
+            => true;
+
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override Task SelectMany_with_navigation_filter_paging_and_explicit_DefaultIfEmpty(bool async)
         {
