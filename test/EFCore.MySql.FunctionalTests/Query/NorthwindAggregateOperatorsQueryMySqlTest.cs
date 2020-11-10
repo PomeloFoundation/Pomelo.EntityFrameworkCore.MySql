@@ -1,5 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore.Query;
+﻿using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
@@ -18,6 +21,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
         protected override bool CanExecuteQueryString
             => true;
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Multiple_collection_navigation_with_FirstOrDefault_chained(bool async)
+        {
+            return base.Multiple_collection_navigation_with_FirstOrDefault_chained(async);
+        }
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
