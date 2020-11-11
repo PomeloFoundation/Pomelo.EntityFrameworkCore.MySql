@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore.Utilities;
 using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
