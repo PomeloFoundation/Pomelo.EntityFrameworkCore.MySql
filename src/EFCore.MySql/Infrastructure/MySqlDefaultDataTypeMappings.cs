@@ -1,7 +1,7 @@
 // Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
-namespace Pomelo.EntityFrameworkCore.MySql.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
 {
     public class MySqlDefaultDataTypeMappings
     {
@@ -99,7 +99,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         /// TODO
         /// </summary>
         None = -1, // TODO: Remove in EF Core 5; see MySqlTypeMappingTest.Bool_with_MySqlBooleanType_None_maps_to_null()
-        
+
         /// <summary>
         /// TODO
         /// </summary>
