@@ -51,8 +51,8 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Common Versions">
-    <EntityFrameworkCoreVersion>5.0.0-rc.2.20475.6</EntityFrameworkCoreVersion>
-    <DotnetRuntimeVersion>5.0.0-rc.2.20475.5</DotnetRuntimeVersion>
+    <EntityFrameworkCoreVersion>5.0.0</EntityFrameworkCoreVersion>
+    <DotnetRuntimeVersion>5.0.0</DotnetRuntimeVersion>
   </PropertyGroup>
 
   <PropertyGroup Label="Dependencies">
@@ -80,7 +80,7 @@
     <!-- EFCore.MySql.Json.Newtonsoft Dependencies -->
     <NewtonsoftJsonVersion>12.0.3</NewtonsoftJsonVersion>
     <!-- Shared Test Dependencies -->
-    <MicrosoftNETTestSdkVersion>16.3.0</MicrosoftNETTestSdkVersion>
+    <MicrosoftNETTestSdkVersion>16.8.0</MicrosoftNETTestSdkVersion>
     <XunitAssertVersion>2.4.1</XunitAssertVersion>
     <XunitCoreVersion>2.4.1</XunitCoreVersion>
     <XunitRunnerVisualStudioVersion>2.4.3</XunitRunnerVisualStudioVersion>
@@ -98,13 +98,13 @@
     <SystemComponentModelTypeConverterVersion>4.3.0</SystemComponentModelTypeConverterVersion>
     <CastleCoreVersion>4.4.1</CastleCoreVersion>
     <!-- EFCoreMySqlIntegrationTests Dependencies -->
-    <MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>5.0.0-rc.1.20451.15</MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>
-    <MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>5.0.0-rc.1.20451.15</MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>
+    <MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>5.0.0</MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>
+    <MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>5.0.0</MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>
     <!-- EFCoreMySqlTests Dependencies -->
     <MicrosoftEntityFrameworkCoreDesignVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreDesignVersion>
     <MicrosoftCodeAnalysisCSharpVersion>3.7.0</MicrosoftCodeAnalysisCSharpVersion>
-    <MicrosoftExtensionsDependencyModelVersion>3.1.6</MicrosoftExtensionsDependencyModelVersion>
-    <MoqVersion>4.14.7</MoqVersion>
+    <MicrosoftExtensionsDependencyModelVersion>5.0.0</MicrosoftExtensionsDependencyModelVersion>
+    <MoqVersion>4.15.1</MoqVersion>
     <NewtonsoftJsonVersion>12.0.3</NewtonsoftJsonVersion>
   </PropertyGroup>
 </Project>
