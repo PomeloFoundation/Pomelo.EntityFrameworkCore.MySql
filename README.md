@@ -15,7 +15,7 @@ The following versions of MySqlConnector, EF Core and .NET Standard are compatib
 
 Release | Branch | MySqlConnector | EF Core | .NET Standard | .NET (Core) | .NET Framework
 --- | --- | --- | --- | --- | --- | ---
-[5.0.0-alpha.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/5.0.0-alpha.1) | [master](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/master) | >= 1.0.1 | 5.0.0-rc.2 | 2.1 | 3.0+ | N/A
+[5.0.0-alpha.2](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/5.0.0-alpha.2) | [master](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/master) | >= 1.1.0 | 5.0.x | 2.1 | 3.0+ | N/A
 [3.2.4](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.2.4) | [3.2-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/3.2-maint) | >= 0.69.9 < 1.0.0 | 3.1.x | 2.0 | 2.0+ | 4.6.1+
 [3.0.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.0.1) | [3.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/3.0-maint) | >= 0.61.0 < 1.0.0 | 3.0.x | 2.1 | 3.0+ | N/A
 [2.2.6](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/2.2.6) | [2.2-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/2.2-maint) | >= 0.59.2 < 1.0.0 | 2.2.6 | 2.0 | 2.0+ | 4.6.1+
@@ -44,7 +44,7 @@ Currently supported versions are:
 Milestone | Status | Release Date
 ----------|--------|-------------
 5.0.0 | In Development | TBA (see [#1088](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1088))
-5.0.0-alpha.1 | Released | 2020-11-06
+5.0.0-alpha.2 | Released | 2020-11-12
 3.2.4 | Released | 2020-10-13
 3.0.1 | Released | 2019-12-04
 2.2.6 | Released | 2019-10-15
@@ -79,7 +79,7 @@ show variables like 'character_set_database';
 Ensure that your `.csproj` file contains the following reference:
 
 ```xml
-<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="5.0.0-alpha.1" />
+<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="5.0.0-alpha.2" />
 ```
 
 ### 3. Services Configuration
@@ -105,15 +105,11 @@ namespace YourNamespace
                         // Replace with your connection string.
                         "server=localhost;user=root;password=1234;database=ef",
                         // Replace with your server version and type.
+                        // For common usages, see pull request #1233.
+                        new MySqlServerVersion(8, 0, 21), // use MariaDbServerVersion for MariaDB
                         mySqlOptions => mySqlOptions
-                            .ServerVersion(new Version(8, 0, 21), ServerType.MySql)
                             .CharSetBehavior(CharSetBehavior.NeverAppend))
                     // Everything from this point on is optional but helps with debugging.
-                    .UseLoggerFactory(
-                        LoggerFactory.Create(
-                            logging => logging
-                                .AddConsole()
-                                .AddFilter(level => level >= LogLevel.Information)))
                     .EnableSensitiveDataLogging()
                     .EnableDetailedErrors();
             ));
