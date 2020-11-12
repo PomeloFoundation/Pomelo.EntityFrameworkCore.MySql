@@ -59,7 +59,7 @@
     <MicrosoftSourceLinkGitHubVersion>1.0.0</MicrosoftSourceLinkGitHubVersion>
     <!-- EFCore.MySql Dependencies -->
     <MicrosoftEntityFrameworkCoreRelationalVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MySqlConnectorVersion>1.0.1</MySqlConnectorVersion>
+    <MySqlConnectorVersion>1.1.0</MySqlConnectorVersion>
     <MicrosoftExtensionsCachingMemoryVersion>$(DotnetRuntimeVersion)</MicrosoftExtensionsCachingMemoryVersion>
     <MicrosoftExtensionsDependencyInjection>$(DotnetRuntimeVersion)</MicrosoftExtensionsDependencyInjection>
     <SystemDiagnosticsDiagnosticSourceVersion>$(DotnetRuntimeVersion)</SystemDiagnosticsDiagnosticSourceVersion>
