@@ -23,8 +23,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             Assert.Equal(serverVersion.Supports.RenameIndex, supportsRenameIndex);
         }
 
-        [Fact]
-        public void TestInvalidVersion()
+        [Theory]
+        [InlineData("unknown")]
+        [InlineData("8")]
+        [InlineData("8-mysql")]
+        public void TestInvalidVersion(string input)
         {
             Assert.Throws<InvalidOperationException>(() => ServerVersion.FromString("unknown"));
         }
