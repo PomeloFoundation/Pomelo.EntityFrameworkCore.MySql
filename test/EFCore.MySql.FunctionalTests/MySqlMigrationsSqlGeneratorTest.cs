@@ -1155,27 +1155,5 @@ SELECT ROW_COUNT();");
                 EOL,
                 batch.Select(b => b.CommandText));
         }
-
-        /// <summary>
-        /// The base class does set schema values, while MySQL does not support
-        /// the EF Core concept of schemas.
-        /// </summary>
-        protected virtual MigrationOperation[] ResetSchema(params MigrationOperation[] operations)
-        {
-            foreach (var operation in operations)
-            {
-                var schemaPropertyInfos = operation
-                    .GetType()
-                    .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty)
-                    .Where(p => p.Name.Contains(nameof(AddForeignKeyOperation.Schema), StringComparison.Ordinal));
-
-                foreach (var schemaPropertyInfo in schemaPropertyInfos)
-                {
-                    schemaPropertyInfo.SetValue(operation, null);
-                }
-            }
-
-            return operations;
-        }
     }
 }
