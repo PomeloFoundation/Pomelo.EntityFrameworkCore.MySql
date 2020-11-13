@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -18,7 +17,6 @@ using Microsoft.Extensions.Logging;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
@@ -1111,7 +1109,8 @@ SELECT ROW_COUNT();");
             MigrationOperation[] operation,
             MigrationsSqlGenerationOptions options,
             CharSetBehavior? charSetBehavior,
-            [CanBeNull] CharSet charSet)
+            [CanBeNull] CharSet charSet,
+            MySqlSchemaNameTranslator schemaNameTranslator = null)
         {
             var optionsBuilder = new DbContextOptionsBuilder(ContextOptions);
             var mySqlOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder);
@@ -1124,6 +1123,11 @@ SELECT ROW_COUNT();");
             if (charSet != null)
             {
                 mySqlOptionsBuilder.CharSet(charSet);
+            }
+
+            if (schemaNameTranslator != null)
+            {
+                mySqlOptionsBuilder.SchemaBehavior(MySqlSchemaBehavior.Translate, schemaNameTranslator);
             }
 
             var contextOptions = optionsBuilder.Options;

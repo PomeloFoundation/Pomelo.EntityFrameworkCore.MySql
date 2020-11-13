@@ -110,6 +110,42 @@ ALTER TABLE `Cars` ADD CONSTRAINT `FK_Cars_LicensePlates_LicensePlateNumber` FOR
                 ignoreLineEndingDifferences: true);
         }
 
+        [ConditionalFact]
+        public virtual void CreateTable_with_SchemaNameTranslator()
+        {
+            Generate(
+                null,
+                new MigrationOperation[]
+                {
+                    new CreateTableOperation
+                    {
+                        Name = "IceCreams",
+                        Schema = "IceCreamParlor",
+                        Columns =
+                        {
+                            new AddColumnOperation
+                            {
+                                Name = "Name",
+                                ClrType = typeof(string),
+                                ColumnType = "varchar(255)",
+                            }
+                        }
+                    }
+                },
+                default,
+                null,
+                null,
+                (schemaName, objectName) => $"{schemaName}_{objectName}");
+
+            Assert.Equal(
+                @"CREATE TABLE `IceCreamParlor_IceCreams` (
+    `Name` varchar(255) NOT NULL
+);
+",
+                Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
         private static void SetupModel(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Car>(entity =>
