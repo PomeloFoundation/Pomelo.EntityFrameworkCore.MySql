@@ -1023,7 +1023,7 @@ DELIMITER ;";
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
-            var matchType = operation.ColumnType ?? GetColumnType(schema, table, name, operation, model);
+            var matchType = GetColumnType(schema, table, name, operation, model);
             var matchLen = "";
             var match = _typeRegex.Match(matchType ?? "-");
             if (match.Success)
@@ -1114,7 +1114,7 @@ DELIMITER ;";
                 builder
                     .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(name))
                     .Append(" ")
-                    .Append(operation.ColumnType ?? GetColumnType(schema, table, name, operation, model));
+                    .Append(GetColumnType(schema, table, name, operation, model));
                 builder
                     .Append(" AS ")
                     .Append($"({operation.ComputedColumnSql})");
@@ -1152,9 +1152,7 @@ DELIMITER ;";
                 return;
             }
 
-            var columnType = operation.ColumnType != null
-                ? GetColumnTypeWithCharSetAndCollation(operation, operation.ColumnType)
-                : GetColumnType(schema, table, name, operation, model);
+            var columnType = GetColumnType(schema, table, name, operation, model);
 
             builder
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(name))
@@ -1184,7 +1182,7 @@ DELIMITER ;";
         protected override string GetColumnType(string schema, string table, string name, ColumnOperation operation, IModel model)
             => GetColumnTypeWithCharSetAndCollation(
                 operation,
-                base.GetColumnType(schema, table, name, operation, model));
+                operation.ColumnType ?? base.GetColumnType(schema, table, name, operation, model));
 
         private static string GetColumnTypeWithCharSetAndCollation(ColumnOperation operation, string columnType)
         {
@@ -1199,7 +1197,7 @@ DELIMITER ;";
                     : columnType.TrimEnd() + " " + characterSetClause;
             }
 
-            var collation = operation[MySqlAnnotationNames.Collation] ?? operation.Collation;
+            var collation = operation.Collation ?? operation[MySqlAnnotationNames.Collation];
             if (collation != null)
             {
                 const string collationClausePattern = @"COLLATE \w+";
