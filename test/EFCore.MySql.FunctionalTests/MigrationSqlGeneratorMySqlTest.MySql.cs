@@ -247,7 +247,6 @@ DROP PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`;");
                 },
                 default,
                 null,
-                null,
                 (schemaName, objectName) => $"{schemaName}_{objectName}");
 
             Assert.Equal(

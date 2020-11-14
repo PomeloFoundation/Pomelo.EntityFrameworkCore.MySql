@@ -63,7 +63,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
                     mysqlOptions =>
                     {
                         mysqlOptions.MaxBatchSize(AppConfig.EfBatchSize);
-                        mysqlOptions.CharSetBehavior(CharSetBehavior.NeverAppend);
                         mysqlOptions.UseNewtonsoftJson();
 
                         if (AppConfig.EfRetryOnFailure > 0)

@@ -4,8 +4,6 @@
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
 {
@@ -13,7 +11,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
     {
         MySqlConnectionSettings ConnectionSettings { get; }
         ServerVersion ServerVersion { get; }
-        CharSetBehavior CharSetBehavior { get; }
         CharSet CharSet { get; }
         CharSet NationalCharSet { get; }
         bool NoBackslashEscapes { get; }

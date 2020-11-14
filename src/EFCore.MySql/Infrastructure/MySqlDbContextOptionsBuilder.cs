@@ -20,12 +20,6 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
         }
 
         /// <summary>
-        ///     Configures the Default CharSet Behavior
-        /// </summary>
-        public virtual MySqlDbContextOptionsBuilder CharSetBehavior(CharSetBehavior charSetBehavior)
-            => WithOption(e => e.WithCharSetBehavior(charSetBehavior));
-
-        /// <summary>
         ///     Configures the ANSI CharSet
         /// </summary>
         public virtual MySqlDbContextOptionsBuilder CharSet(CharSet charSet)

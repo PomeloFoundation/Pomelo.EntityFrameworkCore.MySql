@@ -76,7 +76,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
             var storeType = property.GetRelationalTypeMapping().StoreType;
 
-            Assert.Equal("varchar(64) CHARACTER SET utf8mb4", storeType);
+            Assert.Equal("varchar(64)", storeType);
 
             return modelBuilder;
         }

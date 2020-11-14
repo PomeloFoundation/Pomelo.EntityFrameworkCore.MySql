@@ -371,22 +371,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     var isUnicode = mappingInfo.IsUnicode ?? charset.IsUnicode;
                     var bytesPerChar = charset.MaxBytesPerChar;
                     var charSetSuffix = string.Empty;
-
-                    // Obsolete: Remove for .NET 5 release.
-                    if (isUnicode &&
-                        (mappingInfo.IsKeyOrIndex &&
-                         (_options.CharSetBehavior & CharSetBehavior.AppendToUnicodeIndexAndKeyColumns) != 0 ||
-                         !mappingInfo.IsKeyOrIndex &&
-                         (_options.CharSetBehavior & CharSetBehavior.AppendToUnicodeNonIndexAndKeyColumns) != 0) ||
-                        !isUnicode &&
-                        (mappingInfo.IsKeyOrIndex &&
-                         (_options.CharSetBehavior & CharSetBehavior.AppendToAnsiIndexAndKeyColumns) != 0 ||
-                         !mappingInfo.IsKeyOrIndex &&
-                         (_options.CharSetBehavior & CharSetBehavior.AppendToAnsiNonIndexAndKeyColumns) != 0))
-                    {
-                        charSetSuffix = $" CHARACTER SET {(isNationalCharSet ? _options.NationalCharSet : _options.CharSet).Name}";
-                    }
-
                     var maxSize = 8000 / bytesPerChar;
 
                     // Obsolete: Remove this for .NET 5 release, because of `HasPrefixLength()` support.
