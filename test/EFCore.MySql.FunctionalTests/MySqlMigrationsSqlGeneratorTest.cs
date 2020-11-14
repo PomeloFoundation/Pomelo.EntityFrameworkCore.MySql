@@ -1089,7 +1089,7 @@ SELECT ROW_COUNT();");
         }
 
         protected override void Generate(params MigrationOperation[] operations)
-            => base.Generate(ResetSchema(operations));
+            => base.Generate(operations);
 
         private void Generate(
             Action<ModelBuilder> buildAction,
@@ -1153,7 +1153,7 @@ SELECT ROW_COUNT();");
                 model = relationalModelConvention.ProcessModelFinalized((IConventionModel)model);
             }
 
-            var batch = services.GetRequiredService<IMigrationsSqlGenerator>().Generate(ResetSchema(operation), model, options);
+            var batch = services.GetRequiredService<IMigrationsSqlGenerator>().Generate(operation, model, options);
 
             Sql = string.Join(
                 EOL,
