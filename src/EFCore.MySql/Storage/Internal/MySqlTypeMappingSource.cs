@@ -370,18 +370,36 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                         : _options.CharSet;
                     var isUnicode = mappingInfo.IsUnicode ?? charset.IsUnicode;
                     var bytesPerChar = charset.MaxBytesPerChar;
+                    var charSetSuffix = string.Empty;
                     var maxSize = 8000 / bytesPerChar;
-                    var size = mappingInfo.Size > maxSize ? null : mappingInfo.Size;
+
+                    // Because we cannot check the annotations of the property mapping, we can't know whether `HasPrefixLength()` has been
+                    // used or not. Therefore by default, the `LimitKeyedOrIndexedStringColumnLength` option will be true, and we will
+                    // ensure, that the length of string properties will be set to a reasonable length, so that two columns limited this
+                    // way could stil fit.
+                    // If users disable the `LimitKeyedOrIndexedStringColumnLength` option, they are responsible for oppropriately calling
+                    // `HasPrefixLength()` for string properties, that are not mapped to a store type, where needed.
+                    var size = mappingInfo.Size ??
+                               (mappingInfo.IsKeyOrIndex &&
+                                _options.LimitKeyedOrIndexedStringColumnLength
+                                   // Allow to use at most half of the max key length, so at least 2 columns can fit
+                                   ? Math.Min(_options.ServerVersion.MaxKeyLength / (bytesPerChar * 2), 255)
+                                   : (int?)null);
+
+                    if (size > maxSize)
+                    {
+                        size = null;
+                    }
 
                     return new MySqlStringTypeMapping(
                         size == null
-                            ? "longtext"
+                            ? "longtext" + charSetSuffix
                             : (isNationalCharSet
                                   ? "n"
                                   : string.Empty) +
                               (isFixedLength
                                   ? "char("
-                                  : "varchar(") + size + ")",
+                                  : "varchar(") + size + ")" + charSetSuffix,
                         _options,
                         StoreTypePostfix.None, // HACK: remove once CHARACTER SET above has been removed
                         isUnicode,

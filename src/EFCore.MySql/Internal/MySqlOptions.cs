@@ -38,6 +38,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
 
             // TODO: Change to `true` for EF Core 5.
             IndexOptimizedBooleanColumns = false;
+
+            LimitKeyedOrIndexedStringColumnLength = true;
         }
 
         public virtual void Initialize(IDbContextOptions options)
@@ -56,6 +58,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                 : null);
             IndexOptimizedBooleanColumns = mySqlOptions.IndexOptimizedBooleanColumns;
             JsonChangeTrackingOptions = mySqlJsonOptions?.JsonChangeTrackingOptions ?? default;
+            LimitKeyedOrIndexedStringColumnLength = mySqlOptions.LimitKeyedOrIndexedStringColumnLength;
         }
 
         public virtual void Validate(IDbContextOptions options)
@@ -147,6 +150,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                         nameof(MySqlJsonOptionsExtension.JsonChangeTrackingOptions),
                         nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
             }
+
+            if (!Equals(LimitKeyedOrIndexedStringColumnLength, mySqlOptions.LimitKeyedOrIndexedStringColumnLength))
+            {
+                throw new InvalidOperationException(
+                    CoreStrings.SingletonOptionChanged(
+                        nameof(MySqlDbContextOptionsBuilder.LimitKeyedOrIndexedStringColumnLength),
+                        nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
+            }
         }
 
         protected virtual MySqlDefaultDataTypeMappings ApplyDefaultDataTypeMappings(MySqlDefaultDataTypeMappings defaultDataTypeMappings, MySqlConnectionSettings connectionSettings)
@@ -216,7 +227,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                    Equals(DefaultDataTypeMappings, other.DefaultDataTypeMappings) &&
                    Equals(SchemaNameTranslator, other.SchemaNameTranslator) &&
                    IndexOptimizedBooleanColumns == other.IndexOptimizedBooleanColumns &&
-                   JsonChangeTrackingOptions == other.JsonChangeTrackingOptions;
+                   JsonChangeTrackingOptions == other.JsonChangeTrackingOptions &&
+                   LimitKeyedOrIndexedStringColumnLength == other.LimitKeyedOrIndexedStringColumnLength;
         }
 
         public override bool Equals(object obj)
@@ -252,6 +264,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             hashCode.Add(SchemaNameTranslator);
             hashCode.Add(IndexOptimizedBooleanColumns);
             hashCode.Add(JsonChangeTrackingOptions);
+            hashCode.Add(LimitKeyedOrIndexedStringColumnLength);
             return hashCode.ToHashCode();
         }
 
@@ -265,5 +278,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         public virtual MySqlSchemaNameTranslator SchemaNameTranslator { get; private set; }
         public virtual bool IndexOptimizedBooleanColumns { get; private set; }
         public virtual MySqlJsonChangeTrackingOptions JsonChangeTrackingOptions { get; private set; }
+        public virtual bool LimitKeyedOrIndexedStringColumnLength { get; private set; }
     }
 }

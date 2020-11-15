@@ -19,5 +19,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         MySqlSchemaNameTranslator SchemaNameTranslator { get; }
         bool IndexOptimizedBooleanColumns { get; }
         MySqlJsonChangeTrackingOptions JsonChangeTrackingOptions { get; }
+        bool LimitKeyedOrIndexedStringColumnLength { get; }
     }
 }

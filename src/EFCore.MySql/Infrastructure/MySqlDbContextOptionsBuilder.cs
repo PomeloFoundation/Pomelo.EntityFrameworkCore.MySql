@@ -105,5 +105,14 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
         /// </summary>
         public virtual MySqlDbContextOptionsBuilder EnableIndexOptimizedBooleanColumns(bool enable = true)
             => WithOption(e => e.WithIndexOptimizedBooleanColumns(enable));
+
+        /// <summary>
+        ///     Configures the context to automatically limit the length of `System.String` mapped columns, that have not explicitly mapped
+        ///     to a store type (e.g. `varchar(1024)`), to ensure that at least two indexed columns will be allowed on a given table (this
+        ///     is the default if you don't configure this option).
+        ///     If you intend to use `HasPrefixLength()` for those kind of columns, set this option to `false`.
+        /// </summary>
+        public virtual MySqlDbContextOptionsBuilder LimitKeyedOrIndexedStringColumnLength(bool enable = true)
+            => WithOption(e => e.WithKeyedOrIndexedStringColumnLengthLimit(enable));
     }
 }
