@@ -370,30 +370,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                         : _options.CharSet;
                     var isUnicode = mappingInfo.IsUnicode ?? charset.IsUnicode;
                     var bytesPerChar = charset.MaxBytesPerChar;
-                    var charSetSuffix = string.Empty;
                     var maxSize = 8000 / bytesPerChar;
-
-                    // Obsolete: Remove this for .NET 5 release, because of `HasPrefixLength()` support.
-                    var size = mappingInfo.Size ??
-                               (mappingInfo.IsKeyOrIndex
-                                   // Allow to use at most half of the max key length, so at least 2 columns can fit
-                                   ? Math.Min(_options.ServerVersion.MaxKeyLength / (bytesPerChar * 2), 255)
-                                   : (int?)null);
-
-                    if (size > maxSize)
-                    {
-                        size = null;
-                    }
+                    var size = mappingInfo.Size > maxSize ? null : mappingInfo.Size;
 
                     return new MySqlStringTypeMapping(
                         size == null
-                            ? "longtext" + charSetSuffix
+                            ? "longtext"
                             : (isNationalCharSet
                                   ? "n"
                                   : string.Empty) +
                               (isFixedLength
                                   ? "char("
-                                  : "varchar(") + size + ")" + charSetSuffix,
+                                  : "varchar(") + size + ")",
                         _options,
                         StoreTypePostfix.None, // HACK: remove once CHARACTER SET above has been removed
                         isUnicode,
