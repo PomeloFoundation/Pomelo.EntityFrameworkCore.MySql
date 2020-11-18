@@ -106,7 +106,7 @@ namespace YourNamespace
                         "server=localhost;user=root;password=1234;database=ef",
                         // Replace with your server version and type.
                         // For common usages, see pull request #1233.
-                        new MySqlServerVersion(8, 0, 21), // use MariaDbServerVersion for MariaDB
+                        new MySqlServerVersion(new Version(8, 0, 21)), // use MariaDbServerVersion for MariaDB
                         mySqlOptions => mySqlOptions
                             .CharSetBehavior(CharSetBehavior.NeverAppend))
                     // Everything from this point on is optional but helps with debugging.
