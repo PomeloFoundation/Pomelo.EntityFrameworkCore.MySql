@@ -10,6 +10,7 @@ namespace Microsoft.EntityFrameworkCore
 {
     public class MySqlServerVersion : ServerVersion
     {
+        public static readonly string MySqlTypeIdentifier = nameof(ServerType.MySql).ToLowerInvariant();
         public static readonly ServerVersion LatestSupportedServerVersion = new MySqlServerVersion(new Version(8, 0, 21));
 
         public override ServerVersionSupport Supports { get; }
@@ -21,7 +22,7 @@ namespace Microsoft.EntityFrameworkCore
         }
 
         public MySqlServerVersion(string versionString)
-            : this(FromString(versionString))
+            : this(FromString(versionString, ServerType.MySql))
         {
         }
 
@@ -29,10 +30,12 @@ namespace Microsoft.EntityFrameworkCore
             : base(serverVersion.Version, serverVersion.Type, serverVersion.TypeIdentifier)
         {
             if (Type != ServerType.MySql ||
-                !string.Equals(TypeIdentifier, nameof(ServerType.MySql).ToLowerInvariant()))
+                !string.Equals(TypeIdentifier, MySqlTypeIdentifier))
             {
                 throw new ArgumentException($"{nameof(MySqlServerVersion)} is not compatible with the supplied server type.");
             }
+
+            Supports = new MySqlServerVersionSupport(this);
         }
 
         public class MySqlServerVersionSupport : ServerVersionSupport

@@ -10,6 +10,7 @@ namespace Microsoft.EntityFrameworkCore
 {
     public class MariaDbServerVersion : ServerVersion
     {
+        public static readonly string MariaDbTypeIdentifier = nameof(ServerType.MariaDb).ToLowerInvariant();
         public static readonly ServerVersion LatestSupportedServerVersion = new MariaDbServerVersion(new Version(10, 5, 5));
 
         public override ServerVersionSupport Supports { get; }
@@ -21,7 +22,7 @@ namespace Microsoft.EntityFrameworkCore
         }
 
         public MariaDbServerVersion(string versionString)
-            : this(FromString(versionString))
+            : this(FromString(versionString, ServerType.MariaDb))
         {
         }
 
@@ -29,10 +30,12 @@ namespace Microsoft.EntityFrameworkCore
             : base(serverVersion.Version, serverVersion.Type, serverVersion.TypeIdentifier)
         {
             if (Type != ServerType.MariaDb ||
-                !string.Equals(TypeIdentifier, nameof(ServerType.MariaDb).ToLowerInvariant()))
+                !string.Equals(TypeIdentifier, MariaDbTypeIdentifier))
             {
                 throw new ArgumentException($"{nameof(MariaDbServerVersion)} is not compatible with the supplied server type.");
             }
+
+            Supports = new MariaDbServerVersionSupport(this);
         }
 
         public class MariaDbServerVersionSupport : ServerVersionSupport

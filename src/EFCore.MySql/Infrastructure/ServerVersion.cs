@@ -74,11 +74,11 @@ namespace Microsoft.EntityFrameworkCore
             return FromString(serverVersion);
         }
 
-        public static ServerVersion FromString(string versionString)
+        public static ServerVersion FromString(string versionString, ServerType? serverType = null)
         {
             Check.NotEmpty(versionString, nameof(versionString));
 
-            if (!TryFromString(versionString, out var serverVersion))
+            if (!TryFromString(versionString, serverType, out var serverVersion))
             {
                 throw new InvalidOperationException($"Unable to determine server version from version string '${versionString}'.");
             }
@@ -87,6 +87,9 @@ namespace Microsoft.EntityFrameworkCore
         }
 
         public static bool TryFromString(string versionString, out ServerVersion serverVersion)
+            => TryFromString(versionString, null, out serverVersion);
+
+        public static bool TryFromString(string versionString, ServerType? serverType, out ServerVersion serverVersion)
         {
             Check.NotEmpty(versionString, nameof(versionString));
 
@@ -95,17 +98,15 @@ namespace Microsoft.EntityFrameworkCore
             var semanticVersion = _versionRegex.Matches(versionString);
             if (semanticVersion.Count > 0)
             {
-                var type = versionString.ToLower()
-                    .Contains("mariadb")
-                    ? ServerType.MariaDb
-                    : ServerType.MySql;
-                var version = type == ServerType.MariaDb && semanticVersion.Count > 1
-                    ? Version.Parse(
-                        semanticVersion[1]
-                            .Value)
-                    : Version.Parse(
-                        semanticVersion[0]
-                            .Value);
+                var type = serverType ??
+                           (versionString.ToLower().Contains(MariaDbServerVersion.MariaDbTypeIdentifier)
+                               ? ServerType.MariaDb
+                               : ServerType.MySql);
+
+                var version = type == ServerType.MariaDb &&
+                              semanticVersion.Count > 1
+                    ? Version.Parse(semanticVersion[1].Value)
+                    : Version.Parse(semanticVersion[0].Value);
 
                 serverVersion = type switch
                 {
