@@ -108,6 +108,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         {
             var script = base.GenerateScript(fromMigration, toMigration, options);
 
+            options |= MigrationsSqlGenerationOptions.Script;
+
             if (!options.HasFlag(MigrationsSqlGenerationOptions.Idempotent))
             {
                 return script;
