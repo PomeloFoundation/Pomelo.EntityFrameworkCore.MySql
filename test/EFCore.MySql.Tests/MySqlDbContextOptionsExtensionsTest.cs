@@ -106,5 +106,239 @@ namespace Pomelo.EntityFrameworkCore.MySql
 
             Assert.Equal(MySqlBooleanType.TinyInt1, mySqlOptions.DefaultDataTypeMappings.ClrBoolean);
         }
+
+        [Fact]
+        public void UseMySql_with_MySqlServerVersion_Version()
+        {
+            var builder = new DbContextOptionsBuilder();
+
+            builder.UseMySql(
+                "Server=foo",
+                new MySqlServerVersion(new Version(8, 0, 21)));
+
+            var mySqlOptions = new MySqlOptions();
+            mySqlOptions.Initialize(builder.Options);
+
+            Assert.Equal(new Version(8, 0, 21), mySqlOptions.ServerVersion.Version);
+            Assert.Equal(ServerType.MySql, mySqlOptions.ServerVersion.Type);
+            Assert.Equal("mysql", mySqlOptions.ServerVersion.TypeIdentifier);
+        }
+
+        [Fact]
+        public void UseMySql_with_MySqlServerVersion_string_version_only()
+        {
+            var builder = new DbContextOptionsBuilder();
+
+            builder.UseMySql(
+                "Server=foo",
+                new MySqlServerVersion("8.0.21"));
+
+            var mySqlOptions = new MySqlOptions();
+            mySqlOptions.Initialize(builder.Options);
+
+            Assert.Equal(new Version(8, 0, 21), mySqlOptions.ServerVersion.Version);
+            Assert.Equal(ServerType.MySql, mySqlOptions.ServerVersion.Type);
+            Assert.Equal("mysql", mySqlOptions.ServerVersion.TypeIdentifier);
+        }
+
+        [Fact]
+        public void UseMySql_with_MySqlServerVersion_string_version_full()
+        {
+            var builder = new DbContextOptionsBuilder();
+
+            builder.UseMySql(
+                "Server=foo",
+                new MySqlServerVersion("8.0.21-mysql"));
+
+            var mySqlOptions = new MySqlOptions();
+            mySqlOptions.Initialize(builder.Options);
+
+            Assert.Equal(new Version(8, 0, 21), mySqlOptions.ServerVersion.Version);
+            Assert.Equal(ServerType.MySql, mySqlOptions.ServerVersion.Type);
+            Assert.Equal("mysql", mySqlOptions.ServerVersion.TypeIdentifier);
+        }
+
+        [Fact]
+        public void UseMySql_with_MySqlServerVersion_ServerVersion()
+        {
+            var builder = new DbContextOptionsBuilder();
+
+            builder.UseMySql(
+                "Server=foo",
+                new MySqlServerVersion(new MySqlServerVersion(new Version(8, 0, 21))));
+
+            var mySqlOptions = new MySqlOptions();
+            mySqlOptions.Initialize(builder.Options);
+
+            Assert.Equal(new Version(8, 0, 21), mySqlOptions.ServerVersion.Version);
+            Assert.Equal(ServerType.MySql, mySqlOptions.ServerVersion.Type);
+            Assert.Equal("mysql", mySqlOptions.ServerVersion.TypeIdentifier);
+        }
+
+        [Fact]
+        public void UseMySql_with_MySqlServerVersion_incorrect_ServerVersion_throws()
+        {
+            Assert.Throws<ArgumentException>(
+                () =>
+                {
+                    var builder = new DbContextOptionsBuilder();
+
+                    builder.UseMySql(
+                        "Server=foo",
+                        new MySqlServerVersion(new MariaDbServerVersion("10.5.5-mariadb")));
+                });
+        }
+
+        [Fact]
+        public void UseMySql_with_MySqlServerVersion_LatestSupportedServerVersion()
+        {
+            var builder = new DbContextOptionsBuilder();
+
+            builder.UseMySql(
+                "Server=foo",
+                MySqlServerVersion.LatestSupportedServerVersion);
+
+            var mySqlOptions = new MySqlOptions();
+            mySqlOptions.Initialize(builder.Options);
+
+            Assert.Equal(MySqlServerVersion.LatestSupportedServerVersion.Version, mySqlOptions.ServerVersion.Version);
+            Assert.Equal(ServerType.MySql, mySqlOptions.ServerVersion.Type);
+            Assert.Equal("mysql", mySqlOptions.ServerVersion.TypeIdentifier);
+        }
+
+        [Fact]
+        public void UseMySql_with_MariaDbServerVersion_Version()
+        {
+            var builder = new DbContextOptionsBuilder();
+
+            builder.UseMySql(
+                "Server=foo",
+                new MariaDbServerVersion(new Version(10, 5, 5)));
+
+            var mySqlOptions = new MySqlOptions();
+            mySqlOptions.Initialize(builder.Options);
+
+            Assert.Equal(new Version(10, 5, 5), mySqlOptions.ServerVersion.Version);
+            Assert.Equal(ServerType.MariaDb, mySqlOptions.ServerVersion.Type);
+            Assert.Equal("mariadb", mySqlOptions.ServerVersion.TypeIdentifier);
+        }
+
+        [Fact]
+        public void UseMySql_with_MariaDbServerVersion_string_version_only()
+        {
+            var builder = new DbContextOptionsBuilder();
+
+            builder.UseMySql(
+                "Server=foo",
+                new MariaDbServerVersion("10.5.5"));
+
+            var mySqlOptions = new MySqlOptions();
+            mySqlOptions.Initialize(builder.Options);
+
+            Assert.Equal(new Version(10, 5, 5), mySqlOptions.ServerVersion.Version);
+            Assert.Equal(ServerType.MariaDb, mySqlOptions.ServerVersion.Type);
+            Assert.Equal("mariadb", mySqlOptions.ServerVersion.TypeIdentifier);
+        }
+
+        [Fact]
+        public void UseMySql_with_MariaDbServerVersion_string_version_full()
+        {
+            var builder = new DbContextOptionsBuilder();
+
+            builder.UseMySql(
+                "Server=foo",
+                new MariaDbServerVersion("10.5.5-mariadb"));
+
+            var mySqlOptions = new MySqlOptions();
+            mySqlOptions.Initialize(builder.Options);
+
+            Assert.Equal(new Version(10, 5, 5), mySqlOptions.ServerVersion.Version);
+            Assert.Equal(ServerType.MariaDb, mySqlOptions.ServerVersion.Type);
+            Assert.Equal("mariadb", mySqlOptions.ServerVersion.TypeIdentifier);
+        }
+
+        [Fact]
+        public void UseMySql_with_MariaDbServerVersion_ServerVersion()
+        {
+            var builder = new DbContextOptionsBuilder();
+
+            builder.UseMySql(
+                "Server=foo",
+                new MariaDbServerVersion(new MariaDbServerVersion(new Version(10, 5, 5))));
+
+            var mySqlOptions = new MySqlOptions();
+            mySqlOptions.Initialize(builder.Options);
+
+            Assert.Equal(new Version(10, 5, 5), mySqlOptions.ServerVersion.Version);
+            Assert.Equal(ServerType.MariaDb, mySqlOptions.ServerVersion.Type);
+            Assert.Equal("mariadb", mySqlOptions.ServerVersion.TypeIdentifier);
+        }
+
+        [Fact]
+        public void UseMySql_with_MariaDbServerVersion_incorrect_ServerVersion_throws()
+        {
+            Assert.Throws<ArgumentException>(
+                () =>
+                {
+                    var builder = new DbContextOptionsBuilder();
+
+                    builder.UseMySql(
+                        "Server=foo",
+                        new MariaDbServerVersion(new MySqlServerVersion("8.0.21-mysql")));
+                });
+        }
+
+        [Fact]
+        public void UseMySql_with_MariaDbServerVersion_LatestSupportedServerVersion()
+        {
+            var builder = new DbContextOptionsBuilder();
+
+            builder.UseMySql(
+                "Server=foo",
+                MariaDbServerVersion.LatestSupportedServerVersion);
+
+            var mySqlOptions = new MySqlOptions();
+            mySqlOptions.Initialize(builder.Options);
+
+            Assert.Equal(MariaDbServerVersion.LatestSupportedServerVersion.Version, mySqlOptions.ServerVersion.Version);
+            Assert.Equal(ServerType.MariaDb, mySqlOptions.ServerVersion.Type);
+            Assert.Equal("mariadb", mySqlOptions.ServerVersion.TypeIdentifier);
+        }
+
+        [Fact]
+        public void UseMySql_with_ServerVersion_FromString()
+        {
+            var builder = new DbContextOptionsBuilder();
+            var serverVersion = ServerVersion.FromString("8.0.21-mysql");
+
+            builder.UseMySql(
+                "Server=foo",
+                serverVersion);
+
+            var mySqlOptions = new MySqlOptions();
+            mySqlOptions.Initialize(builder.Options);
+
+            Assert.Equal(new Version(8, 0, 21), mySqlOptions.ServerVersion.Version);
+            Assert.Equal(ServerType.MySql, mySqlOptions.ServerVersion.Type);
+            Assert.Equal("mysql", mySqlOptions.ServerVersion.TypeIdentifier);
+        }
+
+        [Fact]
+        public void UseMySql_with_ServerVersion_AutoDetect()
+        {
+            var builder = new DbContextOptionsBuilder();
+            var serverVersion = ServerVersion.AutoDetect(AppConfig.ConnectionString);
+
+            builder.UseMySql(
+                "Server=foo",
+                serverVersion);
+
+            var mySqlOptions = new MySqlOptions();
+            mySqlOptions.Initialize(builder.Options);
+
+            Assert.Equal(serverVersion.Version, mySqlOptions.ServerVersion.Version);
+            Assert.Equal(serverVersion.Type, mySqlOptions.ServerVersion.Type);
+            Assert.Equal(serverVersion.TypeIdentifier, mySqlOptions.ServerVersion.TypeIdentifier);
+        }
     }
 }
