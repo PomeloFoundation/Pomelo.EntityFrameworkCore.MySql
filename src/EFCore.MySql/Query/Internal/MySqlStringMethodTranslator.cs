@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
@@ -99,8 +100,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             if (_replaceMethodInfo.Equals(method))
             {
                 var stringTypeMapping = ExpressionExtensions.InferTypeMapping(instance, arguments[0], arguments[1]);
-
-                return _sqlExpressionFactory.NullableFunction(
+                var replacementArgument = _sqlExpressionFactory.ApplyTypeMapping(arguments[1], stringTypeMapping);
+                var replaceCall = _sqlExpressionFactory.NullableFunction(
                     "REPLACE",
                     new[]
                     {
@@ -110,6 +111,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     },
                     method.ReturnType,
                     stringTypeMapping);
+
+                // Due to a bug in all versions of MariaDB and all MySQL versions below 8.0.x (exact version that fixed the issue is
+                // currently unclear), using `null` as the replacement argument in a REPLACE() call leads to unexpected results, in which
+                // the call returns the original string, instead of `null`.
+                // See https://jira.mariadb.org/browse/MDEV-24263
+                return _sqlExpressionFactory.Case(
+                    new[]
+                    {
+                        new CaseWhenClause(
+                            _sqlExpressionFactory.IsNotNull(replacementArgument),
+                            replaceCall)
+                    },
+                    _sqlExpressionFactory.Constant(null, RelationalTypeMapping.NullMapping));
             }
 
             if (_toLowerMethodInfo.Equals(method)
