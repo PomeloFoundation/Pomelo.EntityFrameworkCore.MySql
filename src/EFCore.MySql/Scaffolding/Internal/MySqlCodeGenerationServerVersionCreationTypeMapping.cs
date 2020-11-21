@@ -5,6 +5,7 @@ using System;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
 {
@@ -31,9 +32,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
         public override Expression GenerateCodeLiteral(object value)
             => value is MySqlCodeGenerationServerVersionCreation serverVersionCreation
                 ? Expression.Call(
-                    typeof(ServerVersion),
-                    nameof(ServerVersion.FromString),
-                    null,
+                    typeof(ServerVersion).GetMethod(nameof(ServerVersion.FromString), new[] {typeof(string)}),
                     Expression.Constant(serverVersionCreation.ServerVersion.ToString()))
                 : null;
     }
