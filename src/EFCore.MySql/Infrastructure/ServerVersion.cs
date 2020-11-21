@@ -74,7 +74,10 @@ namespace Microsoft.EntityFrameworkCore
             return FromString(serverVersion);
         }
 
-        public static ServerVersion FromString(string versionString, ServerType? serverType = null)
+        public static ServerVersion FromString(string versionString)
+            => FromString(versionString, null);
+
+        public static ServerVersion FromString(string versionString, ServerType? serverType)
         {
             Check.NotEmpty(versionString, nameof(versionString));
 
