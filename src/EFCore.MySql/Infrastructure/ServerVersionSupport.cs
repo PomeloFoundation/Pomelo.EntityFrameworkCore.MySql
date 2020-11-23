@@ -61,6 +61,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
         public virtual bool Json => false;
         public virtual bool GeneratedColumns => false;
         public virtual bool NullableGeneratedColumns => false;
+        public virtual bool ParenthesisEnclosedGeneratedColumnExpressions => false;
         public virtual bool DefaultCharSetUtf8Mb4 => false;
         public virtual bool DefaultExpression => false;
         public virtual bool AlternativeDefaultExpression => false;
