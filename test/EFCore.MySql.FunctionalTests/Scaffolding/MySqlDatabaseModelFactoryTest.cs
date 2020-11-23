@@ -375,6 +375,27 @@ CREATE TABLE DefaultValue (
                 "DROP TABLE DefaultValueClr");
         }
 
+        [Fact]
+        public void Computed_value()
+            => Test(@"
+CREATE TABLE `ComputedValues` (
+    `Id` int,
+    `A` int NOT NULL,
+    `B` int NOT NULL,
+    `SumOfAAndB` int GENERATED ALWAYS AS (`A` + `B`) STORED
+);",
+                Enumerable.Empty<string>(),
+                Enumerable.Empty<string>(),
+                dbModel =>
+                {
+                    var columns = dbModel.Tables.Single().Columns;
+
+                    var column = columns.Single(c => c.Name == "SumOfAAndB");
+                    Assert.Null(column.DefaultValueSql);
+                    Assert.Equal(@"`A` + `B`", column.ComputedColumnSql);
+                },
+                @"DROP TABLE `ComputedValues`");
+
         #endregion
 
         #region PrimaryKeyFacets

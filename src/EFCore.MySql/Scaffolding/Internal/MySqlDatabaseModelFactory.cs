@@ -18,6 +18,7 @@ using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
+using Pomelo.EntityFrameworkCore.MySql.Extensions;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
@@ -202,7 +203,8 @@ AND
     `COLLATION_NAME`,
     `COLUMN_TYPE`,
     `COLUMN_COMMENT`,
-    `EXTRA` /*!80003 ,
+    `EXTRA`,
+    `GENERATION_EXPRESSION` /*!80003 ,
     `SRS_ID` */
 FROM
 	`INFORMATION_SCHEMA`.`COLUMNS`
@@ -235,6 +237,7 @@ ORDER BY
                             var collation = reader.GetValueOrDefault<string>("COLLATION_NAME");
                             var columType = reader.GetValueOrDefault<string>("COLUMN_TYPE");
                             var extra = reader.GetValueOrDefault<string>("EXTRA");
+                            var generation = reader.GetValueOrDefault<string>("GENERATION_EXPRESSION").NullIfEmpty();
                             var comment = reader.GetValueOrDefault<string>("COLUMN_COMMENT");
 
                             // MariaDB does not support SRID column restrictions.
@@ -242,10 +245,21 @@ ORDER BY
                                 ? reader.GetValueOrDefault<uint?>("SRS_ID")
                                 : null;
 
-                            defaultValue = _options.ServerVersion.SupportsAlternativeDefaultExpression &&
-                                           defaultValue != null
-                                ? ConvertDefaultValueFromMariaDbToMySql(defaultValue)
-                                : defaultValue;
+                            // MySQL saves the generation expression with enclosing parenthesis, while MariaDB doesn't.
+                            generation = generation != null &&
+                                         _options.ServerVersion.SupportsParenthesisEnclosedGeneratedColumnExpressions
+                                ? Regex.Replace(generation, @"^\((.*)\)$", "$1", RegexOptions.Singleline)
+                                : generation;
+
+                            defaultValue = generation == null
+                                ? FilterClrDefaults(
+                                    dataType,
+                                    nullable,
+                                    _options.ServerVersion.SupportsAlternativeDefaultExpression &&
+                                    defaultValue != null
+                                        ? ConvertDefaultValueFromMariaDbToMySql(defaultValue)
+                                        : defaultValue)
+                                : null;
 
                             ValueGenerated? valueGenerated;
 
@@ -289,8 +303,6 @@ ORDER BY
                                 valueGenerated = null;
                             }
 
-                            defaultValue = FilterClrDefaults(dataType, nullable, defaultValue);
-
                             var column = new DatabaseColumn
                             {
                                 Table = table,
@@ -298,6 +310,7 @@ ORDER BY
                                 StoreType = columType,
                                 IsNullable = nullable,
                                 DefaultValueSql = CreateDefaultValueString(defaultValue, dataType),
+                                ComputedColumnSql = generation,
                                 ValueGenerated = valueGenerated,
                                 Comment = string.IsNullOrEmpty(comment) ? null : comment,
                                 [MySqlAnnotationNames.CharSet] = Settings.CharSet ? charset : null,
