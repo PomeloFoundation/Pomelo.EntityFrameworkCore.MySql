@@ -76,5 +76,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
         public virtual bool ExceptInterceptPrecedence => false;
         public virtual bool JsonDataTypeEmulation => false;
         public virtual bool ImplicitBoolCheckUsesIndex => false;
+        public virtual bool Sequences => false;
     }
 }

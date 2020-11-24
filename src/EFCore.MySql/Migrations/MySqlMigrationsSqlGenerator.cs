@@ -276,7 +276,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
         {
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
-
+            if (!_options.ServerVersion.Supports.Sequences)
+            {
+                throw new InvalidOperationException(
+                    $"Error in Restart Sequence {operation.Name}: Sequences are not supported." /* +
+                    // $"Sequences are  supported only from  {ServerVersion.Supports.GetSupport(ServerVersion.SequencesSupportKey)}." */); 
+            }
             builder
                 .Append("ALTER SEQUENCE ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name, operation.Schema))
@@ -390,6 +395,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             [NotNull] MigrationCommandListBuilder builder)
         {
             Check.NotNull(operation, nameof(operation));
+            if (!_options.ServerVersion.Supports.Sequences)
+            {
+                throw new InvalidOperationException(
+                    $"Error in Create Sequence {operation.Name}: Sequences are not supported."/* +
+                    // $"Sequences are  supported only from  {ServerVersion.Supports.GetSupport(ServerVersion.SequencesSupportKey)}." */);
+            }
 
             // "CREATE SEQUENCE"  supported only in MariaDb from 10.3.
             // However, "CREATE SEQUENCE name AS type" expression is currently not supported.
@@ -706,39 +717,36 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
         /// <param name="model"> The target model which may be <see langword="null"/> if the operations exist without a model. </param>
         /// <param name="builder"> The command builder to use to add the SQL fragment. </param>
         protected override void SequenceOptions(
-             [CanBeNull] string schema,
-             [NotNull] string name,
-             [NotNull] SequenceOperation operation,
-             [CanBeNull] IModel model,
-             [NotNull] MigrationCommandListBuilder builder)
+            string schema,
+            string name,
+            SequenceOperation operation,
+            IModel model,
+            MigrationCommandListBuilder builder)
         {
             Check.NotEmpty(name, nameof(name));
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
-            var intTypeMapping = Dependencies.TypeMappingSource.GetMapping(typeof(int));
-            var longTypeMapping = Dependencies.TypeMappingSource.GetMapping(typeof(long));
-
             builder
                 .Append(" INCREMENT BY ")
-                .Append(intTypeMapping.GenerateSqlLiteral(operation.IncrementBy));
+                .Append(IntegerConstant(operation.IncrementBy));
 
-            if (operation.MinValue != null)
+            if (operation.MinValue.HasValue)
             {
                 builder
                     .Append(" MINVALUE ")
-                    .Append(longTypeMapping.GenerateSqlLiteral(operation.MinValue));
+                    .Append(IntegerConstant(operation.MinValue.Value));
             }
             else
             {
                 builder.Append(" NO MINVALUE");
             }
 
-            if (operation.MaxValue != null)
+            if (operation.MaxValue.HasValue)
             {
                 builder
                     .Append(" MAXVALUE ")
-                    .Append(longTypeMapping.GenerateSqlLiteral(operation.MaxValue));
+                    .Append(IntegerConstant(operation.MaxValue.Value));
             }
             else
             {
