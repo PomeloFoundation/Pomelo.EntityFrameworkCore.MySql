@@ -25,6 +25,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string NullableGeneratedColumnsMySqlSupportVersionString = "5.7.0-mysql";
         // public const string NullableGeneratedColumnsMariaDbSupportVersionString = "?.?.?-mariadb";
 
+        public const string ParenthesisEnclosedGeneratedColumnExpressionsMySqlSupportVersionString = GeneratedColumnsMySqlSupportVersionString;
+        // public const string ParenthesisEnclosedGeneratedColumnExpressionsMariaDbSupportVersionString = GeneratedColumnsMariaDbSupportVersionString;
+
         public const string JsonMySqlSupportVersionString = "5.7.8-mysql";
         public const string JsonMariaDbSupportVersionString = "10.2.4-mariadb";
 
@@ -117,6 +120,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string JsonSupportKey = nameof(JsonSupportKey);
         public const string GeneratedColumnsSupportKey = nameof(GeneratedColumnsSupportKey);
         public const string NullableGeneratedColumnsSupportKey = nameof(NullableGeneratedColumnsSupportKey);
+        public const string ParenthesisEnclosedGeneratedColumnExpressionsSupportKey = nameof(ParenthesisEnclosedGeneratedColumnExpressionsSupportKey);
         public const string DefaultCharSetUtf8Mb4SupportKey = nameof(DefaultCharSetUtf8Mb4SupportKey);
         public const string DefaultExpressionSupportKey = nameof(DefaultExpressionSupportKey);
         public const string AlternativeDefaultExpressionSupportKey = nameof(AlternativeDefaultExpressionSupportKey);
@@ -152,6 +156,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
             { JsonSupportKey, new ServerVersionSupport(JsonMySqlSupportVersionString/*, JsonMariaDbSupportVersionString*/) },
             { GeneratedColumnsSupportKey, new ServerVersionSupport(GeneratedColumnsMySqlSupportVersionString, GeneratedColumnsMariaDbSupportVersionString) },
             { NullableGeneratedColumnsSupportKey, new ServerVersionSupport(NullableGeneratedColumnsMySqlSupportVersionString/*, NullableGeneratedColumnsMariaDbSupportVersionString*/) },
+            { ParenthesisEnclosedGeneratedColumnExpressionsSupportKey, new ServerVersionSupport(ParenthesisEnclosedGeneratedColumnExpressionsMySqlSupportVersionString/*, ParenthesisEnclosedGeneratedColumnExpressionsMariaDbSupportVersionString*/) },
             { DefaultCharSetUtf8Mb4SupportKey, new ServerVersionSupport(DefaultCharSetUtf8Mb4MySqlSupportVersionString/*, DefaultCharSetUtf8Mb4MariaDbSupportVersionString*/) },
             { DefaultExpressionSupportKey, new ServerVersionSupport(DefaultExpressionMySqlSupportVersionString/*, DefaultExpressionMariaDbSupportVersionString*/) },
             { AlternativeDefaultExpressionSupportKey, new ServerVersionSupport(/*AlternativeDefaultExpressionMySqlSupportVersionString, */AlternativeDefaultExpressionMariaDbSupportVersionString) },
@@ -187,6 +192,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public virtual bool SupportsJson => SupportMap[JsonSupportKey].IsSupported(this);
         public virtual bool SupportsGeneratedColumns => SupportMap[GeneratedColumnsSupportKey].IsSupported(this);
         public virtual bool SupportsNullableGeneratedColumns => SupportMap[NullableGeneratedColumnsSupportKey].IsSupported(this);
+        public virtual bool SupportsParenthesisEnclosedGeneratedColumnExpressions => SupportMap[ParenthesisEnclosedGeneratedColumnExpressionsSupportKey].IsSupported(this);
         public virtual bool SupportsDefaultCharSetUtf8Mb4 => SupportMap[DefaultCharSetUtf8Mb4SupportKey].IsSupported(this);
         public virtual bool SupportsDefaultExpression => SupportMap[DefaultExpressionSupportKey].IsSupported(this);
         public virtual bool SupportsAlternativeDefaultExpression => SupportMap[AlternativeDefaultExpressionSupportKey].IsSupported(this);
