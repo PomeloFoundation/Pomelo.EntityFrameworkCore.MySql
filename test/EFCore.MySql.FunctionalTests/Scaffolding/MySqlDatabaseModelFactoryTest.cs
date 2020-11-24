@@ -378,6 +378,50 @@ CREATE TABLE DefaultValue (
                 "DROP TABLE DefaultValueClr");
         }
 
+        [Fact]
+        public void Computed_value_virtual()
+            => Test(@"
+CREATE TABLE `ComputedValues` (
+    `Id` int,
+    `A` int NOT NULL,
+    `B` int NOT NULL,
+    `SumOfAAndB` int GENERATED ALWAYS AS (`A` + `B`) VIRTUAL
+);",
+                Enumerable.Empty<string>(),
+                Enumerable.Empty<string>(),
+                dbModel =>
+                {
+                    var columns = dbModel.Tables.Single().Columns;
+
+                    var column = columns.Single(c => c.Name == "SumOfAAndB");
+                    Assert.Null(column.DefaultValueSql);
+                    Assert.Equal(@"`A` + `B`", column.ComputedColumnSql);
+                    Assert.False(column.IsStored);
+                },
+                @"DROP TABLE `ComputedValues`");
+
+        [Fact]
+        public void Computed_value_stored()
+            => Test(@"
+CREATE TABLE `ComputedValues` (
+    `Id` int,
+    `A` int NOT NULL,
+    `B` int NOT NULL,
+    `SumOfAAndB` int GENERATED ALWAYS AS (`A` + `B`) STORED
+);",
+                Enumerable.Empty<string>(),
+                Enumerable.Empty<string>(),
+                dbModel =>
+                {
+                    var columns = dbModel.Tables.Single().Columns;
+
+                    var column = columns.Single(c => c.Name == "SumOfAAndB");
+                    Assert.Null(column.DefaultValueSql);
+                    Assert.Equal(@"`A` + `B`", column.ComputedColumnSql);
+                    Assert.True(column.IsStored);
+                },
+                @"DROP TABLE `ComputedValues`");
+
         #endregion
 
         #region PrimaryKeyFacets

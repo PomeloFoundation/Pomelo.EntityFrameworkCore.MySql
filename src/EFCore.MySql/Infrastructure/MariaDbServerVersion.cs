@@ -59,6 +59,7 @@ namespace Microsoft.EntityFrameworkCore
             public override bool Json => ServerVersion.Version >= new Version(10, 2, 4);
             public override bool GeneratedColumns => ServerVersion.Version >= new Version(10, 2, 0);
             public override bool NullableGeneratedColumns => false;
+            public override bool ParenthesisEnclosedGeneratedColumnExpressions => false;
             public override bool DefaultCharSetUtf8Mb4 => false;
             public override bool DefaultExpression => false;
             public override bool AlternativeDefaultExpression => ServerVersion.Version >= new Version(10, 2, 7);

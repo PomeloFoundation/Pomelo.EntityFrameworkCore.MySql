@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
+using Pomelo.EntityFrameworkCore.MySql.Extensions;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
@@ -204,7 +205,8 @@ AND
     `COLLATION_NAME`,
     `COLUMN_TYPE`,
     `COLUMN_COMMENT`,
-    `EXTRA` /*!80003 ,
+    `EXTRA`,
+    `GENERATION_EXPRESSION` /*!80003 ,
     `SRS_ID` */
 FROM
 	`INFORMATION_SCHEMA`.`COLUMNS`
@@ -237,6 +239,7 @@ ORDER BY
                             var collation = reader.GetValueOrDefault<string>("COLLATION_NAME");
                             var columType = reader.GetValueOrDefault<string>("COLUMN_TYPE");
                             var extra = reader.GetValueOrDefault<string>("EXTRA");
+                            var generation = reader.GetValueOrDefault<string>("GENERATION_EXPRESSION").NullIfEmpty();
                             var comment = reader.GetValueOrDefault<string>("COLUMN_COMMENT");
 
                             // MariaDB does not support SRID column restrictions.
@@ -244,13 +247,27 @@ ORDER BY
                                 ? reader.GetValueOrDefault<uint?>("SRS_ID")
                                 : null;
 
-                            defaultValue = _options.ServerVersion.Supports.AlternativeDefaultExpression &&
-                                           defaultValue != null
-                                ? ConvertDefaultValueFromMariaDbToMySql(defaultValue)
-                                : defaultValue;
+                            var isStored = generation != null
+                                ? (bool?)extra.Contains("stored generated", StringComparison.OrdinalIgnoreCase)
+                                : null;
+
+                            // MySQL saves the generation expression with enclosing parenthesis, while MariaDB doesn't.
+                            generation = generation != null &&
+                                         _options.ServerVersion.Supports.ParenthesisEnclosedGeneratedColumnExpressions
+                                ? Regex.Replace(generation, @"^\((.*)\)$", "$1", RegexOptions.Singleline)
+                                : generation;
+
+                            defaultValue = generation == null
+                                ? FilterClrDefaults(
+                                    dataType,
+                                    nullable,
+                                    _options.ServerVersion.Supports.AlternativeDefaultExpression &&
+                                    defaultValue != null
+                                        ? ConvertDefaultValueFromMariaDbToMySql(defaultValue)
+                                        : defaultValue)
+                                : null;
 
                             ValueGenerated? valueGenerated;
-
                             if (extra.IndexOf("auto_increment", StringComparison.Ordinal) >= 0)
                             {
                                 valueGenerated = ValueGenerated.OnAdd;
@@ -260,7 +277,7 @@ ORDER BY
                                 if (defaultValue != null && extra.IndexOf(defaultValue, StringComparison.Ordinal) > 0 ||
                                     (string.Equals(dataType, "timestamp", StringComparison.OrdinalIgnoreCase) ||
                                      string.Equals(dataType, "datetime", StringComparison.OrdinalIgnoreCase)) &&
-                                    extra.IndexOf("CURRENT_TIMESTAMP", StringComparison.Ordinal) > 0)
+                                    extra.IndexOf("CURRENT_TIMESTAMP", StringComparison.OrdinalIgnoreCase) > 0)
                                 {
                                     valueGenerated = ValueGenerated.OnAddOrUpdate;
                                 }
@@ -291,8 +308,6 @@ ORDER BY
                                 valueGenerated = null;
                             }
 
-                            defaultValue = FilterClrDefaults(dataType, nullable, defaultValue);
-
                             var column = new DatabaseColumn
                             {
                                 Table = table,
@@ -300,6 +315,8 @@ ORDER BY
                                 StoreType = columType,
                                 IsNullable = nullable,
                                 DefaultValueSql = CreateDefaultValueString(defaultValue, dataType),
+                                ComputedColumnSql = generation,
+                                IsStored = isStored,
                                 ValueGenerated = valueGenerated,
                                 Comment = string.IsNullOrEmpty(comment) ? null : comment,
                                 [MySqlAnnotationNames.CharSet] = Settings.CharSet ? charset : null,
