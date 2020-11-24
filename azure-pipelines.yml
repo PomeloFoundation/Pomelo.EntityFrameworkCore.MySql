@@ -14,7 +14,7 @@ variables:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   dotnet_version: 3.1.x
-  dotnet_ef_tools_version: 3.1.8
+  dotnet_ef_tools_version: 3.1.10
 
 # TODO: Simplify (PWSH for most cases etc.)
 jobs:
