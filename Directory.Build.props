@@ -8,7 +8,7 @@
     <Product>Pomelo.EntityFrameworkCore.MySql</Product>
     <Authors>Laurents Meyer, Caleb Lloyd, Yuko Zheng</Authors>
     <Company>Pomelo Foundation</Company>
-    <!-- <Copyright></Copyright> -->
+    <Copyright>Copyright 2020 © Pomelo Foundation</Copyright>
     <PackageIconUrl>https://avatars3.githubusercontent.com/u/19828814</PackageIconUrl>
     <PackageIcon>icon.png</PackageIcon>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
