@@ -73,6 +73,7 @@ namespace Microsoft.EntityFrameworkCore
             public override bool ExceptInterceptPrecedence => ServerVersion.Version >= new Version(10, 4, 0);
             public override bool JsonDataTypeEmulation => ServerVersion.Version >= new Version(10, 2, 4); // JSON_COMPACT was added in 10.2.4, though most other functions where added in 10.2.3
             public override bool ImplicitBoolCheckUsesIndex => ServerVersion.Version >= new Version(10, 0, 0); // Exact version has not been verified yet
+            public override bool Sequences => ServerVersion.Version >= new Version(10, 3, 0);
         }
     }
 }

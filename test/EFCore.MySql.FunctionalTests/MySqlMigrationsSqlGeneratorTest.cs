@@ -1071,6 +1071,106 @@ SELECT ROW_COUNT();");
                 ignoreLineEndingDifferences: true);
         }
 
+        [ConditionalFact]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
+        public virtual void AlterSequenceOperation_with_minValue_and_maxValue()
+        {
+            Generate(
+                new AlterSequenceOperation {
+                    Name = "MySequence",
+                    Schema = Schema,
+                    IncrementBy=1,
+                    IsCyclic=false,
+                    MinValue = 10,
+                    MaxValue = 20
+                });
+
+            Assert.Equal(
+               @"ALTER SEQUENCE `MySequence` INCREMENT BY 1 MINVALUE 10 MAXVALUE 20 NOCYCLE;" + EOL,
+               Sql,
+               ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
+        public virtual void AlterSequenceOperation_without_minValue_and_maxValue()
+        {
+            Generate(
+                new AlterSequenceOperation
+                {
+                    Name = "MySequence",
+                    Schema = Schema,
+                    IncrementBy = 1,
+                    IsCyclic = false
+                });
+
+            Assert.Equal(
+               @"ALTER SEQUENCE `MySequence` INCREMENT BY 1 NO MINVALUE NO MAXVALUE NOCYCLE;" + EOL,
+               Sql,
+               ignoreLineEndingDifferences: true);
+
+        }
+
+        [ConditionalFact]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
+        public virtual void CreateSequenceOperation_with_minValue_and_maxValue()
+        {
+            Generate(
+              new CreateSequenceOperation
+              {
+                  Name = "MySequence",
+                  Schema = Schema,
+                  IncrementBy = 1,
+                  IsCyclic = false,
+                  StartValue=10,
+                  MinValue = 10,
+                  MaxValue = 20,
+                  
+              });
+
+            Assert.Equal(
+               @"CREATE SEQUENCE `MySequence` START WITH 10 INCREMENT BY 1 MINVALUE 10 MAXVALUE 20 NOCYCLE;" + EOL,
+               Sql,
+               ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
+        public virtual void CreateSequenceOperation_without_minValue_and_maxValue()
+        {
+
+            Generate(
+              new CreateSequenceOperation
+              {
+                  Name = "MySequence",
+                  Schema = Schema,
+                  IncrementBy = 1,
+                  IsCyclic = false
+              });
+
+            Assert.Equal(
+               @"CREATE SEQUENCE `MySequence` START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE NOCYCLE;" + EOL,
+               Sql,
+               ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
+        public virtual void DropSequenceOperation()
+        {
+             Generate(
+             new DropSequenceOperation
+             {
+                 Name = "MySequence",
+                 Schema = Schema
+             });
+
+            Assert.Equal(
+               @"DROP SEQUENCE `MySequence`;" + EOL,
+               Sql,
+               ignoreLineEndingDifferences: true);
+        }
+		
         protected new void AssertSql(string expected)
         {
             var testSqlLoggerFactory = new TestSqlLoggerFactory();

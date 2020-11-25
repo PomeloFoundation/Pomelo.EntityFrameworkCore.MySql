@@ -276,7 +276,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
         {
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
-
+            if (!_options.ServerVersion.Supports.Sequences)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot restart sequence '{operation.Name}' because sequences are not supported in server version {_options.ServerVersion}.");
+            }
             builder
                 .Append("ALTER SEQUENCE ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name, operation.Schema))
@@ -385,35 +389,32 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
         /// <param name="model"> The target model which may be <see langword="null"/> if the operations exist without a model. </param>
         /// <param name="builder"> The command builder to use to build the commands. </param>
         protected override void Generate(
-            CreateSequenceOperation operation,
-            IModel model,
-            MigrationCommandListBuilder builder)
+            [NotNull] CreateSequenceOperation operation,
+            [CanBeNull] IModel model,
+            [NotNull] MigrationCommandListBuilder builder)
         {
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
-
-            builder
-                .Append("CREATE SEQUENCE ")
-                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name, operation.Schema));
-
-            if (operation.ClrType != typeof(long))
+            if (!_options.ServerVersion.Supports.Sequences)
             {
-                var typeMapping = Dependencies.TypeMappingSource.GetMapping(operation.ClrType);
-
-                builder
-                    .Append(" AS ")
-                    .Append(typeMapping.StoreType);
+                throw new InvalidOperationException(
+                    $"Cannot create sequence '{operation.Name}' because sequences are not supported in server version {_options.ServerVersion}.");
             }
 
-            builder
-                .Append(" START WITH ")
-                .Append(IntegerConstant(operation.StartValue));
-
-            SequenceOptions(operation, model, builder);
-
-            builder.AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
-
-            EndStatement(builder);
+            // "CREATE SEQUENCE"  supported only in MariaDb from 10.3.
+            // However, "CREATE SEQUENCE name AS type" expression is currently not supported.
+            // The base MigrationsSqlGenerator.Generate method generates that expression.
+            // Also, when creating a sequence current version of MariaDb doesn't tolerate "NO MINVALUE"
+            // when specifying "STARTS WITH" so, StartValue mus be set accordingly.
+            // https://github.com/aspnet/EntityFrameworkCore/blob/master/src/EFCore.Relational/Migrations/MigrationsSqlGenerator.cs#L535-L543
+            var oldValue = operation.ClrType;
+            operation.ClrType = typeof(long);
+            if (operation.StartValue <= 0 )
+            {
+                operation.MinValue = operation.StartValue;
+            }
+            base.Generate(operation, model, builder);
+            operation.ClrType = oldValue;
         }
 
         /// <summary>
@@ -751,7 +752,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
                 builder.Append(" NO MAXVALUE");
             }
 
-            builder.Append(operation.IsCyclic ? " CYCLE" : " NO CYCLE");
+            builder.Append(operation.IsCyclic ? " CYCLE" : " NOCYCLE");
         }
 
         /// <summary>
