@@ -279,7 +279,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             if (!_options.ServerVersion.Supports.Sequences)
             {
                 throw new InvalidOperationException(
-                    $"Cannot create sequence '{operation.Name}' because sequences are not supported in server version {_options.ServerVersion}.");
+                    $"Cannot restart sequence '{operation.Name}' because sequences are not supported in server version {_options.ServerVersion}.");
             }
             builder
                 .Append("ALTER SEQUENCE ")
