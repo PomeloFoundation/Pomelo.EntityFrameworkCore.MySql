@@ -1071,7 +1071,7 @@ SELECT ROW_COUNT();");
                 ignoreLineEndingDifferences: true);
         }
 
-       
+        [ConditionalFact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
         public virtual void AlterSequenceOperation_with_minValue_and_maxValue()
         {
@@ -1091,6 +1091,7 @@ SELECT ROW_COUNT();");
                ignoreLineEndingDifferences: true);
         }
 
+        [ConditionalFact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
         public virtual void AlterSequenceOperation_without_minValue_and_maxValue()
         {
@@ -1110,6 +1111,7 @@ SELECT ROW_COUNT();");
 
         }
 
+        [ConditionalFact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
         public virtual void CreateSequenceOperation_with_minValue_and_maxValue()
         {
@@ -1132,12 +1134,7 @@ SELECT ROW_COUNT();");
                ignoreLineEndingDifferences: true);
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
-        public virtual void CreateSequenceOperation_with_minValue_and_maxValue_not_long()
-        {
-            throw(new Exception("MariaDb Sequences can be only long"));
-        }
-
+        [ConditionalFact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
         public virtual void CreateSequenceOperation_without_minValue_and_maxValue()
         {
@@ -1157,11 +1154,11 @@ SELECT ROW_COUNT();");
                ignoreLineEndingDifferences: true);
         }
 
+        [ConditionalFact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
         public virtual void DropSequenceOperation()
         {
-
-            Generate(
+             Generate(
              new DropSequenceOperation
              {
                  Name = "MySequence",

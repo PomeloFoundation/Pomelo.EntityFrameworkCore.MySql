@@ -279,8 +279,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             if (!_options.ServerVersion.Supports.Sequences)
             {
                 throw new InvalidOperationException(
-                    $"Error in Restart Sequence {operation.Name}: Sequences are not supported." /* +
-                    // $"Sequences are  supported only from  {ServerVersion.Supports.GetSupport(ServerVersion.SequencesSupportKey)}." */); 
+                    $"Cannot create sequence '{operation.Name}' because sequences are not supported in server version {_options.ServerVersion}.");
             }
             builder
                 .Append("ALTER SEQUENCE ")
@@ -395,11 +394,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             [NotNull] MigrationCommandListBuilder builder)
         {
             Check.NotNull(operation, nameof(operation));
+            Check.NotNull(builder, nameof(builder));
             if (!_options.ServerVersion.Supports.Sequences)
             {
                 throw new InvalidOperationException(
-                    $"Error in Create Sequence {operation.Name}: Sequences are not supported."/* +
-                    // $"Sequences are  supported only from  {ServerVersion.Supports.GetSupport(ServerVersion.SequencesSupportKey)}." */);
+                    $"Cannot create sequence '{operation.Name}' because sequences are not supported in server version {_options.ServerVersion}.");
             }
 
             // "CREATE SEQUENCE"  supported only in MariaDb from 10.3.
