@@ -8,7 +8,6 @@
     <RootNamespace>Pomelo.EntityFrameworkCore.MySql.Json.Microsoft</RootNamespace>
     <IsPackable>true</IsPackable>
     <PackageTags>$(PackageTags);json;system.text.json;microsoft</PackageTags>
-    <DeterministicSourcePaths>false</DeterministicSourcePaths>
   </PropertyGroup>
 
   <PropertyGroup>

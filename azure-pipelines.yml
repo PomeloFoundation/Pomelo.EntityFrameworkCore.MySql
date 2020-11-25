@@ -238,14 +238,14 @@ jobs:
       $officialBuild = '$(Build.SourceBranch)' -match '^refs/tags/[0-9]+\.[0-9]+\.[0-9]+'
       $wipBuild = '$(Build.SourceBranch)' -match '^refs/heads/.*-wip$'
       $ciBuildOnly = $wipBuild -or ('$(Build.SourceBranch)' -match '^refs/heads/(?:master|.*-maint)$')
-      $continuesIntegrationTimestamp = Get-Date -Format yyyyMMddHHmmss
+      $continuousIntegrationTimestamp = Get-Date -Format yyyyMMddHHmmss
       $buildSha = '$(Build.SourceVersion)'.SubString(0, 7);
       $pack = '$(buildAndTestSucceeded)' -eq "true" -and ($officialBuild -or $ciBuildOnly) -or $wipBuild
 
       echo "officialBuild: $officialBuild"
       echo "wipBuild: $wipBuild"
       echo "ciBuildOnly: $ciBuildOnly"
-      echo "continuesIntegrationTimestamp: $continuesIntegrationTimestamp"
+      echo "continuousIntegrationTimestamp: $continuousIntegrationTimestamp"
       echo "buildSha: $buildSha"
       echo "pack: $pack"
 
@@ -255,7 +255,7 @@ jobs:
 
         if ($ciBuildOnly)
         {
-          $arguments += "-p:ContinuesIntegrationTimestamp=$continuesIntegrationTimestamp"
+          $arguments += "-p:ContinuousIntegrationTimestamp=$continuousIntegrationTimestamp"
           $arguments += "-p:BuildSha=$buildSha"
         }
 

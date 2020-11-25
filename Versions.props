@@ -14,7 +14,7 @@
 
     <!--
       The following properties will automatically be set by CI builds when appropriate:
-        ContinuesIntegrationTimestamp
+        ContinuousIntegrationTimestamp
         BuildSha
     -->
   </PropertyGroup>
@@ -30,7 +30,7 @@
 
   <PropertyGroup Label="Version Suffix Handling" Condition="'$(UseVersionOverride)' != 'true' And '$(UseVersionSuffixOverride)' != 'true'">
     <VersionSuffix>$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</VersionSuffix>
-    <VersionSuffix Condition="'$(ContinuesIntegrationTimestamp)' != ''">$(VersionSuffix).ci.$(ContinuesIntegrationTimestamp)</VersionSuffix>
+    <VersionSuffix Condition="'$(ContinuousIntegrationTimestamp)' != ''">$(VersionSuffix).ci.$(ContinuousIntegrationTimestamp)</VersionSuffix>
     <VersionSuffix Condition="'$(BuildSha)' != ''">$(VersionSuffix)+sha.$(BuildSha)</VersionSuffix>
   </PropertyGroup>
 
