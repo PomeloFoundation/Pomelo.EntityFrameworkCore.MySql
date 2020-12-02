@@ -321,9 +321,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
             return _sqlExpressionFactory.NullableFunction(
                 "TRIM",
-                new[] { _sqlExpressionFactory.ComplexFunctionArgument(
-                    sqlArguments.ToArray(),
-                    typeof(string)),
+                new[]
+                {
+                    _sqlExpressionFactory.ComplexFunctionArgument(
+                        sqlArguments.ToArray(),
+                        " ",
+                        typeof(string)),
                 },
                 typeof(string));
         }

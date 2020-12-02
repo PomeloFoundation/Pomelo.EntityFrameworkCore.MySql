@@ -436,8 +436,7 @@ namespace Microsoft.EntityFrameworkCore
         ///     <para>
         ///         Note that if this function is translated into SQL, then the semantics of the comparison will
         ///         depend on the database configuration. In particular, it may be either case-sensitive or
-        ///         case-insensitive. If this function is evaluated on the client, then it will always use
-        ///         a case-insensitive comparison.
+        ///         case-insensitive.
         ///     </para>
         /// </summary>
         /// <param name="_">The DbFunctions instance.</param>
@@ -461,23 +460,40 @@ namespace Microsoft.EntityFrameworkCore
         ///     </para>
         ///     <para>
         ///         The semantics of the comparison will depend on the database configuration.
-        ///         In particular, it may be either case-sensitive or
-        ///         case-insensitive.
-        ///     </para>
-        ///     <para>
-        ///         Should be directly translated to SQL.
-        ///         This function can't be evaluated on the client.
+        ///         In particular, it may be either case-sensitive or case-insensitive.
         ///     </para>
         /// </summary>
         /// <param name="_">The DbFunctions instance.</param>
-        /// <param name="matchExpression">The property of entity that is to be matched.</param>
+        /// <param name="property">The property of entity that is to be matched.</param>
         /// <param name="pattern">The pattern against which Full Text search is performed</param>
         /// <param name="searchMode">Mode in which search is performed</param>
         /// <returns>true if there is a match.</returns>
         /// <exception cref="InvalidOperationException">Throws when query switched to client-evaluation.</exception>
-        public static bool Match<T>(
+        public static bool Match(
             [CanBeNull] this DbFunctions _,
-            [CanBeNull] T matchExpression,
+            [CanBeNull] string property,
+            [CanBeNull] string pattern,
+            MySqlMatchSearchMode searchMode)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(Match)));
+
+        /// <summary>
+        ///     <para>
+        ///         An implementation of the SQL MATCH operation for Full Text search.
+        ///     </para>
+        ///     <para>
+        ///         The semantics of the comparison will depend on the database configuration.
+        ///         In particular, it may be either case-sensitive or case-insensitive.
+        ///     </para>
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="properties">The propertys of entity that is to be matched.</param>
+        /// <param name="pattern">The pattern against which Full Text search is performed</param>
+        /// <param name="searchMode">Mode in which search is performed</param>
+        /// <returns>true if there is a match.</returns>
+        /// <exception cref="InvalidOperationException">Throws when query switched to client-evaluation.</exception>
+        public static bool Match(
+            [CanBeNull] this DbFunctions _,
+            [NotNull] string[] properties,
             [CanBeNull] string pattern,
             MySqlMatchSearchMode searchMode)
             => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(Match)));

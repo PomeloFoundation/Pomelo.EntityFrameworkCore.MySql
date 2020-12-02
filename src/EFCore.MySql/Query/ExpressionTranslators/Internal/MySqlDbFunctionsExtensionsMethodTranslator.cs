@@ -68,9 +68,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 .SelectMany(method => _supportedLikeTypes.Select(type => method.MakeGenericMethod(type))).ToArray();
 
         private static readonly MethodInfo _matchMethodInfo
-            = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethods()
-                .FirstOrDefault(method => method.Name == nameof(MySqlDbFunctionsExtensions.Match))
-                ?.MakeGenericMethod(typeof(string));
+            = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(
+                nameof(MySqlDbFunctionsExtensions.Match),
+                new[] {typeof(DbFunctions), typeof(string), typeof(string), typeof(MySqlMatchSearchMode)});
+
+        private static readonly MethodInfo _matchWithMultiplePropertiesMethodInfo
+            = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(
+                nameof(MySqlDbFunctionsExtensions.Match),
+                new[] {typeof(DbFunctions), typeof(string[]), typeof(string), typeof(MySqlMatchSearchMode)});
 
         private static readonly Type[] _supportedHexTypes = {
             typeof(string),
@@ -143,7 +148,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     excapeChar);
             }
 
-            if (Equals(method, _matchMethodInfo))
+            if (Equals(method, _matchMethodInfo) ||
+                Equals(method, _matchWithMultiplePropertiesMethodInfo))
             {
                 if (arguments[3] is SqlConstantExpression constant)
                 {

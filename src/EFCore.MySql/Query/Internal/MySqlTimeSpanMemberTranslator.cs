@@ -49,6 +49,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                                 _sqlExpressionFactory.Fragment($"{datePart.Part} FROM"),
                                 instance
                             },
+                            " ",
                             typeof(string))
                     },
                     returnType,

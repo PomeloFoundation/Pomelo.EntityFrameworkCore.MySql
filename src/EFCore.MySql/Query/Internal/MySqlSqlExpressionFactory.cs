@@ -162,6 +162,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
         public MySqlComplexFunctionArgumentExpression ComplexFunctionArgument(
             IEnumerable<SqlExpression> argumentParts,
+            string delimiter,
             Type argumentType,
             RelationalTypeMapping typeMapping = null)
         {
@@ -174,6 +175,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
             return new MySqlComplexFunctionArgumentExpression(
                 typeMappedArgumentParts,
+                delimiter,
                 argumentType,
                 typeMapping);
         }
@@ -348,6 +350,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
             return new MySqlComplexFunctionArgumentExpression(
                 complexFunctionArgumentExpression.ArgumentParts,
+                complexFunctionArgumentExpression.Delimiter,
                 complexFunctionArgumentExpression.Type,
                 inferredTypeMapping ?? complexFunctionArgumentExpression.TypeMapping);
         }
@@ -366,8 +369,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
         private SqlExpression ApplyTypeMappingOnMatch(MySqlMatchExpression matchExpression)
         {
-            var inferredTypeMapping = ExpressionExtensions.InferTypeMapping(matchExpression.Match)
-                                      ?? _typeMappingSource.FindMapping(matchExpression.Match.Type);
+            var inferredTypeMapping = ExpressionExtensions.InferTypeMapping(matchExpression.Match) ??
+                                      _typeMappingSource.FindMapping(matchExpression.Match.Type);
 
             return new MySqlMatchExpression(
                 ApplyTypeMapping(matchExpression.Match, inferredTypeMapping),

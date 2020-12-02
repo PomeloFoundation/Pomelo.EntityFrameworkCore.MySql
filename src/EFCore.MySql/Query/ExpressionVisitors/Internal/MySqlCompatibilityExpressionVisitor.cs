@@ -28,7 +28,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 OuterApplyExpression outerApplyExpression => VisitOuterApply(outerApplyExpression),
                 ExceptExpression exceptExpression => VisitExcept(exceptExpression),
                 IntersectExpression intersectExpression => VisitIntercept(intersectExpression),
-                ShapedQueryExpression shapedQueryExpression => shapedQueryExpression.Update(Visit(shapedQueryExpression.QueryExpression), shapedQueryExpression.ShaperExpression),
+                ShapedQueryExpression shapedQueryExpression => shapedQueryExpression.Update(Visit(shapedQueryExpression.QueryExpression), Visit(shapedQueryExpression.ShaperExpression)),
                 _ => base.VisitExtension(extensionExpression)
             };
 
