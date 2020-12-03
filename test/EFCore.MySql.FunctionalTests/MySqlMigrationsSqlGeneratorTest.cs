@@ -815,6 +815,25 @@ SELECT ROW_COUNT();");
         }
 
         [ConditionalFact]
+        public void AlterColumnOperation_ComputedColumnSql_stored()
+        {
+            Generate(
+                new AddColumnOperation
+                {
+                    Table = "Universes",
+                    Name = "AnswerToEverything",
+                    ClrType = typeof(int),
+                    ColumnType = "int",
+                    ComputedColumnSql = "6 * 9",
+                    IsStored = true,
+                });
+
+            Assert.Equal(
+                "ALTER TABLE `Universes` ADD `AnswerToEverything` int AS (6 * 9) STORED;" + EOL,
+                Sql);
+        }
+
+        [ConditionalFact]
         public virtual void AddForeignKeyOperation_with_long_name()
         {
             Generate(
@@ -1125,7 +1144,7 @@ SELECT ROW_COUNT();");
                   StartValue=10,
                   MinValue = 10,
                   MaxValue = 20,
-                  
+
               });
 
             Assert.Equal(
@@ -1170,7 +1189,7 @@ SELECT ROW_COUNT();");
                Sql,
                ignoreLineEndingDifferences: true);
         }
-		
+
         protected new void AssertSql(string expected)
         {
             var testSqlLoggerFactory = new TestSqlLoggerFactory();
