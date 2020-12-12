@@ -697,6 +697,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
                 DefaultValue = defaultValue,
                 DefaultValueSql = column.DefaultValueSql,
                 ComputedColumnSql = column.ComputedColumnSql,
+                IsStored = column.IsStored,
             };
 
             ColumnDefinition(
@@ -887,6 +888,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
                 builder
                     .Append(" AS ")
                     .Append($"({operation.ComputedColumnSql})");
+
+                if (operation.IsStored.GetValueOrDefault())
+                {
+                    builder.Append(" STORED");
+                }
 
                 if (operation.IsNullable && _options.ServerVersion.Supports.NullableGeneratedColumns)
                 {
