@@ -249,7 +249,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             Visit(mySqlMatchExpression.Match);
             Sql.Append(")");
             Sql.Append(" AGAINST ");
-            Sql.Append($"(");
+            Sql.Append("(");
             Visit(mySqlMatchExpression.Against);
 
             switch (mySqlMatchExpression.SearchMode)
@@ -409,7 +409,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 }
                 else
                 {
-                    Sql.Append(" ");
+                    Sql.Append(mySqlComplexFunctionArgumentExpression.Delimiter);
                 }
 
                 Visit(argument);

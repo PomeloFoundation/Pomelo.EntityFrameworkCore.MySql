@@ -61,7 +61,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                                     _sqlExpressionFactory.Fragment("INTERVAL"),
                                     _sqlExpressionFactory.Convert(arguments[0], typeof(int)),
                                     _sqlExpressionFactory.Fragment(datePart)
-                                }, typeof(string))
+                                },
+                                " ",
+                                typeof(string))
                         },
                         instance.Type,
                         instance.TypeMapping,

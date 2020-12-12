@@ -16,10 +16,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
     {
         public MySqlComplexFunctionArgumentExpression(
             IEnumerable<SqlExpression> argumentParts,
+            string delimiter,
             Type type,
             RelationalTypeMapping typeMapping)
             : base(type, typeMapping)
         {
+            Delimiter = delimiter;
             ArgumentParts = argumentParts.ToList().AsReadOnly();
         }
 
@@ -27,6 +29,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         ///     The arguments parts.
         /// </summary>
         public virtual IReadOnlyList<SqlExpression> ArgumentParts { get; }
+
+        public string Delimiter { get; }
 
         /// <summary>
         ///     Dispatches to the specific visit method for this node type.
@@ -45,27 +49,26 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
                 argumentParts[i] = (SqlExpression) visitor.Visit(ArgumentParts[i]);
             }
 
-            return Update(argumentParts);
+            return Update(argumentParts, Delimiter);
         }
 
-        public virtual MySqlComplexFunctionArgumentExpression Update(IReadOnlyList<SqlExpression> argumentParts)
+        public virtual MySqlComplexFunctionArgumentExpression Update(IReadOnlyList<SqlExpression> argumentParts, string delimiter)
             => !argumentParts.SequenceEqual(ArgumentParts)
-                ? new MySqlComplexFunctionArgumentExpression(argumentParts, Type, TypeMapping)
+                ? new MySqlComplexFunctionArgumentExpression(argumentParts, delimiter, Type, TypeMapping)
                 : this;
 
         protected override void Print(ExpressionPrinter expressionPrinter)
             => expressionPrinter.Append(ToString());
 
         public override bool Equals(object obj)
-            => obj != null
-            && (ReferenceEquals(this, obj)
-                || obj is MySqlComplexFunctionArgumentExpression sqlFragmentExpression
-                    && Equals(sqlFragmentExpression));
+            => obj != null &&
+               (ReferenceEquals(this, obj) ||
+                obj is MySqlComplexFunctionArgumentExpression complexExpression && Equals(complexExpression));
 
         private bool Equals(MySqlComplexFunctionArgumentExpression other)
-            => base.Equals(other)
-               && Type == other.Type
-               && ArgumentParts.SequenceEqual(other.ArgumentParts);
+            => base.Equals(other) &&
+               Delimiter.Equals(other.Delimiter) &&
+               ArgumentParts.SequenceEqual(other.ArgumentParts);
 
         /// <summary>
         ///     Returns a hash code for this object.
@@ -75,12 +78,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         /// </returns>
         public override int GetHashCode()
         {
-            unchecked
+            var hashCode = new HashCode();
+
+            hashCode.Add(base.GetHashCode());
+
+            foreach (var argumentPart in ArgumentParts)
             {
-                var hashCode = ArgumentParts.Aggregate(0, (current, argument) => current + ((current * 397) ^ argument.GetHashCode()));
-                hashCode = (hashCode * 397) ^ Type.GetHashCode();
-                return hashCode;
+                hashCode.Add(argumentPart);
             }
+
+            hashCode.Add(Delimiter);
+            return hashCode.ToHashCode();
         }
 
         /// <summary>
@@ -88,6 +96,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         /// </summary>
         /// <returns>A <see cref="string" /> representation of the Expression.</returns>
         public override string ToString()
-            => string.Join(" ", ArgumentParts);
+            => string.Join(Delimiter, ArgumentParts);
     }
 }

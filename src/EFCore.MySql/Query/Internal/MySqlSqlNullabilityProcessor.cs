@@ -2,6 +2,7 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
@@ -100,7 +101,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 nullable |= argumentPartNullable;
             }
 
-            return complexFunctionArgumentExpression.Update(argumentParts);
+            return complexFunctionArgumentExpression.Update(argumentParts, complexFunctionArgumentExpression.Delimiter);
         }
 
         /// <summary>

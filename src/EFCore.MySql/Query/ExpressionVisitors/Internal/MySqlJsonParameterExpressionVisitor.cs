@@ -25,7 +25,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             => extensionExpression switch
             {
                 SqlParameterExpression sqlParameterExpression => VisitParameter(sqlParameterExpression),
-                ShapedQueryExpression shapedQueryExpression => shapedQueryExpression.Update(Visit(shapedQueryExpression.QueryExpression), shapedQueryExpression.ShaperExpression),
+                ShapedQueryExpression shapedQueryExpression => shapedQueryExpression.Update(Visit(shapedQueryExpression.QueryExpression), Visit(shapedQueryExpression.ShaperExpression)),
                 _ => base.VisitExtension(extensionExpression)
             };
 

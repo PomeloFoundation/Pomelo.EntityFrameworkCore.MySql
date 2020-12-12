@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Linq.Expressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query;
@@ -141,6 +142,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             }
 
             return visitedExpression;
+        }
+
+        protected override Expression VisitNewArray(NewArrayExpression newArrayExpression)
+        {
+            // Needed for MySqlDbFunctionsExtensions.Match().
+            // Could be made more specific in the future, if needed.
+            return newArrayExpression.Type == typeof(string[])
+                ? _sqlExpressionFactory.ComplexFunctionArgument(
+                    newArrayExpression.Expressions.Select(e => (SqlExpression)Visit(e))
+                        .ToArray(),
+                    ", ",
+                    typeof(string))
+                : base.VisitNewArray(newArrayExpression);
         }
 
         private static bool IsDateTimeBasedOperation(SqlBinaryExpression binaryExpression)
