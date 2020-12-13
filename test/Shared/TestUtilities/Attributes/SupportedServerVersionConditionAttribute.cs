@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes
 {
+    // For facts and theories, they must be defined as conditional (ConditionalFact, ConditionalTheory) for this attribute to work.
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class SupportedServerVersionConditionAttribute : Attribute, ITestCondition
     {

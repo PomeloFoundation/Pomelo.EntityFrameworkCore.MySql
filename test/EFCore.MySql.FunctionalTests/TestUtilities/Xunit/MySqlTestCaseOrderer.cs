@@ -10,10 +10,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
     {
         public IEnumerable<TTestCase> OrderTestCases<TTestCase>(IEnumerable<TTestCase> testCases)
             where TTestCase : ITestCase
-        {
-            var result = testCases.ToList();
-            result.Sort((x, y) => StringComparer.OrdinalIgnoreCase.Compare(x.TestMethod.Method.Name, y.TestMethod.Method.Name));
-            return result;
-        }
+            => testCases.OrderBy(c => c.TestMethod.Method.Name, StringComparer.OrdinalIgnoreCase);
     }
 }
