@@ -257,6 +257,8 @@ ORDER BY
                                 ? Regex.Replace(generation, @"^\((.*)\)$", "$1", RegexOptions.Singleline)
                                 : generation;
 
+                            var isDefaultValueSqlFunction = IsDefaultValueSqlFunction(defaultValue, dataType);
+
                             defaultValue = generation == null
                                 ? FilterClrDefaults(
                                     dataType,
@@ -300,7 +302,7 @@ ORDER BY
                                 Name = name,
                                 StoreType = columType,
                                 IsNullable = nullable,
-                                DefaultValueSql = CreateDefaultValueString(defaultValue, dataType),
+                                DefaultValueSql = CreateDefaultValueString(defaultValue, dataType, isDefaultValueSqlFunction),
                                 ComputedColumnSql = generation,
                                 IsStored = isStored,
                                 ValueGenerated = valueGenerated,
@@ -315,6 +317,34 @@ ORDER BY
                     }
                 }
             }
+        }
+
+        private bool IsDefaultValueSqlFunction(string defaultValue, string dataType)
+        {
+            if (defaultValue == null)
+            {
+                return false;
+            }
+
+            // MySQL uses `CURRENT_TIMESTAMP` (or `CURRENT_TIMESTAMP(6)`),
+            // while MariaDB uses `current_timestamp()` (or `current_timestamp(6)`).
+            // MariaDB also allows the usage of `curdate()` as a default for datetime or timestamp columns, but this is handled by the next
+            // section.
+            if ((string.Equals(dataType, "timestamp", StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(dataType, "datetime", StringComparison.OrdinalIgnoreCase)) &&
+                Regex.IsMatch(defaultValue, @"^CURRENT_TIMESTAMP(?:\(\d*\))?$", RegexOptions.IgnoreCase))
+            {
+                return true;
+            }
+
+            // If SQL functions are used as a default value in MariaDB, they will always end in a parenthesis pair.
+            if (_options.ServerVersion.Supports.AlternativeDefaultExpression &&
+                defaultValue.EndsWith("()", StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -382,18 +412,14 @@ ORDER BY
             return defaultValue;
         }
 
-        protected virtual string CreateDefaultValueString(string defaultValue, string dataType)
+        protected virtual string CreateDefaultValueString(string defaultValue, string dataType, bool isSqlFunction)
         {
             if (defaultValue == null)
             {
                 return null;
             }
 
-            // MySQL uses `CURRENT_TIMESTAMP` (or `CURRENT_TIMESTAMP(6)`),
-            // while MariaDB uses `current_timestamp()` (or `current_timestamp(6)`).
-            if ((string.Equals(dataType, "timestamp", StringComparison.OrdinalIgnoreCase) ||
-                 string.Equals(dataType, "datetime", StringComparison.OrdinalIgnoreCase)) &&
-                Regex.IsMatch(defaultValue, @"^CURRENT_TIMESTAMP(?:\(\d*\))?$", RegexOptions.IgnoreCase))
+            if (isSqlFunction)
             {
                 return defaultValue;
             }

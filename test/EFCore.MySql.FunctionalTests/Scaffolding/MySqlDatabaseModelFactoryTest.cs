@@ -15,9 +15,11 @@ using Microsoft.EntityFrameworkCore.Diagnostics.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.Extensions.DependencyInjection;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 
 // ReSharper disable InconsistentNaming
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Scaffolding
@@ -421,6 +423,31 @@ CREATE TABLE `ComputedValues` (
                     Assert.True(column.IsStored);
                 },
                 @"DROP TABLE `ComputedValues`");
+
+        [ConditionalFact]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.AlternativeDefaultExpression))]
+        public void Default_value_curdate_mariadb()
+        {
+            // MariaDB allows to use `curdate()` as a default value, while MySQL doesn't.
+            Test(
+                @"
+CREATE TABLE `IceCreams` (
+    `IceCreamId` int,
+    `Name` varchar(255) NOT NULL,
+    `BestServedBefore` datetime DEFAULT curdate()
+);",
+                Enumerable.Empty<string>(),
+                Enumerable.Empty<string>(),
+                dbModel =>
+                {
+                    var columns = dbModel.Tables.Single()
+                        .Columns;
+
+                    var column = columns.Single(c => c.Name == "BestServedBefore");
+                    Assert.Equal(@"curdate()", column.DefaultValueSql);
+                },
+                @"DROP TABLE `IceCreams`");
+        }
 
         #endregion
 
