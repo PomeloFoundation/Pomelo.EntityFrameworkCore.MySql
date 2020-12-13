@@ -283,21 +283,7 @@ ORDER BY
                                 }
                                 else
                                 {
-                                    // BUG: EF Core does not handle code generation for `OnUpdate`.
-                                    //      Instead, it just generates an empty method call ".()".
-                                    //      Tracked by: https://github.com/aspnet/EntityFrameworkCore/issues/18579
-                                    //
-                                    //      As a partial workaround, use `OnAddOrUpdate`, if a default value
-                                    //      has been specified.
-
-                                    if (defaultValue != null)
-                                    {
-                                        valueGenerated = ValueGenerated.OnAddOrUpdate;
-                                    }
-                                    else
-                                    {
-                                        valueGenerated = ValueGenerated.OnUpdate;
-                                    }
+                                    valueGenerated = ValueGenerated.OnUpdate;
                                 }
                             }
                             else
