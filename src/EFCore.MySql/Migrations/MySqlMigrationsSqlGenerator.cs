@@ -724,7 +724,7 @@ DELIMITER ;";
             // A foreign key might reuse the alternate key for its own purposes and prohibit its deletion,
             // if the foreign key columns are listed as the first columns and in the same order as in the foreign key (#678).
             // We therefore drop and later recreate all foreign keys to ensure, that no other dependencies on the
-            // alternate key exist, if explicitly requested by the user via `MySqlMigrationBuilderExtensions.TODO()`.
+            // alternate key exist, if explicitly requested by the user via `MySqlMigrationBuilderExtensions.DropUniqueConstraint()`.
             if (operation.RecreateForeignKeys)
             {
                 TemporarilyDropForeignKeys(
