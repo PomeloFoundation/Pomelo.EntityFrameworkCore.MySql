@@ -1053,78 +1053,6 @@ SELECT ROW_COUNT();");
         }
 
         [ConditionalFact]
-        public virtual void DropPrimaryKeyOperation()
-        {
-            Generate(
-                modelBuilder => Models.IceCreamBrandModel.GetModel(modelBuilder),
-                new DropPrimaryKeyOperation
-                {
-                    Name = "PRIMARY",
-                    Table = "IceCreamBrands",
-                });
-
-            Assert.Equal(
-                @"CALL POMELO_BEFORE_DROP_PRIMARY_KEY(NULL, 'IceCreamBrands');
-ALTER TABLE `IceCreamBrands` DROP PRIMARY KEY;" + EOL,
-                Sql,
-                ignoreLineEndingDifferences: true);
-        }
-
-        [ConditionalFact]
-        public virtual void MySqlDropPrimaryKeyAndRecreateForeignKeysOperation()
-        {
-            Generate(
-                modelBuilder => Models.IceCreamBrandModel.GetModel(modelBuilder),
-                new MySqlDropPrimaryKeyAndRecreateForeignKeysOperation
-                {
-                    Name = "PRIMARY",
-                    Table = "IceCreamBrands",
-                    RecreateForeignKeys = true,
-                });
-
-            Assert.Equal(
-                @"CALL POMELO_BEFORE_DROP_PRIMARY_KEY(NULL, 'IceCreamBrands');
-ALTER TABLE `IceCreamBrands` DROP PRIMARY KEY;" + EOL,
-                Sql,
-                ignoreLineEndingDifferences: true);
-        }
-
-        [ConditionalFact]
-        public virtual void DropUniqueConstraintOperation()
-        {
-            Generate(
-                modelBuilder => Models.IceCreamBrandModel.GetModel(modelBuilder),
-                new DropUniqueConstraintOperation
-                {
-                    Name = "AK_InternalName",
-                    Table = "IceCreamBrands",
-                });
-
-            Assert.Equal(
-                @"ALTER TABLE `IceCreamBrands` DROP KEY `AK_InternalName`;" + EOL,
-                Sql,
-                ignoreLineEndingDifferences: true);
-        }
-
-        [ConditionalFact]
-        public virtual void MySqlDropUniqueConstraintAndRecreateForeignKeysOperation()
-        {
-            Generate(
-                modelBuilder => Models.IceCreamBrandModel.GetModel(modelBuilder),
-                new MySqlDropUniqueConstraintAndRecreateForeignKeysOperation
-                {
-                    Name = "AK_InternalName",
-                    Table = "IceCreamBrands",
-                    RecreateForeignKeys = true,
-                });
-
-            Assert.Equal(
-                @"ALTER TABLE `IceCreamBrands` DROP KEY `AK_InternalName`;" + EOL,
-                Sql,
-                ignoreLineEndingDifferences: true);
-        }
-
-        [ConditionalFact]
         public virtual void CreateTableOperation_primary_key_with_prefix_lengths()
         {
             Generate(
@@ -1350,42 +1278,6 @@ ALTER TABLE `IceCreamBrands` DROP PRIMARY KEY;" + EOL,
             Sql = string.Join(
                 EOL,
                 batch.Select(b => b.CommandText));
-        }
-
-        public static class Models
-        {
-            public static class IceCreamBrandModel
-            {
-                public static ModelBuilder GetModel(ModelBuilder modelBuilder)
-                {
-                    modelBuilder.Entity<IceCream>();
-                    modelBuilder.Entity<IceCreamBrand>()
-                        .HasAlternateKey(b => b.InternalName);
-
-                    return modelBuilder;
-                }
-
-                public class IceCream
-                {
-                    public int IceCreamId { get; set; }
-                    public string Name { get; set; }
-                    public int IceCreamBrandId { get; set; }
-
-                    public IceCreamBrand Brand { get; set; }
-                }
-
-                public class IceCreamBrand
-                {
-                    public int IceCreamBrandId { get; set; }
-                    public string Name { get; set; }
-
-                    [Required]
-                    [MaxLength(255)]
-                    public string InternalName { get; set; }
-
-                    public ICollection<IceCream> IceCreams { get; set; } = new HashSet<IceCream>();
-                }
-            }
         }
     }
 }
