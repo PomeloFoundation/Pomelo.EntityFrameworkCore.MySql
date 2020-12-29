@@ -217,7 +217,355 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             return base.Rename_table_with_primary_key();
         }
 
+        [ConditionalFact]
+        public virtual async Task Drop_primary_key_without_recreating_foreign_keys()
+        {
+            await Test(
+                builder => builder
+                    .Entity(
+                        "Foo", e =>
+                        {
+                            e.Property<int>("FooPK");
+                            e.Property<int>("BarFK");
+                            e.HasOne("Bar", "Bars")
+                                .WithMany()
+                                .HasForeignKey("BarFK");
+                        })
+                    .Entity(
+                        "Bar", e =>
+                        {
+                            e.Property<int>("BarPK");
+                            e.HasKey("BarPK");
+                        }),
+                builder => builder
+                    .Entity(
+                        "Foo", e => e.HasKey("FooPK")),
+                builder => { },
+                model => Assert.Null(Assert.Single(model.Tables.Where(t => t.Name == "Foo"))?.PrimaryKey));
+
+            AssertSql(
+                @"DROP PROCEDURE IF EXISTS `POMELO_BEFORE_DROP_PRIMARY_KEY`;
+
+CREATE PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255))
+BEGIN
+	DECLARE HAS_AUTO_INCREMENT_ID TINYINT(1);
+	DECLARE PRIMARY_KEY_COLUMN_NAME VARCHAR(255);
+	DECLARE PRIMARY_KEY_TYPE VARCHAR(255);
+	DECLARE SQL_EXP VARCHAR(1000);
+	SELECT COUNT(*)
+		INTO HAS_AUTO_INCREMENT_ID
+		FROM `information_schema`.`COLUMNS`
+		WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+			AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+			AND `Extra` = 'auto_increment'
+			AND `COLUMN_KEY` = 'PRI'
+			LIMIT 1;
+	IF HAS_AUTO_INCREMENT_ID THEN
+		SELECT `COLUMN_TYPE`
+			INTO PRIMARY_KEY_TYPE
+			FROM `information_schema`.`COLUMNS`
+			WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+				AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+				AND `COLUMN_KEY` = 'PRI'
+			LIMIT 1;
+		SELECT `COLUMN_NAME`
+			INTO PRIMARY_KEY_COLUMN_NAME
+			FROM `information_schema`.`COLUMNS`
+			WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+				AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+				AND `COLUMN_KEY` = 'PRI'
+			LIMIT 1;
+		SET SQL_EXP = CONCAT('ALTER TABLE `', (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA())), '`.`', TABLE_NAME_ARGUMENT, '` MODIFY COLUMN `', PRIMARY_KEY_COLUMN_NAME, '` ', PRIMARY_KEY_TYPE, ' NOT NULL;');
+		SET @SQL_EXP = SQL_EXP;
+		PREPARE SQL_EXP_EXECUTE FROM @SQL_EXP;
+		EXECUTE SQL_EXP_EXECUTE;
+		DEALLOCATE PREPARE SQL_EXP_EXECUTE;
+	END IF;
+END;",
+                //
+                @"CALL POMELO_BEFORE_DROP_PRIMARY_KEY(NULL, 'Foo');
+ALTER TABLE `Foo` DROP PRIMARY KEY;",
+                //
+                @"DROP PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`;");
+        }
+
+        [ConditionalFact]
+        public virtual async Task Drop_primary_key_without_recreating_foreign_keys_MigrationBuilder()
+        {
+            await Test(
+                builder => builder
+                    .Entity(
+                        "Foo", e =>
+                        {
+                            e.Property<int>("FooPK");
+                            e.Property<int>("BarFK");
+                            e.HasOne("Bar", "Bars")
+                                .WithMany()
+                                .HasForeignKey("BarFK");
+                        })
+                    .Entity(
+                        "Bar", e =>
+                        {
+                            e.Property<int>("BarPK");
+                            e.HasKey("BarPK");
+                        }),
+                builder => builder
+                    .Entity(
+                        "Foo", e => e.HasKey("FooPK")),
+                builder => { },
+                migrationBuilder => migrationBuilder.DropPrimaryKey("PRIMARY", "Foo"),
+                model => Assert.Null(Assert.Single(model.Tables.Where(t => t.Name == "Foo"))?.PrimaryKey));
+
+            AssertSql(
+                @"DROP PROCEDURE IF EXISTS `POMELO_BEFORE_DROP_PRIMARY_KEY`;
+
+CREATE PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255))
+BEGIN
+	DECLARE HAS_AUTO_INCREMENT_ID TINYINT(1);
+	DECLARE PRIMARY_KEY_COLUMN_NAME VARCHAR(255);
+	DECLARE PRIMARY_KEY_TYPE VARCHAR(255);
+	DECLARE SQL_EXP VARCHAR(1000);
+	SELECT COUNT(*)
+		INTO HAS_AUTO_INCREMENT_ID
+		FROM `information_schema`.`COLUMNS`
+		WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+			AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+			AND `Extra` = 'auto_increment'
+			AND `COLUMN_KEY` = 'PRI'
+			LIMIT 1;
+	IF HAS_AUTO_INCREMENT_ID THEN
+		SELECT `COLUMN_TYPE`
+			INTO PRIMARY_KEY_TYPE
+			FROM `information_schema`.`COLUMNS`
+			WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+				AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+				AND `COLUMN_KEY` = 'PRI'
+			LIMIT 1;
+		SELECT `COLUMN_NAME`
+			INTO PRIMARY_KEY_COLUMN_NAME
+			FROM `information_schema`.`COLUMNS`
+			WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+				AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+				AND `COLUMN_KEY` = 'PRI'
+			LIMIT 1;
+		SET SQL_EXP = CONCAT('ALTER TABLE `', (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA())), '`.`', TABLE_NAME_ARGUMENT, '` MODIFY COLUMN `', PRIMARY_KEY_COLUMN_NAME, '` ', PRIMARY_KEY_TYPE, ' NOT NULL;');
+		SET @SQL_EXP = SQL_EXP;
+		PREPARE SQL_EXP_EXECUTE FROM @SQL_EXP;
+		EXECUTE SQL_EXP_EXECUTE;
+		DEALLOCATE PREPARE SQL_EXP_EXECUTE;
+	END IF;
+END;",
+                //
+                @"CALL POMELO_BEFORE_DROP_PRIMARY_KEY(NULL, 'Foo');
+ALTER TABLE `Foo` DROP PRIMARY KEY;",
+                //
+                @"DROP PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`;");
+        }
+
+        [ConditionalFact]
+        public virtual async Task Drop_primary_key_with_recreating_foreign_keys_MigrationBuilder()
+        {
+            await Test(
+                builder => builder
+                    .Entity(
+                        "Foo", e =>
+                        {
+                            e.Property<int>("FooPK");
+                            e.Property<int>("BarFK");
+                            e.HasOne("Bar", "Bars")
+                                .WithMany()
+                                .HasForeignKey("BarFK");
+                        })
+                    .Entity(
+                        "Bar", e =>
+                        {
+                            e.Property<int>("BarPK");
+                            e.HasKey("BarPK");
+                        }),
+                builder => builder
+                    .Entity(
+                        "Foo", e => e.HasKey("FooPK")),
+                builder => { },
+                migrationBuilder => migrationBuilder.DropPrimaryKey("PRIMARY", "Foo", recreateForeignKeys: true),
+                model => Assert.Null(Assert.Single(model.Tables.Where(t => t.Name == "Foo"))?.PrimaryKey));
+
+            AssertSql(
+                @"DROP PROCEDURE IF EXISTS `POMELO_BEFORE_DROP_PRIMARY_KEY`;
+
+CREATE PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255))
+BEGIN
+	DECLARE HAS_AUTO_INCREMENT_ID TINYINT(1);
+	DECLARE PRIMARY_KEY_COLUMN_NAME VARCHAR(255);
+	DECLARE PRIMARY_KEY_TYPE VARCHAR(255);
+	DECLARE SQL_EXP VARCHAR(1000);
+	SELECT COUNT(*)
+		INTO HAS_AUTO_INCREMENT_ID
+		FROM `information_schema`.`COLUMNS`
+		WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+			AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+			AND `Extra` = 'auto_increment'
+			AND `COLUMN_KEY` = 'PRI'
+			LIMIT 1;
+	IF HAS_AUTO_INCREMENT_ID THEN
+		SELECT `COLUMN_TYPE`
+			INTO PRIMARY_KEY_TYPE
+			FROM `information_schema`.`COLUMNS`
+			WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+				AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+				AND `COLUMN_KEY` = 'PRI'
+			LIMIT 1;
+		SELECT `COLUMN_NAME`
+			INTO PRIMARY_KEY_COLUMN_NAME
+			FROM `information_schema`.`COLUMNS`
+			WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+				AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+				AND `COLUMN_KEY` = 'PRI'
+			LIMIT 1;
+		SET SQL_EXP = CONCAT('ALTER TABLE `', (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA())), '`.`', TABLE_NAME_ARGUMENT, '` MODIFY COLUMN `', PRIMARY_KEY_COLUMN_NAME, '` ', PRIMARY_KEY_TYPE, ' NOT NULL;');
+		SET @SQL_EXP = SQL_EXP;
+		PREPARE SQL_EXP_EXECUTE FROM @SQL_EXP;
+		EXECUTE SQL_EXP_EXECUTE;
+		DEALLOCATE PREPARE SQL_EXP_EXECUTE;
+	END IF;
+END;",
+                //
+                @"ALTER TABLE `Foo` DROP FOREIGN KEY `FK_Foo_Bar_BarFK`;",
+                //
+                @"CALL POMELO_BEFORE_DROP_PRIMARY_KEY(NULL, 'Foo');
+ALTER TABLE `Foo` DROP PRIMARY KEY;",
+                //
+                @"ALTER TABLE `Foo` ADD CONSTRAINT `FK_Foo_Bar_BarFK` FOREIGN KEY (`BarFK`) REFERENCES `Bar` (`BarPK`) ON DELETE RESTRICT;",
+                //
+                @"DROP PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`;");
+        }
+
+        [ConditionalFact]
+        public virtual async Task Drop_unique_constraint_without_recreating_foreign_keys()
+        {
+            await Test(
+                builder => builder
+                    .Entity(
+                        "Foo", e =>
+                        {
+                            e.Property<int>("FooPK");
+                            e.Property<int>("FooAK");
+                            e.Property<int>("BarFK");
+                            e.HasKey("FooPK");
+                            e.HasOne("Bar", "Bars")
+                                .WithMany()
+                                .HasForeignKey("BarFK");
+                        })
+                    .Entity(
+                        "Bar", e =>
+                        {
+                            e.Property<int>("BarPK");
+                            e.HasKey("BarPK");
+                        }),
+                builder => builder
+                    .Entity(
+                        "Foo", e => e.HasAlternateKey("FooAK")),
+                builder => { },
+                model => Assert.Empty(Assert.Single(model.Tables.Where(t => t.Name == "Foo"))?.UniqueConstraints));
+
+            AssertSql(
+                @"ALTER TABLE `Foo` DROP KEY `AK_Foo_FooAK`;");
+        }
+
+        [ConditionalFact]
+        public virtual async Task Drop_unique_constraint_without_recreating_foreign_keys_MigrationBuilder()
+        {
+            await Test(
+                builder => builder
+                    .Entity(
+                        "Foo", e =>
+                        {
+                            e.Property<int>("FooPK");
+                            e.Property<int>("FooAK");
+                            e.Property<int>("BarFK");
+                            e.HasKey("FooPK");
+                            e.HasOne("Bar", "Bars")
+                                .WithMany()
+                                .HasForeignKey("BarFK");
+                        })
+                    .Entity(
+                        "Bar", e =>
+                        {
+                            e.Property<int>("BarPK");
+                            e.HasKey("BarPK");
+                        }),
+                builder => builder
+                    .Entity(
+                        "Foo", e => e.HasAlternateKey("FooAK")),
+                builder => { },
+                migrationBuilder => migrationBuilder.DropUniqueConstraint("AK_Foo_FooAK", "Foo"),
+                model => Assert.Empty(Assert.Single(model.Tables.Where(t => t.Name == "Foo"))?.UniqueConstraints));
+
+            AssertSql(
+                @"ALTER TABLE `Foo` DROP KEY `AK_Foo_FooAK`;");
+        }
+
+        [ConditionalFact]
+        public virtual async Task Drop_unique_constraint_with_recreating_foreign_keys_MigrationBuilder()
+        {
+            await Test(
+                builder => builder
+                    .Entity(
+                        "Foo", e =>
+                        {
+                            e.Property<int>("FooPK");
+                            e.Property<int>("FooAK");
+                            e.Property<int>("BarFK");
+                            e.HasKey("FooPK");
+                            e.HasOne("Bar", "Bars")
+                                .WithMany()
+                                .HasForeignKey("BarFK");
+                        })
+                    .Entity(
+                        "Bar", e =>
+                        {
+                            e.Property<int>("BarPK");
+                            e.HasKey("BarPK");
+                        }),
+                builder => builder
+                    .Entity(
+                        "Foo", e => e.HasAlternateKey("FooAK")),
+                builder => { },
+                migrationBuilder => migrationBuilder.DropUniqueConstraint("AK_Foo_FooAK", "Foo", recreateForeignKeys: true),
+                model => Assert.Empty(Assert.Single(model.Tables.Where(t => t.Name == "Foo"))?.UniqueConstraints));
+
+            AssertSql(
+                @"ALTER TABLE `Foo` DROP FOREIGN KEY `FK_Foo_Bar_BarFK`;",
+                //
+                @"ALTER TABLE `Foo` DROP KEY `AK_Foo_FooAK`;",
+                //
+                @"ALTER TABLE `Foo` ADD CONSTRAINT `FK_Foo_Bar_BarFK` FOREIGN KEY (`BarFK`) REFERENCES `Bar` (`BarPK`) ON DELETE RESTRICT;");
+        }
+
         protected override string NonDefaultCollation => ((MySqlTestStore)Fixture.TestStore).GetCaseSensitiveUtf8Mb4Collation();
+
+        protected virtual Task Test(
+            Action<ModelBuilder> buildCommonAction,
+            Action<ModelBuilder> buildSourceAction,
+            Action<ModelBuilder> buildTargetAction,
+            Action<MigrationBuilder> migrationBuilderAction,
+            Action<DatabaseModel> asserter)
+        {
+            // Build the source and target models. Add current/latest product version if one wasn't set.
+            var sourceModelBuilder = CreateConventionlessModelBuilder();
+            buildCommonAction(sourceModelBuilder);
+            buildSourceAction(sourceModelBuilder);
+            var sourceModel = sourceModelBuilder.FinalizeModel();
+
+            var targetModelBuilder = CreateConventionlessModelBuilder();
+            buildCommonAction(targetModelBuilder);
+            buildTargetAction(targetModelBuilder);
+            var targetModel = targetModelBuilder.FinalizeModel();
+
+            var migrationBuilder = new MigrationBuilder(null);
+            migrationBuilderAction(migrationBuilder);
+
+            return Test(sourceModel, targetModel, migrationBuilder.Operations, asserter);
+        }
 
         public class MigrationsMySqlFixture : MigrationsFixtureBase
         {

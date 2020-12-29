@@ -18,7 +18,6 @@ using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Migrations
 {
@@ -288,6 +287,12 @@ DELIMITER ;";
                     break;
                 case MySqlDropDatabaseOperation dropDatabaseOperation:
                     Generate(dropDatabaseOperation, model, builder);
+                    break;
+                case MySqlDropPrimaryKeyAndRecreateForeignKeysOperation dropPrimaryKeyAndRecreateForeignKeysOperation:
+                    Generate(dropPrimaryKeyAndRecreateForeignKeysOperation, model, builder);
+                    break;
+                case MySqlDropUniqueConstraintAndRecreateForeignKeysOperation dropUniqueConstraintAndRecreateForeignKeysOperation:
+                    Generate(dropUniqueConstraintAndRecreateForeignKeysOperation, model, builder);
                     break;
                 default:
                     base.Generate(operation, model, builder);
@@ -681,36 +686,64 @@ DELIMITER ;";
             }
         }
 
-        /// <summary>
-        ///     Builds commands for the given <see cref="DropUniqueConstraintOperation" /> by making calls on the given
-        ///     <see cref="MigrationCommandListBuilder" />, and then terminates the final command.
-        /// </summary>
-        /// <param name="operation"> The operation. </param>
-        /// <param name="model"> The target model which may be <see langword="null"/> if the operations exist without a model. </param>
-        /// <param name="builder"> The command builder to use to build the commands. </param>
         protected override void Generate(
             DropUniqueConstraintOperation operation,
+            IModel model,
+            MigrationCommandListBuilder builder)
+            => Generate(
+                new MySqlDropUniqueConstraintAndRecreateForeignKeysOperation
+                {
+                    IsDestructiveChange = operation.IsDestructiveChange,
+                    Name = operation.Name,
+                    Schema = operation.Schema,
+                    Table = operation.Table,
+                    RecreateForeignKeys = false,
+                },
+                model,
+                builder);
+
+        protected virtual void Generate(
+            MySqlDropUniqueConstraintAndRecreateForeignKeysOperation operation,
             IModel model,
             MigrationCommandListBuilder builder)
         {
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
-            // A foreign key might reuse the alternate key for its own purposes and prohibit its deletion,
-            // if the foreign key columns are listed as the first columns and in the same order as in the foreign key (#678).
-            // We therefore drop and later recreate all foreign keys to ensure, that no other dependencies on the
-            // alternate key exist.
-            TemporarilyDropForeignKeys(model, builder, operation.Schema, operation.Table, () =>
+            void DropUniqueKey()
             {
-                builder
-                    .Append("ALTER TABLE ")
+                builder.Append("ALTER TABLE ")
                     .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
                     .Append(" DROP KEY ")
                     .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
                     .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
 
                 EndStatement(builder);
-            });
+            }
+
+            // A foreign key might reuse the alternate key for its own purposes and prohibit its deletion,
+            // if the foreign key columns are listed as the first columns and in the same order as in the foreign key (#678).
+            // We therefore drop and later recreate all foreign keys to ensure, that no other dependencies on the
+            // alternate key exist, if explicitly requested by the user via `MySqlMigrationBuilderExtensions.TODO()`.
+            if (operation.RecreateForeignKeys)
+            {
+                TemporarilyDropForeignKeys(
+                    model,
+                    builder,
+                    operation.Schema,
+                    operation.Table,
+                    // model.GetRelationalModel()
+                    //     .FindTable(operation.Table, operation.Schema)
+                    //     ?.Columns
+                    //     .Select(c => c.Name)
+                    //     .ToArray(),
+                    null,
+                    DropUniqueKey);
+            }
+            else
+            {
+                DropUniqueKey();
+            }
         }
 
         protected void TemporarilyDropForeignKeys(
@@ -718,11 +751,14 @@ DELIMITER ;";
             MigrationCommandListBuilder builder,
             string schemaName,
             string tableName,
+            string[] columnNames,
             Action action)
         {
             var foreignKeys = model.GetRelationalModel()
                 .FindTable(tableName, schemaName)
-                ?.ForeignKeyConstraints
+                ?.ForeignKeyConstraints?.Where(cs => columnNames == null ||
+                                                     columnNames.Length == 0 ||
+                                                     cs.Columns.Select(c => c.Name).SequenceEqual(columnNames))
                 .ToArray() ?? Array.Empty<IForeignKeyConstraint>();
 
             foreach (var foreignKey in foreignKeys)
@@ -1325,19 +1361,36 @@ DELIMITER ;";
             EndStatement(builder);
         }
 
-        protected override void Generate(DropPrimaryKeyOperation operation, IModel model, MigrationCommandListBuilder builder, bool terminate = true)
+        protected override void Generate(
+            DropPrimaryKeyOperation operation,
+            IModel model,
+            MigrationCommandListBuilder builder,
+            bool terminate = true)
+            => Generate(
+                new MySqlDropPrimaryKeyAndRecreateForeignKeysOperation
+                {
+                    IsDestructiveChange = operation.IsDestructiveChange,
+                    Name = operation.Name,
+                    Schema = operation.Schema,
+                    Table = operation.Table,
+                    RecreateForeignKeys = false,
+                },
+                model,
+                builder,
+                terminate);
+
+        protected virtual void Generate(
+            MySqlDropPrimaryKeyAndRecreateForeignKeysOperation operation,
+            IModel model,
+            MigrationCommandListBuilder builder,
+            bool terminate = true)
         {
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
-            // A foreign key might reuse the primary key for its own purposes and prohibit its deletion,
-            // if the foreign key columns are listed as the first columns and in the same order as in the foreign key (#678).
-            // We therefore drop and later recreate all foreign keys to ensure, that no other dependencies on the
-            // primary key exist.
-            TemporarilyDropForeignKeys(model, builder, operation.Schema, operation.Table, () =>
+            void DropPrimaryKey()
             {
-                builder
-                    .Append($"CALL POMELO_BEFORE_DROP_PRIMARY_KEY({_stringTypeMapping.GenerateSqlLiteral(operation.Schema)}, {_stringTypeMapping.GenerateSqlLiteral(operation.Table)});")
+                builder.Append($"CALL POMELO_BEFORE_DROP_PRIMARY_KEY({_stringTypeMapping.GenerateSqlLiteral(operation.Schema)}, {_stringTypeMapping.GenerateSqlLiteral(operation.Table)});")
                     .AppendLine()
                     .Append("ALTER TABLE ")
                     .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
@@ -1348,7 +1401,31 @@ DELIMITER ;";
                     builder.AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
                     EndStatement(builder);
                 }
-            });
+            }
+
+            // A foreign key might reuse the primary key for its own purposes and prohibit its deletion,
+            // if the foreign key columns are listed as the first columns and in the same order as in the foreign key (#678).
+            // We therefore drop and later recreate all foreign keys to ensure, that no other dependencies on the
+            // primary key exist, if explicitly requested by the user via `MySqlMigrationBuilderExtensions.DropPrimaryKey()`.
+            if (operation.RecreateForeignKeys)
+            {
+                TemporarilyDropForeignKeys(
+                    model,
+                    builder,
+                    operation.Schema,
+                    operation.Table,
+                    // model.GetRelationalModel()
+                    //     .FindTable(operation.Table, operation.Schema)
+                    //     ?.Columns
+                    //     .Select(c => c.Name)
+                    //     .ToArray(),
+                    null,
+                    DropPrimaryKey);
+            }
+            else
+            {
+                DropPrimaryKey();
+            }
         }
 
         /// <summary>
