@@ -54,7 +54,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<ICompiledQueryCacheKeyGenerator, MySqlCompiledQueryCacheKeyGenerator>()
                 .TryAdd<IExecutionStrategyFactory, MySqlExecutionStrategyFactory>()
                 .TryAdd<IRelationalQueryStringFactory, MySqlQueryStringFactory>()
-                .TryAdd<IMigrator, MySqlMigrator>()
                 .TryAdd<IMethodCallTranslatorProvider, MySqlMethodCallTranslatorProvider>()
                 .TryAdd<IMemberTranslatorProvider, MySqlMemberTranslatorProvider>()
                 .TryAdd<IEvaluatableExpressionFilter, MySqlEvaluatableExpressionFilter>()
