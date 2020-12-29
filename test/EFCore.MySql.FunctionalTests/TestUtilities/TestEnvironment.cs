@@ -7,7 +7,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {
     public static class TestEnvironment
     {
-        private const string DefaultConnectionString = "Server=localhost;Username=mysql_tests;Password=mysql_tests";
+        private const string DefaultConnectionString = "server=localhost;port=3306;username=root;password=;database=pomelo_test";
 
         private static Version _mySqlVersion;
 
@@ -48,5 +48,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 }
             }
         }
+
+        public static string GetDefaultConnectionString(string databaseName)
+            => new MySqlConnectionStringBuilder(DefaultConnection)
+            {
+                Database = databaseName
+            }.ConnectionString;
+
+        public static int? GetInt(string key)
+            => int.TryParse(Config[key], out var value) ? value : (int?)null;
     }
 }

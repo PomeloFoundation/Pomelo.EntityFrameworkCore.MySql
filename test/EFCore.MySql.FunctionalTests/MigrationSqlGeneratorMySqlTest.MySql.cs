@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using NetTopologySuite.Geometries;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
@@ -10,21 +9,37 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
     public partial class MySqlMigrationsSqlGeneratorTest : MigrationsSqlGeneratorTestBase
     {
         [ConditionalFact]
-        public virtual void DropUniqueConstraintOperation_temporarily_drops_foreign_keys()
+        public virtual void DropUniqueConstraintOperation()
         {
-            // A foreign key might reuse the alternate key for its own purposes and prohibit its deletion,
-            // if the foreign key columns are listed as the first columns and in the same order as in the foreign key (#678).
-            // We therefore drop and later recreate all foreign keys to ensure, that no other dependencies on the
-            // alternate key exist.
             Generate(
-                modelBuilder => SetupModel(modelBuilder),
+                SetupModel,
                 new DropUniqueConstraintOperation
                 {
                     Table = "Cars",
                     Name = "AK_Cars_LicensePlateNumber",
                 });
 
-            AssertSql(@"ALTER TABLE `Cars` DROP FOREIGN KEY `FK_Cars_LicensePlates_LicensePlateNumber`;
+            AssertSql(@"ALTER TABLE `Cars` DROP KEY `AK_Cars_LicensePlateNumber`;");
+        }
+
+        [ConditionalFact]
+        public virtual void MySqlDropUniqueConstraintAndRecreateForeignKeysOperation_temporarily_drops_foreign_keys()
+        {
+            // A foreign key might reuse the alternate key for its own purposes and prohibit its deletion,
+            // if the foreign key columns are listed as the first columns and in the same order as in the foreign key (#678).
+            // We therefore drop and later recreate all foreign keys to ensure, that no other dependencies on the
+            // alternate key exist.
+            Generate(
+                SetupModel,
+                new MySqlDropUniqueConstraintAndRecreateForeignKeysOperation
+                {
+                    Table = "Cars",
+                    Name = "AK_Cars_LicensePlateNumber",
+                    RecreateForeignKeys = true,
+                });
+
+            AssertSql(
+                @"ALTER TABLE `Cars` DROP FOREIGN KEY `FK_Cars_LicensePlates_LicensePlateNumber`;
 
 ALTER TABLE `Cars` DROP KEY `AK_Cars_LicensePlateNumber`;
 
@@ -32,26 +47,124 @@ ALTER TABLE `Cars` ADD CONSTRAINT `FK_Cars_LicensePlates_LicensePlateNumber` FOR
         }
 
         [ConditionalFact]
-        public virtual void DropPrimaryKeyOperation_temporarily_drops_foreign_keys()
+        public virtual void DropPrimaryKeyOperation()
         {
-            // A foreign key might reuse the primary key for its own purposes and prohibit its deletion,
-            // if the foreign key columns are listed as the first columns and in the same order as in the foreign key (#678).
-            // We therefore drop and later recreate all foreign keys to ensure, that no other dependencies on the
-            // primary key exist.
             Generate(
-                modelBuilder => SetupModel(modelBuilder),
+                SetupModel,
                 new DropPrimaryKeyOperation
                 {
                     Table = "Cars",
                     Name = "PK_Cars_CarId",
                 });
 
-            AssertSql(@"ALTER TABLE `Cars` DROP FOREIGN KEY `FK_Cars_LicensePlates_LicensePlateNumber`;
+            AssertSql(
+                @"DROP PROCEDURE IF EXISTS `POMELO_BEFORE_DROP_PRIMARY_KEY`;
+
+CREATE PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255))
+BEGIN
+	DECLARE HAS_AUTO_INCREMENT_ID TINYINT(1);
+	DECLARE PRIMARY_KEY_COLUMN_NAME VARCHAR(255);
+	DECLARE PRIMARY_KEY_TYPE VARCHAR(255);
+	DECLARE SQL_EXP VARCHAR(1000);
+	SELECT COUNT(*)
+		INTO HAS_AUTO_INCREMENT_ID
+		FROM `information_schema`.`COLUMNS`
+		WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+			AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+			AND `Extra` = 'auto_increment'
+			AND `COLUMN_KEY` = 'PRI'
+			LIMIT 1;
+	IF HAS_AUTO_INCREMENT_ID THEN
+		SELECT `COLUMN_TYPE`
+			INTO PRIMARY_KEY_TYPE
+			FROM `information_schema`.`COLUMNS`
+			WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+				AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+				AND `COLUMN_KEY` = 'PRI'
+			LIMIT 1;
+		SELECT `COLUMN_NAME`
+			INTO PRIMARY_KEY_COLUMN_NAME
+			FROM `information_schema`.`COLUMNS`
+			WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+				AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+				AND `COLUMN_KEY` = 'PRI'
+			LIMIT 1;
+		SET SQL_EXP = CONCAT('ALTER TABLE `', (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA())), '`.`', TABLE_NAME_ARGUMENT, '` MODIFY COLUMN `', PRIMARY_KEY_COLUMN_NAME, '` ', PRIMARY_KEY_TYPE, ' NOT NULL;');
+		SET @SQL_EXP = SQL_EXP;
+		PREPARE SQL_EXP_EXECUTE FROM @SQL_EXP;
+		EXECUTE SQL_EXP_EXECUTE;
+		DEALLOCATE PREPARE SQL_EXP_EXECUTE;
+	END IF;
+END;
+CALL POMELO_BEFORE_DROP_PRIMARY_KEY(NULL, 'Cars');
+ALTER TABLE `Cars` DROP PRIMARY KEY;
+
+DROP PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`;");
+        }
+
+        [ConditionalFact]
+        public virtual void MySqlDropPrimaryKeyAndRecreateForeignKeysOperation_temporarily_drops_foreign_keys()
+        {
+            // A foreign key might reuse the primary key for its own purposes and prohibit its deletion,
+            // if the foreign key columns are listed as the first columns and in the same order as in the foreign key (#678).
+            // We therefore drop and later recreate all foreign keys to ensure, that no other dependencies on the
+            // primary key exist.
+            Generate(
+                SetupModel,
+                new MySqlDropPrimaryKeyAndRecreateForeignKeysOperation
+                {
+                    Table = "Cars",
+                    Name = "PK_Cars_CarId",
+                    RecreateForeignKeys = true,
+                });
+
+            AssertSql(
+                @"DROP PROCEDURE IF EXISTS `POMELO_BEFORE_DROP_PRIMARY_KEY`;
+
+CREATE PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255))
+BEGIN
+	DECLARE HAS_AUTO_INCREMENT_ID TINYINT(1);
+	DECLARE PRIMARY_KEY_COLUMN_NAME VARCHAR(255);
+	DECLARE PRIMARY_KEY_TYPE VARCHAR(255);
+	DECLARE SQL_EXP VARCHAR(1000);
+	SELECT COUNT(*)
+		INTO HAS_AUTO_INCREMENT_ID
+		FROM `information_schema`.`COLUMNS`
+		WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+			AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+			AND `Extra` = 'auto_increment'
+			AND `COLUMN_KEY` = 'PRI'
+			LIMIT 1;
+	IF HAS_AUTO_INCREMENT_ID THEN
+		SELECT `COLUMN_TYPE`
+			INTO PRIMARY_KEY_TYPE
+			FROM `information_schema`.`COLUMNS`
+			WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+				AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+				AND `COLUMN_KEY` = 'PRI'
+			LIMIT 1;
+		SELECT `COLUMN_NAME`
+			INTO PRIMARY_KEY_COLUMN_NAME
+			FROM `information_schema`.`COLUMNS`
+			WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+				AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+				AND `COLUMN_KEY` = 'PRI'
+			LIMIT 1;
+		SET SQL_EXP = CONCAT('ALTER TABLE `', (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA())), '`.`', TABLE_NAME_ARGUMENT, '` MODIFY COLUMN `', PRIMARY_KEY_COLUMN_NAME, '` ', PRIMARY_KEY_TYPE, ' NOT NULL;');
+		SET @SQL_EXP = SQL_EXP;
+		PREPARE SQL_EXP_EXECUTE FROM @SQL_EXP;
+		EXECUTE SQL_EXP_EXECUTE;
+		DEALLOCATE PREPARE SQL_EXP_EXECUTE;
+	END IF;
+END;
+ALTER TABLE `Cars` DROP FOREIGN KEY `FK_Cars_LicensePlates_LicensePlateNumber`;
 
 CALL POMELO_BEFORE_DROP_PRIMARY_KEY(NULL, 'Cars');
 ALTER TABLE `Cars` DROP PRIMARY KEY;
 
-ALTER TABLE `Cars` ADD CONSTRAINT `FK_Cars_LicensePlates_LicensePlateNumber` FOREIGN KEY (`LicensePlateNumber`) REFERENCES `LicensePlates` (`LicensePlateNumber`) ON DELETE CASCADE;");
+ALTER TABLE `Cars` ADD CONSTRAINT `FK_Cars_LicensePlates_LicensePlateNumber` FOREIGN KEY (`LicensePlateNumber`) REFERENCES `LicensePlates` (`LicensePlateNumber`) ON DELETE CASCADE;
+
+DROP PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`;");
         }
 
         [ConditionalFact]

@@ -14,7 +14,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             typeof(UdfDbFunctionTestBase<>),
             typeof(TransactionInterceptionTestBase),
             typeof(CommandInterceptionTestBase),
-            typeof(MigrationsTestBase<>),
             typeof(NorthwindQueryTaggingQueryTestBase<>),
         };
 

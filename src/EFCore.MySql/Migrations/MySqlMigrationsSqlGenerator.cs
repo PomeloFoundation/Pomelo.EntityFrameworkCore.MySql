@@ -18,7 +18,6 @@ using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Migrations
 {
@@ -49,6 +48,100 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             "multipolygon",
         };
 
+        private static readonly Dictionary<Type, (string beginText, string endText)> _customMigrationCommands = new Dictionary<Type, (string beginText, string endText)>
+        {
+            { typeof(DropPrimaryKeyOperation), (beginText: BeforeDropPrimaryKeyMigrationBegin, endText: BeforeDropPrimaryKeyMigrationEnd) },
+            { typeof(AddPrimaryKeyOperation), (beginText: AfterAddPrimaryKeyMigrationBegin, endText: AfterAddPrimaryKeyMigrationEnd) },
+        };
+
+        #region Custom SQL
+
+        private const string BeforeDropPrimaryKeyMigrationBegin = @"DROP PROCEDURE IF EXISTS `POMELO_BEFORE_DROP_PRIMARY_KEY`;
+DELIMITER //
+CREATE PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255))
+BEGIN
+	DECLARE HAS_AUTO_INCREMENT_ID TINYINT(1);
+	DECLARE PRIMARY_KEY_COLUMN_NAME VARCHAR(255);
+	DECLARE PRIMARY_KEY_TYPE VARCHAR(255);
+	DECLARE SQL_EXP VARCHAR(1000);
+	SELECT COUNT(*)
+		INTO HAS_AUTO_INCREMENT_ID
+		FROM `information_schema`.`COLUMNS`
+		WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+			AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+			AND `Extra` = 'auto_increment'
+			AND `COLUMN_KEY` = 'PRI'
+			LIMIT 1;
+	IF HAS_AUTO_INCREMENT_ID THEN
+		SELECT `COLUMN_TYPE`
+			INTO PRIMARY_KEY_TYPE
+			FROM `information_schema`.`COLUMNS`
+			WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+				AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+				AND `COLUMN_KEY` = 'PRI'
+			LIMIT 1;
+		SELECT `COLUMN_NAME`
+			INTO PRIMARY_KEY_COLUMN_NAME
+			FROM `information_schema`.`COLUMNS`
+			WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+				AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+				AND `COLUMN_KEY` = 'PRI'
+			LIMIT 1;
+		SET SQL_EXP = CONCAT('ALTER TABLE `', (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA())), '`.`', TABLE_NAME_ARGUMENT, '` MODIFY COLUMN `', PRIMARY_KEY_COLUMN_NAME, '` ', PRIMARY_KEY_TYPE, ' NOT NULL;');
+		SET @SQL_EXP = SQL_EXP;
+		PREPARE SQL_EXP_EXECUTE FROM @SQL_EXP;
+		EXECUTE SQL_EXP_EXECUTE;
+		DEALLOCATE PREPARE SQL_EXP_EXECUTE;
+	END IF;
+END //
+DELIMITER ;";
+        private const string BeforeDropPrimaryKeyMigrationEnd = @"DROP PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`;";
+
+        private const string AfterAddPrimaryKeyMigrationBegin = @"DROP PROCEDURE IF EXISTS `POMELO_AFTER_ADD_PRIMARY_KEY`;
+DELIMITER //
+CREATE PROCEDURE `POMELO_AFTER_ADD_PRIMARY_KEY`(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255), IN `COLUMN_NAME_ARGUMENT` VARCHAR(255))
+BEGIN
+	DECLARE HAS_AUTO_INCREMENT_ID INT(11);
+	DECLARE PRIMARY_KEY_COLUMN_NAME VARCHAR(255);
+	DECLARE PRIMARY_KEY_TYPE VARCHAR(255);
+	DECLARE SQL_EXP VARCHAR(1000);
+	SELECT COUNT(*)
+		INTO HAS_AUTO_INCREMENT_ID
+		FROM `information_schema`.`COLUMNS`
+		WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+			AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+			AND `COLUMN_NAME` = COLUMN_NAME_ARGUMENT
+			AND `COLUMN_TYPE` LIKE '%int%'
+			AND `COLUMN_KEY` = 'PRI';
+	IF HAS_AUTO_INCREMENT_ID THEN
+		SELECT `COLUMN_TYPE`
+			INTO PRIMARY_KEY_TYPE
+			FROM `information_schema`.`COLUMNS`
+			WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+				AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+				AND `COLUMN_NAME` = COLUMN_NAME_ARGUMENT
+				AND `COLUMN_TYPE` LIKE '%int%'
+				AND `COLUMN_KEY` = 'PRI';
+		SELECT `COLUMN_NAME`
+			INTO PRIMARY_KEY_COLUMN_NAME
+			FROM `information_schema`.`COLUMNS`
+			WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+				AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+				AND `COLUMN_NAME` = COLUMN_NAME_ARGUMENT
+				AND `COLUMN_TYPE` LIKE '%int%'
+				AND `COLUMN_KEY` = 'PRI';
+		SET SQL_EXP = CONCAT('ALTER TABLE `', (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA())), '`.`', TABLE_NAME_ARGUMENT, '` MODIFY COLUMN `', PRIMARY_KEY_COLUMN_NAME, '` ', PRIMARY_KEY_TYPE, ' NOT NULL AUTO_INCREMENT;');
+		SET @SQL_EXP = SQL_EXP;
+		PREPARE SQL_EXP_EXECUTE FROM @SQL_EXP;
+		EXECUTE SQL_EXP_EXECUTE;
+		DEALLOCATE PREPARE SQL_EXP_EXECUTE;
+	END IF;
+END //
+DELIMITER ;";
+        private const string AfterAddPrimaryKeyMigrationEnd = @"DROP PROCEDURE `POMELO_AFTER_ADD_PRIMARY_KEY`;";
+
+        #endregion
+
         private readonly IRelationalAnnotationProvider _annotationProvider;
         private readonly IMySqlOptions _options;
         private readonly RelationalTypeMapping _stringTypeMapping;
@@ -64,6 +157,106 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             _annotationProvider = annotationProvider;
             _options = options;
             _stringTypeMapping = dependencies.TypeMappingSource.GetMapping(typeof(string));
+        }
+
+        public override IReadOnlyList<MigrationCommand> Generate(IReadOnlyList<MigrationOperation> operations, IModel model = null, MigrationsSqlGenerationOptions options = MigrationsSqlGenerationOptions.Default)
+        {
+            var commands = base.Generate(operations, model, options);
+
+            // Some operations depend on custom stored procedures. If those operations are used, the stored procedures are added before any
+            // actual migration operations and removed after all actual migration operations.
+            return WrapWithCustomCommands(
+                operations,
+                commands.ToList(),
+                options);
+        }
+
+        private IReadOnlyList<MigrationCommand> WrapWithCustomCommands(
+            IReadOnlyList<MigrationOperation> migrationOperations,
+            List<MigrationCommand> migrationCommands,
+            MigrationsSqlGenerationOptions options)
+        {
+            var commandTexts = GetMigrationCommandTexts(migrationOperations, true, options);
+            if (commandTexts.Length > 0)
+            {
+                var customCommands = new MigrationCommandListBuilder(Dependencies);
+
+                foreach (var commandText in commandTexts)
+                {
+                    customCommands
+                        .Append(commandText)
+                        .EndCommand();
+                }
+
+                migrationCommands.InsertRange(0, customCommands.GetCommandList());
+            }
+
+            commandTexts = GetMigrationCommandTexts(migrationOperations, false, options);
+            if (commandTexts.Length > 0)
+            {
+                var customCommands = new MigrationCommandListBuilder(Dependencies);
+
+                foreach (var commandText in commandTexts)
+                {
+                    customCommands
+                        .Append(commandText)
+                        .EndCommand();
+                }
+
+                migrationCommands.AddRange(customCommands.GetCommandList());
+            }
+
+            return migrationCommands;
+        }
+
+        private string[] GetMigrationCommandTexts(
+            IReadOnlyList<MigrationOperation> migrationOperations,
+            bool beginTexts,
+            MigrationsSqlGenerationOptions options)
+            => GetCustomCommands(migrationOperations)
+                .Select(t => PrepareString(beginTexts ? t.beginText : t.endText, options))
+                .ToArray();
+
+        private static IReadOnlyList<(string beginText, string endText)> GetCustomCommands(IReadOnlyList<MigrationOperation> migrationOperations)
+            => _customMigrationCommands
+                .Where(c => migrationOperations.Any(o => c.Key.IsInstanceOfType(o)))
+                .Select(kvp => kvp.Value)
+                .ToList();
+
+        private string PrepareString(string str, MigrationsSqlGenerationOptions options)
+        {
+            str = options.HasFlag(MigrationsSqlGenerationOptions.Script)
+                ? str
+                : CleanUpScriptSpecificPseudoStatements(str);
+
+            str = str
+                .Replace("\r", string.Empty)
+                .Replace("\n", Environment.NewLine);
+
+            str += options.HasFlag(MigrationsSqlGenerationOptions.Script)
+                ? Environment.NewLine + (
+                    options.HasFlag(MigrationsSqlGenerationOptions.Idempotent)
+                        ? Environment.NewLine
+                        : string.Empty)
+                : string.Empty;
+
+            return str;
+        }
+
+        private static string CleanUpScriptSpecificPseudoStatements(string commandText)
+        {
+            const string delimiterPattern = @"^\s*DELIMITER\s*(?<Delimiter>;|//)\s*$";
+            const RegexOptions delimiterPatternRegexOptions = RegexOptions.IgnoreCase | RegexOptions.Multiline;
+
+            var delimiter = Regex.Match(commandText, delimiterPattern, delimiterPatternRegexOptions);
+
+            if (delimiter.Success)
+            {
+                var result = Regex.Replace(commandText, delimiterPattern, string.Empty, delimiterPatternRegexOptions);
+                return Regex.Replace(result, $@"\s*{Regex.Escape(delimiter.Groups["Delimiter"].Value)}\s*$", ";", delimiterPatternRegexOptions);
+            }
+
+            return commandText;
         }
 
         /// <summary>
@@ -94,6 +287,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
                     break;
                 case MySqlDropDatabaseOperation dropDatabaseOperation:
                     Generate(dropDatabaseOperation, model, builder);
+                    break;
+                case MySqlDropPrimaryKeyAndRecreateForeignKeysOperation dropPrimaryKeyAndRecreateForeignKeysOperation:
+                    Generate(dropPrimaryKeyAndRecreateForeignKeysOperation, model, builder);
+                    break;
+                case MySqlDropUniqueConstraintAndRecreateForeignKeysOperation dropUniqueConstraintAndRecreateForeignKeysOperation:
+                    Generate(dropUniqueConstraintAndRecreateForeignKeysOperation, model, builder);
                     break;
                 default:
                     base.Generate(operation, model, builder);
@@ -487,36 +686,64 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             }
         }
 
-        /// <summary>
-        ///     Builds commands for the given <see cref="DropUniqueConstraintOperation" /> by making calls on the given
-        ///     <see cref="MigrationCommandListBuilder" />, and then terminates the final command.
-        /// </summary>
-        /// <param name="operation"> The operation. </param>
-        /// <param name="model"> The target model which may be <see langword="null"/> if the operations exist without a model. </param>
-        /// <param name="builder"> The command builder to use to build the commands. </param>
         protected override void Generate(
             DropUniqueConstraintOperation operation,
+            IModel model,
+            MigrationCommandListBuilder builder)
+            => Generate(
+                new MySqlDropUniqueConstraintAndRecreateForeignKeysOperation
+                {
+                    IsDestructiveChange = operation.IsDestructiveChange,
+                    Name = operation.Name,
+                    Schema = operation.Schema,
+                    Table = operation.Table,
+                    RecreateForeignKeys = false,
+                },
+                model,
+                builder);
+
+        protected virtual void Generate(
+            MySqlDropUniqueConstraintAndRecreateForeignKeysOperation operation,
             IModel model,
             MigrationCommandListBuilder builder)
         {
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
-            // A foreign key might reuse the alternate key for its own purposes and prohibit its deletion,
-            // if the foreign key columns are listed as the first columns and in the same order as in the foreign key (#678).
-            // We therefore drop and later recreate all foreign keys to ensure, that no other dependencies on the
-            // alternate key exist.
-            TemporarilyDropForeignKeys(model, builder, operation.Schema, operation.Table, () =>
+            void DropUniqueKey()
             {
-                builder
-                    .Append("ALTER TABLE ")
+                builder.Append("ALTER TABLE ")
                     .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
                     .Append(" DROP KEY ")
                     .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
                     .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
 
                 EndStatement(builder);
-            });
+            }
+
+            // A foreign key might reuse the alternate key for its own purposes and prohibit its deletion,
+            // if the foreign key columns are listed as the first columns and in the same order as in the foreign key (#678).
+            // We therefore drop and later recreate all foreign keys to ensure, that no other dependencies on the
+            // alternate key exist, if explicitly requested by the user via `MySqlMigrationBuilderExtensions.DropUniqueConstraint()`.
+            if (operation.RecreateForeignKeys)
+            {
+                TemporarilyDropForeignKeys(
+                    model,
+                    builder,
+                    operation.Schema,
+                    operation.Table,
+                    // model.GetRelationalModel()
+                    //     .FindTable(operation.Table, operation.Schema)
+                    //     ?.Columns
+                    //     .Select(c => c.Name)
+                    //     .ToArray(),
+                    null,
+                    DropUniqueKey);
+            }
+            else
+            {
+                DropUniqueKey();
+            }
         }
 
         protected void TemporarilyDropForeignKeys(
@@ -524,11 +751,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             MigrationCommandListBuilder builder,
             string schemaName,
             string tableName,
+            string[] columnNames,
             Action action)
         {
             var foreignKeys = model.GetRelationalModel()
                 .FindTable(tableName, schemaName)
-                ?.ForeignKeyConstraints
+                ?.ForeignKeyConstraints?.Where(cs => columnNames == null ||
+                                                     columnNames.Length == 0 ||
+                                                     cs.Columns.Select(c => c.Name).SequenceEqual(columnNames))
                 .ToArray() ?? Array.Empty<IForeignKeyConstraint>();
 
             foreach (var foreignKey in foreignKeys)
@@ -553,7 +783,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
                     Columns = foreignKey.Columns.Select(c => c.Name).ToArray(),
                     PrincipalSchema = foreignKey.PrincipalTable.Schema,
                     PrincipalTable = foreignKey.PrincipalTable.Name,
-                    PrincipalColumns = foreignKey.Columns.Select(c => c.Name).ToArray(),
+                    PrincipalColumns = foreignKey.PrincipalColumns.Select(c => c.Name).ToArray(),
                     OnDelete = foreignKey.OnDeleteAction,
                 }, model, builder);
             }
@@ -1131,19 +1361,36 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             EndStatement(builder);
         }
 
-        protected override void Generate(DropPrimaryKeyOperation operation, IModel model, MigrationCommandListBuilder builder, bool terminate = true)
+        protected override void Generate(
+            DropPrimaryKeyOperation operation,
+            IModel model,
+            MigrationCommandListBuilder builder,
+            bool terminate = true)
+            => Generate(
+                new MySqlDropPrimaryKeyAndRecreateForeignKeysOperation
+                {
+                    IsDestructiveChange = operation.IsDestructiveChange,
+                    Name = operation.Name,
+                    Schema = operation.Schema,
+                    Table = operation.Table,
+                    RecreateForeignKeys = false,
+                },
+                model,
+                builder,
+                terminate);
+
+        protected virtual void Generate(
+            MySqlDropPrimaryKeyAndRecreateForeignKeysOperation operation,
+            IModel model,
+            MigrationCommandListBuilder builder,
+            bool terminate = true)
         {
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
-            // A foreign key might reuse the primary key for its own purposes and prohibit its deletion,
-            // if the foreign key columns are listed as the first columns and in the same order as in the foreign key (#678).
-            // We therefore drop and later recreate all foreign keys to ensure, that no other dependencies on the
-            // primary key exist.
-            TemporarilyDropForeignKeys(model, builder, operation.Schema, operation.Table, () =>
+            void DropPrimaryKey()
             {
-                builder
-                    .Append($"CALL POMELO_BEFORE_DROP_PRIMARY_KEY({_stringTypeMapping.GenerateSqlLiteral(operation.Schema)}, {_stringTypeMapping.GenerateSqlLiteral(operation.Table)});")
+                builder.Append($"CALL POMELO_BEFORE_DROP_PRIMARY_KEY({_stringTypeMapping.GenerateSqlLiteral(operation.Schema)}, {_stringTypeMapping.GenerateSqlLiteral(operation.Table)});")
                     .AppendLine()
                     .Append("ALTER TABLE ")
                     .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema))
@@ -1154,7 +1401,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
                     builder.AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
                     EndStatement(builder);
                 }
-            });
+            }
+
+            // A foreign key might reuse the primary key for its own purposes and prohibit its deletion,
+            // if the foreign key columns are listed as the first columns and in the same order as in the foreign key (#678).
+            // We therefore drop and later recreate all foreign keys to ensure, that no other dependencies on the
+            // primary key exist, if explicitly requested by the user via `MySqlMigrationBuilderExtensions.DropPrimaryKey()`.
+            if (operation.RecreateForeignKeys)
+            {
+                TemporarilyDropForeignKeys(
+                    model,
+                    builder,
+                    operation.Schema,
+                    operation.Table,
+                    // model.GetRelationalModel()
+                    //     .FindTable(operation.Table, operation.Schema)
+                    //     ?.Columns
+                    //     .Select(c => c.Name)
+                    //     .ToArray(),
+                    null,
+                    DropPrimaryKey);
+            }
+            else
+            {
+                DropPrimaryKey();
+            }
         }
 
         /// <summary>

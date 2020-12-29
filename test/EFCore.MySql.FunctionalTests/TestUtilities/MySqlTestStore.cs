@@ -19,8 +19,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {
     public class MySqlTestStore : RelationalTestStore
     {
-        private const int DefaultCommandTimeout = 600;
         private const string NoBackslashEscapes = "NO_BACKSLASH_ESCAPES";
+
+        public const int DefaultCommandTimeout = 600;
 
         private readonly string _scriptPath;
         private readonly bool _useConnectionString;
@@ -45,6 +46,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 
         public static MySqlTestStore CreateInitialized(string name)
             => new MySqlTestStore(name, shared: false).InitializeMySql(null, (Func<DbContext>)null, null);
+
+        public Lazy<ServerVersion> ServerVersion { get; }
 
         // ReSharper disable VirtualMemberCallInConstructor
         private MySqlTestStore(
@@ -72,6 +75,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 
             ConnectionString = CreateConnectionString(name, _noBackslashEscapes);
             Connection = new MySqlConnection(ConnectionString);
+            ServerVersion = new Lazy<ServerVersion>(() => Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect((MySqlConnection)Connection));
         }
 
         public static string CreateConnectionString(string name, bool noBackslashEscapes = false, MySqlGuidFormat guidFormat = MySqlGuidFormat.Default)
@@ -320,10 +324,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             return command.ExecuteNonQueryAsync();
         }
 
-        private const string ModernCsCollation = "utf8mb4_0900_as_cs";
-        private const string LegacyCsCollation = "utf8mb4_bin";
-        private const string ModernCiCollation = "utf8mb4_0900_ai_ci";
-        private const string LegacyCiCollation = "utf8mb4_general_ci";
+        public const string ModernCsCollation = "utf8mb4_0900_as_cs";
+        public const string LegacyCsCollation = "utf8mb4_bin";
+        public const string ModernCiCollation = "utf8mb4_0900_ai_ci";
+        public const string LegacyCiCollation = "utf8mb4_general_ci";
 
         private string EnsureBackwardsCompatibleCollations(DbConnection connection, string script)
         {
@@ -340,13 +344,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             return script;
         }
 
+        public string GetCaseSensitiveUtf8Mb4Collation()
+            => ServerVersion.Value.Supports.DefaultCharSetUtf8Mb4
+                ? ModernCsCollation
+                : LegacyCsCollation;
+
+        public string GetCaseInsensitiveUtf8Mb4Collation()
+            => ServerVersion.Value.Supports.DefaultCharSetUtf8Mb4
+                ? ModernCiCollation
+                : LegacyCiCollation;
+
         private string GetCaseSensitiveUtf8Mb4Collation(MySqlConnection connection)
-            => ServerVersion.AutoDetect(connection).Supports.DefaultCharSetUtf8Mb4
+            => Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect(connection).Supports.DefaultCharSetUtf8Mb4
                 ? ModernCsCollation
                 : LegacyCsCollation;
 
         private string GetCaseInsensitiveUtf8Mb4Collation(MySqlConnection connection)
-            => ServerVersion.AutoDetect(connection).Supports.DefaultCharSetUtf8Mb4
+            => Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect(connection).Supports.DefaultCharSetUtf8Mb4
                 ? ModernCiCollation
                 : LegacyCiCollation;
     }
