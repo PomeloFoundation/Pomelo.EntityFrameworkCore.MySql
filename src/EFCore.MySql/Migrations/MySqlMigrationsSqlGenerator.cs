@@ -783,7 +783,7 @@ DELIMITER ;";
                     Columns = foreignKey.Columns.Select(c => c.Name).ToArray(),
                     PrincipalSchema = foreignKey.PrincipalTable.Schema,
                     PrincipalTable = foreignKey.PrincipalTable.Name,
-                    PrincipalColumns = foreignKey.Columns.Select(c => c.Name).ToArray(),
+                    PrincipalColumns = foreignKey.PrincipalColumns.Select(c => c.Name).ToArray(),
                     OnDelete = foreignKey.OnDeleteAction,
                 }, model, builder);
             }
