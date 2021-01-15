@@ -251,18 +251,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Where_subquery_distinct_orderby_firstordefault_boolean_with_pushdown(async);
         }
 
-        [SupportedServerVersionLessThanCondition("5.6.0", Skip = "https://bugs.mysql.com/bug.php?id=96947")]
-        public override Task Correlated_collections_basic_projecting_constant(bool async)
-        {
-            return base.Correlated_collections_basic_projecting_constant(async);
-        }
-
-        [SupportedServerVersionLessThanCondition("5.6.0", Skip = "https://bugs.mysql.com/bug.php?id=96947")]
-        public override Task Correlated_collections_basic_projecting_constant_bool(bool async)
-        {
-            return base.Correlated_collections_basic_projecting_constant_bool(async);
-        }
-
         [ConditionalTheory( /*Skip = "https://github.com/mysql-net/MySqlConnector/pull/707"*/)]
         public override Task Optional_Navigation_Null_Coalesce_To_Clr_Type(bool async)
         {
