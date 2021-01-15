@@ -34,6 +34,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             query = new MySqlJsonParameterExpressionVisitor(_sqlExpressionFactory, _options).Visit(query);
             query = new MySqlCompatibilityExpressionVisitor(_options).Visit(query);
 
+            if (_options.ServerVersion.SupportsMySqlBug96947Workaround)
+            {
+                query = new MySqlBug96947WorkaroundExpressionVisitor(_sqlExpressionFactory).Visit(query);
+            }
+
             return query;
         }
     }

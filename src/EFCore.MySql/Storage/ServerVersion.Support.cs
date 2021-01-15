@@ -103,6 +103,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         // public const string JsonDataTypeEmulationMySqlSupportVersionString = "5.7.8-mysql";
         public const string JsonDataTypeEmulationMariaDbSupportVersionString = "10.2.4-mariadb"; // JSON_COMPACT was added in 10.2.4, though most other functions where added in 10.2.3
 
+        public const string MySqlBug96947WorkaroundMySqlSupportVersionString = "5.7.0-mysql";
+        // public const string MySqlBug96947WorkaroundMariaDbSupportVersionString = "?.?.?-mariadb";
+
         #endregion
 
         #region SupportMap keys for test attributes
@@ -139,6 +142,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string ExceptInterceptSupportKey = nameof(ExceptInterceptSupportKey);
         public const string ExceptInterceptPrecedenceSupportKey = nameof(ExceptInterceptPrecedenceSupportKey);
         public const string JsonDataTypeEmulationSupportKey = nameof(JsonDataTypeEmulationSupportKey);
+        public const string MySqlBug96947WorkaroundSupportKey = nameof(MySqlBug96947WorkaroundSupportKey);
 
         #endregion
 
@@ -175,6 +179,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
             { ExceptInterceptSupportKey, new ServerVersionSupport(/*ExceptInterceptMySqlSupportVersionString, */ExceptInterceptMariaDbSupportVersionString)},
             { ExceptInterceptPrecedenceSupportKey, new ServerVersionSupport(/*ExceptInterceptPrecedenceMySqlSupportVersionString, */ExceptInterceptPrecedenceMariaDbSupportVersionString)},
             { JsonDataTypeEmulationSupportKey, new ServerVersionSupport(/*JsonDataTypeEmulationMySqlSupportVersionString, */JsonDataTypeEmulationMariaDbSupportVersionString)},
+            { MySqlBug96947WorkaroundSupportKey, new ServerVersionSupport(MySqlBug96947WorkaroundMySqlSupportVersionString/*, MySqlBug96947WorkaroundMariaDbSupportVersionString*/)},
         };
 
         #region Support checks for provider code
@@ -211,6 +216,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public virtual bool SupportsExceptIntercept => SupportMap[ExceptInterceptSupportKey].IsSupported(this);
         public virtual bool SupportsExceptInterceptPrecedence => SupportMap[ExceptInterceptPrecedenceSupportKey].IsSupported(this);
         public virtual bool SupportsJsonDataTypeEmulation => SupportMap[JsonDataTypeEmulationSupportKey].IsSupported(this);
+        public virtual bool SupportsMySqlBug96947Workaround => SupportMap[MySqlBug96947WorkaroundSupportKey].IsSupported(this);
 
         #endregion
 
