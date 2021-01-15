@@ -78,6 +78,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 m => m.Name == nameof(Enumerable.LastOrDefault)
                      && m.GetParameters().Length == 1).MakeGenericMethod(typeof(char));
 
+        private static readonly MethodInfo _removeMethodInfoWithOneArg
+            = typeof(string).GetRuntimeMethod(nameof(string.Remove), new[] { typeof(int) });
+        private static readonly MethodInfo _removeMethodInfoWithTwoArgs
+            = typeof(string).GetRuntimeMethod(nameof(string.Remove), new[] { typeof(int), typeof(int) });
+
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
         public MySqlStringMethodTranslator(ISqlExpressionFactory sqlExpressionFactory)
@@ -262,6 +267,68 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         _sqlExpressionFactory.Constant(1)
                     },
                     method.ReturnType);
+            }
+
+            if (_removeMethodInfoWithOneArg.Equals(method))
+            {
+                return _sqlExpressionFactory.NullableFunction(
+                    "SUBSTRING",
+                    new[]
+                    {
+                        instance,
+                        _sqlExpressionFactory.Constant(1),
+                        arguments[0],
+                    },
+                    method.ReturnType,
+                    instance.TypeMapping);
+            }
+
+            if (_removeMethodInfoWithTwoArgs.Equals(method))
+            {
+                var firstSubString = _sqlExpressionFactory.NullableFunction(
+                    "SUBSTRING",
+                    new[]
+                    {
+                        instance,
+                        _sqlExpressionFactory.Constant(1),
+                        arguments[0]
+                    },
+                    method.ReturnType,
+                    instance.TypeMapping);
+
+                var secondSubString = _sqlExpressionFactory.NullableFunction(
+                    "SUBSTRING",
+                    new[]
+                    {
+                        instance,
+                        _sqlExpressionFactory.Add(
+                            _sqlExpressionFactory.Add(
+                                arguments[0],
+                                arguments[1]),
+                            _sqlExpressionFactory.Constant(1)),
+                        _sqlExpressionFactory.Subtract(
+                            _sqlExpressionFactory.NullableFunction(
+                                "CHAR_LENGTH",
+                                new[] {instance},
+                                typeof(int)),
+                            _sqlExpressionFactory.Add(
+                                arguments[0],
+                                arguments[1])),
+                    },
+                    method.ReturnType,
+                    instance.TypeMapping);
+
+                var concat = _sqlExpressionFactory.NullableFunction(
+                    "CONCAT",
+                    new[]
+                    {
+                        firstSubString,
+                        secondSubString
+                    },
+                    method.ReturnType,
+                    instance.TypeMapping);
+
+                return concat;
             }
 
             return null;

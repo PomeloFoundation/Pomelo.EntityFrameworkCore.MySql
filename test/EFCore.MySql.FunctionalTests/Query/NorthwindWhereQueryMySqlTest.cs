@@ -233,6 +233,36 @@ WHERE SUBSTRING(`c`.`City`, 1 + 1, 2) = 'ea'");
             return base.Where_multiple_contains_in_subquery_with_or(async);
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual async Task Where_string_remove(bool async)
+        {
+            await AssertQuery(
+                async,
+                ss => ss.Set<Customer>().Where(c => c.City.Remove(3) == "Sea"),
+                entryCount: 1);
+
+            AssertSql(
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE SUBSTRING(`c`.`City`, 1, 3) = 'Sea'");
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual async Task Where_string_remove_count(bool async)
+        {
+            await AssertQuery(
+                async,
+                ss => ss.Set<Customer>().Where(c => c.City.Remove(3, 1) == "Seatle"),
+                entryCount: 1);
+
+            AssertSql(
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE CONCAT(SUBSTRING(`c`.`City`, 1, 3), SUBSTRING(`c`.`City`, (3 + 1) + 1, CHAR_LENGTH(`c`.`City`) - (3 + 1))) = 'Seatle'");
+        }
+
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
