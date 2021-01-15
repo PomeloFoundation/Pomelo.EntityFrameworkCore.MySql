@@ -77,5 +77,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
         public virtual bool JsonDataTypeEmulation => false;
         public virtual bool ImplicitBoolCheckUsesIndex => false;
         public virtual bool Sequences => false;
+        public virtual bool MySqlBug96947Workaround => false;
     }
 }
