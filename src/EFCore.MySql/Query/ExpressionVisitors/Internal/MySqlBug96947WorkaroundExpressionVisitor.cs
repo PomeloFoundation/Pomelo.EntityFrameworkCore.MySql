@@ -82,6 +82,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                         constantExpression.TypeMapping);
                 }
 
+                if (expression is SqlParameterExpression parameterExpression)
+                {
+                    expression = _sqlExpressionFactory.Convert(
+                        parameterExpression,
+                        projectionExpression.Type,
+                        parameterExpression.TypeMapping);
+                }
+
                 return projectionExpression.Update(expression);
             }
 
