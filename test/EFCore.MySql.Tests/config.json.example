@@ -1,0 +1,7 @@
+﻿{
+  "Data": {
+    "ConnectionString": "server=127.0.0.1;user id=root;password=Password12!;port=3306;",
+    "ServerVersion": "auto",
+    "CommandTimeout": "600"
+  }
+}
