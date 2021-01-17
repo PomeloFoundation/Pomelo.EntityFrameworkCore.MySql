@@ -45,7 +45,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             => new MySqlTestStore(name, useConnectionString: useConnectionString, shared: false, noBackslashEscapes: noBackslashEscapes);
 
         public static MySqlTestStore CreateInitialized(string name)
-            => new MySqlTestStore(name, shared: false).InitializeMySql(null, (Func<DbContext>)null, null);
+            => new MySqlTestStore(name, shared: false).InitializeMySql(null, null, null);
+
+        public static MySqlTestStore RecreateInitialized(string name)
+            => new MySqlTestStore(name, shared: false).InitializeMySql(null, null, null, c =>
+            {
+                c.Database.EnsureDeleted();
+                c.Database.EnsureCreated();
+            });
 
         public Lazy<ServerVersion> ServerVersion { get; }
 
@@ -120,8 +127,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             }
         }
 
-        public MySqlTestStore InitializeMySql(IServiceProvider serviceProvider, Func<DbContext> createContext, Action<DbContext> seed)
-            => (MySqlTestStore)Initialize(serviceProvider, createContext, seed);
+        public MySqlTestStore InitializeMySql(IServiceProvider serviceProvider, Func<DbContext> createContext, Action<DbContext> seed, Action<DbContext> clean = null)
+            => (MySqlTestStore)Initialize(serviceProvider, createContext, seed, clean);
 
         protected override void Initialize(Func<DbContext> createContext, Action<DbContext> seed, Action<DbContext> clean)
         {
@@ -129,7 +136,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             {
                 if (_scriptPath != null)
                 {
-                    ExecuteScript(_scriptPath);
+                    ExecuteScript(new FileInfo(_scriptPath));
                 }
                 else
                 {
@@ -193,10 +200,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         private static string CreateAdminConnectionString()
             => CreateConnectionString(null);
 
-        public void ExecuteScript(string scriptPath)
-        {
-            var script = File.ReadAllText(scriptPath);
-            Execute(
+        public void ExecuteScript(FileInfo scriptFile)
+            => ExecuteScript(File.ReadAllText(scriptFile.FullName));
+
+        public void ExecuteScript(string script)
+            => Execute(
                 Connection, command =>
                 {
                     foreach (var batch in
@@ -210,7 +218,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 
                     return 0;
                 }, string.Empty);
-        }
 
         public override void Clean(DbContext context)
             => context.Database.EnsureClean();
