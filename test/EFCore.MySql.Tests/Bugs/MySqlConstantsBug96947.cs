@@ -5,9 +5,9 @@ using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Bugs
 {
-    public class MySqlConstantsBug96947 : RawSqlTestWithFixture<MySqlConstantsBug96947.MySqlBug96947Fixture>
+    public class MySqlConstantsBug96947 : RawSqlTestWithFixture<MySqlConstantsBug96947.MySqlConstantsBug96947Fixture>
     {
-        public MySqlConstantsBug96947(MySqlBug96947Fixture fixture, ITestOutputHelper testOutputHelper)
+        public MySqlConstantsBug96947(MySqlConstantsBug96947Fixture fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
         {
         }
@@ -37,7 +37,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Bugs
             }
         }
 
-        public class MySqlBug96947Fixture : MySqlTestFixtureBase<ContextBase>
+        public class MySqlConstantsBug96947Fixture : MySqlTestFixtureBase<ContextBase>
         {
             protected override string SetupDatabaseScript => @"
             CREATE TABLE `Orders` (
