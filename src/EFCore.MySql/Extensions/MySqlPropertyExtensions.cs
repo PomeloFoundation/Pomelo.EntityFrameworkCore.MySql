@@ -101,13 +101,33 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
         /// <param name="property"> The property. </param>
         /// <returns> <c>true</c> if compatible. </returns>
         public static bool IsCompatibleIdentityColumn(IProperty property)
+            => IsCompatibleAutoIncrementColumn(property) ||
+               IsCompatibleCurrentTimestampColumn(property);
+
+        /// <summary>
+        ///     Returns a value indicating whether the property is compatible with <see cref="MySqlValueGenerationStrategy.IdentityColumn"/>.
+        /// </summary>
+        /// <param name="property"> The property. </param>
+        /// <returns> <c>true</c> if compatible. </returns>
+        public static bool IsCompatibleAutoIncrementColumn(IProperty property)
         {
             var valueConverter = GetConverter(property);
             var type = (valueConverter?.ProviderClrType ?? property.ClrType).UnwrapNullableType();
-            return type.IsInteger()
-                   || type == typeof(decimal)
-                   || type == typeof(DateTime)
-                   || type == typeof(DateTimeOffset);
+            return type.IsInteger() ||
+                   type == typeof(decimal);
+        }
+
+        /// <summary>
+        ///     Returns a value indicating whether the property is compatible with <see cref="MySqlValueGenerationStrategy.IdentityColumn"/>.
+        /// </summary>
+        /// <param name="property"> The property. </param>
+        /// <returns> <c>true</c> if compatible. </returns>
+        public static bool IsCompatibleCurrentTimestampColumn(IProperty property)
+        {
+            var valueConverter = GetConverter(property);
+            var type = (valueConverter?.ProviderClrType ?? property.ClrType).UnwrapNullableType();
+            return type == typeof(DateTime) ||
+                   type == typeof(DateTimeOffset);
         }
 
         /// <summary>

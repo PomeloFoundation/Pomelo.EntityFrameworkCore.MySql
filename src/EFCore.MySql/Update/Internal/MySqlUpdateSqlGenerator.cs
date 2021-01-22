@@ -179,14 +179,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
             // values are.
             // Therefore, we filter out the key columns that are marked as `read`, but are not an auto_increment column,
             // so that `AppendIdentityWhereCondition()` can safely called for the remaining auto_increment column.
+            // Because we currently use `MySqlValueGenerationStrategy.IdentityColumn` for auto_increment columns as well
+            // as CURRENT_TIMESTAMP columns, we need to use `MySqlPropertyExtensions.IsCompatibleAutoIncrementColumn()`
+            // to ensure, that the column is actually an auto_increment column.
             // See https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1300
             var nonDefaultOperations = operations
                 .Where(
                     o => !o.IsKey ||
                          !o.IsRead ||
                          o.Property == null ||
-                         o.Property.GetValueGenerationStrategy() == MySqlValueGenerationStrategy.IdentityColumn ||
-                         !o.Property.ValueGenerated.HasFlag(ValueGenerated.OnAdd))
+                         !o.Property.ValueGenerated.HasFlag(ValueGenerated.OnAdd) ||
+                         MySqlPropertyExtensions.IsCompatibleAutoIncrementColumn(o.Property))
                 .ToList()
                 .AsReadOnly();
 
