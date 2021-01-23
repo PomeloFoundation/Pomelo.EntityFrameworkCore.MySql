@@ -5,13 +5,15 @@ using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
-    public class UpdatesMySqlTest : UpdatesRelationalTestBase<UpdatesMySqlFixture>
+    public partial class UpdatesMySqlTest : UpdatesRelationalTestBase<UpdatesMySqlFixture>
     {
         public UpdatesMySqlTest(UpdatesMySqlFixture fixture)
             : base(fixture)
         {
+            fixture.TestSqlLoggerFactory.Clear();
         }
 
+        [ConditionalFact]
         public override void Identifiers_are_generated_correctly()
         {
             using (var context = CreateContext())
