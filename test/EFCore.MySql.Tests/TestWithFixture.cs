@@ -34,15 +34,10 @@ namespace Pomelo.EntityFrameworkCore.MySql
         protected TestWithFixture(TFixture fixture)
         {
             Fixture = fixture;
-            Fixture.SetupDatabase();
         }
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                Fixture.Dispose();
-            }
         }
 
         public void Dispose()

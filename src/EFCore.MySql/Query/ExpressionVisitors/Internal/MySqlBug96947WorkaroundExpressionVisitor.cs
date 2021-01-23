@@ -21,6 +21,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
     {
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
+        private bool _usesOrderBy;
         private bool _insideLeftJoin;
         private bool _insideLeftJoinSelect;
 
@@ -61,8 +62,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 _insideLeftJoinSelect = !_insideLeftJoinSelect;
             }
 
+            var oldUsesOrderBy = _usesOrderBy;
+
+            _usesOrderBy = selectExpression.Orderings.Count > 0 ||
+                           oldUsesOrderBy;
+
             var expression = base.VisitExtension(selectExpression);
 
+            _usesOrderBy = oldUsesOrderBy;
             _insideLeftJoinSelect = oldInsideLeftJoinSelect;
 
             return expression;
@@ -70,16 +77,28 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         protected virtual Expression VisitProjection(ProjectionExpression projectionExpression)
         {
-            if (_insideLeftJoinSelect)
+            if (_insideLeftJoinSelect &&
+                _usesOrderBy)
             {
                 var expression = (SqlExpression)Visit(projectionExpression.Expression);
 
-                if (expression is SqlConstantExpression constantExpression)
+                // Parameters trigger this bug as well, because the get inlined by MySqlConnector and
+                // become constant values in the end.
+                if (expression is SqlConstantExpression ||
+                    expression is SqlParameterExpression)
                 {
                     expression = _sqlExpressionFactory.Convert(
-                        constantExpression,
+                        expression,
                         projectionExpression.Type,
-                        constantExpression.TypeMapping);
+                        expression.TypeMapping);
+                }
+
+                if (expression is SqlParameterExpression parameterExpression)
+                {
+                    expression = _sqlExpressionFactory.Convert(
+                        parameterExpression,
+                        projectionExpression.Type,
+                        parameterExpression.TypeMapping);
                 }
 
                 return projectionExpression.Update(expression);

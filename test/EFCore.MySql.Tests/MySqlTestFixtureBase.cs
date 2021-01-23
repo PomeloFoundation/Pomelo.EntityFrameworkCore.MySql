@@ -31,6 +31,7 @@ namespace Pomelo.EntityFrameworkCore.MySql
         public MySqlTestFixtureBase()
         {
             TestStore = MySqlTestStore.RecreateInitialized(StoreName);
+            SetupDatabase();
         }
 
         protected override void Dispose(bool disposing)
@@ -40,9 +41,15 @@ namespace Pomelo.EntityFrameworkCore.MySql
         }
 
         protected virtual string StoreName
-            => GetType().Name.EndsWith(FixtureSuffix)
-                ? GetType().Name.Substring(0, GetType().Name.Length - FixtureSuffix.Length)
-                : GetType().Name;
+        {
+            get
+            {
+                var typeName = GetType().Name;
+                return typeName.EndsWith(FixtureSuffix)
+                    ? typeName.Substring(0, typeName.Length - FixtureSuffix.Length)
+                    : typeName;
+            }
+        }
 
         protected virtual MySqlTestStore TestStore { get; }
         protected virtual string SetupDatabaseScript { get; }

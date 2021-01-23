@@ -5,15 +5,15 @@ using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Bugs
 {
-    public class MySqlBug96947 : RawSqlTestWithFixture<MySqlBug96947.MySqlBug96947Fixture>
+    public class MySqlBug96947 : RawSqlTestWithFixture<MySqlBug96947.FixtureClass>
     {
-        public MySqlBug96947(MySqlBug96947Fixture fixture, ITestOutputHelper testOutputHelper)
+        public MySqlBug96947(FixtureClass fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
         {
         }
 
         [Fact]
-        public void Bug_exists_in_MySql57_or_higher()
+        public void Bug_exists_in_MySql57_or_higher_constant()
         {
             using var command = Connection.CreateCommand();
             command.CommandText = @"
@@ -37,7 +37,36 @@ ORDER BY `od1`.`OrderID`;";
             }
         }
 
-        public class MySqlBug96947Fixture : MySqlTestFixtureBase<ContextBase>
+        [Fact]
+        public void Bug_exists_in_MySql57_or_higher_parameter()
+        {
+            // Parameters are an issue as well, because the get inlined by MySqlConnector and
+            // just become constant values as well.
+
+            using var command = Connection.CreateCommand();
+            command.CommandText = @"
+SELECT `od1`.`Constant`, `od1`.`OrderID`
+FROM `Orders` AS `o`
+LEFT JOIN (
+    SELECT @p0 AS `Constant`, `od`.`OrderID`
+    FROM `Order Details` AS `od`
+) AS `od1` ON `o`.`OrderID` = `od1`.`OrderID`
+ORDER BY `od1`.`OrderID`;";
+            command.Parameters.AddWithValue("@p0", "MyParameterValue");
+
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                var constant = reader["Constant"];
+                var expected = ServerVersion.FromString(Connection.ServerVersion).Supports.MySqlBug96947Workaround
+                    ? (object)DBNull.Value
+                    : "MyParameterValue";
+
+                Assert.Equal(expected, constant);
+            }
+        }
+
+        public class FixtureClass : MySqlTestFixtureBase<ContextBase>
         {
             protected override string SetupDatabaseScript => @"
 CREATE TABLE `Orders` (
