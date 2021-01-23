@@ -177,6 +177,35 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
             // there is no equivalent in mysql: https://stackoverflow.com/questions/3386217/is-there-an-equivalent-to-sql-servers-set-nocount-in-mysql
         }
 
+        protected override void AppendWhereAffectedClause(
+            [NotNull] StringBuilder commandStringBuilder,
+            [NotNull] IReadOnlyList<ColumnModification> operations)
+        {
+            Check.NotNull(commandStringBuilder, nameof(commandStringBuilder));
+            Check.NotNull(operations, nameof(operations));
+
+            // If a compound key consists of an auto_increment column and a database generated column (e.g. a DEFAULT
+            // value), then we only want to filter by `LAST_INSERT_ID()`, because we can't know what the other generated
+            // values are.
+            // Therefore, we filter out the key columns that are marked as `read`, but are not an auto_increment column,
+            // so that `AppendIdentityWhereCondition()` can safely called for the remaining auto_increment column.
+            // Because we currently use `MySqlValueGenerationStrategy.IdentityColumn` for auto_increment columns as well
+            // as CURRENT_TIMESTAMP columns, we need to use `MySqlPropertyExtensions.IsCompatibleAutoIncrementColumn()`
+            // to ensure, that the column is actually an auto_increment column.
+            // See https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1300
+            var nonDefaultOperations = operations
+                .Where(
+                    o => !o.IsKey ||
+                         !o.IsRead ||
+                         o.Property == null ||
+                         !o.Property.ValueGenerated.HasFlag(ValueGenerated.OnAdd) ||
+                         MySqlPropertyExtensions.IsCompatibleAutoIncrementColumn(o.Property))
+                .ToList()
+                .AsReadOnly();
+
+            base.AppendWhereAffectedClause(commandStringBuilder, nonDefaultOperations);
+        }
+
         protected override void AppendIdentityWhereCondition(StringBuilder commandStringBuilder, ColumnModification columnModification)
         {
             SqlGenerationHelper.DelimitIdentifier(commandStringBuilder, columnModification.ColumnName);
