@@ -122,7 +122,7 @@ namespace Microsoft.EntityFrameworkCore
             Check.NotNull(propertyBuilder, nameof(propertyBuilder));
 
             var property = propertyBuilder.Metadata;
-            property.SetCollation(collation);
+            MySqlPropertyExtensions.SetCollation(property, collation);
 
             return propertyBuilder;
         }

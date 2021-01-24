@@ -83,7 +83,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
                     charset);
             }
 
-            if (column.PropertyMappings.Select(m => m.Property.GetCollation())
+            if (column.PropertyMappings.Select(m => MySqlPropertyExtensions.GetCollation(m.Property))
                 .FirstOrDefault(c => c != null) is string collation)
             {
                 yield return new Annotation(
