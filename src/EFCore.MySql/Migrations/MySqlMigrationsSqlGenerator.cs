@@ -1199,7 +1199,7 @@ DELIMITER ;";
                     : columnType.TrimEnd() + " " + characterSetClause;
             }
 
-            var collation = operation[MySqlAnnotationNames.Collation];
+            var collation = operation[MySqlAnnotationNames.Collation] ?? operation.Collation;
             if (collation != null)
             {
                 const string collationClausePattern = @"COLLATE \w+";
