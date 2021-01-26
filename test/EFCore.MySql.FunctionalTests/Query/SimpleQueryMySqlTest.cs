@@ -82,7 +82,7 @@ WHERE (UTC_TIMESTAMP() <> @__myDatetime_0) OR UTC_TIMESTAMP() IS NULL");
             AssertSql(
                 @"SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
 FROM `Employees` AS `e`
-WHERE (CONVERT(CURRENT_TIMESTAMP(), date) = CURDATE()) OR (CONVERT(CURRENT_TIMESTAMP(), date) IS NULL AND CURDATE() IS NULL)");
+WHERE (CONVERT(CURRENT_TIMESTAMP(), date) = CURDATE()) OR (CONVERT(CURRENT_TIMESTAMP(), date) IS NULL AND (CURDATE() IS NULL))");
         }
 
         [ConditionalTheory]

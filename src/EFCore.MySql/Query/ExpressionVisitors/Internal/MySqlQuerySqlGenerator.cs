@@ -227,8 +227,60 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 return sqlBinaryExpression;
             }
 
-            return base.VisitSqlBinary(sqlBinaryExpression);
+            if (sqlBinaryExpression.OperatorType == ExpressionType.Coalesce)
+            {
+                Sql.Append("COALESCE(");
+                Visit(sqlBinaryExpression.Left);
+                Sql.Append(", ");
+                Visit(sqlBinaryExpression.Right);
+                Sql.Append(")");
+            }
+            else
+            {
+                var requiresBrackets = RequiresBrackets(sqlBinaryExpression.Left);
+
+                if (requiresBrackets)
+                {
+                    Sql.Append("(");
+                }
+
+                Visit(sqlBinaryExpression.Left);
+
+                if (requiresBrackets)
+                {
+                    Sql.Append(")");
+                }
+
+                Sql.Append(GenerateOperator(sqlBinaryExpression));
+
+                // EF uses unary Equal and NotEqual to represent is-null checking.
+                // These need to be surrounded with parenthesis in various cases (e.g. where TRUE = x IS NOT NULL).
+                // See https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1309
+                requiresBrackets = RequiresBrackets(sqlBinaryExpression.Right) ||
+                                   !requiresBrackets &&
+                                   sqlBinaryExpression.Right is SqlUnaryExpression sqlUnaryExpression &&
+                                   (sqlUnaryExpression.OperatorType == ExpressionType.Equal || sqlUnaryExpression.OperatorType == ExpressionType.NotEqual);
+
+                if (requiresBrackets)
+                {
+                    Sql.Append("(");
+                }
+
+                Visit(sqlBinaryExpression.Right);
+
+                if (requiresBrackets)
+                {
+                    Sql.Append(")");
+                }
+            }
+
+            return sqlBinaryExpression;
         }
+
+        private bool RequiresBrackets(SqlExpression expression)
+            => expression is SqlBinaryExpression sqlBinary
+               && sqlBinary.OperatorType != ExpressionType.Coalesce
+               || expression is LikeExpression;
 
         public virtual Expression VisitMySqlRegexp(MySqlRegexpExpression mySqlRegexpExpression)
         {
