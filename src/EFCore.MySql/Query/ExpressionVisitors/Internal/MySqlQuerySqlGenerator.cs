@@ -212,6 +212,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         protected override Expression VisitSqlBinary(SqlBinaryExpression sqlBinaryExpression)
         {
+            Check.NotNull(sqlBinaryExpression, nameof(sqlBinaryExpression));
+
             if (sqlBinaryExpression.OperatorType == ExpressionType.Add &&
                 sqlBinaryExpression.Type == typeof(string) &&
                 sqlBinaryExpression.Left.TypeMapping?.ClrType == typeof(string) &&
@@ -226,8 +228,48 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 return sqlBinaryExpression;
             }
 
-            return base.VisitSqlBinary(sqlBinaryExpression);
+            var requiresBrackets = RequiresBrackets(sqlBinaryExpression.Left);
+
+            if (requiresBrackets)
+            {
+                Sql.Append("(");
+            }
+
+            Visit(sqlBinaryExpression.Left);
+
+            if (requiresBrackets)
+            {
+                Sql.Append(")");
+            }
+
+            Sql.Append(GetOperator(sqlBinaryExpression));
+
+            // EF uses unary Equal and NotEqual to represent is-null checking.
+            // These need to be surrounded with parenthesis in various cases (e.g. where TRUE = x IS NOT NULL).
+            // See https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1309
+            requiresBrackets = RequiresBrackets(sqlBinaryExpression.Right) ||
+                               !requiresBrackets &&
+                               sqlBinaryExpression.Right is SqlUnaryExpression sqlUnaryExpression &&
+                               (sqlUnaryExpression.OperatorType == ExpressionType.Equal || sqlUnaryExpression.OperatorType == ExpressionType.NotEqual);
+
+            if (requiresBrackets)
+            {
+                Sql.Append("(");
+            }
+
+            Visit(sqlBinaryExpression.Right);
+
+            if (requiresBrackets)
+            {
+                Sql.Append(")");
+            }
+
+            return sqlBinaryExpression;
         }
+
+        private static bool RequiresBrackets(SqlExpression expression)
+            => expression is SqlBinaryExpression ||
+               expression is LikeExpression;
 
         public virtual Expression VisitMySqlRegexp(MySqlRegexpExpression mySqlRegexpExpression)
         {
