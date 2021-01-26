@@ -20,7 +20,7 @@ FROM `Engines` AS `e`
 LEFT JOIN (
     SELECT `e0`.`Id`, `e0`.`StorageLocation_Latitude`, `e0`.`StorageLocation_Longitude`
     FROM `Engines` AS `e0`
-    WHERE `e0`.`StorageLocation_Longitude` IS NOT NULL AND `e0`.`StorageLocation_Latitude` IS NOT NULL
+    WHERE `e0`.`StorageLocation_Longitude` IS NOT NULL AND (`e0`.`StorageLocation_Latitude` IS NOT NULL)
 ) AS `t` ON `e`.`Id` = `t`.`Id`
 ORDER BY `e`.`Id`
 LIMIT 1",

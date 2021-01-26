@@ -100,7 +100,7 @@ SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`Cont
 FROM `Customers` AS `c`
 WHERE CASE
     WHEN @__comparison_0 IN (4, 0, 2) THEN `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin
-    ELSE ((LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin) AND (LCASE(`c`.`CustomerID`) IS NOT NULL AND CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin IS NOT NULL)) OR (LCASE(`c`.`CustomerID`) IS NULL AND CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin IS NULL)
+    ELSE ((LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin) AND (LCASE(`c`.`CustomerID`) IS NOT NULL AND (CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin IS NOT NULL))) OR (LCASE(`c`.`CustomerID`) IS NULL AND (CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin IS NULL))
 END");
         }
 
@@ -158,7 +158,7 @@ WHERE `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin) OR (LCASE(`c`.`CustomerID`) IS NULL AND CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin IS NULL)");
+WHERE (LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin) OR (LCASE(`c`.`CustomerID`) IS NULL AND (CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin IS NULL))");
         }
 
         [ConditionalTheory]
@@ -173,7 +173,7 @@ WHERE (LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE u
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin) OR (LCASE(`c`.`CustomerID`) IS NULL AND CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin IS NULL)");
+WHERE (LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin) OR (LCASE(`c`.`CustomerID`) IS NULL AND (CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin IS NULL))");
         }
 
         [ConditionalTheory]
@@ -188,7 +188,7 @@ WHERE (LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE u
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin) OR (LCASE(`c`.`CustomerID`) IS NULL AND CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin IS NULL)");
+WHERE (LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin) OR (LCASE(`c`.`CustomerID`) IS NULL AND (CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin IS NULL))");
         }
 
         [ConditionalTheory]
@@ -220,7 +220,7 @@ SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`Cont
 FROM `Customers` AS `c`
 WHERE CASE
     WHEN @__comparison_0 IN (4, 0, 2) THEN `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin
-    ELSE ((LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin) AND (LCASE(`c`.`CustomerID`) IS NOT NULL AND CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin IS NOT NULL)) OR (LCASE(`c`.`CustomerID`) IS NULL AND CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin IS NULL)
+    ELSE ((LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin) AND (LCASE(`c`.`CustomerID`) IS NOT NULL AND (CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin IS NOT NULL))) OR (LCASE(`c`.`CustomerID`) IS NULL AND (CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin IS NULL))
 END");
         }
 
@@ -278,7 +278,7 @@ WHERE `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin");
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin) OR (LCASE(`c`.`CustomerID`) IS NULL AND CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin IS NULL)");
+WHERE (LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin) OR (LCASE(`c`.`CustomerID`) IS NULL AND (CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin IS NULL))");
         }
 
         [ConditionalTheory]
@@ -293,7 +293,7 @@ WHERE (LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE u
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin) OR (LCASE(`c`.`CustomerID`) IS NULL AND CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin IS NULL)");
+WHERE (LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin) OR (LCASE(`c`.`CustomerID`) IS NULL AND (CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin IS NULL))");
         }
 
         [ConditionalTheory]
@@ -308,7 +308,7 @@ WHERE (LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE u
             AssertSql(
                 @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin) OR (LCASE(`c`.`CustomerID`) IS NULL AND CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin IS NULL)");
+WHERE (LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin) OR (LCASE(`c`.`CustomerID`) IS NULL AND (CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin IS NULL))");
         }
 
         [ConditionalTheory]
