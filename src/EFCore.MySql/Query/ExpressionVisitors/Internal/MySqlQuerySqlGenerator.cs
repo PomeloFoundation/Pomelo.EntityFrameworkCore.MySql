@@ -270,9 +270,30 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         }
 
         protected override Expression VisitSqlUnary(SqlUnaryExpression sqlUnaryExpression)
-            => sqlUnaryExpression.OperatorType == ExpressionType.Convert
-                ? VisitConvert(sqlUnaryExpression)
-                : base.VisitSqlUnary(sqlUnaryExpression);
+        {
+            switch (sqlUnaryExpression.OperatorType)
+            {
+                case ExpressionType.Convert:
+                    return VisitConvert(sqlUnaryExpression);
+
+                // EF uses unary Equal and NotEqual to represent is-null checking.
+                // These need to be surrounded with parenthesis in various cases (e.g. where TRUE = x IS NOT NULL).
+                // See https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1309
+                case ExpressionType.Equal:
+                    Sql.Append("(");
+                    Visit(sqlUnaryExpression.Operand);
+                    Sql.Append(" IS NULL)");
+                    return sqlUnaryExpression;
+
+                case ExpressionType.NotEqual:
+                    Sql.Append("(");
+                    Visit(sqlUnaryExpression.Operand);
+                    Sql.Append(" IS NOT NULL)");
+                    return sqlUnaryExpression;
+            }
+
+            return base.VisitSqlUnary(sqlUnaryExpression);
+        }
 
         private SqlUnaryExpression VisitConvert(SqlUnaryExpression sqlUnaryExpression)
         {
