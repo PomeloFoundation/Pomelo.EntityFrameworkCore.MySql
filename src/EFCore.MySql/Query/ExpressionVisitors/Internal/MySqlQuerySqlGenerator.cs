@@ -211,6 +211,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         protected override Expression VisitSqlBinary(SqlBinaryExpression sqlBinaryExpression)
         {
+            Check.NotNull(sqlBinaryExpression, nameof(sqlBinaryExpression));
+
             if (sqlBinaryExpression.OperatorType == ExpressionType.Add &&
                 sqlBinaryExpression.Type == typeof(string) &&
                 sqlBinaryExpression.Left.TypeMapping?.ClrType == typeof(string) &&

@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
@@ -12,7 +13,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         public NullSemanticsQueryMySqlTest(NullSemanticsQueryMySqlFixture fixture)
             : base(fixture)
         {
+            ClearLog();
         }
+
+        protected override void ClearLog()
+            => Fixture.TestSqlLoggerFactory.Clear();
+
+        private void AssertSql(params string[] expected)
+            => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
         [Fact]
         public override void From_sql_composed_with_relational_null_comparison()
@@ -38,6 +46,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         public override void Projecting_nullable_bool_with_coalesce_nested()
         {
             base.Projecting_nullable_bool_with_coalesce_nested();
+        }
+
+        [Fact]
+        public virtual void Compare_left_bool_parameter_with_right_nullable_hasvalue()
+        {
+            bool prm = false;
+
+            AssertQuery<NullSemanticsEntity1>(
+                ss => ss.Where(e => prm == e.NullableBoolC.HasValue),
+                ss => ss.Where(e => !e.NullableBoolC.HasValue),
+                useRelationalNulls: false);
+
+            AssertSql(
+                @"@__prm_0='False'
+
+SELECT `e`.`Id`
+FROM `Entities1` AS `e`
+WHERE @__prm_0 = (`e`.`NullableBoolC` IS NOT NULL)");
         }
 
         protected override NullSemanticsContext CreateContext(bool useRelationalNulls = false)
