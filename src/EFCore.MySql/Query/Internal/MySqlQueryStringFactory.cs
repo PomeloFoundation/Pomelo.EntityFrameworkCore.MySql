@@ -3,14 +3,12 @@
 
 using System;
 using System.Data.Common;
-using System.Data.SqlTypes;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -44,14 +42,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             var builder = new StringBuilder();
             foreach (DbParameter parameter in command.Parameters)
             {
-                var typeName = TypeNameBuilder.CreateTypeName(parameter);
-                var typeMapping = _typeMapper.FindMapping(typeName);
-
                 builder
                     .Append("SET ")
                     .Append(parameter.ParameterName)
                     .Append(" = ")
-                    .Append(GetParameterValue(parameter, typeName, typeMapping))
+                    .Append(GetParameterValue(parameter))
                     .AppendLine(";");
             }
 
@@ -60,15 +55,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 .Append(command.CommandText).ToString();
         }
 
-        private static string GetParameterValue(DbParameter parameter, string typeName, RelationalTypeMapping typeMapping)
-            => (parameter.Value == DBNull.Value
-                || parameter.Value == null)
+        private string GetParameterValue(DbParameter parameter)
+        {
+            var typeMapping = _typeMapper.FindMapping(parameter.Value.GetType());
+
+            return (parameter.Value == DBNull.Value
+                    || parameter.Value == null)
                 ? "NULL"
-                : parameter.Value is SqlBytes sqlBytes
-                    ? new MySqlByteArrayTypeMapping(typeName).GenerateSqlLiteral(sqlBytes.Value)
-                    : typeMapping != null
-                        ? typeMapping.GenerateSqlLiteral(parameter.Value)
-                        : parameter.Value.ToString();
+                : typeMapping != null
+                    ? typeMapping.GenerateSqlLiteral(parameter.Value)
+                    : parameter.Value.ToString();
+        }
 
         protected virtual void PrepareCommand(DbCommand command)
         {
@@ -142,9 +139,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                              t.ParameterName == parameterName));
 
                 var parameter = command.Parameters[parameterName];
-                var typeName = TypeNameBuilder.CreateTypeName(parameter);
-                var typeMapping = _typeMapper.FindMapping(typeName);
-                var parameterValue = GetParameterValue(parameter, typeName, typeMapping);
+                var parameterValue = GetParameterValue(parameter);
 
                 command.CommandText = command.CommandText.Substring(0, parameterIndex) +
                                       parameterValue +
