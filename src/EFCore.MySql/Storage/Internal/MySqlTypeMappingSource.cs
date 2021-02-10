@@ -99,17 +99,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private Dictionary<Type, RelationalTypeMapping> _clrTypeMappings;
         private Dictionary<Type, RelationalTypeMapping> _scaffoldingClrTypeMappings;
 
-        // These are disallowed only if specified without any kind of length specified in parenthesis.
-        private readonly HashSet<string> _disallowedMappings = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "binary",
-            "char",
-            "nchar",
-            "varbinary",
-            "varchar",
-            "nvarchar"
-        };
-
         private readonly IMySqlOptions _options;
 
         private bool _initialized;
@@ -130,17 +119,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             // String mappings depend on the MySqlOptions.NoBackslashEscapes setting:
             //
 
-            _charUnicode = new MySqlStringTypeMapping("char", _options, fixedLength: true);
-            _varcharUnicode = new MySqlStringTypeMapping("varchar", _options);
-            _tinytextUnicode = new MySqlStringTypeMapping("tinytext", _options);
-            _textUnicode = new MySqlStringTypeMapping("text", _options);
-            _mediumtextUnicode = new MySqlStringTypeMapping("mediumtext", _options);
-            _longtextUnicode = new MySqlStringTypeMapping("longtext", _options);
+            _charUnicode = new MySqlStringTypeMapping("char", _options, StoreTypePostfix.Size, fixedLength: true);
+            _varcharUnicode = new MySqlStringTypeMapping("varchar", _options, StoreTypePostfix.Size);
+            _tinytextUnicode = new MySqlStringTypeMapping("tinytext", _options, StoreTypePostfix.None);
+            _textUnicode = new MySqlStringTypeMapping("text", _options, StoreTypePostfix.None);
+            _mediumtextUnicode = new MySqlStringTypeMapping("mediumtext", _options, StoreTypePostfix.None);
+            _longtextUnicode = new MySqlStringTypeMapping("longtext", _options, StoreTypePostfix.None);
 
-            _nchar = new MySqlStringTypeMapping("nchar", _options, fixedLength: true);
-            _nvarchar = new MySqlStringTypeMapping("nvarchar", _options);
+            _nchar = new MySqlStringTypeMapping("nchar", _options, StoreTypePostfix.Size, fixedLength: true);
+            _nvarchar = new MySqlStringTypeMapping("nvarchar", _options, StoreTypePostfix.Size);
 
-            _enum = new MySqlStringTypeMapping("enum", _options);
+            _enum = new MySqlStringTypeMapping("enum", _options, StoreTypePostfix.None);
 
             _guid = MySqlGuidTypeMapping.IsValidGuidFormat(_options.ConnectionSettings.GuidFormat)
                 ? new MySqlGuidTypeMapping(_options.ConnectionSettings.GuidFormat)
@@ -286,20 +275,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        protected override void ValidateMapping(CoreTypeMapping mapping, IProperty property)
-        {
-            var relationalMapping = mapping as RelationalTypeMapping;
-
-            if (_disallowedMappings.Contains(relationalMapping?.StoreType))
-            {
-                throw new ArgumentException($@"Missing length for data type ""{relationalMapping?.StoreType}"".");
-            }
-        }
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         protected override RelationalTypeMapping FindMapping(in RelationalTypeMappingInfo mappingInfo) =>
             // first, try any plugins, allowing them to override built-in mappings
             base.FindMapping(mappingInfo) ??
@@ -436,6 +411,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                                   ? "char("
                                   : "varchar(") + size + ")" + charSetSuffix,
                         _options,
+                        StoreTypePostfix.None, // HACK: remove once CHARACTER SET above has been removed
                         isUnicode,
                         size,
                         isFixedLength);

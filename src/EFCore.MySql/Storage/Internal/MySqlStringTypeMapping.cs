@@ -28,6 +28,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public MySqlStringTypeMapping(
             [NotNull] string storeType,
             IMySqlOptions options,
+            StoreTypePostfix storeTypePostfix,
             bool unicode = true,
             int? size = null,
             bool fixedLength = false,
@@ -36,7 +37,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 new RelationalTypeMappingParameters(
                     new CoreTypeMappingParameters(typeof(string)),
                     storeType,
-                    StoreTypePostfix.None, // Has to be None until EF #11896 is fixed
+                    storeTypePostfix,
                     unicode
                         ? fixedLength
                             ? System.Data.DbType.StringFixedLength
