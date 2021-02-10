@@ -263,6 +263,25 @@ FROM `Customers` AS `c`
 WHERE CONCAT(SUBSTRING(`c`.`City`, 1, 3), SUBSTRING(`c`.`City`, (3 + 1) + 1, CHAR_LENGTH(`c`.`City`) - (3 + 1))) = 'Seatle'");
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual async Task Where_guid(bool async)
+        {
+            var guidParameter = new Guid("4D68FE70-DDB0-47D7-B6DB-437684FA3E1F");
+
+            await AssertQuery(
+                async,
+                ss => ss.Set<Customer>().Where(c => guidParameter == Guid.NewGuid()),
+                entryCount: 0);
+
+            AssertSql(
+                @"@__guidParameter_0='4d68fe70-ddb0-47d7-b6db-437684fa3e1f'
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE @__guidParameter_0 = UUID()");
+        }
+
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
