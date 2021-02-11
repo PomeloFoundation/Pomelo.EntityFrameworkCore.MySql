@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using NetTopologySuite.Geometries;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
@@ -197,6 +198,34 @@ ALTER TABLE `Cars` ADD CONSTRAINT `FK_Cars_LicensePlates_LicensePlateNumber` FOR
     `Name` varchar(255) NOT NULL
 );",
                 Sql.Trim(),
+                ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        public virtual void CreateTable_with_ValueGenerationStrategy_int_value()
+        {
+            Generate(
+                new CreateTableOperation
+                {
+                    Name = "IceCreamShops",
+                    Columns =
+                    {
+                        new AddColumnOperation
+                        {
+                            Name = "IceCreamShopId",
+                            ClrType = typeof(int),
+                            ColumnType = "int",
+                            [MySqlAnnotationNames.ValueGenerationStrategy] = (int)MySqlValueGenerationStrategy.IdentityColumn,
+                        }
+                    }
+                });
+
+            Assert.Equal(
+                @"CREATE TABLE `IceCreamShops` (
+    `IceCreamShopId` int NOT NULL AUTO_INCREMENT
+);
+",
+                Sql,
                 ignoreLineEndingDifferences: true);
         }
 
