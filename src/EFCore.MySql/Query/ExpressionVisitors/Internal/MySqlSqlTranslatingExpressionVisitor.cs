@@ -5,11 +5,12 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
@@ -21,6 +22,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
     {
         private readonly IMySqlJsonPocoTranslator _jsonPocoTranslator;
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
+
+        protected static readonly MethodInfo[] NewArrayExpressionSupportMethodInfos = Array.Empty<MethodInfo>()
+            .Concat(typeof(MySqlDbFunctionsExtensions).GetRuntimeMethods().Where(m => m.Name == nameof(MySqlDbFunctionsExtensions.Match)))
+            .Concat(typeof(string).GetRuntimeMethods().Where(m => m.Name == nameof(string.Concat)))
+            .Where(m => m.GetParameters().Any(p => p.ParameterType.IsArray))
+            .ToArray();
 
         public MySqlSqlTranslatingExpressionVisitor(
             RelationalSqlTranslatingExpressionVisitorDependencies dependencies,
@@ -145,19 +152,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return visitedExpression;
         }
 
-        protected override Expression VisitNewArray(NewArrayExpression newArrayExpression)
+        protected virtual Expression VisitMethodCallNewArray(NewArrayExpression newArrayExpression)
         {
-            // Needed for MySqlDbFunctionsExtensions.Match() and the String.Concat translation.
-            // Could be made more specific in the future, if needed.
+            // Needed for MySqlDbFunctionsExtensions.Match() and String.Concat() translation.
             if (newArrayExpression.Type == typeof(string[]))
             {
                 return _sqlExpressionFactory.ComplexFunctionArgument(
                     newArrayExpression.Expressions.Select(e => (SqlExpression)Visit(e))
                         .ToArray(),
                     ", ",
-                    typeof(string));
+                    typeof(string[]));
             }
 
+            // Needed for String.Concat() translation.
             if (newArrayExpression.Type == typeof(object[]))
             {
                 var typeMapping = ((MySqlStringTypeMapping)Dependencies.TypeMappingSource.GetMapping(typeof(string))).Clone(forceToString: true);
@@ -165,11 +172,41 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                     newArrayExpression.Expressions.Select(e => Dependencies.SqlExpressionFactory.ApplyTypeMapping((SqlExpression)Visit(e), typeMapping))
                         .ToArray(),
                     ", ",
-                    typeof(object),
+                    typeof(object[]),
                     typeMapping);
             }
 
             return base.VisitNewArray(newArrayExpression);
+        }
+
+        protected override Expression VisitMethodCall(MethodCallExpression methodCallExpression)
+        {
+            if (NewArrayExpressionSupportMethodInfos.Contains(methodCallExpression.Method))
+            {
+                var arguments = new Expression[methodCallExpression.Arguments.Count];
+                for (var i = 0; i < arguments.Length; i++)
+                {
+                    var argument = methodCallExpression.Arguments[i];
+
+                    if (argument is NewArrayExpression newArrayExpression)
+                    {
+                        if (TranslationFailed(argument, VisitMethodCallNewArray(newArrayExpression), out var sqlExpression))
+                        {
+                            return null;
+                        }
+
+                        arguments[i] = sqlExpression;
+                    }
+                    else
+                    {
+                        arguments[i] = argument;
+                    }
+                }
+
+                methodCallExpression = methodCallExpression.Update(methodCallExpression.Object, arguments);
+            }
+
+            return base.VisitMethodCall(methodCallExpression);
         }
 
         private static bool IsDateTimeBasedOperation(SqlBinaryExpression binaryExpression)
