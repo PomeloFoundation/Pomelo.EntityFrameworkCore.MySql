@@ -28,9 +28,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             _boolTypeMapping = _typeMappingSource.FindMapping(typeof(bool));
         }
 
-        public virtual RelationalTypeMapping FindMapping([NotNull] string storeTypeName)
-            => _typeMappingSource.FindMapping(storeTypeName);
-
         public virtual RelationalTypeMapping FindMapping(
             [NotNull] Type type,
             [CanBeNull] string storeTypeName,

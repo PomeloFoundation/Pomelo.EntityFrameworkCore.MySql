@@ -8,6 +8,7 @@ using System.Linq.Expressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
@@ -146,15 +147,29 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         protected override Expression VisitNewArray(NewArrayExpression newArrayExpression)
         {
-            // Needed for MySqlDbFunctionsExtensions.Match().
+            // Needed for MySqlDbFunctionsExtensions.Match() and the String.Concat translation.
             // Could be made more specific in the future, if needed.
-            return newArrayExpression.Type == typeof(string[])
-                ? _sqlExpressionFactory.ComplexFunctionArgument(
+            if (newArrayExpression.Type == typeof(string[]))
+            {
+                return _sqlExpressionFactory.ComplexFunctionArgument(
                     newArrayExpression.Expressions.Select(e => (SqlExpression)Visit(e))
                         .ToArray(),
                     ", ",
-                    typeof(string))
-                : base.VisitNewArray(newArrayExpression);
+                    typeof(string));
+            }
+
+            if (newArrayExpression.Type == typeof(object[]))
+            {
+                var typeMapping = ((MySqlStringTypeMapping)Dependencies.TypeMappingSource.GetMapping(typeof(string))).Clone(forceToString: true);
+                return _sqlExpressionFactory.ComplexFunctionArgument(
+                    newArrayExpression.Expressions.Select(e => Dependencies.SqlExpressionFactory.ApplyTypeMapping((SqlExpression)Visit(e), typeMapping))
+                        .ToArray(),
+                    ", ",
+                    typeof(object),
+                    typeMapping);
+            }
+
+            return base.VisitNewArray(newArrayExpression);
         }
 
         private static bool IsDateTimeBasedOperation(SqlBinaryExpression binaryExpression)

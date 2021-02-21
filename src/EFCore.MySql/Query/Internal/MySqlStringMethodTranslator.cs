@@ -10,12 +10,16 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
+using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
     public class MySqlStringMethodTranslator : IMethodCallTranslator
     {
+        private readonly IRelationalTypeMappingSource _typeMappingSource;
+
         private static readonly MethodInfo _indexOfMethodInfo
             = typeof(string).GetRuntimeMethod(nameof(string.IndexOf), new[] { typeof(string) });
         private static readonly MethodInfo _replaceMethodInfo
@@ -83,11 +87,32 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         private static readonly MethodInfo _removeMethodInfoWithTwoArgs
             = typeof(string).GetRuntimeMethod(nameof(string.Remove), new[] { typeof(int), typeof(int) });
 
+        private static readonly MethodInfo[] _concatMethodInfos = typeof(string).GetRuntimeMethods()
+            .Where(
+                m => m.Name == nameof(string.Concat) &&
+                     (m.GetParameters()
+                          .All(p => p.ParameterType == typeof(string) ||
+                                    p.ParameterType == typeof(object)) ||
+                      m.GetParameters().Length == 1 &&
+                      (m.GetParameters()
+                          .Any(p => p.ParameterType == typeof(string[]) ||
+                                    p.ParameterType == typeof(object[]) ||
+                                    p.ParameterType == typeof(IEnumerable<string>))) ||
+                      m.IsGenericMethodDefinition &&
+                      m.GetGenericArguments().Length == 1 &&
+                      m.GetParameters()
+                          .Any(p => p.ParameterType.IsGenericType &&
+                                    p.ParameterType.GetGenericTypeDefinition() == typeof(IEnumerable<>))))
+            .ToArray();
+
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
-        public MySqlStringMethodTranslator(ISqlExpressionFactory sqlExpressionFactory)
+        public MySqlStringMethodTranslator(
+            MySqlSqlExpressionFactory sqlExpressionFactory,
+            MySqlTypeMappingSource typeMappingSource)
         {
-            _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
+            _typeMappingSource = typeMappingSource;
+            _sqlExpressionFactory = sqlExpressionFactory;
         }
 
         public virtual SqlExpression Translate(
@@ -329,6 +354,44 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     instance.TypeMapping);
 
                 return concat;
+            }
+
+            if (_concatMethodInfos.Contains(
+                (method.IsGenericMethod
+                    ? method.GetGenericMethodDefinition()
+                    : null) ?? method))
+            {
+                // Handle
+                //     string[]
+                //     IEnumerable<string>
+                //     object[]
+                //     IEnumerable<T>
+                // and
+                //     string, ...
+                //     object, ...
+                //
+                // Some call signature variants can never reach this code, because they will be directly called and thus only their result
+                // is translated.
+                var concatArguments = arguments[0] is MySqlComplexFunctionArgumentExpression mySqlComplexFunctionArgumentExpression
+                    ? new SqlExpression[] {mySqlComplexFunctionArgumentExpression}
+                    : arguments.Select(
+                            e => e switch
+                            {
+                                SqlConstantExpression c => _sqlExpressionFactory.Constant(c.Value.ToString()),
+                                SqlParameterExpression p => p.ApplyTypeMapping(
+                                    ((MySqlStringTypeMapping)_typeMappingSource.GetMapping(typeof(string))).Clone(forceToString: true)),
+                                _ => e,
+                            })
+                        .ToArray();
+
+                // We haven't implemented expansion of MySqlComplexFunctionArgumentExpression yet, so the default nullability check would
+                // result in an invalid SQL generation.
+                // TODO: Fix at some point.
+                return _sqlExpressionFactory.NullableFunction(
+                    "CONCAT",
+                    concatArguments,
+                    method.ReturnType,
+                    onlyNullWhenAnyNullPropagatingArgumentIsNull: arguments[0] is not MySqlComplexFunctionArgumentExpression);
             }
 
             return null;
