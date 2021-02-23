@@ -4,6 +4,7 @@
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -13,6 +14,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             : base(dependencies)
         {
             var sqlExpressionFactory = (MySqlSqlExpressionFactory)dependencies.SqlExpressionFactory;
+            var relationalTypeMappingSource = (MySqlTypeMappingSource)dependencies.RelationalTypeMappingSource;
 
             AddTranslators(new IMethodCallTranslator[]
             {
@@ -27,7 +29,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 new MySqlObjectToStringTranslator(sqlExpressionFactory),
                 new MySqlRegexIsMatchTranslator(sqlExpressionFactory),
                 new MySqlStringComparisonMethodTranslator(sqlExpressionFactory),
-                new MySqlStringMethodTranslator(sqlExpressionFactory),
+                new MySqlStringMethodTranslator(sqlExpressionFactory, relationalTypeMappingSource),
             });
         }
     }

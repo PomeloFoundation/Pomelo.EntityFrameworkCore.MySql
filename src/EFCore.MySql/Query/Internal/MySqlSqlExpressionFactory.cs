@@ -28,9 +28,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             _boolTypeMapping = _typeMappingSource.FindMapping(typeof(bool));
         }
 
-        public virtual RelationalTypeMapping FindMapping([NotNull] string storeTypeName)
-            => _typeMappingSource.FindMapping(storeTypeName);
-
         public virtual RelationalTypeMapping FindMapping(
             [NotNull] Type type,
             [CanBeNull] string storeTypeName,
@@ -173,10 +170,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 typeMappedArgumentParts.Add(ApplyDefaultTypeMapping(argument));
             }
 
-            return new MySqlComplexFunctionArgumentExpression(
-                typeMappedArgumentParts,
-                delimiter,
-                argumentType,
+            return (MySqlComplexFunctionArgumentExpression)ApplyTypeMapping(
+                new MySqlComplexFunctionArgumentExpression(
+                    typeMappedArgumentParts,
+                    delimiter,
+                    argumentType,
+                    typeMapping),
                 typeMapping);
         }
 
@@ -346,7 +345,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         private MySqlComplexFunctionArgumentExpression ApplyTypeMappingOnComplexFunctionArgument(MySqlComplexFunctionArgumentExpression complexFunctionArgumentExpression)
         {
             var inferredTypeMapping = ExpressionExtensions.InferTypeMapping(complexFunctionArgumentExpression.ArgumentParts.ToArray())
-                                      ?? _typeMappingSource.FindMapping(complexFunctionArgumentExpression.Type);
+                                      ?? (complexFunctionArgumentExpression.Type.IsArray
+                                          ? _typeMappingSource.FindMapping(
+                                              complexFunctionArgumentExpression.Type.GetElementType() ??
+                                              complexFunctionArgumentExpression.Type)
+                                          : _typeMappingSource.FindMapping(complexFunctionArgumentExpression.Type));
 
             return new MySqlComplexFunctionArgumentExpression(
                 complexFunctionArgumentExpression.ArgumentParts,
