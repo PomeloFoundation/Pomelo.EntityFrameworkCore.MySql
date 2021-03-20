@@ -15,6 +15,7 @@ The following versions of MySqlConnector, EF Core and .NET Standard are compatib
 
 Release | Branch | MySqlConnector | EF Core | .NET Standard | .NET (Core) | .NET Framework
 --- | --- | --- | --- | --- | --- | ---
+_Not supported_ | N/A | N/A | 6.0 Preview | N/A | 5.0 | N/A
 [5.0.0-alpha.2](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/5.0.0-alpha.2) | [master](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/master) | >= 1.1.0 | 5.0.x | 2.1 | 3.0+ | N/A
 [3.2.4](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.2.4) | [3.2-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/3.2-maint) | >= 0.69.9 < 1.0.0 | 3.1.x | 2.0 | 2.0+ | 4.6.1+
 [3.0.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.0.1) | [3.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/3.0-maint) | >= 0.61.0 < 1.0.0 | 3.0.x | 2.1 | 3.0+ | N/A
