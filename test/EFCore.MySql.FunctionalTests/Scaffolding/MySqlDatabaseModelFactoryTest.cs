@@ -1143,7 +1143,7 @@ DROP TABLE PrincipalTable;");
         }
 
         [Fact]
-        public void Create_dependent_table_with_missing_principal_table_works()
+        public void Create_dependent_table_with_missing_principal_table_creates_model_without_it()
         {
             Test(
                 @"
@@ -1156,13 +1156,13 @@ CREATE TABLE DependentTable (
     ForeignKeyId int,
     FOREIGN KEY (ForeignKeyId) REFERENCES PrincipalTable(Id)
 );",
-                new[] { "dependenttable" },
+                new[] { "DependentTable" },
                 Enumerable.Empty<string>(),
                 dbModel =>
                 {
                     //basically I just don't want to get any InvalidOperationExceptions
                     var table = Assert.Single(dbModel.Tables);
-                    Assert.Equal("dependenttable", table.Name);
+                    Assert.Equal("DependentTable", table.Name);
                 },
                 @"
 DROP TABLE DependentTable;
