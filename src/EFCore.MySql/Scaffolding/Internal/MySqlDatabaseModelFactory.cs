@@ -653,7 +653,7 @@ ORDER BY
                                 // different casing than the actual table name. (#1017)
                                 // In the unlikely event that there are multiple tables with the same spelling, differing only in casing,
                                 // we can't be certain which is the right match, so rather fail to be safe.
-                                referencedTable = tables.Single(t => string.Equals(t.Name, referencedTableName, StringComparison.OrdinalIgnoreCase));
+                                referencedTable = tables.SingleOrDefault(t => string.Equals(t.Name, referencedTableName, StringComparison.OrdinalIgnoreCase));
                             }
                             if (referencedTable != null)
                             {

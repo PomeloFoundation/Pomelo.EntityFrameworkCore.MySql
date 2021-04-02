@@ -1142,6 +1142,33 @@ DROP TABLE DependentTable;
 DROP TABLE PrincipalTable;");
         }
 
+        [Fact]
+        public void Create_dependent_table_with_missing_principal_table_creates_model_without_it()
+        {
+            Test(
+                @"
+CREATE TABLE PrincipalTable (
+    Id int PRIMARY KEY
+);
+
+CREATE TABLE DependentTable (
+    Id int PRIMARY KEY,
+    ForeignKeyId int,
+    FOREIGN KEY (ForeignKeyId) REFERENCES PrincipalTable(Id)
+);",
+                new[] { "DependentTable" },
+                Enumerable.Empty<string>(),
+                dbModel =>
+                {
+                    //basically I just don't want to get any InvalidOperationExceptions
+                    var table = Assert.Single(dbModel.Tables);
+                    Assert.Equal("DependentTable", table.Name);
+                },
+                @"
+DROP TABLE DependentTable;
+DROP TABLE PrincipalTable;");
+        }
+
         #endregion
 
         public class MySqlDatabaseModelFixture : SharedStoreFixtureBase<PoolableDbContext>
