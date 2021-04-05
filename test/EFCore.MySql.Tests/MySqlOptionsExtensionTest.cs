@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql
@@ -19,14 +18,12 @@ namespace Pomelo.EntityFrameworkCore.MySql
             Assert.Equal(
                 new MySqlOptionsExtension()
                     .WithCharSet(CharSet.Latin1)
-                    .WithCharSetBehavior(CharSetBehavior.AppendToAllColumns)
                     .WithServerVersion(new MySqlServerVersion(new Version(1, 2, 3, 4)))
                     .WithDisabledBackslashEscaping()
                     .Info
                     .GetServiceProviderHashCode(),
                 new MySqlOptionsExtension()
                     .WithCharSet(CharSet.Latin1)
-                    .WithCharSetBehavior(CharSetBehavior.AppendToAllColumns)
                     .WithServerVersion(new MySqlServerVersion(new Version(1, 2, 3, 4)))
                     .WithDisabledBackslashEscaping()
                     .Info

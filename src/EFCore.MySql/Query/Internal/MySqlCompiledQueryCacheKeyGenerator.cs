@@ -6,10 +6,8 @@ using System.Linq.Expressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -40,7 +38,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             return new MySqlCompiledQueryCacheKey(
                 GenerateCacheKeyCore(query, async),
                 extensions?.ServerVersion,
-                extensions?.NullableCharSetBehavior,
                 extensions?.CharSet,
                 extensions?.NoBackslashEscapes ?? false);
         }
@@ -49,20 +46,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         {
             private readonly RelationalCompiledQueryCacheKey _relationalCompiledQueryCacheKey;
             private readonly ServerVersion _serverVersion;
-            private readonly CharSetBehavior? _nullableCharSetBehavior;
             private readonly CharSet _charSet;
             private readonly bool _noBackslashEscapes;
 
             public MySqlCompiledQueryCacheKey(
                 RelationalCompiledQueryCacheKey relationalCompiledQueryCacheKey,
                 ServerVersion serverVersion,
-                CharSetBehavior? nullableCharSetBehavior,
                 CharSet charSet,
                 bool noBackslashEscapes)
             {
                 _relationalCompiledQueryCacheKey = relationalCompiledQueryCacheKey;
                 _serverVersion = serverVersion;
-                _nullableCharSetBehavior = nullableCharSetBehavior;
                 _charSet = charSet;
                 _noBackslashEscapes = noBackslashEscapes;
             }
@@ -75,7 +69,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             private bool Equals(MySqlCompiledQueryCacheKey other)
                 => _relationalCompiledQueryCacheKey.Equals(other._relationalCompiledQueryCacheKey)
                    && Equals(_serverVersion, other._serverVersion)
-                   && _nullableCharSetBehavior.GetValueOrDefault() == other._nullableCharSetBehavior.GetValueOrDefault()
                    && Equals(_charSet, other._charSet)
                    && _noBackslashEscapes == other._noBackslashEscapes
                 ;
@@ -83,7 +76,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             public override int GetHashCode()
                 => HashCode.Combine(_relationalCompiledQueryCacheKey,
                     _serverVersion,
-                    _nullableCharSetBehavior,
                     _charSet,
                     _noBackslashEscapes);
         }

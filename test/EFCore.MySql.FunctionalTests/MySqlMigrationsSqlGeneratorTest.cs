@@ -45,7 +45,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.AddColumnOperation_with_unicode_overridden();
 
             AssertSql(
-                @"ALTER TABLE `Person` ADD `Name` longtext CHARACTER SET utf8mb4 NULL;");
+                @"ALTER TABLE `Person` ADD `Name` longtext NULL;");
         }
 
         public override void AddColumnOperation_with_unicode_no_model()
@@ -53,7 +53,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.AddColumnOperation_with_unicode_no_model();
 
             AssertSql(
-                @"ALTER TABLE `Person` ADD `Name` longtext CHARACTER SET utf8mb4 NULL;");
+                @"ALTER TABLE `Person` ADD `Name` longtext NULL;");
         }
 
         public override void AddColumnOperation_with_fixed_length_no_model()
@@ -61,7 +61,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.AddColumnOperation_with_fixed_length_no_model();
 
             AssertSql(
-                @"ALTER TABLE `Person` ADD `Name` char(100) CHARACTER SET utf8mb4 NULL;");
+                @"ALTER TABLE `Person` ADD `Name` char(100) NULL;");
         }
 
         public override void AddColumnOperation_with_maxLength_no_model()
@@ -69,7 +69,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.AddColumnOperation_with_maxLength_no_model();
 
             AssertSql(
-                @"ALTER TABLE `Person` ADD `Name` varchar(30) CHARACTER SET utf8mb4 NULL;");
+                @"ALTER TABLE `Person` ADD `Name` varchar(30) NULL;");
         }
 
         public override void AddColumnOperation_with_precision_and_scale_overridden()
@@ -361,7 +361,7 @@ SELECT ROW_COUNT();");
 
             AssertSql(
                 @"CREATE TABLE `TestLineBreaks` (
-    `TestDefaultValue` longtext CHARACTER SET utf8mb4 NOT NULL
+    `TestDefaultValue` longtext NOT NULL
 );");
         }
 
@@ -465,43 +465,24 @@ SELECT ROW_COUNT();");
         }
 
         [ConditionalTheory]
-        [InlineData(true, false, CharSetBehavior.AppendToAllAnsiColumns, "Latin1", false)]
-        [InlineData(true, false, CharSetBehavior.AppendToUnicodeIndexAndKeyColumns, "Latin1", false)]
-        [InlineData(true, false, CharSetBehavior.AppendToAllUnicodeColumns, "Latin1", true)]
-        [InlineData(true, false, CharSetBehavior.AppendToAllColumns, "Latin1", true)]
-        [InlineData(true, true, CharSetBehavior.AppendToAnsiIndexAndKeyColumns, "Latin1", false)]
-        [InlineData(true, true, CharSetBehavior.AppendToUnicodeIndexAndKeyColumns, "Latin1", true)]
-        [InlineData(true, true, CharSetBehavior.AppendToAllUnicodeColumns, "Latin1", true)]
-        [InlineData(true, true, CharSetBehavior.AppendToAllColumns, "Latin1", true)]
-        [InlineData(false, false, CharSetBehavior.AppendToAllUnicodeColumns, "Latin1", false)]
-        [InlineData(false, false, CharSetBehavior.AppendToAnsiIndexAndKeyColumns, "Latin1", false)]
-        [InlineData(false, false, CharSetBehavior.AppendToAllAnsiColumns, "Latin1", true)]
-        [InlineData(false, false, CharSetBehavior.AppendToAllColumns, "Latin1", true)]
-        [InlineData(false, true, CharSetBehavior.AppendToUnicodeIndexAndKeyColumns, "Latin1", false)]
-        [InlineData(false, true, CharSetBehavior.AppendToAnsiIndexAndKeyColumns, "Latin1", true)]
-        [InlineData(false, true, CharSetBehavior.AppendToAllAnsiColumns, "Latin1", true)]
-        [InlineData(false, true, CharSetBehavior.AppendToAllColumns, "Latin1", true)]
-        [InlineData(null, false, CharSetBehavior.AppendToAllAnsiColumns, "Latin1", true)]
-        [InlineData(null, false, CharSetBehavior.AppendToUnicodeIndexAndKeyColumns, "Latin1", false)]
-        [InlineData(null, false, CharSetBehavior.AppendToAllUnicodeColumns, "Latin1", false)]
-        [InlineData(null, false, CharSetBehavior.AppendToAllColumns, "Latin1", true)]
-        [InlineData(null, true, CharSetBehavior.AppendToAnsiIndexAndKeyColumns, "Latin1", true)]
-        [InlineData(null, true, CharSetBehavior.AppendToUnicodeIndexAndKeyColumns, "Latin1", false)]
-        [InlineData(null, true, CharSetBehavior.AppendToAllUnicodeColumns, "Latin1", false)]
-        [InlineData(null, true, CharSetBehavior.AppendToAllColumns, "Latin1", true)]
-        [InlineData(null, false, CharSetBehavior.AppendToAllAnsiColumns, "Utf8Mb4", false)]
-        [InlineData(null, false, CharSetBehavior.AppendToUnicodeIndexAndKeyColumns, "Utf8Mb4", false)]
-        [InlineData(null, false, CharSetBehavior.AppendToAllUnicodeColumns, "Utf8Mb4", true)]
-        [InlineData(null, false, CharSetBehavior.AppendToAllColumns, "Utf8Mb4", true)]
-        [InlineData(null, true, CharSetBehavior.AppendToAnsiIndexAndKeyColumns, "Utf8Mb4", false)]
-        [InlineData(null, true, CharSetBehavior.AppendToUnicodeIndexAndKeyColumns, "Utf8Mb4", true)]
-        [InlineData(null, true, CharSetBehavior.AppendToAllUnicodeColumns, "Utf8Mb4", true)]
-        [InlineData(null, true, CharSetBehavior.AppendToAllColumns, "Utf8Mb4", true)]
-        public virtual void AddColumnOperation_with_charSet_implicit(bool? isUnicode, bool isIndex, CharSetBehavior charSetBehavior,
-            string charSetName, bool expectExplicitCharSet)
+        [InlineData(false, false, "Latin1")]
+        [InlineData(false, false, null)]
+        [InlineData(false, true, "Latin1")]
+        [InlineData(false, true, null)]
+        [InlineData(null, false, "Latin1")]
+        [InlineData(null, false, "Utf8Mb4")]
+        [InlineData(null, false, null)]
+        [InlineData(null, true, "Latin1")]
+        [InlineData(null, true, "Utf8Mb4")]
+        [InlineData(null, true, null)]
+        [InlineData(true, false, "Latin1")]
+        [InlineData(true, false, null)]
+        [InlineData(true, true, "Latin1")]
+        [InlineData(true, true, null)]
+        public virtual void AddColumnOperation_with_charSet_implicit(bool? isUnicode, bool isIndex, string charSetName)
         {
             var charSet = CharSet.GetCharSetFromName(charSetName);
-            var expectedCharSetName = expectExplicitCharSet ? $" CHARACTER SET {charSet}" : string.Empty;
+            var expectedCharSetName = charSet != null ? $" CHARACTER SET {charSet}" : null;
 
             Generate(
                 modelBuilder => modelBuilder.Entity("Person", eb =>
@@ -524,15 +505,16 @@ SELECT ROW_COUNT();");
                     Name = "Name",
                     ClrType = typeof(string),
                     IsUnicode = isUnicode,
-                    IsNullable = true
+                    IsNullable = true,
+                    [MySqlAnnotationNames.CharSet] = charSet,
                 },
-                charSetBehavior,
                 charSet);
 
             var columnType = "longtext";
             if (isIndex)
             {
-                var columnSize = Math.Min(AppConfig.ServerVersion.MaxKeyLength / (charSet.MaxBytesPerChar * 2), 255);
+                // TODO: Implementation should be changed to use a prefix, instead of a type change.
+                var columnSize = Math.Min(AppConfig.ServerVersion.MaxKeyLength / ((charSet ?? CharSet.Utf8Mb4).MaxBytesPerChar * 2), 255);
                 columnType = $"varchar({columnSize})";
             }
 
@@ -547,7 +529,7 @@ SELECT ROW_COUNT();");
             base.AddColumnOperation_without_column_type();
 
             Assert.Equal(
-                @"ALTER TABLE `People` ADD `Alias` longtext CHARACTER SET utf8mb4 NOT NULL;" + EOL,
+                @"ALTER TABLE `People` ADD `Alias` longtext NOT NULL;" + EOL,
                 Sql);
         }
 
@@ -577,7 +559,7 @@ SELECT ROW_COUNT();");
             base.AddColumnOperation_with_maxLength_overridden();
 
             Assert.Equal(
-                @"ALTER TABLE `Person` ADD `Name` varchar(32) CHARACTER SET utf8mb4 NULL;" + EOL,
+                @"ALTER TABLE `Person` ADD `Name` varchar(32) NULL;" + EOL,
                 Sql);
         }
 
@@ -986,7 +968,7 @@ SELECT ROW_COUNT();");
             Assert.Equal(
                 AppConfig.ServerVersion.Supports.RenameColumn
                     ? "ALTER TABLE `Person` RENAME COLUMN `Name` TO `FullName`;" + EOL
-                    : "ALTER TABLE `Person` CHANGE `Name` `FullName` longtext CHARACTER SET utf8mb4 NULL;" + EOL,
+                    : "ALTER TABLE `Person` CHANGE `Name` `FullName` longtext NULL;" + EOL,
                 Sql);
         }
 
@@ -1004,7 +986,7 @@ SELECT ROW_COUNT();");
             => "geometrycollection";
 
         [ConditionalFact]
-        public virtual void AddColumnOperation_with_charSet_annotation()
+        public virtual void AddColumnOperation_with_CharSet_annotation()
         {
             Generate(
                 new AddColumnOperation
@@ -1214,9 +1196,8 @@ SELECT ROW_COUNT();");
         private void Generate(
             Action<ModelBuilder> buildAction,
             MigrationOperation operation,
-            CharSetBehavior charSetBehavior,
             CharSet charSet)
-            => Generate(buildAction, new[] {operation}, default, charSetBehavior, charSet);
+            => Generate(buildAction, new[] {operation}, default, charSet);
 
         protected override void Generate(
             Action<ModelBuilder> buildAction,
@@ -1228,17 +1209,11 @@ SELECT ROW_COUNT();");
             Action<ModelBuilder> buildAction,
             MigrationOperation[] operation,
             MigrationsSqlGenerationOptions options,
-            CharSetBehavior? charSetBehavior,
             [CanBeNull] CharSet charSet,
             MySqlSchemaNameTranslator schemaNameTranslator = null)
         {
             var optionsBuilder = new DbContextOptionsBuilder(ContextOptions);
             var mySqlOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder);
-
-            if (charSetBehavior != null)
-            {
-                mySqlOptionsBuilder.CharSetBehavior(charSetBehavior.Value);
-            }
 
             if (charSet != null)
             {

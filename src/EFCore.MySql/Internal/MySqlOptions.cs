@@ -22,7 +22,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         {
             ConnectionSettings = new MySqlConnectionSettings();
             ServerVersion = null;
-            CharSetBehavior = CharSetBehavior.AppendToAllColumns; // TODO: Change to `NeverAppend` for EF Core 5.
 
             // We do not use the MySQL versions's default, but explicitly use `utf8mb4`
             // if not changed by the user.
@@ -39,6 +38,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
 
             // TODO: Change to `true` for EF Core 5.
             IndexOptimizedBooleanColumns = false;
+
+            LimitKeyedOrIndexedStringColumnLength = true;
         }
 
         public virtual void Initialize(IDbContextOptions options)
@@ -48,7 +49,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
 
             ConnectionSettings = GetConnectionSettings(mySqlOptions);
             ServerVersion = mySqlOptions.ServerVersion ?? throw new InvalidOperationException($"The {nameof(ServerVersion)} has not been set.");
-            CharSetBehavior = mySqlOptions.NullableCharSetBehavior ?? CharSetBehavior;
             CharSet = mySqlOptions.CharSet ?? CharSet;
             NoBackslashEscapes = mySqlOptions.NoBackslashEscapes;
             ReplaceLineBreaksWithCharFunction = mySqlOptions.ReplaceLineBreaksWithCharFunction;
@@ -58,6 +58,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                 : null);
             IndexOptimizedBooleanColumns = mySqlOptions.IndexOptimizedBooleanColumns;
             JsonChangeTrackingOptions = mySqlJsonOptions?.JsonChangeTrackingOptions ?? default;
+            LimitKeyedOrIndexedStringColumnLength = mySqlOptions.LimitKeyedOrIndexedStringColumnLength;
         }
 
         public virtual void Validate(IDbContextOptions options)
@@ -87,14 +88,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                 throw new InvalidOperationException(
                     CoreStrings.SingletonOptionChanged(
                         nameof(MySqlConnectionStringBuilder.GuidFormat),
-                        nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
-            }
-
-            if (!Equals(CharSetBehavior, mySqlOptions.NullableCharSetBehavior ?? CharSetBehavior.AppendToAllColumns))
-            {
-                throw new InvalidOperationException(
-                    CoreStrings.SingletonOptionChanged(
-                        nameof(MySqlDbContextOptionsBuilder.CharSetBehavior),
                         nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
             }
 
@@ -155,6 +148,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                 throw new InvalidOperationException(
                     CoreStrings.SingletonOptionChanged(
                         nameof(MySqlJsonOptionsExtension.JsonChangeTrackingOptions),
+                        nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
+            }
+
+            if (!Equals(LimitKeyedOrIndexedStringColumnLength, mySqlOptions.LimitKeyedOrIndexedStringColumnLength))
+            {
+                throw new InvalidOperationException(
+                    CoreStrings.SingletonOptionChanged(
+                        nameof(MySqlDbContextOptionsBuilder.LimitKeyedOrIndexedStringColumnLength),
                         nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
             }
         }
@@ -219,7 +220,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         {
             return Equals(ConnectionSettings, other.ConnectionSettings) &&
                    Equals(ServerVersion, other.ServerVersion) &&
-                   CharSetBehavior == other.CharSetBehavior &&
                    Equals(CharSet, other.CharSet) &&
                    Equals(NationalCharSet, other.NationalCharSet) &&
                    NoBackslashEscapes == other.NoBackslashEscapes &&
@@ -227,7 +227,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                    Equals(DefaultDataTypeMappings, other.DefaultDataTypeMappings) &&
                    Equals(SchemaNameTranslator, other.SchemaNameTranslator) &&
                    IndexOptimizedBooleanColumns == other.IndexOptimizedBooleanColumns &&
-                   JsonChangeTrackingOptions == other.JsonChangeTrackingOptions;
+                   JsonChangeTrackingOptions == other.JsonChangeTrackingOptions &&
+                   LimitKeyedOrIndexedStringColumnLength == other.LimitKeyedOrIndexedStringColumnLength;
         }
 
         public override bool Equals(object obj)
@@ -255,7 +256,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             var hashCode = new HashCode();
             hashCode.Add(ConnectionSettings);
             hashCode.Add(ServerVersion);
-            hashCode.Add((int) CharSetBehavior);
             hashCode.Add(CharSet);
             hashCode.Add(NationalCharSet);
             hashCode.Add(NoBackslashEscapes);
@@ -264,12 +264,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             hashCode.Add(SchemaNameTranslator);
             hashCode.Add(IndexOptimizedBooleanColumns);
             hashCode.Add(JsonChangeTrackingOptions);
+            hashCode.Add(LimitKeyedOrIndexedStringColumnLength);
             return hashCode.ToHashCode();
         }
 
         public virtual MySqlConnectionSettings ConnectionSettings { get; private set; }
         public virtual ServerVersion ServerVersion { get; private set; }
-        public virtual CharSetBehavior CharSetBehavior { get; private set; }
         public virtual CharSet CharSet { get; private set; }
         public virtual CharSet NationalCharSet { get; }
         public virtual bool NoBackslashEscapes { get; private set; }
@@ -278,5 +278,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         public virtual MySqlSchemaNameTranslator SchemaNameTranslator { get; private set; }
         public virtual bool IndexOptimizedBooleanColumns { get; private set; }
         public virtual MySqlJsonChangeTrackingOptions JsonChangeTrackingOptions { get; private set; }
+        public virtual bool LimitKeyedOrIndexedStringColumnLength { get; private set; }
     }
 }

@@ -29,6 +29,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             public override DateTime DefaultDateTime => new DateTime();
 
             public override bool SupportsDecimalComparisons => false;
+
+            protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
+            {
+                base.OnModelCreating(modelBuilder, context);
+
+                // Needed to make Can_insert_and_read_back_with_case_insensitive_string_key() work.
+                modelBuilder.Entity<StringForeignKeyDataType>()
+                    .Property(e => e.StringKeyDataTypeId)
+                    .HasCollation("utf8_general_ci");
+                modelBuilder.Entity<StringKeyDataType>()
+                    .Property(e => e.Id)
+                    .HasCollation("utf8_general_ci");
+            }
         }
     }
 }

@@ -110,7 +110,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
                 .CommandTimeout(GetCommandTimeout())
                 .ExecutionStrategy(d => new TestMySqlRetryingExecutionStrategy(d))
-                .CharSetBehavior(CharSetBehavior.AppendToAllColumns) // TODO: Change to NerverAppend.
                 .CharSet(CharSet.Utf8Mb4);
             // .EnableIndexOptimizedBooleanColumns(); // TODO: Activate for all test for .NET 5. Tests should use
             //       `ONLY_FULL_GROUP_BY` to ensure correct working of the

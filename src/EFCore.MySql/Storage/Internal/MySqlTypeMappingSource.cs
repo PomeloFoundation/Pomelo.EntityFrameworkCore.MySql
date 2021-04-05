@@ -371,27 +371,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     var isUnicode = mappingInfo.IsUnicode ?? charset.IsUnicode;
                     var bytesPerChar = charset.MaxBytesPerChar;
                     var charSetSuffix = string.Empty;
-
-                    // Obsolete: Remove for .NET 5 release.
-                    if (isUnicode &&
-                        (mappingInfo.IsKeyOrIndex &&
-                         (_options.CharSetBehavior & CharSetBehavior.AppendToUnicodeIndexAndKeyColumns) != 0 ||
-                         !mappingInfo.IsKeyOrIndex &&
-                         (_options.CharSetBehavior & CharSetBehavior.AppendToUnicodeNonIndexAndKeyColumns) != 0) ||
-                        !isUnicode &&
-                        (mappingInfo.IsKeyOrIndex &&
-                         (_options.CharSetBehavior & CharSetBehavior.AppendToAnsiIndexAndKeyColumns) != 0 ||
-                         !mappingInfo.IsKeyOrIndex &&
-                         (_options.CharSetBehavior & CharSetBehavior.AppendToAnsiNonIndexAndKeyColumns) != 0))
-                    {
-                        charSetSuffix = $" CHARACTER SET {(isNationalCharSet ? _options.NationalCharSet : _options.CharSet).Name}";
-                    }
-
                     var maxSize = 8000 / bytesPerChar;
 
-                    // Obsolete: Remove this for .NET 5 release, because of `HasPrefixLength()` support.
+                    // Because we cannot check the annotations of the property mapping, we can't know whether `HasPrefixLength()` has been
+                    // used or not. Therefore by default, the `LimitKeyedOrIndexedStringColumnLength` option will be true, and we will
+                    // ensure, that the length of string properties will be set to a reasonable length, so that two columns limited this
+                    // way could stil fit.
+                    // If users disable the `LimitKeyedOrIndexedStringColumnLength` option, they are responsible for oppropriately calling
+                    // `HasPrefixLength()` for string properties, that are not mapped to a store type, where needed.
                     var size = mappingInfo.Size ??
-                               (mappingInfo.IsKeyOrIndex
+                               (mappingInfo.IsKeyOrIndex &&
+                                _options.LimitKeyedOrIndexedStringColumnLength
                                    // Allow to use at most half of the max key length, so at least 2 columns can fit
                                    ? Math.Min(_options.ServerVersion.MaxKeyLength / (bytesPerChar * 2), 255)
                                    : (int?)null);

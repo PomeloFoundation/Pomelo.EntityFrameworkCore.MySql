@@ -24,13 +24,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
 
             // TODO: Change to `true` for EF Core 5.
             IndexOptimizedBooleanColumns = false;
+
+            LimitKeyedOrIndexedStringColumnLength = true;
         }
 
         public MySqlOptionsExtension([NotNull] MySqlOptionsExtension copyFrom)
             : base(copyFrom)
         {
             ServerVersion = copyFrom.ServerVersion;
-            NullableCharSetBehavior = copyFrom.NullableCharSetBehavior;
             CharSet = copyFrom.CharSet;
             NoBackslashEscapes = copyFrom.NoBackslashEscapes;
             UpdateSqlModeOnOpen = copyFrom.UpdateSqlModeOnOpen;
@@ -39,6 +40,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
             SchemaBehavior = copyFrom.SchemaBehavior;
             SchemaNameTranslator = copyFrom.SchemaNameTranslator;
             IndexOptimizedBooleanColumns = copyFrom.IndexOptimizedBooleanColumns;
+            LimitKeyedOrIndexedStringColumnLength = copyFrom.LimitKeyedOrIndexedStringColumnLength;
         }
 
         /// <summary>
@@ -58,12 +60,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public ServerVersion ServerVersion { get; private set; }
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public CharSetBehavior? NullableCharSetBehavior { get; private set; }
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -90,6 +86,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         public MySqlSchemaBehavior SchemaBehavior { get; private set; }
         public MySqlSchemaNameTranslator SchemaNameTranslator { get; private set; }
         public bool IndexOptimizedBooleanColumns { get; private set; }
+        public bool LimitKeyedOrIndexedStringColumnLength { get; private set; }
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -100,19 +97,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
             var clone = (MySqlOptionsExtension)Clone();
 
             clone.ServerVersion = serverVersion;
-
-            return clone;
-        }
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public MySqlOptionsExtension WithCharSetBehavior(CharSetBehavior charSetBehavior)
-        {
-            var clone = (MySqlOptionsExtension)Clone();
-
-            clone.NullableCharSetBehavior = charSetBehavior;
 
             return clone;
         }
@@ -190,6 +174,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
             return clone;
         }
 
+        public MySqlOptionsExtension WithKeyedOrIndexedStringColumnLengthLimit(bool enable)
+        {
+            var clone = (MySqlOptionsExtension)Clone();
+            clone.LimitKeyedOrIndexedStringColumnLength = enable;
+            return clone;
+        }
+
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
         ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
@@ -245,7 +236,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                     var hashCode = new HashCode();
                     hashCode.Add(base.GetServiceProviderHashCode());
                     hashCode.Add(Extension.ServerVersion);
-                    hashCode.Add(Extension.NullableCharSetBehavior);
                     hashCode.Add(Extension.CharSet);
                     hashCode.Add(Extension.NoBackslashEscapes);
                     hashCode.Add(Extension.UpdateSqlModeOnOpen);
@@ -254,6 +244,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                     hashCode.Add(Extension.SchemaBehavior);
                     hashCode.Add(Extension.SchemaNameTranslator);
                     hashCode.Add(Extension.IndexOptimizedBooleanColumns);
+                    hashCode.Add(Extension.LimitKeyedOrIndexedStringColumnLength);
 
                     _serviceProviderHash = hashCode.ToHashCode();
                 }
@@ -264,7 +255,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
             public override void PopulateDebugInfo(IDictionary<string, string> debugInfo)
             {
                 debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(Extension.ServerVersion)] = HashCode.Combine(Extension.ServerVersion).ToString(CultureInfo.InvariantCulture);
-                debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.CharSetBehavior)] = HashCode.Combine(Extension.NullableCharSetBehavior).ToString(CultureInfo.InvariantCulture);
                 debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.CharSet)] = HashCode.Combine(Extension.CharSet).ToString(CultureInfo.InvariantCulture);
                 debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.DisableBackslashEscaping)] = HashCode.Combine(Extension.NoBackslashEscapes).ToString(CultureInfo.InvariantCulture);
                 debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.SetSqlModeOnOpen)] = HashCode.Combine(Extension.UpdateSqlModeOnOpen).ToString(CultureInfo.InvariantCulture);
@@ -273,6 +263,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                 debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.SchemaBehavior)] = HashCode.Combine(Extension.SchemaBehavior).ToString(CultureInfo.InvariantCulture);
                 debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(Extension.SchemaNameTranslator)] = HashCode.Combine(Extension.SchemaNameTranslator).ToString(CultureInfo.InvariantCulture);
                 debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.EnableIndexOptimizedBooleanColumns)] = HashCode.Combine(Extension.IndexOptimizedBooleanColumns).ToString(CultureInfo.InvariantCulture);
+                debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.LimitKeyedOrIndexedStringColumnLength)] = HashCode.Combine(Extension.LimitKeyedOrIndexedStringColumnLength).ToString(CultureInfo.InvariantCulture);
             }
         }
     }

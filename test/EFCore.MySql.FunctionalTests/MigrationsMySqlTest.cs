@@ -576,14 +576,6 @@ ALTER TABLE `Foo` DROP PRIMARY KEY;",
             protected override IServiceCollection AddServices(IServiceCollection serviceCollection)
                 => base.AddServices(serviceCollection)
                     .AddScoped<IDatabaseModelFactory, MySqlDatabaseModelFactory>();
-
-            public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
-            {
-                new MySqlDbContextOptionsBuilder(base.AddOptions(builder))
-                    .CharSetBehavior(CharSetBehavior.NeverAppend);
-
-                return builder;
-            }
         }
     }
 }

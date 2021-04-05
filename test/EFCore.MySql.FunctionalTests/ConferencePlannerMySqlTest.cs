@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestModels.ConferencePlanner;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Tests;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
@@ -22,23 +23,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
 
-            public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
-            {
-                var optionsBuilder = base.AddOptions(builder);
-
-                // In MySQL 5.6 and lower, unique indices have a smaller max. key size as in later version.
-                // This can lead to the following exception being thrown:
-                //     Specified key was too long; max key length is 767 bytes
-                /*
-                if (!AppConfig.ServerVersion.SupportsLargerKeyLength)
-                {
-                    new MySqlDbContextOptionsBuilder(optionsBuilder)
-                        .UnicodeCharSet(CharSet.Utf8mb4);
-                }
-                */
-                return optionsBuilder;
-            }
-
             protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
             {
                 base.OnModelCreating(modelBuilder, context);
@@ -56,6 +40,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                         entity.HasAlternateKey(e => e.UserName);
                     });
                 }
+
+                // Some of the data requires a UTF-8 character set.
+                modelBuilder.Entity<Speaker>()
+                    .Property(e => e.Name)
+                    .HasCharSet(CharSet.Utf8Mb4);
+                modelBuilder.Entity<Session>()
+                    .Property(e => e.Title)
+                    .HasCharSet(CharSet.Utf8Mb4);
             }
         }
     }

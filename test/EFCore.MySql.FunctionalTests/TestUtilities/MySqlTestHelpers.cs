@@ -28,9 +28,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         public IServiceProvider CreateContextServices(ServerVersion serverVersion)
             => ((IInfrastructure<IServiceProvider>)new DbContext(CreateOptions(serverVersion))).Instance;
 
-        public IServiceProvider CreateContextServices(CharSetBehavior charSetBehavior, CharSet charSet)
-            => ((IInfrastructure<IServiceProvider>)new DbContext(CreateOptions(charSetBehavior, charSet))).Instance;
-
         public IServiceProvider CreateContextServices(Action<MySqlDbContextOptionsBuilder> builder)
             => ((IInfrastructure<IServiceProvider>)new DbContext(CreateOptions(builder))).Instance;
 
@@ -44,11 +41,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 
         public DbContextOptions CreateOptions(ServerVersion serverVersion)
             => CreateOptions(b => {});
-
-        public DbContextOptions CreateOptions(CharSetBehavior charSetBehavior, CharSet charSet)
-            => CreateOptions(
-                b => b.CharSetBehavior(charSetBehavior)
-                    .CharSet(charSet));
 
         public DbContextOptions CreateOptions(Action<MySqlDbContextOptionsBuilder> builder)
             => new DbContextOptionsBuilder()
