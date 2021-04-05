@@ -1,0 +1,51 @@
+<Project>
+  <PropertyGroup Label="Common Versions">
+    <DotnetRuntimeVersion>5.0.4</DotnetRuntimeVersion>
+    <EFCoreVersion>[$(DotnetRuntimeVersion), 6.0.0)</EFCoreVersion>
+  </PropertyGroup>
+
+  <ItemGroup Label="Dependencies">
+    <PackageReference Update="Microsoft.EntityFrameworkCore.Design" Version="$(EFCoreVersion)" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" Version="$(EFCoreVersion)" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.Relational" Version="$(EFCoreVersion)" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore" Version="$(EFCoreVersion)" />
+
+    <PackageReference Update="MySqlConnector" Version="1.1.0" />
+
+    <PackageReference Update="NetTopologySuite" Version="2.2.0" />
+    <PackageReference Update="System.Text.Json" Version="5.0.1" />
+    <PackageReference Update="Newtonsoft.Json" Version="13.0.1" />
+
+    <PackageReference Update="Castle.Core" Version="4.4.1" />
+    <PackageReference Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(DotnetRuntimeVersion)" />
+    <PackageReference Update="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(DotnetRuntimeVersion)" />
+    <PackageReference Update="Microsoft.Bcl.AsyncInterfaces" Version="5.0.0" />
+    <PackageReference Update="Microsoft.Bcl.HashCode" Version="1.1.1" />
+    <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" />
+    <PackageReference Update="Microsoft.Extensions.Caching.Memory" Version="5.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Configuration.Binder" Version="5.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="5.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Configuration.FileExtensions" Version="5.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Configuration" Version="5.0.0" />
+    <PackageReference Update="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
+    <PackageReference Update="Microsoft.Extensions.DependencyModel" Version="5.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Logging" Version="5.0.0" />
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.9.4" />
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
+    <PackageReference Update="Moq" Version="4.16.1" />
+    <PackageReference Update="System.Collections.Immutable" Version="5.0.0" />
+    <PackageReference Update="System.ComponentModel.Annotations" Version="5.0.0" />
+    <PackageReference Update="System.ComponentModel.TypeConverter" Version="4.3.0" />
+    <PackageReference Update="System.Diagnostics.DiagnosticSource" Version="5.0.1" />
+    <PackageReference Update="xunit.assert" Version="2.4.1" />
+    <PackageReference Update="xunit.core" Version="2.4.1" />
+    <PackageReference Update="xunit.runner.console" Version="2.4.1" />
+    <PackageReference Update="xunit.runner.visualstudio" Version="2.4.3" />
+
+    <!-- Keep at the same level that the EF Core projects use. -->
+    <PackageReference Update="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.0.0" />
+    <PackageReference Update="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" />
+    <PackageReference Update="StyleCop.Analyzers" Version="1.1.118" />
+  </ItemGroup>
+</Project>

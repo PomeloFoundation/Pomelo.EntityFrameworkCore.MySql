@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
@@ -240,6 +238,12 @@ FROM `Orders` AS `o`");
         public override Task SelectMany_with_collection_being_correlated_subquery_which_references_inner_and_outer_entity(bool async)
         {
             return base.SelectMany_with_collection_being_correlated_subquery_which_references_inner_and_outer_entity(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
+        public override Task Do_not_erase_projection_mapping_when_adding_single_projection(bool async)
+        {
+            return base.Do_not_erase_projection_mapping_when_adding_single_projection(async);
         }
 
         public override Task Reverse_without_explicit_ordering_throws(bool async)
