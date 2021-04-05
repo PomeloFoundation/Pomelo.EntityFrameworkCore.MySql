@@ -298,6 +298,7 @@ WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First' WITH QUERY EXPANSION)");
                         // We force a case-insensitive collation here, because there exists a bug, where MySQL and MariaDB will handle
                         // FULLTEXT searches for `..._bin` collations incorrectly.
                         herb.Property(h => h.Name).UseCollation(AppConfig.ServerVersion.DefaultUtf8CiCollation);
+                        herb.Property(h => h.Garden).UseCollation(AppConfig.ServerVersion.DefaultUtf8CiCollation);
                     });
             }
 
