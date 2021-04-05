@@ -23,6 +23,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
         public const string LegacyValueGeneratedOnAdd = Prefix + "ValueGeneratedOnAdd";
         public const string LegacyValueGeneratedOnAddOrUpdate = Prefix + "ValueGeneratedOnAddOrUpdate";
         public const string FullTextIndex = Prefix + "FullTextIndex";
+        public const string FullTextParser = Prefix + "FullTextParser";
         public const string SpatialIndex = Prefix + "SpatialIndex";
         public const string CharSet = Prefix + "CharSet";
         public const string Collation = Prefix + "Collation";

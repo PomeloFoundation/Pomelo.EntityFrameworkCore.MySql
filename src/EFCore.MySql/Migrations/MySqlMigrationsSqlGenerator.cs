@@ -1470,7 +1470,19 @@ DELIMITER ;";
         protected override void IndexOptions(CreateIndexOperation operation, IModel model, MigrationCommandListBuilder builder)
         {
             // The base implementation supports index filters in form of a WHERE clause.
-            // This is not supported by MySQL.
+            // This is not supported by MySQL, so we don't call it here.
+
+            var fullText = operation[MySqlAnnotationNames.FullTextIndex] as bool?;
+            if (fullText == true)
+            {
+                var fullTextParser = operation[MySqlAnnotationNames.FullTextParser] as string;
+                if (!string.IsNullOrEmpty(fullTextParser))
+                {
+                    builder.Append(" /*!50100 WITH PARSER ")
+                        .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(fullTextParser))
+                        .Append(" */");
+                }
+            }
         }
 
         /// <summary>

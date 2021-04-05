@@ -54,6 +54,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
                     isFullText.Value);
             }
 
+            var fullTextParser = modelIndex.FullTextParser();
+            if (!string.IsNullOrEmpty(fullTextParser))
+            {
+                yield return new Annotation(
+                    MySqlAnnotationNames.FullTextParser,
+                    fullTextParser);
+            }
+
             var isSpatial = modelIndex.IsSpatial();
             if (isSpatial.HasValue)
             {

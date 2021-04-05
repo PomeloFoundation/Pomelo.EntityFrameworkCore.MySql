@@ -21,7 +21,6 @@ using Pomelo.EntityFrameworkCore.MySql.Extensions;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
@@ -504,6 +503,8 @@ ORDER BY
      AND `INDEX_NAME` <> 'PRIMARY'
      GROUP BY `INDEX_NAME`, `NON_UNIQUE`, `INDEX_TYPE`;";
 
+        private const string GetCreateTableStatementQuery = @"SHOW CREATE TABLE `{0}`.`{1}`;";
+
         protected virtual void GetIndexes(
             DbConnection connection,
             IReadOnlyList<DatabaseTable> tables,
@@ -613,7 +614,53 @@ ORDER BY
                         }
                     }
                 }
+
+                //
+                // Post-process the full-text indices, because we cannot open to data readers over the same connection at the same time.
+                //
+
+                var fullTextIndexes = table.Indexes
+                    .Where(i => ((bool?) i[MySqlAnnotationNames.FullTextIndex]).GetValueOrDefault())
+                    .ToList();
+
+                if (fullTextIndexes.Any())
+                {
+                    var createTableQuery = GetCreateTableQuery(connection, table);
+                    var fullTextParsers = GetFullTextParsers(createTableQuery);
+
+                    foreach (var fullTextIndex in fullTextIndexes)
+                    {
+                        if (fullTextParsers.TryGetValue(fullTextIndex.Name, out var fullTextParser))
+                        {
+                            fullTextIndex[MySqlAnnotationNames.FullTextParser] = fullTextParser;
+                        }
+                    }
+                }
             }
+        }
+
+        private static Dictionary<string, string> GetFullTextParsers(string createTableQuery)
+            => Regex.Matches(
+                    createTableQuery,
+                    @"\s*FULLTEXT\s+(?:INDEX|KEY)\s+(?:`(?<IndexName>(?:[^`]|``)+)`|(?<IndexName>\S+)).*WITH\s+PARSER\s+(?:`(?<FullTextParser>(?:[^`]|``)+)`|(?<FullTextParser>\S+))",
+                    RegexOptions.IgnoreCase)
+                .Where(m => m.Success)
+                .ToDictionary(
+                    m => m.Groups["IndexName"].Value.Replace("``", "`"),
+                    m => m.Groups["FullTextParser"].Value.Replace("``", "`"));
+
+        private static string GetCreateTableQuery(DbConnection connection, DatabaseTable table)
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = string.Format(GetCreateTableStatementQuery, connection.Database, table.Name);
+
+            using var reader = command.ExecuteReader();
+            if (reader.Read())
+            {
+                return reader.GetValueOrDefault<string>("Create Table");
+            }
+
+            throw new InvalidOperationException("The statement 'SHOW CREATE TABLE' did not return any results.");
         }
 
         private const string GetConstraintsQuery = @"SELECT

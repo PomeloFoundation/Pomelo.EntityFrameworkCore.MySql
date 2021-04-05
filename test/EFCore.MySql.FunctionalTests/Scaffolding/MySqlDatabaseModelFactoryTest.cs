@@ -802,6 +802,34 @@ CREATE FULLTEXT INDEX `IX_IceCreams_Name` ON `IceCreams` (`Name`);",
         }
 
         [Fact]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.FullTextParser))]
+        public void Set_fulltextparser_for_fulltext_index_with_parser()
+        {
+            Test(
+                @"
+CREATE TABLE `IceCreams` (
+    `IceCreamId` int NOT NULL,
+    `Name` varchar(255) NOT NULL,
+    PRIMARY KEY (`IceCreamId`)
+);
+
+CREATE FULLTEXT INDEX `IX_IceCreams_Name` ON `IceCreams` (`Name`) /*!50100 WITH PARSER `ngram` */;",
+                Enumerable.Empty<string>(),
+                Enumerable.Empty<string>(),
+                dbModel =>
+                {
+                    var index = Assert.Single(dbModel.Tables.Single().Indexes);
+
+                    Assert.Equal("IceCreams", index.Table.Name, StringComparer.OrdinalIgnoreCase);
+                    Assert.Equal(1, index.Columns.Count);
+                    Assert.Equal("Name", index.Columns[0].Name, StringComparer.OrdinalIgnoreCase);
+                    Assert.Equal(true, index.FindAnnotation(MySqlAnnotationNames.FullTextIndex)?.Value);
+                    Assert.Equal("ngram", index.FindAnnotation(MySqlAnnotationNames.FullTextParser)?.Value);
+                },
+                @"DROP TABLE IF EXISTS `IceCreams`;");
+        }
+
+        [Fact]
         public void Set_spatial_for_spatial_index()
         {
             Test(
