@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
-    public class OptimisticConcurrencyMySqlTest : OptimisticConcurrencyTestBase<F1MySqlFixture>
+    public class OptimisticConcurrencyMySqlTest : OptimisticConcurrencyTestBase<F1MySqlFixture, byte[]>
     {
         public OptimisticConcurrencyMySqlTest(F1MySqlFixture fixture)
             : base(fixture)
