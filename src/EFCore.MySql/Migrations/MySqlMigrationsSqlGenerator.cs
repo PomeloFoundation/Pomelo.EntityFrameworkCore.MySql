@@ -1470,7 +1470,22 @@ DELIMITER ;";
         protected override void IndexOptions(CreateIndexOperation operation, IModel model, MigrationCommandListBuilder builder)
         {
             // The base implementation supports index filters in form of a WHERE clause.
-            // This is not supported by MySQL.
+            // This is not supported by MySQL, so we don't call it here.
+
+            var fullText = operation[MySqlAnnotationNames.FullTextIndex] as bool?;
+            if (fullText == true)
+            {
+                var fullTextParser = operation[MySqlAnnotationNames.FullTextParser] as string;
+                if (!string.IsNullOrEmpty(fullTextParser))
+                {
+                    // Official MySQL support exists since 5.1, but since MariaDB does not support full-text parsers and does not recognize
+                    // the "/*!xxxxx" syntax for versions below 50700, we use 50700 here, even though the statement would work in lower
+                    // versions as well. Since we don't support MySQL 5.6 officially anymore, this is fine.
+                    builder.Append(" /*!50700 WITH PARSER ")
+                        .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(fullTextParser))
+                        .Append(" */");
+                }
+            }
         }
 
         /// <summary>

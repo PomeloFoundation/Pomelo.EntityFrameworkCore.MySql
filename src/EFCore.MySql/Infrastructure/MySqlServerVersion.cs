@@ -75,6 +75,7 @@ namespace Microsoft.EntityFrameworkCore
             public override bool JsonDataTypeEmulation => false;
             public override bool ImplicitBoolCheckUsesIndex => ServerVersion.Version >= new Version(8, 0, 0); // Exact version has not been verified yet
             public override bool MySqlBug96947Workaround => ServerVersion.Version >= new Version(5, 7, 0); // Exact version has not been verified yet, but it is 5.7.x and could very well be 5.7.0
+            public override bool FullTextParser => true;
         }
     }
 }

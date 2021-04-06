@@ -20,7 +20,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         {
             if (ex is MySqlException mySqlException)
             {
-                switch ((MySqlErrorCode)mySqlException.Number)
+                switch (mySqlException.ErrorCode)
                 {
                     // Thrown if timer queue couldn't be cleared while reading sockets
                     case MySqlErrorCode.CommandTimeoutExpired:

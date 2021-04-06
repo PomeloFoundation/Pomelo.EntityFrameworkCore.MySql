@@ -22,12 +22,14 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="indexBuilder"> The index builder. </param>
         /// <param name="fullText"> The value to set. </param>
+        /// <param name="parser"> An optional argument (e.g. "ngram"), that will be used in an `WITH PARSER` clause. </param>
         /// <returns> The index builder. </returns>
-        public static IndexBuilder IsFullText([NotNull] this IndexBuilder indexBuilder, bool fullText = true)
+        public static IndexBuilder IsFullText([NotNull] this IndexBuilder indexBuilder, bool fullText = true, string parser = null)
         {
             Check.NotNull(indexBuilder, nameof(indexBuilder));
 
             indexBuilder.Metadata.SetIsFullText(fullText);
+            indexBuilder.Metadata.SetFullTextParser(parser);
 
             return indexBuilder;
         }

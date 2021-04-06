@@ -854,6 +854,24 @@ SELECT ROW_COUNT();");
         }
 
         [ConditionalFact]
+        public virtual void CreateIndexOperation_fulltext_with_parser()
+        {
+            Generate(
+                new CreateIndexOperation
+                {
+                    Name = "IX_People_Name",
+                    Table = "People",
+                    Columns = new[] { "FirstName", "LastName" },
+                    [MySqlAnnotationNames.FullTextIndex] = true,
+                    [MySqlAnnotationNames.FullTextParser] = "ngram",
+                });
+
+            Assert.Equal(
+                "CREATE FULLTEXT INDEX `IX_People_Name` ON `People` (`FirstName`, `LastName`) /*!50700 WITH PARSER `ngram` */;" + EOL,
+                Sql);
+        }
+
+        [ConditionalFact]
         public virtual void CreateIndexOperation_spatial()
         {
             // TODO: Use meaningful column names.

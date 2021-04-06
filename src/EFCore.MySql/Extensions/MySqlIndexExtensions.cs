@@ -53,6 +53,45 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
             => property.FindAnnotation(MySqlAnnotationNames.FullTextIndex)?.GetConfigurationSource();
 
         /// <summary>
+        ///     Returns a value indicating which full text parser to use.
+        /// </summary>
+        /// <param name="index"> The index. </param>
+        /// <returns> The name of the full text parser. </returns>
+        [CanBeNull] public static string FullTextParser([NotNull] this IIndex index)
+            => (string)index[MySqlAnnotationNames.FullTextParser];
+
+        /// <summary>
+        ///     Sets a value indicating which full text parser to used.
+        /// </summary>
+        /// <param name="value"> The value to set. </param>
+        /// <param name="index"> The index. </param>
+        public static void SetFullTextParser([NotNull] this IMutableIndex index, [CanBeNull] string value)
+            => index.SetOrRemoveAnnotation(
+                MySqlAnnotationNames.FullTextParser,
+                value);
+
+        /// <summary>
+        ///     Sets a value indicating which full text parser to used.
+        /// </summary>
+        /// <param name="value"> The value to set. </param>
+        /// <param name="index"> The index. </param>
+        /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
+        public static void SetFullTextParser(
+            [NotNull] this IConventionIndex index, [CanBeNull] string value, bool fromDataAnnotation = false)
+            => index.SetOrRemoveAnnotation(
+                MySqlAnnotationNames.FullTextParser,
+                value,
+                fromDataAnnotation);
+
+        /// <summary>
+        ///     Returns the <see cref="ConfigurationSource" /> for whether the index is full text.
+        /// </summary>
+        /// <param name="property"> The property. </param>
+        /// <returns> The <see cref="ConfigurationSource" /> for whether the index is full text. </returns>
+        public static ConfigurationSource? GetFullTextParserConfigurationSource([NotNull] this IConventionIndex property)
+            => property.FindAnnotation(MySqlAnnotationNames.FullTextParser)?.GetConfigurationSource();
+
+        /// <summary>
         ///     Returns prefix lengths for the index.
         /// </summary>
         /// <param name="index"> The index. </param>
