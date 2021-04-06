@@ -801,7 +801,7 @@ CREATE FULLTEXT INDEX `IX_IceCreams_Name` ON `IceCreams` (`Name`);",
                 @"DROP TABLE IF EXISTS `IceCreams`;");
         }
 
-        [Fact]
+        [ConditionalFact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.FullTextParser))]
         public void Set_fulltextparser_for_fulltext_index_with_parser()
         {
@@ -813,7 +813,7 @@ CREATE TABLE `IceCreams` (
     PRIMARY KEY (`IceCreamId`)
 );
 
-CREATE FULLTEXT INDEX `IX_IceCreams_Name` ON `IceCreams` (`Name`) /*!50100 WITH PARSER `ngram` */;",
+CREATE FULLTEXT INDEX `IX_IceCreams_Name` ON `IceCreams` (`Name`) /*!50700 WITH PARSER `ngram` */;",
                 Enumerable.Empty<string>(),
                 Enumerable.Empty<string>(),
                 dbModel =>

@@ -1478,7 +1478,10 @@ DELIMITER ;";
                 var fullTextParser = operation[MySqlAnnotationNames.FullTextParser] as string;
                 if (!string.IsNullOrEmpty(fullTextParser))
                 {
-                    builder.Append(" /*!50100 WITH PARSER ")
+                    // Official MySQL support exists since 5.1, but since MariaDB does not support full-text parsers and does not recognize
+                    // the "/*!xxxxx" syntax for versions below 50700, we use 50700 here, even though the statement would work in lower
+                    // versions as well. Since we don't support MySQL 5.6 officially anymore, this is fine.
+                    builder.Append(" /*!50700 WITH PARSER ")
                         .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(fullTextParser))
                         .Append(" */");
                 }

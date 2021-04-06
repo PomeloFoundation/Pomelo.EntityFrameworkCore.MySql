@@ -867,7 +867,7 @@ SELECT ROW_COUNT();");
                 });
 
             Assert.Equal(
-                "CREATE FULLTEXT INDEX `IX_People_Name` ON `People` (`FirstName`, `LastName`) /*!50100 WITH PARSER `ngram` */;" + EOL,
+                "CREATE FULLTEXT INDEX `IX_People_Name` ON `People` (`FirstName`, `LastName`) /*!50700 WITH PARSER `ngram` */;" + EOL,
                 Sql);
         }
 
