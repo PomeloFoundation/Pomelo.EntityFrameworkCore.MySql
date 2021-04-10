@@ -11,7 +11,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
     {
         MySqlConnectionSettings ConnectionSettings { get; }
         ServerVersion ServerVersion { get; }
-        CharSet CharSet { get; }
+        CharSet DefaultCharSet { get; }
         CharSet NationalCharSet { get; }
         bool NoBackslashEscapes { get; }
         bool ReplaceLineBreaksWithCharFunction { get; }

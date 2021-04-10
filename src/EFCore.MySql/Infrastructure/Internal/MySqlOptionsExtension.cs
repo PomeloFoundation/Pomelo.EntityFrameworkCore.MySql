@@ -9,8 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
 {
@@ -32,7 +30,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
             : base(copyFrom)
         {
             ServerVersion = copyFrom.ServerVersion;
-            CharSet = copyFrom.CharSet;
             NoBackslashEscapes = copyFrom.NoBackslashEscapes;
             UpdateSqlModeOnOpen = copyFrom.UpdateSqlModeOnOpen;
             ReplaceLineBreaksWithCharFunction = copyFrom.ReplaceLineBreaksWithCharFunction;
@@ -65,12 +62,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public CharSet CharSet { get; private set; }
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public bool NoBackslashEscapes { get; private set; }
 
         /// <summary>
@@ -97,19 +88,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
             var clone = (MySqlOptionsExtension)Clone();
 
             clone.ServerVersion = serverVersion;
-
-            return clone;
-        }
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public MySqlOptionsExtension WithCharSet(CharSet charSet)
-        {
-            var clone = (MySqlOptionsExtension)Clone();
-
-            clone.CharSet = charSet;
 
             return clone;
         }
@@ -236,7 +214,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                     var hashCode = new HashCode();
                     hashCode.Add(base.GetServiceProviderHashCode());
                     hashCode.Add(Extension.ServerVersion);
-                    hashCode.Add(Extension.CharSet);
                     hashCode.Add(Extension.NoBackslashEscapes);
                     hashCode.Add(Extension.UpdateSqlModeOnOpen);
                     hashCode.Add(Extension.ReplaceLineBreaksWithCharFunction);
@@ -255,7 +232,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
             public override void PopulateDebugInfo(IDictionary<string, string> debugInfo)
             {
                 debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(Extension.ServerVersion)] = HashCode.Combine(Extension.ServerVersion).ToString(CultureInfo.InvariantCulture);
-                debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.CharSet)] = HashCode.Combine(Extension.CharSet).ToString(CultureInfo.InvariantCulture);
                 debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.DisableBackslashEscaping)] = HashCode.Combine(Extension.NoBackslashEscapes).ToString(CultureInfo.InvariantCulture);
                 debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.SetSqlModeOnOpen)] = HashCode.Combine(Extension.UpdateSqlModeOnOpen).ToString(CultureInfo.InvariantCulture);
                 debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.DisableLineBreakToCharSubstition)] = HashCode.Combine(Extension.ReplaceLineBreaksWithCharFunction).ToString(CultureInfo.InvariantCulture);

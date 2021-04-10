@@ -10,7 +10,6 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Internal
 {
@@ -23,9 +22,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             ConnectionSettings = new MySqlConnectionSettings();
             ServerVersion = null;
 
-            // We do not use the MySQL versions's default, but explicitly use `utf8mb4`
-            // if not changed by the user.
-            CharSet = CharSet.Utf8Mb4;
+            // We explicitly use `utf8mb4` in all instances, where charset based calculations need to be done, but accessing annotations
+            // isn't possible (e.g. in `MySqlTypeMappingSource`).
+            DefaultCharSet = CharSet.Utf8Mb4;
 
             // NCHAR and NVARCHAR are prefdefined by MySQL.
             NationalCharSet = CharSet.Utf8Mb3;
@@ -49,7 +48,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
 
             ConnectionSettings = GetConnectionSettings(mySqlOptions);
             ServerVersion = mySqlOptions.ServerVersion ?? throw new InvalidOperationException($"The {nameof(ServerVersion)} has not been set.");
-            CharSet = mySqlOptions.CharSet ?? CharSet;
             NoBackslashEscapes = mySqlOptions.NoBackslashEscapes;
             ReplaceLineBreaksWithCharFunction = mySqlOptions.ReplaceLineBreaksWithCharFunction;
             DefaultDataTypeMappings = ApplyDefaultDataTypeMappings(mySqlOptions.DefaultDataTypeMappings, ConnectionSettings);
@@ -88,14 +86,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                 throw new InvalidOperationException(
                     CoreStrings.SingletonOptionChanged(
                         nameof(MySqlConnectionStringBuilder.GuidFormat),
-                        nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
-            }
-
-            if (!Equals(CharSet, mySqlOptions.CharSet ?? CharSet.Utf8Mb4))
-            {
-                throw new InvalidOperationException(
-                    CoreStrings.SingletonOptionChanged(
-                        nameof(MySqlDbContextOptionsBuilder.CharSet),
                         nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
             }
 
@@ -220,7 +210,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         {
             return Equals(ConnectionSettings, other.ConnectionSettings) &&
                    Equals(ServerVersion, other.ServerVersion) &&
-                   Equals(CharSet, other.CharSet) &&
+                   Equals(DefaultCharSet, other.DefaultCharSet) &&
                    Equals(NationalCharSet, other.NationalCharSet) &&
                    NoBackslashEscapes == other.NoBackslashEscapes &&
                    ReplaceLineBreaksWithCharFunction == other.ReplaceLineBreaksWithCharFunction &&
@@ -254,9 +244,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         public override int GetHashCode()
         {
             var hashCode = new HashCode();
+
             hashCode.Add(ConnectionSettings);
             hashCode.Add(ServerVersion);
-            hashCode.Add(CharSet);
+            hashCode.Add(DefaultCharSet);
             hashCode.Add(NationalCharSet);
             hashCode.Add(NoBackslashEscapes);
             hashCode.Add(ReplaceLineBreaksWithCharFunction);
@@ -265,12 +256,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             hashCode.Add(IndexOptimizedBooleanColumns);
             hashCode.Add(JsonChangeTrackingOptions);
             hashCode.Add(LimitKeyedOrIndexedStringColumnLength);
+
             return hashCode.ToHashCode();
         }
 
         public virtual MySqlConnectionSettings ConnectionSettings { get; private set; }
         public virtual ServerVersion ServerVersion { get; private set; }
-        public virtual CharSet CharSet { get; private set; }
+        public virtual CharSet DefaultCharSet { get; private set; }
         public virtual CharSet NationalCharSet { get; }
         public virtual bool NoBackslashEscapes { get; private set; }
         public virtual bool ReplaceLineBreaksWithCharFunction { get; private set; }

@@ -109,8 +109,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             return builder
                 .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
                 .CommandTimeout(GetCommandTimeout())
-                .ExecutionStrategy(d => new TestMySqlRetryingExecutionStrategy(d))
-                .CharSet(CharSet.Utf8Mb4);
+                .ExecutionStrategy(d => new TestMySqlRetryingExecutionStrategy(d));
+            // .CharSet(CharSet.Utf8Mb4); // <-- TODO: Replace with `model.HasCharSet()`.
             // .EnableIndexOptimizedBooleanColumns(); // TODO: Activate for all test for .NET 5. Tests should use
             //       `ONLY_FULL_GROUP_BY` to ensure correct working of the
             //       expression visitor in all cases, which is blocked by

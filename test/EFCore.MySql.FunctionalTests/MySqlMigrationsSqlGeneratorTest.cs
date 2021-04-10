@@ -1235,7 +1235,7 @@ SELECT ROW_COUNT();");
 
             if (charSet != null)
             {
-                mySqlOptionsBuilder.CharSet(charSet);
+                // mySqlOptionsBuilder.CharSet(charSet); // <-- TODO: Replace with `model.HasCharSet()`.
             }
 
             if (schemaNameTranslator != null)

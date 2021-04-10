@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Xunit;
 
@@ -17,13 +16,11 @@ namespace Pomelo.EntityFrameworkCore.MySql
 
             Assert.Equal(
                 new MySqlOptionsExtension()
-                    .WithCharSet(CharSet.Latin1)
                     .WithServerVersion(new MySqlServerVersion(new Version(1, 2, 3, 4)))
                     .WithDisabledBackslashEscaping()
                     .Info
                     .GetServiceProviderHashCode(),
                 new MySqlOptionsExtension()
-                    .WithCharSet(CharSet.Latin1)
                     .WithServerVersion(new MySqlServerVersion(new Version(1, 2, 3, 4)))
                     .WithDisabledBackslashEscaping()
                     .Info
