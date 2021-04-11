@@ -432,6 +432,16 @@ SELECT ROW_COUNT();");
         }
 
         [ConditionalFact]
+        public virtual void CreateDatabaseOperation_with_collation()
+        {
+            Generate(new MySqlCreateDatabaseOperation { Name = "Northwind", Collation = "latin1_general_ci"});
+
+            Assert.Equal(
+                @"CREATE DATABASE `Northwind` COLLATE latin1_general_ci;" + EOL,
+                Sql);
+        }
+
+        [ConditionalFact]
         public virtual void CreateTableUlongAutoincrement()
         {
             Generate(

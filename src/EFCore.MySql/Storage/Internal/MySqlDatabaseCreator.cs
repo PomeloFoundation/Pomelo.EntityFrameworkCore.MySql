@@ -133,7 +133,15 @@ FROM information_schema.tables
 WHERE table_type = 'BASE TABLE' AND table_schema = '" + _relationalConnection.DbConnection.Database + "'");
 
         private IReadOnlyList<MigrationCommand> CreateCreateOperations()
-            => Dependencies.MigrationsSqlGenerator.Generate(new[] { new MySqlCreateDatabaseOperation { Name = _relationalConnection.DbConnection.Database } });
+            => Dependencies.MigrationsSqlGenerator.Generate(
+                new[]
+                {
+                    new MySqlCreateDatabaseOperation
+                    {
+                        Name = _relationalConnection.DbConnection.Database,
+                        Collation = Dependencies.Model.GetCollation(),
+                    }
+                });
 
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

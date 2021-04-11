@@ -62,8 +62,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
             SetupMySqlOptions(connection);
             _logger.Logger.LogInformation($"Using {nameof(ServerVersion)} '{_options.ServerVersion}'.");
 
-            var databaseModel = new DatabaseModel();
-
             var connectionStartedOpen = connection.State == ConnectionState.Open;
             if (!connectionStartedOpen)
             {
@@ -72,21 +70,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
 
             try
             {
-                databaseModel.DatabaseName = connection.Database;
-                databaseModel.DefaultSchema = GetDefaultSchema(connection);
-
-                var schemaList = Enumerable.Empty<string>().ToList();
-                var tableList = options.Tables.ToList();
-                var tableFilter = GenerateTableFilter(tableList, schemaList);
-
-                var tables = GetTables(connection, tableFilter);
-                foreach (var table in tables)
-                {
-                    table.Database = databaseModel;
-                    databaseModel.Tables.Add(table);
-                }
-
-                return databaseModel;
+                return GetDatabase(connection, options);
             }
             finally
             {
@@ -130,6 +114,52 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
             }
         }
 
+        private const string GetDatabaseSettings = @"SELECT
+	`DEFAULT_CHARACTER_SET_NAME`,
+    `DEFAULT_COLLATION_NAME`
+FROM
+	`INFORMATION_SCHEMA`.`SCHEMATA`
+WHERE
+	`SCHEMA_NAME` = SCHEMA()";
+
+        private DatabaseModel GetDatabase(DbConnection connection, DatabaseModelFactoryOptions options)
+        {
+            var databaseModel = new DatabaseModel
+            {
+                DatabaseName = connection.Database,
+                DefaultSchema = GetDefaultSchema(connection)
+            };
+
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = GetDatabaseSettings;
+
+                using (var reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        var defaultCharSet = reader.GetValueOrDefault<string>("DEFAULT_CHARACTER_SET_NAME");
+                        var defaultCollation = reader.GetValueOrDefault<string>("DEFAULT_COLLATION_NAME");
+
+                        databaseModel.Collation = defaultCollation;
+                    }
+                }
+            }
+
+            var schemaList = Enumerable.Empty<string>().ToList();
+            var tableList = options.Tables.ToList();
+            var tableFilter = GenerateTableFilter(tableList, schemaList);
+
+            var tables = GetTables(connection, tableFilter, defaultCharSet: null, databaseModel.Collation);
+            foreach (var table in tables)
+            {
+                table.Database = databaseModel;
+                databaseModel.Tables.Add(table);
+            }
+
+            return databaseModel;
+        }
+
         protected virtual string GetDefaultSchema(DbConnection connection)
             => null;
 
@@ -139,11 +169,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
             => tables.Count > 0 ? (s, t) => tables.Contains(t) : (Func<string, string, bool>)null;
 
         private const string GetTablesQuery = @"SELECT
-    `TABLE_NAME`,
-    `TABLE_TYPE`,
-    IF(`TABLE_COMMENT` = 'VIEW' AND `TABLE_TYPE` = 'VIEW', '', `TABLE_COMMENT`) AS `TABLE_COMMENT`
+    `t`.`TABLE_NAME`,
+    `t`.`TABLE_TYPE`,
+    IF(`t`.`TABLE_COMMENT` = 'VIEW' AND `t`.`TABLE_TYPE` = 'VIEW', '', `t`.`TABLE_COMMENT`) AS `TABLE_COMMENT`,
+    `ccsa`.`CHARACTER_SET_NAME` as `TABLE_CHARACTER_SET`,
+    `t`.`TABLE_COLLATION`
 FROM
-    `INFORMATION_SCHEMA`.`TABLES`
+    `INFORMATION_SCHEMA`.`TABLES` as `t`
+LEFT JOIN
+	`INFORMATION_SCHEMA`.`COLLATION_CHARACTER_SET_APPLICABILITY` as `ccsa` ON `ccsa`.`COLLATION_NAME` = `t`.`TABLE_COLLATION`
 WHERE
     `TABLE_SCHEMA` = SCHEMA()
 AND
@@ -151,7 +185,9 @@ AND
 
         protected virtual IEnumerable<DatabaseTable> GetTables(
             DbConnection connection,
-            Func<string, string, bool> filter)
+            Func<string, string, bool> filter,
+            string defaultCharSet,
+            string defaultCollation)
         {
             using (var command = connection.CreateCommand())
             {
@@ -164,6 +200,8 @@ AND
                         var name = reader.GetValueOrDefault<string>("TABLE_NAME");
                         var type = reader.GetValueOrDefault<string>("TABLE_TYPE");
                         var comment = reader.GetValueOrDefault<string>("TABLE_COMMENT");
+                        var charset = reader.GetValueOrDefault<string>("TABLE_CHARACTER_SET");
+                        var collation = reader.GetValueOrDefault<string>("TABLE_COLLATION");
 
                         var table = string.Equals(type, "base table", StringComparison.OrdinalIgnoreCase)
                             ? new DatabaseTable()
@@ -185,7 +223,7 @@ AND
                 }
 
                 // This is done separately due to MARS property may be turned off
-                GetColumns(connection, tables, filter);
+                GetColumns(connection, tables, filter, defaultCharSet, defaultCollation);
                 GetPrimaryKeys(connection, tables);
                 GetIndexes(connection, tables, filter);
                 GetConstraints(connection, tables);
@@ -219,7 +257,9 @@ ORDER BY
         protected virtual void GetColumns(
             DbConnection connection,
             IReadOnlyList<DatabaseTable> tables,
-            Func<string, string, bool> tableFilter)
+            Func<string, string, bool> tableFilter,
+            string defaultCharSet,
+            string defaultCollation)
         {
             foreach (var table in tables)
             {
@@ -305,10 +345,20 @@ ORDER BY
                                 ComputedColumnSql = generation,
                                 IsStored = isStored,
                                 ValueGenerated = valueGenerated,
-                                Comment = string.IsNullOrEmpty(comment) ? null : comment,
-                                [MySqlAnnotationNames.CharSet] = Settings.CharSet ? charset : null,
-                                [MySqlAnnotationNames.Collation] = Settings.Collation ? collation : null,
-                                [MySqlAnnotationNames.SpatialReferenceSystemId] = srid.HasValue ? (int?)(int)srid.Value : null,
+                                Comment = string.IsNullOrEmpty(comment)
+                                    ? null
+                                    : comment,
+                                [MySqlAnnotationNames.CharSet] = Settings.CharSet &&
+                                                                 charset != (table[MySqlAnnotationNames.CharSet] as string ?? defaultCharSet)
+                                    ? charset
+                                    : null,
+                                Collation = Settings.Collation &&
+                                            collation != (table[RelationalAnnotationNames.Collation] as string ?? defaultCollation)
+                                    ? collation
+                                    : null,
+                                [MySqlAnnotationNames.SpatialReferenceSystemId] = srid.HasValue
+                                    ? (int?)(int)srid.Value
+                                    : null,
                             };
 
                             table.Columns.Add(column);
