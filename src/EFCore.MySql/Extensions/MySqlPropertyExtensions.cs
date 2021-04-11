@@ -179,16 +179,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
         /// </summary>
         /// <param name="property">The property of which to get the columns collation from.</param>
         /// <returns>The name of the collation or null, if no explicit collation was set.</returns>
-        public static string GetCollation([NotNull] this IProperty property)
+#pragma warning disable 618
+        internal static string GetMySqlLegacyCollation([NotNull] this IProperty property)
             => property[MySqlAnnotationNames.Collation] as string;
-
-        /// <summary>
-        /// Sets the name of the collation in use by the column of the property.
-        /// </summary>
-        /// <param name="property">The property to set the columns collation for.</param>
-        /// <param name="collation">The name of the collation used for the column of the property.</param>
-        public static void SetCollation([NotNull] this IMutableProperty property, string collation)
-            => property.SetOrRemoveAnnotation(MySqlAnnotationNames.Collation, collation);
+#pragma warning restore 618
 
         /// <summary>
         /// Returns the Spatial Reference System Identifier (SRID) used by the column of the property.

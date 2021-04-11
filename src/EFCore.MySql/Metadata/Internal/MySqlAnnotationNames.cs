@@ -1,6 +1,9 @@
 // Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
+using System;
+using Microsoft.EntityFrameworkCore.Metadata;
+
 namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
 {
     /// <summary>
@@ -26,8 +29,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
         public const string FullTextParser = Prefix + "FullTextParser";
         public const string SpatialIndex = Prefix + "SpatialIndex";
         public const string CharSet = Prefix + "CharSet";
-        public const string Collation = Prefix + "Collation";
         public const string IndexPrefixLength = Prefix + "IndexPrefixLength";
         public const string SpatialReferenceSystemId = Prefix + "SpatialReferenceSystemId";
+
+        [Obsolete("Use '" + nameof(RelationalAnnotationNames) + "." + nameof(RelationalAnnotationNames.Collation) + "' instead.")]
+        public const string Collation = Prefix + "Collation";
     }
 }

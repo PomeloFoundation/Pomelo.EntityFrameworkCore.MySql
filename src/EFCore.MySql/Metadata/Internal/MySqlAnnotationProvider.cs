@@ -91,11 +91,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
                     charset);
             }
 
-            if (column.PropertyMappings.Select(m => MySqlPropertyExtensions.GetCollation(m.Property))
+            // We have been using the `MySql:Collation` annotation before EF Core added collation support.
+            // Our `MySqlPropertyExtensions.GetMySqlLegacyCollation()` method handles the legacy case, so we explicitly
+            // call it here and setup the relational annotation, even though EF Core sets it up as well.
+            // This ensures, that from this point onwards, only the `Relational:Collation` annotation is being used.
+            if (column.PropertyMappings.Select(m => m.Property.GetMySqlLegacyCollation())
                 .FirstOrDefault(c => c != null) is string collation)
             {
                 yield return new Annotation(
-                    MySqlAnnotationNames.Collation,
+                    RelationalAnnotationNames.Collation,
                     collation);
             }
 

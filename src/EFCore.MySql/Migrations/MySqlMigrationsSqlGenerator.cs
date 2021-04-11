@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -1197,7 +1198,12 @@ DELIMITER ;";
                     : columnType.TrimEnd() + " " + characterSetClause;
             }
 
-            var collation = operation.Collation ?? operation[MySqlAnnotationNames.Collation];
+            // At this point, all legacy `MySql:Collation` annotations should have been replaced by `Relational:Collation` ones.
+#pragma warning disable 618
+            Debug.Assert(operation.FindAnnotation(MySqlAnnotationNames.Collation) == null);
+#pragma warning restore 618
+
+            var collation = operation.Collation;
             if (collation != null)
             {
                 const string collationClausePattern = @"COLLATE \w+";
