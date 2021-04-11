@@ -122,7 +122,7 @@ FROM
 WHERE
 	`SCHEMA_NAME` = SCHEMA()";
 
-        private DatabaseModel GetDatabase(DbConnection connection, DatabaseModelFactoryOptions options)
+        protected virtual DatabaseModel GetDatabase(DbConnection connection, DatabaseModelFactoryOptions options)
         {
             var databaseModel = new DatabaseModel
             {
@@ -210,6 +210,10 @@ AND
                         table.Schema = null;
                         table.Name = name;
                         table.Comment = string.IsNullOrEmpty(comment) ? null : comment;
+                        table[RelationalAnnotationNames.Collation] = Settings.Collation &&
+                                                                     collation != defaultCollation
+                            ? collation
+                            : null;
 
                         var isValidByFilter = filter?.Invoke(table.Schema, table.Name) ?? true;
                         var isValidBySettings = !(table is DatabaseView) || Settings.Views;

@@ -442,6 +442,21 @@ SELECT ROW_COUNT();");
         }
 
         [ConditionalFact]
+        public virtual void AlterDatabaseOperation_with_collation()
+        {
+            // There is currently no way to dynamically execute an ALTER DATABASE statement in MySQL.
+            // And since we don't know the database name when creating the statement, the statement has to be dynamically created and
+            // executed.
+            // See:
+            //      https://dev.mysql.com/worklog/task/?id=2871
+            //      https://bugs.mysql.com/bug.php?id=31625
+            Assert.Throws<InvalidOperationException>(
+                () => Generate(
+                    new MySqlCreateDatabaseOperation {Name = "Northwind", Collation = "latin1_general_ci"},
+                    new AlterDatabaseOperation {Collation = "latin1_swedish_ci"}));
+        }
+
+        [ConditionalFact]
         public virtual void CreateTableUlongAutoincrement()
         {
             Generate(
@@ -1058,6 +1073,121 @@ SELECT ROW_COUNT();");
 
             Assert.Equal(
                 @"CREATE INDEX `IX_IceCreams_Brand_Name` ON `IceCreams` (`Name`, `Brand`(20));" + EOL,
+                Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        public virtual void CreateTableOperation_with_collation()
+        {
+            Generate(
+                new CreateTableOperation
+                {
+                    Name = "IceCreams",
+                    Columns =
+                    {
+                        new AddColumnOperation
+                        {
+                            Name = "Brand",
+                            ColumnType = "longtext",
+                            ClrType = typeof(string),
+                            Collation = "latin1_swedish_ci"
+                        },
+                        new AddColumnOperation
+                        {
+                            Name = "Name",
+                            ColumnType = "varchar(255)",
+                            ClrType = typeof(string),
+                        },
+                    },
+                    PrimaryKey = new AddPrimaryKeyOperation
+                    {
+                        Columns = new[] { "Name", "Brand" },
+                        [MySqlAnnotationNames.IndexPrefixLength] = new [] { 0, 20 }
+                    },
+                    [RelationalAnnotationNames.Collation] = "latin1_general_ci",
+                });
+
+            Assert.Equal(
+                @"CREATE TABLE `IceCreams` (
+    `Brand` longtext COLLATE latin1_swedish_ci NOT NULL,
+    `Name` varchar(255) NOT NULL,
+    PRIMARY KEY (`Name`, `Brand`(20))
+) COLLATE latin1_general_ci;" + EOL,
+                Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        public virtual void AlterTableOperation_with_collation()
+        {
+            Generate(
+                modelBuilder =>
+                {
+                    modelBuilder.Entity(
+                        "IceCreams",
+                        entity =>
+                        {
+                            entity.Property<string>("Brand")
+                                .HasColumnType("longtext")
+                                .UseCollation("latin1_swedish_ci");
+
+                            entity.Property<string>("Name")
+                                .HasColumnType("varchar(255)");
+
+                            entity.UseCollation("latin1_general_ci");
+                        });
+                },
+                migrationBuilder =>
+                {
+                    migrationBuilder.AlterTable("IceCreams")
+                        .OldAnnotation(RelationalAnnotationNames.Collation, "latin1_general_ci")
+                        .Annotation(RelationalAnnotationNames.Collation, "latin1_general_cs");
+                });
+
+            Assert.Equal(
+                @"ALTER TABLE `IceCreams` COLLATE latin1_general_cs;" + EOL,
+                Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        public virtual void AlterTableOperation_with_collation_reset()
+        {
+            Generate(
+                modelBuilder =>
+                {
+                    modelBuilder.Entity(
+                        "IceCreams",
+                        entity =>
+                        {
+                            entity.Property<string>("Brand")
+                                .HasColumnType("longtext")
+                                .UseCollation("latin1_swedish_ci");
+
+                            entity.Property<string>("Name")
+                                .HasColumnType("varchar(255)");
+
+                            entity.UseCollation("latin1_general_ci");
+                        });
+                },
+                migrationBuilder =>
+                {
+                    migrationBuilder.AlterTable("IceCreams")
+                        .OldAnnotation(RelationalAnnotationNames.Collation, "latin1_general_ci");
+                });
+
+            Assert.Equal(
+                @"set @__pomelo_TableCharset = (
+    SELECT `ccsa`.`CHARACTER_SET_NAME` as `TABLE_CHARACTER_SET`
+    FROM `INFORMATION_SCHEMA`.`TABLES` as `t`
+    LEFT JOIN `INFORMATION_SCHEMA`.`COLLATION_CHARACTER_SET_APPLICABILITY` as `ccsa` ON `ccsa`.`COLLATION_NAME` = `t`.`TABLE_COLLATION`
+    WHERE `TABLE_SCHEMA` = SCHEMA() AND `TABLE_NAME` = 'IceCreams' AND `TABLE_TYPE` IN ('BASE TABLE', 'VIEW'));
+
+SET @__pomelo_SqlExpr = CONCAT('ALTER TABLE `IceCreams` CHARACTER SET = ', @__pomelo_TableCharset, ';');
+PREPARE __pomelo_SqlExprExecute FROM @__pomelo_SqlExpr;
+EXECUTE __pomelo_SqlExprExecute;
+DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
                 Sql,
                 ignoreLineEndingDifferences: true);
         }

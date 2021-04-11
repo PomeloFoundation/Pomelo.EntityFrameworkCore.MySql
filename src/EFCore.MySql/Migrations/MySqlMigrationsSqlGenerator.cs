@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
@@ -53,6 +54,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
         {
             { typeof(DropPrimaryKeyOperation), (beginText: BeforeDropPrimaryKeyMigrationBegin, endText: BeforeDropPrimaryKeyMigrationEnd) },
             { typeof(AddPrimaryKeyOperation), (beginText: AfterAddPrimaryKeyMigrationBegin, endText: AfterAddPrimaryKeyMigrationEnd) },
+            { typeof(AlterDatabaseOperation), (beginText: AlterDatabaseOperationMigrationBegin, endText: AlterDatabaseOperationMigrationEnd) },
         };
 
         #region Custom SQL
@@ -140,6 +142,21 @@ BEGIN
 END //
 DELIMITER ;";
         private const string AfterAddPrimaryKeyMigrationEnd = @"DROP PROCEDURE `POMELO_AFTER_ADD_PRIMARY_KEY`;";
+
+        private const string AlterDatabaseOperationMigrationBegin = @"DROP PROCEDURE IF EXISTS `__Pomelo_AlterDatabase`;
+DELIMITER //
+CREATE PROCEDURE `__Pomelo_AlterDatabase`(in `collation` varchar(255))
+BEGIN
+    DECLARE SQL_EXP longtext;
+	SET SQL_EXP = CONCAT('ALTER DATABASE `', SCHEMA(), '` COLLATE ', IFNULL(`collation`, @@character_set_server), ';');
+
+	PREPARE SQL_EXP_EXECUTE FROM @SQL_EXP;
+	EXECUTE SQL_EXP_EXECUTE;
+	DEALLOCATE PREPARE SQL_EXP_EXECUTE;
+END //
+DELIMITER ;";
+
+        private const string AlterDatabaseOperationMigrationEnd = @"DROP PROCEDURE IF EXISTS `__Pomelo_AlterDatabase`;";
 
         #endregion
 
@@ -332,6 +349,11 @@ DELIMITER ;";
         {
             base.Generate(operation, model, builder, false);
 
+            if (operation[RelationalAnnotationNames.Collation] is string collation)
+            {
+                builder.Append($" COLLATE {collation}");
+            }
+
             GenerateComment(operation.Comment, builder);
 
             if (terminate)
@@ -343,7 +365,45 @@ DELIMITER ;";
 
         protected override void Generate(AlterTableOperation operation, IModel model, MigrationCommandListBuilder builder)
         {
-            var madeChanges = false;
+            var oldCollation = operation.OldTable[RelationalAnnotationNames.Collation] as string;
+            var newCollation = operation[RelationalAnnotationNames.Collation] as string;
+
+            if (newCollation != oldCollation)
+            {
+                if (newCollation != null)
+                {
+                    builder
+                        .Append("ALTER TABLE ")
+                        .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name, operation.Schema))
+                        .Append(" COLLATE ")
+                        .Append(newCollation)
+                        .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
+
+                    EndStatement(builder);
+                }
+                else
+                {
+                    var resetCharSetSql = $@"set @__pomelo_TableCharset = (
+    SELECT `ccsa`.`CHARACTER_SET_NAME` as `TABLE_CHARACTER_SET`
+    FROM `INFORMATION_SCHEMA`.`TABLES` as `t`
+    LEFT JOIN `INFORMATION_SCHEMA`.`COLLATION_CHARACTER_SET_APPLICABILITY` as `ccsa` ON `ccsa`.`COLLATION_NAME` = `t`.`TABLE_COLLATION`
+    WHERE `TABLE_SCHEMA` = SCHEMA() AND `TABLE_NAME` = {_stringTypeMapping.GenerateSqlLiteral(operation.Name)} AND `TABLE_TYPE` IN ('BASE TABLE', 'VIEW'));
+
+SET @__pomelo_SqlExpr = CONCAT('ALTER TABLE {Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name)} CHARACTER SET = ', @__pomelo_TableCharset, ';');
+PREPARE __pomelo_SqlExprExecute FROM @__pomelo_SqlExpr;
+EXECUTE __pomelo_SqlExprExecute;
+DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
+
+                    builder.AppendLine(resetCharSetSql);
+                    EndStatement(builder);
+                }
+            }
+            else /*if (charset change expression)*/
+            {
+                // CharSet handling.
+                // Collations are more specific than charsets. So if a collation has been set, we use the collation instead of the charset.
+                // If we made it into this branch, no collation has been defined.
+            }
 
             if (operation.Comment != operation.OldTable.Comment)
             {
@@ -354,11 +414,6 @@ DELIMITER ;";
                 GenerateComment(operation.Comment ?? string.Empty, builder);
 
                 builder.AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
-                madeChanges = true;
-            }
-
-            if (madeChanges)
-            {
                 EndStatement(builder);
             }
         }
@@ -669,6 +724,23 @@ DELIMITER ;";
                 .Append(Dependencies.SqlGenerationHelper.StatementTerminator)
                 .AppendLine(Dependencies.SqlGenerationHelper.BatchTerminator);
             EndStatement(builder);
+        }
+
+        protected override void Generate(AlterDatabaseOperation operation, IModel model, MigrationCommandListBuilder builder)
+        {
+            // The following does not work, because PREPARE does still not support ALTER DATABASE and we cannot inject the current SCHEMA()
+            // into an ALTER DATABASE statement without it.
+            //
+            // ALTER DATABASE `Foo` CHARACTER SET latin1 COLLATE latin1_swedish_ci;
+            //
+            // Check.NotNull(operation, nameof(operation));
+            // Check.NotNull(model, nameof(model));
+            // Check.NotNull(builder, nameof(builder));
+            //
+            // builder.AppendLine($"CALL `__Pomelo_AlterDatabase`({_stringTypeMapping.GenerateSqlLiteral(operation)});");
+
+            throw new InvalidOperationException(
+                "ALTER DATABASE operations are curently not supported using the migration operation. Please execute the necessary SQL manually.");
         }
 
         protected override void Generate(
@@ -1146,10 +1218,8 @@ DELIMITER ;";
             if (comment == null)
                 return;
 
-            var stringTypeMapping = Dependencies.TypeMappingSource.GetMapping(typeof(string));
-
             builder.Append(" COMMENT ")
-                .Append(stringTypeMapping.GenerateSqlLiteral(comment));
+                .Append(_stringTypeMapping.GenerateSqlLiteral(comment));
         }
 
         private void ColumnDefinitionWithCharSet(string schema, string table, string name, ColumnOperation operation, IModel model, MigrationCommandListBuilder builder)

@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Pomelo.EntityFrameworkCore.MySql.Extensions;
@@ -15,6 +16,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
         public MySqlAnnotationProvider([NotNull] RelationalAnnotationProviderDependencies dependencies)
             : base(dependencies)
         {
+        }
+
+        public override IEnumerable<IAnnotation> For(ITable table)
+        {
+            // Model validation ensures that these facets are the same on all mapped entity types
+            var entityType = table.EntityTypeMappings.First().EntityType;
+
+            if (!string.IsNullOrEmpty(entityType.GetCollation()))
+            {
+                yield return new Annotation(RelationalAnnotationNames.Collation, entityType.GetCollation());
+            }
         }
 
         public override IEnumerable<IAnnotation> For(IUniqueConstraint constraint)

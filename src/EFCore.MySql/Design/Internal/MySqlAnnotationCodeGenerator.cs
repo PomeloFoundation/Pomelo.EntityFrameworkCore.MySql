@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -19,9 +20,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
         }
 
         protected override bool IsHandledByConvention(IModel model, IAnnotation annotation)
-        {
-            return true;
-        }
+            => true;
+
+        protected override MethodCallCodeFragment GenerateFluentApi(IEntityType entityType, IAnnotation annotation)
+            => annotation.Name switch
+            {
+                RelationalAnnotationNames.Collation => new MethodCallCodeFragment(nameof(MySqlEntityTypeBuilderExtensions.UseCollation), annotation.Value),
+                _ => null
+            };
 
         protected override MethodCallCodeFragment GenerateFluentApi(IProperty property, IAnnotation annotation)
         {
