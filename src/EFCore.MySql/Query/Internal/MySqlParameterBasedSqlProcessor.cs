@@ -14,7 +14,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
     public class MySqlParameterBasedSqlProcessor : RelationalParameterBasedSqlProcessor
     {
         private readonly IMySqlOptions _options;
-        private readonly SqlNullabilityProcessor _sqlNullabilityProcessor;
 
         public MySqlParameterBasedSqlProcessor(
             [NotNull] RelationalParameterBasedSqlProcessorDependencies dependencies,
@@ -23,7 +22,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             : base(dependencies, useRelationalNulls)
         {
             _options = options;
-            _sqlNullabilityProcessor = new MySqlSqlNullabilityProcessor(dependencies, useRelationalNulls);
         }
 
         /// <inheritdoc />
@@ -33,7 +31,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             Check.NotNull(selectExpression, nameof(selectExpression));
             Check.NotNull(parametersValues, nameof(parametersValues));
 
-            selectExpression = _sqlNullabilityProcessor.Process(selectExpression, parametersValues, out canCache);
+            selectExpression = new MySqlSqlNullabilityProcessor(Dependencies, UseRelationalNulls).Process(selectExpression, parametersValues, out canCache);
 
             if (_options.IndexOptimizedBooleanColumns)
             {
