@@ -66,7 +66,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<IQueryCompilationContextFactory, MySqlQueryCompilationContextFactory>()
                 .TryAdd<IQueryTranslationPostprocessorFactory, MySqlQueryTranslationPostprocessorFactory>()
                 .TryAdd<IMigrationsModelDiffer, MySqlMigrationsModelDiffer>()
-                .TryAdd<IRelationalTransactionFactory, MySqlRelationalTransactionFactory>() // CHECK: Still needed?
                 .TryAddProviderSpecificServices(m => m
                     //.TryAddSingleton<IMySqlValueGeneratorCache, MySqlValueGeneratorCache>()
                     .TryAddSingleton<IMySqlOptions, MySqlOptions>()
