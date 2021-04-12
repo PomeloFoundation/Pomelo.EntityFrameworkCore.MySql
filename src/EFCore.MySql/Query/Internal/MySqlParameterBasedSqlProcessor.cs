@@ -24,6 +24,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             _options = options;
         }
 
+        /// <inheritdoc />
         protected override SelectExpression ProcessSqlNullability(
             SelectExpression selectExpression, IReadOnlyDictionary<string, object> parametersValues, out bool canCache)
         {
