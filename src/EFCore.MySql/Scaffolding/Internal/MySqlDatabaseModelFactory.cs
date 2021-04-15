@@ -141,7 +141,12 @@ WHERE
                         var defaultCharSet = reader.GetValueOrDefault<string>("DEFAULT_CHARACTER_SET_NAME");
                         var defaultCollation = reader.GetValueOrDefault<string>("DEFAULT_COLLATION_NAME");
 
-                        databaseModel.Collation = defaultCollation;
+                        databaseModel[MySqlAnnotationNames.CharSet] = Settings.CharSet
+                            ? defaultCharSet
+                            : null;
+                        databaseModel.Collation = Settings.Collation
+                            ? defaultCollation
+                            : null;
                     }
                 }
             }
@@ -150,7 +155,7 @@ WHERE
             var tableList = options.Tables.ToList();
             var tableFilter = GenerateTableFilter(tableList, schemaList);
 
-            var tables = GetTables(connection, tableFilter, defaultCharSet: null, databaseModel.Collation);
+            var tables = GetTables(connection, tableFilter, (string)databaseModel[MySqlAnnotationNames.CharSet], databaseModel.Collation);
             foreach (var table in tables)
             {
                 table.Database = databaseModel;

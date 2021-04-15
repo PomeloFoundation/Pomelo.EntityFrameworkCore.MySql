@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
 using MySqlConnector;
+using Pomelo.EntityFrameworkCore.MySql.Extensions;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
@@ -139,6 +140,7 @@ WHERE table_type = 'BASE TABLE' AND table_schema = '" + _relationalConnection.Db
                     new MySqlCreateDatabaseOperation
                     {
                         Name = _relationalConnection.DbConnection.Database,
+                        CharSet = Dependencies.Model.GetCharSet(),
                         Collation = Dependencies.Model.GetCollation(),
                     }
                 });

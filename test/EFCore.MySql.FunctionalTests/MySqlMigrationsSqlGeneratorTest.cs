@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
@@ -432,6 +431,16 @@ SELECT ROW_COUNT();");
         }
 
         [ConditionalFact]
+        public virtual void CreateDatabaseOperation_with_charset()
+        {
+            Generate(new MySqlCreateDatabaseOperation { Name = "Northwind", CharSet = "latin1"});
+
+            Assert.Equal(
+                @"CREATE DATABASE `Northwind` CHARSET latin1;" + EOL,
+                Sql);
+        }
+
+        [ConditionalFact]
         public virtual void CreateDatabaseOperation_with_collation()
         {
             Generate(new MySqlCreateDatabaseOperation { Name = "Northwind", Collation = "latin1_general_ci"});
@@ -439,6 +448,21 @@ SELECT ROW_COUNT();");
             Assert.Equal(
                 @"CREATE DATABASE `Northwind` COLLATE latin1_general_ci;" + EOL,
                 Sql);
+        }
+
+        [ConditionalFact]
+        public virtual void AlterDatabaseOperation_with_charset()
+        {
+            // There is currently no way to dynamically execute an ALTER DATABASE statement in MySQL.
+            // And since we don't know the database name when creating the statement, the statement has to be dynamically created and
+            // executed.
+            // See:
+            //      https://dev.mysql.com/worklog/task/?id=2871
+            //      https://bugs.mysql.com/bug.php?id=31625
+            Assert.Throws<InvalidOperationException>(
+                () => Generate(
+                    new MySqlCreateDatabaseOperation {Name = "Northwind", CharSet = "latin1"},
+                    new AlterDatabaseOperation {[MySqlAnnotationNames.CharSet] = "utf8mb4"}));
         }
 
         [ConditionalFact]

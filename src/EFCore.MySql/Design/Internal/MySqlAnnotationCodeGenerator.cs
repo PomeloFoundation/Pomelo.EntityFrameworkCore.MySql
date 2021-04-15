@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Pomelo.EntityFrameworkCore.MySql.Extensions;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
@@ -21,6 +22,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
 
         protected override bool IsHandledByConvention(IModel model, IAnnotation annotation)
             => true;
+
+        protected override MethodCallCodeFragment GenerateFluentApi(IModel model, IAnnotation annotation)
+            => annotation.Name switch
+            {
+                MySqlAnnotationNames.CharSet => new MethodCallCodeFragment(nameof(MySqlModelBuilderExtensions.HasCharSet), annotation.Value),
+                _ => null
+            };
 
         protected override MethodCallCodeFragment GenerateFluentApi(IEntityType entityType, IAnnotation annotation)
             => annotation.Name switch

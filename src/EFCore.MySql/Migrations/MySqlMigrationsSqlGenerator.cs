@@ -691,6 +691,13 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
                 .Append("CREATE DATABASE ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name));
 
+            if (operation.CharSet != null)
+            {
+                builder
+                    .Append(" CHARSET ")
+                    .Append(operation.CharSet);
+            }
+
             if (operation.Collation != null)
             {
                 builder

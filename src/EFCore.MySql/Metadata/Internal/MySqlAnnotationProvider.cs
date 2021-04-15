@@ -18,6 +18,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
         {
         }
 
+        public override IEnumerable<IAnnotation> For(IRelationalModel model)
+            => model.GetAnnotations()
+                .Where(a => a.Name == MySqlAnnotationNames.CharSet)
+                .Select(a => new Annotation(a.Name, a.Value));
+
         public override IEnumerable<IAnnotation> For(ITable table)
         {
             // Model validation ensures that these facets are the same on all mapped entity types

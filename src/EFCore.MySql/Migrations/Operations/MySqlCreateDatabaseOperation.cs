@@ -15,5 +15,10 @@ namespace Microsoft.EntityFrameworkCore.Migrations.Operations
         ///     The name of the database.
         /// </summary>
         public virtual string Name { get; [param: NotNull] set; }
+
+        /// <summary>
+        ///     The default character set of the database.
+        /// </summary>
+        public virtual string CharSet { get; [param: CanBeNull] set; }
     }
 }
