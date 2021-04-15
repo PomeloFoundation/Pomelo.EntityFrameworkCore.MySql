@@ -33,6 +33,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
         protected override MethodCallCodeFragment GenerateFluentApi(IEntityType entityType, IAnnotation annotation)
             => annotation.Name switch
             {
+                MySqlAnnotationNames.CharSet => new MethodCallCodeFragment(nameof(MySqlEntityTypeBuilderExtensions.HasCharSet), annotation.Value),
                 RelationalAnnotationNames.Collation => new MethodCallCodeFragment(nameof(MySqlEntityTypeBuilderExtensions.UseCollation), annotation.Value),
                 _ => null
             };

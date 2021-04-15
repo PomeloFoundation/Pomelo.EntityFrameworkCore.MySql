@@ -215,6 +215,10 @@ AND
                         table.Schema = null;
                         table.Name = name;
                         table.Comment = string.IsNullOrEmpty(comment) ? null : comment;
+                        table[MySqlAnnotationNames.CharSet] = Settings.CharSet &&
+                                                              charset != defaultCharSet
+                            ? charset
+                            : null;
                         table[RelationalAnnotationNames.Collation] = Settings.Collation &&
                                                                      collation != defaultCollation
                             ? collation

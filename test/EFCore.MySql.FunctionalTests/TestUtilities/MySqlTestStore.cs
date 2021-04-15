@@ -188,7 +188,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         }
 
         private string GetCreateDatabaseStatement(DbConnection connection, string name, string charset = null, string collation = null)
-            => EnsureBackwardsCompatibleCollations(connection, $@"CREATE DATABASE `{name}`{(string.IsNullOrEmpty(charset) ? null : $" CHARSET {charset}")}{(string.IsNullOrEmpty(collation) ? null : $" COLLATE {collation}")};");
+            => EnsureBackwardsCompatibleCollations(connection, $@"CREATE DATABASE `{name}`{(string.IsNullOrEmpty(charset) ? null : $" CHARACTER SET {charset}")}{(string.IsNullOrEmpty(collation) ? null : $" COLLATE {collation}")};");
 
         private static bool DatabaseExists(string name)
         {

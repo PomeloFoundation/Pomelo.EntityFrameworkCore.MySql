@@ -436,7 +436,7 @@ SELECT ROW_COUNT();");
             Generate(new MySqlCreateDatabaseOperation { Name = "Northwind", CharSet = "latin1"});
 
             Assert.Equal(
-                @"CREATE DATABASE `Northwind` CHARSET latin1;" + EOL,
+                @"CREATE DATABASE `Northwind` CHARACTER SET latin1;" + EOL,
                 Sql);
         }
 
@@ -1199,6 +1199,121 @@ SELECT ROW_COUNT();");
                 {
                     migrationBuilder.AlterTable("IceCreams")
                         .OldAnnotation(RelationalAnnotationNames.Collation, "latin1_general_ci");
+                });
+
+            Assert.Equal(
+                @"set @__pomelo_TableCharset = (
+    SELECT `ccsa`.`CHARACTER_SET_NAME` as `TABLE_CHARACTER_SET`
+    FROM `INFORMATION_SCHEMA`.`TABLES` as `t`
+    LEFT JOIN `INFORMATION_SCHEMA`.`COLLATION_CHARACTER_SET_APPLICABILITY` as `ccsa` ON `ccsa`.`COLLATION_NAME` = `t`.`TABLE_COLLATION`
+    WHERE `TABLE_SCHEMA` = SCHEMA() AND `TABLE_NAME` = 'IceCreams' AND `TABLE_TYPE` IN ('BASE TABLE', 'VIEW'));
+
+SET @__pomelo_SqlExpr = CONCAT('ALTER TABLE `IceCreams` CHARACTER SET = ', @__pomelo_TableCharset, ';');
+PREPARE __pomelo_SqlExprExecute FROM @__pomelo_SqlExpr;
+EXECUTE __pomelo_SqlExprExecute;
+DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
+                Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        public virtual void CreateTableOperation_with_charset()
+        {
+            Generate(
+                new CreateTableOperation
+                {
+                    Name = "IceCreams",
+                    Columns =
+                    {
+                        new AddColumnOperation
+                        {
+                            Name = "Brand",
+                            ColumnType = "longtext",
+                            ClrType = typeof(string),
+                            [MySqlAnnotationNames.CharSet] = "utf8mb4"
+                        },
+                        new AddColumnOperation
+                        {
+                            Name = "Name",
+                            ColumnType = "varchar(255)",
+                            ClrType = typeof(string),
+                        },
+                    },
+                    PrimaryKey = new AddPrimaryKeyOperation
+                    {
+                        Columns = new[] { "Name", "Brand" },
+                        [MySqlAnnotationNames.IndexPrefixLength] = new [] { 0, 20 }
+                    },
+                    [MySqlAnnotationNames.CharSet] = "latin1",
+                });
+
+            Assert.Equal(
+                @"CREATE TABLE `IceCreams` (
+    `Brand` longtext CHARACTER SET utf8mb4 NOT NULL,
+    `Name` varchar(255) NOT NULL,
+    PRIMARY KEY (`Name`, `Brand`(20))
+) CHARACTER SET latin1;" + EOL,
+                Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        public virtual void AlterTableOperation_with_charset()
+        {
+            Generate(
+                modelBuilder =>
+                {
+                    modelBuilder.Entity(
+                        "IceCreams",
+                        entity =>
+                        {
+                            entity.Property<string>("Brand")
+                                .HasColumnType("longtext")
+                                .HasCharSet("utf8mb4");
+
+                            entity.Property<string>("Name")
+                                .HasColumnType("varchar(255)");
+
+                            entity.HasCharSet("latin1");
+                        });
+                },
+                migrationBuilder =>
+                {
+                    migrationBuilder.AlterTable("IceCreams")
+                        .OldAnnotation(MySqlAnnotationNames.CharSet, "latin1")
+                        .Annotation(MySqlAnnotationNames.CharSet, "utf8mb4");
+                });
+
+            Assert.Equal(
+                @"ALTER TABLE `IceCreams` CHARACTER SET utf8mb4;" + EOL,
+                Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        public virtual void AlterTableOperation_with_charset_reset()
+        {
+            Generate(
+                modelBuilder =>
+                {
+                    modelBuilder.Entity(
+                        "IceCreams",
+                        entity =>
+                        {
+                            entity.Property<string>("Brand")
+                                .HasColumnType("longtext")
+                                .HasCharSet("utf8mb4");
+
+                            entity.Property<string>("Name")
+                                .HasColumnType("varchar(255)");
+
+                            entity.HasCharSet("latin1");
+                        });
+                },
+                migrationBuilder =>
+                {
+                    migrationBuilder.AlterTable("IceCreams")
+                        .OldAnnotation(MySqlAnnotationNames.CharSet, "latin1");
                 });
 
             Assert.Equal(

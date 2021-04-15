@@ -349,9 +349,18 @@ DELIMITER ;";
         {
             base.Generate(operation, model, builder, false);
 
+            if (operation[MySqlAnnotationNames.CharSet] is string charSet)
+            {
+                builder
+                    .Append(" CHARACTER SET ")
+                    .Append(charSet);
+            }
+
             if (operation[RelationalAnnotationNames.Collation] is string collation)
             {
-                builder.Append($" COLLATE {collation}");
+                builder
+                    .Append(" COLLATE ")
+                    .Append(collation);
             }
 
             GenerateComment(operation.Comment, builder);
@@ -365,24 +374,45 @@ DELIMITER ;";
 
         protected override void Generate(AlterTableOperation operation, IModel model, MigrationCommandListBuilder builder)
         {
+            var oldCharSet = operation.OldTable[MySqlAnnotationNames.CharSet] as string;
+            var newCharSet = operation[MySqlAnnotationNames.CharSet] as string;
+
             var oldCollation = operation.OldTable[RelationalAnnotationNames.Collation] as string;
             var newCollation = operation[RelationalAnnotationNames.Collation] as string;
 
-            if (newCollation != oldCollation)
+            // Collations are more specific than charsets. So if a collation has been set, we use the collation instead of the charset.
+            if (newCollation != oldCollation &&
+                newCollation != null)
             {
-                if (newCollation != null)
+                // A new collation has been set. It takes precedence over any a defined charset.
+                builder
+                    .Append("ALTER TABLE ")
+                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name, operation.Schema))
+                    .Append(" COLLATE ")
+                    .Append(newCollation)
+                    .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
+
+                EndStatement(builder);
+            }
+            else if (newCharSet != oldCharSet ||
+                     newCollation != oldCollation && newCollation == null)
+            {
+                // The charset has been changed or the collation has been reset to the default.
+                if (newCharSet != null)
                 {
+                    // A new charset has been set without an explicit collation.
                     builder
                         .Append("ALTER TABLE ")
                         .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name, operation.Schema))
-                        .Append(" COLLATE ")
-                        .Append(newCollation)
+                        .Append(" CHARACTER SET ")
+                        .Append(newCharSet)
                         .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
 
                     EndStatement(builder);
                 }
                 else
                 {
+                    // The charset (and any collation) has been reset to the default.
                     var resetCharSetSql = $@"set @__pomelo_TableCharset = (
     SELECT `ccsa`.`CHARACTER_SET_NAME` as `TABLE_CHARACTER_SET`
     FROM `INFORMATION_SCHEMA`.`TABLES` as `t`
@@ -397,12 +427,6 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
                     builder.AppendLine(resetCharSetSql);
                     EndStatement(builder);
                 }
-            }
-            else /*if (charset change expression)*/
-            {
-                // CharSet handling.
-                // Collations are more specific than charsets. So if a collation has been set, we use the collation instead of the charset.
-                // If we made it into this branch, no collation has been defined.
             }
 
             if (operation.Comment != operation.OldTable.Comment)
@@ -694,7 +718,7 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
             if (operation.CharSet != null)
             {
                 builder
-                    .Append(" CHARSET ")
+                    .Append(" CHARACTER SET ")
                     .Append(operation.CharSet);
             }
 
