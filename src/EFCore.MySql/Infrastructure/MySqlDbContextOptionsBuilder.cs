@@ -21,7 +21,7 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
         /// <summary>
         ///     Configures the ANSI CharSet
         /// </summary>
-        [Obsolete("Use the Fluent API extension method 'HasCharSet()' on the definition of your model/entities/properties instead.", true)]
+        [Obsolete("Call the Fluent API extension method 'HasCharSet()' on the builder object of your model/entities/properties instead.", true)]
         public virtual MySqlDbContextOptionsBuilder CharSet(CharSet charSet) // TODO: Remove for EF Core 6.
             => throw new NotImplementedException("Use the Fluent API extension method 'HasCharSet()' on the definition of your model/entities/properties instead.");
 

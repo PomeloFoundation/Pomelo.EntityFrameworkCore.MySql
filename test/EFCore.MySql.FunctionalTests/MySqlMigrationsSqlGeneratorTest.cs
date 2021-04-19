@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Pomelo.EntityFrameworkCore.MySql.Extensions;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
@@ -534,30 +535,35 @@ SELECT ROW_COUNT();");
             var expectedCharSetName = charSet != null ? $" CHARACTER SET {charSet}" : null;
 
             Generate(
-                modelBuilder => modelBuilder.Entity("Person", eb =>
-                    {
-                        var pb = eb.Property<string>("Name");
-
-                        if (isUnicode.HasValue)
-                        {
-                            pb.IsUnicode(isUnicode.Value);
-                        }
-
-                        if (isIndex)
-                        {
-                            eb.HasIndex("Name");
-                        }
-                    }),
-                new AddColumnOperation
+                modelBuilder =>
                 {
-                    Table = "Person",
-                    Name = "Name",
-                    ClrType = typeof(string),
-                    IsUnicode = isUnicode,
-                    IsNullable = true,
-                    [MySqlAnnotationNames.CharSet] = charSet,
+                    modelBuilder.HasCharSet(charSet);
+                    modelBuilder.Entity(
+                        "Person", eb =>
+                        {
+                            var pb = eb.Property<string>("Name");
+
+                            if (isUnicode.HasValue)
+                            {
+                                pb.IsUnicode(isUnicode.Value);
+                            }
+
+                            if (isIndex)
+                            {
+                                eb.HasIndex("Name");
+                            }
+                        });
                 },
-                charSet);
+                modelBuilder =>
+                {
+                    var addColumn = modelBuilder.AddColumn<string>(name: "Name", table: "Person", nullable: true, unicode: isUnicode);
+
+                    if (charSet != null)
+                    {
+                        addColumn.Annotation(MySqlAnnotationNames.CharSet, charSet);
+                    }
+                }
+            );
 
             var columnType = "longtext";
             if (isIndex)
@@ -1487,40 +1493,25 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
             testSqlLoggerFactory.AssertBaseline(new[] {expected});
         }
 
-        protected override void Generate(params MigrationOperation[] operations)
-            => base.Generate(operations);
-
-        private void Generate(
-            Action<ModelBuilder> buildAction,
-            MigrationOperation operation,
-            CharSet charSet)
-            => Generate(buildAction, new[] {operation}, default, charSet);
+        protected override void Generate(params MigrationOperation[] operation)
+            => Generate(null, operation);
 
         protected override void Generate(
             Action<ModelBuilder> buildAction,
             MigrationOperation[] operation,
             MigrationsSqlGenerationOptions options)
-            => Generate(buildAction, operation, options, null, null);
+            => Generate(null, buildAction, operation, options);
 
         protected virtual void Generate(
+            Action<MySqlDbContextOptionsBuilder> optionsAction,
             Action<ModelBuilder> buildAction,
             MigrationOperation[] operation,
-            MigrationsSqlGenerationOptions options,
-            [CanBeNull] CharSet charSet,
-            MySqlSchemaNameTranslator schemaNameTranslator = null)
+            MigrationsSqlGenerationOptions options)
         {
             var optionsBuilder = new DbContextOptionsBuilder(ContextOptions);
             var mySqlOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder);
 
-            if (charSet != null)
-            {
-                // mySqlOptionsBuilder.CharSet(charSet); // <-- TODO: Replace with `model.HasCharSet()`.
-            }
-
-            if (schemaNameTranslator != null)
-            {
-                mySqlOptionsBuilder.SchemaBehavior(MySqlSchemaBehavior.Translate, schemaNameTranslator);
-            }
+            optionsAction?.Invoke(mySqlOptionsBuilder);
 
             var contextOptions = optionsBuilder.Options;
 

@@ -4,9 +4,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Extensions;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
 {
@@ -19,7 +22,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
 
         public override IEnumerable<IAnnotation> For(IRelationalModel model)
             => model.GetAnnotations()
-                .Where(a => a.Name == MySqlAnnotationNames.CharSet);
+                .Where(a => a.Name == MySqlAnnotationNames.CharSet ||
+                            a.Name == MySqlAnnotationNames.CharSetDelegation ||
+                            a.Name == MySqlAnnotationNames.CollationDelegation);
 
         public override IEnumerable<IAnnotation> For(ITable table)
             => table.EntityTypeMappings.First()
@@ -94,20 +99,41 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
                     valueGenerationStrategy);
             }
 
-            if (column.PropertyMappings.Select(m => m.Property.GetCharSet())
-                .FirstOrDefault(c => c != null) is string charset)
+            // Use the an explicitly defined character set, if set.
+            // Otherwise, explicitly use the the model/database character set, if delegation is enabled.
+            var charSet = column.PropertyMappings.Select(m => m.Property.GetCharSet()).FirstOrDefault(c => c != null) ??
+                          column.PropertyMappings.Select(
+                                  m => m.Property.FindTypeMapping() is MySqlStringTypeMapping &&
+                                       m.Property.DeclaringEntityType.Model.GetCharSetDelegation().GetValueOrDefault(true)
+                                      ? m.Property.DeclaringEntityType.Model.GetCharSet()
+                                      : null)
+                              .FirstOrDefault(c => c != null);
+
+            if (charSet is not null)
             {
                 yield return new Annotation(
                     MySqlAnnotationNames.CharSet,
-                    charset);
+                    charSet);
             }
 
             // We have been using the `MySql:Collation` annotation before EF Core added collation support.
             // Our `MySqlPropertyExtensions.GetMySqlLegacyCollation()` method handles the legacy case, so we explicitly
             // call it here and setup the relational annotation, even though EF Core sets it up as well.
             // This ensures, that from this point onwards, only the `Relational:Collation` annotation is being used.
-            if (column.PropertyMappings.Select(m => m.Property.GetMySqlLegacyCollation())
-                .FirstOrDefault(c => c != null) is string collation)
+            // If no collation has been set, explicitly use the the model/database collation, if delegation is enabled.
+            var collation = column.PropertyMappings.All(m => m.Property.GetCollation() is null)
+                ? column.PropertyMappings.Select(
+                          m => m.Property.GetMySqlLegacyCollation())
+                      .FirstOrDefault(c => c != null) ??
+                  column.PropertyMappings.Select(
+                          m => m.Property.FindTypeMapping() is MySqlStringTypeMapping &&
+                               m.Property.DeclaringEntityType.Model.GetCollationDelegation().GetValueOrDefault(true)
+                              ? m.Property.DeclaringEntityType.Model.GetCollation()
+                              : null)
+                      .FirstOrDefault(c => c != null)
+                : null;
+
+            if (collation is not null)
             {
                 yield return new Annotation(
                     RelationalAnnotationNames.Collation,

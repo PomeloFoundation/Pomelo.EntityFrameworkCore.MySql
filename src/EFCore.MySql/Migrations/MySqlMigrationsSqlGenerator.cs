@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Pomelo.EntityFrameworkCore.MySql.Extensions;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
@@ -377,7 +378,10 @@ DELIMITER ;";
             var oldCharSet = operation.OldTable[MySqlAnnotationNames.CharSet] as string;
             var newCharSet = operation[MySqlAnnotationNames.CharSet] as string;
 
-            var oldCollation = operation.OldTable[RelationalAnnotationNames.Collation] as string;
+            var oldCollation = operation.OldTable[RelationalAnnotationNames.Collation] as string ??
+                               (model?.GetCollationDelegation() ?? true
+                                   ? model?.GetCollation()
+                                   : null);
             var newCollation = operation[RelationalAnnotationNames.Collation] as string;
 
             // Collations are more specific than charsets. So if a collation has been set, we use the collation instead of the charset.
