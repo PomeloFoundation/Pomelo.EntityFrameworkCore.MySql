@@ -24,6 +24,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
 
             // We explicitly use `utf8mb4` in all instances, where charset based calculations need to be done, but accessing annotations
             // isn't possible (e.g. in `MySqlTypeMappingSource`).
+            // This is also being used as the universal fallback character set, if no character set was explicitly defined for the model,
+            // which will result in similar behavior as in previous versions and ensure that databases use a decent/the recommended charset
+            // by default, if none was explicitly set.
             DefaultCharSet = CharSet.Utf8Mb4;
 
             // NCHAR and NVARCHAR are prefdefined by MySQL.

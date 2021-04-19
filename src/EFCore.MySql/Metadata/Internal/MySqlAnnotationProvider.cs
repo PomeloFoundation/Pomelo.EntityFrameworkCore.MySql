@@ -7,24 +7,42 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Extensions;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
 {
     public class MySqlAnnotationProvider : RelationalAnnotationProvider
     {
-        public MySqlAnnotationProvider([NotNull] RelationalAnnotationProviderDependencies dependencies)
+        [NotNull] private readonly IMySqlOptions _options;
+
+        public MySqlAnnotationProvider(
+            [NotNull] RelationalAnnotationProviderDependencies dependencies,
+            [NotNull] IMySqlOptions options)
             : base(dependencies)
         {
+            _options = options;
         }
 
         public override IEnumerable<IAnnotation> For(IRelationalModel model)
-            => model.GetAnnotations()
-                .Where(a => a.Name == MySqlAnnotationNames.CharSet ||
-                            a.Name == MySqlAnnotationNames.CharSetDelegation ||
-                            a.Name == MySqlAnnotationNames.CollationDelegation);
+        {
+            // If no character set has been explicitly defined for the model, we use Pomelo's universal fallback default character set,
+            // which is `utf8mb4`.
+            if (model.GetAnnotations().All(a => a.Name != MySqlAnnotationNames.CharSet || a.Value is not string))
+            {
+                yield return new Annotation(MySqlAnnotationNames.CharSet, _options.DefaultCharSet);
+            }
+
+            foreach (var annotation in model.GetAnnotations()
+                .Where(
+                    a => a.Name == MySqlAnnotationNames.CharSet ||
+                         a.Name == MySqlAnnotationNames.CharSetDelegation ||
+                         a.Name == MySqlAnnotationNames.CollationDelegation))
+            {
+                yield return annotation;
+            }
+        }
 
         public override IEnumerable<IAnnotation> For(ITable table)
             => table.EntityTypeMappings.First()
