@@ -29,7 +29,7 @@ Release | Branch | MySqlConnector | EF Core | .NET Standard | .NET (Core) | .NET
 
 ### Supported Databases and Versions
 
-`Pomelo.EntityFrameworkCore.MySql` is tested at least against the latest 2 minor versions of `MySQL` and `MariaDB`. Older versions and other server implementations _may_ be compatible (and likely are to a high degree) but are not officially supported or tested.
+`Pomelo.EntityFrameworkCore.MySql` is tested at least against the latest 2 minor versions of `MySQL` and `MariaDB`. Older versions and other server implementations (e.g. Amazon Aurora) _may_ be compatible (and likely are to a high degree) but are not officially supported or tested.
 
 Currently supported versions are:
 
@@ -43,7 +43,8 @@ Currently supported versions are:
 
 Milestone | Status | Release Date
 ----------|--------|-------------
-5.0.0 | In Development | TBA (see [#1088](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1088))
+5.0.0 | Feature lock | 2021-04-28 (see [#1088](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1088))
+5.0.0-beta.1 | Announced | 2021-04-22
 5.0.0-alpha.2 | Released | 2020-11-12
 3.2.4 | Released | 2020-10-13
 3.0.1 | Released | 2019-12-04
