@@ -157,17 +157,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
 
             // Use an explicitly defined character set, if set.
             // Otherwise, explicitly use the entity/table or model/database character set, if delegation is enabled.
-            var charSet = column.PropertyMappings.Select(m => m.Property.GetCharSet()).FirstOrDefault(c => c != null) ??
-                          column.PropertyMappings.Select(
-                                  m => m.Property.FindTypeMapping() is MySqlStringTypeMapping &&
-                                       m.Property.DeclaringEntityType.GetCharSetDelegation().GetValueOrDefault(true)
-                                      ? m.Property.DeclaringEntityType.GetCharSet()
-                                      : null)
+            var charSet = column.PropertyMappings.Select(
+                                  m => m.Property.GetCharSet())
                               .FirstOrDefault(c => c != null) ??
                           column.PropertyMappings.Select(
                                   m => m.Property.FindTypeMapping() is MySqlStringTypeMapping &&
-                                       m.Property.DeclaringEntityType.Model.GetCharSetDelegation().GetValueOrDefault(true)
-                                      ? m.Property.DeclaringEntityType.Model.GetCharSet()
+                                       m.Property.DeclaringEntityType.GetCharSetDelegation().GetValueOrDefault(true)
+                                      ? m.Property.DeclaringEntityType.GetCharSet() ??
+                                        (m.Property.DeclaringEntityType.Model.GetCharSetDelegation().GetValueOrDefault(true)
+                                            ? m.Property.DeclaringEntityType.Model.GetCharSet()
+                                            : null)
                                       : null)
                               .FirstOrDefault(c => c != null);
 
@@ -190,13 +189,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
                   column.PropertyMappings.Select(
                           m => m.Property.FindTypeMapping() is MySqlStringTypeMapping &&
                                m.Property.DeclaringEntityType.GetCollationDelegation().GetValueOrDefault(true)
-                              ? m.Property.DeclaringEntityType.GetCollation()
-                              : null)
-                      .FirstOrDefault(c => c != null) ??
-                  column.PropertyMappings.Select(
-                          m => m.Property.FindTypeMapping() is MySqlStringTypeMapping &&
-                               m.Property.DeclaringEntityType.Model.GetCollationDelegation().GetValueOrDefault(true)
-                              ? m.Property.DeclaringEntityType.Model.GetCollation()
+                              ? m.Property.DeclaringEntityType.GetCollation() ??
+                                (m.Property.DeclaringEntityType.Model.GetCollationDelegation().GetValueOrDefault(true)
+                                    ? m.Property.DeclaringEntityType.Model.GetCollation()
+                                    : null)
                               : null)
                       .FirstOrDefault(c => c != null)
                 : null;
