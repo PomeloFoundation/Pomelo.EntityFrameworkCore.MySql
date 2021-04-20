@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +16,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
-using Pomelo.EntityFrameworkCore.MySql.Extensions;
+using Microsoft.Extensions.Logging;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
@@ -55,7 +54,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
         {
             { typeof(DropPrimaryKeyOperation), (beginText: BeforeDropPrimaryKeyMigrationBegin, endText: BeforeDropPrimaryKeyMigrationEnd) },
             { typeof(AddPrimaryKeyOperation), (beginText: AfterAddPrimaryKeyMigrationBegin, endText: AfterAddPrimaryKeyMigrationEnd) },
-            { typeof(AlterDatabaseOperation), (beginText: AlterDatabaseOperationMigrationBegin, endText: AlterDatabaseOperationMigrationEnd) },
         };
 
         #region Custom SQL
@@ -143,21 +141,6 @@ BEGIN
 END //
 DELIMITER ;";
         private const string AfterAddPrimaryKeyMigrationEnd = @"DROP PROCEDURE `POMELO_AFTER_ADD_PRIMARY_KEY`;";
-
-        private const string AlterDatabaseOperationMigrationBegin = @"DROP PROCEDURE IF EXISTS `__Pomelo_AlterDatabase`;
-DELIMITER //
-CREATE PROCEDURE `__Pomelo_AlterDatabase`(in `collation` varchar(255))
-BEGIN
-    DECLARE SQL_EXP longtext;
-	SET SQL_EXP = CONCAT('ALTER DATABASE `', SCHEMA(), '` COLLATE ', IFNULL(`collation`, @@character_set_server), ';');
-
-	PREPARE SQL_EXP_EXECUTE FROM @SQL_EXP;
-	EXECUTE SQL_EXP_EXECUTE;
-	DEALLOCATE PREPARE SQL_EXP_EXECUTE;
-END //
-DELIMITER ;";
-
-        private const string AlterDatabaseOperationMigrationEnd = @"DROP PROCEDURE IF EXISTS `__Pomelo_AlterDatabase`;";
 
         #endregion
 
@@ -378,17 +361,14 @@ DELIMITER ;";
             var oldCharSet = operation.OldTable[MySqlAnnotationNames.CharSet] as string;
             var newCharSet = operation[MySqlAnnotationNames.CharSet] as string;
 
-            var oldCollation = operation.OldTable[RelationalAnnotationNames.Collation] as string ??
-                               (model?.GetCollationDelegation() ?? true
-                                   ? model?.GetCollation()
-                                   : null);
+            var oldCollation = operation.OldTable[RelationalAnnotationNames.Collation] as string;
             var newCollation = operation[RelationalAnnotationNames.Collation] as string;
 
             // Collations are more specific than charsets. So if a collation has been set, we use the collation instead of the charset.
             if (newCollation != oldCollation &&
                 newCollation != null)
             {
-                // A new collation has been set. It takes precedence over any a defined charset.
+                // A new collation has been set. It takes precedence over any defined charset.
                 builder
                     .Append("ALTER TABLE ")
                     .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name, operation.Schema))
@@ -763,19 +743,50 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
 
         protected override void Generate(AlterDatabaseOperation operation, IModel model, MigrationCommandListBuilder builder)
         {
-            // The following does not work, because PREPARE does still not support ALTER DATABASE and we cannot inject the current SCHEMA()
-            // into an ALTER DATABASE statement without it.
-            //
-            // ALTER DATABASE `Foo` CHARACTER SET latin1 COLLATE latin1_swedish_ci;
-            //
-            // Check.NotNull(operation, nameof(operation));
-            // Check.NotNull(model, nameof(model));
-            // Check.NotNull(builder, nameof(builder));
-            //
-            // builder.AppendLine($"CALL `__Pomelo_AlterDatabase`({_stringTypeMapping.GenerateSqlLiteral(operation)});");
+            Check.NotNull(operation, nameof(operation));
+            Check.NotNull(builder, nameof(builder));
 
-            throw new InvalidOperationException(
-                "ALTER DATABASE operations are curently not supported using the migration operation. Please execute the necessary SQL manually.");
+            // Also at this point, all explicitly added `Relational:Collation` annotations (through delegation) should have been set to the
+            // `Collation` property and removed.
+            Debug.Assert(operation.FindAnnotation(RelationalAnnotationNames.Collation) == null);
+
+            var oldCharSet = operation.OldDatabase[MySqlAnnotationNames.CharSet] as string;
+            var newCharSet = operation[MySqlAnnotationNames.CharSet] as string;
+
+            var oldCollation = operation.OldDatabase.Collation;
+            var newCollation = operation.Collation;
+
+            // Collations are more specific than charsets. So if a collation has been set, we use the collation instead of the charset.
+            if (newCollation != oldCollation &&
+                newCollation != null)
+            {
+                // A new collation has been set. It takes precedence over any defined charset.
+                builder
+                    .Append("ALTER DATABASE COLLATE ")
+                    .Append(newCollation)
+                    .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
+
+                EndStatement(builder);
+            }
+            else if (newCharSet != oldCharSet ||
+                     newCollation != oldCollation && newCollation == null)
+            {
+                // The charset has been changed or the collation has been reset to the default.
+                if (newCharSet != null)
+                {
+                    // A new charset has been set without an explicit collation.
+                    builder
+                        .Append("ALTER DATABASE CHARACTER SET ")
+                        .Append(newCharSet)
+                        .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
+
+                    EndStatement(builder);
+                }
+                else
+                {
+                    Dependencies.MigrationsLogger.Logger.LogWarning(@"ALTER DATABASE operations can currently not implicitly reset the character set AND the collation to the server default values. Please explicitly specify a character set, a collation or both.");
+                }
+            }
         }
 
         protected override void Generate(
@@ -1315,6 +1326,12 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
             Debug.Assert(operation.FindAnnotation(MySqlAnnotationNames.Collation) == null);
 #pragma warning restore 618
 
+            // Also at this point, all explicitly added `Relational:Collation` annotations (through delegation) should have been set to the
+            // `Collation` property and removed.
+            Debug.Assert(operation.FindAnnotation(RelationalAnnotationNames.Collation) == null);
+
+            // If we set the collation through delegation, we use the `Relational:Collation` annotation, so the collation will not be in the
+            // `Collation` property.
             var collation = operation.Collation;
             if (collation != null)
             {

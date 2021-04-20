@@ -27,14 +27,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
 
         public override IEnumerable<IAnnotation> For(IRelationalModel model)
         {
-            // If no character set has been explicitly defined for the model, we use Pomelo's universal fallback default character set,
+            // If neither character set nor collation has been explicitly defined for the model, we use Pomelo's universal fallback default character set,
             // which is `utf8mb4`.
-            if (model.GetAnnotations().All(a => a.Name != MySqlAnnotationNames.CharSet || a.Value is not string))
+            if (model.Model.GetAnnotations().All(a => (a.Name != MySqlAnnotationNames.CharSet || a.Value is not string) &&
+                                                      (a.Name != RelationalAnnotationNames.Collation || a.Value is not string)) &&
+                _options.DefaultCharSet?.Name is not null)
             {
-                yield return new Annotation(MySqlAnnotationNames.CharSet, _options.DefaultCharSet);
+                yield return new Annotation(MySqlAnnotationNames.CharSet, _options.DefaultCharSet.Name);
             }
 
-            foreach (var annotation in model.GetAnnotations()
+            foreach (var annotation in model.Model.GetAnnotations()
                 .Where(
                     a => a.Name == MySqlAnnotationNames.CharSet ||
                          a.Name == MySqlAnnotationNames.CharSetDelegation ||
@@ -45,11 +47,47 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
         }
 
         public override IEnumerable<IAnnotation> For(ITable table)
-            => table.EntityTypeMappings.First()
-                .EntityType.GetAnnotations()
+        {
+            // Model validation ensures that these facets are the same on all mapped entity types
+            var entityType = table.EntityTypeMappings.First().EntityType;
+
+            // Use an explicitly defined character set, if set.
+            // Otherwise, explicitly use the model/database character set, if delegation is enabled.
+            var charSet = entityType.GetCharSet() ??
+                          (entityType.Model.GetCharSetDelegation().GetValueOrDefault(true)
+                              ? entityType.Model.GetCharSet()
+                              : null);
+
+            if (charSet is not null)
+            {
+                yield return new Annotation(
+                    MySqlAnnotationNames.CharSet,
+                    charSet);
+            }
+
+            // Use an explicitly defined collation, if set.
+            // Otherwise, explicitly use the model/database collation, if delegation is enabled.
+            var collation = entityType.GetCollation() ??
+                            (entityType.Model.GetCollationDelegation().GetValueOrDefault(true)
+                                ? entityType.Model.GetCollation()
+                                : null);
+
+            if (collation is not null)
+            {
+                yield return new Annotation(
+                    RelationalAnnotationNames.Collation,
+                    collation);
+            }
+
+            // Handle other annotations (including the delegation annotations).
+            foreach (var annotation in entityType.GetAnnotations()
                 .Where(
-                    a => a.Name == MySqlAnnotationNames.CharSet && a.Value != null ||
-                         a.Name == RelationalAnnotationNames.Collation && a.Value != null);
+                    a => (a.Name == MySqlAnnotationNames.CharSetDelegation && a.Value != null) ||
+                         (a.Name == MySqlAnnotationNames.CollationDelegation && a.Value != null)))
+            {
+                yield return annotation;
+            }
+        }
 
         public override IEnumerable<IAnnotation> For(IUniqueConstraint constraint)
         {
@@ -117,9 +155,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
                     valueGenerationStrategy);
             }
 
-            // Use the an explicitly defined character set, if set.
-            // Otherwise, explicitly use the the model/database character set, if delegation is enabled.
+            // Use an explicitly defined character set, if set.
+            // Otherwise, explicitly use the entity/table or model/database character set, if delegation is enabled.
             var charSet = column.PropertyMappings.Select(m => m.Property.GetCharSet()).FirstOrDefault(c => c != null) ??
+                          column.PropertyMappings.Select(
+                                  m => m.Property.FindTypeMapping() is MySqlStringTypeMapping &&
+                                       m.Property.DeclaringEntityType.GetCharSetDelegation().GetValueOrDefault(true)
+                                      ? m.Property.DeclaringEntityType.GetCharSet()
+                                      : null)
+                              .FirstOrDefault(c => c != null) ??
                           column.PropertyMappings.Select(
                                   m => m.Property.FindTypeMapping() is MySqlStringTypeMapping &&
                                        m.Property.DeclaringEntityType.Model.GetCharSetDelegation().GetValueOrDefault(true)
@@ -142,6 +186,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             var collation = column.PropertyMappings.All(m => m.Property.GetCollation() is null)
                 ? column.PropertyMappings.Select(
                           m => m.Property.GetMySqlLegacyCollation())
+                      .FirstOrDefault(c => c != null) ??
+                  column.PropertyMappings.Select(
+                          m => m.Property.FindTypeMapping() is MySqlStringTypeMapping &&
+                               m.Property.DeclaringEntityType.GetCollationDelegation().GetValueOrDefault(true)
+                              ? m.Property.DeclaringEntityType.GetCollation()
+                              : null)
                       .FirstOrDefault(c => c != null) ??
                   column.PropertyMappings.Select(
                           m => m.Property.FindTypeMapping() is MySqlStringTypeMapping &&

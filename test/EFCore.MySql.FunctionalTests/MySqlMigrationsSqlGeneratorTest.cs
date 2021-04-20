@@ -454,31 +454,29 @@ SELECT ROW_COUNT();");
         [ConditionalFact]
         public virtual void AlterDatabaseOperation_with_charset()
         {
-            // There is currently no way to dynamically execute an ALTER DATABASE statement in MySQL.
-            // And since we don't know the database name when creating the statement, the statement has to be dynamically created and
-            // executed.
-            // See:
-            //      https://dev.mysql.com/worklog/task/?id=2871
-            //      https://bugs.mysql.com/bug.php?id=31625
-            Assert.Throws<InvalidOperationException>(
-                () => Generate(
-                    new MySqlCreateDatabaseOperation {Name = "Northwind", CharSet = "latin1"},
-                    new AlterDatabaseOperation {[MySqlAnnotationNames.CharSet] = "utf8mb4"}));
+            Generate(
+                new MySqlCreateDatabaseOperation {Name = "Northwind", CharSet = "latin1"},
+                new AlterDatabaseOperation {[MySqlAnnotationNames.CharSet] = "utf8mb4"});
+
+            Assert.Equal(
+                @"CREATE DATABASE `Northwind` CHARACTER SET latin1;
+
+ALTER DATABASE CHARACTER SET utf8mb4;" + EOL,
+                Sql);
         }
 
         [ConditionalFact]
         public virtual void AlterDatabaseOperation_with_collation()
         {
-            // There is currently no way to dynamically execute an ALTER DATABASE statement in MySQL.
-            // And since we don't know the database name when creating the statement, the statement has to be dynamically created and
-            // executed.
-            // See:
-            //      https://dev.mysql.com/worklog/task/?id=2871
-            //      https://bugs.mysql.com/bug.php?id=31625
-            Assert.Throws<InvalidOperationException>(
-                () => Generate(
-                    new MySqlCreateDatabaseOperation {Name = "Northwind", Collation = "latin1_general_ci"},
-                    new AlterDatabaseOperation {Collation = "latin1_swedish_ci"}));
+            Generate(
+                new MySqlCreateDatabaseOperation {Name = "Northwind", Collation = "latin1_general_ci"},
+                new AlterDatabaseOperation {Collation = "latin1_swedish_ci"});
+
+            Assert.Equal(
+                @"CREATE DATABASE `Northwind` COLLATE latin1_general_ci;
+
+ALTER DATABASE COLLATE latin1_swedish_ci;" + EOL,
+                Sql);
         }
 
         [ConditionalFact]
@@ -529,7 +527,7 @@ SELECT ROW_COUNT();");
         [InlineData(true, false, null)]
         [InlineData(true, true, "Latin1")]
         [InlineData(true, true, null)]
-        public virtual void AddColumnOperation_with_charSet_implicit(bool? isUnicode, bool isIndex, string charSetName)
+        public virtual void AddColumnOperation_with_charset_implicit(bool? isUnicode, bool isIndex, string charSetName)
         {
             var charSet = CharSet.GetCharSetFromName(charSetName);
             var expectedCharSetName = charSet != null ? $" CHARACTER SET {charSet}" : null;
@@ -1059,7 +1057,7 @@ SELECT ROW_COUNT();");
             => "geometrycollection";
 
         [ConditionalFact]
-        public virtual void AddColumnOperation_with_CharSet_annotation()
+        public virtual void AddColumnOperation_with_charset_annotation()
         {
             Generate(
                 new AddColumnOperation

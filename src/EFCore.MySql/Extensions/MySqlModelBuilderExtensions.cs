@@ -52,11 +52,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
             [NotNull] this ModelBuilder modelBuilder,
             [CanBeNull] CharSet charSet,
             bool? explicitlyDelegateToChildren = null)
-        {
-            Check.NotNull(modelBuilder, nameof(modelBuilder));
-
-            return modelBuilder.HasCharSet(charSet?.Name, explicitlyDelegateToChildren);
-        }
+            => modelBuilder.HasCharSet(charSet?.Name, explicitlyDelegateToChildren);
 
         /// <summary>
         /// Sets the default character set to use for the model/database.
@@ -109,11 +105,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
             [CanBeNull] CharSet charSet,
             bool? explicitlyDelegateToChildren = null,
             bool fromDataAnnotation = false)
-        {
-            Check.NotNull(modelBuilder, nameof(modelBuilder));
-
-            return modelBuilder.HasCharSet(charSet?.Name, explicitlyDelegateToChildren, fromDataAnnotation);
-        }
+            => modelBuilder.HasCharSet(charSet?.Name, explicitlyDelegateToChildren, fromDataAnnotation);
 
         /// <summary>
         ///     Returns a value indicating whether the given character set can be set as default.
@@ -132,6 +124,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
 
             return modelBuilder.CanSetAnnotation(MySqlAnnotationNames.CharSet, charSet, fromDataAnnotation);
         }
+
+        /// <summary>
+        ///     Returns a value indicating whether the given character set can be set as default.
+        /// </summary>
+        /// <param name="modelBuilder"> The model builder. </param>
+        /// <param name="charSet"> The character set. </param>
+        /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
+        /// <returns> <see langword="true" /> if the given character set can be set as default. </returns>
+        public static bool CanSetCharSet(
+            [NotNull] this IConventionModelBuilder modelBuilder,
+            [CanBeNull] CharSet charSet,
+            bool fromDataAnnotation = false)
+            => modelBuilder.CanSetCharSet(charSet?.Name, fromDataAnnotation);
 
         /// <summary>
         ///     Returns a value indicating whether the given character set delegation setting can be set.

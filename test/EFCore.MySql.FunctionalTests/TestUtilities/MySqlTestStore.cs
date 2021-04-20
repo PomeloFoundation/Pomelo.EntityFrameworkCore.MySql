@@ -11,8 +11,6 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Tests;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
@@ -30,17 +28,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         protected override string OpenDelimiter => "`";
         protected override string CloseDelimiter => "`";
 
-        public static MySqlTestStore GetOrCreate(string name, bool useConnectionString = false, bool noBackslashEscapes = false)
-            => new MySqlTestStore(name, useConnectionString: useConnectionString, shared: true, noBackslashEscapes: noBackslashEscapes);
+        public static MySqlTestStore GetOrCreate(string name, bool useConnectionString = false, bool noBackslashEscapes = false, string databaseCollation = null)
+            => new MySqlTestStore(name, useConnectionString: useConnectionString, shared: true, noBackslashEscapes: noBackslashEscapes, databaseCollation: databaseCollation);
 
-        public static MySqlTestStore GetOrCreate(string name, string scriptPath, bool noBackslashEscapes = false)
-            => new MySqlTestStore(name, scriptPath: scriptPath, noBackslashEscapes: noBackslashEscapes);
+        public static MySqlTestStore GetOrCreate(string name, string scriptPath, bool noBackslashEscapes = false, string databaseCollation = null)
+            => new MySqlTestStore(name, scriptPath: scriptPath, noBackslashEscapes: noBackslashEscapes, databaseCollation: databaseCollation);
 
         public static MySqlTestStore GetOrCreateInitialized(string name)
             => new MySqlTestStore(name, shared: true).InitializeMySql(null, (Func<DbContext>)null, null);
 
-        public static MySqlTestStore Create(string name, bool useConnectionString = false, bool noBackslashEscapes = false)
-            => new MySqlTestStore(name, useConnectionString: useConnectionString, shared: false, noBackslashEscapes: noBackslashEscapes);
+        public static MySqlTestStore Create(string name, bool useConnectionString = false, bool noBackslashEscapes = false, string databaseCollation = null)
+            => new MySqlTestStore(name, useConnectionString: useConnectionString, shared: false, noBackslashEscapes: noBackslashEscapes, databaseCollation: databaseCollation);
 
         public static MySqlTestStore CreateInitialized(string name)
             => new MySqlTestStore(name, shared: false).InitializeMySql(null, null, null);
@@ -68,7 +66,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             : base(name, shared)
         {
             DatabaseCharSet = databaseCharSet ?? "utf8mb4";
-            DatabaseCollation = databaseCollation ?? ModernCsCollation; // all tests assume CS collation by default
+            DatabaseCollation = databaseCollation ?? ModernCsCollation;
             _useConnectionString = useConnectionString;
             _noBackslashEscapes = noBackslashEscapes;
 
@@ -110,7 +108,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
                 .CommandTimeout(GetCommandTimeout())
                 .ExecutionStrategy(d => new TestMySqlRetryingExecutionStrategy(d));
-            // .CharSet(CharSet.Utf8Mb4); // <-- TODO: Replace with `model.HasCharSet()`.
             // .EnableIndexOptimizedBooleanColumns(); // TODO: Activate for all test for .NET 5. Tests should use
             //       `ONLY_FULL_GROUP_BY` to ensure correct working of the
             //       expression visitor in all cases, which is blocked by
@@ -175,6 +172,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 }
 
                 databaseSetupSql = GetAlterDatabaseStatement(Name, DatabaseCharSet, DatabaseCollation);
+
+                // databaseSetupSql = GetCreateDatabaseStatement(Name, DatabaseCharSet, DatabaseCollation);
                 // DeleteDatabase();
             }
             else

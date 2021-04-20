@@ -69,6 +69,59 @@ namespace Microsoft.EntityFrameworkCore
 
         #endregion CharSet
 
+        #region CharSetDelegation
+
+        /// <summary>
+        ///     Returns the character set delegation setting for the entity/table.
+        /// </summary>
+        /// <param name="entityType"> The entity type. </param>
+        /// <returns> The character set delegation setting. </returns>
+        public static bool? GetCharSetDelegation([NotNull] this IEntityType entityType)
+            => entityType[MySqlAnnotationNames.CharSetDelegation] as bool?;
+
+        /// <summary>
+        ///     Attempts to set the character set delegation setting for entity/table.
+        /// </summary>
+        /// <param name="entityType"> The entity type. </param>
+        /// <param name="explicitlyDelegateToChildren">
+        /// Properties/columns don't explicitly inherit the character set if set to <see langword="false"/>.
+        /// They will explicitly inherit the character set if set to <see langword="null"/> or <see langword="true"/>.
+        /// </param>
+        public static void SetCharSetDelegation(
+            [NotNull] this IMutableEntityType entityType,
+            [CanBeNull] bool? explicitlyDelegateToChildren)
+            => entityType.SetOrRemoveAnnotation(MySqlAnnotationNames.CharSetDelegation, explicitlyDelegateToChildren);
+
+        /// <summary>
+        ///     Attempts to set the character set delegation setting for entity/table.
+        /// </summary>
+        /// <param name="entityType"> The entity type. </param>
+        /// <param name="explicitlyDelegateToChildren">
+        /// Entities/tables (and possibly properties/columns) don't explicitly inherit the character set if set to <see langword="false"/>.
+        /// They will explicitly inherit the character set if set to <see langword="null"/> or <see langword="true"/>.
+        /// </param>
+        /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
+        /// <returns> The configured value. </returns>
+        public static bool? SetCharSetDelegation(
+            [NotNull] this IConventionEntityType entityType,
+            [CanBeNull] bool? explicitlyDelegateToChildren,
+            bool fromDataAnnotation = false)
+        {
+            entityType.SetOrRemoveAnnotation(MySqlAnnotationNames.CharSetDelegation, explicitlyDelegateToChildren, fromDataAnnotation);
+
+            return explicitlyDelegateToChildren;
+        }
+
+        /// <summary>
+        ///     Gets the configuration source for the character set delegation setting.
+        /// </summary>
+        /// <param name="entityType"> The entity type. </param>
+        /// <returns> The configuration source. </returns>
+        public static ConfigurationSource? GetCharSetDelegationConfigurationSource([NotNull] this IConventionEntityType entityType)
+            => entityType.FindAnnotation(MySqlAnnotationNames.CharSetDelegation)?.GetConfigurationSource();
+
+        #endregion CharSetDelegation
+
         #region Collation
 
         /// <summary>
@@ -123,5 +176,58 @@ namespace Microsoft.EntityFrameworkCore
             => entityType.FindAnnotation(RelationalAnnotationNames.Collation)?.GetConfigurationSource();
 
         #endregion Collation
+
+        #region CollationDelegation
+
+        /// <summary>
+        ///     Returns the collation delegation setting for the entity/table.
+        /// </summary>
+        /// <param name="entityType"> The entity type. </param>
+        /// <returns> The collation delegation setting. </returns>
+        public static bool? GetCollationDelegation([NotNull] this IEntityType entityType)
+            => entityType[MySqlAnnotationNames.CollationDelegation] as bool?;
+
+        /// <summary>
+        ///     Attempts to set the collation delegation setting for entity/table.
+        /// </summary>
+        /// <param name="entityType"> The entity type. </param>
+        /// <param name="explicitlyDelegateToChildren">
+        /// Properties/columns don't explicitly inherit the collation if set to <see langword="false"/>.
+        /// They will explicitly inherit the collation if set to <see langword="null"/> or <see langword="true"/>.
+        /// </param>
+        public static void SetCollationDelegation(
+            [NotNull] this IMutableEntityType entityType,
+            [CanBeNull] bool? explicitlyDelegateToChildren)
+            => entityType.SetOrRemoveAnnotation(MySqlAnnotationNames.CollationDelegation, explicitlyDelegateToChildren);
+
+        /// <summary>
+        ///     Attempts to set the collation delegation setting for entity/table.
+        /// </summary>
+        /// <param name="entityType"> The entity type. </param>
+        /// <param name="explicitlyDelegateToChildren">
+        /// Entities/tables (and possibly properties/columns) don't explicitly inherit the collation if set to <see langword="false"/>.
+        /// They will explicitly inherit the collation if set to <see langword="null"/> or <see langword="true"/>.
+        /// </param>
+        /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
+        /// <returns> The configured value. </returns>
+        public static bool? SetCollationDelegation(
+            [NotNull] this IConventionEntityType entityType,
+            [CanBeNull] bool? explicitlyDelegateToChildren,
+            bool fromDataAnnotation = false)
+        {
+            entityType.SetOrRemoveAnnotation(MySqlAnnotationNames.CollationDelegation, explicitlyDelegateToChildren, fromDataAnnotation);
+
+            return explicitlyDelegateToChildren;
+        }
+
+        /// <summary>
+        ///     Gets the configuration source for the collation delegation setting.
+        /// </summary>
+        /// <param name="entityType"> The entity type. </param>
+        /// <returns> The configuration source. </returns>
+        public static ConfigurationSource? GetCollationDelegationConfigurationSource([NotNull] this IConventionEntityType entityType)
+            => entityType.FindAnnotation(MySqlAnnotationNames.CollationDelegation)?.GetConfigurationSource();
+
+        #endregion CollationDelegation
     }
 }
