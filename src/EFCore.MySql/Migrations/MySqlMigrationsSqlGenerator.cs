@@ -459,13 +459,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             EndStatement(builder);
         }
 
-        /// <summary>
-        ///     Builds commands for the given <see cref="DropIndexOperation" />
-        ///     by making calls on the given <see cref="MigrationCommandListBuilder" />, and then terminates the final command.
-        /// </summary>
-        /// <param name="operation"> The operation. </param>
-        /// <param name="model"> The target model which may be <c>null</c> if the operations exist without a model. </param>
-        /// <param name="builder"> The command builder to use to build the commands. </param>
         protected override void Generate(
             [NotNull] DropIndexOperation operation,
             [CanBeNull] IModel model,
@@ -983,12 +976,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             return columnType;
         }
 
-        /// <summary>
-        ///     Generates a SQL fragment for the default constraint of a column.
-        /// </summary>
-        /// <param name="defaultValue"> The default value for the column. </param>
-        /// <param name="defaultValueSql"> The SQL expression to use for the column's default constraint. </param>
-        /// <param name="builder"> The command builder to use to add the SQL fragment. </param>
         protected override void DefaultValue(object defaultValue, string defaultValueSql, string columnType, MigrationCommandListBuilder builder)
         {
             Check.NotNull(builder, nameof(builder));

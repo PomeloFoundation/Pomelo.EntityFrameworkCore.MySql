@@ -11,16 +11,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
     public static class MySqlModelExtensions
     {
         /// <summary>
-        ///     Returns the <see cref="SqlServerValueGenerationStrategy" /> to use for properties
+        ///     Returns the <see cref="MySqlValueGenerationStrategy" /> to use for properties
         ///     of keys in the model, unless the property has a strategy explicitly set.
         /// </summary>
         /// <param name="model"> The model. </param>
-        /// <returns> The default <see cref="SqlServerValueGenerationStrategy" />. </returns>
+        /// <returns> The default <see cref="MySqlValueGenerationStrategy" />. </returns>
         public static MySqlValueGenerationStrategy? GetValueGenerationStrategy([NotNull] this IModel model)
             => (MySqlValueGenerationStrategy?)model[MySqlAnnotationNames.ValueGenerationStrategy];
 
         /// <summary>
-        ///     Attempts to set the <see cref="SqlServerValueGenerationStrategy" /> to use for properties
+        ///     Attempts to set the <see cref="MySqlValueGenerationStrategy" /> to use for properties
         ///     of keys in the model that don't have a strategy explicitly set.
         /// </summary>
         /// <param name="model"> The model. </param>
@@ -29,7 +29,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
             => model.SetOrRemoveAnnotation(MySqlAnnotationNames.ValueGenerationStrategy, value);
 
         /// <summary>
-        ///     Attempts to set the <see cref="SqlServerValueGenerationStrategy" /> to use for properties
+        ///     Attempts to set the <see cref="MySqlValueGenerationStrategy" /> to use for properties
         ///     of keys in the model that don't have a strategy explicitly set.
         /// </summary>
         /// <param name="model"> The model. </param>
@@ -40,10 +40,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
             => model.SetOrRemoveAnnotation(MySqlAnnotationNames.ValueGenerationStrategy, value, fromDataAnnotation);
 
         /// <summary>
-        ///     Returns the <see cref="ConfigurationSource" /> for the default <see cref="SqlServerValueGenerationStrategy" />.
+        ///     Returns the <see cref="ConfigurationSource" /> for the default <see cref="MySqlValueGenerationStrategy" />.
         /// </summary>
         /// <param name="model"> The model. </param>
-        /// <returns> The <see cref="ConfigurationSource" /> for the default <see cref="SqlServerValueGenerationStrategy" />. </returns>
+        /// <returns> The <see cref="ConfigurationSource" /> for the default <see cref="MySqlValueGenerationStrategy" />. </returns>
         public static ConfigurationSource? GetValueGenerationStrategyConfigurationSource([NotNull] this IConventionModel model)
             => model.FindAnnotation(MySqlAnnotationNames.ValueGenerationStrategy)?.GetConfigurationSource();
     }
