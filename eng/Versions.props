@@ -24,28 +24,28 @@
     <UsingToolXliff>False</UsingToolXliff>
   </PropertyGroup>
   <PropertyGroup Label="Common Versions">
-    <EntityFrameworkCoreVersion>[3.1.10, 5.0.0)</EntityFrameworkCoreVersion>
+    <EntityFrameworkCoreVersion>[3.1.14, 5.0.0)</EntityFrameworkCoreVersion>
   </PropertyGroup>
   <PropertyGroup Label="Dependencies">
     <!-- Runtime Dependencies -->
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.1.10</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCoreAppInternalPackageVersion>3.1.10-servicing.20519.3</MicrosoftNETCoreAppInternalPackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.1.14</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNETCoreAppInternalPackageVersion>3.1.14-servicing.21165.2</MicrosoftNETCoreAppInternalPackageVersion>
     <!-- EFCore.MySql Dependencies -->
     <MicrosoftEntityFrameworkCoreRelationalVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreRelationalVersion>
     <MySqlConnectorVersion>[0.69.10, 1.0.0)</MySqlConnectorVersion>
     <PomeloJsonObjectVersion>2.2.1</PomeloJsonObjectVersion>
-    <MicrosoftExtensionsCachingMemoryVersion>3.1.10</MicrosoftExtensionsCachingMemoryVersion>
-    <MicrosoftExtensionsDependencyInjection>3.1.10</MicrosoftExtensionsDependencyInjection>
+    <MicrosoftExtensionsCachingMemoryVersion>3.1.14</MicrosoftExtensionsCachingMemoryVersion>
+    <MicrosoftExtensionsDependencyInjection>3.1.14</MicrosoftExtensionsDependencyInjection>
     <SystemDiagnosticsDiagnosticSourceVersion>4.7.1</SystemDiagnosticsDiagnosticSourceVersion>
-    <MicrosoftExtensionsLoggingVersion>3.1.10</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftExtensionsLoggingVersion>3.1.14</MicrosoftExtensionsLoggingVersion>
     <MicrosoftBclAsyncInterfacesVersion>1.1.1</MicrosoftBclAsyncInterfacesVersion>
-    <MicrosoftBclHashCodeVersion>1.1.0</MicrosoftBclHashCodeVersion>
-    <MicrosoftExtensionsHostFactoryResolverSourcesVersion>3.1.8-servicing.20411.1</MicrosoftExtensionsHostFactoryResolverSourcesVersion>
-    <MicrosoftExtensionsConfigurationVersion>3.1.10</MicrosoftExtensionsConfigurationVersion>
+    <MicrosoftBclHashCodeVersion>1.1.1</MicrosoftBclHashCodeVersion>
+    <MicrosoftExtensionsHostFactoryResolverSourcesVersion>3.1.14-servicing.21165.9</MicrosoftExtensionsHostFactoryResolverSourcesVersion>
+    <MicrosoftExtensionsConfigurationVersion>3.1.14</MicrosoftExtensionsConfigurationVersion>
     <SystemCollectionsImmutableVersion>1.7.1</SystemCollectionsImmutableVersion>
     <SystemComponentModelAnnotationsVersion>4.7.0</SystemComponentModelAnnotationsVersion>
     <!-- EFCore.MySql.NTS Dependencies -->
-    <NetTopologySuiteVersion>2.1.0</NetTopologySuiteVersion>
+    <NetTopologySuiteVersion>2.0.0</NetTopologySuiteVersion>
     <!-- EFCore.MySql.Json.Microsoft Dependencies -->
     <SystemTextJsonVersion>4.6.0</SystemTextJsonVersion> <!-- Does not lead to build warnings in user projects, due to
                                                               some strange System.Text.Json made internal reference to
@@ -63,14 +63,14 @@
     <MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>
     <!-- EFCoreMySqlFunctionalTests Dependencies -->
     <MicrosoftEntityFrameworkCoreDesignVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreDesignVersion>
-    <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>3.1.10</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
-    <MicrosoftExtensionsConfigurationFileExtensionsVersion>3.1.10</MicrosoftExtensionsConfigurationFileExtensionsVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>3.1.14</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
+    <MicrosoftExtensionsConfigurationFileExtensionsVersion>3.1.14</MicrosoftExtensionsConfigurationFileExtensionsVersion>
     <MicrosoftExtensionsConfigurationJsonVersion>3.0.3</MicrosoftExtensionsConfigurationJsonVersion>
     <SystemComponentModelTypeConverterVersion>4.3.0</SystemComponentModelTypeConverterVersion>
-    <CastleCoreVersion>4.4.1</CastleCoreVersion>
+    <CastleCoreVersion>4.4.0</CastleCoreVersion>
     <!-- EFCoreMySqlIntegrationTests Dependencies -->
-    <MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>3.1.10</MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>
-    <MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>3.1.10</MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>
+    <MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>3.1.14</MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>
+    <MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>3.1.14</MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>
     <!-- EFCoreMySqlTests Dependencies -->
     <MicrosoftEntityFrameworkCoreDesignVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreDesignVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>3.7.0</MicrosoftCodeAnalysisCSharpPackageVersion>
