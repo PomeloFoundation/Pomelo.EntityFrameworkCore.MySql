@@ -17,13 +17,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
     {
         /// <summary>
         ///     <para>
-        ///         Returns the <see cref="SqlServerValueGenerationStrategy" /> to use for the property.
+        ///         Returns the <see cref="MySqlValueGenerationStrategy" /> to use for the property.
         ///     </para>
         ///     <para>
         ///         If no strategy is set for the property, then the strategy to use will be taken from the <see cref="IModel" />.
         ///     </para>
         /// </summary>
-        /// <returns> The strategy, or <see cref="SqlServerValueGenerationStrategy.None"/> if none was set. </returns>
+        /// <returns> The strategy, or <see cref="MySqlValueGenerationStrategy.None"/> if none was set. </returns>
         public static MySqlValueGenerationStrategy? GetValueGenerationStrategy([NotNull] this IProperty property)
         {
             var annotation = property[MySqlAnnotationNames.ValueGenerationStrategy];
@@ -59,7 +59,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Extensions
         }
 
         /// <summary>
-        ///     Sets the <see cref="SqlServerValueGenerationStrategy" /> to use for the property.
+        ///     Sets the <see cref="MySqlValueGenerationStrategy" /> to use for the property.
         /// </summary>
         /// <param name="property"> The property. </param>
         /// <param name="value"> The strategy to use. </param>

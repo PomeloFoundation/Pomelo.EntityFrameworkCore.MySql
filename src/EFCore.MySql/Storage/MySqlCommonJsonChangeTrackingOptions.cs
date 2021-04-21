@@ -12,7 +12,7 @@ namespace Microsoft.EntityFrameworkCore
     /// or `MySqlDbContextOptionsBuilder.UseNewtonsoftJson()`, or for a specific model property when calling
     /// `PropertyBuilder.UseJsonChangeTrackingOptions()`.
     /// The default is `RootPropertyOnly`, resulting in the best performance but only limited change tracking support.
-    /// Comparisons will use appropriate `Equals()` methods (including `IEquatable<T>` implementations) or overloaded
+    /// Comparisons will use appropriate `Equals()` methods (including `IEquatable&lt;T&gt;` implementations) or overloaded
     /// `==` operators.
     /// </summary>
     [Flags]
@@ -31,7 +31,7 @@ namespace Microsoft.EntityFrameworkCore
         /// required.
         /// If the JSON column mapped property implements a `Clone()` or `DeepClone()` method, it is called in snapshot
         /// generation and assumed to clone the full hierarchy.
-        /// If the JSON column mapped property implements an `Equals(T, T)` method (e.g. for `IEquatable<T>`
+        /// If the JSON column mapped property implements an `Equals(T, T)` method (e.g. for `IEquatable&lt;T&gt;`
         /// implementations) or overloads the `==` operator, it is being call for equivalence checks for the whole
         /// hierarchy.
         /// In case the JSON column mapped property is represented by a JSON DOM object, only its root reference will
@@ -50,7 +50,7 @@ namespace Microsoft.EntityFrameworkCore
         /// consider the `FullHierarchyOptimizedFast` option instead.
         /// If the JSON column mapped property implements a `Clone()` or `DeepClone()` method, it is called in snapshot
         /// generation and assumed to clone the full hierarchy.
-        /// If the JSON column mapped property implements an `Equals(T, T)` method (e.g. for `IEquatable<T>`
+        /// If the JSON column mapped property implements an `Equals(T, T)` method (e.g. for `IEquatable&lt;T&gt;`
         /// implementations) or overloads the `==` operator, it is being call for equivalence checks for the whole
         /// hierarchy.
         /// This option is most usefull when using `Newtonsof.Json`. If instead `System.Text.Json` is being used,

@@ -14,7 +14,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions
     /// <summary>
     ///     A convention that configures store value generation as <see cref="ValueGenerated.OnAdd"/> on properties that are
     ///     part of the primary key and not part of any foreign keys, were configured to have a database default value
-    ///     or were configured to use a <see cref="SqlServerValueGenerationStrategy"/>.
+    ///     or were configured to use a <see cref="MySqlValueGenerationStrategy"/>.
     ///     It also configures properties as <see cref="ValueGenerated.OnAddOrUpdate"/> if they were configured as computed columns.
     /// </summary>
     public class MySqlValueGenerationConvention : RelationalValueGenerationConvention

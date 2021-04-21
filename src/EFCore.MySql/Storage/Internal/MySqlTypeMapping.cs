@@ -22,12 +22,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public virtual MySqlDbType MySqlDbType { get; }
 
         // ReSharper disable once PublicConstructorInAbstractClass
-        /// <summary>
-        /// Constructs an instance of the <see cref="MySqlTypeMapping"/> class.
-        /// </summary>
-        /// <param name="storeType">The database type to map.</param>
-        /// <param name="clrType">The CLR type to map.</param>
-        /// <param name="mySqlDbType">The database type used by MySql.</param>
         public MySqlTypeMapping(
             [NotNull] string storeType,
             [NotNull] Type clrType,
