@@ -310,8 +310,19 @@ ORDER BY
                             // This ensures, that e.g. the `json` alias for the `longtext` type for MariaDB databases will be added to the
                             // model as `json` instead of as `longtext`.
                             columType = columnTypeOverrides.TryGetValue(name, out var columnTypeOverride)
-                                ? columnTypeOverride
+                                ? columnTypeOverride((dataType: dataType, charset: charset, collation: collation))
                                 : columType;
+
+                            // MySQL enforces the `utf8mb4` charset and `utf8mb4_bin` collation for `json` columns and MariaDB will use them
+                            // automatically for `json` columns as well.
+                            // Both will refuse explicit specifications of other charsets/collations, even though `json` is just an alias
+                            // for `longtext` for MariaDB and setting `longtext` to other charsets/collations works fine.
+                            // We therefore do not scaffold thouse charsets/collations in the first place, so that users don't get confused.
+                            if (columType == "json")
+                            {
+                                charset = null;
+                                collation = null;
+                            }
 
                             // MySQL saves the generation expression with enclosing parenthesis, while MariaDB doesn't.
                             generation = generation != null &&
@@ -803,11 +814,11 @@ FROM `INFORMATION_SCHEMA`.`CHECK_CONSTRAINTS` as `c`
 INNER JOIN `INFORMATION_SCHEMA`.`TABLE_CONSTRAINTS` as `t` on `t`.`CONSTRAINT_CATALOG` = `c`.`CONSTRAINT_CATALOG` and `t`.`CONSTRAINT_SCHEMA` = `c`.`CONSTRAINT_SCHEMA` and `t`.`CONSTRAINT_NAME` = `c`.`CONSTRAINT_NAME`
 WHERE `t`.`TABLE_SCHEMA` = '{0}' AND `t`.`CONSTRAINT_SCHEMA` = `t`.`TABLE_SCHEMA` AND `t`.`TABLE_NAME` = '{1}';";
 
-        protected virtual Dictionary<string, string> GetColumnTypeOverrides(
+        protected virtual Dictionary<string, Func<(string dataType, string charset, string collation), string>> GetColumnTypeOverrides(
             DbConnection connection,
             DatabaseTable table)
         {
-            var columnTypeOverrides = new Dictionary<string, string>();
+            var columnTypeOverrides = new Dictionary<string, Func<(string dataType, string charset, string collation), string>>();
 
             // For MariaDB. the `json` type is just an alias for `longtext`.
             // In newer versions however, it adds a json_valid(`columnName`) check constraint when a column was created with the type
@@ -831,7 +842,12 @@ WHERE `t`.`TABLE_SCHEMA` = '{0}' AND `t`.`CONSTRAINT_SCHEMA` = `t`.`TABLE_SCHEMA
 
                     if (match.Success)
                     {
-                        columnTypeOverrides.Add(match.Groups["columnName"].Value, "json");
+                        columnTypeOverrides.TryAdd(
+                            match.Groups["columnName"].Value,
+                            t => t.charset == "utf8mb4" &&
+                                 t.collation == "utf8mb4_bin"
+                                ? "json"
+                                : t.dataType);
                     }
                 }
             }

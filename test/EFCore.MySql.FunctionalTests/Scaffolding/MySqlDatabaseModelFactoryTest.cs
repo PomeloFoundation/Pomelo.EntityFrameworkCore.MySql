@@ -339,14 +339,42 @@ DROP TABLE PrincipalTable;");
             Test(
                 @"
 CREATE TABLE `PlaceDetails` (
-    `Characteristics` json
-);",
+    `JsonCharacteristics` json,
+    `TextDescription` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
+    `TextDependingOnValidJsonCharacteristics` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci CHECK (json_valid(`JsonCharacteristics`)),
+    `TextCharacteristics` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci CHECK (json_valid(`TextCharacteristics`)),
+    `OtherJsonCharacteristics` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin CHECK (json_valid(`OtherJsonCharacteristics`))
+) CHARACTER SET latin1 COLLATE latin1_general_ci;",
                 Enumerable.Empty<string>(),
                 Enumerable.Empty<string>(),
                 dbModel =>
                     {
-                        var characteristicsColumn = Assert.Single(dbModel.Tables.Single(t => t.Name == "PlaceDetails").Columns);
-                        Assert.Equal("json", characteristicsColumn.StoreType);
+                        var table = Assert.Single(dbModel.Tables.Where(t => t.Name == "PlaceDetails"));
+                        var jsonCharacteristicsColumn = Assert.Single(table.Columns.Where(c => c.Name == "JsonCharacteristics"));
+                        var textDescriptionColumn = Assert.Single(table.Columns.Where(c => c.Name == "TextDescription"));
+                        var textDependingOnValidJsonCharacteristicsColumn = Assert.Single(table.Columns.Where(c => c.Name == "TextDependingOnValidJsonCharacteristics"));
+                        var textCharacteristicsColumn = Assert.Single(table.Columns.Where(c => c.Name == "TextCharacteristics"));
+                        var otherJsonCharacteristicsColumn = Assert.Single(table.Columns.Where(c => c.Name == "OtherJsonCharacteristics"));
+
+                        Assert.Equal("json", jsonCharacteristicsColumn.StoreType);
+                        Assert.Null(jsonCharacteristicsColumn[MySqlAnnotationNames.CharSet]);
+                        Assert.Null(jsonCharacteristicsColumn.Collation);
+
+                        Assert.Equal("longtext", textDescriptionColumn.StoreType);
+                        Assert.Equal("utf8mb4", textDescriptionColumn[MySqlAnnotationNames.CharSet]);
+                        Assert.Equal("utf8mb4_bin", textDescriptionColumn.Collation);
+
+                        Assert.Equal("longtext", textDependingOnValidJsonCharacteristicsColumn.StoreType);
+                        Assert.Equal("utf8mb4", textDependingOnValidJsonCharacteristicsColumn[MySqlAnnotationNames.CharSet]);
+                        Assert.Equal("utf8mb4_general_ci", textDependingOnValidJsonCharacteristicsColumn.Collation);
+
+                        Assert.Equal("longtext", textCharacteristicsColumn.StoreType);
+                        Assert.Equal("utf8mb4", textCharacteristicsColumn[MySqlAnnotationNames.CharSet]);
+                        Assert.Equal("utf8mb4_general_ci", textCharacteristicsColumn.Collation);
+
+                        Assert.Equal("json", otherJsonCharacteristicsColumn.StoreType);
+                        Assert.Null(otherJsonCharacteristicsColumn[MySqlAnnotationNames.CharSet]);
+                        Assert.Null(otherJsonCharacteristicsColumn.Collation);
                     },
                 @"
 DROP TABLE `PlaceDetails`;");
