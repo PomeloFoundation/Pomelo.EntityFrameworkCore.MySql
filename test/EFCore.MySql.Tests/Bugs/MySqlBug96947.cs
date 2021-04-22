@@ -29,7 +29,7 @@ ORDER BY `od1`.`OrderID`;";
             while (reader.Read())
             {
                 var constant = reader["Constant"];
-                var expected = ServerVersion.FromString(Connection.ServerVersion).Supports.MySqlBug96947Workaround
+                var expected = ServerVersion.Parse(Connection.ServerVersion).Supports.MySqlBug96947Workaround
                     ? (object)DBNull.Value
                     : "MyConstantValue";
 
@@ -58,7 +58,7 @@ ORDER BY `od1`.`OrderID`;";
             while (reader.Read())
             {
                 var constant = reader["Constant"];
-                var expected = ServerVersion.FromString(Connection.ServerVersion).Supports.MySqlBug96947Workaround
+                var expected = ServerVersion.Parse(Connection.ServerVersion).Supports.MySqlBug96947Workaround
                     ? (object)DBNull.Value
                     : "MyParameterValue";
 

@@ -8,6 +8,10 @@ using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
 {
+    /// <summary>
+    /// Represents a <see cref="ServerVersion"/> for MariaDB database servers.
+    /// For MySQL database servers, use <see cref="MySqlServerVersion"/> instead.
+    /// </summary>
     public class MariaDbServerVersion : ServerVersion
     {
         public static readonly string MariaDbTypeIdentifier = nameof(ServerType.MariaDb).ToLowerInvariant();
@@ -22,7 +26,7 @@ namespace Microsoft.EntityFrameworkCore
         }
 
         public MariaDbServerVersion(string versionString)
-            : this(FromString(versionString, ServerType.MariaDb))
+            : this(Parse(versionString, ServerType.MariaDb))
         {
         }
 
