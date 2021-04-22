@@ -1186,6 +1186,11 @@ DELIMITER ;";
 
         private static string GetColumnTypeWithCharSetAndCollation(ColumnOperation operation, string columnType)
         {
+            if (columnType.IndexOf("json", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return columnType;
+            }
+
             var charSet = operation[MySqlAnnotationNames.CharSet];
             if (charSet != null)
             {
