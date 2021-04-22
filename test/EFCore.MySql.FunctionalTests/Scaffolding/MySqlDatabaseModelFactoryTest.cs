@@ -306,6 +306,52 @@ DROP TABLE FirstDependent;
 DROP TABLE PrincipalTable;");
         }
 
+        [Fact]
+        public void Create_dependent_table_with_missing_principal_table_creates_model_without_it()
+        {
+            Test(
+                @"
+CREATE TABLE PrincipalTable (
+    Id int PRIMARY KEY
+);
+
+CREATE TABLE DependentTable (
+    Id int PRIMARY KEY,
+    ForeignKeyId int,
+    FOREIGN KEY (ForeignKeyId) REFERENCES PrincipalTable(Id)
+);",
+                new[] { "DependentTable" },
+                Enumerable.Empty<string>(),
+                dbModel =>
+                {
+                    var table = Assert.Single(dbModel.Tables);
+                    Assert.Equal("DependentTable", table.Name);
+                },
+                @"
+DROP TABLE DependentTable;
+DROP TABLE PrincipalTable;");
+        }
+
+        [ConditionalFact]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.IdentifyJsonColumsByCheckConstraints))]
+        public void Create_json_column()
+        {
+            Test(
+                @"
+CREATE TABLE `PlaceDetails` (
+    `Characteristics` json
+);",
+                Enumerable.Empty<string>(),
+                Enumerable.Empty<string>(),
+                dbModel =>
+                    {
+                        var characteristicsColumn = Assert.Single(dbModel.Tables.Single(t => t.Name == "PlaceDetails").Columns);
+                        Assert.Equal("json", characteristicsColumn.StoreType);
+                    },
+                @"
+DROP TABLE `PlaceDetails`;");
+        }
+
         #endregion
 
         #region ColumnFacets
@@ -1194,33 +1240,6 @@ CREATE TABLE DependentTable (
                     {
                         var (Level, Id, Message) = Assert.Single(Log.Where(t => t.Level == LogLevel.Warning));
                     },
-                @"
-DROP TABLE DependentTable;
-DROP TABLE PrincipalTable;");
-        }
-
-        [Fact]
-        public void Create_dependent_table_with_missing_principal_table_creates_model_without_it()
-        {
-            Test(
-                @"
-CREATE TABLE PrincipalTable (
-    Id int PRIMARY KEY
-);
-
-CREATE TABLE DependentTable (
-    Id int PRIMARY KEY,
-    ForeignKeyId int,
-    FOREIGN KEY (ForeignKeyId) REFERENCES PrincipalTable(Id)
-);",
-                new[] { "DependentTable" },
-                Enumerable.Empty<string>(),
-                dbModel =>
-                {
-                    //basically I just don't want to get any InvalidOperationExceptions
-                    var table = Assert.Single(dbModel.Tables);
-                    Assert.Equal("DependentTable", table.Name);
-                },
                 @"
 DROP TABLE DependentTable;
 DROP TABLE PrincipalTable;");
