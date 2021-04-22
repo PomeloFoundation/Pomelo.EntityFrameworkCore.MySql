@@ -1,5 +1,5 @@
 <Project>
-  <Import Project="Versions.props" />
+  <Import Project="Version.props" />
   <Import Project="Development.props" Condition="Exists('Development.props')" />
 
   <PropertyGroup>

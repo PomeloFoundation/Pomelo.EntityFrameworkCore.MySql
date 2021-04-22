@@ -9,8 +9,8 @@
           - "servicing"
     -->
     <VersionPrefix>5.0.0</VersionPrefix>
-    <PreReleaseVersionLabel>alpha</PreReleaseVersionLabel>
-    <PreReleaseVersionIteration>3</PreReleaseVersionIteration>
+    <PreReleaseVersionLabel>beta</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
 
     <!--
       The following properties will automatically be set by CI builds when appropriate:

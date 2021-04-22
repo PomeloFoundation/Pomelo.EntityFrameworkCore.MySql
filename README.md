@@ -5,7 +5,7 @@
 [![Pomelo.EntityFrameworkCore.MySql package in pomelo-efcore-public feed in Azure Artifacts](https://feeds.dev.azure.com/pomelo-efcore/e81f0b59-aba4-4055-8e18-e3f1a565942e/_apis/public/Packaging/Feeds/5f202e7e-2c62-4fc1-a18c-4025a32eabc8/Packages/54935cc0-f38b-4ddb-86d6-c812a8c92988/Badge)](https://dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging?_a=package&feed=5f202e7e-2c62-4fc1-a18c-4025a32eabc8&package=54935cc0-f38b-4ddb-86d6-c812a8c92988&preferRelease=false)
 [![Join the chat at https://gitter.im/PomeloFoundation/Home](https://badges.gitter.im/PomeloFoundation/Home.svg)](https://gitter.im/PomeloFoundation/Home?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-`Pomelo.EntityFrameworkCore.MySql` is the most popular Entity Framework Core provider for MySQL compatible databases. It supports EF Core 3.1 (and lower) and uses [MySqlConnector](https://mysqlconnector.net/) for high-performance database server communication.
+`Pomelo.EntityFrameworkCore.MySql` is the most popular Entity Framework Core provider for MySQL compatible databases. It supports EF Core 5.0 (and lower) and uses [MySqlConnector](https://mysqlconnector.net/) for high-performance database server communication.
 
 ## Compatibility
 
@@ -99,20 +99,21 @@ namespace YourNamespace
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            // Replace "YourDbContext" with the name of your own DbContext derived class.
+            // Replace with your connection string.
+            var connectionString = "server=localhost;user=root;password=1234;database=ef";
+
+            // Replace with your server version and type.
+            // Use 'MariaDbServerVersion' for MariaDB.
+            // Alternatively, use 'ServerVersion.AutoDetect(connectionString)'.
+            // For common usages, see pull request #1233.
+            var serverVersion = new MySqlServerVersion(new Version(8, 0, 21));
+
+            // Replace 'YourDbContext' with the name of your own DbContext derived class.
             services.AddDbContextPool<YourDbContext>(
                 dbContextOptions => dbContextOptions
-                    .UseMySql(
-                        // Replace with your connection string.
-                        "server=localhost;user=root;password=1234;database=ef",
-                        // Replace with your server version and type.
-                        // For common usages, see pull request #1233.
-                        new MySqlServerVersion(new Version(8, 0, 21)), // use MariaDbServerVersion for MariaDB
-                        mySqlOptions => mySqlOptions
-                            .CharSetBehavior(CharSetBehavior.NeverAppend))
-                    // Everything from this point on is optional but helps with debugging.
-                    .EnableSensitiveDataLogging()
-                    .EnableDetailedErrors();
+                    .UseMySql(connectionString, serverVersion)
+                    .EnableSensitiveDataLogging() // These two calls are optional but help
+                    .EnableDetailedErrors();      // with debugging (remove for production).
             ));
         }
     }

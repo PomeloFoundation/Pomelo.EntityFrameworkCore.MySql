@@ -9,10 +9,10 @@ using Xunit.Abstractions;
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public partial class NorthwindFunctionsQueryMySqlTest : NorthwindFunctionsQueryRelationalTestBase<
-        NorthwindQueryMySqlFixture<NoopModelCustomizer>>
+        CaseSensitiveNorthwindQueryMySqlFixture<NoopModelCustomizer>>
     {
         public NorthwindFunctionsQueryMySqlTest(
-            NorthwindQueryMySqlFixture<NoopModelCustomizer> fixture,
+            CaseSensitiveNorthwindQueryMySqlFixture<NoopModelCustomizer> fixture,
             ITestOutputHelper testOutputHelper)
             : base(fixture)
         {

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +14,7 @@ using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Pomelo.EntityFrameworkCore.MySql.Extensions;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
@@ -432,6 +432,54 @@ SELECT ROW_COUNT();");
         }
 
         [ConditionalFact]
+        public virtual void CreateDatabaseOperation_with_charset()
+        {
+            Generate(new MySqlCreateDatabaseOperation { Name = "Northwind", CharSet = "latin1"});
+
+            Assert.Equal(
+                @"CREATE DATABASE `Northwind` CHARACTER SET latin1;" + EOL,
+                Sql);
+        }
+
+        [ConditionalFact]
+        public virtual void CreateDatabaseOperation_with_collation()
+        {
+            Generate(new MySqlCreateDatabaseOperation { Name = "Northwind", Collation = "latin1_general_ci"});
+
+            Assert.Equal(
+                @"CREATE DATABASE `Northwind` COLLATE latin1_general_ci;" + EOL,
+                Sql);
+        }
+
+        [ConditionalFact]
+        public virtual void AlterDatabaseOperation_with_charset()
+        {
+            Generate(
+                new MySqlCreateDatabaseOperation {Name = "Northwind", CharSet = "latin1"},
+                new AlterDatabaseOperation {[MySqlAnnotationNames.CharSet] = "utf8mb4"});
+
+            Assert.Equal(
+                @"CREATE DATABASE `Northwind` CHARACTER SET latin1;
+
+ALTER DATABASE CHARACTER SET utf8mb4;" + EOL,
+                Sql);
+        }
+
+        [ConditionalFact]
+        public virtual void AlterDatabaseOperation_with_collation()
+        {
+            Generate(
+                new MySqlCreateDatabaseOperation {Name = "Northwind", Collation = "latin1_general_ci"},
+                new AlterDatabaseOperation {Collation = "latin1_swedish_ci"});
+
+            Assert.Equal(
+                @"CREATE DATABASE `Northwind` COLLATE latin1_general_ci;
+
+ALTER DATABASE COLLATE latin1_swedish_ci;" + EOL,
+                Sql);
+        }
+
+        [ConditionalFact]
         public virtual void CreateTableUlongAutoincrement()
         {
             Generate(
@@ -479,36 +527,41 @@ SELECT ROW_COUNT();");
         [InlineData(true, false, null)]
         [InlineData(true, true, "Latin1")]
         [InlineData(true, true, null)]
-        public virtual void AddColumnOperation_with_charSet_implicit(bool? isUnicode, bool isIndex, string charSetName)
+        public virtual void AddColumnOperation_with_charset_implicit(bool? isUnicode, bool isIndex, string charSetName)
         {
             var charSet = CharSet.GetCharSetFromName(charSetName);
             var expectedCharSetName = charSet != null ? $" CHARACTER SET {charSet}" : null;
 
             Generate(
-                modelBuilder => modelBuilder.Entity("Person", eb =>
-                    {
-                        var pb = eb.Property<string>("Name");
-
-                        if (isUnicode.HasValue)
-                        {
-                            pb.IsUnicode(isUnicode.Value);
-                        }
-
-                        if (isIndex)
-                        {
-                            eb.HasIndex("Name");
-                        }
-                    }),
-                new AddColumnOperation
+                modelBuilder =>
                 {
-                    Table = "Person",
-                    Name = "Name",
-                    ClrType = typeof(string),
-                    IsUnicode = isUnicode,
-                    IsNullable = true,
-                    [MySqlAnnotationNames.CharSet] = charSet,
+                    modelBuilder.HasCharSet(charSet);
+                    modelBuilder.Entity(
+                        "Person", eb =>
+                        {
+                            var pb = eb.Property<string>("Name");
+
+                            if (isUnicode.HasValue)
+                            {
+                                pb.IsUnicode(isUnicode.Value);
+                            }
+
+                            if (isIndex)
+                            {
+                                eb.HasIndex("Name");
+                            }
+                        });
                 },
-                charSet);
+                modelBuilder =>
+                {
+                    var addColumn = modelBuilder.AddColumn<string>(name: "Name", table: "Person", nullable: true, unicode: isUnicode);
+
+                    if (charSet != null)
+                    {
+                        addColumn.Annotation(MySqlAnnotationNames.CharSet, charSet);
+                    }
+                }
+            );
 
             var columnType = "longtext";
             if (isIndex)
@@ -1004,7 +1057,7 @@ SELECT ROW_COUNT();");
             => "geometrycollection";
 
         [ConditionalFact]
-        public virtual void AddColumnOperation_with_CharSet_annotation()
+        public virtual void AddColumnOperation_with_charset_annotation()
         {
             Generate(
                 new AddColumnOperation
@@ -1048,6 +1101,236 @@ SELECT ROW_COUNT();");
 
             Assert.Equal(
                 @"CREATE INDEX `IX_IceCreams_Brand_Name` ON `IceCreams` (`Name`, `Brand`(20));" + EOL,
+                Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        public virtual void CreateTableOperation_with_collation()
+        {
+            Generate(
+                new CreateTableOperation
+                {
+                    Name = "IceCreams",
+                    Columns =
+                    {
+                        new AddColumnOperation
+                        {
+                            Name = "Brand",
+                            ColumnType = "longtext",
+                            ClrType = typeof(string),
+                            Collation = "latin1_swedish_ci"
+                        },
+                        new AddColumnOperation
+                        {
+                            Name = "Name",
+                            ColumnType = "varchar(255)",
+                            ClrType = typeof(string),
+                        },
+                    },
+                    PrimaryKey = new AddPrimaryKeyOperation
+                    {
+                        Columns = new[] { "Name", "Brand" },
+                        [MySqlAnnotationNames.IndexPrefixLength] = new [] { 0, 20 }
+                    },
+                    [RelationalAnnotationNames.Collation] = "latin1_general_ci",
+                });
+
+            Assert.Equal(
+                @"CREATE TABLE `IceCreams` (
+    `Brand` longtext COLLATE latin1_swedish_ci NOT NULL,
+    `Name` varchar(255) NOT NULL,
+    PRIMARY KEY (`Name`, `Brand`(20))
+) COLLATE latin1_general_ci;" + EOL,
+                Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        public virtual void AlterTableOperation_with_collation()
+        {
+            Generate(
+                modelBuilder =>
+                {
+                    modelBuilder.Entity(
+                        "IceCreams",
+                        entity =>
+                        {
+                            entity.Property<string>("Brand")
+                                .HasColumnType("longtext")
+                                .UseCollation("latin1_swedish_ci");
+
+                            entity.Property<string>("Name")
+                                .HasColumnType("varchar(255)");
+
+                            entity.UseCollation("latin1_general_ci");
+                        });
+                },
+                migrationBuilder =>
+                {
+                    migrationBuilder.AlterTable("IceCreams")
+                        .OldAnnotation(RelationalAnnotationNames.Collation, "latin1_general_ci")
+                        .Annotation(RelationalAnnotationNames.Collation, "latin1_general_cs");
+                });
+
+            Assert.Equal(
+                @"ALTER TABLE `IceCreams` COLLATE latin1_general_cs;" + EOL,
+                Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        public virtual void AlterTableOperation_with_collation_reset()
+        {
+            Generate(
+                modelBuilder =>
+                {
+                    modelBuilder.Entity(
+                        "IceCreams",
+                        entity =>
+                        {
+                            entity.Property<string>("Brand")
+                                .HasColumnType("longtext")
+                                .UseCollation("latin1_swedish_ci");
+
+                            entity.Property<string>("Name")
+                                .HasColumnType("varchar(255)");
+
+                            entity.UseCollation("latin1_general_ci");
+                        });
+                },
+                migrationBuilder =>
+                {
+                    migrationBuilder.AlterTable("IceCreams")
+                        .OldAnnotation(RelationalAnnotationNames.Collation, "latin1_general_ci");
+                });
+
+            Assert.Equal(
+                @"set @__pomelo_TableCharset = (
+    SELECT `ccsa`.`CHARACTER_SET_NAME` as `TABLE_CHARACTER_SET`
+    FROM `INFORMATION_SCHEMA`.`TABLES` as `t`
+    LEFT JOIN `INFORMATION_SCHEMA`.`COLLATION_CHARACTER_SET_APPLICABILITY` as `ccsa` ON `ccsa`.`COLLATION_NAME` = `t`.`TABLE_COLLATION`
+    WHERE `TABLE_SCHEMA` = SCHEMA() AND `TABLE_NAME` = 'IceCreams' AND `TABLE_TYPE` IN ('BASE TABLE', 'VIEW'));
+
+SET @__pomelo_SqlExpr = CONCAT('ALTER TABLE `IceCreams` CHARACTER SET = ', @__pomelo_TableCharset, ';');
+PREPARE __pomelo_SqlExprExecute FROM @__pomelo_SqlExpr;
+EXECUTE __pomelo_SqlExprExecute;
+DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
+                Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        public virtual void CreateTableOperation_with_charset()
+        {
+            Generate(
+                new CreateTableOperation
+                {
+                    Name = "IceCreams",
+                    Columns =
+                    {
+                        new AddColumnOperation
+                        {
+                            Name = "Brand",
+                            ColumnType = "longtext",
+                            ClrType = typeof(string),
+                            [MySqlAnnotationNames.CharSet] = "utf8mb4"
+                        },
+                        new AddColumnOperation
+                        {
+                            Name = "Name",
+                            ColumnType = "varchar(255)",
+                            ClrType = typeof(string),
+                        },
+                    },
+                    PrimaryKey = new AddPrimaryKeyOperation
+                    {
+                        Columns = new[] { "Name", "Brand" },
+                        [MySqlAnnotationNames.IndexPrefixLength] = new [] { 0, 20 }
+                    },
+                    [MySqlAnnotationNames.CharSet] = "latin1",
+                });
+
+            Assert.Equal(
+                @"CREATE TABLE `IceCreams` (
+    `Brand` longtext CHARACTER SET utf8mb4 NOT NULL,
+    `Name` varchar(255) NOT NULL,
+    PRIMARY KEY (`Name`, `Brand`(20))
+) CHARACTER SET latin1;" + EOL,
+                Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        public virtual void AlterTableOperation_with_charset()
+        {
+            Generate(
+                modelBuilder =>
+                {
+                    modelBuilder.Entity(
+                        "IceCreams",
+                        entity =>
+                        {
+                            entity.Property<string>("Brand")
+                                .HasColumnType("longtext")
+                                .HasCharSet("utf8mb4");
+
+                            entity.Property<string>("Name")
+                                .HasColumnType("varchar(255)");
+
+                            entity.HasCharSet("latin1");
+                        });
+                },
+                migrationBuilder =>
+                {
+                    migrationBuilder.AlterTable("IceCreams")
+                        .OldAnnotation(MySqlAnnotationNames.CharSet, "latin1")
+                        .Annotation(MySqlAnnotationNames.CharSet, "utf8mb4");
+                });
+
+            Assert.Equal(
+                @"ALTER TABLE `IceCreams` CHARACTER SET utf8mb4;" + EOL,
+                Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        public virtual void AlterTableOperation_with_charset_reset()
+        {
+            Generate(
+                modelBuilder =>
+                {
+                    modelBuilder.Entity(
+                        "IceCreams",
+                        entity =>
+                        {
+                            entity.Property<string>("Brand")
+                                .HasColumnType("longtext")
+                                .HasCharSet("utf8mb4");
+
+                            entity.Property<string>("Name")
+                                .HasColumnType("varchar(255)");
+
+                            entity.HasCharSet("latin1");
+                        });
+                },
+                migrationBuilder =>
+                {
+                    migrationBuilder.AlterTable("IceCreams")
+                        .OldAnnotation(MySqlAnnotationNames.CharSet, "latin1");
+                });
+
+            Assert.Equal(
+                @"set @__pomelo_TableCharset = (
+    SELECT `ccsa`.`CHARACTER_SET_NAME` as `TABLE_CHARACTER_SET`
+    FROM `INFORMATION_SCHEMA`.`TABLES` as `t`
+    LEFT JOIN `INFORMATION_SCHEMA`.`COLLATION_CHARACTER_SET_APPLICABILITY` as `ccsa` ON `ccsa`.`COLLATION_NAME` = `t`.`TABLE_COLLATION`
+    WHERE `TABLE_SCHEMA` = SCHEMA() AND `TABLE_NAME` = 'IceCreams' AND `TABLE_TYPE` IN ('BASE TABLE', 'VIEW'));
+
+SET @__pomelo_SqlExpr = CONCAT('ALTER TABLE `IceCreams` CHARACTER SET = ', @__pomelo_TableCharset, ';');
+PREPARE __pomelo_SqlExprExecute FROM @__pomelo_SqlExpr;
+EXECUTE __pomelo_SqlExprExecute;
+DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
                 Sql,
                 ignoreLineEndingDifferences: true);
         }
@@ -1208,40 +1491,25 @@ SELECT ROW_COUNT();");
             testSqlLoggerFactory.AssertBaseline(new[] {expected});
         }
 
-        protected override void Generate(params MigrationOperation[] operations)
-            => base.Generate(operations);
-
-        private void Generate(
-            Action<ModelBuilder> buildAction,
-            MigrationOperation operation,
-            CharSet charSet)
-            => Generate(buildAction, new[] {operation}, default, charSet);
+        protected override void Generate(params MigrationOperation[] operation)
+            => Generate(null, operation);
 
         protected override void Generate(
             Action<ModelBuilder> buildAction,
             MigrationOperation[] operation,
             MigrationsSqlGenerationOptions options)
-            => Generate(buildAction, operation, options, null, null);
+            => Generate(null, buildAction, operation, options);
 
         protected virtual void Generate(
+            Action<MySqlDbContextOptionsBuilder> optionsAction,
             Action<ModelBuilder> buildAction,
             MigrationOperation[] operation,
-            MigrationsSqlGenerationOptions options,
-            [CanBeNull] CharSet charSet,
-            MySqlSchemaNameTranslator schemaNameTranslator = null)
+            MigrationsSqlGenerationOptions options)
         {
             var optionsBuilder = new DbContextOptionsBuilder(ContextOptions);
             var mySqlOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder);
 
-            if (charSet != null)
-            {
-                mySqlOptionsBuilder.CharSet(charSet);
-            }
-
-            if (schemaNameTranslator != null)
-            {
-                mySqlOptionsBuilder.SchemaBehavior(MySqlSchemaBehavior.Translate, schemaNameTranslator);
-            }
+            optionsAction?.Invoke(mySqlOptionsBuilder);
 
             var contextOptions = optionsBuilder.Options;
 

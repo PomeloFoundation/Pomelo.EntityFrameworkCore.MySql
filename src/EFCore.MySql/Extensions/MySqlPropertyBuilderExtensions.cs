@@ -1,13 +1,13 @@
 // Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
+using System;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Extensions;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
@@ -115,16 +115,14 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="propertyBuilder">The builder for the property being configured.</param>
         /// <param name="collation">The name of the collation to configure for the property's column.</param>
         /// <returns>The same builder instance so that multiple calls can be chained.</returns>
+        [Obsolete("Call 'UseCollation()' instead.")]
         public static PropertyBuilder HasCollation(
             [NotNull] this PropertyBuilder propertyBuilder,
             string collation)
         {
             Check.NotNull(propertyBuilder, nameof(propertyBuilder));
 
-            var property = propertyBuilder.Metadata;
-            MySqlPropertyExtensions.SetCollation(property, collation);
-
-            return propertyBuilder;
+            return propertyBuilder.UseCollation(collation);
         }
 
         /// <summary>

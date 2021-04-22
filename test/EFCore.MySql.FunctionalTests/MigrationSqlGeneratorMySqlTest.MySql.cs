@@ -1,6 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using NetTopologySuite.Geometries;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Xunit;
 
@@ -227,6 +230,9 @@ DROP PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`;");
         public virtual void CreateTable_with_SchemaNameTranslator()
         {
             Generate(
+                optionsBuilder => optionsBuilder.SchemaBehavior(
+                    MySqlSchemaBehavior.Translate,
+                    (schemaName, objectName) => $"{schemaName}_{objectName}"),
                 null,
                 new MigrationOperation[]
                 {
@@ -245,9 +251,7 @@ DROP PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`;");
                         }
                     }
                 },
-                default,
-                null,
-                (schemaName, objectName) => $"{schemaName}_{objectName}");
+                MigrationsSqlGenerationOptions.Default);
 
             Assert.Equal(
                 @"CREATE TABLE `IceCreamParlor_IceCreams` (

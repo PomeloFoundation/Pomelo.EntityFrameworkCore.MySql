@@ -1,8 +1,6 @@
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
@@ -21,12 +19,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
         public override async Task Like_literal(bool async)
         {
-            using (var context = CreateContext())
-            {
-                var count = await context.Customers.CountAsync(c => EF.Functions.Like(c.ContactName, "%M%"));
-
-                Assert.Equal(19, count);
-            }
+            await base.Like_literal(async);
 
             AssertSql(
                 @"SELECT COUNT(*)

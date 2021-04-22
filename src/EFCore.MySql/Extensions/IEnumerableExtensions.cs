@@ -14,5 +14,10 @@ namespace System.Linq
             => condition
                 ? source.Append(elementGetter.Invoke())
                 : source;
+
+        internal static IEnumerable<T> AppendIfTrue<T>(this IEnumerable<T> source, bool condition, T element)
+            => condition
+                ? source.Append(element)
+                : source;
     }
 }

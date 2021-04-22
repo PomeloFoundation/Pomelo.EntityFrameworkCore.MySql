@@ -7,7 +7,6 @@ using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Infrastructure
@@ -22,8 +21,9 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
         /// <summary>
         ///     Configures the ANSI CharSet
         /// </summary>
-        public virtual MySqlDbContextOptionsBuilder CharSet(CharSet charSet)
-            => WithOption(e => e.WithCharSet(charSet));
+        [Obsolete("Call the Fluent API extension method 'HasCharSet()' on the builder object of your model/entities/properties instead.", true)]
+        public virtual MySqlDbContextOptionsBuilder CharSet(CharSet charSet) // TODO: Remove for EF Core 6.
+            => throw new NotImplementedException("Use the Fluent API extension method 'HasCharSet()' on the definition of your model/entities/properties instead.");
 
         /// <summary>
         ///     Configures the context to use the default retrying <see cref="IExecutionStrategy" />.

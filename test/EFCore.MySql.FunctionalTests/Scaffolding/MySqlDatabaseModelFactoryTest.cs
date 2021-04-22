@@ -12,6 +12,7 @@ using Xunit;
 using Microsoft.EntityFrameworkCore.Internal;
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore.Diagnostics.Internal;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.Extensions.DependencyInjection;
@@ -132,6 +133,34 @@ CREATE TABLE Denali ( id int );",
                 @"
 DROP TABLE Everest;
 DROP TABLE Denali;");
+        }
+
+        [Fact]
+        public void Create_table_with_collation()
+        {
+            Test(
+                @"
+CREATE TABLE `Mountains` (
+    `Name` varchar(255) NOT NULL COLLATE latin1_general_cs,
+    `Text1` longtext NOT NULL COLLATE latin1_general_ci,
+    `Text2` longtext NOT NULL
+) COLLATE latin1_general_ci;",
+                Enumerable.Empty<string>(),
+                Enumerable.Empty<string>(),
+                dbModel =>
+                {
+                    var table = Assert.Single(dbModel.Tables);
+
+                    Assert.Equal("latin1_general_ci", table[RelationalAnnotationNames.Collation]);
+
+                    Assert.Collection(
+                        table.Columns.OrderBy(c => c.Name),
+                        c => Assert.Equal("latin1_general_cs", c.Collation),
+                        c => Assert.Null(c.Collation),
+                        c => Assert.Null(c.Collation));
+                },
+                @"
+DROP TABLE `Mountains`;");
         }
 
         [Fact(Skip = "Issue #582")]
