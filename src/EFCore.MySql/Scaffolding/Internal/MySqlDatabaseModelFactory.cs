@@ -276,6 +276,8 @@ ORDER BY
         {
             foreach (var table in tables)
             {
+                var columnTypeOverrides = GetColumnTypeOverrides(connection, table);
+
                 using (var command = connection.CreateCommand())
                 {
                     command.CommandText = string.Format(GetColumnsQuery, table.Name);
@@ -302,6 +304,25 @@ ORDER BY
                             var isStored = generation != null
                                 ? (bool?)extra.Contains("stored generated", StringComparison.OrdinalIgnoreCase)
                                 : null;
+
+                            // Override this column's type, if we detected earlier that this column should actually by added to the model
+                            // with a different type than the one returned by INFORMATION_SCHEMA.COLUMNS.
+                            // This ensures, that e.g. the `json` alias for the `longtext` type for MariaDB databases will be added to the
+                            // model as `json` instead of as `longtext`.
+                            columType = columnTypeOverrides.TryGetValue(name, out var columnTypeOverride)
+                                ? columnTypeOverride((dataType: dataType, charset: charset, collation: collation))
+                                : columType;
+
+                            // MySQL enforces the `utf8mb4` charset and `utf8mb4_bin` collation for `json` columns and MariaDB will use them
+                            // automatically for `json` columns as well.
+                            // Both will refuse explicit specifications of other charsets/collations, even though `json` is just an alias
+                            // for `longtext` for MariaDB and setting `longtext` to other charsets/collations works fine.
+                            // We therefore do not scaffold thouse charsets/collations in the first place, so that users don't get confused.
+                            if (columType == "json")
+                            {
+                                charset = null;
+                                collation = null;
+                            }
 
                             // MySQL saves the generation expression with enclosing parenthesis, while MariaDB doesn't.
                             generation = generation != null &&
@@ -786,6 +807,52 @@ ORDER BY
                     }
                 }
             }
+        }
+
+        private const string GetCheckConstraintsQuery = @"SELECT `c`.`CONSTRAINT_NAME`, `c`.`CHECK_CLAUSE`
+FROM `INFORMATION_SCHEMA`.`CHECK_CONSTRAINTS` as `c`
+INNER JOIN `INFORMATION_SCHEMA`.`TABLE_CONSTRAINTS` as `t` on `t`.`CONSTRAINT_CATALOG` = `c`.`CONSTRAINT_CATALOG` and `t`.`CONSTRAINT_SCHEMA` = `c`.`CONSTRAINT_SCHEMA` and `t`.`CONSTRAINT_NAME` = `c`.`CONSTRAINT_NAME`
+WHERE `t`.`TABLE_SCHEMA` = '{0}' AND `t`.`CONSTRAINT_SCHEMA` = `t`.`TABLE_SCHEMA` AND `t`.`TABLE_NAME` = '{1}';";
+
+        protected virtual Dictionary<string, Func<(string dataType, string charset, string collation), string>> GetColumnTypeOverrides(
+            DbConnection connection,
+            DatabaseTable table)
+        {
+            var columnTypeOverrides = new Dictionary<string, Func<(string dataType, string charset, string collation), string>>();
+
+            // For MariaDB. the `json` type is just an alias for `longtext`.
+            // In newer versions however, it adds a json_valid(`columnName`) check constraint when a column was created with the type
+            // `json`, which we can use as a very strong heuristic that a `longtext` column is being used as a `json` column.
+            if (_options.ServerVersion.Supports.IdentifyJsonColumsByCheckConstraints &&
+                _options.ServerVersion.Supports.InformationSchemaCheckConstraintsTable)
+            {
+                using var command = connection.CreateCommand();
+                command.CommandText = string.Format(GetCheckConstraintsQuery, connection.Database, table.Name);
+
+                using var reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    var constraintName = reader.GetValueOrDefault<string>("CONSTRAINT_NAME");
+                    var checkClause = reader.GetValueOrDefault<string>("CHECK_CLAUSE");
+
+                    var match = Regex.Match(
+                        checkClause,
+                        @"json_valid\s*\(\s*`(?<columnName>(?:[^`]|``)+)`\s*\)",
+                        RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+                    if (match.Success)
+                    {
+                        columnTypeOverrides.TryAdd(
+                            match.Groups["columnName"].Value,
+                            t => t.charset == "utf8mb4" &&
+                                 t.collation == "utf8mb4_bin"
+                                ? "json"
+                                : t.dataType);
+                    }
+                }
+            }
+
+            return columnTypeOverrides;
         }
 
         protected virtual ReferentialAction? ConvertToReferentialAction(string onDeleteAction)

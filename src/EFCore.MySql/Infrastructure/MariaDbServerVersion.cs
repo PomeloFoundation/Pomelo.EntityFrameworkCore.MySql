@@ -74,6 +74,9 @@ namespace Microsoft.EntityFrameworkCore
             public override bool JsonDataTypeEmulation => ServerVersion.Version >= new Version(10, 2, 4); // JSON_COMPACT was added in 10.2.4, though most other functions where added in 10.2.3
             public override bool ImplicitBoolCheckUsesIndex => ServerVersion.Version >= new Version(10, 0, 0); // Exact version has not been verified yet
             public override bool Sequences => ServerVersion.Version >= new Version(10, 3, 0);
+            public override bool InformationSchemaCheckConstraintsTable => ServerVersion.Version >= new Version(10, 3, 10) ||
+                                                                           ServerVersion.Version.Major == 10 && ServerVersion.Version.Minor == 2 && ServerVersion.Version.Build >= 22;  // MySQL is missing the explicit TABLE_NAME column that MariaDB supports, so always join the TABLE_CONSTRAINTS table when accessing CHECK_CONSTRAINTS for any database server that supports CHECK_CONSTRAINTS.
+            public override bool IdentifyJsonColumsByCheckConstraints => true;
         }
     }
 }

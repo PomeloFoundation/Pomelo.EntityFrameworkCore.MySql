@@ -306,6 +306,80 @@ DROP TABLE FirstDependent;
 DROP TABLE PrincipalTable;");
         }
 
+        [Fact]
+        public void Create_dependent_table_with_missing_principal_table_creates_model_without_it()
+        {
+            Test(
+                @"
+CREATE TABLE PrincipalTable (
+    Id int PRIMARY KEY
+);
+
+CREATE TABLE DependentTable (
+    Id int PRIMARY KEY,
+    ForeignKeyId int,
+    FOREIGN KEY (ForeignKeyId) REFERENCES PrincipalTable(Id)
+);",
+                new[] { "DependentTable" },
+                Enumerable.Empty<string>(),
+                dbModel =>
+                {
+                    var table = Assert.Single(dbModel.Tables);
+                    Assert.Equal("DependentTable", table.Name);
+                },
+                @"
+DROP TABLE DependentTable;
+DROP TABLE PrincipalTable;");
+        }
+
+        [ConditionalFact]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.IdentifyJsonColumsByCheckConstraints))]
+        public void Create_json_column()
+        {
+            Test(
+                @"
+CREATE TABLE `PlaceDetails` (
+    `JsonCharacteristics` json,
+    `TextDescription` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
+    `TextDependingOnValidJsonCharacteristics` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci CHECK (json_valid(`JsonCharacteristics`)),
+    `TextCharacteristics` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci CHECK (json_valid(`TextCharacteristics`)),
+    `OtherJsonCharacteristics` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin CHECK (json_valid(`OtherJsonCharacteristics`))
+) CHARACTER SET latin1 COLLATE latin1_general_ci;",
+                Enumerable.Empty<string>(),
+                Enumerable.Empty<string>(),
+                dbModel =>
+                    {
+                        var table = Assert.Single(dbModel.Tables.Where(t => t.Name == "PlaceDetails"));
+                        var jsonCharacteristicsColumn = Assert.Single(table.Columns.Where(c => c.Name == "JsonCharacteristics"));
+                        var textDescriptionColumn = Assert.Single(table.Columns.Where(c => c.Name == "TextDescription"));
+                        var textDependingOnValidJsonCharacteristicsColumn = Assert.Single(table.Columns.Where(c => c.Name == "TextDependingOnValidJsonCharacteristics"));
+                        var textCharacteristicsColumn = Assert.Single(table.Columns.Where(c => c.Name == "TextCharacteristics"));
+                        var otherJsonCharacteristicsColumn = Assert.Single(table.Columns.Where(c => c.Name == "OtherJsonCharacteristics"));
+
+                        Assert.Equal("json", jsonCharacteristicsColumn.StoreType);
+                        Assert.Null(jsonCharacteristicsColumn[MySqlAnnotationNames.CharSet]);
+                        Assert.Null(jsonCharacteristicsColumn.Collation);
+
+                        Assert.Equal("longtext", textDescriptionColumn.StoreType);
+                        Assert.Equal("utf8mb4", textDescriptionColumn[MySqlAnnotationNames.CharSet]);
+                        Assert.Equal("utf8mb4_bin", textDescriptionColumn.Collation);
+
+                        Assert.Equal("longtext", textDependingOnValidJsonCharacteristicsColumn.StoreType);
+                        Assert.Equal("utf8mb4", textDependingOnValidJsonCharacteristicsColumn[MySqlAnnotationNames.CharSet]);
+                        Assert.Equal("utf8mb4_general_ci", textDependingOnValidJsonCharacteristicsColumn.Collation);
+
+                        Assert.Equal("longtext", textCharacteristicsColumn.StoreType);
+                        Assert.Equal("utf8mb4", textCharacteristicsColumn[MySqlAnnotationNames.CharSet]);
+                        Assert.Equal("utf8mb4_general_ci", textCharacteristicsColumn.Collation);
+
+                        Assert.Equal("json", otherJsonCharacteristicsColumn.StoreType);
+                        Assert.Null(otherJsonCharacteristicsColumn[MySqlAnnotationNames.CharSet]);
+                        Assert.Null(otherJsonCharacteristicsColumn.Collation);
+                    },
+                @"
+DROP TABLE `PlaceDetails`;");
+        }
+
         #endregion
 
         #region ColumnFacets
@@ -1194,33 +1268,6 @@ CREATE TABLE DependentTable (
                     {
                         var (Level, Id, Message) = Assert.Single(Log.Where(t => t.Level == LogLevel.Warning));
                     },
-                @"
-DROP TABLE DependentTable;
-DROP TABLE PrincipalTable;");
-        }
-
-        [Fact]
-        public void Create_dependent_table_with_missing_principal_table_creates_model_without_it()
-        {
-            Test(
-                @"
-CREATE TABLE PrincipalTable (
-    Id int PRIMARY KEY
-);
-
-CREATE TABLE DependentTable (
-    Id int PRIMARY KEY,
-    ForeignKeyId int,
-    FOREIGN KEY (ForeignKeyId) REFERENCES PrincipalTable(Id)
-);",
-                new[] { "DependentTable" },
-                Enumerable.Empty<string>(),
-                dbModel =>
-                {
-                    //basically I just don't want to get any InvalidOperationExceptions
-                    var table = Assert.Single(dbModel.Tables);
-                    Assert.Equal("DependentTable", table.Name);
-                },
                 @"
 DROP TABLE DependentTable;
 DROP TABLE PrincipalTable;");
