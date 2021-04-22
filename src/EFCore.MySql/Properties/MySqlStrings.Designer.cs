@@ -145,6 +145,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         public static string ExpressionTypeMismatch
             => GetString("ExpressionTypeMismatch");
 
+        /// <summary>
+        ///     Translation of the '{declaringTypeName}.{methodName}' overload with a 'StringComparison' parameter is not supported by default. To opt-in to translations of methods with a 'StringComparison' parameter, call `{optionName}` on your MySQL specific 'DbContext' options. For general EF Core information about this error, see https://go.microsoft.com/fwlink/?linkid=2129535 for more information.
+        /// </summary>
+        public static string QueryUnableToTranslateMethodWithStringComparison([CanBeNull] object declaringTypeName, [CanBeNull] object methodName, [CanBeNull] object optionName)
+            => string.Format(
+                GetString("QueryUnableToTranslateMethodWithStringComparison", nameof(declaringTypeName), nameof(methodName), nameof(optionName)),
+                declaringTypeName, methodName, optionName);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

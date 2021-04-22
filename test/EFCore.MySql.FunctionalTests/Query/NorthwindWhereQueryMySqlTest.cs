@@ -206,16 +206,6 @@ FROM `Customers` AS `c`
 WHERE SUBSTRING(`c`.`City`, 1 + 1, 2) = 'ea'");
         }
 
-        [ConditionalTheory]
-        public override Task Where_equals_method_string_with_ignore_case(bool async)
-        {
-            // We have an implementation for this and therefore don't throw.
-            return AssertQuery(
-                async,
-                ss => ss.Set<Customer>().Where(c => c.City.Equals("London", StringComparison.OrdinalIgnoreCase)),
-                entryCount: 6);
-        }
-
         [ConditionalTheory(Skip = "issue #573")]
         public override Task Where_as_queryable_expression(bool async)
         {

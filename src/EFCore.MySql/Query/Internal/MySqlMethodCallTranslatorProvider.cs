@@ -3,6 +3,7 @@
 
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
@@ -10,7 +11,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
     public class MySqlMethodCallTranslatorProvider : RelationalMethodCallTranslatorProvider
     {
-        public MySqlMethodCallTranslatorProvider([NotNull] RelationalMethodCallTranslatorProviderDependencies dependencies)
+        public MySqlMethodCallTranslatorProvider(
+            [NotNull] RelationalMethodCallTranslatorProviderDependencies dependencies,
+            [NotNull] IMySqlOptions options)
             : base(dependencies)
         {
             var sqlExpressionFactory = (MySqlSqlExpressionFactory)dependencies.SqlExpressionFactory;
@@ -28,8 +31,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 new MySqlNewGuidTranslator(sqlExpressionFactory),
                 new MySqlObjectToStringTranslator(sqlExpressionFactory),
                 new MySqlRegexIsMatchTranslator(sqlExpressionFactory),
-                new MySqlStringComparisonMethodTranslator(sqlExpressionFactory),
-                new MySqlStringMethodTranslator(sqlExpressionFactory, relationalTypeMappingSource),
+                new MySqlStringComparisonMethodTranslator(sqlExpressionFactory, options),
+                new MySqlStringMethodTranslator(sqlExpressionFactory, relationalTypeMappingSource, options),
             });
         }
     }

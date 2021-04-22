@@ -228,4 +228,7 @@
   <data name="ExpressionTypeMismatch" xml:space="preserve">
     <value>The specified expression does not have the correct Type.</value>
   </data>
+  <data name="QueryUnableToTranslateMethodWithStringComparison" xml:space="preserve">
+    <value>Translation of the '{declaringTypeName}.{methodName}' overload with a 'StringComparison' parameter is not supported by default. To opt-in to translations of methods with a 'StringComparison' parameter, call `{optionName}` on your MySQL specific 'DbContext' options. For general EF Core information about this error, see https://go.microsoft.com/fwlink/?linkid=2129535 for more information.</value>
+  </data>
 </root>

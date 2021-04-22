@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
@@ -19,6 +20,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
     public class MySqlStringMethodTranslator : IMethodCallTranslator
     {
         private readonly IRelationalTypeMappingSource _typeMappingSource;
+        private readonly IMySqlOptions _options;
 
         private static readonly MethodInfo _indexOfMethodInfo
             = typeof(string).GetRuntimeMethod(nameof(string.IndexOf), new[] { typeof(string) });
@@ -109,10 +111,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
         public MySqlStringMethodTranslator(
             MySqlSqlExpressionFactory sqlExpressionFactory,
-            MySqlTypeMappingSource typeMappingSource)
+            MySqlTypeMappingSource typeMappingSource,
+            IMySqlOptions options)
         {
-            _typeMappingSource = typeMappingSource;
             _sqlExpressionFactory = sqlExpressionFactory;
+            _typeMappingSource = typeMappingSource;
+            _options = options;
         }
 
         public virtual SqlExpression Translate(
@@ -123,7 +127,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         {
             if (_indexOfMethodInfo.Equals(method))
             {
-                return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory)
+                return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory, _options)
                     .MakeIndexOfExpression(instance, arguments[0]);
             }
 
@@ -214,19 +218,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
             if (_containsMethodInfo.Equals(method))
             {
-                return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory)
+                return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory, _options)
                     .MakeContainsExpression(instance, arguments[0]);
             }
 
             if (_startsWithMethodInfo.Equals(method))
             {
-                return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory)
+                return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory, _options)
                     .MakeStartsWithExpression(instance, arguments[0]);
             }
 
             if (_endsWithMethodInfo.Equals(method))
             {
-                return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory)
+                return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory, _options)
                     .MakeEndsWithExpression(instance, arguments[0]);
             }
 

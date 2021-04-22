@@ -38,6 +38,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
             SchemaNameTranslator = copyFrom.SchemaNameTranslator;
             IndexOptimizedBooleanColumns = copyFrom.IndexOptimizedBooleanColumns;
             LimitKeyedOrIndexedStringColumnLength = copyFrom.LimitKeyedOrIndexedStringColumnLength;
+            StringComparisonTranslations = copyFrom.StringComparisonTranslations;
         }
 
         /// <summary>
@@ -78,6 +79,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         public MySqlSchemaNameTranslator SchemaNameTranslator { get; private set; }
         public bool IndexOptimizedBooleanColumns { get; private set; }
         public bool LimitKeyedOrIndexedStringColumnLength { get; private set; }
+        public bool StringComparisonTranslations { get; private set; }
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -159,6 +161,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
             return clone;
         }
 
+        public MySqlOptionsExtension WithStringComparisonTranslations(bool enable)
+        {
+            var clone = (MySqlOptionsExtension)Clone();
+            clone.StringComparisonTranslations = enable;
+            return clone;
+        }
+
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
         ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
@@ -222,6 +231,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                     hashCode.Add(Extension.SchemaNameTranslator);
                     hashCode.Add(Extension.IndexOptimizedBooleanColumns);
                     hashCode.Add(Extension.LimitKeyedOrIndexedStringColumnLength);
+                    hashCode.Add(Extension.StringComparisonTranslations);
 
                     _serviceProviderHash = hashCode.ToHashCode();
                 }
@@ -240,6 +250,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                 debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(Extension.SchemaNameTranslator)] = HashCode.Combine(Extension.SchemaNameTranslator).ToString(CultureInfo.InvariantCulture);
                 debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.EnableIndexOptimizedBooleanColumns)] = HashCode.Combine(Extension.IndexOptimizedBooleanColumns).ToString(CultureInfo.InvariantCulture);
                 debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.LimitKeyedOrIndexedStringColumnLength)] = HashCode.Combine(Extension.LimitKeyedOrIndexedStringColumnLength).ToString(CultureInfo.InvariantCulture);
+                debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.EnableStringComparisonTranslations)] = HashCode.Combine(Extension.StringComparisonTranslations).ToString(CultureInfo.InvariantCulture);
             }
         }
     }
