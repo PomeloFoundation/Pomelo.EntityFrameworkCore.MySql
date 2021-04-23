@@ -29,7 +29,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
                 return new MethodCallCodeFragment(
                     nameof(MySqlModelBuilderExtensions.HasCharSet),
                     new[] {annotation.Value}
-                        .AppendIfTrue(explicitlyDelegateToChildren.HasValue, explicitlyDelegateToChildren));
+                        .AppendIfTrue(explicitlyDelegateToChildren.HasValue, explicitlyDelegateToChildren)
+                        .ToArray());
             }
 
             if (annotation.Name == MySqlAnnotationNames.CharSetDelegation &&
@@ -49,7 +50,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
                 return new MethodCallCodeFragment(
                     nameof(MySqlModelBuilderExtensions.UseCollation),
                     new[] {annotation.Value}
-                        .AppendIfTrue(explicitlyDelegateToChildren.HasValue, explicitlyDelegateToChildren));
+                        .AppendIfTrue(explicitlyDelegateToChildren.HasValue, explicitlyDelegateToChildren)
+                        .ToArray());
             }
 
             if (annotation.Name == MySqlAnnotationNames.CollationDelegation &&
@@ -72,7 +74,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
                 return new MethodCallCodeFragment(
                     nameof(MySqlEntityTypeBuilderExtensions.HasCharSet),
                     new[] {annotation.Value}
-                        .AppendIfTrue(explicitlyDelegateToChildren.HasValue, explicitlyDelegateToChildren));
+                        .AppendIfTrue(explicitlyDelegateToChildren.HasValue, explicitlyDelegateToChildren)
+                        .ToArray());
             }
 
             if (annotation.Name == MySqlAnnotationNames.CharSetDelegation &&
@@ -90,7 +93,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
                 return new MethodCallCodeFragment(
                     nameof(MySqlEntityTypeBuilderExtensions.UseCollation),
                     new[] {annotation.Value}
-                        .AppendIfTrue(explicitlyDelegateToChildren.HasValue, explicitlyDelegateToChildren));
+                        .AppendIfTrue(explicitlyDelegateToChildren.HasValue, explicitlyDelegateToChildren)
+                        .ToArray());
             }
 
             if (annotation.Name == MySqlAnnotationNames.CollationDelegation &&
