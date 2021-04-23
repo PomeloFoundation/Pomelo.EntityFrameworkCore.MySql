@@ -1,12 +1,13 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
+using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
@@ -204,6 +205,24 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
                 assertOrder: true);
         }
 
+        public override Task Using_string_Equals_with_StringComparison_throws_informative_error(bool async)
+        {
+            return AssertTranslationFailedWithDetails(
+                () => AssertQuery(
+                    async,
+                    ss => ss.Set<Customer>().Where(c => c.CustomerID.Equals("ALFKI", StringComparison.InvariantCulture))),
+                MySqlStrings.QueryUnableToTranslateMethodWithStringComparison(nameof(String), nameof(string.Equals), nameof(MySqlDbContextOptionsBuilder.EnableStringComparisonTranslations)));
+        }
+
+        public override Task Using_static_string_Equals_with_StringComparison_throws_informative_error(bool async)
+        {
+            return AssertTranslationFailedWithDetails(
+                () => AssertQuery(
+                    async,
+                    ss => ss.Set<Customer>().Where(c => string.Equals(c.CustomerID, "ALFKI", StringComparison.InvariantCulture))),
+                MySqlStrings.QueryUnableToTranslateMethodWithStringComparison(nameof(String), nameof(string.Equals), nameof(MySqlDbContextOptionsBuilder.EnableStringComparisonTranslations)));
+        }
+
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override Task SelectMany_Joined_Take(bool async)
         {
@@ -276,16 +295,6 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
         {
             return base.SelectMany_correlated_subquery_hard(async);
         }
-
-        // TODO: EF Core 5
-        [ConditionalTheory(Skip = "https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/996")]
-        public override Task Using_string_Equals_with_StringComparison_throws_informative_error(bool async)
-            => base.Using_string_Equals_with_StringComparison_throws_informative_error(async);
-
-        // TODO: EF Core 5
-        [ConditionalTheory(Skip = "https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/996")]
-        public override Task Using_static_string_Equals_with_StringComparison_throws_informative_error(bool async)
-            => base.Using_static_string_Equals_with_StringComparison_throws_informative_error(async);
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
         public override Task DefaultIfEmpty_Sum_over_collection_navigation(bool async)

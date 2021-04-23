@@ -8,9 +8,12 @@ using System.Linq.Expressions;
 using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
+using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
@@ -206,7 +209,30 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 methodCallExpression = methodCallExpression.Update(methodCallExpression.Object, arguments);
             }
 
-            return base.VisitMethodCall(methodCallExpression);
+            var result = base.VisitMethodCall(methodCallExpression);
+            if (result == null &&
+                MySqlStringComparisonMethodTranslator.StringComparisonMethodInfos.Any(m => m == methodCallExpression.Method))
+            {
+                var message = MySqlStrings.QueryUnableToTranslateMethodWithStringComparison(
+                    methodCallExpression.Method.DeclaringType.Name,
+                    methodCallExpression.Method.Name,
+                    nameof(MySqlDbContextOptionsBuilder.EnableStringComparisonTranslations));
+
+                // EF Core returns an error message on its own, when the string.Equals() methods (static and non-static) are being used with
+                // a `StringComparison` parameter.
+                // Since we also support other translations, but all of them only when opted in, we will replace the EF Core error message
+                // with our own, that is more appropriate for our case.
+                if (TranslationErrorDetails.Contains(CoreStrings.QueryUnableToTranslateStringEqualsWithStringComparison))
+                {
+                    var translationErrorDetails = TranslationErrorDetails;
+                    ResetTranslationErrorDetails();
+                    message = translationErrorDetails.Replace(CoreStrings.QueryUnableToTranslateStringEqualsWithStringComparison, message);
+                }
+
+                AddTranslationErrorDetails(message);
+            }
+
+            return result;
         }
 
         private static bool IsDateTimeBasedOperation(SqlBinaryExpression binaryExpression)

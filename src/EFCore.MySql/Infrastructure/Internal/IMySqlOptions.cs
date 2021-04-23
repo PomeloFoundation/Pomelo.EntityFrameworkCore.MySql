@@ -20,5 +20,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         bool IndexOptimizedBooleanColumns { get; }
         MySqlJsonChangeTrackingOptions JsonChangeTrackingOptions { get; }
         bool LimitKeyedOrIndexedStringColumnLength { get; }
+        bool StringComparisonTranslations { get; }
     }
 }

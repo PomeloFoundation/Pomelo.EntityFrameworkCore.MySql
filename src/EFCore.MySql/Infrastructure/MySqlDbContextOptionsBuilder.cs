@@ -114,5 +114,16 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
         /// </summary>
         public virtual MySqlDbContextOptionsBuilder LimitKeyedOrIndexedStringColumnLength(bool enable = true)
             => WithOption(e => e.WithKeyedOrIndexedStringColumnLengthLimit(enable));
+
+        /// <summary>
+        ///     Configures the context to translate string related methods, containing a parameter of type <see cref="StringComparison"/>,
+        ///     to their SQL equivalent, even though MySQL might not be able to use indexes when executing the query, resulting in decreased
+        ///     performance. Whether MySQL is able to use indexes for the query, depends on the <see cref="StringComparison"/> option, the
+        ///     underlying collation and the scenario.
+        ///     It is also possible to just use `EF.Functions.Collate()`, possibly in addition to `string.ToUpper()` if needed, to achieve
+        ///     the same result but with full control over the SQL generation.
+        /// </summary>
+        public virtual MySqlDbContextOptionsBuilder EnableStringComparisonTranslations(bool enable = true)
+            => WithOption(e => e.WithStringComparisonTranslations(enable));
     }
 }
