@@ -380,6 +380,82 @@ CREATE TABLE `PlaceDetails` (
 DROP TABLE `PlaceDetails`;");
         }
 
+        [ConditionalFact]
+        public void Create_default_value_column()
+        {
+            Test(
+                $@"
+CREATE TABLE `DefaultValueTable` (
+    `DefaultValueInt` int not null default '42',
+    `DefaultValueString` varchar(255) not null default 'Answer to everything',
+    `DefaultValueFunction` datetime not null default CURRENT_TIMESTAMP()
+);",
+                Enumerable.Empty<string>(),
+                Enumerable.Empty<string>(),
+                dbModel =>
+                    {
+                        var table = Assert.Single(dbModel.Tables.Where(t => t.Name == "DefaultValueTable"));
+                        var defaultValueIntColumn = Assert.Single(table.Columns.Where(c => c.Name == "DefaultValueInt"));
+                        var defaultValueStringColumn = Assert.Single(table.Columns.Where(c => c.Name == "DefaultValueString"));
+                        var defaultValueFunctionColumn = Assert.Single(table.Columns.Where(c => c.Name == "DefaultValueFunction"));
+
+                        Assert.Equal("'42'", defaultValueIntColumn.DefaultValueSql);
+                        Assert.Equal("'Answer to everything'", defaultValueStringColumn.DefaultValueSql);
+                        Assert.Contains("current_timestamp", defaultValueFunctionColumn.DefaultValueSql, StringComparison.OrdinalIgnoreCase);
+                    },
+                @"
+DROP TABLE `DefaultValueTable`;");
+        }
+
+        [ConditionalFact]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.AlternativeDefaultExpression))]
+        public void Create_default_value_column_simple_function_expression()
+        {
+            Test(
+                $@"
+CREATE TABLE `DefaultValueSimpleExpressionTable` (
+    `DefaultValueSimpleFunctionExpression` double not null default rand()
+);",
+                Enumerable.Empty<string>(),
+                Enumerable.Empty<string>(),
+                dbModel =>
+                {
+                    var table = Assert.Single(dbModel.Tables.Where(t => t.Name == "DefaultValueSimpleExpressionTable"));
+                    var defaultValueSimpleFunctionExpressionColumn = table.Columns.SingleOrDefault(c => c.Name == "DefaultValueSimpleFunctionExpression");
+
+                    Assert.Equal("rand()", defaultValueSimpleFunctionExpressionColumn.DefaultValueSql);
+                },
+                @"
+DROP TABLE `DefaultValueSimpleExpressionTable`;");
+        }
+
+        [ConditionalFact]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.DefaultExpression), nameof(ServerVersionSupport.AlternativeDefaultExpression))]
+        public void Create_default_value_expression_column()
+        {
+            Test(
+                $@"
+CREATE TABLE `DefaultValueExpressionTable` (
+    `DefaultValueExpression` varchar(255) not null default (CONCAT(CAST(42 as char), ' is the answer to everything')),
+    `DefaultValueExpressionInt` int not null default (42)
+);",
+                Enumerable.Empty<string>(),
+                Enumerable.Empty<string>(),
+                dbModel =>
+                    {
+                        var table = Assert.Single(dbModel.Tables.Where(t => t.Name == "DefaultValueExpressionTable"));
+                        var defaultValueExpressionColumn = Assert.Single(table.Columns.Where(c => c.Name == "DefaultValueExpression"));
+                        var defaultValueExpressionIntColumn = Assert.Single(table.Columns.Where(c => c.Name == "DefaultValueExpressionInt"));
+
+                        Assert.Contains("CONCAT(CAST(42 as char", defaultValueExpressionColumn.DefaultValueSql, StringComparison.OrdinalIgnoreCase);
+                        Assert.Contains(" is the answer to everything", defaultValueExpressionColumn.DefaultValueSql, StringComparison.OrdinalIgnoreCase);
+
+                        Assert.Equal("'42'", defaultValueExpressionIntColumn.DefaultValueSql);
+                    },
+                @"
+DROP TABLE `DefaultValueExpressionTable`;");
+        }
+
         #endregion
 
         #region ColumnFacets

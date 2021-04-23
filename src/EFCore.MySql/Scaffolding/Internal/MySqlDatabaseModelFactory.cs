@@ -331,16 +331,26 @@ ORDER BY
                                 : generation;
 
                             var isDefaultValueSqlFunction = IsDefaultValueSqlFunction(defaultValue, dataType);
+                            var isDefaultValueExpression = false;
 
-                            defaultValue = generation == null
-                                ? FilterClrDefaults(
-                                    dataType,
-                                    nullable,
-                                    _options.ServerVersion.Supports.AlternativeDefaultExpression &&
-                                    defaultValue != null
-                                        ? ConvertDefaultValueFromMariaDbToMySql(defaultValue)
-                                        : defaultValue)
-                                : null;
+                            if (defaultValue != null)
+                            {
+                                // MySQL 8.0.13+ fully supports complex default value expressions.
+                                isDefaultValueExpression = extra.Contains("DEFAULT_GENERATED", StringComparison.OrdinalIgnoreCase) &&
+                                                           !IsSimpleNumericDefaultValue(defaultValue);
+
+                                // MariaDB uses a slightly different syntax.
+                                defaultValue = _options.ServerVersion.Supports.AlternativeDefaultExpression
+                                    ? ConvertDefaultValueFromMariaDbToMySql(defaultValue, out isDefaultValueExpression)
+                                    : defaultValue;
+
+                                defaultValue = generation == null
+                                    ? FilterClrDefaults(
+                                        dataType,
+                                        nullable,
+                                        defaultValue)
+                                    : null;
+                            }
 
                             ValueGenerated? valueGenerated;
                             if (extra.IndexOf("auto_increment", StringComparison.Ordinal) >= 0)
@@ -375,7 +385,7 @@ ORDER BY
                                 Name = name,
                                 StoreType = columType,
                                 IsNullable = nullable,
-                                DefaultValueSql = CreateDefaultValueString(defaultValue, dataType, isDefaultValueSqlFunction),
+                                DefaultValueSql = CreateDefaultValueString(defaultValue, dataType, isDefaultValueSqlFunction, isDefaultValueExpression),
                                 ComputedColumnSql = generation,
                                 IsStored = isStored,
                                 ValueGenerated = valueGenerated,
@@ -436,8 +446,10 @@ ORDER BY
         /// See https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/994#issuecomment-568271740
         /// for tables with differences.
         /// </summary>
-        protected virtual string ConvertDefaultValueFromMariaDbToMySql([NotNull] string defaultValue)
+        protected virtual string ConvertDefaultValueFromMariaDbToMySql([NotNull] string defaultValue, out bool isDefaultValueExpression)
         {
+            isDefaultValueExpression = false;
+
             if (string.Equals(defaultValue, "NULL", StringComparison.OrdinalIgnoreCase))
             {
                 return null;
@@ -453,8 +465,13 @@ ORDER BY
                     .Replace("''", "'");
             }
 
+            isDefaultValueExpression = !IsSimpleNumericDefaultValue(defaultValue);
+
             return defaultValue;
         }
+
+        private static bool IsSimpleNumericDefaultValue(string defaultValue)
+            => Regex.IsMatch(defaultValue, @"^\d+(?:\.\d+)?$");
 
         protected virtual string FilterClrDefaults(string dataTypeName, bool nullable, string defaultValue)
         {
@@ -495,14 +512,16 @@ ORDER BY
             return defaultValue;
         }
 
-        protected virtual string CreateDefaultValueString(string defaultValue, string dataType, bool isSqlFunction)
+        protected virtual string CreateDefaultValueString(
+            string defaultValue, string dataType, bool isSqlFunction, bool isDefaultValueExpression)
         {
             if (defaultValue == null)
             {
                 return null;
             }
 
-            if (isSqlFunction)
+            if (isSqlFunction ||
+                isDefaultValueExpression)
             {
                 return defaultValue;
             }
