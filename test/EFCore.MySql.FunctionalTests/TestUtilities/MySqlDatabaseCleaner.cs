@@ -8,6 +8,7 @@ using System.Diagnostics;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics.Internal;
+using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
@@ -15,10 +16,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
     public class MySqlDatabaseCleaner : RelationalDatabaseCleaner
     {
         private readonly IMySqlOptions _options;
+        private readonly IRelationalTypeMappingSource _relationalTypeMappingSource;
 
-        public MySqlDatabaseCleaner(IMySqlOptions options)
+        public MySqlDatabaseCleaner(IMySqlOptions options, IRelationalTypeMappingSource relationalTypeMappingSource)
         {
             _options = options;
+            _relationalTypeMappingSource = relationalTypeMappingSource;
         }
 
         protected override IDatabaseModelFactory CreateDatabaseModelFactory(ILoggerFactory loggerFactory)
@@ -29,6 +32,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                     new DiagnosticListener("Fake"),
                     new MySqlLoggingDefinitions(),
                     new NullDbContextLogger()),
+                _relationalTypeMappingSource,
                 _options);
 
         protected override bool AcceptIndex(DatabaseIndex index) => false;

@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
 using Microsoft.EntityFrameworkCore.Scaffolding;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
@@ -50,6 +51,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Scaffolding
                         new DiagnosticListener("Fake"),
                         new MySqlLoggingDefinitions(),
                         new NullDbContextLogger()),
+                    Fixture.ServiceProvider.GetService<IRelationalTypeMappingSource>(),
                     Fixture.ServiceProvider.GetService<IMySqlOptions>());
 
                 var databaseModel = databaseModelFactory.Create(Fixture.TestStore.ConnectionString,
@@ -378,6 +380,34 @@ CREATE TABLE `PlaceDetails` (
                     },
                 @"
 DROP TABLE `PlaceDetails`;");
+        }
+
+        [ConditionalFact]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.DefaultExpression), nameof(ServerVersionSupport.AlternativeDefaultExpression))]
+        public void Create_guid_columns()
+        {
+            Test(
+                @"
+CREATE TABLE `GuidTable`  (
+  `GuidTableId` char(36) NOT NULL DEFAULT (UUID()) PRIMARY KEY,
+  `DefaultUuid` char(36) NOT NULL DEFAULT (UUID())
+);",
+                Enumerable.Empty<string>(),
+                Enumerable.Empty<string>(),
+                dbModel =>
+                    {
+                        var table = Assert.Single(dbModel.Tables.Where(t => t.Name == "GuidTable"));
+                        var guidTableIdColumn = Assert.Single(table.Columns.Where(c => c.Name == "GuidTableId"));
+                        var defaultUuidColumn = Assert.Single(table.Columns.Where(c => c.Name == "DefaultUuid"));
+
+                        Assert.Equal(ValueGenerated.OnAdd, guidTableIdColumn.ValueGenerated);
+                        Assert.Null(guidTableIdColumn.DefaultValueSql);
+
+                        Assert.Null(defaultUuidColumn.ValueGenerated);
+                        Assert.Equal("uuid()", defaultUuidColumn.DefaultValueSql);
+                    },
+                @"
+DROP TABLE `GuidTable`;");
         }
 
         [ConditionalFact]

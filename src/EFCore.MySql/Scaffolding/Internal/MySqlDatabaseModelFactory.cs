@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
@@ -28,17 +29,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
     public class MySqlDatabaseModelFactory : DatabaseModelFactory
     {
         private readonly IDiagnosticsLogger<DbLoggerCategory.Scaffolding> _logger;
+        private readonly IRelationalTypeMappingSource _typeMappingSource;
         private readonly IMySqlOptions _options;
 
         protected MySqlScaffoldingConnectionSettings Settings { get; set; }
 
         public MySqlDatabaseModelFactory(
             [NotNull] IDiagnosticsLogger<DbLoggerCategory.Scaffolding> logger,
-            IMySqlOptions options)
+            [NotNull] IRelationalTypeMappingSource typeMappingSource,
+            [NotNull] IMySqlOptions options)
         {
             Check.NotNull(logger, nameof(logger));
+            Check.NotNull(typeMappingSource, nameof(typeMappingSource));
+            Check.NotNull(options, nameof(options));
 
             _logger = logger;
+            _typeMappingSource = typeMappingSource;
             _options = options;
             Settings = new MySqlScaffoldingConnectionSettings(string.Empty);
         }
@@ -291,7 +297,7 @@ ORDER BY
                             var dataType = reader.GetValueOrDefault<string>("DATA_TYPE");
                             var charset = reader.GetValueOrDefault<string>("CHARACTER_SET_NAME");
                             var collation = reader.GetValueOrDefault<string>("COLLATION_NAME");
-                            var columType = reader.GetValueOrDefault<string>("COLUMN_TYPE");
+                            var columnType = reader.GetValueOrDefault<string>("COLUMN_TYPE");
                             var extra = reader.GetValueOrDefault<string>("EXTRA");
                             var generation = reader.GetValueOrDefault<string>("GENERATION_EXPRESSION").NullIfEmpty();
                             var comment = reader.GetValueOrDefault<string>("COLUMN_COMMENT");
@@ -309,16 +315,16 @@ ORDER BY
                             // with a different type than the one returned by INFORMATION_SCHEMA.COLUMNS.
                             // This ensures, that e.g. the `json` alias for the `longtext` type for MariaDB databases will be added to the
                             // model as `json` instead of as `longtext`.
-                            columType = columnTypeOverrides.TryGetValue(name, out var columnTypeOverride)
+                            columnType = columnTypeOverrides.TryGetValue(name, out var columnTypeOverride)
                                 ? columnTypeOverride((dataType: dataType, charset: charset, collation: collation))
-                                : columType;
+                                : columnType;
 
                             // MySQL enforces the `utf8mb4` charset and `utf8mb4_bin` collation for `json` columns and MariaDB will use them
                             // automatically for `json` columns as well.
                             // Both will refuse explicit specifications of other charsets/collations, even though `json` is just an alias
                             // for `longtext` for MariaDB and setting `longtext` to other charsets/collations works fine.
                             // We therefore do not scaffold thouse charsets/collations in the first place, so that users don't get confused.
-                            if (columType == "json")
+                            if (columnType == "json")
                             {
                                 charset = null;
                                 collation = null;
@@ -383,7 +389,7 @@ ORDER BY
                             {
                                 Table = table,
                                 Name = name,
-                                StoreType = columType,
+                                StoreType = columnType,
                                 IsNullable = nullable,
                                 DefaultValueSql = CreateDefaultValueString(defaultValue, dataType, isDefaultValueSqlFunction, isDefaultValueExpression),
                                 ComputedColumnSql = generation,
@@ -581,6 +587,19 @@ ORDER BY
                                     prefixLengths.Length == 1 && prefixLengths[0] > 0)
                                 {
                                     key[MySqlAnnotationNames.IndexPrefixLength] = prefixLengths;
+                                }
+
+                                var firstKeyColumn = key.Columns[0];
+
+                                if (key.Columns.Count == 1 &&
+                                    firstKeyColumn.ValueGenerated == null &&
+                                    (firstKeyColumn.DefaultValueSql == null ||
+                                     string.Equals(firstKeyColumn.DefaultValueSql, "uuid()", StringComparison.OrdinalIgnoreCase) ||
+                                     string.Equals(firstKeyColumn.DefaultValueSql, "uuid_to_bin(uuid())", StringComparison.OrdinalIgnoreCase)) &&
+                                    _typeMappingSource.FindMapping(firstKeyColumn.StoreType) is MySqlGuidTypeMapping)
+                                {
+                                    firstKeyColumn.ValueGenerated = ValueGenerated.OnAdd;
+                                    firstKeyColumn.DefaultValueSql = null;
                                 }
 
                                 table.PrimaryKey = key;
