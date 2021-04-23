@@ -11,7 +11,6 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
 using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.Extensions;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal

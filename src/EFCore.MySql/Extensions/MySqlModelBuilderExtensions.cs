@@ -2,13 +2,13 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Extensions
+// ReSharper disable once CheckNamespace
+namespace Microsoft.EntityFrameworkCore
 {
     public static class MySqlModelBuilderExtensions
     {
