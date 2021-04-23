@@ -44,6 +44,7 @@ Currently supported versions are:
 Milestone | Status | Release Date
 ----------|--------|-------------
 5.0.0 | Announced | 2021-04-28 (see [#1088](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1088))
+5.0.0-beta.2 | Announced | 2021-04-25
 5.0.0-beta.1 | Released | 2021-04-22
 5.0.0-alpha.2 | Released | 2020-11-12
 3.2.5 | Released | 2021-04-21
