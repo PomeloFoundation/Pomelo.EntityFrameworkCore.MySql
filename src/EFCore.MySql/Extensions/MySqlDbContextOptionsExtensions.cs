@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Utilities;
 using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
@@ -32,7 +31,18 @@ namespace Microsoft.EntityFrameworkCore
         ///     </para>
         /// </summary>
         /// <param name="optionsBuilder"> The builder being used to configure the context. </param>
-        /// <param name="serverVersion"> The version of the database server. </param>
+        /// <param name="serverVersion">
+        ///     <para>
+        ///         The version of the database server.
+        ///     </para>
+        ///     <para>
+        ///         Create an object for this parameter from the classes <see cref="MySqlServerVersion"/> (for MySQL) and
+        ///         <see cref="MariaDbServerVersion"/> (for MariaDB), through a call to the static method
+        ///         <see cref="ServerVersion.AutoDetect(string)"/> (which retrieves the server version directly from the
+        ///         database server), or by parsing a version string using the static methods
+        ///         <see cref="ServerVersion.Parse(string)"/> or <see cref="ServerVersion.TryParse(string,out ServerVersion)"/>.
+        ///      </para>
+        /// </param>
         /// <param name="mySqlOptionsAction"> An optional action to allow additional MySQL specific configuration. </param>
         /// <returns> The options builder so that further configuration can be chained. </returns>
         public static DbContextOptionsBuilder UseMySql(
@@ -57,7 +67,18 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="optionsBuilder"> The builder being used to configure the context. </param>
         /// <param name="connectionString"> The connection string of the database to connect to. </param>
-        /// <param name="serverVersion"> The version of the database server used in the connection string. </param>
+        /// <param name="serverVersion">
+        ///     <para>
+        ///         The version of the database server.
+        ///     </para>
+        ///     <para>
+        ///         Create an object for this parameter from the classes <see cref="MySqlServerVersion"/> (for MySQL) and
+        ///         <see cref="MariaDbServerVersion"/> (for MariaDB), through a call to the static method
+        ///         <see cref="ServerVersion.AutoDetect(string)"/> (which retrieves the server version directly from the
+        ///         database server), or by parsing a version string using the static methods
+        ///         <see cref="ServerVersion.Parse(string)"/> or <see cref="ServerVersion.TryParse(string,out ServerVersion)"/>.
+        ///      </para>
+        /// </param>
         /// <param name="mySqlOptionsAction"> An optional action to allow additional MySQL specific configuration. </param>
         /// <returns> The options builder so that further configuration can be chained. </returns>
         public static DbContextOptionsBuilder UseMySql(
@@ -97,7 +118,18 @@ namespace Microsoft.EntityFrameworkCore
         ///     in the open state then EF will not open or close the connection. If the connection is in the closed
         ///     state then EF will open and close the connection as needed.
         /// </param>
-        /// <param name="serverVersion"> The version of the database server used in the connection string. </param>
+        /// <param name="serverVersion">
+        ///     <para>
+        ///         The version of the database server.
+        ///     </para>
+        ///     <para>
+        ///         Create an object for this parameter from the classes <see cref="MySqlServerVersion"/> (for MySQL) and
+        ///         <see cref="MariaDbServerVersion"/> (for MariaDB), through a call to the static method
+        ///         <see cref="ServerVersion.AutoDetect(string)"/> (which retrieves the server version directly from the
+        ///         database server), or by parsing a version string using the static methods
+        ///         <see cref="ServerVersion.Parse(string)"/> or <see cref="ServerVersion.TryParse(string,out ServerVersion)"/>.
+        ///      </para>
+        /// </param>
         /// <param name="mySqlOptionsAction"> An optional action to allow additional MySQL specific configuration. </param>
         /// <returns> The options builder so that further configuration can be chained. </returns>
         public static DbContextOptionsBuilder UseMySql(
@@ -153,7 +185,18 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <typeparam name="TContext"> The type of context to be configured. </typeparam>
         /// <param name="optionsBuilder"> The builder being used to configure the context. </param>
-        /// <param name="serverVersion"> The version of the database server. </param>
+        /// <param name="serverVersion">
+        ///     <para>
+        ///         The version of the database server.
+        ///     </para>
+        ///     <para>
+        ///         Create an object for this parameter from the classes <see cref="MySqlServerVersion"/> (for MySQL) and
+        ///         <see cref="MariaDbServerVersion"/> (for MariaDB), through a call to the static method
+        ///         <see cref="ServerVersion.AutoDetect(string)"/> (which retrieves the server version directly from the
+        ///         database server), or by parsing a version string using the static methods
+        ///         <see cref="ServerVersion.Parse(string)"/> or <see cref="ServerVersion.TryParse(string,out ServerVersion)"/>.
+        ///      </para>
+        /// </param>
         /// <param name="mySqlOptionsAction"> An optional action to allow additional MySQL specific configuration. </param>
         /// <returns> The options builder so that further configuration can be chained. </returns>
         public static DbContextOptionsBuilder<TContext> UseMySql<TContext>(
@@ -170,7 +213,18 @@ namespace Microsoft.EntityFrameworkCore
         /// <typeparam name="TContext"> The type of context to be configured. </typeparam>
         /// <param name="optionsBuilder"> The builder being used to configure the context. </param>
         /// <param name="connectionString"> The connection string of the database to connect to. </param>
-        /// <param name="serverVersion"> The version of the database server used in the connection string. </param>
+        /// <param name="serverVersion">
+        ///     <para>
+        ///         The version of the database server.
+        ///     </para>
+        ///     <para>
+        ///         Create an object for this parameter from the classes <see cref="MySqlServerVersion"/> (for MySQL) and
+        ///         <see cref="MariaDbServerVersion"/> (for MariaDB), through a call to the static method
+        ///         <see cref="ServerVersion.AutoDetect(string)"/> (which retrieves the server version directly from the
+        ///         database server), or by parsing a version string using the static methods
+        ///         <see cref="ServerVersion.Parse(string)"/> or <see cref="ServerVersion.TryParse(string,out ServerVersion)"/>.
+        ///      </para>
+        /// </param>
         /// <param name="mySqlOptionsAction"> An optional action to allow additional MySQL specific configuration. </param>
         /// <returns> The options builder so that further configuration can be chained. </returns>
         public static DbContextOptionsBuilder<TContext> UseMySql<TContext>(
@@ -192,7 +246,18 @@ namespace Microsoft.EntityFrameworkCore
         ///     state then EF will open and close the connection as needed.
         /// </param>
         /// <typeparam name="TContext"> The type of context to be configured. </typeparam>
-        /// <param name="serverVersion"> The version of the database server used in the connection string. </param>
+        /// <param name="serverVersion">
+        ///     <para>
+        ///         The version of the database server.
+        ///     </para>
+        ///     <para>
+        ///         Create an object for this parameter from the classes <see cref="MySqlServerVersion"/> (for MySQL) and
+        ///         <see cref="MariaDbServerVersion"/> (for MariaDB), through a call to the static method
+        ///         <see cref="ServerVersion.AutoDetect(string)"/> (which retrieves the server version directly from the
+        ///         database server), or by parsing a version string using the static methods
+        ///         <see cref="ServerVersion.Parse(string)"/> or <see cref="ServerVersion.TryParse(string,out ServerVersion)"/>.
+        ///      </para>
+        /// </param>
         /// <param name="mySqlOptionsAction"> An optional action to allow additional MySQL specific configuration. </param>
         /// <returns> The options builder so that further configuration can be chained. </returns>
         public static DbContextOptionsBuilder<TContext> UseMySql<TContext>(

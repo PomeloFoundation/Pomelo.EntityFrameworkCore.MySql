@@ -54,7 +54,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Tests
             return string.IsNullOrEmpty(serverVersionString) ||
                    string.Equals(serverVersionString, "auto", StringComparison.OrdinalIgnoreCase)
                 ? ServerVersion.AutoDetect(ConnectionString)
-                : ServerVersion.FromString(serverVersionString);
+                : ServerVersion.Parse(serverVersionString);
         });
 
         public static IConfigurationRoot Config => _lazyConfig.Value;

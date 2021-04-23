@@ -21,7 +21,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
             => throw new NotImplementedException(); // TODO: Remove or implement!
 
         public virtual bool Version(string versionString)
-            => Version(ServerVersion.FromString(versionString));
+            => Version(ServerVersion.Parse(versionString));
 
         public virtual bool Version(ServerVersion serverVersion)
             => ServerVersion.Type == serverVersion.Type &&
@@ -30,7 +30,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
 
         public virtual bool PropertyOrVersion(string propertyNameOrServerVersion)
         {
-            if (ServerVersion.TryFromString(propertyNameOrServerVersion, out var serverVersion))
+            if (ServerVersion.TryParse(propertyNameOrServerVersion, out var serverVersion))
             {
                 return ServerVersion.Type == serverVersion.Type &&
                        ServerVersion.TypeIdentifier == serverVersion.TypeIdentifier &&

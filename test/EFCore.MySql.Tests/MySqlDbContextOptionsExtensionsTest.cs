@@ -309,7 +309,7 @@ namespace Pomelo.EntityFrameworkCore.MySql
         public void UseMySql_with_ServerVersion_FromString()
         {
             var builder = new DbContextOptionsBuilder();
-            var serverVersion = ServerVersion.FromString("8.0.21-mysql");
+            var serverVersion = ServerVersion.Parse("8.0.21-mysql");
 
             builder.UseMySql(
                 "Server=foo",

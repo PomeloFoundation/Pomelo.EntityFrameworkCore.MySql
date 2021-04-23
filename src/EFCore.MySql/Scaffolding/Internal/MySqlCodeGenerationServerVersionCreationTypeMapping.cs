@@ -32,7 +32,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
         public override Expression GenerateCodeLiteral(object value)
             => value is MySqlCodeGenerationServerVersionCreation serverVersionCreation
                 ? Expression.Call(
-                    typeof(ServerVersion).GetMethod(nameof(ServerVersion.FromString), new[] {typeof(string)}),
+                    typeof(ServerVersion).GetMethod(nameof(ServerVersion.Parse), new[] {typeof(string)}),
                     Expression.Constant(serverVersionCreation.ServerVersion.ToString()))
                 : null;
     }
