@@ -3,7 +3,6 @@
 
 using System;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -11,7 +10,8 @@ using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Extensions
+// ReSharper disable once CheckNamespace
+namespace Microsoft.EntityFrameworkCore
 {
     /// <summary>
     ///     Extension methods for <see cref="IProperty" /> for MySQL-specific metadata.

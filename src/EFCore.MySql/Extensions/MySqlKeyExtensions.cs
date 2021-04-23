@@ -2,11 +2,11 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Extensions
+// ReSharper disable once CheckNamespace
+namespace Microsoft.EntityFrameworkCore
 {
     /// <summary>
     ///     Extension methods for <see cref="IKey" /> for MySQL-specific metadata.

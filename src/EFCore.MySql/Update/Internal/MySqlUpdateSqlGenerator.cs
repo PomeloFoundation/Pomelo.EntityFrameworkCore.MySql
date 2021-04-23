@@ -11,7 +11,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.EntityFrameworkCore.Utilities;
-using Pomelo.EntityFrameworkCore.MySql.Extensions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
 {
