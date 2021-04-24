@@ -411,34 +411,6 @@ DROP TABLE IF EXISTS `GuidTable`;");
         }
 
         [ConditionalFact]
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.DefaultExpression), nameof(ServerVersionSupport.AlternativeDefaultExpression))]
-        public void Create_guid_columns()
-        {
-            Test(
-                @"
-CREATE TABLE `GuidTable`  (
-  `GuidTableId` char(36) NOT NULL DEFAULT (UUID()) PRIMARY KEY,
-  `DefaultUuid` char(36) NOT NULL DEFAULT (UUID())
-);",
-                Enumerable.Empty<string>(),
-                Enumerable.Empty<string>(),
-                dbModel =>
-                    {
-                        var table = Assert.Single(dbModel.Tables.Where(t => t.Name == "GuidTable"));
-                        var guidTableIdColumn = Assert.Single(table.Columns.Where(c => c.Name == "GuidTableId"));
-                        var defaultUuidColumn = Assert.Single(table.Columns.Where(c => c.Name == "DefaultUuid"));
-
-                        Assert.Equal(ValueGenerated.OnAdd, guidTableIdColumn.ValueGenerated);
-                        Assert.Null(guidTableIdColumn.DefaultValueSql);
-
-                        Assert.Null(defaultUuidColumn.ValueGenerated);
-                        Assert.Equal("uuid()", defaultUuidColumn.DefaultValueSql);
-                    },
-                @"
-DROP TABLE `GuidTable`;");
-        }
-
-        [ConditionalFact]
         public void Create_default_value_column()
         {
             Test(
@@ -617,7 +589,8 @@ CREATE TABLE DefaultValue (
                 "DROP TABLE IF EXISTS DefaultValueClr");
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.GeneratedColumns))]
         public void Computed_value_virtual()
             => Test(@"
 CREATE TABLE `ComputedValues` (
@@ -639,7 +612,8 @@ CREATE TABLE `ComputedValues` (
                 },
                 @"DROP TABLE IF EXISTS `ComputedValues`");
 
-        [Fact]
+        [ConditionalFact]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.GeneratedColumns))]
         public void Computed_value_stored()
             => Test(@"
 CREATE TABLE `ComputedValues` (
