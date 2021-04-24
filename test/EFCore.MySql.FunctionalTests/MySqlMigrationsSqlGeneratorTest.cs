@@ -33,7 +33,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                         new MySqlDbContextOptionsBuilder(new DbContextOptionsBuilder()).UseNetTopologySuite())
                     .OptionsBuilder).Options)
         {
-            //MigrationsSqlGeneratorTestBase
         }
 
         protected override string Schema { get; } = null;
@@ -561,13 +560,9 @@ ALTER DATABASE COLLATE latin1_swedish_ci;" + EOL,
                 }
             );
 
-            var columnType = "longtext";
-            if (isIndex)
-            {
-                // TODO: Implementation should be changed to use a prefix, instead of a type change.
-                var columnSize = Math.Min(AppConfig.ServerVersion.MaxKeyLength / ((charSet ?? CharSet.Utf8Mb4).MaxBytesPerChar * 2), 255);
-                columnType = $"varchar({columnSize})";
-            }
+            var columnType = isIndex
+                ? $"varchar({MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})"
+                : "longtext";
 
             Assert.Equal(
                 $"ALTER TABLE `Person` ADD `Name` {columnType}{expectedCharSetName} NULL;" + EOL,
@@ -923,6 +918,7 @@ ALTER DATABASE COLLATE latin1_swedish_ci;" + EOL,
         }
 
         [ConditionalFact]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.SpatialIndexes))]
         public virtual void CreateIndexOperation_spatial()
         {
             // TODO: Use meaningful column names.

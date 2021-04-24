@@ -8,7 +8,9 @@ using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -214,6 +216,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
             return base.Rename_table_with_primary_key();
         }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.GeneratedColumns))]
+        public override Task Add_column_with_computedSql(bool? stored)
+            => base.Add_column_with_computedSql(stored);
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.GeneratedColumns))]
+        public override Task Create_table_with_computed_column(bool? stored)
+            => base.Create_table_with_computed_column(stored);
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.GeneratedColumns))]
+        public override Task Alter_column_change_computed()
+            => base.Alter_column_change_computed();
 
         [ConditionalFact]
         public virtual async Task Add_columns_with_collations()

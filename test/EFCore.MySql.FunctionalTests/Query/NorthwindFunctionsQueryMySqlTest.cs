@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 using Xunit.Abstractions;
@@ -888,37 +889,37 @@ WHERE `c`.`CustomerID` >= 'ALFKI'");
             await base.String_compare_with_parameter(async);
 
             AssertSql(
-                $@"@__customer_CustomerID_0='ALFKI' (Size = 255)
+                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` > @__customer_CustomerID_0",
                 //
-                $@"@__customer_CustomerID_0='ALFKI' (Size = 255)
+                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` < @__customer_CustomerID_0",
                 //
-                $@"@__customer_CustomerID_0='ALFKI' (Size = 255)
+                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` <= @__customer_CustomerID_0",
                 //
-                $@"@__customer_CustomerID_0='ALFKI' (Size = 255)
+                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` <= @__customer_CustomerID_0",
                 //
-                $@"@__customer_CustomerID_0='ALFKI' (Size = 255)
+                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` >= @__customer_CustomerID_0",
                 //
-                $@"@__customer_CustomerID_0='ALFKI' (Size = 255)
+                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
@@ -1064,37 +1065,37 @@ WHERE `c`.`CustomerID` >= 'ALFKI'");
             await base.String_compare_to_with_parameter(async);
 
             AssertSql(
-                $@"@__customer_CustomerID_0='ALFKI' (Size = 255)
+                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` > @__customer_CustomerID_0",
                 //
-                $@"@__customer_CustomerID_0='ALFKI' (Size = 255)
+                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` < @__customer_CustomerID_0",
                 //
-                $@"@__customer_CustomerID_0='ALFKI' (Size = 255)
+                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` <= @__customer_CustomerID_0",
                 //
-                $@"@__customer_CustomerID_0='ALFKI' (Size = 255)
+                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` <= @__customer_CustomerID_0",
                 //
-                $@"@__customer_CustomerID_0='ALFKI' (Size = 255)
+                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` >= @__customer_CustomerID_0",
                 //
-                $@"@__customer_CustomerID_0='ALFKI' (Size = 255)
+                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
