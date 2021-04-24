@@ -303,7 +303,7 @@ ORDER BY
                             var comment = reader.GetValueOrDefault<string>("COLUMN_COMMENT");
 
                             // MariaDB does not support SRID column restrictions.
-                            var srid = reader.GetColumnSchema().Any(c => string.Equals(c.ColumnName, "SRS_ID", StringComparison.OrdinalIgnoreCase))
+                            var srid = reader.HasName("SRS_ID")
                                 ? reader.GetValueOrDefault<uint?>("SRS_ID")
                                 : null;
 
