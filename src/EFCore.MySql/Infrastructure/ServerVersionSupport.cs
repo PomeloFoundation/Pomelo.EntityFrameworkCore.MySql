@@ -65,6 +65,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
         public virtual bool DefaultCharSetUtf8Mb4 => false;
         public virtual bool DefaultExpression => false;
         public virtual bool AlternativeDefaultExpression => false;
+        public virtual bool SpatialIndexes => false;
         public virtual bool SpatialReferenceSystemRestrictedColumns => false;
         public virtual bool SpatialFunctionAdditions => false;
         public virtual bool SpatialSupportFunctionAdditions => false;

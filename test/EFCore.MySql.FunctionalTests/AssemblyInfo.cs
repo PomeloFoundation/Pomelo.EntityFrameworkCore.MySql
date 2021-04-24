@@ -12,3 +12,7 @@ using Xunit;
 [assembly: TestCaseOrderer("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit.MySqlTestCaseOrderer", "Pomelo.EntityFrameworkCore.MySql.FunctionalTests")]
 
 #endif
+
+// Our custom MySqlXunitTestFrameworkDiscoverer class allows filtering whole classes like SupportedServerVersionConditionAttribute, instead
+// of just the test cases. This is necessary, if a fixture is database server version dependent.
+[assembly: TestFramework("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit.MySqlXunitTestFramework", "Pomelo.EntityFrameworkCore.MySql.FunctionalTests")]

@@ -1,12 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Extensions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.Json))]
     public class JsonMicrosoftPocoChangeTrackingTest : JsonPocoChangeTrackingTestBase<JsonMicrosoftPocoChangeTrackingTest.JsonMicrosoftPocoChangeTrackingFixture>
     {
         public JsonMicrosoftPocoChangeTrackingTest(JsonMicrosoftPocoChangeTrackingFixture fixture, ITestOutputHelper testOutputHelper)

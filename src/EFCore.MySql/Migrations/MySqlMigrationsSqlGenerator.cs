@@ -596,6 +596,14 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
+            if (!_options.ServerVersion.Supports.SpatialIndexes &&
+                operation[MySqlAnnotationNames.SpatialIndex] is true)
+            {
+                Dependencies.MigrationsLogger.Logger.LogWarning(
+                    $"Spatial indexes are not supported on {_options.ServerVersion}. The CREATE INDEX operation will be ignored.");
+                return;
+            }
+
             builder.Append("CREATE ");
 
             if (operation.IsUnique)

@@ -52,6 +52,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         public override Task Relate(bool async)
             => base.Relate(async);
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.SpatialSupportFunctionAdditions))] // Actually supported since MySQL 5.7.5 (not 5.7.6)
+        public override Task ConvexHull(bool async)
+            => base.ConvexHull(async);
+
         #region Not supported by MySQL and MariaDB
 
         public override Task Buffer_quadrantSegments(bool async) => Task.CompletedTask;

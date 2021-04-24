@@ -6,13 +6,16 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Extensions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.Json))]
     public class JsonNewtonsoftDomChangeTrackingTest : IClassFixture<JsonNewtonsoftDomChangeTrackingTest.JsonMicrosoftDomChangeTrackingFixture>
     {
         public JsonNewtonsoftDomChangeTrackingTest(JsonMicrosoftDomChangeTrackingFixture fixture)

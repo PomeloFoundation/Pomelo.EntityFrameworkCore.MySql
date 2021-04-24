@@ -14,6 +14,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         public class MusicStoreMySqlFixture : MusicStoreFixtureBase
         {
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
+
+            protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
+            {
+                base.OnModelCreating(modelBuilder, context);
+
+                MySqlTestHelpers.Instance.EnsureSufficientKeySpace(modelBuilder.Model, TestStore);
+            }
         }
     }
 }

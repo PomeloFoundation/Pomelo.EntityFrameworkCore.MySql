@@ -67,6 +67,7 @@ namespace Microsoft.EntityFrameworkCore
             public override bool DefaultCharSetUtf8Mb4 => false;
             public override bool DefaultExpression => false;
             public override bool AlternativeDefaultExpression => ServerVersion.Version >= new Version(10, 2, 7);
+            public override bool SpatialIndexes => ServerVersion.Version >= new Version(10, 2, 2);
             public override bool SpatialReferenceSystemRestrictedColumns => false;
             public override bool SpatialFunctionAdditions => ServerVersion.Version >= new Version(10, 1, 2);
             public override bool SpatialSupportFunctionAdditions => false;
