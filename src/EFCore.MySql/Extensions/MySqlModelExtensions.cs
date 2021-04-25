@@ -100,7 +100,7 @@ namespace Microsoft.EntityFrameworkCore
                (model[MySqlAnnotationNames.CharSetDelegation] is bool explicitlyDelegateToChildren
                    ? explicitlyDelegateToChildren
                        ? DelegationMode.ApplyToAll
-                       : DelegationMode.ApplyToDatabase
+                       : DelegationMode.ApplyToDatabases
                    : null);
 
         /// <summary>
@@ -168,7 +168,7 @@ namespace Microsoft.EntityFrameworkCore
                (model[MySqlAnnotationNames.CollationDelegation] is bool explicitlyDelegateToChildren
                    ? explicitlyDelegateToChildren
                        ? DelegationMode.ApplyToAll
-                       : DelegationMode.ApplyToDatabase
+                       : DelegationMode.ApplyToDatabases
                    : null);
 
         /// <summary>

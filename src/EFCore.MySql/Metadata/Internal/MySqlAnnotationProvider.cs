@@ -36,7 +36,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
                 yield return new Annotation(MySqlAnnotationNames.CharSet, _options.DefaultCharSet.Name);
             }
 
-            var charSet = model.Model.GetActualCharSetDelegation().HasFlag(DelegationMode.ApplyToDatabase)
+            var charSet = model.Model.GetActualCharSetDelegation().HasFlag(DelegationMode.ApplyToDatabases)
                 ? model.Model.GetCharSet()
                 : null;
 

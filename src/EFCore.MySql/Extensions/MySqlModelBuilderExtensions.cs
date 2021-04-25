@@ -57,7 +57,7 @@ namespace Microsoft.EntityFrameworkCore
             => modelBuilder.HasCharSet(
                 charSet,
                 explicitlyDelegateToChildren == false
-                    ? DelegationMode.ApplyToDatabase
+                    ? DelegationMode.ApplyToDatabases
                     : DelegationMode.ApplyToAll);
 
         /// <summary>
@@ -150,7 +150,7 @@ namespace Microsoft.EntityFrameworkCore
             => modelBuilder.HasCharSet(
                 charSet,
                 explicitlyDelegateToChildren == false
-                    ? DelegationMode.ApplyToDatabase
+                    ? DelegationMode.ApplyToDatabases
                     : DelegationMode.ApplyToAll,
                 fromDataAnnotation);
 
@@ -283,7 +283,7 @@ namespace Microsoft.EntityFrameworkCore
             => modelBuilder.UseCollation(
                 collation,
                 explicitlyDelegateToChildren == false
-                    ? DelegationMode.ApplyToDatabase
+                    ? DelegationMode.ApplyToDatabases
                     : DelegationMode.ApplyToAll);
 
         /// <summary>
@@ -343,7 +343,7 @@ namespace Microsoft.EntityFrameworkCore
             => modelBuilder.UseCollation(
                 collation,
                 explicitlyDelegateToChildren == false
-                    ? DelegationMode.ApplyToDatabase
+                    ? DelegationMode.ApplyToDatabases
                     : DelegationMode.ApplyToAll,
                 fromDataAnnotation);
 

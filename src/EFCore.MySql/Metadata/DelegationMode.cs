@@ -18,23 +18,23 @@ namespace Microsoft.EntityFrameworkCore.Metadata
         Default = 0,
 
         /// <summary>
-        /// Applys the character set or collation to the database.
+        /// Applys the character set or collation to databases.
         /// </summary>
-        ApplyToDatabase = 1 << 0,
+        ApplyToDatabases = 1 << 0,
 
         /// <summary>
         /// Applys the character set or collation to tables.
         /// </summary>
-        ApplyToTables = 2 << 0,
+        ApplyToTables = 1 << 1,
 
         /// <summary>
         /// Applys the character set or collation to columns.
         /// </summary>
-        ApplyToColumns = 3 << 0,
+        ApplyToColumns = 1 << 2,
 
         /// <summary>
         /// Applys the character set or collation to all objects.
         /// </summary>
-        ApplyToAll = ApplyToDatabase | ApplyToTables | ApplyToColumns
+        ApplyToAll = ApplyToDatabases | ApplyToTables | ApplyToColumns
     }
 }
