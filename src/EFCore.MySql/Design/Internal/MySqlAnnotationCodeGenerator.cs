@@ -24,11 +24,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
         {
             if (annotation.Name == MySqlAnnotationNames.CharSet)
             {
-                var explicitlyDelegateToChildren = model[MySqlAnnotationNames.CharSetDelegation] as bool?;
+                var delegationMode = model[MySqlAnnotationNames.CharSetDelegation] as DelegationMode?;
                 return new MethodCallCodeFragment(
                     nameof(MySqlModelBuilderExtensions.HasCharSet),
                     new[] {annotation.Value}
-                        .AppendIfTrue(explicitlyDelegateToChildren.HasValue, explicitlyDelegateToChildren)
+                        .AppendIfTrue(delegationMode.HasValue, delegationMode)
                         .ToArray());
             }
 
@@ -45,11 +45,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
             // method call (though it could), so we can return our method call fragment here, without generating an ugly duplicate.
             if (annotation.Name == RelationalAnnotationNames.Collation)
             {
-                var explicitlyDelegateToChildren = model[MySqlAnnotationNames.CollationDelegation] as bool?;
+                var delegationMode = model[MySqlAnnotationNames.CollationDelegation] as DelegationMode?;
                 return new MethodCallCodeFragment(
                     nameof(MySqlModelBuilderExtensions.UseCollation),
                     new[] {annotation.Value}
-                        .AppendIfTrue(explicitlyDelegateToChildren.HasValue, explicitlyDelegateToChildren)
+                        .AppendIfTrue(delegationMode.HasValue, delegationMode)
                         .ToArray());
             }
 

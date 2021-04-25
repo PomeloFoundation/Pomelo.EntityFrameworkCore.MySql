@@ -26,20 +26,34 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
 
         public override IEnumerable<IAnnotation> For(IRelationalModel model)
         {
-            // If neither character set nor collation has been explicitly defined for the model, we use Pomelo's universal fallback default character set,
-            // which is `utf8mb4`.
-            if (model.Model.GetAnnotations().All(a => (a.Name != MySqlAnnotationNames.CharSet || a.Value is not string) &&
-                                                      (a.Name != RelationalAnnotationNames.Collation || a.Value is not string)) &&
-                _options.DefaultCharSet?.Name is not null)
+            // If neither character set nor collation has been explicitly defined for the model, and no delegation has been setup, we use
+            // Pomelo's universal fallback default character set (which is `utf8mb4`) and apply it to all database objects.
+            if (model.Model.GetCharSet() is null &&
+                model.Model.GetCharSetDelegation() is null &&
+                model.Model.GetCollation() is null &&
+                model.Model.GetCollationDelegation() is null)
             {
                 yield return new Annotation(MySqlAnnotationNames.CharSet, _options.DefaultCharSet.Name);
             }
 
+            var charSet = model.Model.GetActualCharSetDelegation().HasFlag(DelegationMode.ApplyToDatabase)
+                ? model.Model.GetCharSet()
+                : null;
+
+            if (charSet is not null)
+            {
+                yield return new Annotation(
+                    MySqlAnnotationNames.CharSet,
+                    charSet);
+            }
+
+            // If a collation delegation mode has been set, but does not contain DelegationMode.ApplyToDatabase, we reset the EF Core
+            // handled Collation property in MySqlMigrationsModelDiffer.
+
+            // Handle other annotations (including the delegation annotations).
             foreach (var annotation in model.Model.GetAnnotations()
-                .Where(
-                    a => a.Name == MySqlAnnotationNames.CharSet ||
-                         a.Name == MySqlAnnotationNames.CharSetDelegation ||
-                         a.Name == MySqlAnnotationNames.CollationDelegation))
+                .Where(a => a.Name is MySqlAnnotationNames.CharSetDelegation or
+                                      MySqlAnnotationNames.CollationDelegation))
             {
                 yield return annotation;
             }
@@ -53,7 +67,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             // Use an explicitly defined character set, if set.
             // Otherwise, explicitly use the model/database character set, if delegation is enabled.
             var charSet = entityType.GetCharSet() ??
-                          (entityType.Model.GetCharSetDelegation().GetValueOrDefault(true)
+                          (entityType.Model.GetActualCharSetDelegation().HasFlag(DelegationMode.ApplyToTables)
                               ? entityType.Model.GetCharSet()
                               : null);
 
@@ -67,7 +81,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             // Use an explicitly defined collation, if set.
             // Otherwise, explicitly use the model/database collation, if delegation is enabled.
             var collation = entityType.GetCollation() ??
-                            (entityType.Model.GetCollationDelegation().GetValueOrDefault(true)
+                            (entityType.Model.GetActualCollationDelegation().HasFlag(DelegationMode.ApplyToTables)
                                 ? entityType.Model.GetCollation()
                                 : null);
 
@@ -161,9 +175,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
                               .FirstOrDefault(c => c != null) ??
                           column.PropertyMappings.Select(
                                   m => m.Property.FindTypeMapping() is MySqlStringTypeMapping &&
-                                       m.Property.DeclaringEntityType.GetCharSetDelegation().GetValueOrDefault(true)
+                                       m.Property.DeclaringEntityType.GetCharSetDelegation().GetValueOrDefault(true) // <-- TODO
                                       ? m.Property.DeclaringEntityType.GetCharSet() ??
-                                        (m.Property.DeclaringEntityType.Model.GetCharSetDelegation().GetValueOrDefault(true)
+                                        (m.Property.DeclaringEntityType.Model.GetActualCharSetDelegation().HasFlag(DelegationMode.ApplyToColumns)
                                             ? m.Property.DeclaringEntityType.Model.GetCharSet()
                                             : null)
                                       : null)
@@ -187,9 +201,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
                       .FirstOrDefault(c => c != null) ??
                   column.PropertyMappings.Select(
                           m => m.Property.FindTypeMapping() is MySqlStringTypeMapping &&
-                               m.Property.DeclaringEntityType.GetCollationDelegation().GetValueOrDefault(true)
+                               m.Property.DeclaringEntityType.GetCollationDelegation().GetValueOrDefault(true) // <-- TODO
                               ? m.Property.DeclaringEntityType.GetCollation() ??
-                                (m.Property.DeclaringEntityType.Model.GetCollationDelegation().GetValueOrDefault(true)
+                                (m.Property.DeclaringEntityType.Model.GetActualCollationDelegation().HasFlag(DelegationMode.ApplyToColumns)
                                     ? m.Property.DeclaringEntityType.Model.GetCollation()
                                     : null)
                               : null)
