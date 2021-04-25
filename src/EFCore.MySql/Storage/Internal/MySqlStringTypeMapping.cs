@@ -25,6 +25,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private readonly IMySqlOptions _options;
 
         public bool IsUnquoted { get; }
+        public bool IsNationalChar
+            => StoreTypeNameBase.StartsWith("n") && StoreTypeNameBase.Contains("char");
 
         public MySqlStringTypeMapping(
             [NotNull] string storeType,

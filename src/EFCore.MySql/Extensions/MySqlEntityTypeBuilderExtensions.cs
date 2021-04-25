@@ -26,8 +26,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="charSet"> The name of the character set. </param>
         /// <param name="delegationMode">
         /// Finely controls where to recursively apply the character set and where not (including this entity/table).
-        /// Implicitly uses <see cref="DelegationMode.Default"/> (which translates to <see cref="DelegationMode.ApplyToAll"/>) if set to
-        /// <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         /// <returns> The same builder instance so that multiple calls can be chained. </returns>
         public static EntityTypeBuilder HasCharSet(
@@ -37,6 +36,7 @@ namespace Microsoft.EntityFrameworkCore
         {
             Check.NotNull(entityTypeBuilder, nameof(entityTypeBuilder));
             Check.NullButNotEmpty(charSet, nameof(charSet));
+            Check.NullOrEnumValue(delegationMode, nameof(delegationMode));
 
             entityTypeBuilder.Metadata.SetCharSet(charSet);
             entityTypeBuilder.Metadata.SetCharSetDelegation(delegationMode);
@@ -73,8 +73,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="charSet"> The character set. </param>
         /// <param name="delegationMode">
         /// Finely controls where to recursively apply the character set and where not (including this entity/table).
-        /// Implicitly uses <see cref="DelegationMode.Default"/> (which translates to <see cref="DelegationMode.ApplyToAll"/>) if set to
-        /// <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         /// <returns> The same builder instance so that multiple calls can be chained. </returns>
         public static EntityTypeBuilder HasCharSet(
@@ -108,8 +107,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="charSet"> The name of the character set. </param>
         /// <param name="delegationMode">
         /// Finely controls where to recursively apply the character set and where not (including this entity/table).
-        /// Implicitly uses <see cref="DelegationMode.Default"/> (which translates to <see cref="DelegationMode.ApplyToAll"/>) if set to
-        /// <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         /// <returns> The same builder instance so that multiple calls can be chained. </returns>
         public static EntityTypeBuilder<TEntity> HasCharSet<TEntity>(
@@ -145,8 +143,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="charSet"> The character set. </param>
         /// <param name="delegationMode">
         /// Finely controls where to recursively apply the character set and where not (including this entity/table).
-        /// Implicitly uses <see cref="DelegationMode.Default"/> (which translates to <see cref="DelegationMode.ApplyToAll"/>) if set to
-        /// <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         /// <returns> The same builder instance so that multiple calls can be chained. </returns>
         public static EntityTypeBuilder<TEntity> HasCharSet<TEntity>(
@@ -182,8 +179,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="charSet"> The name of the character set. </param>
         /// <param name="delegationMode">
         /// Finely controls where to recursively apply the character set and where not (including this entity/table).
-        /// Implicitly uses <see cref="DelegationMode.Default"/> (which translates to <see cref="DelegationMode.ApplyToAll"/>) if set to
-        /// <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
         /// <returns> The same builder instance so that multiple calls can be chained. </returns>
@@ -193,6 +189,10 @@ namespace Microsoft.EntityFrameworkCore
             DelegationMode? delegationMode = null,
             bool fromDataAnnotation = false)
         {
+            Check.NotNull(entityTypeBuilder, nameof(entityTypeBuilder));
+            Check.NullButNotEmpty(charSet, nameof(charSet));
+            Check.NullOrEnumValue(delegationMode, nameof(delegationMode));
+
             if (entityTypeBuilder.CanSetCharSet(charSet, fromDataAnnotation) &&
                 entityTypeBuilder.CanSetCharSetDelegation(delegationMode, fromDataAnnotation))
             {
@@ -237,8 +237,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="charSet"> The character set. </param>
         /// <param name="delegationMode">
         /// Finely controls where to recursively apply the character set and where not (including this entity/table).
-        /// Implicitly uses <see cref="DelegationMode.Default"/> (which translates to <see cref="DelegationMode.ApplyToAll"/>) if set to
-        /// <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
         /// <returns> The same builder instance so that multiple calls can be chained. </returns>
@@ -281,6 +280,7 @@ namespace Microsoft.EntityFrameworkCore
             bool fromDataAnnotation = false)
         {
             Check.NotNull(entityTypeBuilder, nameof(entityTypeBuilder));
+            Check.NullButNotEmpty(charSet, nameof(charSet));
 
             return entityTypeBuilder.CanSetAnnotation(MySqlAnnotationNames.CharSet, charSet, fromDataAnnotation);
         }
@@ -298,6 +298,7 @@ namespace Microsoft.EntityFrameworkCore
             bool fromDataAnnotation = false)
         {
             Check.NotNull(entityTypeBuilder, nameof(entityTypeBuilder));
+            Check.NullOrEnumValue(delegationMode, nameof(delegationMode));
 
             return entityTypeBuilder.CanSetAnnotation(MySqlAnnotationNames.CharSetDelegation, delegationMode, fromDataAnnotation);
         }
@@ -314,8 +315,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="collation"> The name of the collation. </param>
         /// <param name="delegationMode">
         /// Finely controls where to recursively apply the character set and where not (including this entity/table).
-        /// Implicitly uses <see cref="DelegationMode.Default"/> (which translates to <see cref="DelegationMode.ApplyToAll"/>) if set to
-        /// <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         /// <returns> The same builder instance so that multiple calls can be chained. </returns>
         public static EntityTypeBuilder UseCollation(
@@ -324,6 +324,8 @@ namespace Microsoft.EntityFrameworkCore
             DelegationMode? delegationMode = null)
         {
             Check.NotNull(entityTypeBuilder, nameof(entityTypeBuilder));
+            Check.NullButNotEmpty(collation, nameof(collation));
+            Check.NullOrEnumValue(delegationMode, nameof(delegationMode));
 
             entityTypeBuilder.Metadata.SetCollation(collation);
             entityTypeBuilder.Metadata.SetCollationDelegation(delegationMode);
@@ -360,8 +362,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="collation"> The name of the collation. </param>
         /// <param name="delegationMode">
         /// Finely controls where to recursively apply the character set and where not (including this entity/table).
-        /// Implicitly uses <see cref="DelegationMode.Default"/> (which translates to <see cref="DelegationMode.ApplyToAll"/>) if set to
-        /// <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         /// <returns> The same builder instance so that multiple calls can be chained. </returns>
         public static EntityTypeBuilder<TEntity> UseCollation<TEntity>(
@@ -397,8 +398,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="collation"> The name of the collation. </param>
         /// <param name="delegationMode">
         /// Finely controls where to recursively apply the character set and where not (including this entity/table).
-        /// Implicitly uses <see cref="DelegationMode.Default"/> (which translates to <see cref="DelegationMode.ApplyToAll"/>) if set to
-        /// <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
         /// <returns> The same builder instance so that multiple calls can be chained. </returns>
@@ -408,6 +408,10 @@ namespace Microsoft.EntityFrameworkCore
             DelegationMode? delegationMode = null,
             bool fromDataAnnotation = false)
         {
+            Check.NotNull(entityTypeBuilder, nameof(entityTypeBuilder));
+            Check.NullButNotEmpty(collation, nameof(collation));
+            Check.NullOrEnumValue(delegationMode, nameof(delegationMode));
+
             if (entityTypeBuilder.CanSetCollation(collation, fromDataAnnotation) &&
                 entityTypeBuilder.CanSetCollationDelegation(delegationMode, fromDataAnnotation))
             {
@@ -457,6 +461,7 @@ namespace Microsoft.EntityFrameworkCore
             bool fromDataAnnotation = false)
         {
             Check.NotNull(entityTypeBuilder, nameof(entityTypeBuilder));
+            Check.NullButNotEmpty(collation, nameof(collation));
 
             return entityTypeBuilder.CanSetAnnotation(RelationalAnnotationNames.Collation, collation, fromDataAnnotation);
         }
@@ -474,6 +479,7 @@ namespace Microsoft.EntityFrameworkCore
             bool fromDataAnnotation = false)
         {
             Check.NotNull(entityTypeBuilder, nameof(entityTypeBuilder));
+            Check.NullOrEnumValue(delegationMode, nameof(delegationMode));
 
             return entityTypeBuilder.CanSetAnnotation(MySqlAnnotationNames.CollationDelegation, delegationMode, fromDataAnnotation);
         }

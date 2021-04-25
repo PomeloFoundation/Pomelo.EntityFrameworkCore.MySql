@@ -109,8 +109,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="model"> The model. </param>
         /// <param name="delegationMode">
         /// Finely controls where to recursively apply the character set and where not (including this model/database).
-        /// Implicitly uses <see cref="DelegationMode.Default"/> (which translates to <see cref="DelegationMode.ApplyToAll"/>) if set to
-        /// <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         public static void SetCharSetDelegation([NotNull] this IMutableModel model, DelegationMode? delegationMode)
             => model.SetOrRemoveAnnotation(MySqlAnnotationNames.CharSetDelegation, delegationMode);
@@ -121,8 +120,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="model"> The model. </param>
         /// <param name="delegationMode">
         /// Finely controls where to recursively apply the character set and where not (including this model/database).
-        /// Implicitly uses <see cref="DelegationMode.Default"/> (which translates to <see cref="DelegationMode.ApplyToAll"/>) if set to
-        /// <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
         public static void SetCharSetDelegation([NotNull] this IConventionModel model, DelegationMode? delegationMode, bool fromDataAnnotation = false)
@@ -144,14 +142,10 @@ namespace Microsoft.EntityFrameworkCore
         /// <returns> The actual character set delegation mode. </returns>
         public static DelegationMode GetActualCharSetDelegation([NotNull] this IModel model)
         {
-            var delegationMode = model.GetCharSetDelegation();
-
-            if (delegationMode is null or DelegationMode.Default)
-            {
-                delegationMode = DelegationMode.ApplyToAll;
-            }
-
-            return delegationMode.Value;
+            var delegationMode = model.GetCharSetDelegation() ?? DelegationMode.Default;
+            return delegationMode == DelegationMode.Default
+                ? DelegationMode.ApplyToAll
+                : delegationMode;
         }
 
         #endregion CharSetDelegation
@@ -177,8 +171,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="model"> The model. </param>
         /// <param name="delegationMode">
         /// Finely controls where to recursively apply the collation and where not (including this model/database).
-        /// Implicitly uses <see cref="DelegationMode.Default"/> (which translates to <see cref="DelegationMode.ApplyToAll"/>) if set to
-        /// <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         public static void SetCollationDelegation([NotNull] this IMutableModel model, DelegationMode? delegationMode)
             => model.SetOrRemoveAnnotation(MySqlAnnotationNames.CollationDelegation, delegationMode);
@@ -189,8 +182,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="model"> The model. </param>
         /// <param name="delegationMode">
         /// Finely controls where to recursively apply the collation and where not (including this model/database).
-        /// Implicitly uses <see cref="DelegationMode.Default"/> (which translates to <see cref="DelegationMode.ApplyToAll"/>) if set to
-        /// <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
         public static void SetCollationDelegation([NotNull] this IConventionModel model, DelegationMode? delegationMode, bool fromDataAnnotation = false)
@@ -212,14 +204,10 @@ namespace Microsoft.EntityFrameworkCore
         /// <returns> The actual collation delegation mode. </returns>
         public static DelegationMode GetActualCollationDelegation([NotNull] this IModel model)
         {
-            var delegationMode = model.GetCharSetDelegation();
-
-            if (delegationMode is null or DelegationMode.Default)
-            {
-                delegationMode = DelegationMode.ApplyToAll;
-            }
-
-            return delegationMode.Value;
+            var delegationMode = model.GetCollationDelegation() ?? DelegationMode.Default;
+            return delegationMode == DelegationMode.Default
+                ? DelegationMode.ApplyToAll
+                : delegationMode;
         }
 
         #endregion CollationDelegation

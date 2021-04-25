@@ -77,7 +77,12 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="entityType"> The entity type. </param>
         /// <returns> The character set delegation mode. </returns>
         public static DelegationMode? GetCharSetDelegation([NotNull] this IEntityType entityType)
-            => entityType[MySqlAnnotationNames.CharSetDelegation] as DelegationMode?;
+            => entityType[MySqlAnnotationNames.CharSetDelegation] as DelegationMode? ??
+               (entityType[MySqlAnnotationNames.CharSetDelegation] is bool explicitlyDelegateToChildren
+                   ? explicitlyDelegateToChildren
+                       ? DelegationMode.ApplyToAll
+                       : DelegationMode.ApplyToDatabases
+                   : null);
 
         /// <summary>
         ///     Attempts to set the character set delegation mode for entity/table.
@@ -85,8 +90,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="entityType"> The entity type. </param>
         /// <param name="delegationMode">
         /// Finely controls where to recursively apply the character set and where not (including this entity/table).
-        /// Implicitly uses <see cref="DelegationMode.Default"/> (which translates to <see cref="DelegationMode.ApplyToAll"/>) if set to
-        /// <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         public static void SetCharSetDelegation(
             [NotNull] this IMutableEntityType entityType,
@@ -99,8 +103,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="entityType"> The entity type. </param>
         /// <param name="delegationMode">
         /// Finely controls where to recursively apply the character set and where not (including this entity/table).
-        /// Implicitly uses <see cref="DelegationMode.Default"/> (which translates to <see cref="DelegationMode.ApplyToAll"/>) if set to
-        /// <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
         /// <returns> The configured value. </returns>
@@ -130,14 +133,10 @@ namespace Microsoft.EntityFrameworkCore
         /// <returns> The actual character set delegation mode. </returns>
         public static DelegationMode GetActualCharSetDelegation([NotNull] this IEntityType entityType)
         {
-            var delegationMode = entityType.GetCharSetDelegation();
-
-            if (delegationMode is null or DelegationMode.Default)
-            {
-                delegationMode = DelegationMode.ApplyToAll;
-            }
-
-            return delegationMode.Value;
+            var delegationMode = entityType.GetCharSetDelegation() ?? DelegationMode.Default;
+            return delegationMode == DelegationMode.Default
+                ? DelegationMode.ApplyToAll
+                : delegationMode;
         }
 
         #endregion CharSetDelegation
@@ -205,7 +204,12 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="entityType"> The entity type. </param>
         /// <returns> The collation delegation mode. </returns>
         public static DelegationMode? GetCollationDelegation([NotNull] this IEntityType entityType)
-            => entityType[MySqlAnnotationNames.CollationDelegation] as DelegationMode?;
+            => entityType[MySqlAnnotationNames.CollationDelegation] as DelegationMode? ??
+               (entityType[MySqlAnnotationNames.CollationDelegation] is bool explicitlyDelegateToChildren
+                   ? explicitlyDelegateToChildren
+                       ? DelegationMode.ApplyToAll
+                       : DelegationMode.ApplyToDatabases
+                   : null);
 
         /// <summary>
         ///     Attempts to set the collation delegation mode for entity/table.
@@ -213,8 +217,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="entityType"> The entity type. </param>
         /// <param name="delegationMode">
         /// Finely controls where to recursively apply the character set and where not (including this entity/table).
-        /// Implicitly uses <see cref="DelegationMode.Default"/> (which translates to <see cref="DelegationMode.ApplyToAll"/>) if set to
-        /// <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         public static void SetCollationDelegation(
             [NotNull] this IMutableEntityType entityType,
@@ -227,8 +230,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="entityType"> The entity type. </param>
         /// <param name="delegationMode">
         /// Finely controls where to recursively apply the character set and where not (including this entity/table).
-        /// Implicitly uses <see cref="DelegationMode.Default"/> (which translates to <see cref="DelegationMode.ApplyToAll"/>) if set to
-        /// <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
         /// <returns> The configured value. </returns>
@@ -258,14 +260,10 @@ namespace Microsoft.EntityFrameworkCore
         /// <returns> The actual collation delegation mode. </returns>
         public static DelegationMode GetActualCollationDelegation([NotNull] this IEntityType entityType)
         {
-            var delegationMode = entityType.GetCollationDelegation();
-
-            if (delegationMode is null or DelegationMode.Default)
-            {
-                delegationMode = DelegationMode.ApplyToAll;
-            }
-
-            return delegationMode.Value;
+            var delegationMode = entityType.GetCollationDelegation() ?? DelegationMode.Default;
+            return delegationMode == DelegationMode.Default
+                ? DelegationMode.ApplyToAll
+                : delegationMode;
         }
 
         #endregion CollationDelegation

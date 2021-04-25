@@ -111,6 +111,32 @@ namespace Microsoft.EntityFrameworkCore.Utilities
             return value;
         }
 
+        public static TEnum? EnumValue<TEnum>(
+            TEnum? value,
+            [InvokerParameterName] [NotNull] string parameterName)
+            where TEnum : struct
+        {
+            NotNull(value, parameterName);
+
+            return NullOrEnumValue(value, parameterName);
+        }
+
+        public static TEnum? NullOrEnumValue<TEnum>(
+            TEnum? value,
+            [InvokerParameterName] [NotNull] string parameterName)
+            where TEnum : struct
+        {
+            if (value is not null)
+            {
+                if (!Enum.IsDefined(typeof(TEnum), value))
+                {
+                    throw new ArgumentOutOfRangeException(parameterName, value, null);
+                }
+            }
+
+            return value;
+        }
+
         [Conditional("DEBUG")]
         public static void DebugAssert([CA.DoesNotReturnIfAttribute(false)] bool condition, string message)
         {

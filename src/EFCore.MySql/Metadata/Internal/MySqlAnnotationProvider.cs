@@ -26,21 +26,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
 
         public override IEnumerable<IAnnotation> For(IRelationalModel model)
         {
-            // If neither character set nor collation has been explicitly defined for the model, and no delegation has been setup, we use
-            // Pomelo's universal fallback default character set (which is `utf8mb4`) and apply it to all database objects.
-            if (model.Model.GetCharSet() is null &&
-                model.Model.GetCharSetDelegation() is null &&
-                model.Model.GetCollation() is null &&
-                model.Model.GetCollationDelegation() is null)
-            {
-                yield return new Annotation(MySqlAnnotationNames.CharSet, _options.DefaultCharSet.Name);
-            }
-
-            var charSet = model.Model.GetActualCharSetDelegation().HasFlag(DelegationMode.ApplyToDatabases)
-                ? model.Model.GetCharSet()
-                : null;
-
-            if (charSet is not null)
+            if (GetActualModelCharSet(model.Model, DelegationMode.ApplyToDatabases) is string charSet)
             {
                 yield return new Annotation(
                     MySqlAnnotationNames.CharSet,
@@ -66,13 +52,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
 
             // Use an explicitly defined character set, if set.
             // Otherwise, explicitly use the model/database character set, if delegation is enabled.
-            var charSet = entityType.GetActualCharSetDelegation().HasFlag(DelegationMode.ApplyToTables)
-                ? entityType.GetCharSet()
-                : (entityType.Model.GetActualCharSetDelegation().HasFlag(DelegationMode.ApplyToTables)
-                    ? entityType.Model.GetCharSet()
-                    : null);
-
-            if (charSet is not null)
+            if (GetActualEntityTypeCharSet(entityType, DelegationMode.ApplyToTables) is string charSet)
             {
                 yield return new Annotation(
                     MySqlAnnotationNames.CharSet,
@@ -81,13 +61,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
 
             // Use an explicitly defined collation, if set.
             // Otherwise, explicitly use the model/database collation, if delegation is enabled.
-            var collation = entityType.GetActualCollationDelegation().HasFlag(DelegationMode.ApplyToTables)
-                ? entityType.GetCollation()
-                : (entityType.Model.GetActualCollationDelegation().HasFlag(DelegationMode.ApplyToTables)
-                    ? entityType.Model.GetCollation()
-                    : null);
-
-            if (collation is not null)
+            if (GetActualEntityTypeCollation(entityType, DelegationMode.ApplyToTables) is string collation)
             {
                 yield return new Annotation(
                     RelationalAnnotationNames.Collation,
@@ -159,9 +133,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
 
         public override IEnumerable<IAnnotation> For(IColumn column)
         {
-            if (column.PropertyMappings.Select(m => m.Property)
-                .FirstOrDefault(p => p.GetValueGenerationStrategy() != null &&
-                                     p.GetValueGenerationStrategy() != MySqlValueGenerationStrategy.None) is IProperty property)
+            var properties = column.PropertyMappings.Select(m => m.Property).ToArray();
+
+            if (properties.FirstOrDefault(p => p.GetValueGenerationStrategy() != null &&
+                                               p.GetValueGenerationStrategy() != MySqlValueGenerationStrategy.None) is IProperty property)
             {
                 var valueGenerationStrategy = property.GetValueGenerationStrategy();
                 yield return new Annotation(
@@ -171,47 +146,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
 
             // Use an explicitly defined character set, if set.
             // Otherwise, explicitly use the entity/table or model/database character set, if delegation is enabled.
-            var charSet = column.PropertyMappings.Select(
-                                  m => m.Property.GetCharSet())
-                              .FirstOrDefault(c => c != null) ??
-                          column.PropertyMappings.Select(
-                                  m => m.Property.FindTypeMapping() is MySqlStringTypeMapping &&
-                                       m.Property.DeclaringEntityType.GetActualCharSetDelegation().HasFlag(DelegationMode.ApplyToColumns)
-                                      ? m.Property.DeclaringEntityType.GetCharSet() ??
-                                        (m.Property.DeclaringEntityType.Model.GetActualCharSetDelegation().HasFlag(DelegationMode.ApplyToColumns)
-                                            ? m.Property.DeclaringEntityType.Model.GetCharSet()
-                                            : null)
-                                      : null)
-                              .FirstOrDefault(c => c != null);
-
-            if (charSet is not null)
+            if (GetActualPropertyCharSet(properties, DelegationMode.ApplyToColumns) is string charSet)
             {
                 yield return new Annotation(
                     MySqlAnnotationNames.CharSet,
                     charSet);
             }
 
-            // We have been using the `MySql:Collation` annotation before EF Core added collation support.
-            // Our `MySqlPropertyExtensions.GetMySqlLegacyCollation()` method handles the legacy case, so we explicitly
-            // call it here and setup the relational annotation, even though EF Core sets it up as well.
-            // This ensures, that from this point onwards, only the `Relational:Collation` annotation is being used.
-            // If no collation has been set, explicitly use the the model/database collation, if delegation is enabled.
-            var collation = column.PropertyMappings.All(m => m.Property.GetCollation() is null)
-                ? column.PropertyMappings.Select(
-                          m => m.Property.GetMySqlLegacyCollation())
-                      .FirstOrDefault(c => c != null) ??
-                  column.PropertyMappings.Select(
-                          m => m.Property.FindTypeMapping() is MySqlStringTypeMapping &&
-                               m.Property.DeclaringEntityType.GetActualCollationDelegation().HasFlag(DelegationMode.ApplyToColumns)
-                              ? m.Property.DeclaringEntityType.GetCollation() ??
-                                (m.Property.DeclaringEntityType.Model.GetActualCollationDelegation().HasFlag(DelegationMode.ApplyToColumns)
-                                    ? m.Property.DeclaringEntityType.Model.GetCollation()
-                                    : null)
-                              : null)
-                      .FirstOrDefault(c => c != null)
-                : null;
-
-            if (collation is not null)
+            // Use an explicitly defined collation, if set.
+            // Otherwise, explicitly use the entity/table or model/database collation, if delegation is enabled.
+            if (GetActualPropertyCollation(properties, DelegationMode.ApplyToColumns) is string collation)
             {
                 yield return new Annotation(
                     RelationalAnnotationNames.Collation,
@@ -225,6 +169,92 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
                     MySqlAnnotationNames.SpatialReferenceSystemId,
                     srid);
             }
+        }
+
+        protected virtual string GetActualModelCharSet(IModel model, DelegationMode currentLevel)
+        {
+            // If neither character set nor collation has been explicitly defined for the model, and no delegation has been setup, we use
+            // Pomelo's universal fallback default character set (which is `utf8mb4`) and apply it to all database objects.
+            return model.GetCharSet() is null &&
+                   model.GetCharSetDelegation() is null &&
+                   model.GetCollation() is null &&
+                   model.GetCollationDelegation() is null
+                ? _options.DefaultCharSet.Name
+                : model.GetActualCharSetDelegation().HasFlag(currentLevel)
+                    ? model.GetCharSet()
+                    : null;
+        }
+
+        protected virtual string GetActualModelCollation(IModel model, DelegationMode currentLevel)
+        {
+            return model.GetActualCollationDelegation().HasFlag(currentLevel)
+                ? model.GetCollation()
+                : null;
+        }
+
+        protected virtual string GetActualEntityTypeCharSet(IEntityType entityType, DelegationMode currentLevel)
+        {
+            // There are the following variations at the entity level:
+            //    1. entityTypeBuilder.HasCharSet(null, null) [or no call at all]
+            //            -> Check the charset and delegation at the database level.
+            //    2. a. entityTypeBuilder.HasCharSet(null, DelegationMode.ApplyToAll)
+            //       b. entityTypeBuilder.HasCharSet(null, DelegationMode.ApplyToColumns)
+            //            -> Do not explicitly use any charset.
+            //    3. a. entityTypeBuilder.HasCharSet("latin1")
+            //       b. entityTypeBuilder.HasCharSet("latin1", DelegationMode.ApplyToAll)
+            //       c. entityTypeBuilder.HasCharSet("latin1", DelegationMode.ApplyToColumns)
+            //            -> Explicitly use the specified charset.
+            return (entityType.GetCharSet() is not null || // 3abc
+                    entityType.GetCharSet() is null && entityType.GetCharSetDelegation() is not null) && // 2ab
+                   entityType.GetActualCharSetDelegation().HasFlag(currentLevel) // 3abc, 2ab
+                ? entityType.GetCharSet()
+                : GetActualModelCharSet(entityType.Model, currentLevel); // 1
+        }
+
+        protected virtual string GetActualEntityTypeCollation(IEntityType entityType, DelegationMode currentLevel)
+        {
+            // There are the following variations at the entity level:
+            //    1. entityTypeBuilder.HasCollation(null, null) [or no call at all]
+            //            -> Check the collation and delegation at the database level.
+            //    2. a. entityTypeBuilder.HasCollation(null, DelegationMode.ApplyToAll)
+            //       b. entityTypeBuilder.HasCollation(null, DelegationMode.ApplyToColumns)
+            //            -> Do not explicitly use any collation.
+            //    3. a. entityTypeBuilder.HasCollation("latin1_general_ci")
+            //       b. entityTypeBuilder.HasCollation("latin1_general_ci", DelegationMode.ApplyToAll)
+            //       c. entityTypeBuilder.HasCollation("latin1_general_ci", DelegationMode.ApplyToColumns)
+            //            -> Explicitly use the specified collation.
+            return (entityType.GetCollation() is not null || // 3abc
+                    entityType.GetCollation() is null && entityType.GetCollationDelegation() is not null) && // 2ab
+                   entityType.GetActualCollationDelegation().HasFlag(currentLevel) // 3abc, 2ab
+                ? entityType.GetCollation()
+                : GetActualModelCollation(entityType.Model, currentLevel); // 1
+        }
+
+        protected virtual string GetActualPropertyCharSet(IProperty[] properties, DelegationMode currentLevel)
+        {
+            return properties.Select(p => p.GetCharSet()).FirstOrDefault(s => s is not null) ??
+                   properties.Select(
+                           p => p.FindTypeMapping() is MySqlStringTypeMapping {IsNationalChar: false}
+                               ? GetActualEntityTypeCharSet(p.DeclaringEntityType, currentLevel)
+                               : null)
+                       .FirstOrDefault(s => s is not null);
+        }
+
+        protected virtual string GetActualPropertyCollation(IProperty[] properties, DelegationMode currentLevel)
+        {
+            // We have been using the `MySql:Collation` annotation before EF Core added collation support.
+            // Our `MySqlPropertyExtensions.GetMySqlLegacyCollation()` method handles the legacy case, so we explicitly
+            // call it here and setup the relational annotation, even though EF Core sets it up as well.
+            // This ensures, that from this point onwards, only the `Relational:Collation` annotation is being used.
+            // If no collation has been set, explicitly use the the model/database collation, if delegation is enabled.
+            return properties.All(p => p.GetCollation() is null)
+                ? properties.Select(p => p.GetMySqlLegacyCollation()).FirstOrDefault(c => c is not null) ??
+                  properties.Select(
+                          p => p.FindTypeMapping() is MySqlStringTypeMapping {IsNationalChar: false}
+                              ? GetActualEntityTypeCollation(p.DeclaringEntityType, currentLevel)
+                              : null)
+                      .FirstOrDefault(s => s is not null)
+                : null;
         }
     }
 }
