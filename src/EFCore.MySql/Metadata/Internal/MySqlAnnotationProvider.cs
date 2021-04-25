@@ -66,10 +66,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
 
             // Use an explicitly defined character set, if set.
             // Otherwise, explicitly use the model/database character set, if delegation is enabled.
-            var charSet = entityType.GetCharSet() ??
-                          (entityType.Model.GetActualCharSetDelegation().HasFlag(DelegationMode.ApplyToTables)
-                              ? entityType.Model.GetCharSet()
-                              : null);
+            var charSet = entityType.GetActualCharSetDelegation().HasFlag(DelegationMode.ApplyToTables)
+                ? entityType.GetCharSet()
+                : (entityType.Model.GetActualCharSetDelegation().HasFlag(DelegationMode.ApplyToTables)
+                    ? entityType.Model.GetCharSet()
+                    : null);
 
             if (charSet is not null)
             {
@@ -80,10 +81,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
 
             // Use an explicitly defined collation, if set.
             // Otherwise, explicitly use the model/database collation, if delegation is enabled.
-            var collation = entityType.GetCollation() ??
-                            (entityType.Model.GetActualCollationDelegation().HasFlag(DelegationMode.ApplyToTables)
-                                ? entityType.Model.GetCollation()
-                                : null);
+            var collation = entityType.GetActualCollationDelegation().HasFlag(DelegationMode.ApplyToTables)
+                ? entityType.GetCollation()
+                : (entityType.Model.GetActualCollationDelegation().HasFlag(DelegationMode.ApplyToTables)
+                    ? entityType.Model.GetCollation()
+                    : null);
 
             if (collation is not null)
             {
@@ -94,9 +96,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
 
             // Handle other annotations (including the delegation annotations).
             foreach (var annotation in entityType.GetAnnotations()
-                .Where(
-                    a => (a.Name == MySqlAnnotationNames.CharSetDelegation && a.Value != null) ||
-                         (a.Name == MySqlAnnotationNames.CollationDelegation && a.Value != null)))
+                .Where(a => a.Name is MySqlAnnotationNames.CharSetDelegation or
+                                      MySqlAnnotationNames.CollationDelegation))
             {
                 yield return annotation;
             }
@@ -175,7 +176,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
                               .FirstOrDefault(c => c != null) ??
                           column.PropertyMappings.Select(
                                   m => m.Property.FindTypeMapping() is MySqlStringTypeMapping &&
-                                       m.Property.DeclaringEntityType.GetCharSetDelegation().GetValueOrDefault(true) // <-- TODO
+                                       m.Property.DeclaringEntityType.GetActualCharSetDelegation().HasFlag(DelegationMode.ApplyToColumns)
                                       ? m.Property.DeclaringEntityType.GetCharSet() ??
                                         (m.Property.DeclaringEntityType.Model.GetActualCharSetDelegation().HasFlag(DelegationMode.ApplyToColumns)
                                             ? m.Property.DeclaringEntityType.Model.GetCharSet()
@@ -201,7 +202,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
                       .FirstOrDefault(c => c != null) ??
                   column.PropertyMappings.Select(
                           m => m.Property.FindTypeMapping() is MySqlStringTypeMapping &&
-                               m.Property.DeclaringEntityType.GetCollationDelegation().GetValueOrDefault(true) // <-- TODO
+                               m.Property.DeclaringEntityType.GetActualCollationDelegation().HasFlag(DelegationMode.ApplyToColumns)
                               ? m.Property.DeclaringEntityType.GetCollation() ??
                                 (m.Property.DeclaringEntityType.Model.GetActualCollationDelegation().HasFlag(DelegationMode.ApplyToColumns)
                                     ? m.Property.DeclaringEntityType.Model.GetCollation()
