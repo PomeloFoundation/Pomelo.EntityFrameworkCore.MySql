@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using NetTopologySuite.Geometries;
@@ -256,6 +256,34 @@ DROP PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`;");
             Assert.Equal(
                 @"CREATE TABLE `IceCreamParlor_IceCreams` (
     `Name` varchar(255) NOT NULL
+);
+",
+                Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        public virtual void CreateTable_with_ValueGenerationStrategy_int_value()
+        {
+            Generate(
+                new CreateTableOperation
+                {
+                    Name = "IceCreamShops",
+                    Columns =
+                    {
+                        new AddColumnOperation
+                        {
+                            Name = "IceCreamShopId",
+                            ClrType = typeof(int),
+                            ColumnType = "int",
+                            [MySqlAnnotationNames.ValueGenerationStrategy] = (int)MySqlValueGenerationStrategy.IdentityColumn,
+                        }
+                    }
+                });
+
+            Assert.Equal(
+                @"CREATE TABLE `IceCreamShops` (
+    `IceCreamShopId` int NOT NULL AUTO_INCREMENT
 );
 ",
                 Sql,
