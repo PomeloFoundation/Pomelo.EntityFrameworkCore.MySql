@@ -77,7 +77,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="entityType"> The entity type. </param>
         /// <returns> The character set delegation mode. </returns>
         public static DelegationMode? GetCharSetDelegation([NotNull] this IEntityType entityType)
-            => entityType[MySqlAnnotationNames.CharSetDelegation] as DelegationMode? ??
+            => ObjectToEnumConverter.GetEnumValue<DelegationMode>(entityType[MySqlAnnotationNames.CharSetDelegation]) ??
                (entityType[MySqlAnnotationNames.CharSetDelegation] is bool explicitlyDelegateToChildren
                    ? explicitlyDelegateToChildren
                        ? DelegationMode.ApplyToAll
@@ -204,7 +204,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="entityType"> The entity type. </param>
         /// <returns> The collation delegation mode. </returns>
         public static DelegationMode? GetCollationDelegation([NotNull] this IEntityType entityType)
-            => entityType[MySqlAnnotationNames.CollationDelegation] as DelegationMode? ??
+            => ObjectToEnumConverter.GetEnumValue<DelegationMode>(entityType[MySqlAnnotationNames.CollationDelegation]) ??
                (entityType[MySqlAnnotationNames.CollationDelegation] is bool explicitlyDelegateToChildren
                    ? explicitlyDelegateToChildren
                        ? DelegationMode.ApplyToAll
