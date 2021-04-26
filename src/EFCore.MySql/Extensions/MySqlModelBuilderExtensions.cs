@@ -377,5 +377,77 @@ namespace Microsoft.EntityFrameworkCore
         }
 
         #endregion Collation and delegation
+
+        #region GuidCollation
+
+        /// <summary>
+        ///     Configures the explicit default collation for char-based <see cref="Guid"/> columns, which will be used by all appropriate
+        ///     columns without an explicit collation.
+        /// </summary>
+        /// <param name="modelBuilder"> The model builder. </param>
+        /// <param name="collation">
+        ///     The <see cref="Guid"/> default collation to apply.
+        ///     An empty string means that no explicit collation will be applied, while <see langword="null"/> means that the default
+        ///     collation `ascii_general_ci` will be applied.
+        /// </param>
+        /// <returns> The same builder instance so that multiple calls can be chained. </returns>
+        public static ModelBuilder UseGuidCollation(
+            [NotNull] this ModelBuilder modelBuilder,
+            string collation)
+        {
+            Check.NotNull(modelBuilder, nameof(modelBuilder));
+
+            modelBuilder.Model.SetGuidCollation(collation);
+
+            return modelBuilder;
+        }
+
+        /// <summary>
+        ///     Configures the explicit default collation for char-based <see cref="Guid"/> columns, which will be used by all appropriate
+        ///     columns without an explicit collation.
+        /// </summary>
+        /// <param name="modelBuilder"> The model builder. </param>
+        /// <param name="collation">
+        ///     The <see cref="Guid"/> default collation to apply.
+        ///     An empty string means that no explicit collation will be applied, while <see langword="null"/> means that the default
+        ///     collation `ascii_general_ci` will be applied.
+        /// </param>
+        /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
+        /// <returns>
+        ///     The same builder instance if the configuration was applied,
+        ///     <see langword="null" /> otherwise.
+        /// </returns>
+        public static IConventionModelBuilder UseGuidCollation(
+            [NotNull] this IConventionModelBuilder modelBuilder,
+            string collation,
+            bool fromDataAnnotation = false)
+        {
+            if (modelBuilder.CanSetGuidCollation(collation, fromDataAnnotation))
+            {
+                modelBuilder.Metadata.SetGuidCollation(collation, fromDataAnnotation);
+                return modelBuilder;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        ///     Returns a value indicating whether the given <see cref="Guid"/> default collation setting can be set.
+        /// </summary>
+        /// <param name="modelBuilder"> The model builder. </param>
+        /// <param name="collation"> The <see cref="Guid"/> default collation setting. </param>
+        /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
+        /// <returns> <see langword="true" /> if the given <see cref="Guid"/> default collation setting can be set. </returns>
+        public static bool CanSetGuidCollation(
+            [NotNull] this IConventionModelBuilder modelBuilder,
+            [CanBeNull] string collation,
+            bool fromDataAnnotation = false)
+        {
+            Check.NotNull(modelBuilder, nameof(modelBuilder));
+
+            return modelBuilder.CanSetAnnotation(MySqlAnnotationNames.GuidCollation, collation, fromDataAnnotation);
+        }
+
+        #endregion GuidCollation
     }
 }
