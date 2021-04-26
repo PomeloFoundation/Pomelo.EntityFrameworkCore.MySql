@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.EntityFrameworkCore.Update.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
 {
@@ -101,18 +102,27 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                         alterColumnOperation.OldColumn.RemoveAnnotation(RelationalAnnotationNames.Collation);
                     }
                 }
-                else if (migrationOperation is DatabaseOperation databaseOperation &&
-                         databaseOperation[RelationalAnnotationNames.Collation] is string databaseCollation)
+                else if (migrationOperation is DatabaseOperation databaseOperation)
                 {
-                    databaseOperation.Collation ??= databaseCollation;
-                    databaseOperation.RemoveAnnotation(RelationalAnnotationNames.Collation);
-
-                    // CHECK: Can this condition be true?
-                    if (migrationOperation is AlterDatabaseOperation alterDatabaseOperation &&
-                        alterDatabaseOperation.OldDatabase[RelationalAnnotationNames.Collation] is string oldColumnCollation)
+                    if (databaseOperation[RelationalAnnotationNames.Collation] is string databaseCollation)
                     {
-                        alterDatabaseOperation.OldDatabase.Collation ??= oldColumnCollation;
-                        alterDatabaseOperation.OldDatabase.RemoveAnnotation(RelationalAnnotationNames.Collation);
+                        databaseOperation.Collation ??= databaseCollation;
+                        databaseOperation.RemoveAnnotation(RelationalAnnotationNames.Collation);
+
+                        // CHECK: Can this condition be true?
+                        if (migrationOperation is AlterDatabaseOperation alterDatabaseOperation &&
+                            alterDatabaseOperation.OldDatabase[RelationalAnnotationNames.Collation] is string oldColumnCollation)
+                        {
+                            alterDatabaseOperation.OldDatabase.Collation ??= oldColumnCollation;
+                            alterDatabaseOperation.OldDatabase.RemoveAnnotation(RelationalAnnotationNames.Collation);
+                        }
+                    }
+
+                    // If the database collation should not be applied to the database itself, we need to reset the Collation property.
+                    if (databaseOperation[MySqlAnnotationNames.CollationDelegation] is DelegationModes databaseCollationDelegation &&
+                        !databaseCollationDelegation.HasFlag(DelegationModes.ApplyToDatabases))
+                    {
+                        databaseOperation.Collation = null;
                     }
                 }
 

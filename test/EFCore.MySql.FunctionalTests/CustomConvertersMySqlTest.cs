@@ -34,13 +34,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             {
                 base.OnModelCreating(modelBuilder, context);
 
+                var ciCollation = ((MySqlTestStore)TestStore).GetCaseInsensitiveUtf8Mb4Collation();
+
                 // Needed to make Can_insert_and_read_back_with_case_insensitive_string_key() work.
                 modelBuilder.Entity<StringForeignKeyDataType>()
                     .Property(e => e.StringKeyDataTypeId)
-                    .UseCollation("utf8_general_ci");
+                    .UseCollation(ciCollation);
                 modelBuilder.Entity<StringKeyDataType>()
                     .Property(e => e.Id)
-                    .UseCollation("utf8_general_ci");
+                    .UseCollation(ciCollation);
             }
         }
     }
