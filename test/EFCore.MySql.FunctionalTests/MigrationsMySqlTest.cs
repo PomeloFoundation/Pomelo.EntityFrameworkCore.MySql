@@ -264,6 +264,117 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         }
 
         [ConditionalFact]
+        public virtual async Task Add_guid_columns()
+        {
+            await Test(
+                common => { },
+                source => { },
+                target => target
+                    .UseCollation(DefaultCollation)
+                    .Entity(
+                        "IceCream",
+                        e => e.Property<Guid>("IceCreamId")),
+                result =>
+                {
+                    var table = Assert.Single(result.Tables);
+                    var iceCreamIdColumn = Assert.Single(table.Columns.Where(c => c.Name == "IceCreamId"));
+
+                    Assert.Equal("ascii_general_ci", iceCreamIdColumn.Collation);
+                });
+
+            AssertSql(
+                $@"ALTER DATABASE COLLATE {DefaultCollation};",
+                //
+                $@"CREATE TABLE `IceCream` (
+    `IceCreamId` char(36) COLLATE ascii_general_ci NOT NULL
+) COLLATE {DefaultCollation};");
+        }
+
+        [ConditionalFact]
+        public virtual async Task Add_guid_columns_with_collation()
+        {
+            await Test(
+                common => { },
+                source => { },
+                target => target
+                    .UseCollation(DefaultCollation)
+                    .Entity(
+                        "IceCream",
+                        e => e.Property<Guid>("IceCreamId")
+                            .UseCollation(NonDefaultCollation)),
+                result =>
+                {
+                    var table = Assert.Single(result.Tables);
+                    var iceCreamIdColumn = Assert.Single(table.Columns.Where(c => c.Name == "IceCreamId"));
+
+                    Assert.Equal(NonDefaultCollation, iceCreamIdColumn.Collation);
+                });
+
+            AssertSql(
+                $@"ALTER DATABASE COLLATE {DefaultCollation};",
+                //
+                $@"CREATE TABLE `IceCream` (
+    `IceCreamId` char(36) COLLATE {NonDefaultCollation} NOT NULL
+) COLLATE {DefaultCollation};");
+        }
+
+        [ConditionalFact]
+        public virtual async Task Add_guid_columns_with_explicit_default_collation()
+        {
+            await Test(
+                common => { },
+                source => { },
+                target => target
+                    .UseCollation(DefaultCollation)
+                    .UseGuidCollation(NonDefaultCollation)
+                    .Entity(
+                        "IceCream",
+                        e => e.Property<Guid>("IceCreamId")),
+                result =>
+                {
+                    var table = Assert.Single(result.Tables);
+                    var iceCreamIdColumn = Assert.Single(table.Columns.Where(c => c.Name == "IceCreamId"));
+
+                    Assert.Equal(NonDefaultCollation, iceCreamIdColumn.Collation);
+                });
+
+            AssertSql(
+                $@"ALTER DATABASE COLLATE {DefaultCollation};",
+                //
+                $@"CREATE TABLE `IceCream` (
+    `IceCreamId` char(36) COLLATE {NonDefaultCollation} NOT NULL
+) COLLATE {DefaultCollation};");
+        }
+
+        [ConditionalFact]
+        public virtual async Task Add_guid_columns_with_disabled_default_collation()
+        {
+            await Test(
+                common => { },
+                source => { },
+                target => target
+                    .UseCollation(DefaultCollation)
+                    .UseGuidCollation(string.Empty)
+                    .Entity(
+                        "IceCream",
+                        e => e.Property<Guid>("IceCreamId")),
+                result =>
+                {
+                    var table = Assert.Single(result.Tables);
+                    var iceCreamIdColumn = Assert.Single(table.Columns.Where(c => c.Name == "IceCreamId"));
+
+                    Assert.Null(iceCreamIdColumn.Collation);
+                });
+
+            AssertSql(
+                $@"ALTER DATABASE COLLATE {DefaultCollation};",
+                //
+                $@"CREATE TABLE `IceCream` (
+    `IceCreamId` char(36) NOT NULL
+) COLLATE {DefaultCollation};");
+        }
+
+        [ConditionalFact]
         public virtual async Task Alter_column_collations_with_delegation()
         {
             await Test(
