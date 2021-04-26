@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
+using System;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
@@ -211,5 +212,70 @@ namespace Microsoft.EntityFrameworkCore
         }
 
         #endregion CollationDelegation
+
+        #region GuidCollation
+
+        /// <summary>
+        ///     Returns the default collation used for char-based <see cref="Guid"/> columns.
+        /// </summary>
+        /// <param name="model"> The model. </param>
+        /// <returns>
+        ///     The <see cref="Guid"/> collation setting.
+        ///     An empty string means that no explicit collation will be applied, while <see langword="null"/> means that the default
+        ///     collation `ascii_general_ci` will be applied.
+        /// </returns>
+        public static string GetGuidCollation([NotNull] this IModel model)
+            => model[MySqlAnnotationNames.GuidCollation] as string;
+
+        /// <summary>
+        ///     Attempts to set the default collation used for char-based <see cref="Guid"/> columns.
+        /// </summary>
+        /// <param name="model"> The model. </param>
+        /// <param name="collation">
+        ///     The <see cref="Guid"/> collation setting.
+        ///     An empty string means that no explicit collation will be applied, while <see langword="null"/> means that the default
+        ///     collation `ascii_general_ci` will be applied.
+        /// </param>
+        public static void SetGuidCollation([NotNull] this IMutableModel model, string collation)
+            => model.SetOrRemoveAnnotation(MySqlAnnotationNames.GuidCollation, collation);
+
+        /// <summary>
+        ///     Attempts to set the default collation used for char-based <see cref="Guid"/> columns.
+        /// </summary>
+        /// <param name="model"> The model. </param>
+        /// <param name="collation">
+        ///     The <see cref="Guid"/> collation setting.
+        ///     An empty string means that no explicit collation will be applied, while <see langword="null"/> means that the default
+        ///     collation `ascii_general_ci` will be applied.
+        /// </param>
+        /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
+        public static void SetGuidCollation([NotNull] this IConventionModel model, string collation, bool fromDataAnnotation = false)
+            => model.SetOrRemoveAnnotation(MySqlAnnotationNames.GuidCollation, collation, fromDataAnnotation);
+
+        /// <summary>
+        ///     Returns the <see cref="ConfigurationSource" /> for the <see cref="Guid"/> collation setting.
+        /// </summary>
+        /// <param name="model"> The model. </param>
+        /// <returns> The <see cref="ConfigurationSource" />. </returns>
+        public static ConfigurationSource? GetGuidCollationConfigurationSource([NotNull] this IConventionModel model)
+            => model.FindAnnotation(MySqlAnnotationNames.GuidCollation)?.GetConfigurationSource();
+
+        /// <summary>
+        ///     Returns the actual <see cref="Guid"/> default collation used for char-based <see cref="Guid"/> columns.
+        /// </summary>
+        /// <param name="model"> The model. </param>
+        /// <param name="defaultCollation"> The default collation to use, if no default collation has been explicitly set. </param>
+        /// <returns>
+        ///     <see langword="null"/> if no collation should be set, otherwise the concrete collation to apply.
+        /// </returns>
+        public static string GetActualGuidCollation([NotNull] this IModel model, [CanBeNull] string defaultCollation)
+            => model.GetGuidCollation() switch
+            {
+                null => defaultCollation,
+                {Length: <= 0} => null,
+                var c => c
+            };
+
+        #endregion GuidCollation
     }
 }

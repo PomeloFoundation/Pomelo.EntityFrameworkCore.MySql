@@ -32,6 +32,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             // NCHAR and NVARCHAR are prefdefined by MySQL.
             NationalCharSet = CharSet.Utf8Mb3;
 
+            // Optimize space and performance for GUID columns.
+            DefaultGuidCollation = "ascii_general_ci";
+
             ReplaceLineBreaksWithCharFunction = true;
             DefaultDataTypeMappings = new MySqlDefaultDataTypeMappings();
 
@@ -225,6 +228,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                    Equals(ServerVersion, other.ServerVersion) &&
                    Equals(DefaultCharSet, other.DefaultCharSet) &&
                    Equals(NationalCharSet, other.NationalCharSet) &&
+                   Equals(DefaultGuidCollation, other.DefaultGuidCollation) &&
                    NoBackslashEscapes == other.NoBackslashEscapes &&
                    ReplaceLineBreaksWithCharFunction == other.ReplaceLineBreaksWithCharFunction &&
                    Equals(DefaultDataTypeMappings, other.DefaultDataTypeMappings) &&
@@ -263,6 +267,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             hashCode.Add(ServerVersion);
             hashCode.Add(DefaultCharSet);
             hashCode.Add(NationalCharSet);
+            hashCode.Add(DefaultGuidCollation);
             hashCode.Add(NoBackslashEscapes);
             hashCode.Add(ReplaceLineBreaksWithCharFunction);
             hashCode.Add(DefaultDataTypeMappings);
@@ -279,6 +284,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         public virtual ServerVersion ServerVersion { get; private set; }
         public virtual CharSet DefaultCharSet { get; private set; }
         public virtual CharSet NationalCharSet { get; }
+        public virtual string DefaultGuidCollation { get; private set; }
         public virtual bool NoBackslashEscapes { get; private set; }
         public virtual bool ReplaceLineBreaksWithCharFunction { get; private set; }
         public virtual MySqlDefaultDataTypeMappings DefaultDataTypeMappings { get; private set; }

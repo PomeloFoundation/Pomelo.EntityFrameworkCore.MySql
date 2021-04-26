@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
@@ -246,13 +247,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             // Our `MySqlPropertyExtensions.GetMySqlLegacyCollation()` method handles the legacy case, so we explicitly
             // call it here and setup the relational annotation, even though EF Core sets it up as well.
             // This ensures, that from this point onwards, only the `Relational:Collation` annotation is being used.
+            //
             // If no collation has been set, explicitly use the the model/database collation, if delegation is enabled.
+            //
+            // The exception are Guid properties when the GuidFormat has been set to a char-based format, in which case we will use the
+            // default guid collation setup for the model, or the fallback default from our options if none has been set, to optimize space
+            // and performance for those columns. (We ignore the binary format, because its charset and collation is always `binary`.)
             return properties.All(p => p.GetCollation() is null)
                 ? properties.Select(p => p.GetMySqlLegacyCollation()).FirstOrDefault(c => c is not null) ??
                   properties.Select(
                           p => p.FindTypeMapping() is MySqlStringTypeMapping {IsNationalChar: false}
                               ? GetActualEntityTypeCollation(p.DeclaringEntityType, currentLevel)
-                              : null)
+                              : p.FindTypeMapping() is MySqlGuidTypeMapping {IsCharBasedStoreType: true}
+                                  ? p.DeclaringEntityType.Model.GetActualGuidCollation(_options.DefaultGuidCollation)
+                                  : null)
                       .FirstOrDefault(s => s is not null)
                 : null;
         }
