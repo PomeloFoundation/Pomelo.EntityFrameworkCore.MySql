@@ -26,14 +26,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
 
         public override IEnumerable<IAnnotation> For(IRelationalModel model)
         {
-            if (GetActualModelCharSet(model.Model, DelegationMode.ApplyToDatabases) is string charSet)
+            if (GetActualModelCharSet(model.Model, DelegationModes.ApplyToDatabases) is string charSet)
             {
                 yield return new Annotation(
                     MySqlAnnotationNames.CharSet,
                     charSet);
             }
 
-            // If a collation delegation mode has been set, but does not contain DelegationMode.ApplyToDatabase, we reset the EF Core
+            // If a collation delegation modes has been set, but does not contain DelegationMode.ApplyToDatabase, we reset the EF Core
             // handled Collation property in MySqlMigrationsModelDiffer.
 
             // Handle other annotations (including the delegation annotations).
@@ -52,7 +52,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
 
             // Use an explicitly defined character set, if set.
             // Otherwise, explicitly use the model/database character set, if delegation is enabled.
-            if (GetActualEntityTypeCharSet(entityType, DelegationMode.ApplyToTables) is string charSet)
+            if (GetActualEntityTypeCharSet(entityType, DelegationModes.ApplyToTables) is string charSet)
             {
                 yield return new Annotation(
                     MySqlAnnotationNames.CharSet,
@@ -61,7 +61,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
 
             // Use an explicitly defined collation, if set.
             // Otherwise, explicitly use the model/database collation, if delegation is enabled.
-            if (GetActualEntityTypeCollation(entityType, DelegationMode.ApplyToTables) is string collation)
+            if (GetActualEntityTypeCollation(entityType, DelegationModes.ApplyToTables) is string collation)
             {
                 yield return new Annotation(
                     RelationalAnnotationNames.Collation,
@@ -146,7 +146,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
 
             // Use an explicitly defined character set, if set.
             // Otherwise, explicitly use the entity/table or model/database character set, if delegation is enabled.
-            if (GetActualPropertyCharSet(properties, DelegationMode.ApplyToColumns) is string charSet)
+            if (GetActualPropertyCharSet(properties, DelegationModes.ApplyToColumns) is string charSet)
             {
                 yield return new Annotation(
                     MySqlAnnotationNames.CharSet,
@@ -155,7 +155,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
 
             // Use an explicitly defined collation, if set.
             // Otherwise, explicitly use the entity/table or model/database collation, if delegation is enabled.
-            if (GetActualPropertyCollation(properties, DelegationMode.ApplyToColumns) is string collation)
+            if (GetActualPropertyCollation(properties, DelegationModes.ApplyToColumns) is string collation)
             {
                 yield return new Annotation(
                     RelationalAnnotationNames.Collation,
@@ -171,7 +171,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             }
         }
 
-        protected virtual string GetActualModelCharSet(IModel model, DelegationMode currentLevel)
+        protected virtual string GetActualModelCharSet(IModel model, DelegationModes currentLevel)
         {
             // If neither character set nor collation has been explicitly defined for the model, and no delegation has been setup, we use
             // Pomelo's universal fallback default character set (which is `utf8mb4`) and apply it to all database objects.
@@ -185,14 +185,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
                     : null;
         }
 
-        protected virtual string GetActualModelCollation(IModel model, DelegationMode currentLevel)
+        protected virtual string GetActualModelCollation(IModel model, DelegationModes currentLevel)
         {
             return model.GetActualCollationDelegation().HasFlag(currentLevel)
                 ? model.GetCollation()
                 : null;
         }
 
-        protected virtual string GetActualEntityTypeCharSet(IEntityType entityType, DelegationMode currentLevel)
+        protected virtual string GetActualEntityTypeCharSet(IEntityType entityType, DelegationModes currentLevel)
         {
             // There are the following variations at the entity level:
             //    1. entityTypeBuilder.HasCharSet(null, null) [or no call at all]
@@ -211,7 +211,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
                 : GetActualModelCharSet(entityType.Model, currentLevel); // 1
         }
 
-        protected virtual string GetActualEntityTypeCollation(IEntityType entityType, DelegationMode currentLevel)
+        protected virtual string GetActualEntityTypeCollation(IEntityType entityType, DelegationModes currentLevel)
         {
             // There are the following variations at the entity level:
             //    1. entityTypeBuilder.HasCollation(null, null) [or no call at all]
@@ -230,7 +230,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
                 : GetActualModelCollation(entityType.Model, currentLevel); // 1
         }
 
-        protected virtual string GetActualPropertyCharSet(IProperty[] properties, DelegationMode currentLevel)
+        protected virtual string GetActualPropertyCharSet(IProperty[] properties, DelegationModes currentLevel)
         {
             return properties.Select(p => p.GetCharSet()).FirstOrDefault(s => s is not null) ??
                    properties.Select(
@@ -240,7 +240,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
                        .FirstOrDefault(s => s is not null);
         }
 
-        protected virtual string GetActualPropertyCollation(IProperty[] properties, DelegationMode currentLevel)
+        protected virtual string GetActualPropertyCollation(IProperty[] properties, DelegationModes currentLevel)
         {
             // We have been using the `MySql:Collation` annotation before EF Core added collation support.
             // Our `MySqlPropertyExtensions.GetMySqlLegacyCollation()` method handles the legacy case, so we explicitly

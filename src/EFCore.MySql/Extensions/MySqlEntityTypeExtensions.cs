@@ -72,53 +72,53 @@ namespace Microsoft.EntityFrameworkCore
         #region CharSetDelegation
 
         /// <summary>
-        ///     Returns the character set delegation mode for the entity/table.
+        ///     Returns the character set delegation modes for the entity/table.
         /// </summary>
         /// <param name="entityType"> The entity type. </param>
-        /// <returns> The character set delegation mode. </returns>
-        public static DelegationMode? GetCharSetDelegation([NotNull] this IEntityType entityType)
-            => ObjectToEnumConverter.GetEnumValue<DelegationMode>(entityType[MySqlAnnotationNames.CharSetDelegation]) ??
+        /// <returns> The character set delegation modes. </returns>
+        public static DelegationModes? GetCharSetDelegation([NotNull] this IEntityType entityType)
+            => ObjectToEnumConverter.GetEnumValue<DelegationModes>(entityType[MySqlAnnotationNames.CharSetDelegation]) ??
                (entityType[MySqlAnnotationNames.CharSetDelegation] is bool explicitlyDelegateToChildren
                    ? explicitlyDelegateToChildren
-                       ? DelegationMode.ApplyToAll
-                       : DelegationMode.ApplyToDatabases
+                       ? DelegationModes.ApplyToAll
+                       : DelegationModes.ApplyToDatabases
                    : null);
 
         /// <summary>
-        ///     Attempts to set the character set delegation mode for entity/table.
+        ///     Attempts to set the character set delegation modes for entity/table.
         /// </summary>
         /// <param name="entityType"> The entity type. </param>
-        /// <param name="delegationMode">
+        /// <param name="delegationModes">
         /// Finely controls where to recursively apply the character set and where not (including this entity/table).
-        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationModes.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         public static void SetCharSetDelegation(
             [NotNull] this IMutableEntityType entityType,
-            [CanBeNull] DelegationMode? delegationMode)
-            => entityType.SetOrRemoveAnnotation(MySqlAnnotationNames.CharSetDelegation, delegationMode);
+            [CanBeNull] DelegationModes? delegationModes)
+            => entityType.SetOrRemoveAnnotation(MySqlAnnotationNames.CharSetDelegation, delegationModes);
 
         /// <summary>
-        ///     Attempts to set the character set delegation mode for entity/table.
+        ///     Attempts to set the character set delegation modes for entity/table.
         /// </summary>
         /// <param name="entityType"> The entity type. </param>
-        /// <param name="delegationMode">
+        /// <param name="delegationModes">
         /// Finely controls where to recursively apply the character set and where not (including this entity/table).
-        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationModes.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
         /// <returns> The configured value. </returns>
-        public static DelegationMode? SetCharSetDelegation(
+        public static DelegationModes? SetCharSetDelegation(
             [NotNull] this IConventionEntityType entityType,
-            [CanBeNull] DelegationMode? delegationMode,
+            [CanBeNull] DelegationModes? delegationModes,
             bool fromDataAnnotation = false)
         {
-            entityType.SetOrRemoveAnnotation(MySqlAnnotationNames.CharSetDelegation, delegationMode, fromDataAnnotation);
+            entityType.SetOrRemoveAnnotation(MySqlAnnotationNames.CharSetDelegation, delegationModes, fromDataAnnotation);
 
-            return delegationMode;
+            return delegationModes;
         }
 
         /// <summary>
-        ///     Gets the configuration source for the character set delegation mode.
+        ///     Gets the configuration source for the character set delegation modes.
         /// </summary>
         /// <param name="entityType"> The entity type. </param>
         /// <returns> The configuration source. </returns>
@@ -126,17 +126,17 @@ namespace Microsoft.EntityFrameworkCore
             => entityType.FindAnnotation(MySqlAnnotationNames.CharSetDelegation)?.GetConfigurationSource();
 
         /// <summary>
-        ///     Returns the actual character set delegation mode for the entity/table.
-        ///     Always returns a concrete value and never returns <see cref="DelegationMode.Default"/>.
+        ///     Returns the actual character set delegation modes for the entity/table.
+        ///     Always returns a concrete value and never returns <see cref="DelegationModes.Default"/>.
         /// </summary>
         /// <param name="entityType"> The entity type. </param>
-        /// <returns> The actual character set delegation mode. </returns>
-        public static DelegationMode GetActualCharSetDelegation([NotNull] this IEntityType entityType)
+        /// <returns> The actual character set delegation modes. </returns>
+        public static DelegationModes GetActualCharSetDelegation([NotNull] this IEntityType entityType)
         {
-            var delegationMode = entityType.GetCharSetDelegation() ?? DelegationMode.Default;
-            return delegationMode == DelegationMode.Default
-                ? DelegationMode.ApplyToAll
-                : delegationMode;
+            var delegationModes = entityType.GetCharSetDelegation() ?? DelegationModes.Default;
+            return delegationModes == DelegationModes.Default
+                ? DelegationModes.ApplyToAll
+                : delegationModes;
         }
 
         #endregion CharSetDelegation
@@ -199,53 +199,53 @@ namespace Microsoft.EntityFrameworkCore
         #region CollationDelegation
 
         /// <summary>
-        ///     Returns the collation delegation mode for the entity/table.
+        ///     Returns the collation delegation modes for the entity/table.
         /// </summary>
         /// <param name="entityType"> The entity type. </param>
-        /// <returns> The collation delegation mode. </returns>
-        public static DelegationMode? GetCollationDelegation([NotNull] this IEntityType entityType)
-            => ObjectToEnumConverter.GetEnumValue<DelegationMode>(entityType[MySqlAnnotationNames.CollationDelegation]) ??
+        /// <returns> The collation delegation modes. </returns>
+        public static DelegationModes? GetCollationDelegation([NotNull] this IEntityType entityType)
+            => ObjectToEnumConverter.GetEnumValue<DelegationModes>(entityType[MySqlAnnotationNames.CollationDelegation]) ??
                (entityType[MySqlAnnotationNames.CollationDelegation] is bool explicitlyDelegateToChildren
                    ? explicitlyDelegateToChildren
-                       ? DelegationMode.ApplyToAll
-                       : DelegationMode.ApplyToDatabases
+                       ? DelegationModes.ApplyToAll
+                       : DelegationModes.ApplyToDatabases
                    : null);
 
         /// <summary>
-        ///     Attempts to set the collation delegation mode for entity/table.
+        ///     Attempts to set the collation delegation modes for entity/table.
         /// </summary>
         /// <param name="entityType"> The entity type. </param>
-        /// <param name="delegationMode">
+        /// <param name="delegationModes">
         /// Finely controls where to recursively apply the character set and where not (including this entity/table).
-        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationModes.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         public static void SetCollationDelegation(
             [NotNull] this IMutableEntityType entityType,
-            [CanBeNull] DelegationMode? delegationMode)
-            => entityType.SetOrRemoveAnnotation(MySqlAnnotationNames.CollationDelegation, delegationMode);
+            [CanBeNull] DelegationModes? delegationModes)
+            => entityType.SetOrRemoveAnnotation(MySqlAnnotationNames.CollationDelegation, delegationModes);
 
         /// <summary>
-        ///     Attempts to set the collation delegation mode for entity/table.
+        ///     Attempts to set the collation delegation modes for entity/table.
         /// </summary>
         /// <param name="entityType"> The entity type. </param>
-        /// <param name="delegationMode">
+        /// <param name="delegationModes">
         /// Finely controls where to recursively apply the character set and where not (including this entity/table).
-        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationModes.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
         /// <returns> The configured value. </returns>
-        public static DelegationMode? SetCollationDelegation(
+        public static DelegationModes? SetCollationDelegation(
             [NotNull] this IConventionEntityType entityType,
-            [CanBeNull] DelegationMode? delegationMode,
+            [CanBeNull] DelegationModes? delegationModes,
             bool fromDataAnnotation = false)
         {
-            entityType.SetOrRemoveAnnotation(MySqlAnnotationNames.CollationDelegation, delegationMode, fromDataAnnotation);
+            entityType.SetOrRemoveAnnotation(MySqlAnnotationNames.CollationDelegation, delegationModes, fromDataAnnotation);
 
-            return delegationMode;
+            return delegationModes;
         }
 
         /// <summary>
-        ///     Gets the configuration source for the collation delegation mode.
+        ///     Gets the configuration source for the collation delegation modes.
         /// </summary>
         /// <param name="entityType"> The entity type. </param>
         /// <returns> The configuration source. </returns>
@@ -253,17 +253,17 @@ namespace Microsoft.EntityFrameworkCore
             => entityType.FindAnnotation(MySqlAnnotationNames.CollationDelegation)?.GetConfigurationSource();
 
         /// <summary>
-        ///     Returns the actual collation delegation mode for the entity/table.
-        ///     Always returns a concrete value and never returns <see cref="DelegationMode.Default"/>.
+        ///     Returns the actual collation delegation modes for the entity/table.
+        ///     Always returns a concrete value and never returns <see cref="DelegationModes.Default"/>.
         /// </summary>
         /// <param name="entityType"> The entity type. </param>
-        /// <returns> The actual collation delegation mode. </returns>
-        public static DelegationMode GetActualCollationDelegation([NotNull] this IEntityType entityType)
+        /// <returns> The actual collation delegation modes. </returns>
+        public static DelegationModes GetActualCollationDelegation([NotNull] this IEntityType entityType)
         {
-            var delegationMode = entityType.GetCollationDelegation() ?? DelegationMode.Default;
-            return delegationMode == DelegationMode.Default
-                ? DelegationMode.ApplyToAll
-                : delegationMode;
+            var delegationModes = entityType.GetCollationDelegation() ?? DelegationModes.Default;
+            return delegationModes == DelegationModes.Default
+                ? DelegationModes.ApplyToAll
+                : delegationModes;
         }
 
         #endregion CollationDelegation

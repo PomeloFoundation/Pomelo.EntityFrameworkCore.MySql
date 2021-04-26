@@ -364,7 +364,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                             e.Property<string>("Brand");
                         }),
                 source => source
-                    .UseCollation(DefaultCollation, DelegationMode.ApplyToColumns)
+                    .UseCollation(DefaultCollation, DelegationModes.ApplyToColumns)
                     .Entity(
                         "IceCream", e =>
                         {
@@ -372,7 +372,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                                 .UseCollation(NonDefaultCollation);
                         }),
                 target => target
-                    .UseCollation(NonDefaultCollation2, DelegationMode.ApplyToColumns)
+                    .UseCollation(NonDefaultCollation2, DelegationModes.ApplyToColumns)
                     .Entity(
                         "IceCream", e =>
                         {
@@ -401,7 +401,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                             e.Property<string>("Brand");
                         }),
                 source => source
-                    .UseCollation(DefaultCollation, DelegationMode.ApplyToColumns)
+                    .UseCollation(DefaultCollation, DelegationModes.ApplyToColumns)
                     .Entity(
                         "IceCream",
                         e =>
@@ -410,12 +410,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                                 .UseCollation(NonDefaultCollation);
                         }),
                 target => target
-                    .UseCollation(NonDefaultCollation2, DelegationMode.ApplyToColumns)
+                    .UseCollation(NonDefaultCollation2, DelegationModes.ApplyToColumns)
                     .Entity(
                         "IceCream",
                         e =>
                         {
-                            e.UseCollation(DefaultCollation, DelegationMode.ApplyToTables);
+                            e.UseCollation(DefaultCollation, DelegationModes.ApplyToTables);
                             e.Property<string>("Name")
                                 .UseCollation(NonDefaultCollation);
                         }),

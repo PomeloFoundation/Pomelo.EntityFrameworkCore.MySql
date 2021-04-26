@@ -119,8 +119,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                     }
 
                     // If the database collation should not be applied to the database itself, we need to reset the Collation property.
-                    if (databaseOperation[MySqlAnnotationNames.CollationDelegation] is DelegationMode databaseCollationDelegation &&
-                        !databaseCollationDelegation.HasFlag(DelegationMode.ApplyToDatabases))
+                    if (databaseOperation[MySqlAnnotationNames.CollationDelegation] is DelegationModes databaseCollationDelegation &&
+                        !databaseCollationDelegation.HasFlag(DelegationModes.ApplyToDatabases))
                     {
                         databaseOperation.Collation = null;
                     }

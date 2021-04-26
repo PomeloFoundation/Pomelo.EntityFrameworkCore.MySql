@@ -10,7 +10,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata
     /// Provides precice control over recursive character set or collation delegation/inheritance aspects.
     /// </summary>
     [Flags]
-    public enum DelegationMode
+    public enum DelegationModes
     {
         /// <summary>
         /// The current default is <see cref="ApplyToAll"/>.

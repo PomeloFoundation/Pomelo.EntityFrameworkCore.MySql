@@ -21,27 +21,27 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="modelBuilder">The model builder.</param>
         /// <param name="charSet">The name of the character set to use.</param>
-        /// <param name="delegationMode">
+        /// <param name="delegationModes">
         /// Finely controls where to recursively apply the character set and where not (including this model/database).
-        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationModes.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         /// <returns>The same builder instance so that multiple calls can be chained.</returns>
         public static ModelBuilder HasCharSet(
             [NotNull] this ModelBuilder modelBuilder,
             [CanBeNull] string charSet,
-            DelegationMode? delegationMode = null)
+            DelegationModes? delegationModes = null)
         {
             Check.NotNull(modelBuilder, nameof(modelBuilder));
             Check.NullButNotEmpty(charSet, nameof(charSet));
-            Check.NullOrEnumValue(delegationMode, nameof(delegationMode));
+            Check.NullOrEnumValue(delegationModes, nameof(delegationModes));
 
-            if (delegationMode is not null && !Enum.IsDefined(typeof(DelegationMode), delegationMode))
+            if (delegationModes is not null && !Enum.IsDefined(typeof(DelegationModes), delegationModes))
             {
-                throw new ArgumentOutOfRangeException(nameof(delegationMode), delegationMode, null);
+                throw new ArgumentOutOfRangeException(nameof(delegationModes), delegationModes, null);
             }
 
             modelBuilder.Model.SetCharSet(charSet);
-            modelBuilder.Model.SetCharSetDelegation(delegationMode);
+            modelBuilder.Model.SetCharSetDelegation(delegationModes);
 
             return modelBuilder;
         }
@@ -63,24 +63,24 @@ namespace Microsoft.EntityFrameworkCore
             => modelBuilder.HasCharSet(
                 charSet,
                 explicitlyDelegateToChildren == false
-                    ? DelegationMode.ApplyToDatabases
-                    : DelegationMode.ApplyToAll);
+                    ? DelegationModes.ApplyToDatabases
+                    : DelegationModes.ApplyToAll);
 
         /// <summary>
         /// Sets the default character set to use for the model/database.
         /// </summary>
         /// <param name="modelBuilder">The model builder.</param>
         /// <param name="charSet">The character set to use.</param>
-        /// <param name="delegationMode">
+        /// <param name="delegationModes">
         /// Finely controls where to recursively apply the character set and where not (including this model/database).
-        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationModes.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         /// <returns>The same builder instance so that multiple calls can be chained.</returns>
         public static ModelBuilder HasCharSet(
             [NotNull] this ModelBuilder modelBuilder,
             [CanBeNull] CharSet charSet,
-            DelegationMode? delegationMode = null)
-            => modelBuilder.HasCharSet(charSet?.Name, delegationMode);
+            DelegationModes? delegationModes = null)
+            => modelBuilder.HasCharSet(charSet?.Name, delegationModes);
 
         /// <summary>
         /// Sets the default character set to use for the model/database.
@@ -105,9 +105,9 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="modelBuilder">The model builder.</param>
         /// <param name="charSet">The name of the character set to use.</param>
-        /// <param name="delegationMode">
+        /// <param name="delegationModes">
         /// Finely controls where to recursively apply the character set and where not (including this model/database).
-        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationModes.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
         /// <returns>
@@ -117,18 +117,18 @@ namespace Microsoft.EntityFrameworkCore
         public static IConventionModelBuilder HasCharSet(
             [NotNull] this IConventionModelBuilder modelBuilder,
             [CanBeNull] string charSet,
-            DelegationMode? delegationMode = null,
+            DelegationModes? delegationModes = null,
             bool fromDataAnnotation = false)
         {
             Check.NotNull(modelBuilder, nameof(modelBuilder));
             Check.NullButNotEmpty(charSet, nameof(charSet));
-            Check.NullOrEnumValue(delegationMode, nameof(delegationMode));
+            Check.NullOrEnumValue(delegationModes, nameof(delegationModes));
 
             if (modelBuilder.CanSetCharSet(charSet, fromDataAnnotation) &&
-                modelBuilder.CanSetCharSetDelegation(delegationMode, fromDataAnnotation))
+                modelBuilder.CanSetCharSetDelegation(delegationModes, fromDataAnnotation))
             {
                 modelBuilder.Metadata.SetCharSet(charSet, fromDataAnnotation);
-                modelBuilder.Metadata.SetCharSetDelegation(delegationMode, fromDataAnnotation);
+                modelBuilder.Metadata.SetCharSetDelegation(delegationModes, fromDataAnnotation);
 
                 return modelBuilder;
             }
@@ -158,8 +158,8 @@ namespace Microsoft.EntityFrameworkCore
             => modelBuilder.HasCharSet(
                 charSet,
                 explicitlyDelegateToChildren == false
-                    ? DelegationMode.ApplyToDatabases
-                    : DelegationMode.ApplyToAll,
+                    ? DelegationModes.ApplyToDatabases
+                    : DelegationModes.ApplyToAll,
                 fromDataAnnotation);
 
         /// <summary>
@@ -167,9 +167,9 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="modelBuilder">The model builder.</param>
         /// <param name="charSet">The character set to use.</param>
-        /// <param name="delegationMode">
+        /// <param name="delegationModes">
         /// Finely controls where to recursively apply the character set and where not (including this model/database).
-        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationModes.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
         /// <returns>
@@ -179,9 +179,9 @@ namespace Microsoft.EntityFrameworkCore
         public static IConventionModelBuilder HasCharSet(
             [NotNull] this IConventionModelBuilder modelBuilder,
             [CanBeNull] CharSet charSet,
-            DelegationMode? delegationMode = null,
+            DelegationModes? delegationModes = null,
             bool fromDataAnnotation = false)
-            => modelBuilder.HasCharSet(charSet?.Name, delegationMode, fromDataAnnotation);
+            => modelBuilder.HasCharSet(charSet?.Name, delegationModes, fromDataAnnotation);
 
         /// <summary>
         /// Sets the default character set to use for the model/database.
@@ -226,21 +226,21 @@ namespace Microsoft.EntityFrameworkCore
         }
 
         /// <summary>
-        ///     Returns a value indicating whether the given character set delegation mode can be set.
+        ///     Returns a value indicating whether the given character set delegation modes can be set.
         /// </summary>
         /// <param name="modelBuilder"> The model builder. </param>
-        /// <param name="delegationMode"> The character set delegation mode. </param>
+        /// <param name="delegationModes"> The character set delegation modes. </param>
         /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
-        /// <returns> <see langword="true" /> if the given character set delegation mode can be set as default. </returns>
+        /// <returns> <see langword="true" /> if the given character set delegation modes can be set as default. </returns>
         public static bool CanSetCharSetDelegation(
             [NotNull] this IConventionModelBuilder modelBuilder,
-            [CanBeNull] DelegationMode? delegationMode,
+            [CanBeNull] DelegationModes? delegationModes,
             bool fromDataAnnotation = false)
         {
             Check.NotNull(modelBuilder, nameof(modelBuilder));
-            Check.NullOrEnumValue(delegationMode, nameof(delegationMode));
+            Check.NullOrEnumValue(delegationModes, nameof(delegationModes));
 
-            return modelBuilder.CanSetAnnotation(MySqlAnnotationNames.CharSetDelegation, delegationMode, fromDataAnnotation);
+            return modelBuilder.CanSetAnnotation(MySqlAnnotationNames.CharSetDelegation, delegationModes, fromDataAnnotation);
         }
 
         #endregion CharSet and delegation
@@ -253,22 +253,22 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="modelBuilder"> The model builder. </param>
         /// <param name="collation"> The collation. </param>
-        /// <param name="delegationMode">
+        /// <param name="delegationModes">
         /// Finely controls where to recursively apply the collation and where not (including this model/database).
-        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationModes.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         /// <returns> The same builder instance so that multiple calls can be chained. </returns>
         public static ModelBuilder UseCollation(
             [NotNull] this ModelBuilder modelBuilder,
             string collation,
-            DelegationMode? delegationMode)
+            DelegationModes? delegationModes)
         {
             Check.NotNull(modelBuilder, nameof(modelBuilder));
             Check.NullButNotEmpty(collation, nameof(collation));
-            Check.NullOrEnumValue(delegationMode, nameof(delegationMode));
+            Check.NullOrEnumValue(delegationModes, nameof(delegationModes));
 
             modelBuilder.Model.SetCollation(collation);
-            modelBuilder.Model.SetCollationDelegation(delegationMode);
+            modelBuilder.Model.SetCollationDelegation(delegationModes);
 
             return modelBuilder;
         }
@@ -291,8 +291,8 @@ namespace Microsoft.EntityFrameworkCore
             => modelBuilder.UseCollation(
                 collation,
                 explicitlyDelegateToChildren == false
-                    ? DelegationMode.ApplyToDatabases
-                    : DelegationMode.ApplyToAll);
+                    ? DelegationModes.ApplyToDatabases
+                    : DelegationModes.ApplyToAll);
 
         /// <summary>
         ///     Configures the database collation, which will be used by all columns without an explicit collation. Also finely controls
@@ -300,9 +300,9 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="modelBuilder"> The model builder. </param>
         /// <param name="collation"> The collation. </param>
-        /// <param name="delegationMode">
+        /// <param name="delegationModes">
         /// Finely controls where to recursively apply the collation and where not (including this model/database).
-        /// Implicitly uses <see cref="DelegationMode.ApplyToAll"/> if set to <see langword="null"/>.
+        /// Implicitly uses <see cref="DelegationModes.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
         /// <returns>
@@ -312,18 +312,18 @@ namespace Microsoft.EntityFrameworkCore
         public static IConventionModelBuilder UseCollation(
             [NotNull] this IConventionModelBuilder modelBuilder,
             string collation,
-            DelegationMode? delegationMode,
+            DelegationModes? delegationModes,
             bool fromDataAnnotation = false)
         {
             Check.NotNull(modelBuilder, nameof(modelBuilder));
             Check.NullButNotEmpty(collation, nameof(collation));
-            Check.NullOrEnumValue(delegationMode, nameof(delegationMode));
+            Check.NullOrEnumValue(delegationModes, nameof(delegationModes));
 
             if (modelBuilder.CanSetCollation(collation, fromDataAnnotation) &&
-                modelBuilder.CanSetCollationDelegation(delegationMode, fromDataAnnotation))
+                modelBuilder.CanSetCollationDelegation(delegationModes, fromDataAnnotation))
             {
                 modelBuilder.Metadata.SetCollation(collation, fromDataAnnotation);
-                modelBuilder.Metadata.SetCharSetDelegation(delegationMode, fromDataAnnotation);
+                modelBuilder.Metadata.SetCharSetDelegation(delegationModes, fromDataAnnotation);
 
                 return modelBuilder;
             }
@@ -354,26 +354,26 @@ namespace Microsoft.EntityFrameworkCore
             => modelBuilder.UseCollation(
                 collation,
                 explicitlyDelegateToChildren == false
-                    ? DelegationMode.ApplyToDatabases
-                    : DelegationMode.ApplyToAll,
+                    ? DelegationModes.ApplyToDatabases
+                    : DelegationModes.ApplyToAll,
                 fromDataAnnotation);
 
         /// <summary>
-        ///     Returns a value indicating whether the given collation delegation mode can be set.
+        ///     Returns a value indicating whether the given collation delegation modes can be set.
         /// </summary>
         /// <param name="modelBuilder"> The model builder. </param>
-        /// <param name="delegationMode"> The collation delegation mode. </param>
+        /// <param name="delegationModes"> The collation delegation modes. </param>
         /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
-        /// <returns> <see langword="true" /> if the given collation delegation mode can be set as default. </returns>
+        /// <returns> <see langword="true" /> if the given collation delegation modes can be set as default. </returns>
         public static bool CanSetCollationDelegation(
             [NotNull] this IConventionModelBuilder modelBuilder,
-            [CanBeNull] DelegationMode? delegationMode,
+            [CanBeNull] DelegationModes? delegationModes,
             bool fromDataAnnotation = false)
         {
             Check.NotNull(modelBuilder, nameof(modelBuilder));
-            Check.NullOrEnumValue(delegationMode, nameof(delegationMode));
+            Check.NullOrEnumValue(delegationModes, nameof(delegationModes));
 
-            return modelBuilder.CanSetAnnotation(MySqlAnnotationNames.CollationDelegation, delegationMode, fromDataAnnotation);
+            return modelBuilder.CanSetAnnotation(MySqlAnnotationNames.CollationDelegation, delegationModes, fromDataAnnotation);
         }
 
         #endregion Collation and delegation
