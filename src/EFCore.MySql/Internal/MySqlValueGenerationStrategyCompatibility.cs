@@ -12,7 +12,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
     {
         public static MySqlValueGenerationStrategy? GetValueGenerationStrategy(IAnnotation[] annotations)
         {
-            var valueGenerationStrategy = annotations.FirstOrDefault(a => a.Name == MySqlAnnotationNames.ValueGenerationStrategy)?.Value as MySqlValueGenerationStrategy?;
+            var valueGenerationStrategy = ObjectToEnumConverter.GetEnumValue<MySqlValueGenerationStrategy>(
+                annotations.FirstOrDefault(a => a.Name == MySqlAnnotationNames.ValueGenerationStrategy)?.Value);
 
             if (!valueGenerationStrategy.HasValue ||
                 valueGenerationStrategy == MySqlValueGenerationStrategy.None)
