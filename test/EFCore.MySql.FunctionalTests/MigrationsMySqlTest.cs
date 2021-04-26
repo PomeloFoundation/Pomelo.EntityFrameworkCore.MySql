@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
@@ -343,6 +344,85 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
             AssertSql(
                 $"ALTER TABLE `IceCream` COLLATE {NonDefaultCollation2};",
+                //
+                $@"ALTER TABLE `IceCream` MODIFY COLUMN `Name` longtext COLLATE {NonDefaultCollation} NULL;",
+                //
+                $@"ALTER TABLE `IceCream` MODIFY COLUMN `Brand` longtext COLLATE {NonDefaultCollation2} NULL;");
+        }
+
+        [ConditionalFact]
+        public virtual async Task Alter_column_collations_with_delegation_columns_only()
+        {
+            await Test(
+                common => common
+                    .Entity(
+                        "IceCream",
+                        e =>
+                        {
+                            e.Property<int>("IceCreamId");
+                            e.Property<string>("Name");
+                            e.Property<string>("Brand");
+                        }),
+                source => source
+                    .UseCollation(DefaultCollation, DelegationMode.ApplyToColumns)
+                    .Entity(
+                        "IceCream", e =>
+                        {
+                            e.Property<string>("Brand")
+                                .UseCollation(NonDefaultCollation);
+                        }),
+                target => target
+                    .UseCollation(NonDefaultCollation2, DelegationMode.ApplyToColumns)
+                    .Entity(
+                        "IceCream", e =>
+                        {
+                            e.Property<string>("Name")
+                                .UseCollation(NonDefaultCollation);
+                        }),
+                result => { });
+
+            AssertSql(
+                $@"ALTER TABLE `IceCream` MODIFY COLUMN `Name` longtext COLLATE {NonDefaultCollation} NULL;",
+                //
+                $@"ALTER TABLE `IceCream` MODIFY COLUMN `Brand` longtext COLLATE {NonDefaultCollation2} NULL;");
+        }
+
+        [ConditionalFact]
+        public virtual async Task Alter_column_collations_with_delegation_columns_only_with_inbetween_tableonly_collation()
+        {
+            await Test(
+                common => common
+                    .Entity(
+                        "IceCream",
+                        e =>
+                        {
+                            e.Property<int>("IceCreamId");
+                            e.Property<string>("Name");
+                            e.Property<string>("Brand");
+                        }),
+                source => source
+                    .UseCollation(DefaultCollation, DelegationMode.ApplyToColumns)
+                    .Entity(
+                        "IceCream",
+                        e =>
+                        {
+                            e.Property<string>("Brand")
+                                .UseCollation(NonDefaultCollation);
+                        }),
+                target => target
+                    .UseCollation(NonDefaultCollation2, DelegationMode.ApplyToColumns)
+                    .Entity(
+                        "IceCream",
+                        e =>
+                        {
+                            e.UseCollation(DefaultCollation, DelegationMode.ApplyToTables);
+                            e.Property<string>("Name")
+                                .UseCollation(NonDefaultCollation);
+                        }),
+                result => { });
+
+            AssertSql(
+                $@"ALTER TABLE `IceCream` COLLATE {DefaultCollation};",
                 //
                 $@"ALTER TABLE `IceCream` MODIFY COLUMN `Name` longtext COLLATE {NonDefaultCollation} NULL;",
                 //
@@ -712,9 +792,6 @@ ALTER TABLE `Foo` DROP PRIMARY KEY;",
             protected override string StoreName { get; } = nameof(MigrationsMySqlTest);
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
             public override TestHelpers TestHelpers => MySqlTestHelpers.Instance;
-
-            public string GetStoreName()
-                => StoreName;
 
             protected override IServiceCollection AddServices(IServiceCollection serviceCollection)
                 => base.AddServices(serviceCollection)
