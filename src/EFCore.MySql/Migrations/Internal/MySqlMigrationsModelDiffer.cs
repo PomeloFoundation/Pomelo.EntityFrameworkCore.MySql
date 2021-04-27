@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
@@ -36,12 +39,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         }
 
         protected override IEnumerable<MigrationOperation> Add(IRelationalModel target, DiffContext diffContext)
-            => ApplyMySqlSpecificRelationalCollationAnnotations(base.Add(target, diffContext));
+            => PostFilterOperations(base.Add(target, diffContext));
 
         protected override IEnumerable<MigrationOperation> Diff(IRelationalModel source, IRelationalModel target, DiffContext diffContext)
-            => ApplyMySqlSpecificRelationalCollationAnnotations(base.Diff(source, target, diffContext));
+            => PostFilterOperations(base.Diff(source, target, diffContext));
 
-        // CHECK: Can we somehow get rid of this, by moving it somewhere else (e.g. to MySqlMigrationsSqlGenerator)?
+        protected override IEnumerable<MigrationOperation> Add(ITable target, DiffContext diffContext)
+            => PostFilterOperations(base.Add(target, diffContext));
+
+        protected override IEnumerable<MigrationOperation> Diff(ITable source, ITable target, DiffContext diffContext)
+            => PostFilterOperations(base.Diff(source, target, diffContext));
+
         protected override IEnumerable<MigrationOperation> Add(IColumn target, DiffContext diffContext, bool inline = false)
         {
             if (!inline)
@@ -74,60 +82,175 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                 }
             }
 
-            return ApplyMySqlSpecificRelationalCollationAnnotations(base.Add(target, diffContext, inline));
+            return PostFilterOperations(base.Add(target, diffContext, inline));
         }
 
         protected override IEnumerable<MigrationOperation> Diff(IColumn source, IColumn target, DiffContext diffContext)
-            => ApplyMySqlSpecificRelationalCollationAnnotations(base.Diff(source, target, diffContext));
+            => PostFilterOperations(base.Diff(source, target, diffContext));
 
-        protected virtual IEnumerable<MigrationOperation> ApplyMySqlSpecificRelationalCollationAnnotations(
-            IEnumerable<MigrationOperation> migrationOperations)
+        protected virtual IEnumerable<MigrationOperation> PostFilterOperations(IEnumerable<MigrationOperation> migrationOperations)
         {
-            // This is not strictly necessary. Without applying the (delegated) collations, that were generated in MySqlAnnotationProvider,
-            // the MySqlMigrationsSqlGenerator implementation for column and database operations would need to not only use the `Collation`
-            // property, but also explicitly check the `Relational:Collation` annotation.
             foreach (var migrationOperation in migrationOperations)
             {
-                if (migrationOperation is ColumnOperation columnOperation &&
-                    columnOperation[RelationalAnnotationNames.Collation] is string columnCollation)
+                var resultOperation = migrationOperation switch
                 {
-                    columnOperation.Collation ??= columnCollation;
-                    columnOperation.RemoveAnnotation(RelationalAnnotationNames.Collation);
+                    AlterDatabaseOperation operation => PostFilterOperation(operation),
+                    CreateTableOperation operation => PostFilterOperation(operation),
+                    AlterTableOperation operation => PostFilterOperation(operation),
+                    AddColumnOperation operation => PostFilterOperation(operation),
+                    AlterColumnOperation operation => PostFilterOperation(operation),
+                    _ => migrationOperation
+                };
 
-                    // CHECK: Can this condition be true?
-                    if (migrationOperation is AlterColumnOperation alterColumnOperation &&
-                        alterColumnOperation.OldColumn[RelationalAnnotationNames.Collation] is string oldColumnCollation)
-                    {
-                        alterColumnOperation.OldColumn.Collation ??= oldColumnCollation;
-                        alterColumnOperation.OldColumn.RemoveAnnotation(RelationalAnnotationNames.Collation);
-                    }
-                }
-                else if (migrationOperation is DatabaseOperation databaseOperation)
+                if (resultOperation != null)
                 {
-                    if (databaseOperation[RelationalAnnotationNames.Collation] is string databaseCollation)
-                    {
-                        databaseOperation.Collation ??= databaseCollation;
-                        databaseOperation.RemoveAnnotation(RelationalAnnotationNames.Collation);
-
-                        // CHECK: Can this condition be true?
-                        if (migrationOperation is AlterDatabaseOperation alterDatabaseOperation &&
-                            alterDatabaseOperation.OldDatabase[RelationalAnnotationNames.Collation] is string oldColumnCollation)
-                        {
-                            alterDatabaseOperation.OldDatabase.Collation ??= oldColumnCollation;
-                            alterDatabaseOperation.OldDatabase.RemoveAnnotation(RelationalAnnotationNames.Collation);
-                        }
-                    }
-
-                    // If the database collation should not be applied to the database itself, we need to reset the Collation property.
-                    if (databaseOperation[MySqlAnnotationNames.CollationDelegation] is DelegationModes databaseCollationDelegation &&
-                        !databaseCollationDelegation.HasFlag(DelegationModes.ApplyToDatabases))
-                    {
-                        databaseOperation.Collation = null;
-                    }
+                    yield return resultOperation;
                 }
-
-                yield return migrationOperation;
             }
         }
+
+        protected virtual AlterDatabaseOperation PostFilterOperation(AlterDatabaseOperation operation)
+        {
+            HandleCharSetDelegation(operation, DelegationModes.ApplyToDatabases);
+
+            ApplyCollationAnnotation(operation, (operation, collation) => operation.Collation ??= collation);
+            ApplyCollationAnnotation(operation.OldDatabase, (operation, collation) => operation.Collation ??= collation);
+            HandleCollationDelegation(operation, DelegationModes.ApplyToDatabases, o => o.Collation = null);
+
+            // Ensure, that no properties have been added by the EF Core team in the meantime.
+            // If they have, they need to be checked below.
+            AssertMigrationOperationProperties(
+                operation,
+                new[]
+                {
+                    nameof(AlterDatabaseOperation.OldDatabase),
+                    nameof(AlterDatabaseOperation.Collation),
+                });
+
+            // Ensure, that this hasn't become an empty operation.
+            return operation.Collation != operation.OldDatabase.Collation ||
+                   HasDifferences(operation.GetAnnotations(), operation.OldDatabase.GetAnnotations())
+                ? operation
+                : null;
+        }
+
+        protected virtual CreateTableOperation PostFilterOperation(CreateTableOperation operation)
+        {
+            HandleCharSetDelegation(operation, DelegationModes.ApplyToTables);
+            HandleCollationDelegation(operation, DelegationModes.ApplyToTables);
+
+            for (var i = 0; i < operation.Columns.Count; i++)
+            {
+                var oldColumn = operation.Columns[i];
+                var newColumn = PostFilterOperation(oldColumn);
+
+                if (newColumn != oldColumn)
+                {
+                    operation.Columns[i] = newColumn;
+                }
+            }
+
+            return operation;
+        }
+
+        protected virtual AlterTableOperation PostFilterOperation(AlterTableOperation operation)
+        {
+            HandleCharSetDelegation(operation, DelegationModes.ApplyToTables);
+            HandleCollationDelegation(operation, DelegationModes.ApplyToTables);
+
+            // Ensure, that no properties have been added by the EF Core team in the meantime.
+            // If they have, they need to be checked below.
+            AssertMigrationOperationProperties(
+                operation,
+                new[]
+                {
+                    nameof(AlterTableOperation.OldTable),
+                    nameof(AlterTableOperation.Name),
+                    nameof(AlterTableOperation.Schema),
+                    nameof(AlterTableOperation.Comment),
+                });
+
+            // Ensure, that this hasn't become an empty operation.
+            // We do not check Name and Schema, because changes would have resulted in a RenameTableOperation already.
+            return operation.Comment != operation.OldTable.Comment ||
+                   HasDifferences(operation.GetAnnotations(), operation.OldTable.GetAnnotations())
+                ? operation
+                : null;
+        }
+
+        protected virtual AddColumnOperation PostFilterOperation(AddColumnOperation operation)
+        {
+            ApplyCollationAnnotation(operation, (operation, collation) => operation.Collation ??= collation);
+
+            return operation;
+        }
+
+        protected virtual AlterColumnOperation PostFilterOperation(AlterColumnOperation operation)
+        {
+            ApplyCollationAnnotation(operation, (operation, collation) => operation.Collation ??= collation);
+
+            return operation;
+        }
+
+        private static void ApplyCollationAnnotation<TOperation>(TOperation operation, Action<TOperation, string> applyCollation)
+            where TOperation : MigrationOperation
+        {
+            if (operation[RelationalAnnotationNames.Collation] is string collation)
+            {
+                operation.RemoveAnnotation(RelationalAnnotationNames.Collation);
+                applyCollation(operation, collation);
+            }
+        }
+
+        private static void HandleCollationDelegation<TOperation>(
+            TOperation operation,
+            DelegationModes delegationModes,
+            Action<TOperation> resetCollationProperty = null)
+            where TOperation : MigrationOperation
+        {
+            // If the database collation should not be applied to the database itself, we need to reset the Collation property.
+            // It the CollationDelegation annotation does not exist, it is ApplyToAll implicitly.
+            if (operation[MySqlAnnotationNames.CollationDelegation] is DelegationModes databaseCollationDelegation)
+            {
+                // Don't leak the CollationDelegation annotation to the MigrationOperation.
+                operation[MySqlAnnotationNames.CollationDelegation] = null;
+
+                if (!databaseCollationDelegation.HasFlag(delegationModes))
+                {
+                    if (resetCollationProperty == null)
+                    {
+                        operation[RelationalAnnotationNames.Collation] = null;
+                    }
+                    else
+                    {
+                        resetCollationProperty(operation);
+                    }
+                }
+            }
+        }
+
+        private static void HandleCharSetDelegation(MigrationOperation operation, DelegationModes delegationModes)
+        {
+            // If the character set should not be applied to the database itself, we need to remove the CharSet annotation.
+            // It the CharSetDelegation annotation does not exist, it is ApplyToAll implicitly.
+            if (operation[MySqlAnnotationNames.CharSetDelegation] is DelegationModes charSetDelegation)
+            {
+                // Don't leak the CharSetDelegation annotation to the MigrationOperation.
+                operation[MySqlAnnotationNames.CharSetDelegation] = null;
+
+                if (!charSetDelegation.HasFlag(delegationModes))
+                {
+                    operation[MySqlAnnotationNames.CharSet] = null;
+                }
+            }
+        }
+
+        private static void AssertMigrationOperationProperties(MigrationOperation operation, IEnumerable<string> propertyNames)
+            => Debug.Assert(
+                !operation.GetType()
+                    .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                    .Select(p => p.Name)
+                    .Except(propertyNames.Concat(new[] {"Item", nameof(MigrationOperation.IsDestructiveChange)}))
+                    .Any());
     }
 }
