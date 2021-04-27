@@ -278,16 +278,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             return properties.All(p => p.GetCollation() is null)
                 ? properties.Select(p => p.GetMySqlLegacyCollation()).FirstOrDefault(c => c is not null) ??
                   properties.Select(
-                          p => p.FindTypeMapping() is MySqlStringTypeMapping {IsNationalChar: false}
-                              // An explicitly defined charset on the current property level takes precedence over an inherited collation.
-                              ? GetActualEntityTypeCollation(p.DeclaringEntityType, currentLevel) is string collation &&
-                                (p.GetCharSet() is not string charSet ||
-                                 collation.StartsWith(charSet, StringComparison.OrdinalIgnoreCase))
-                                  ? collation
-                                  : null
-                              : p.FindTypeMapping() is MySqlGuidTypeMapping {IsCharBasedStoreType: true}
-                                  ? p.DeclaringEntityType.Model.GetActualGuidCollation(_options.DefaultGuidCollation)
-                                  : null)
+                          // An explicitly defined charset on the current property level takes precedence over an inherited collation.
+                          p => (p.FindTypeMapping() is MySqlStringTypeMapping {IsNationalChar: false}
+                                   ? GetActualEntityTypeCollation(p.DeclaringEntityType, currentLevel)
+                                   : p.FindTypeMapping() is MySqlGuidTypeMapping {IsCharBasedStoreType: true}
+                                       ? p.DeclaringEntityType.Model.GetActualGuidCollation(_options.DefaultGuidCollation)
+                                       : null) is string collation &&
+                               (p.GetCharSet() is not string charSet ||
+                                collation.StartsWith(charSet, StringComparison.OrdinalIgnoreCase))
+                              ? collation
+                              : null)
                       .FirstOrDefault(s => s is not null)
                 : null;
         }
