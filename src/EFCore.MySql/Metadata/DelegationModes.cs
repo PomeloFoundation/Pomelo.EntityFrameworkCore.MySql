@@ -4,7 +4,7 @@
 using System;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore.Metadata
+namespace Microsoft.EntityFrameworkCore
 {
     /// <summary>
     /// Provides precice control over recursive character set or collation delegation/inheritance aspects.

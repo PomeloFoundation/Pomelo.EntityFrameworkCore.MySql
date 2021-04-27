@@ -1,6 +1,7 @@
 // Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using JetBrains.Annotations;
@@ -18,6 +19,29 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
         public MySqlAnnotationCodeGenerator([NotNull] AnnotationCodeGeneratorDependencies dependencies)
             : base(dependencies)
         {
+        }
+
+        public override IEnumerable<IAnnotation> FilterIgnoredAnnotations(IEnumerable<IAnnotation> annotations)
+        {
+            annotations = base.FilterIgnoredAnnotations(annotations).ToArray();
+
+            var hasCharSetAnnotation = annotations.Any(a => a.Name == MySqlAnnotationNames.CharSet);
+            var hasCollationAnnotation = annotations.Any(a => a.Name == RelationalAnnotationNames.Collation);
+
+            foreach (var annotation in annotations)
+            {
+                // Charsets and their delegation and collations and their delegation are handled in the same Fluent API call.
+                // Since the GenerateFluentApi methods cannot skip annotations, we have to ignore one of them here early, if both have been
+                // set, so we don't output a HasCharSet()/UseCollation() call and a CharSetDelegation/CollationDelegation annotation in
+                // addition to that.
+                if (annotation.Name == MySqlAnnotationNames.CharSetDelegation && hasCharSetAnnotation ||
+                    annotation.Name == MySqlAnnotationNames.CollationDelegation && hasCollationAnnotation)
+                {
+                    continue;
+                }
+
+                yield return annotation;
+            }
         }
 
         protected override MethodCallCodeFragment GenerateFluentApi(IModel model, IAnnotation annotation)
