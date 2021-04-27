@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
@@ -541,6 +542,84 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         }
 
         [ConditionalFact]
+        public virtual async Task Create_table_explicit_column_charset_takes_precedence_over_inherited_collation()
+        {
+            await Test(
+                common => { },
+                source => { },
+                target => target
+                    .UseCollation(DefaultCollation)
+                    .Entity(
+                        "IceCream",
+                        e =>
+                        {
+                            e.Property<int>("IceCreamId");
+                            e.Property<string>("Name");
+                            e.Property<string>("Brand")
+                                .HasCharSet(NonDefaultCharSet);
+                        }),
+                result =>
+                {
+                    var table = Assert.Single(result.Tables);
+                    var nameColumn = Assert.Single(table.Columns.Where(c => c.Name == "Name"));
+                    var brandColumn = Assert.Single(table.Columns.Where(c => c.Name == "Brand"));
+
+                    Assert.Null(nameColumn[MySqlAnnotationNames.CharSet]);
+                    Assert.Null(nameColumn.Collation);
+                    Assert.Equal(NonDefaultCharSet, brandColumn[MySqlAnnotationNames.CharSet]);
+                    Assert.NotEqual(DefaultCollation, brandColumn.Collation);
+                });
+
+            AssertSql(
+                $@"ALTER DATABASE COLLATE {DefaultCollation};",
+                //
+                $@"CREATE TABLE `IceCream` (
+    `Brand` longtext CHARACTER SET {NonDefaultCharSet} NULL,
+    `IceCreamId` int NOT NULL,
+    `Name` longtext COLLATE {DefaultCollation} NULL
+) COLLATE {DefaultCollation};");
+        }
+
+        [ConditionalFact]
+        public virtual async Task Create_table_explicit_column_collation_takes_precedence_over_inherited_charset()
+        {
+            await Test(
+                common => { },
+                source => { },
+                target => target
+                    .HasCharSet(NonDefaultCharSet)
+                    .Entity(
+                        "IceCream",
+                        e =>
+                        {
+                            e.Property<int>("IceCreamId");
+                            e.Property<string>("Name");
+                            e.Property<string>("Brand")
+                                .UseCollation(NonDefaultCollation2);
+                        }),
+                result =>
+                {
+                    var table = Assert.Single(result.Tables);
+                    var nameColumn = Assert.Single(table.Columns.Where(c => c.Name == "Name"));
+                    var brandColumn = Assert.Single(table.Columns.Where(c => c.Name == "Brand"));
+
+                    Assert.Null(nameColumn[MySqlAnnotationNames.CharSet]);
+                    Assert.Null(nameColumn.Collation);
+                    Assert.NotEqual(NonDefaultCharSet, brandColumn[MySqlAnnotationNames.CharSet]);
+                    Assert.Equal(NonDefaultCollation2, brandColumn.Collation);
+                });
+
+            AssertSql(
+                $@"ALTER DATABASE CHARACTER SET {NonDefaultCharSet};",
+                //
+                $@"CREATE TABLE `IceCream` (
+    `Brand` longtext COLLATE {NonDefaultCollation2} NULL,
+    `IceCreamId` int NOT NULL,
+    `Name` longtext CHARACTER SET {NonDefaultCharSet} NULL
+) CHARACTER SET {NonDefaultCharSet};");
+        }
+
+        [ConditionalFact]
         public virtual async Task Drop_primary_key_without_recreating_foreign_keys()
         {
             await Test(
@@ -873,6 +952,9 @@ ALTER TABLE `Foo` DROP PRIMARY KEY;",
 
         protected virtual string NonDefaultCollation2
             => "utf8mb4_german2_ci";
+
+        protected virtual string DefaultCharSet => ((MySqlTestStore)Fixture.TestStore).DatabaseCharSet;
+        protected virtual string NonDefaultCharSet => "latin1";
 
         protected virtual Task Test(
             Action<ModelBuilder> buildCommonAction,

@@ -1,7 +1,9 @@
 // Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
@@ -208,7 +210,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
                     entityType.GetCharSet() is null && entityType.GetCharSetDelegation() is not null) && // 2ab
                    entityType.GetActualCharSetDelegation().HasFlag(currentLevel) // 3abc, 2ab
                 ? entityType.GetCharSet()
-                : GetActualModelCharSet(entityType.Model, currentLevel); // 1
+                // An explicitly defined collation on the current entity level takes precedence over an inherited charset.
+                : GetActualModelCharSet(entityType.Model, currentLevel) is string charSet && // 1
+                  (currentLevel != DelegationModes.ApplyToTables ||
+                   entityType.GetCollation() is not string collation ||
+                   !entityType.GetActualCollationDelegation().HasFlag(DelegationModes.ApplyToTables) ||
+                   collation.StartsWith(charSet, StringComparison.OrdinalIgnoreCase))
+                    ? charSet
+                    : null;
         }
 
         protected virtual string GetActualEntityTypeCollation(IEntityType entityType, DelegationModes currentLevel)
@@ -225,9 +234,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             //            -> Explicitly use the specified collation.
             return (entityType.GetCollation() is not null || // 3abc
                     entityType.GetCollation() is null && entityType.GetCollationDelegation() is not null) && // 2ab
-                   entityType.GetActualCollationDelegation().HasFlag(currentLevel) // 3abc, 2ab
+                   entityType.GetActualCollationDelegation().HasFlag(currentLevel)
                 ? entityType.GetCollation()
-                : GetActualModelCollation(entityType.Model, currentLevel); // 1
+                // An explicitly defined charset on the current entity level takes precedence over an inherited collation.
+                : GetActualModelCollation(entityType.Model, currentLevel) is string collation && // 1
+                  (currentLevel != DelegationModes.ApplyToTables ||
+                   entityType.GetCharSet() is not string charSet ||
+                   !entityType.GetActualCharSetDelegation().HasFlag(DelegationModes.ApplyToTables) ||
+                   collation.StartsWith(charSet, StringComparison.OrdinalIgnoreCase))
+                    ? collation
+                    : null;
         }
 
         protected virtual string GetActualPropertyCharSet(IProperty[] properties, DelegationModes currentLevel)
@@ -235,13 +251,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             return properties.Select(p => p.GetCharSet()).FirstOrDefault(s => s is not null) ??
                    properties.Select(
                            p => p.FindTypeMapping() is MySqlStringTypeMapping {IsNationalChar: false}
-                               ? GetActualEntityTypeCharSet(p.DeclaringEntityType, currentLevel)
+                               // An explicitly defined collation on the current property level takes precedence over an inherited charset.
+                               ? GetActualEntityTypeCharSet(p.DeclaringEntityType, currentLevel) is string charSet &&
+                                 (p.GetCollation() is not string collation ||
+                                  collation.StartsWith(charSet, StringComparison.OrdinalIgnoreCase))
+                                   ? charSet
+                                   : null
                                : null)
                        .FirstOrDefault(s => s is not null);
         }
 
         protected virtual string GetActualPropertyCollation(IProperty[] properties, DelegationModes currentLevel)
         {
+            Debug.Assert(currentLevel == DelegationModes.ApplyToColumns);
+
             // We have been using the `MySql:Collation` annotation before EF Core added collation support.
             // Our `MySqlPropertyExtensions.GetMySqlLegacyCollation()` method handles the legacy case, so we explicitly
             // call it here and setup the relational annotation, even though EF Core sets it up as well.
@@ -255,11 +278,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             return properties.All(p => p.GetCollation() is null)
                 ? properties.Select(p => p.GetMySqlLegacyCollation()).FirstOrDefault(c => c is not null) ??
                   properties.Select(
-                          p => p.FindTypeMapping() is MySqlStringTypeMapping {IsNationalChar: false}
-                              ? GetActualEntityTypeCollation(p.DeclaringEntityType, currentLevel)
-                              : p.FindTypeMapping() is MySqlGuidTypeMapping {IsCharBasedStoreType: true}
-                                  ? p.DeclaringEntityType.Model.GetActualGuidCollation(_options.DefaultGuidCollation)
-                                  : null)
+                          // An explicitly defined charset on the current property level takes precedence over an inherited collation.
+                          p => (p.FindTypeMapping() is MySqlStringTypeMapping {IsNationalChar: false}
+                                   ? GetActualEntityTypeCollation(p.DeclaringEntityType, currentLevel)
+                                   : p.FindTypeMapping() is MySqlGuidTypeMapping {IsCharBasedStoreType: true}
+                                       ? p.DeclaringEntityType.Model.GetActualGuidCollation(_options.DefaultGuidCollation)
+                                       : null) is string collation &&
+                               (p.GetCharSet() is not string charSet ||
+                                collation.StartsWith(charSet, StringComparison.OrdinalIgnoreCase))
+                              ? collation
+                              : null)
                       .FirstOrDefault(s => s is not null)
                 : null;
         }
