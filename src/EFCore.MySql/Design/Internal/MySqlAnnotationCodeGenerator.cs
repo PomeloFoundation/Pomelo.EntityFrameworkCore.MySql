@@ -86,6 +86,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
                     annotation.Value);
             }
 
+            if (annotation.Name == MySqlAnnotationNames.GuidCollation)
+            {
+                return new MethodCallCodeFragment(
+                    nameof(MySqlModelBuilderExtensions.UseGuidCollation),
+                    annotation.Value);
+            }
+
             return null;
         }
 
@@ -144,7 +151,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
 
             switch (annotation.Name)
             {
-                case MySqlAnnotationNames.CharSet when annotation.Value is string charSet && charSet.Length > 0:
+                case MySqlAnnotationNames.CharSet when annotation.Value is string {Length: > 0} charSet:
                     return new MethodCallCodeFragment(nameof(MySqlPropertyBuilderExtensions.HasCharSet), charSet);
 
                 default:
