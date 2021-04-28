@@ -14,13 +14,14 @@
 
     <!--
       The following properties will automatically be set by CI builds when appropriate:
+        OfficialVersion
         ContinuousIntegrationTimestamp
         BuildSha
     -->
   </PropertyGroup>
 
   <!--
-    If no version or else version suffix has been explicitly set, we generate one in the following format:
+    If no version or version suffix or official version has been explicitly set, we generate a version suffix in the following format:
       alpha.1.ci.20201004T181121Z+sha.0a1b2c3
   -->
   <PropertyGroup>
@@ -28,7 +29,7 @@
     <UseVersionSuffixOverride Condition="'$(VersionSuffix)' != ''">true</UseVersionSuffixOverride>
   </PropertyGroup>
 
-  <PropertyGroup Label="Version Suffix Handling" Condition="'$(UseVersionOverride)' != 'true' And '$(UseVersionSuffixOverride)' != 'true'">
+  <PropertyGroup Label="Version Suffix Handling" Condition="'$(UseVersionOverride)' != 'true' And '$(UseVersionSuffixOverride)' != 'true' And '$(OfficialVersion)' != ''">
     <VersionSuffix>$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</VersionSuffix>
     <VersionSuffix Condition="'$(ContinuousIntegrationTimestamp)' != ''">$(VersionSuffix).ci.$(ContinuousIntegrationTimestamp)</VersionSuffix>
     <VersionSuffix Condition="'$(BuildSha)' != ''">$(VersionSuffix)+sha.$(BuildSha)</VersionSuffix>
@@ -38,6 +39,7 @@
     <Error Condition="'$(VersionPrefix)' == ''" Text="The 'VersionPrefix' property needs to be set." />
     <Error Condition="'$(PreReleaseVersionLabel)' == ''" Text="The 'PreReleaseVersionLabel' property needs to be set." />
     <Error Condition="'$(PreReleaseVersionIteration)' == ''" Text="The 'PreReleaseVersionIteration' property needs to be set." />
+    <Error Condition="'$(OfficialVersion)' != '' And '$(OfficialVersion)' != '$(VersionPrefix)'" Text="The 'OfficialVersion' property needs to be identical to the 'VersionPrefix' property." />
     <!--
     <Message Importance="high" Text="VersionPrefix: $(VersionPrefix)" />
     <Message Importance="high" Text="VersionSuffix: $(VersionSuffix)" />

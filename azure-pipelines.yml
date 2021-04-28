@@ -235,7 +235,8 @@ jobs:
   - pwsh: dotnet --info
     displayName: .NET Information
   - pwsh: |
-      $officialBuild = '$(Build.SourceBranch)' -match '^refs/tags/[0-9]+\.[0-9]+\.[0-9]+'
+      $officialBuild = '$(Build.SourceBranch)' -match '(?<=^refs/tags/)\d+\.\d+\.\d+$'
+      $officialVersion = $Matches.0
       $wipBuild = '$(Build.SourceBranch)' -match '^refs/heads/.*-wip$'
       $ciBuildOnly = $wipBuild -or ('$(Build.SourceBranch)' -match '^refs/heads/(?:master|.*-maint)$')
       $continuousIntegrationTimestamp = Get-Date -Format yyyyMMddHHmmss
@@ -243,6 +244,7 @@ jobs:
       $pack = '$(buildAndTestSucceeded)' -eq "true" -and ($officialBuild -or $ciBuildOnly) -or $wipBuild
 
       echo "officialBuild: $officialBuild"
+      echo "officialVersion: $officialVersion"
       echo "wipBuild: $wipBuild"
       echo "ciBuildOnly: $ciBuildOnly"
       echo "continuousIntegrationTimestamp: $continuousIntegrationTimestamp"
@@ -252,6 +254,11 @@ jobs:
       if ($pack)
       {
         $arguments = 'pack', '-c', 'Release', '-o', '$(Build.ArtifactStagingDirectory)', '-p:ContinuousIntegrationBuild=true'
+
+        if ($officialBuild)
+        {
+          $arguments += '-p:OfficialVersion=$officialVersion'
+        }
 
         if ($ciBuildOnly)
         {
