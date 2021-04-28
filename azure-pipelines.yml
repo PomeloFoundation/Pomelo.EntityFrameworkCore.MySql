@@ -257,7 +257,7 @@ jobs:
 
         if ($officialBuild)
         {
-          $arguments += '-p:OfficialVersion=$officialVersion'
+          $arguments += "-p:OfficialVersion=$officialVersion"
         }
 
         if ($ciBuildOnly)
