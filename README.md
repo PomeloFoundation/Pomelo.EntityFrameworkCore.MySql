@@ -5,7 +5,7 @@
 [![Pomelo.EntityFrameworkCore.MySql package in pomelo-efcore-public feed in Azure Artifacts](https://feeds.dev.azure.com/pomelo-efcore/e81f0b59-aba4-4055-8e18-e3f1a565942e/_apis/public/Packaging/Feeds/5f202e7e-2c62-4fc1-a18c-4025a32eabc8/Packages/54935cc0-f38b-4ddb-86d6-c812a8c92988/Badge)](https://dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging?_a=package&feed=5f202e7e-2c62-4fc1-a18c-4025a32eabc8&package=54935cc0-f38b-4ddb-86d6-c812a8c92988&preferRelease=false)
 [![Join the chat at https://gitter.im/PomeloFoundation/Home](https://badges.gitter.im/PomeloFoundation/Home.svg)](https://gitter.im/PomeloFoundation/Home?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-`Pomelo.EntityFrameworkCore.MySql` is the most popular Entity Framework Core provider for MySQL compatible databases. It supports EF Core 5.0 (and lower) and uses [MySqlConnector](https://mysqlconnector.net/) for high-performance database server communication.
+`Pomelo.EntityFrameworkCore.MySql` is the most popular Entity Framework Core provider for MySQL compatible databases. It supports EF Core 5.0 (and below) and uses [MySqlConnector](https://mysqlconnector.net/) for high-performance database server communication.
 
 ## Compatibility
 
@@ -15,9 +15,8 @@ The following versions of MySqlConnector, EF Core and .NET Standard are compatib
 
 Release | Branch | MySqlConnector | EF Core | .NET Standard | .NET (Core) | .NET Framework
 --- | --- | --- | --- | --- | --- | ---
-[5.0.0-beta.2](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/5.0.0-beta.2) | [master](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/master) | >= 1.3.7 | 5.0.x | 2.1 | 3.0+ | N/A
+[5.0.0](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/5.0.0) | [master](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/master) | >= 1.3.7 | 5.0.x | 2.1 | 3.0+ | N/A
 [3.2.5](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.2.5) | [3.2-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/3.2-maint) | >= 0.69.10 < 1.0.0 | 3.1.x | 2.0 | 2.0+ | 4.6.1+
-[3.0.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.0.1) | [3.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/3.0-maint) | >= 0.61.0 < 1.0.0 | 3.0.x | 2.1 | 3.0+ | N/A
 [2.2.6](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/2.2.6) | [2.2-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/2.2-maint) | >= 0.59.2 < 1.0.0 | 2.2.6 | 2.0 | 2.0+ | 4.6.1+
 
 ### Packages
@@ -43,10 +42,7 @@ Currently supported versions are:
 
 Milestone | Status | Release Date
 ----------|--------|-------------
-5.0.0 | Announced | 2021-04-28 (see [#1088](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1088))
-5.0.0-beta.2 | Released | 2021-04-27
-5.0.0-beta.1 | Released | 2021-04-22
-5.0.0-alpha.2 | Released | 2020-11-12
+5.0.0 | Released | 2021-04-28
 3.2.5 | Released | 2021-04-21
 3.0.1 | Released | 2019-12-04
 2.2.6 | Released | 2019-10-15
@@ -81,7 +77,7 @@ show variables like 'character_set_database';
 Ensure that your `.csproj` file contains the following reference:
 
 ```xml
-<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="5.0.0-beta.2" />
+<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="5.0.0" />
 ```
 
 ### 3. Services Configuration
