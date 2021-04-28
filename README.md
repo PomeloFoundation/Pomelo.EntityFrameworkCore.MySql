@@ -15,7 +15,7 @@ The following versions of MySqlConnector, EF Core and .NET Standard are compatib
 
 Release | Branch | MySqlConnector | EF Core | .NET Standard | .NET (Core) | .NET Framework
 --- | --- | --- | --- | --- | --- | ---
-[5.0.0-beta.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/5.0.0-beta.1) | [master](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/master) | >= 1.3.4 | 5.0.x | 2.1 | 3.0+ | N/A
+[5.0.0-beta.2](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/5.0.0-beta.2) | [master](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/master) | >= 1.3.7 | 5.0.x | 2.1 | 3.0+ | N/A
 [3.2.5](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.2.5) | [3.2-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/3.2-maint) | >= 0.69.10 < 1.0.0 | 3.1.x | 2.0 | 2.0+ | 4.6.1+
 [3.0.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.0.1) | [3.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/3.0-maint) | >= 0.61.0 < 1.0.0 | 3.0.x | 2.1 | 3.0+ | N/A
 [2.2.6](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/2.2.6) | [2.2-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/2.2-maint) | >= 0.59.2 < 1.0.0 | 2.2.6 | 2.0 | 2.0+ | 4.6.1+
@@ -44,7 +44,7 @@ Currently supported versions are:
 Milestone | Status | Release Date
 ----------|--------|-------------
 5.0.0 | Announced | 2021-04-28 (see [#1088](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1088))
-5.0.0-beta.2 | Announced | 2021-04-27
+5.0.0-beta.2 | Released | 2021-04-27
 5.0.0-beta.1 | Released | 2021-04-22
 5.0.0-alpha.2 | Released | 2020-11-12
 3.2.5 | Released | 2021-04-21
@@ -81,7 +81,7 @@ show variables like 'character_set_database';
 Ensure that your `.csproj` file contains the following reference:
 
 ```xml
-<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="5.0.0-beta.1" />
+<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="5.0.0-beta.2" />
 ```
 
 ### 3. Services Configuration
