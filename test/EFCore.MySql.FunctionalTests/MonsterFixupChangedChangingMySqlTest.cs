@@ -1,23 +1,19 @@
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
-    public class MonsterFixupChangedOnlyMySqlTest : MonsterFixupTestBase<MonsterFixupChangedOnlyMySqlTest.MonsterFixupChangedOnlyMySqlFixture>
+    public class MonsterFixupChangedChangingMySqlTest : MonsterFixupTestBase<MonsterFixupChangedChangingMySqlTest.MonsterFixupChangedChangingMySqlFixture>
     {
-        public MonsterFixupChangedOnlyMySqlTest(MonsterFixupChangedOnlyMySqlFixture fixture)
+        public MonsterFixupChangedChangingMySqlTest(MonsterFixupChangedChangingMySqlFixture fixture)
             : base(fixture)
         {
         }
 
-        public class MonsterFixupChangedOnlyMySqlFixture : MonsterFixupChangedOnlyFixtureBase
+        public class MonsterFixupChangedChangingMySqlFixture : MonsterFixupChangedChangingFixtureBase
         {
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
-
-            public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
-                => base.AddOptions(builder);
 
             protected override void OnModelCreating<TMessage, TProduct, TProductPhoto, TProductReview, TComputerDetail, TDimensions>(
                 ModelBuilder builder)

@@ -113,6 +113,33 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                     return QueryCompilationContext.NotTranslatedExpression;
                 }
 
+                if (binaryExpression.Left.Type == typeof(byte[]))
+                {
+                    var left = Visit(binaryExpression.Left);
+                    var right = Visit(binaryExpression.Right);
+
+                    if (left is SqlExpression leftSql &&
+                        right is SqlExpression rightSql)
+                    {
+                        return _sqlExpressionFactory.NullableFunction(
+                            "ASCII",
+                            new[]
+                            {
+                                _sqlExpressionFactory.NullableFunction(
+                                    "SUBSTRING",
+                                    new[]
+                                    {
+                                        leftSql, Dependencies.SqlExpressionFactory.Add(
+                                            Dependencies.SqlExpressionFactory.ApplyDefaultTypeMapping(rightSql),
+                                            Dependencies.SqlExpressionFactory.Constant(1)),
+                                        Dependencies.SqlExpressionFactory.Constant(1)
+                                    },
+                                    typeof(byte[]))
+                            },
+                            typeof(byte));
+                    }
+                }
+
                 // Try translating ArrayIndex inside json column
                 var expression = _jsonPocoTranslator?.TranslateMemberAccess(
                     sqlLeft,
