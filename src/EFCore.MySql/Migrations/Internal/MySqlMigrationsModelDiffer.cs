@@ -129,6 +129,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
 
             // Ensure, that this hasn't become an empty operation.
             return operation.Collation != operation.OldDatabase.Collation ||
+                   operation.IsReadOnly != operation.OldDatabase.IsReadOnly ||
                    HasDifferences(operation.GetAnnotations(), operation.OldDatabase.GetAnnotations())
                 ? operation
                 : null;
@@ -245,12 +246,25 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
             }
         }
 
+        [Conditional("DEBUG")]
         private static void AssertMigrationOperationProperties(MigrationOperation operation, IEnumerable<string> propertyNames)
-            => Debug.Assert(
-                !operation.GetType()
-                    .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                    .Select(p => p.Name)
-                    .Except(propertyNames.Concat(new[] {"Item", nameof(MigrationOperation.IsDestructiveChange)}))
-                    .Any());
+        {
+            if (operation.GetType()
+                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                .Select(p => p.Name)
+                .Except(
+                    propertyNames.Concat(
+                        new[]
+                        {
+                            "Item",
+                            nameof(AlterDatabaseOperation.IsReadOnly),
+                            nameof(MigrationOperation.IsDestructiveChange)
+                        }))
+                .FirstOrDefault() is string unexpectedProperty)
+            {
+                throw new InvalidOperationException(
+                    $"The 'MigrationOperation' of type '{operation.GetType().Name}' contains an unexpected property '{unexpectedProperty}'.");
+            }
+        }
     }
 }
