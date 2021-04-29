@@ -14,7 +14,7 @@ using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 namespace Microsoft.EntityFrameworkCore
 {
     /// <summary>
-    ///     Extension methods for <see cref="IProperty" /> for MySQL-specific metadata.
+    ///     MySQL specific extension methods for properties.
     /// </summary>
     public static class MySqlPropertyExtensions
     {
@@ -27,7 +27,7 @@ namespace Microsoft.EntityFrameworkCore
         ///     </para>
         /// </summary>
         /// <returns> The strategy, or <see cref="MySqlValueGenerationStrategy.None"/> if none was set. </returns>
-        public static MySqlValueGenerationStrategy? GetValueGenerationStrategy([NotNull] this IProperty property, StoreObjectIdentifier storeObject = default)
+        public static MySqlValueGenerationStrategy? GetValueGenerationStrategy([NotNull] this IReadOnlyProperty property, StoreObjectIdentifier storeObject = default)
         {
             var annotation = property[MySqlAnnotationNames.ValueGenerationStrategy];
             if (annotation != null)
@@ -73,7 +73,7 @@ namespace Microsoft.EntityFrameworkCore
             property.SetOrRemoveAnnotation(MySqlAnnotationNames.ValueGenerationStrategy, value);
         }
 
-        private static void CheckValueGenerationStrategy(IProperty property, MySqlValueGenerationStrategy? value)
+        private static void CheckValueGenerationStrategy(IReadOnlyProperty property, MySqlValueGenerationStrategy? value)
         {
             if (value != null)
             {
@@ -102,7 +102,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="property"> The property. </param>
         /// <returns> <see langword="true"/> if compatible. </returns>
-        public static bool IsCompatibleIdentityColumn(IProperty property)
+        public static bool IsCompatibleIdentityColumn(IReadOnlyProperty property)
             => IsCompatibleAutoIncrementColumn(property) ||
                IsCompatibleCurrentTimestampColumn(property);
 
@@ -111,7 +111,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="property"> The property. </param>
         /// <returns> <see langword="true"/> if compatible. </returns>
-        public static bool IsCompatibleAutoIncrementColumn(IProperty property)
+        public static bool IsCompatibleAutoIncrementColumn(IReadOnlyProperty property)
         {
             var valueConverter = GetConverter(property);
             var type = (valueConverter?.ProviderClrType ?? property.ClrType).UnwrapNullableType();
@@ -124,7 +124,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="property"> The property. </param>
         /// <returns> <see langword="true"/> if compatible. </returns>
-        public static bool IsCompatibleCurrentTimestampColumn(IProperty property)
+        public static bool IsCompatibleCurrentTimestampColumn(IReadOnlyProperty property)
         {
             var valueConverter = GetConverter(property);
             var type = (valueConverter?.ProviderClrType ?? property.ClrType).UnwrapNullableType();
@@ -137,7 +137,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="property"> The property. </param>
         /// <returns> <see langword="true"/> if compatible. </returns>
-        public static bool IsCompatibleComputedColumn(IProperty property)
+        public static bool IsCompatibleComputedColumn(IReadOnlyProperty property)
         {
             var type = property.ClrType;
 
@@ -146,16 +146,16 @@ namespace Microsoft.EntityFrameworkCore
                    || type == typeof(byte[]) && !HasExternalConverter(property);
         }
 
-        private static bool HasConverter(IProperty property)
+        private static bool HasConverter(IReadOnlyProperty property)
             => GetConverter(property) != null;
 
-        private static bool HasExternalConverter(IProperty property)
+        private static bool HasExternalConverter(IReadOnlyProperty property)
         {
             var converter = GetConverter(property);
             return converter != null && !(converter is BytesToDateTimeConverter);
         }
 
-        private static ValueConverter GetConverter(IProperty property)
+        private static ValueConverter GetConverter(IReadOnlyProperty property)
             => property.FindTypeMapping()?.Converter ?? property.GetValueConverter();
 
         /// <summary>
@@ -163,7 +163,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="property">The property of which to get the columns charset from.</param>
         /// <returns>The name of the charset or null, if no explicit charset was set.</returns>
-        public static string GetCharSet([NotNull] this IProperty property)
+        public static string GetCharSet([NotNull] this IReadOnlyProperty property)
             => property[MySqlAnnotationNames.CharSet] as string;
 
         /// <summary>
@@ -180,7 +180,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="property">The property of which to get the columns collation from.</param>
         /// <returns>The name of the collation or null, if no explicit collation was set.</returns>
 #pragma warning disable 618
-        internal static string GetMySqlLegacyCollation([NotNull] this IProperty property)
+        internal static string GetMySqlLegacyCollation([NotNull] this IReadOnlyProperty property)
             => property[MySqlAnnotationNames.Collation] as string;
 #pragma warning restore 618
 
@@ -189,7 +189,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="property">The property of which to get the columns SRID from.</param>
         /// <returns>The SRID or null, if no explicit SRID has been set.</returns>
-        public static int? GetSpatialReferenceSystem([NotNull] this IProperty property)
+        public static int? GetSpatialReferenceSystem([NotNull] this IReadOnlyProperty property)
             => (int?)property[MySqlAnnotationNames.SpatialReferenceSystemId];
 
         /// <summary>

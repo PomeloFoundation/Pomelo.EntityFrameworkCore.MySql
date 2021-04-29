@@ -61,7 +61,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
             optionsBuilderInfrastructure.AddOrUpdateExtension(relationalOptions);
 
-            return new MySqlRelationalConnection(Dependencies.With(optionsBuilder.Options))
+            return new MySqlRelationalConnection(Dependencies with { ContextOptions = optionsBuilder.Options })
             {
                 IsMasterConnection = true
             };

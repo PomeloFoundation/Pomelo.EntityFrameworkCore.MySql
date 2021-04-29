@@ -33,13 +33,12 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
 
             return new SingularModificationCommandBatch(
                 new ModificationCommandBatchFactoryDependencies(
-                _commandBuilderFactory,
-                _sqlGenerationHelper,
-                _updateSqlGenerator,
-                _valueBufferFactoryFactory,
-                null,
-                new FakeDiagnosticsLogger<DbLoggerCategory.Database.Command>()
-                ));
+                    _commandBuilderFactory,
+                    _sqlGenerationHelper,
+                    _updateSqlGenerator,
+                    _valueBufferFactoryFactory,
+                    null,
+                    new FakeRelationalCommandDiagnosticsLogger()));
         }
     }
 }

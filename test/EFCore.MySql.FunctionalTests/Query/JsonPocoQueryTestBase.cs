@@ -386,8 +386,7 @@ WHERE JSON_CONTAINS(`j`.`Customer`, '{""Name"": ""Joe"", ""Age"": 25}')");
 
             Assert.Equal(1, count);
             AssertSql(
-                @"@__someJson_1='{""Name"": ""Joe""
-""Age"": 25}' (Size = 4000)
+                @"@__someJson_1='{""Name"": ""Joe"", ""Age"": 25}' (Size = 4000)
 
 SELECT COUNT(*)
 FROM `JsonEntities` AS `j`

@@ -8,8 +8,8 @@
           - "rtm"
           - "servicing"
     -->
-    <VersionPrefix>5.0.1</VersionPrefix>
-    <PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>
+    <VersionPrefix>6.0.0</VersionPrefix>
+    <PreReleaseVersionLabel>preview4</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
 
     <!--

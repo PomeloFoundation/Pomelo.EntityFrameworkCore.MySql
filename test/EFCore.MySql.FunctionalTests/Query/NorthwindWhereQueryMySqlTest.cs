@@ -273,16 +273,9 @@ FROM `Customers` AS `c`
 WHERE @__guidParameter_0 = UUID()");
         }
 
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public virtual async Task Where_string_concat_method_comparison_2(bool async)
+        public override async Task Where_string_concat_method_comparison_2(bool async)
         {
-            var i = "A";
-            var j = "B";
-
-            await AssertQuery(
-                async,
-                ss => ss.Set<Customer>().Where(c => string.Concat(i, j, c.CustomerID) == c.CompanyName).Select(c => c.CustomerID));
+            await base.Where_string_concat_method_comparison_2(async);
 
             AssertSql(
                 @"@__i_0='A' (Size = 4000)
@@ -293,17 +286,9 @@ FROM `Customers` AS `c`
 WHERE CONCAT(@__i_0, @__j_1, `c`.`CustomerID`) = `c`.`CompanyName`");
         }
 
-        [ConditionalTheory]
-        [MemberData(nameof(IsAsyncData))]
-        public virtual async Task Where_string_concat_method_comparison_3(bool async)
+        public override async Task Where_string_concat_method_comparison_3(bool async)
         {
-            var i = "A";
-            var j = "B";
-            var k = "C";
-
-            await AssertQuery(
-                async,
-                ss => ss.Set<Customer>().Where(c => string.Concat(i, j, k, c.CustomerID) == c.CompanyName).Select(c => c.CustomerID));
+            await base.Where_string_concat_method_comparison_3(async);
 
             AssertSql(
                 @"@__i_0='A' (Size = 4000)

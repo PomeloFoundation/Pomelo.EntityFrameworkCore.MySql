@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreLegacyTargetFramework)</TargetFramework>
     <LegacyTargetFramework>$(DefaultNetCoreLegacyTargetFramework)</LegacyTargetFramework>
     <AssemblyName>Pomelo.EntityFrameworkCore.MySql.IntegrationTests</AssemblyName>
     <StartupObject>Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Program</StartupObject>
@@ -68,7 +68,7 @@
 
   <ItemGroup Condition="'$(LocalMySqlConnectorRepository)' != ''">
     <Reference Include="MySqlConnector">
-      <HintPath>$(LocalMySqlConnectorRepository)\src\MySqlConnector\bin\Debug\$(TargetFramework)\MySqlConnector.dll</HintPath>
+      <HintPath>$(LocalMySqlConnectorRepository)\src\MySqlConnector\bin\Debug\$(DefaultNetCoreTargetFramework)\MySqlConnector.dll</HintPath>
     </Reference>
   </ItemGroup>
 

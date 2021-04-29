@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Scaffolding;
@@ -956,6 +957,8 @@ ALTER TABLE `Foo` DROP PRIMARY KEY;",
         protected virtual string DefaultCharSet => ((MySqlTestStore)Fixture.TestStore).DatabaseCharSet;
         protected virtual string NonDefaultCharSet => "latin1";
 
+        protected virtual TestHelpers TestHelpers => MySqlTestHelpers.Instance;
+
         protected virtual Task Test(
             Action<ModelBuilder> buildCommonAction,
             Action<ModelBuilder> buildSourceAction,
@@ -963,16 +966,20 @@ ALTER TABLE `Foo` DROP PRIMARY KEY;",
             Action<MigrationBuilder> migrationBuilderAction,
             Action<DatabaseModel> asserter)
         {
+            var services = TestHelpers.CreateContextServices();
+
             // Build the source and target models. Add current/latest product version if one wasn't set.
             var sourceModelBuilder = CreateConventionlessModelBuilder();
             buildCommonAction(sourceModelBuilder);
             buildSourceAction(sourceModelBuilder);
-            var sourceModel = sourceModelBuilder.FinalizeModel();
+            var sourceModel = services.GetRequiredService<IModelRuntimeInitializer>()
+                .Initialize(sourceModelBuilder.FinalizeModel(), designTime: true, validationLogger: null);
 
             var targetModelBuilder = CreateConventionlessModelBuilder();
             buildCommonAction(targetModelBuilder);
             buildTargetAction(targetModelBuilder);
-            var targetModel = targetModelBuilder.FinalizeModel();
+            var targetModel = services.GetRequiredService<IModelRuntimeInitializer>()
+                .Initialize(targetModelBuilder.FinalizeModel(), designTime: true, validationLogger: null);
 
             var migrationBuilder = new MigrationBuilder(null);
             migrationBuilderAction(migrationBuilder);

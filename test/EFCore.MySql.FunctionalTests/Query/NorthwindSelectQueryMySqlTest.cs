@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.Diagnostics;
+﻿using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
@@ -245,16 +243,6 @@ FROM `Orders` AS `o`");
         {
             return base.Do_not_erase_projection_mapping_when_adding_single_projection(async);
         }
-
-        public override Task Reverse_without_explicit_ordering_throws(bool async)
-            => AssertTranslationFailedWithDetails(
-                () => base.Reverse_without_explicit_ordering_throws(async), RelationalStrings.MissingOrderingInSelectExpression);
-
-        public override async Task Projecting_after_navigation_and_distinct_throws(bool async)
-            => Assert.Equal(
-                RelationalStrings.InsufficientInformationToIdentifyOuterElementOfCollectionJoin,
-                (await Assert.ThrowsAsync<InvalidOperationException>(
-                    () => base.Projecting_after_navigation_and_distinct_throws(async))).Message);
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);

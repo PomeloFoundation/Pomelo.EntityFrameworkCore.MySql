@@ -10,7 +10,7 @@ using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 namespace Microsoft.EntityFrameworkCore
 {
     /// <summary>
-    ///     MySQL specific extension methods for <see cref="IEntityType" />.
+    ///     MySQL specific extension methods for entity types.
     /// </summary>
     public static class MySqlEntityTypeExtensions
     {
@@ -21,7 +21,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="entityType"> The entity type. </param>
         /// <returns> The name of the character set. </returns>
-        public static string GetCharSet([NotNull] this IEntityType entityType)
+        public static string GetCharSet([NotNull] this IReadOnlyEntityType entityType)
             => entityType[MySqlAnnotationNames.CharSet] as string;
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="entityType"> The entity type. </param>
         /// <returns> The character set delegation modes. </returns>
-        public static DelegationModes? GetCharSetDelegation([NotNull] this IEntityType entityType)
+        public static DelegationModes? GetCharSetDelegation([NotNull] this IReadOnlyEntityType entityType)
             => ObjectToEnumConverter.GetEnumValue<DelegationModes>(entityType[MySqlAnnotationNames.CharSetDelegation]) ??
                (entityType[MySqlAnnotationNames.CharSetDelegation] is bool explicitlyDelegateToChildren
                    ? explicitlyDelegateToChildren
@@ -131,7 +131,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="entityType"> The entity type. </param>
         /// <returns> The actual character set delegation modes. </returns>
-        public static DelegationModes GetActualCharSetDelegation([NotNull] this IEntityType entityType)
+        public static DelegationModes GetActualCharSetDelegation([NotNull] this IReadOnlyEntityType entityType)
         {
             var delegationModes = entityType.GetCharSetDelegation() ?? DelegationModes.Default;
             return delegationModes == DelegationModes.Default
@@ -148,7 +148,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="entityType"> The entity type. </param>
         /// <returns> The name of the collation. </returns>
-        public static string GetCollation([NotNull] this IEntityType entityType)
+        public static string GetCollation([NotNull] this IReadOnlyEntityType entityType)
             => entityType[RelationalAnnotationNames.Collation] as string;
 
         /// <summary>
@@ -203,7 +203,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="entityType"> The entity type. </param>
         /// <returns> The collation delegation modes. </returns>
-        public static DelegationModes? GetCollationDelegation([NotNull] this IEntityType entityType)
+        public static DelegationModes? GetCollationDelegation([NotNull] this IReadOnlyEntityType entityType)
             => ObjectToEnumConverter.GetEnumValue<DelegationModes>(entityType[MySqlAnnotationNames.CollationDelegation]) ??
                (entityType[MySqlAnnotationNames.CollationDelegation] is bool explicitlyDelegateToChildren
                    ? explicitlyDelegateToChildren
@@ -258,7 +258,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="entityType"> The entity type. </param>
         /// <returns> The actual collation delegation modes. </returns>
-        public static DelegationModes GetActualCollationDelegation([NotNull] this IEntityType entityType)
+        public static DelegationModes GetActualCollationDelegation([NotNull] this IReadOnlyEntityType entityType)
         {
             var delegationModes = entityType.GetCollationDelegation() ?? DelegationModes.Default;
             return delegationModes == DelegationModes.Default

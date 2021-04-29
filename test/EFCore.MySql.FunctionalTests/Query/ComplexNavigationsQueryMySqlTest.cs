@@ -1,8 +1,6 @@
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
@@ -310,9 +308,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
-        public override void Filtered_include_outer_parameter_used_inside_filter()
+        public override Task Filtered_include_outer_parameter_used_inside_filter(bool async)
         {
-            base.Filtered_include_outer_parameter_used_inside_filter();
+            return base.Filtered_include_outer_parameter_used_inside_filter(async);
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]

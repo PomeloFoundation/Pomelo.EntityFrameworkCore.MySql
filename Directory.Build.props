@@ -8,7 +8,7 @@
     <Product>Pomelo.EntityFrameworkCore.MySql</Product>
     <Authors>Laurents Meyer, Caleb Lloyd, Yuko Zheng</Authors>
     <Company>Pomelo Foundation</Company>
-    <Copyright>Copyright 2020 © Pomelo Foundation</Copyright>
+    <Copyright>Copyright 2021 © Pomelo Foundation</Copyright>
     <PackageIconUrl>https://avatars3.githubusercontent.com/u/19828814</PackageIconUrl>
     <PackageIcon>icon.png</PackageIcon>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -23,7 +23,7 @@
 
   <PropertyGroup>
     <DefaultNetCoreTargetFramework>net5.0</DefaultNetCoreTargetFramework>
-    <DefaultNetCoreLegacyTargetFramework>netcoreapp5.0</DefaultNetCoreLegacyTargetFramework>
+    <DefaultNetCoreLegacyTargetFramework>net6.0</DefaultNetCoreLegacyTargetFramework>
     <DefaultNetStandardTargetFramework>netstandard2.1</DefaultNetStandardTargetFramework>
   </PropertyGroup>
 

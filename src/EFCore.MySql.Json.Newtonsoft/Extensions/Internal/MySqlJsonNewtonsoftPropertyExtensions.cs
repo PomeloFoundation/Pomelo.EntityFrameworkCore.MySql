@@ -2,7 +2,7 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Storage.ValueComparison.Internal;
@@ -33,7 +33,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Extensions.Internal
             {
                 // Use globally configured options for this context.
                 // This can always be used to get back to the default implementation and options.
-                property.SetValueComparer(null);
+                property.SetValueComparer((ValueComparer)null);
                 return;
             }
 

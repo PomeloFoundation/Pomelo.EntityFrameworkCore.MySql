@@ -7,6 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -133,16 +135,20 @@ FROM information_schema.tables
 WHERE table_type = 'BASE TABLE' AND table_schema = '" + _relationalConnection.DbConnection.Database + "'");
 
         private IReadOnlyList<MigrationCommand> CreateCreateOperations()
-            => Dependencies.MigrationsSqlGenerator.Generate(
+        {
+            var designTimeModel = Dependencies.CurrentContext.Context.GetService<IDesignTimeModel>().Model;
+
+            return Dependencies.MigrationsSqlGenerator.Generate(
                 new[]
                 {
                     new MySqlCreateDatabaseOperation
                     {
                         Name = _relationalConnection.DbConnection.Database,
-                        CharSet = Dependencies.Model.GetCharSet(),
-                        Collation = Dependencies.Model.GetCollation(),
+                        CharSet = designTimeModel.GetCharSet(),
+                        Collation = designTimeModel.GetCollation(),
                     }
                 });
+        }
 
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

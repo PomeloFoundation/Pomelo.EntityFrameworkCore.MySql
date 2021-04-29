@@ -1,23 +1,32 @@
-using System;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
+﻿using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public class ComplexNavigationsWeakQueryMySqlTest : ComplexNavigationsWeakQueryRelationalTestBase<ComplexNavigationsWeakQueryMySqlFixture>
+    public class ComplexNavigationsSharedTypeQueryMySqlTest : ComplexNavigationsSharedQueryTypeRelationalTestBase<
+        ComplexNavigationsSharedTypeQueryMySqlTest.ComplexNavigationsSharedTypeQueryMySqlFixture>
     {
-        public ComplexNavigationsWeakQueryMySqlTest(ComplexNavigationsWeakQueryMySqlFixture fixture, ITestOutputHelper testOutputHelper)
+        // ReSharper disable once UnusedParameter.Local
+        public ComplexNavigationsSharedTypeQueryMySqlTest(
+            ComplexNavigationsSharedTypeQueryMySqlFixture fixture,
+            ITestOutputHelper testOutputHelper)
             : base(fixture)
         {
             Fixture.TestSqlLoggerFactory.Clear();
-            //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
+            // Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
+        }
+
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
+        public override Task SelectMany_with_navigation_filter_paging_and_explicit_DefaultIfEmpty(bool async)
+        {
+            return base.SelectMany_with_navigation_filter_paging_and_explicit_DefaultIfEmpty(async);
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
@@ -33,9 +42,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
-        public override Task SelectMany_with_navigation_filter_paging_and_explicit_DefaultIfEmpty(bool async)
+        public override void Member_pushdown_chain_3_levels_deep_entity()
         {
-            return base.SelectMany_with_navigation_filter_paging_and_explicit_DefaultIfEmpty(async);
+            base.Member_pushdown_chain_3_levels_deep_entity();
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
@@ -266,22 +275,28 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             base.Filtered_include_is_considered_loaded();
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
         public override Task Filtered_include_and_non_filtered_include_followed_by_then_include_on_same_navigation_split(bool async)
         {
             return base.Filtered_include_and_non_filtered_include_followed_by_then_include_on_same_navigation_split(async);
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
         public override Task Filtered_include_multiple_multi_level_includes_with_first_level_using_filter_include_on_one_of_the_chains_only_split(bool async)
         {
             return base.Filtered_include_multiple_multi_level_includes_with_first_level_using_filter_include_on_one_of_the_chains_only_split(async);
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
         public override Task Filtered_include_same_filter_set_on_same_navigation_twice_followed_by_ThenIncludes_split(bool async)
         {
             return base.Filtered_include_same_filter_set_on_same_navigation_twice_followed_by_ThenIncludes_split(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Include_inside_subquery(bool async)
+        {
+            return base.Include_inside_subquery(async);
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
@@ -294,6 +309,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         public override Task SelectMany_with_outside_reference_to_joined_table_correctly_translated_to_apply(bool async)
         {
             return base.SelectMany_with_outside_reference_to_joined_table_correctly_translated_to_apply(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Filtered_include_outer_parameter_used_inside_filter(bool async)
+        {
+            return base.Filtered_include_outer_parameter_used_inside_filter(async);
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
@@ -338,19 +359,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Filtered_include_complex_three_level_with_middle_having_filter2(async);
         }
 
-        [ConditionalTheory]
-        public override async Task SelectMany_with_navigation_and_Distinct(bool async)
-        {
-            var message = (await Assert.ThrowsAsync<InvalidOperationException>(
-                () => base.SelectMany_with_navigation_and_Distinct(async))).Message;
-
-            Assert.Equal(RelationalStrings.InsufficientInformationToIdentifyOuterElementOfCollectionJoin, message);
-        }
-
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
         public override Task Contains_with_subquery_optional_navigation_and_constant_item(bool async)
         {
             return base.Contains_with_subquery_optional_navigation_and_constant_item(async);
+        }
+
+        private void AssertSql(params string[] expected)
+            => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
+
+        public class ComplexNavigationsSharedTypeQueryMySqlFixture : ComplexNavigationsSharedTypeQueryRelationalFixtureBase
+        {
+            protected override ITestStoreFactory TestStoreFactory
+                => MySqlTestStoreFactory.Instance;
         }
     }
 }

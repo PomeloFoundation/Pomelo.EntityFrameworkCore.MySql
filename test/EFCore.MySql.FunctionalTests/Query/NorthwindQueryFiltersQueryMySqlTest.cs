@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Query;
+﻿using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Query;
 using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
@@ -15,9 +16,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        public override void Count_query()
+        public override async Task Count_query(bool async)
         {
-            base.Count_query();
+            await base.Count_query(async);
 
             AssertSql(
                 @"@__ef_filter__TenantPrefix_0='B' (Size = 4000)
