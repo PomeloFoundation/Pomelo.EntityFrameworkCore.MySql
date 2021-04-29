@@ -129,30 +129,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 }
             }
 
-            var visitedExpression = (SqlExpression)base.VisitBinary(binaryExpression);
-            if (visitedExpression == null)
-            {
-                return null;
-            }
+            var visitedExpression = base.VisitBinary(binaryExpression);
 
-            if (visitedExpression is SqlBinaryExpression visitedBinaryExpression)
+            if (visitedExpression is SqlExpression visitedSqlExpression)
             {
-                // Returning null forces client projection.
-                // CHECK: Is this still true in .NET Core 3.0?
-                switch (visitedBinaryExpression.OperatorType)
+                if (visitedSqlExpression is SqlBinaryExpression visitedBinaryExpression)
                 {
-                    case ExpressionType.Add:
-                    case ExpressionType.Subtract:
-                    case ExpressionType.Multiply:
-                    case ExpressionType.Divide:
-                    case ExpressionType.Modulo:
-                        return IsDateTimeBasedOperation(visitedBinaryExpression)
-                            ? null
-                            : visitedBinaryExpression;
+                    // Returning null forces client projection.
+                    // TODO: Is this still true in .NET Core 3.0?
+                    switch (visitedBinaryExpression.OperatorType)
+                    {
+                        case ExpressionType.Add:
+                        case ExpressionType.Subtract:
+                        case ExpressionType.Multiply:
+                        case ExpressionType.Divide:
+                        case ExpressionType.Modulo:
+                            return IsDateTimeBasedOperation(visitedBinaryExpression)
+                                ? null
+                                : visitedBinaryExpression;
+                    }
                 }
+
+                return visitedSqlExpression;
             }
 
-            return visitedExpression;
+            return null;
         }
 
         protected virtual Expression VisitMethodCallNewArray(NewArrayExpression newArrayExpression)
