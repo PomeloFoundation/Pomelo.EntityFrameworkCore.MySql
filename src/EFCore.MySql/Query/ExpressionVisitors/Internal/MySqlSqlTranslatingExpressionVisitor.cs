@@ -50,11 +50,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             {
                 if (TranslationFailed(unaryExpression.Operand, Visit(unaryExpression.Operand), out var sqlOperand))
                 {
-                    return null;
+                    return QueryCompilationContext.NotTranslatedExpression;
                 }
 
                 if (sqlOperand.Type == typeof(byte[]) &&
-                    (sqlOperand.TypeMapping == null || sqlOperand.TypeMapping is MySqlByteArrayTypeMapping))
+                    (sqlOperand.TypeMapping is null or MySqlByteArrayTypeMapping))
                 {
                     return _sqlExpressionFactory.NullableFunction(
                         "LENGTH",
@@ -62,9 +62,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                         typeof(int));
                 }
 
-                return _jsonPocoTranslator?.TranslateArrayLength(sqlOperand);
+                return _jsonPocoTranslator?.TranslateArrayLength(sqlOperand) ??
+                       QueryCompilationContext.NotTranslatedExpression;
             }
-
 
             // Make explicit casts implicit if they are applied to a JSON traversal object.
             // It is pretty common for Newtonsoft.Json objects to be cast to other types (e.g. casting from
@@ -87,17 +87,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             }
 
             var visitedExpression = base.VisitUnary(unaryExpression);
-            if (visitedExpression == null)
-            {
-                return null;
-            }
 
-            // MySQL implicitly casts numbers used in BITWISE NOT operations (~ operator) to BIGINT UNSIGNED.
-            // We need to cast them back, to get the expected result.
             if (visitedExpression is SqlUnaryExpression sqlUnaryExpression &&
                 sqlUnaryExpression.OperatorType == ExpressionType.Not &&
                 sqlUnaryExpression.Type != typeof(bool))
             {
+                // MySQL implicitly casts numbers used in BITWISE NOT operations (~ operator) to BIGINT UNSIGNED.
+                // We need to cast them back, to get the expected result.
                 return _sqlExpressionFactory.Convert(
                     sqlUnaryExpression,
                     sqlUnaryExpression.Type,
@@ -114,7 +110,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 if (TranslationFailed(binaryExpression.Left, Visit(TryRemoveImplicitConvert(binaryExpression.Left)), out var sqlLeft)
                     || TranslationFailed(binaryExpression.Right, Visit(TryRemoveImplicitConvert(binaryExpression.Right)), out var sqlRight))
                 {
-                    return null;
+                    return QueryCompilationContext.NotTranslatedExpression;
                 }
 
                 // Try translating ArrayIndex inside json column
@@ -123,7 +119,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                     _sqlExpressionFactory.JsonArrayIndex(sqlRight),
                     binaryExpression.Type);
 
-                if (expression != null)
+                if (expression is not null)
                 {
                     return expression;
                 }
@@ -131,29 +127,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
             var visitedExpression = base.VisitBinary(binaryExpression);
 
-            if (visitedExpression is SqlExpression visitedSqlExpression)
+            if (visitedExpression is SqlBinaryExpression visitedBinaryExpression)
             {
-                if (visitedSqlExpression is SqlBinaryExpression visitedBinaryExpression)
+                // TODO: Is this still true in .NET Core 3.0?
+                switch (visitedBinaryExpression.OperatorType)
                 {
-                    // Returning null forces client projection.
-                    // TODO: Is this still true in .NET Core 3.0?
-                    switch (visitedBinaryExpression.OperatorType)
-                    {
-                        case ExpressionType.Add:
-                        case ExpressionType.Subtract:
-                        case ExpressionType.Multiply:
-                        case ExpressionType.Divide:
-                        case ExpressionType.Modulo:
-                            return IsDateTimeBasedOperation(visitedBinaryExpression)
-                                ? null
-                                : visitedBinaryExpression;
-                    }
+                    case ExpressionType.Add:
+                    case ExpressionType.Subtract:
+                    case ExpressionType.Multiply:
+                    case ExpressionType.Divide:
+                    case ExpressionType.Modulo:
+                        return IsDateTimeBasedOperation(visitedBinaryExpression)
+                            ? QueryCompilationContext.NotTranslatedExpression
+                            : visitedBinaryExpression;
                 }
-
-                return visitedSqlExpression;
             }
 
-            return null;
+            return visitedExpression;
         }
 
         protected virtual Expression VisitMethodCallNewArray(NewArrayExpression newArrayExpression)
@@ -196,7 +186,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                     {
                         if (TranslationFailed(argument, VisitMethodCallNewArray(newArrayExpression), out var sqlExpression))
                         {
-                            return null;
+                            return QueryCompilationContext.NotTranslatedExpression;
                         }
 
                         arguments[i] = sqlExpression;
@@ -211,7 +201,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             }
 
             var result = base.VisitMethodCall(methodCallExpression);
-            if (result == null &&
+            if (result == QueryCompilationContext.NotTranslatedExpression &&
                 MySqlStringComparisonMethodTranslator.StringComparisonMethodInfos.Any(m => m == methodCallExpression.Method))
             {
                 var message = MySqlStrings.QueryUnableToTranslateMethodWithStringComparison(
@@ -238,8 +228,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         private static bool IsDateTimeBasedOperation(SqlBinaryExpression binaryExpression)
         {
-            if (binaryExpression.TypeMapping != null
-                && (binaryExpression.TypeMapping.StoreType.StartsWith("date") || binaryExpression.TypeMapping.StoreType.StartsWith("time")))
+            if (binaryExpression.TypeMapping is RelationalTypeMapping typeMapping &&
+                (typeMapping.StoreType.StartsWith("date") || typeMapping.StoreType.StartsWith("time")))
             {
                 return true;
             }
@@ -293,7 +283,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         [DebuggerStepThrough]
         private bool TranslationFailed(Expression original, Expression translation, out SqlExpression castTranslation)
         {
-            if (original != null && !(translation is SqlExpression))
+            if (original != null && translation is not SqlExpression)
             {
                 castTranslation = null;
                 return true;
