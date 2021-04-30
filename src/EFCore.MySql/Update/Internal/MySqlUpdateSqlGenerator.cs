@@ -170,12 +170,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
             return ResultSetMapping.LastInResultSet;
         }
 
-        public override void AppendBatchHeader(StringBuilder commandStringBuilder)
-        {
-            // TODO: what is the effect of this statment?
-            // there is no equivalent in mysql: https://stackoverflow.com/questions/3386217/is-there-an-equivalent-to-sql-servers-set-nocount-in-mysql
-        }
-
         protected override void AppendWhereAffectedClause(
             [NotNull] StringBuilder commandStringBuilder,
             [NotNull] IReadOnlyList<ColumnModification> operations)
