@@ -73,6 +73,29 @@ namespace Microsoft.EntityFrameworkCore
             property.SetOrRemoveAnnotation(MySqlAnnotationNames.ValueGenerationStrategy, value);
         }
 
+        /// <summary>
+        ///     Sets the <see cref="MySqlValueGenerationStrategy" /> to use for the property.
+        /// </summary>
+        /// <param name="property"> The property. </param>
+        /// <param name="value"> The strategy to use. </param>
+        /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
+        public static MySqlValueGenerationStrategy? SetValueGenerationStrategy([NotNull] this IConventionProperty property, MySqlValueGenerationStrategy? value, bool fromDataAnnotation = false)
+        {
+            CheckValueGenerationStrategy(property, value);
+
+            property.SetOrRemoveAnnotation(MySqlAnnotationNames.ValueGenerationStrategy, value, fromDataAnnotation);
+
+            return value;
+        }
+
+        /// <summary>
+        /// Returns the <see cref="ConfigurationSource" /> for the <see cref="MySqlValueGenerationStrategy" />.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>The <see cref="ConfigurationSource" /> for the <see cref="MySqlValueGenerationStrategy" />.</returns>
+        public static ConfigurationSource? GetValueGenerationStrategyConfigurationSource(this IConventionProperty property)
+            => property.FindAnnotation(MySqlAnnotationNames.ValueGenerationStrategy)?.GetConfigurationSource();
+
         private static void CheckValueGenerationStrategy(IReadOnlyProperty property, MySqlValueGenerationStrategy? value)
         {
             if (value != null)
@@ -175,6 +198,27 @@ namespace Microsoft.EntityFrameworkCore
             => property.SetOrRemoveAnnotation(MySqlAnnotationNames.CharSet, charSet);
 
         /// <summary>
+        /// Sets the name of the charset in use by the column of the property.
+        /// </summary>
+        /// <param name="property">The property to set the columns charset for.</param>
+        /// <param name="charSet">The name of the charset used for the column of the property.</param>
+        /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
+        public static string SetCharSet([NotNull] this IConventionProperty property, string charSet, bool fromDataAnnotation = false)
+        {
+            property.SetOrRemoveAnnotation(MySqlAnnotationNames.CharSet, charSet, fromDataAnnotation);
+
+            return charSet;
+        }
+
+        /// <summary>
+        /// Returns the <see cref="ConfigurationSource" /> for the character set.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>The <see cref="ConfigurationSource" /> for the character set.</returns>
+        public static ConfigurationSource? GetCharSetConfigurationSource(this IConventionProperty property)
+            => property.FindAnnotation(MySqlAnnotationNames.CharSet)?.GetConfigurationSource();
+
+        /// <summary>
         /// Returns the name of the collation used by the column of the property.
         /// </summary>
         /// <param name="property">The property of which to get the columns collation from.</param>
@@ -199,5 +243,26 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="srid">The SRID to configure for the property's column.</param>
         public static void SetSpatialReferenceSystem([NotNull] this IMutableProperty property, int? srid)
             => property.SetOrRemoveAnnotation(MySqlAnnotationNames.SpatialReferenceSystemId, srid);
+
+        /// <summary>
+        /// Sets the Spatial Reference System Identifier (SRID) in use by the column of the property.
+        /// </summary>
+        /// <param name="property">The property to set the columns SRID for.</param>
+        /// <param name="srid">The SRID to configure for the property's column.</param>
+        /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
+        public static int? SetSpatialReferenceSystem([NotNull] this IConventionProperty property, int? srid, bool fromDataAnnotation = false)
+        {
+            property.SetOrRemoveAnnotation(MySqlAnnotationNames.SpatialReferenceSystemId, srid, fromDataAnnotation);
+
+            return srid;
+        }
+
+        /// <summary>
+        /// Returns the <see cref="ConfigurationSource" /> for the Spatial Reference System Identifier (SRID).
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>The <see cref="ConfigurationSource" /> for the Spatial Reference System Identifier (SRID).</returns>
+        public static ConfigurationSource? GetSpatialReferenceSystemConfigurationSource(this IConventionProperty property)
+            => property.FindAnnotation(MySqlAnnotationNames.SpatialReferenceSystemId)?.GetConfigurationSource();
     }
 }

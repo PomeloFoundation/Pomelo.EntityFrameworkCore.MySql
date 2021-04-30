@@ -15,7 +15,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         : IRelationalTypeMappingSourcePlugin
     {
         [NotNull]
-        public IMySqlOptions Options { get; }
+        public virtual IMySqlOptions Options { get; }
 
         protected MySqlJsonTypeMappingSourcePlugin(
             [NotNull] IMySqlOptions options)

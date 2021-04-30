@@ -10,8 +10,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
 {
     public class CharSet
     {
-        public string Name { get; }
-        public int MaxBytesPerChar { get; }
+        public virtual string Name { get; }
+        public virtual int MaxBytesPerChar { get; }
 
         public CharSet(string name, int maxBytesPerChar)
         {
@@ -21,11 +21,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
             MaxBytesPerChar = maxBytesPerChar > 0 ? maxBytesPerChar : throw new ArgumentOutOfRangeException(nameof(maxBytesPerChar));
         }
 
-        public bool IsUnicode => MaxBytesPerChar >= 2;
+        public virtual bool IsUnicode => MaxBytesPerChar >= 2;
 
         public override string ToString() => Name;
 
-        protected bool Equals(CharSet other)
+        protected virtual bool Equals(CharSet other)
         {
             return Name == other.Name &&
                    MaxBytesPerChar == other.MaxBytesPerChar;

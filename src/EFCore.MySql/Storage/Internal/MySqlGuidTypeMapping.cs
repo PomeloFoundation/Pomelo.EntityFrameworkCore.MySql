@@ -34,7 +34,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
             => new MySqlGuidTypeMapping(parameters, _guidFormat);
 
-        public bool IsCharBasedStoreType
+        public virtual bool IsCharBasedStoreType
             => GetStoreType(_guidFormat) == "char";
 
         protected override string GenerateNonNullSqlLiteral(object value)

@@ -6,7 +6,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
     public class MySqlNetTopologySuiteEvaluatableExpressionFilter : IMySqlEvaluatableExpressionFilter
     {
-        public bool? IsEvaluatableExpression(Expression expression, IModel model)
+        public virtual bool? IsEvaluatableExpression(Expression expression, IModel model)
         {
             if (expression is MethodCallExpression methodCallExpression &&
                 methodCallExpression.Method.DeclaringType == typeof(MySqlSpatialDbFunctionsExtensions))

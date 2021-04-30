@@ -34,12 +34,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.ValueGeneration.Internal
             return Next();
         }
 
-        public Guid Next()
+        public virtual Guid Next()
         {
             return Next(DateTimeOffset.UtcNow);
         }
 
-        public Guid Next(DateTimeOffset timeNow)
+        public virtual Guid Next(DateTimeOffset timeNow)
         {
             // According to RFC 4122:
             // dddddddd-dddd-Mddd-Ndrr-rrrrrrrrrrrr

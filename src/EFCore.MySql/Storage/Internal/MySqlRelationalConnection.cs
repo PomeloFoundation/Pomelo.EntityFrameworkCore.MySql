@@ -161,13 +161,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public virtual void AddSqlMode(string mode)
             => Dependencies.CurrentContext.Context?.Database.ExecuteSqlInterpolated($@"SET SESSION sql_mode = CONCAT(@@sql_mode, ',', {mode});");
 
-        public virtual Task AddSqlModeAsync(string mode)
-            => Dependencies.CurrentContext.Context?.Database.ExecuteSqlInterpolatedAsync($@"SET SESSION sql_mode = CONCAT(@@sql_mode, ',', {mode});");
+        public virtual Task AddSqlModeAsync(string mode, CancellationToken cancellationToken = default)
+            => Dependencies.CurrentContext.Context?.Database.ExecuteSqlInterpolatedAsync($@"SET SESSION sql_mode = CONCAT(@@sql_mode, ',', {mode});", cancellationToken);
 
         public virtual void RemoveSqlMode(string mode)
             => Dependencies.CurrentContext.Context?.Database.ExecuteSqlInterpolated($@"SET SESSION sql_mode = REPLACE(@@sql_mode, {mode}, '');");
 
-        public virtual void RemoveSqlModeAsync(string mode)
-            => Dependencies.CurrentContext.Context?.Database.ExecuteSqlInterpolatedAsync($@"SET SESSION sql_mode = REPLACE(@@sql_mode, {mode}, '');");
+        public virtual void RemoveSqlModeAsync(string mode, CancellationToken cancellationToken = default)
+            => Dependencies.CurrentContext.Context?.Database.ExecuteSqlInterpolatedAsync($@"SET SESSION sql_mode = REPLACE(@@sql_mode, {mode}, '');", cancellationToken);
     }
 }

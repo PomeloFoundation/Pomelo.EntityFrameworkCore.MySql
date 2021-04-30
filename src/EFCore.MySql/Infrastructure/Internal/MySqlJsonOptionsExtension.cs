@@ -56,7 +56,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         /// <summary>
         ///     The change tracking option that will be used as the default for all JSON column mapped properties.
         /// </summary>
-        public MySqlJsonOptionsExtension WithJsonChangeTrackingOptions(MySqlCommonJsonChangeTrackingOptions options)
+        public virtual MySqlJsonOptionsExtension WithJsonChangeTrackingOptions(MySqlCommonJsonChangeTrackingOptions options)
             => WithJsonChangeTrackingOptions(options.ToJsonChangeTrackingOptions());
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         ///     doing so can result in application failures when updating to a new Entity Framework Core release.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public MySqlJsonOptionsExtension WithJsonChangeTrackingOptions(MySqlJsonChangeTrackingOptions options)
+        public virtual MySqlJsonOptionsExtension WithJsonChangeTrackingOptions(MySqlJsonChangeTrackingOptions options)
         {
             var clone = Clone();
             clone.JsonChangeTrackingOptions = options;

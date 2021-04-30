@@ -17,7 +17,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
 {
     public class MySqlDesignTimeServices : IDesignTimeServices
     {
-        public void ConfigureDesignTimeServices(IServiceCollection serviceCollection)
+        public virtual void ConfigureDesignTimeServices(IServiceCollection serviceCollection)
         {
             serviceCollection
                 .AddSingleton<LoggingDefinitions, MySqlLoggingDefinitions>()

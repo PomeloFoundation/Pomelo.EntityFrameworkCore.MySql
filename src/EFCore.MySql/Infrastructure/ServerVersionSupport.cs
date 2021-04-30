@@ -10,7 +10,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
 {
     public class ServerVersionSupport
     {
-        public ServerVersion ServerVersion { get; }
+        public virtual ServerVersion ServerVersion { get; }
 
         public ServerVersionSupport([NotNull] ServerVersion serverVersion)
         {

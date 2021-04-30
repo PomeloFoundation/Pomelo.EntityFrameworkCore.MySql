@@ -65,7 +65,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 new[] {StringComparison.Ordinal, StringComparison.CurrentCulture, StringComparison.InvariantCulture});
         }
 
-        public SqlExpression Translate(
+        public virtual SqlExpression Translate(
             SqlExpression instance,
             MethodInfo method,
             IReadOnlyList<SqlExpression> arguments,
@@ -128,7 +128,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             return null;
         }
 
-        public SqlExpression MakeStringEqualsExpression(
+        public virtual SqlExpression MakeStringEqualsExpression(
             [NotNull] SqlExpression leftValue,
             [NotNull] SqlExpression rightValue,
             [NotNull] SqlExpression stringComparison)
@@ -176,7 +176,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             );
         }
 
-        public SqlExpression MakeStartsWithExpression(
+        public virtual SqlExpression MakeStartsWithExpression(
             [NotNull] SqlExpression target,
             [NotNull] SqlExpression prefix,
             [CanBeNull] SqlExpression stringComparison = null)
@@ -234,7 +234,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     true));
         }
 
-        public SqlExpression MakeEndsWithExpression(
+        public virtual SqlExpression MakeEndsWithExpression(
             [NotNull] SqlExpression target,
             [NotNull] SqlExpression suffix,
             [CanBeNull] SqlExpression stringComparison = null)
@@ -292,7 +292,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     false));
         }
 
-        public SqlExpression MakeContainsExpression(
+        public virtual SqlExpression MakeContainsExpression(
             [NotNull] SqlExpression target,
             [NotNull] SqlExpression search,
             [CanBeNull] SqlExpression stringComparison = null)
@@ -469,7 +469,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                         _sqlExpressionFactory.Constant(0)));
         }
 
-        public SqlExpression MakeIndexOfExpression(
+        public virtual SqlExpression MakeIndexOfExpression(
             [NotNull] SqlExpression target,
             [NotNull] SqlExpression search,
             [CanBeNull] SqlExpression stringComparison = null)

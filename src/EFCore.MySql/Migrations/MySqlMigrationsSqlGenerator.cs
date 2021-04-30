@@ -881,7 +881,7 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
             }
         }
 
-        protected void TemporarilyDropForeignKeys(
+        protected virtual void TemporarilyDropForeignKeys(
             IModel model,
             MigrationCommandListBuilder builder,
             string schemaName,

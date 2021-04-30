@@ -24,7 +24,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
         }
 
-        public SqlExpression Translate(
+        public virtual SqlExpression Translate(
             SqlExpression instance,
             MethodInfo method,
             IReadOnlyList<SqlExpression> arguments,

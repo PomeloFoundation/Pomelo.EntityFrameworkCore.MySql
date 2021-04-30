@@ -286,6 +286,19 @@ namespace Microsoft.EntityFrameworkCore
         }
 
         /// <summary>
+        /// Returns a value indicating whether the MySQL character set can be set on the table associated with this entity.
+        /// </summary>
+        /// <param name="entityTypeBuilder"> The builder for the entity type being configured. </param>
+        /// <param name="charSet"> The character set. </param>
+        /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
+        /// <returns><see langword="true"/> if the mapped table can be configured with the collation.</returns>
+        public static bool CanSetCharSet(
+            [NotNull] this IConventionEntityTypeBuilder entityTypeBuilder,
+            [CanBeNull] CharSet charSet,
+            bool fromDataAnnotation = false)
+            => entityTypeBuilder.CanSetCharSet(charSet?.Name, fromDataAnnotation);
+
+        /// <summary>
         ///     Returns a value indicating whether the given character set delegation modes can be set.
         /// </summary>
         /// <param name="entityTypeBuilder"> The builder for the entity type being configured. </param>

@@ -37,12 +37,12 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="value"> The value to set. </param>
         /// <param name="index"> The index. </param>
         /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
-        public static void SetIsFullText(
-            [NotNull] this IConventionIndex index, bool? value, bool fromDataAnnotation = false)
-            => index.SetOrRemoveAnnotation(
-                MySqlAnnotationNames.FullTextIndex,
-                value,
-                fromDataAnnotation);
+        public static bool? SetIsFullText([NotNull] this IConventionIndex index, bool? value, bool fromDataAnnotation = false)
+        {
+            index.SetOrRemoveAnnotation(MySqlAnnotationNames.FullTextIndex, value, fromDataAnnotation);
+
+            return value;
+        }
 
         /// <summary>
         ///     Returns the <see cref="ConfigurationSource" /> for whether the index is full text.
@@ -76,12 +76,12 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="value"> The value to set. </param>
         /// <param name="index"> The index. </param>
         /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
-        public static void SetFullTextParser(
-            [NotNull] this IConventionIndex index, [CanBeNull] string value, bool fromDataAnnotation = false)
-            => index.SetOrRemoveAnnotation(
-                MySqlAnnotationNames.FullTextParser,
-                value,
-                fromDataAnnotation);
+        public static string SetFullTextParser([NotNull] this IConventionIndex index, [CanBeNull] string value, bool fromDataAnnotation = false)
+        {
+            index.SetOrRemoveAnnotation(MySqlAnnotationNames.FullTextParser, value, fromDataAnnotation);
+
+            return value;
+        }
 
         /// <summary>
         ///     Returns the <see cref="ConfigurationSource" /> for whether the index is full text.
@@ -118,12 +118,12 @@ namespace Microsoft.EntityFrameworkCore
         /// A value of `0` indicates, that the full length should be used for that column. </param>
         /// <param name="index"> The index. </param>
         /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
-        public static void SetPrefixLength(
-            [NotNull] this IConventionIndex index, int[] values, bool fromDataAnnotation = false)
-            => index.SetOrRemoveAnnotation(
-                MySqlAnnotationNames.IndexPrefixLength,
-                values,
-                fromDataAnnotation);
+        public static int[] SetPrefixLength([NotNull] this IConventionIndex index, int[] values, bool fromDataAnnotation = false)
+        {
+            index.SetOrRemoveAnnotation(MySqlAnnotationNames.IndexPrefixLength, values, fromDataAnnotation);
+
+            return values;
+        }
 
         /// <summary>
         ///     Returns the <see cref="ConfigurationSource" /> for prefix lengths of the index.
@@ -157,12 +157,12 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="value"> The value to set. </param>
         /// <param name="index"> The index. </param>
         /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
-        public static void SetIsSpatial(
-            [NotNull] this IConventionIndex index, bool? value, bool fromDataAnnotation = false)
-            => index.SetOrRemoveAnnotation(
-                MySqlAnnotationNames.SpatialIndex,
-                value,
-                fromDataAnnotation);
+        public static bool? SetIsSpatial([NotNull] this IConventionIndex index, bool? value, bool fromDataAnnotation = false)
+        {
+            index.SetOrRemoveAnnotation(MySqlAnnotationNames.SpatialIndex, value, fromDataAnnotation);
+
+            return value;
+        }
 
         /// <summary>
         ///     Returns the <see cref="ConfigurationSource" /> for whether the index is spartial.
