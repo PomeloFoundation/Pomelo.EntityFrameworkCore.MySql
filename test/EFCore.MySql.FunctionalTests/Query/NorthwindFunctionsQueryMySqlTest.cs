@@ -241,9 +241,9 @@ WHERE `c`.`CustomerID` = 'ALFKI'");
             await base.Where_math_abs1(async);
 
             AssertSql(
-                $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
-FROM `Order Details` AS `o`
-WHERE ABS(`o`.`ProductID`) > 10");
+                @"SELECT `p`.`ProductID`, `p`.`Discontinued`, `p`.`ProductName`, `p`.`SupplierID`, `p`.`UnitPrice`, `p`.`UnitsInStock`
+FROM `Products` AS `p`
+WHERE ABS(`p`.`ProductID`) > 10");
         }
 
         [ConditionalTheory]
@@ -252,9 +252,9 @@ WHERE ABS(`o`.`ProductID`) > 10");
             await base.Where_math_abs2(async);
 
             AssertSql(
-                $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+                @"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE ABS(`o`.`Quantity`) > 10");
+WHERE (`o`.`UnitPrice` < 7.0) AND (ABS(`o`.`Quantity`) > 10)");
         }
 
         [ConditionalTheory]
@@ -263,9 +263,9 @@ WHERE ABS(`o`.`Quantity`) > 10");
             await base.Where_math_abs_uncorrelated(async);
 
             AssertSql(
-                $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+                @"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE 10 < `o`.`ProductID`");
+WHERE (`o`.`UnitPrice` < 7.0) AND (10 < `o`.`ProductID`)");
         }
 
         [ConditionalTheory]
@@ -463,9 +463,9 @@ WHERE SUBSTRING(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`), 1) = 's'");
             await base.Where_math_abs3(async);
 
             AssertSql(
-                $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+                @"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE ABS(`o`.`UnitPrice`) > 10.0");
+WHERE (`o`.`Quantity` < 5) AND (ABS(`o`.`UnitPrice`) > 10.0)");
         }
 
         public override async Task Where_math_ceiling1(bool async)
@@ -475,7 +475,7 @@ WHERE ABS(`o`.`UnitPrice`) > 10.0");
             AssertSql(
                 $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE CEILING({CastAsDouble("`o`.`Discount`")}) > 0.0");
+WHERE (`o`.`UnitPrice` < 7.0) AND (CEILING({CastAsDouble("`o`.`Discount`")}) > 0.0)");
         }
 
         public override async Task Where_math_ceiling2(bool async)
@@ -483,9 +483,9 @@ WHERE CEILING({CastAsDouble("`o`.`Discount`")}) > 0.0");
             await base.Where_math_ceiling2(async);
 
             AssertSql(
-                $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+                @"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE CEILING(`o`.`UnitPrice`) > 10.0");
+WHERE (`o`.`Quantity` < 5) AND (CEILING(`o`.`UnitPrice`) > 10.0)");
         }
 
         public override async Task Where_math_floor(bool async)
@@ -493,9 +493,9 @@ WHERE CEILING(`o`.`UnitPrice`) > 10.0");
             await base.Where_math_floor(async);
 
             AssertSql(
-                $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+                @"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE FLOOR(`o`.`UnitPrice`) > 10.0");
+WHERE (`o`.`Quantity` < 5) AND (FLOOR(`o`.`UnitPrice`) > 10.0)");
         }
 
         public override async Task Where_math_power(bool async)
@@ -513,9 +513,9 @@ WHERE POWER({CastAsDouble("`o`.`Discount`")}, 2.0) > 0.05000000074505806");
             await base.Where_math_round(async);
 
             AssertSql(
-                $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+                @"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE ROUND(`o`.`UnitPrice`) > 10.0");
+WHERE (`o`.`Quantity` < 5) AND (ROUND(`o`.`UnitPrice`) > 10.0)");
         }
 
         public override async Task Select_math_truncate_int(bool async)
@@ -543,9 +543,9 @@ WHERE ROUND(`o`.`UnitPrice`, 2) > 100.0");
             await base.Where_math_truncate(async);
 
             AssertSql(
-                $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+                @"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE TRUNCATE(`o`.`UnitPrice`, 0) > 10.0");
+WHERE (`o`.`Quantity` < 5) AND (TRUNCATE(`o`.`UnitPrice`, 0) > 10.0)");
         }
 
         public override async Task Where_math_exp(bool async)
@@ -683,8 +683,8 @@ WHERE (`o`.`OrderID` = 11077) AND (SIGN(`o`.`Discount`) > 0)");
             await base.Where_guid_newguid(async);
 
             AssertSql(
-                $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
-FROM `Order Details` AS `o`
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
 WHERE UUID() <> '00000000-0000-0000-0000-000000000000'");
         }
 
