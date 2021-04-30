@@ -39,10 +39,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands{
 	            switch (cmd)
 	            {
 		            case "connectionString":
-						_connectionStringCommand.Run();
+                        _connectionStringCommand.Run();
 			            break;
-		            case "testMigrate":
-						_testMigrateCommand.Run();
+                    case "testMigrate":
+                        _testMigrateCommand.Run();
 			            break;
 	                case "testPerformance":
 	                    if (args.Length != 4)

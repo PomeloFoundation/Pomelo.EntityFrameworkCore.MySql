@@ -15,6 +15,11 @@ variables:
   mariadbSqlMode: STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
   maxConnections: 255
   runIntegrationTests: true
+
+  # Dotnet + Tools versioning:
+  majorDotnetVersion: 6 # empty uses global.json (for rtm/servicing releases)
+  includeDotnetPrereleases: true
+
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
 jobs:
@@ -62,17 +67,49 @@ jobs:
     vmImage: $(vmImageName)
   steps:
   - pwsh: |
+      $dotnetVersion = ''
+      $dotnetEfToolUpdateVersion = ''
+      $useGlobalJson = $false
+
+      if ('$(majorDotnetVersion)' -ne '')
+      {
+        $dotnetVersion = '$(majorDotnetVersion).x'
+
+        if ('$(includeDotnetPrereleases)' -eq 'true')
+        {
+          $dotnetEfToolUpdateVersion = '$(majorDotnetVersion).*-*'
+        }
+        else
+        {
+          $dotnetEfToolUpdateVersion = '$(majorDotnetVersion).*'
+        }
+      }
+      else
+      {
+        $useGlobalJson = $true
+      }
+
+      echo "##vso[task.setvariable variable=dotnetVersion]$dotnetVersion"
+      echo "##vso[task.setvariable variable=dotnetEfToolUpdateVersion]$dotnetEfToolUpdateVersion"
+      echo "##vso[task.setvariable variable=useGlobalJson]$useGlobalJson"
+    displayName: Set additional variables
+  - pwsh: |
       echo "skipTests: $(skipTests)"
       echo "skipWindowsTests: $(skipWindowsTests)"
       echo "pullRequestSourceBranch: $(pullRequestSourceBranch)"
       echo "isPullRequest: $(isPullRequest)"
       echo "Build.SourceBranchName: $(Build.SourceBranchName)"
       echo "Build.SourceVersionMessage: $(Build.SourceVersionMessage)"
+      echo "dotnetVersion: $(dotnetVersion)"
+      echo "includeDotnetPrereleases: $(includeDotnetPrereleases)"
+      echo "useGlobalJson: $(useGlobalJson)"
     displayName: Output Variables
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK'
     inputs:
-      useGlobalJson: true
+      version: $(dotnetVersion)
+      includePreviewVersions: $(includeDotnetPrereleases)
+      useGlobalJson: $(useGlobalJson)
   - pwsh: |
       if ('$(Agent.OS)' -eq 'Windows_NT')
       {
@@ -103,7 +140,7 @@ jobs:
         $startTime = Get-Date
         $started = $false
 
-        while (!($started = docker exec mysql mysqladmin -h localhost -P 3306 -u root -pPassword12! status) -and ((Get-Date) - $startTime).TotalMinutes -lt $waitMinutes)
+        while (!($started = docker exec mysql mysqladmin --protocol=tcp -h localhost -P 3306 -u root -pPassword12! status) -and ((Get-Date) - $startTime).TotalMinutes -lt $waitMinutes)
         {
           Start-Sleep -Seconds $pollingIntervalSeconds
         }
@@ -116,25 +153,30 @@ jobs:
       }
     displayName: Install Database Server
   - pwsh: |
-      if ('$(Agent.OS)' -eq 'Windows_NT')
+      $mySqlCommand = "mysql --protocol=tcp -h localhost -P 3306 -u root -pPassword12! -e ""SET GLOBAL sql_mode = '$(sqlMode)'; SET GLOBAL max_connections = $(maxConnections);"""
+
+      if ('$(Agent.OS)' -ne 'Windows_NT')
       {
-        mysql -h localhost -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sqlMode)'; SET GLOBAL max_connections = $(maxConnections);"
+        $mySqlCommand = 'docker exec mysql ' + $mySqlCommand
       }
-      else
-      {
-        docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e "SET GLOBAL sql_mode = '$(sqlMode)'; SET GLOBAL max_connections = $(maxConnections);"
-      }
+
+      $mySqlCommand
+
+      Invoke-Expression $mySqlCommand
+      echo "Exit code: $?"
     displayName: Setup Database
     ignoreLASTEXITCODE: true
   - pwsh: |
-      if ('$(Agent.OS)' -eq 'Windows_NT')
+      $mySqlCommand = 'mysql --protocol=tcp -h localhost -P 3306 -u root -pPassword12! -e "SHOW VARIABLES;"'
+
+      if ('$(Agent.OS)' -ne 'Windows_NT')
       {
-        mysql -h localhost -u root -pPassword12! -e 'SHOW VARIABLES;'
+        $mySqlCommand = 'docker exec mysql ' + $mySqlCommand
       }
-      else
-      {
-        docker exec mysql mysql -h localhost -P 3306 -u root -pPassword12! -e 'SHOW VARIABLES;'
-      }
+
+      $mySqlCommand
+
+      Invoke-Expression $mySqlCommand
       echo "Exit code: $?"
     displayName: Database Information
     continueOnError: true
@@ -143,6 +185,11 @@ jobs:
   - pwsh: dotnet --info
     displayName: .NET Information
   - pwsh: |
+      if ('$(dotnetEfToolUpdateVersion)' -ne '')
+      {
+        dotnet tool update dotnet-ef --version $(dotnetEfToolUpdateVersion)
+      }
+
       dotnet tool restore
       dotnet ef --version
     displayName: Install EF Core Tools
@@ -150,45 +197,49 @@ jobs:
       cp test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
       cp test/EFCore.MySql.IntegrationTests/appsettings.ci.json test/EFCore.MySql.IntegrationTests/appsettings.json
       cp test/EFCore.MySql.IntegrationTests/config.json.example test/EFCore.MySql.IntegrationTests/config.json
-      dotnet build -c Debug
-    displayName: Setup and Build Solution
+    displayName: Setup Solution
   - pwsh: |
-      if ("$(runIntegrationTests)" -eq "true")
-      {
-        ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
-      }
-    displayName: Build Integration Tests
-    condition: ne(variables['skipTests'], true)
-  - pwsh: dotnet test --logger trx test/EFCore.MySql.Tests
-    displayName: Tests
-    condition: ne(variables['skipTests'], true)
-  - pwsh: dotnet test test/EFCore.MySql.FunctionalTests -c Release --logger trx --verbosity detailed
+      ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
+    displayName: Setup Integration Tests
+    condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
+  - pwsh: |
+      dotnet build -c Debug
+      dotnet build -c Release
+    displayName: Build Solution
+  - pwsh: |
+      dotnet test test/EFCore.MySql.FunctionalTests -c Debug --no-build --logger trx --verbosity detailed
     displayName: Functional Tests
+    condition: ne(variables['skipTests'], true)
+  - pwsh: |
+      dotnet test --logger trx test/EFCore.MySql.Tests
+    displayName: Tests
     condition: ne(variables['skipTests'], true)
   - pwsh: |
       Get-ChildItem QueryBaseline.txt -Recurse | % { $_.FullName }
       Get-Content QueryBaseline.txt -ErrorAction Ignore
     displayName: Show Query Baseline
     condition: ne(variables['skipTests'], true)
-  - pwsh: dotnet run --project test/EFCore.MySql.IntegrationTests -c Release testMigrate
+  - pwsh: |
+      dotnet run --project test/EFCore.MySql.IntegrationTests -c Release testMigrate
     displayName: Integration Tests - Applying migrations
     condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
-  - pwsh: ./test/EFCore.MySql.IntegrationTests/scripts/scaffold.ps1
+  - pwsh: |
+      ./test/EFCore.MySql.IntegrationTests/scripts/scaffold.ps1
     displayName: Integration Tests - Scaffolding
     condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
   - pwsh: |
       $env:EF_BATCH_SIZE = "1"
-      dotnet test -c Release --logger trx test/EFCore.MySql.IntegrationTests
+      dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
     displayName: Integration Tests - With EF_BATCH_SIZE = 1
     condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
   - pwsh: |
       $env:EF_BATCH_SIZE = "10"
-      dotnet test -c Release --logger trx test/EFCore.MySql.IntegrationTests
+      dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
     displayName: Integration Tests - With EF_BATCH_SIZE = 10
     condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
   - pwsh: |
       $env:EF_RETRY_ON_FAILURE = "3"
-      dotnet test -c Release --logger trx test/EFCore.MySql.IntegrationTests
+      dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
     displayName: Integration Tests - With EF_RETRY_ON_FAILURE = 3
     condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
   - pwsh: ./test/EFCore.MySql.IntegrationTests/scripts/legacy.ps1
@@ -206,7 +257,7 @@ jobs:
     condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
   - pwsh: |
       $env:EF_DATABASE = "pomelo_test2"
-      dotnet test -c Release --logger trx test/EFCore.MySql.IntegrationTests
+      dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
     displayName: Integration Tests - With EF_DATABASE = pomelo_test2
     condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
   - task: PublishTestResults@2
@@ -231,11 +282,13 @@ jobs:
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK'
     inputs:
-      useGlobalJson: true
+      version: $(dotnetVersion)
+      includePreviewVersions: $(includeDotnetPrereleases)
+      useGlobalJson: $(useGlobalJson)
   - pwsh: dotnet --info
     displayName: .NET Information
   - pwsh: |
-      $officialBuild = '$(Build.SourceBranch)' -match '(?<=^refs/tags/)\d+\.\d+\.\d+$'
+      $officialBuild = '$(Build.SourceBranch)' -match '(?<=^refs/tags/)\d+\.\d+\.\d+(?:\.[^.]+)*$'
       $officialVersion = $Matches.0
       $wipBuild = '$(Build.SourceBranch)' -match '^refs/heads/.*-wip$'
       $ciBuildOnly = $wipBuild -or ('$(Build.SourceBranch)' -match '^refs/heads/(?:master|.*-maint)$')

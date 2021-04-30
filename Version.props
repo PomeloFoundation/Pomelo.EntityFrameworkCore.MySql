@@ -2,15 +2,19 @@
   <PropertyGroup Label="Version settings">
     <!--
       Use the following values for the different release types:
-          - "alpha"
-          - "beta"
-          - "rc"
-          - "rtm"
-          - "servicing"
+          - "alpha"     - EF Core release independent, code quality unstable,         major changes
+          - "beta"      - EF Core release independent, code quality stable,           can introduce breaking changes
+          - "silver"    - EF Core release independent, code quality stable,           can introduce breaking changes
+
+          - "preview"   - EF Core release targeted,    code quality stable,           can introduce breaking changes
+          - "rc"        - EF Core release targeted,    code quality production ready, only minor changes are expected
+
+          - "rtm"       - EF Core release independent, code quality production ready, major release
+          - "servicing" - EF Core release independent, code quality production ready, mainly bugfixes
     -->
     <VersionPrefix>6.0.0</VersionPrefix>
-    <PreReleaseVersionLabel>preview4</PreReleaseVersionLabel>
-    <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
+    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration>4</PreReleaseVersionIteration>
 
     <!--
       The following properties will automatically be set by CI builds when appropriate:
@@ -39,7 +43,7 @@
     <Error Condition="'$(VersionPrefix)' == ''" Text="The 'VersionPrefix' property needs to be set." />
     <Error Condition="'$(PreReleaseVersionLabel)' == ''" Text="The 'PreReleaseVersionLabel' property needs to be set." />
     <Error Condition="'$(PreReleaseVersionIteration)' == ''" Text="The 'PreReleaseVersionIteration' property needs to be set." />
-    <Error Condition="'$(OfficialVersion)' != '' And '$(OfficialVersion)' != '$(VersionPrefix)'" Text="The 'OfficialVersion' property needs to be identical to the 'VersionPrefix' property." />
+    <Error Condition="'$(OfficialVersion)' != '' And '$(OfficialVersion)' != '$(VersionPrefix)' And '$(OfficialVersion)' != '$(VersionPrefix)-$(VersionSuffix)'" Text="The 'OfficialVersion' property needs to be identical to the 'VersionPrefix' property or to a combination of the 'VersionPrefix' and the 'VersionSuffix' properties." />
     <!--
     <Message Importance="high" Text="VersionPrefix: $(VersionPrefix)" />
     <Message Importance="high" Text="VersionSuffix: $(VersionSuffix)" />
