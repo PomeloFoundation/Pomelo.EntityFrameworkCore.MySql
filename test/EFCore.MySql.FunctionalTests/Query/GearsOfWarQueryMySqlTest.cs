@@ -267,6 +267,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Select_subquery_projecting_single_constant_of_non_mapped_type(async);
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
+        public override Task Correlated_collection_take(bool async)
+        {
+            return base.Correlated_collection_take(async);
+        }
+
         [SupportedServerVersionCondition("8.0.18-mysql", Skip = "TODO: Pinpoint exact version number! Referencing outer column from WHERE subquery does not work in previous versions. Inverse of #573")]
         public override Task Where_subquery_distinct_firstordefault_boolean(bool async)
         {

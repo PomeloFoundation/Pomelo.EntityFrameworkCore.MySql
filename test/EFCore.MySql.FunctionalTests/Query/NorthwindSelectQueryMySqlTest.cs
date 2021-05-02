@@ -145,6 +145,12 @@ FROM `Orders` AS `o`");
             return base.Project_keyless_entity_FirstOrDefault_without_orderby(async);
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
+        public override Task Collection_include_over_result_of_single_non_scalar(bool async)
+        {
+            return base.Collection_include_over_result_of_single_non_scalar(async);
+        }
+
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
         public override Task SelectMany_correlated_with_outer_1(bool async)
         {

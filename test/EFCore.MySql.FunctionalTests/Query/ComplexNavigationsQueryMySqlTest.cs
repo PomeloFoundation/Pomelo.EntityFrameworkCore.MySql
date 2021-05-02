@@ -271,6 +271,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             base.Filtered_include_is_considered_loaded();
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
+        public override Task Collection_FirstOrDefault_entity_reference_accesses_in_projection(bool async)
+        {
+            return base.Collection_FirstOrDefault_entity_reference_accesses_in_projection(async);
+        }
+
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
         public override Task Filtered_include_and_non_filtered_include_followed_by_then_include_on_same_navigation_split(bool async)
         {
