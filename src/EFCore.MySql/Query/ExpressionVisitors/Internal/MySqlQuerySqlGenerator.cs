@@ -282,7 +282,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return mySqlRegexpExpression;
         }
 
-        public Expression VisitMySqlMatch(MySqlMatchExpression mySqlMatchExpression)
+        public virtual Expression VisitMySqlMatch(MySqlMatchExpression mySqlMatchExpression)
         {
             Check.NotNull(mySqlMatchExpression, nameof(mySqlMatchExpression));
 
@@ -438,7 +438,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return castMapping;
         }
 
-        public Expression VisitMySqlComplexFunctionArgumentExpression(MySqlComplexFunctionArgumentExpression mySqlComplexFunctionArgumentExpression)
+        public virtual Expression VisitMySqlComplexFunctionArgumentExpression(MySqlComplexFunctionArgumentExpression mySqlComplexFunctionArgumentExpression)
         {
             Check.NotNull(mySqlComplexFunctionArgumentExpression, nameof(mySqlComplexFunctionArgumentExpression));
 
@@ -460,7 +460,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return mySqlComplexFunctionArgumentExpression;
         }
 
-        public Expression VisitMySqlCollateExpression(MySqlCollateExpression mySqlCollateExpression)
+        public virtual Expression VisitMySqlCollateExpression(MySqlCollateExpression mySqlCollateExpression)
         {
             Check.NotNull(mySqlCollateExpression, nameof(mySqlCollateExpression));
 
@@ -473,7 +473,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return mySqlCollateExpression;
         }
 
-        public Expression VisitMySqlBinaryExpression(MySqlBinaryExpression mySqlBinaryExpression)
+        public virtual Expression VisitMySqlBinaryExpression(MySqlBinaryExpression mySqlBinaryExpression)
         {
             if (mySqlBinaryExpression.OperatorType == MySqlBinaryExpressionOperatorType.NonOptimizedEqual)
             {

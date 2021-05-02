@@ -30,7 +30,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         /// </summary>
         public virtual IReadOnlyList<SqlExpression> ArgumentParts { get; }
 
-        public string Delimiter { get; }
+        public virtual string Delimiter { get; }
 
         /// <summary>
         ///     Dispatches to the specific visit method for this node type.

@@ -37,6 +37,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Select_uncorrelated_collection_with_groupby_multiple_collections_work(async);
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Select_uncorrelated_collection_with_groupby_when_outer_is_distinct(bool async)
+        {
+            return base.Select_uncorrelated_collection_with_groupby_when_outer_is_distinct(async);
+        }
+
         [ConditionalTheory(Skip = "Does not work when using ONLY_FULL_GROUP_BY. See https://github.com/dotnet/efcore/issues/19027")]
         public override Task GroupBy_scalar_subquery(bool async)
         {

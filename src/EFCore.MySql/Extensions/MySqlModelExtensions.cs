@@ -38,9 +38,13 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="model"> The model. </param>
         /// <param name="value"> The value to set. </param>
         /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
-        public static void SetValueGenerationStrategy(
+        public static MySqlValueGenerationStrategy? SetValueGenerationStrategy(
             [NotNull] this IConventionModel model, MySqlValueGenerationStrategy? value, bool fromDataAnnotation = false)
-            => model.SetOrRemoveAnnotation(MySqlAnnotationNames.ValueGenerationStrategy, value, fromDataAnnotation);
+        {
+            model.SetOrRemoveAnnotation(MySqlAnnotationNames.ValueGenerationStrategy, value, fromDataAnnotation);
+
+            return value;
+        }
 
         /// <summary>
         ///     Returns the <see cref="ConfigurationSource" /> for the default <see cref="MySqlValueGenerationStrategy" />.
@@ -76,8 +80,12 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="model"> The model. </param>
         /// <param name="charSet"> The default character set. </param>
         /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
-        public static void SetCharSet([NotNull] this IConventionModel model, string charSet, bool fromDataAnnotation = false)
-            => model.SetOrRemoveAnnotation(MySqlAnnotationNames.CharSet, charSet, fromDataAnnotation);
+        public static string SetCharSet([NotNull] this IConventionModel model, string charSet, bool fromDataAnnotation = false)
+        {
+            model.SetOrRemoveAnnotation(MySqlAnnotationNames.CharSet, charSet, fromDataAnnotation);
+
+            return charSet;
+        }
 
         /// <summary>
         ///     Returns the <see cref="ConfigurationSource" /> for the default character set of the model/database.
@@ -124,8 +132,12 @@ namespace Microsoft.EntityFrameworkCore
         /// Implicitly uses <see cref="DelegationModes.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
-        public static void SetCharSetDelegation([NotNull] this IConventionModel model, DelegationModes? delegationModes, bool fromDataAnnotation = false)
-            => model.SetOrRemoveAnnotation(MySqlAnnotationNames.CharSetDelegation, delegationModes, fromDataAnnotation);
+        public static DelegationModes? SetCharSetDelegation([NotNull] this IConventionModel model, DelegationModes? delegationModes, bool fromDataAnnotation = false)
+        {
+            model.SetOrRemoveAnnotation(MySqlAnnotationNames.CharSetDelegation, delegationModes, fromDataAnnotation);
+
+            return delegationModes;
+        }
 
         /// <summary>
         ///     Returns the <see cref="ConfigurationSource" /> for the character set delegation modes of the model/database.
@@ -186,8 +198,12 @@ namespace Microsoft.EntityFrameworkCore
         /// Implicitly uses <see cref="DelegationModes.ApplyToAll"/> if set to <see langword="null"/>.
         /// </param>
         /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
-        public static void SetCollationDelegation([NotNull] this IConventionModel model, DelegationModes? delegationModes, bool fromDataAnnotation = false)
-            => model.SetOrRemoveAnnotation(MySqlAnnotationNames.CollationDelegation, delegationModes, fromDataAnnotation);
+        public static DelegationModes? SetCollationDelegation([NotNull] this IConventionModel model, DelegationModes? delegationModes, bool fromDataAnnotation = false)
+        {
+            model.SetOrRemoveAnnotation(MySqlAnnotationNames.CollationDelegation, delegationModes, fromDataAnnotation);
+
+            return delegationModes;
+        }
 
         /// <summary>
         ///     Returns the <see cref="ConfigurationSource" /> for the collation delegation modes of the model/database.
@@ -249,8 +265,12 @@ namespace Microsoft.EntityFrameworkCore
         ///     collation `ascii_general_ci` will be applied.
         /// </param>
         /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
-        public static void SetGuidCollation([NotNull] this IConventionModel model, string collation, bool fromDataAnnotation = false)
-            => model.SetOrRemoveAnnotation(MySqlAnnotationNames.GuidCollation, collation, fromDataAnnotation);
+        public static string SetGuidCollation([NotNull] this IConventionModel model, string collation, bool fromDataAnnotation = false)
+        {
+            model.SetOrRemoveAnnotation(MySqlAnnotationNames.GuidCollation, collation, fromDataAnnotation);
+
+            return collation;
+        }
 
         /// <summary>
         ///     Returns the <see cref="ConfigurationSource" /> for the <see cref="Guid"/> collation setting.

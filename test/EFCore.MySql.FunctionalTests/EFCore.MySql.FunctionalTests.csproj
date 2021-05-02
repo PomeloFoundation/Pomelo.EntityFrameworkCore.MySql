@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreLegacyTargetFramework)</TargetFramework>
     <LegacyTargetFramework>$(DefaultNetCoreLegacyTargetFramework)</LegacyTargetFramework>
     <AssemblyName>Pomelo.EntityFrameworkCore.MySql.FunctionalTests</AssemblyName>
     <RootNamespace>Pomelo.EntityFrameworkCore.MySql.FunctionalTests</RootNamespace>
@@ -63,11 +63,12 @@
     <PackageReference Include="NetTopologySuite" />
     <PackageReference Include="System.ComponentModel.TypeConverter" />
     <PackageReference Include="Castle.Core" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(LocalMySqlConnectorRepository)' != ''">
     <Reference Include="MySqlConnector">
-      <HintPath>$(LocalMySqlConnectorRepository)\src\MySqlConnector\bin\Debug\$(DefaultNetStandardTargetFramework)\MySqlConnector.dll</HintPath>
+      <HintPath>$(LocalMySqlConnectorRepository)\src\MySqlConnector\bin\Debug\$(DefaultNetCoreTargetFramework)\MySqlConnector.dll</HintPath>
     </Reference>
   </ItemGroup>
 

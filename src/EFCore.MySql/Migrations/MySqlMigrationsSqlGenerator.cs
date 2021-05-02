@@ -20,6 +20,7 @@ using Microsoft.Extensions.Logging;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Migrations
 {
@@ -880,7 +881,7 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
             }
         }
 
-        protected void TemporarilyDropForeignKeys(
+        protected virtual void TemporarilyDropForeignKeys(
             IModel model,
             MigrationCommandListBuilder builder,
             string schemaName,
@@ -1372,6 +1373,12 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
             else if (defaultValue != null)
             {
                 var typeMapping = Dependencies.TypeMappingSource.GetMappingForValue(defaultValue);
+
+                if (typeMapping is IDefaultValueCompatibilityAware defaultValueCompatibilityAware)
+                {
+                    typeMapping = defaultValueCompatibilityAware.Clone(true);
+                }
+
                 builder
                     .Append(" DEFAULT ")
                     .Append(typeMapping.GenerateSqlLiteral(defaultValue));

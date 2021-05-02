@@ -143,7 +143,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Storage.ValueCompariso
                     param1, param2);
             }
 
-            return (left, right) => object.Equals(JsonSerializer.Serialize(left, null), JsonSerializer.Serialize(right, null));
+            return (left, right) => object.Equals(JsonSerializer.Serialize(left, (JsonSerializerOptions)null), JsonSerializer.Serialize(right, (JsonSerializerOptions)null));
         }
 
         private static Expression<Func<T, int>> CreateHashCodeExpression(MySqlJsonChangeTrackingOptions options)
@@ -254,7 +254,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Storage.ValueCompariso
                 }
             }
 
-            return v => JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(v, null), null);
+            return v => JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(v, (JsonSerializerOptions)null), (JsonSerializerOptions)null);
         }
 
         // REF: Based on https://stackoverflow.com/a/60592310/2618319

@@ -10,8 +10,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
     public class MySqlCommandParser
     {
-        public string SqlFragment { get; }
-        public char[] States { get; }
+        public virtual string SqlFragment { get; }
+        public virtual char[] States { get; }
 
         public MySqlCommandParser(string sqlFragment)
         {
@@ -21,7 +21,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             Parse();
         }
 
-        public IReadOnlyList<int> GetStateIndices(char state, int start = 0, int length = -1)
+        public virtual IReadOnlyList<int> GetStateIndices(char state, int start = 0, int length = -1)
         {
             if (start < 0 ||
                 start >= States.Length)
@@ -54,7 +54,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             return stateIndices.AsReadOnly();
         }
 
-        public IReadOnlyList<int> GetStateIndices(char[] states, int start = 0, int length = -1)
+        public virtual IReadOnlyList<int> GetStateIndices(char[] states, int start = 0, int length = -1)
         {
             if (states == null)
             {

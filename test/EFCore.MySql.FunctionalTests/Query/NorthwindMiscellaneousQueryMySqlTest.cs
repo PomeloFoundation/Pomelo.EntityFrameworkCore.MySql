@@ -29,9 +29,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         protected override bool CanExecuteQueryString
             => true;
 
-        public override void Select_bitwise_or()
+        public override async Task Select_bitwise_or(bool async)
         {
-            base.Select_bitwise_or();
+            await base.Select_bitwise_or(async);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, (`c`.`CustomerID` = 'ALFKI') | (`c`.`CustomerID` = 'ANATR') AS `Value`
@@ -39,9 +39,9 @@ FROM `Customers` AS `c`
 ORDER BY `c`.`CustomerID`");
         }
 
-        public override void Select_bitwise_or_multiple()
+        public override async Task Select_bitwise_or_multiple(bool async)
         {
-            base.Select_bitwise_or_multiple();
+            await base.Select_bitwise_or_multiple(async);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, ((`c`.`CustomerID` = 'ALFKI') | (`c`.`CustomerID` = 'ANATR')) | (`c`.`CustomerID` = 'ANTON') AS `Value`
@@ -49,9 +49,9 @@ FROM `Customers` AS `c`
 ORDER BY `c`.`CustomerID`");
         }
 
-        public override void Select_bitwise_and()
+        public override async Task Select_bitwise_and(bool async)
         {
-            base.Select_bitwise_and();
+            await base.Select_bitwise_and(async);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, (`c`.`CustomerID` = 'ALFKI') & (`c`.`CustomerID` = 'ANATR') AS `Value`
@@ -59,9 +59,9 @@ FROM `Customers` AS `c`
 ORDER BY `c`.`CustomerID`");
         }
 
-        public override void Select_bitwise_and_or()
+        public override async Task Select_bitwise_and_or(bool async)
         {
-            base.Select_bitwise_and_or();
+            await base.Select_bitwise_and_or(async);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, ((`c`.`CustomerID` = 'ALFKI') & (`c`.`CustomerID` = 'ANATR')) | (`c`.`CustomerID` = 'ANTON') AS `Value`
@@ -141,9 +141,9 @@ FROM `Orders` AS `o`
 WHERE (`o`.`OrderID` | 10248) = 10248");
         }
 
-        public override void Select_bitwise_or_with_logical_or()
+        public override async Task Select_bitwise_or_with_logical_or(bool async)
         {
-            base.Select_bitwise_or_with_logical_or();
+            await base.Select_bitwise_or_with_logical_or(async);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, ((`c`.`CustomerID` = 'ALFKI') | (`c`.`CustomerID` = 'ANATR')) OR (`c`.`CustomerID` = 'ANTON') AS `Value`
@@ -151,9 +151,9 @@ FROM `Customers` AS `c`
 ORDER BY `c`.`CustomerID`");
         }
 
-        public override void Select_bitwise_and_with_logical_and()
+        public override async Task Select_bitwise_and_with_logical_and(bool async)
         {
-            base.Select_bitwise_and_with_logical_and();
+            await base.Select_bitwise_and_with_logical_and(async);
 
             AssertSql(
                 @"SELECT `c`.`CustomerID`, ((`c`.`CustomerID` = 'ALFKI') & (`c`.`CustomerID` = 'ANATR')) AND (`c`.`CustomerID` = 'ANTON') AS `Value`
@@ -288,6 +288,18 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
         public override Task Select_subquery_recursive_trivial(bool async)
         {
             return base.Select_subquery_recursive_trivial(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Correlated_collection_with_distinct_without_default_identifiers_projecting_columns(bool async)
+        {
+            return base.Correlated_collection_with_distinct_without_default_identifiers_projecting_columns(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Correlated_collection_with_distinct_without_default_identifiers_projecting_columns_with_navigation(bool async)
+        {
+            return base.Correlated_collection_with_distinct_without_default_identifiers_projecting_columns_with_navigation(async);
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreLegacyTargetFramework)</TargetFramework>
     <LegacyTargetFramework>$(DefaultNetCoreLegacyTargetFramework)</LegacyTargetFramework>
     <AssemblyName>Pomelo.EntityFrameworkCore.MySql.IntegrationTests</AssemblyName>
     <StartupObject>Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Program</StartupObject>
@@ -37,6 +37,16 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(LocalEFCoreRepository)' != ''">
+    <!--
+    The Microsoft.AspNetCore.Identity.EntityFrameworkCore package references Microsoft.EntityFrameworkCore.Relational.
+    Because of that, this project does transitively as well. Since this leads to multiple versions of the same package
+    (local and NuGet) being discovered, it also can also result in navigating to SourceLink files instead of local files.
+    The workaround is to explicitly reference the transitive package and then exclude it.
+    See https://github.com/dotnet/sdk/issues/1151
+    -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" ExcludeAssets="all" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" ExcludeAssets="all" />
+
     <Reference Include="Microsoft.EntityFrameworkCore">
       <HintPath>$(LocalEFCoreRepository)\artifacts\bin\EFCore.Design.Tests\Debug\$(LegacyTargetFramework)\Microsoft.EntityFrameworkCore.dll</HintPath>
     </Reference>
@@ -55,20 +65,11 @@
     <Reference Include="Microsoft.EntityFrameworkCore.Specification.Tests">
       <HintPath>$(LocalEFCoreRepository)\artifacts\bin\EFCore.Relational.Tests\Debug\$(LegacyTargetFramework)\Microsoft.EntityFrameworkCore.Specification.Tests.dll</HintPath>
     </Reference>
-
-    <!--
-    The Microsoft.AspNetCore.Identity.EntityFrameworkCore package references Microsoft.EntityFrameworkCore.Relational.
-    Because of that, this project does transitively as well. Since this leads to multiple versions of the same package
-    (local and NuGet) being discovered, it also can also result in navigating to SourceLink files instead of local files.
-    The workaround is to explicitly reference the transitive package and then exclude it.
-    See https://github.com/dotnet/sdk/issues/1151
-    -->
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" ExcludeAssets="all" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(LocalMySqlConnectorRepository)' != ''">
     <Reference Include="MySqlConnector">
-      <HintPath>$(LocalMySqlConnectorRepository)\src\MySqlConnector\bin\Debug\$(TargetFramework)\MySqlConnector.dll</HintPath>
+      <HintPath>$(LocalMySqlConnectorRepository)\src\MySqlConnector\bin\Debug\$(DefaultNetCoreTargetFramework)\MySqlConnector.dll</HintPath>
     </Reference>
   </ItemGroup>
 

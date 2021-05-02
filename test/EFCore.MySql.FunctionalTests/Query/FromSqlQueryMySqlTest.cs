@@ -1,14 +1,6 @@
-using System;
-using System.Data;
 using System.Data.Common;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Internal;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
 using Xunit;
@@ -29,23 +21,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 Value = value
             };
 
-        public override void FromSqlRaw_queryable_simple_projection_composed()
-        {
-            // The full Northwind data set is not yet being preloaded.
-            // https://github.com/aspnet/EntityFrameworkCore/issues/18111
-            using (var context = CreateContext())
-            {
-                var boolMapping = (RelationalTypeMapping)context.GetService<ITypeMappingSource>().FindMapping(typeof(bool));
-                var actual = context.Set<Product>().FromSqlRaw(
-                        NormalizeDelimitersInRawString(
-                            @"SELECT *
-FROM [Products]
-WHERE [Discontinued] <> " + boolMapping.GenerateSqlLiteral(true)))
-                    .Select(p => p.ProductName)
-                    .ToArray();
+        [ConditionalTheory(Skip = "https://github.com/dotnet/efcore/pull/24806")]
+        public override Task FromSqlRaw_in_subquery_with_dbParameter(bool async)
+            => base.FromSqlRaw_in_subquery_with_dbParameter(async);
 
-                Assert.Equal(69, actual.Length);
-            }
-        }
+        [ConditionalTheory(Skip = "https://github.com/dotnet/efcore/pull/24806")]
+        public override Task FromSqlRaw_in_subquery_with_positional_dbParameter_with_name(bool async)
+            => base.FromSqlRaw_in_subquery_with_positional_dbParameter_with_name(async);
+
+        [ConditionalTheory(Skip = "https://github.com/dotnet/efcore/pull/24806")]
+        public override Task FromSqlRaw_in_subquery_with_positional_dbParameter_without_name(bool async)
+            => base.FromSqlRaw_in_subquery_with_positional_dbParameter_without_name(async);
+
+        [ConditionalTheory(Skip = "https://github.com/dotnet/efcore/pull/24806")]
+        public override Task FromSqlRaw_with_dbParameter_mixed_in_subquery(bool async)
+            => base.FromSqlRaw_with_dbParameter_mixed_in_subquery(async);
     }
 }

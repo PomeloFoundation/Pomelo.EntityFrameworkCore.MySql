@@ -157,7 +157,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 typeMapping);
         }
 
-        public MySqlComplexFunctionArgumentExpression ComplexFunctionArgument(
+        public virtual MySqlComplexFunctionArgumentExpression ComplexFunctionArgument(
             IEnumerable<SqlExpression> argumentParts,
             string delimiter,
             Type argumentType,
@@ -179,7 +179,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 typeMapping);
         }
 
-        public MySqlCollateExpression Collate(
+        public virtual MySqlCollateExpression Collate(
             SqlExpression valueExpression,
             string charset,
             string collation)
@@ -190,7 +190,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     collation,
                     null));
 
-        public MySqlRegexpExpression Regexp(
+        public virtual MySqlRegexpExpression Regexp(
             SqlExpression match,
             SqlExpression pattern)
             => (MySqlRegexpExpression)ApplyDefaultTypeMapping(

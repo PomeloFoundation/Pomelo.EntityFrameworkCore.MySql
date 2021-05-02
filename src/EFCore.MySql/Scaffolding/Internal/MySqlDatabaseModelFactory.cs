@@ -32,7 +32,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
         private readonly IRelationalTypeMappingSource _typeMappingSource;
         private readonly IMySqlOptions _options;
 
-        protected MySqlScaffoldingConnectionSettings Settings { get; set; }
+        protected virtual MySqlScaffoldingConnectionSettings Settings { get; set; }
 
         public MySqlDatabaseModelFactory(
             [NotNull] IDiagnosticsLogger<DbLoggerCategory.Scaffolding> logger,

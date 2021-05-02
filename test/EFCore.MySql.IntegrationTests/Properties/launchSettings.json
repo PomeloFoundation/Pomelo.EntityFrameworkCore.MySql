@@ -17,6 +17,7 @@
     },
     "EFCore.MySql.IntegrationTests": {
       "commandName": "Project",
+      "commandLineArgs": "testMigrate", /* debug */
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

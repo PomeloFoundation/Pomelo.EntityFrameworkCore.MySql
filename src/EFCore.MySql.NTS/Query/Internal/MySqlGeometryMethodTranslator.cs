@@ -70,7 +70,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             _options = options;
         }
 
-        public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
+        public virtual SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
             if (typeof(Geometry).IsAssignableFrom(method.DeclaringType))
             {

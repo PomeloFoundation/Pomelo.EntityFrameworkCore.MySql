@@ -226,6 +226,19 @@ namespace Microsoft.EntityFrameworkCore
         }
 
         /// <summary>
+        ///     Returns a value indicating whether the given character set can be set as default.
+        /// </summary>
+        /// <param name="modelBuilder"> The model builder. </param>
+        /// <param name="charSet"> The character set. </param>
+        /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
+        /// <returns> <see langword="true" /> if the given character set can be set as default. </returns>
+        public static bool CanSetCharSet(
+            [NotNull] this IConventionModelBuilder modelBuilder,
+            [CanBeNull] CharSet charSet,
+            bool fromDataAnnotation = false)
+            => modelBuilder.CanSetCharSet(charSet?.Name, fromDataAnnotation);
+
+        /// <summary>
         ///     Returns a value indicating whether the given character set delegation modes can be set.
         /// </summary>
         /// <param name="modelBuilder"> The model builder. </param>

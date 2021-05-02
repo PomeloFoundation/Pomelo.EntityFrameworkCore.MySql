@@ -58,7 +58,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         public override string ToString()
             => $"[{Expression}]";
 
-        public SqlExpression ApplyTypeMapping(RelationalTypeMapping typeMapping)
+        public virtual SqlExpression ApplyTypeMapping(RelationalTypeMapping typeMapping)
             => new MySqlJsonArrayIndexExpression(Expression, Type, typeMapping);
     }
 }

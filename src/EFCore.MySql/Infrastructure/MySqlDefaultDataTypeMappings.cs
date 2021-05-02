@@ -17,33 +17,33 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
             ClrTimeSpan = copyFrom.ClrTimeSpan;
         }
 
-        public MySqlBooleanType ClrBoolean { get; private set; }
-        public MySqlDateTimeType ClrDateTime { get; private set; }
-        public MySqlDateTimeType ClrDateTimeOffset { get; private set; }
-        public MySqlTimeSpanType ClrTimeSpan { get; private set; }
+        public virtual MySqlBooleanType ClrBoolean { get; private set; }
+        public virtual MySqlDateTimeType ClrDateTime { get; private set; }
+        public virtual MySqlDateTimeType ClrDateTimeOffset { get; private set; }
+        public virtual MySqlTimeSpanType ClrTimeSpan { get; private set; }
 
-        public MySqlDefaultDataTypeMappings WithClrBoolean(MySqlBooleanType mysqlBooleanType)
+        public virtual MySqlDefaultDataTypeMappings WithClrBoolean(MySqlBooleanType mysqlBooleanType)
         {
             var clone = Clone();
             clone.ClrBoolean = mysqlBooleanType;
             return clone;
         }
 
-        public MySqlDefaultDataTypeMappings WithClrDateTime(MySqlDateTimeType mysqlDateTimeType)
+        public virtual MySqlDefaultDataTypeMappings WithClrDateTime(MySqlDateTimeType mysqlDateTimeType)
         {
             var clone = Clone();
             clone.ClrDateTime = mysqlDateTimeType;
             return clone;
         }
 
-        public MySqlDefaultDataTypeMappings WithClrDateTimeOffset(MySqlDateTimeType mysqlDateTimeType)
+        public virtual MySqlDefaultDataTypeMappings WithClrDateTimeOffset(MySqlDateTimeType mysqlDateTimeType)
         {
             var clone = Clone();
             clone.ClrDateTimeOffset = mysqlDateTimeType;
             return clone;
         }
 
-        public MySqlDefaultDataTypeMappings WithClrTimeSpan(MySqlTimeSpanType mysqlTimeSpanType)
+        public virtual MySqlDefaultDataTypeMappings WithClrTimeSpan(MySqlTimeSpanType mysqlTimeSpanType)
         {
             var clone = Clone();
             clone.ClrTimeSpan = mysqlTimeSpanType;
@@ -52,7 +52,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
 
         protected virtual MySqlDefaultDataTypeMappings Clone() => new MySqlDefaultDataTypeMappings(this);
 
-        protected bool Equals(MySqlDefaultDataTypeMappings other)
+        protected virtual bool Equals(MySqlDefaultDataTypeMappings other)
         {
             return ClrBoolean == other.ClrBoolean &&
                    ClrDateTime == other.ClrDateTime &&

@@ -1,8 +1,6 @@
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
@@ -273,6 +271,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             base.Filtered_include_is_considered_loaded();
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
+        public override Task Collection_FirstOrDefault_entity_reference_accesses_in_projection(bool async)
+        {
+            return base.Collection_FirstOrDefault_entity_reference_accesses_in_projection(async);
+        }
+
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
         public override Task Filtered_include_and_non_filtered_include_followed_by_then_include_on_same_navigation_split(bool async)
         {
@@ -310,9 +314,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
-        public override void Filtered_include_outer_parameter_used_inside_filter()
+        public override Task Filtered_include_outer_parameter_used_inside_filter(bool async)
         {
-            base.Filtered_include_outer_parameter_used_inside_filter();
+            return base.Filtered_include_outer_parameter_used_inside_filter(async);
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
@@ -343,6 +347,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         public override Task Let_let_contains_from_outer_let(bool async)
         {
             return base.Let_let_contains_from_outer_let(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Complex_query_with_let_collection_projection_FirstOrDefault(bool async)
+        {
+            return base.Complex_query_with_let_collection_projection_FirstOrDefault(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Skip_Take_Select_collection_Skip_Take(bool async)
+        {
+            return base.Skip_Take_Select_collection_Skip_Take(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Take_Select_collection_Take(bool async)
+        {
+            return base.Take_Select_collection_Take(async);
         }
 
         [ConditionalTheory(Skip = "https://bugs.mysql.com/bug.php?id=101276")]

@@ -94,6 +94,17 @@ namespace Microsoft.EntityFrameworkCore
         /// Configures the charset for the property's column.
         /// </summary>
         /// <param name="propertyBuilder">The builder for the property being configured.</param>
+        /// <param name="charSet">The name of the charset to configure for the property's column.</param>
+        /// <returns>The same builder instance so that multiple calls can be chained.</returns>
+        public static PropertyBuilder<TProperty> HasCharSet<TProperty>(
+            [NotNull] this PropertyBuilder<TProperty> propertyBuilder,
+            string charSet)
+            => (PropertyBuilder<TProperty>)HasCharSet((PropertyBuilder)propertyBuilder, charSet);
+
+        /// <summary>
+        /// Configures the charset for the property's column.
+        /// </summary>
+        /// <param name="propertyBuilder">The builder for the property being configured.</param>
         /// <param name="charSet">The <see cref="CharSet"/> to configure for the property's column.</param>
         /// <returns>The same builder instance so that multiple calls can be chained.</returns>
         public static PropertyBuilder HasCharSet(
@@ -107,6 +118,17 @@ namespace Microsoft.EntityFrameworkCore
 
             return propertyBuilder;
         }
+
+        /// <summary>
+        /// Configures the charset for the property's column.
+        /// </summary>
+        /// <param name="propertyBuilder">The builder for the property being configured.</param>
+        /// <param name="charSet">The <see cref="CharSet"/> to configure for the property's column.</param>
+        /// <returns>The same builder instance so that multiple calls can be chained.</returns>
+        public static PropertyBuilder<TProperty> HasCharSet<TProperty>(
+            [NotNull] this PropertyBuilder<TProperty> propertyBuilder,
+            CharSet charSet)
+            => (PropertyBuilder<TProperty>)HasCharSet((PropertyBuilder)propertyBuilder, charSet);
 
         /// <summary>
         /// Configures the collation for the property's column.
@@ -125,6 +147,18 @@ namespace Microsoft.EntityFrameworkCore
         }
 
         /// <summary>
+        /// Configures the collation for the property's column.
+        /// </summary>
+        /// <param name="propertyBuilder">The builder for the property being configured.</param>
+        /// <param name="collation">The name of the collation to configure for the property's column.</param>
+        /// <returns>The same builder instance so that multiple calls can be chained.</returns>
+        [Obsolete("Call 'UseCollation()' instead.")]
+        public static PropertyBuilder<TProperty> HasCollation<TProperty>(
+            [NotNull] this PropertyBuilder<TProperty> propertyBuilder,
+            string collation)
+            => (PropertyBuilder<TProperty>)HasCollation((PropertyBuilder)propertyBuilder, collation);
+
+        /// <summary>
         /// Restricts the Spatial Reference System Identifier (SRID) for the property's column.
         /// </summary>
         /// <param name="propertyBuilder">The builder for the property being configured.</param>
@@ -141,5 +175,16 @@ namespace Microsoft.EntityFrameworkCore
 
             return propertyBuilder;
         }
+
+        /// <summary>
+        /// Restricts the Spatial Reference System Identifier (SRID) for the property's column.
+        /// </summary>
+        /// <param name="propertyBuilder">The builder for the property being configured.</param>
+        /// <param name="srid">The SRID to configure for the property's column.</param>
+        /// <returns>The same builder instance so that multiple calls can be chained.</returns>
+        public static PropertyBuilder<TProperty> HasSpatialReferenceSystem<TProperty>(
+            [NotNull] this PropertyBuilder<TProperty> propertyBuilder,
+            int? srid)
+            => (PropertyBuilder<TProperty>)HasSpatialReferenceSystem((PropertyBuilder)propertyBuilder, srid);
     }
 }

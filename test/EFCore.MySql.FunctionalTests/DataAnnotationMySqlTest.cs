@@ -109,12 +109,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.ConcurrencyCheckAttribute_throws_if_value_in_database_changed();
 
             AssertSql(
-                @"SELECT `s`.`Unique_No`, `s`.`MaxLengthProperty`, `s`.`Name`, `s`.`RowVersion`, `s`.`AdditionalDetails_Name`, `s`.`Details_Name`
+                @"SELECT `s`.`Unique_No`, `s`.`MaxLengthProperty`, `s`.`Name`, `s`.`RowVersion`, `s`.`AdditionalDetails_Name`, `s`.`AdditionalDetails_Value`, `s`.`Details_Name`, `s`.`Details_Value`
 FROM `Sample` AS `s`
 WHERE `s`.`Unique_No` = 1
 LIMIT 1",
                 //
-                @"SELECT `s`.`Unique_No`, `s`.`MaxLengthProperty`, `s`.`Name`, `s`.`RowVersion`, `s`.`AdditionalDetails_Name`, `s`.`Details_Name`
+                @"SELECT `s`.`Unique_No`, `s`.`MaxLengthProperty`, `s`.`Name`, `s`.`RowVersion`, `s`.`AdditionalDetails_Name`, `s`.`AdditionalDetails_Value`, `s`.`Details_Name`, `s`.`Details_Value`
 FROM `Sample` AS `s`
 WHERE `s`.`Unique_No` = 1
 LIMIT 1",
@@ -147,10 +147,12 @@ SELECT ROW_COUNT();");
 @p1='Third' (Nullable = false) (Size = 4000)
 @p2='00000000-0000-0000-0000-000000000003'
 @p3='Third Additional Name' (Size = 4000)
-@p4='Third Name' (Size = 4000)
+@p4='0' (Nullable = true)
+@p5='Third Name' (Size = 4000)
+@p6='0' (Nullable = true)
 
-INSERT INTO `Sample` (`MaxLengthProperty`, `Name`, `RowVersion`, `AdditionalDetails_Name`, `Details_Name`)
-VALUES (@p0, @p1, @p2, @p3, @p4);
+INSERT INTO `Sample` (`MaxLengthProperty`, `Name`, `RowVersion`, `AdditionalDetails_Name`, `AdditionalDetails_Value`, `Details_Name`, `Details_Value`)
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6);
 SELECT `Unique_No`
 FROM `Sample`
 WHERE ROW_COUNT() = 1 AND `Unique_No` = LAST_INSERT_ID();");

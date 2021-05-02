@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.Diagnostics;
+﻿using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
@@ -147,6 +145,12 @@ FROM `Orders` AS `o`");
             return base.Project_keyless_entity_FirstOrDefault_without_orderby(async);
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
+        public override Task Collection_include_over_result_of_single_non_scalar(bool async)
+        {
+            return base.Collection_include_over_result_of_single_non_scalar(async);
+        }
+
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
         public override Task SelectMany_correlated_with_outer_1(bool async)
         {
@@ -222,6 +226,48 @@ FROM `Orders` AS `o`");
             return base.Project_single_element_from_collection_with_OrderBy_Take_and_SingleOrDefault(async);
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Collection_projection_selecting_outer_element_followed_by_take(bool async)
+        {
+            return base.Collection_projection_selecting_outer_element_followed_by_take(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Correlated_collection_after_distinct_not_containing_original_identifier(bool async)
+        {
+            return base.Correlated_collection_after_distinct_not_containing_original_identifier(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Correlated_collection_after_distinct_with_complex_projection_containing_original_identifier(bool async)
+        {
+            return base.Correlated_collection_after_distinct_with_complex_projection_containing_original_identifier(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Correlated_collection_after_groupby_with_complex_projection_containing_original_identifier(bool async)
+        {
+            return base.Correlated_collection_after_groupby_with_complex_projection_containing_original_identifier(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Projecting_after_navigation_and_distinct(bool async)
+        {
+            return base.Projecting_after_navigation_and_distinct(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Select_nested_collection_deep_distinct_no_identifiers(bool async)
+        {
+            return base.Select_nested_collection_deep_distinct_no_identifiers(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Take_on_correlated_collection_in_first(bool async)
+        {
+            return base.Take_on_correlated_collection_in_first(async);
+        }
+
         [ConditionalTheory]
         public override Task Member_binding_after_ctor_arguments_fails_with_client_eval(bool async)
         {
@@ -246,15 +292,11 @@ FROM `Orders` AS `o`");
             return base.Do_not_erase_projection_mapping_when_adding_single_projection(async);
         }
 
-        public override Task Reverse_without_explicit_ordering_throws(bool async)
-            => AssertTranslationFailedWithDetails(
-                () => base.Reverse_without_explicit_ordering_throws(async), RelationalStrings.MissingOrderingInSelectExpression);
-
-        public override async Task Projecting_after_navigation_and_distinct_throws(bool async)
-            => Assert.Equal(
-                RelationalStrings.InsufficientInformationToIdentifyOuterElementOfCollectionJoin,
-                (await Assert.ThrowsAsync<InvalidOperationException>(
-                    () => base.Projecting_after_navigation_and_distinct_throws(async))).Message);
+        [ConditionalTheory(Skip = "TODO: Seems to be a MySQL bug. Needs to be verified and reported, if not already.")]
+        public override Task Take_on_top_level_and_on_collection_projection_with_outer_apply(bool async)
+        {
+            return base.Take_on_top_level_and_on_collection_projection_with_outer_apply(async);
+        }
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);

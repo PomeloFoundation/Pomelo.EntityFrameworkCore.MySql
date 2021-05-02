@@ -10,7 +10,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
 {
     public class ServerVersionSupport
     {
-        public ServerVersion ServerVersion { get; }
+        public virtual ServerVersion ServerVersion { get; }
 
         public ServerVersionSupport([NotNull] ServerVersion serverVersion)
         {
@@ -82,5 +82,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
         public virtual bool FullTextParser => false;
         public virtual bool InformationSchemaCheckConstraintsTable => false;
         public virtual bool IdentifyJsonColumsByCheckConstraints => false;
+        public virtual bool MySqlBugLimit0Offset0ExistsWorkaround => false;
     }
 }

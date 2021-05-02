@@ -222,7 +222,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             throw new InvalidOperationException(RelationalStrings.NoConnectionOrConnectionString);
         }
 
-        protected bool Equals(MySqlOptions other)
+        protected virtual bool Equals(MySqlOptions other)
         {
             return Equals(ConnectionSettings, other.ConnectionSettings) &&
                    Equals(ServerVersion, other.ServerVersion) &&

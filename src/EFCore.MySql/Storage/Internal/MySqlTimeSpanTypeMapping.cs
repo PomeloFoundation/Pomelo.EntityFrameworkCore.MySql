@@ -2,10 +2,8 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
-using System.Globalization;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Utilities;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
@@ -15,22 +13,26 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public class MySqlTimeSpanTypeMapping : TimeSpanTypeMapping
+    public class MySqlTimeSpanTypeMapping : TimeSpanTypeMapping, IDefaultValueCompatibilityAware
     {
+        private readonly bool _isDefaultValueCompatible;
+
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public MySqlTimeSpanTypeMapping(
             [NotNull] string storeType,
-            int? precision = null)
+            int? precision = null,
+            bool isDefaultValueCompatible = false)
             : this(
                 new RelationalTypeMappingParameters(
                     new CoreTypeMappingParameters(typeof(TimeSpan)),
                     storeType,
                     StoreTypePostfix.Precision,
                     System.Data.DbType.Time,
-                    precision: precision))
+                    precision: precision),
+                isDefaultValueCompatible)
         {
         }
 
@@ -38,9 +40,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        protected MySqlTimeSpanTypeMapping(RelationalTypeMappingParameters parameters)
+        protected MySqlTimeSpanTypeMapping(RelationalTypeMappingParameters parameters, bool isDefaultValueCompatible)
             : base(parameters)
         {
+            _isDefaultValueCompatible = isDefaultValueCompatible;
         }
 
         /// <summary>
@@ -49,7 +52,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// <param name="parameters"> The parameters for this mapping. </param>
         /// <returns> The newly created mapping. </returns>
         protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
-            => new MySqlTimeSpanTypeMapping(parameters);
+            => new MySqlTimeSpanTypeMapping(parameters, _isDefaultValueCompatible);
+
+        /// <summary>
+        ///     Creates a copy of this mapping.
+        /// </summary>
+        /// <param name="isDefaultValueCompatible"> Use a default value compatible syntax, or not. </param>
+        /// <returns> The newly created mapping. </returns>
+        public virtual RelationalTypeMapping Clone(bool isDefaultValueCompatible = false)
+            => new MySqlTimeSpanTypeMapping(Parameters, isDefaultValueCompatible);
 
         /// <summary>
         ///     Generates the SQL representation of a non-null literal value.
@@ -63,8 +74,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             // Custom TimeSpan formats do not handle the fraction point character as gracefully as System.DateTime does.
             var literal = base.GenerateNonNullSqlLiteral(value);
             return literal.EndsWith(".")
-                ? "'" + literal.Substring(0, literal.Length - 1) + "'"
-                : "'" + literal + "'";
+                ? $"{(_isDefaultValueCompatible ? null : "TIME ")}'{literal[..^1]}'"
+                : $"{(_isDefaultValueCompatible ? null : "TIME ")}'{literal}'";
         }
 
         /// <summary>

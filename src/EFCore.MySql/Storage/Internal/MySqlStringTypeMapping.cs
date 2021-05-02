@@ -24,8 +24,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private readonly int _maxSpecificSize;
         private readonly IMySqlOptions _options;
 
-        public bool IsUnquoted { get; }
-        public bool IsNationalChar
+        public virtual bool IsUnquoted { get; }
+        public virtual bool IsNationalChar
             => StoreTypeNameBase.StartsWith("n") && StoreTypeNameBase.Contains("char");
 
         public MySqlStringTypeMapping(

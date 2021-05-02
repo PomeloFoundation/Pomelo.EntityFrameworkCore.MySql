@@ -14,7 +14,7 @@ using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 namespace Microsoft.EntityFrameworkCore
 {
     /// <summary>
-    ///     Extension methods for <see cref="IProperty" /> for MySQL-specific metadata.
+    ///     MySQL specific extension methods for properties.
     /// </summary>
     public static class MySqlPropertyExtensions
     {
@@ -27,7 +27,7 @@ namespace Microsoft.EntityFrameworkCore
         ///     </para>
         /// </summary>
         /// <returns> The strategy, or <see cref="MySqlValueGenerationStrategy.None"/> if none was set. </returns>
-        public static MySqlValueGenerationStrategy? GetValueGenerationStrategy([NotNull] this IProperty property, StoreObjectIdentifier storeObject = default)
+        public static MySqlValueGenerationStrategy? GetValueGenerationStrategy([NotNull] this IReadOnlyProperty property, StoreObjectIdentifier storeObject = default)
         {
             var annotation = property[MySqlAnnotationNames.ValueGenerationStrategy];
             if (annotation != null)
@@ -73,7 +73,30 @@ namespace Microsoft.EntityFrameworkCore
             property.SetOrRemoveAnnotation(MySqlAnnotationNames.ValueGenerationStrategy, value);
         }
 
-        private static void CheckValueGenerationStrategy(IProperty property, MySqlValueGenerationStrategy? value)
+        /// <summary>
+        ///     Sets the <see cref="MySqlValueGenerationStrategy" /> to use for the property.
+        /// </summary>
+        /// <param name="property"> The property. </param>
+        /// <param name="value"> The strategy to use. </param>
+        /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
+        public static MySqlValueGenerationStrategy? SetValueGenerationStrategy([NotNull] this IConventionProperty property, MySqlValueGenerationStrategy? value, bool fromDataAnnotation = false)
+        {
+            CheckValueGenerationStrategy(property, value);
+
+            property.SetOrRemoveAnnotation(MySqlAnnotationNames.ValueGenerationStrategy, value, fromDataAnnotation);
+
+            return value;
+        }
+
+        /// <summary>
+        /// Returns the <see cref="ConfigurationSource" /> for the <see cref="MySqlValueGenerationStrategy" />.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>The <see cref="ConfigurationSource" /> for the <see cref="MySqlValueGenerationStrategy" />.</returns>
+        public static ConfigurationSource? GetValueGenerationStrategyConfigurationSource(this IConventionProperty property)
+            => property.FindAnnotation(MySqlAnnotationNames.ValueGenerationStrategy)?.GetConfigurationSource();
+
+        private static void CheckValueGenerationStrategy(IReadOnlyProperty property, MySqlValueGenerationStrategy? value)
         {
             if (value != null)
             {
@@ -102,7 +125,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="property"> The property. </param>
         /// <returns> <see langword="true"/> if compatible. </returns>
-        public static bool IsCompatibleIdentityColumn(IProperty property)
+        public static bool IsCompatibleIdentityColumn(IReadOnlyProperty property)
             => IsCompatibleAutoIncrementColumn(property) ||
                IsCompatibleCurrentTimestampColumn(property);
 
@@ -111,7 +134,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="property"> The property. </param>
         /// <returns> <see langword="true"/> if compatible. </returns>
-        public static bool IsCompatibleAutoIncrementColumn(IProperty property)
+        public static bool IsCompatibleAutoIncrementColumn(IReadOnlyProperty property)
         {
             var valueConverter = GetConverter(property);
             var type = (valueConverter?.ProviderClrType ?? property.ClrType).UnwrapNullableType();
@@ -124,7 +147,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="property"> The property. </param>
         /// <returns> <see langword="true"/> if compatible. </returns>
-        public static bool IsCompatibleCurrentTimestampColumn(IProperty property)
+        public static bool IsCompatibleCurrentTimestampColumn(IReadOnlyProperty property)
         {
             var valueConverter = GetConverter(property);
             var type = (valueConverter?.ProviderClrType ?? property.ClrType).UnwrapNullableType();
@@ -137,7 +160,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="property"> The property. </param>
         /// <returns> <see langword="true"/> if compatible. </returns>
-        public static bool IsCompatibleComputedColumn(IProperty property)
+        public static bool IsCompatibleComputedColumn(IReadOnlyProperty property)
         {
             var type = property.ClrType;
 
@@ -146,16 +169,16 @@ namespace Microsoft.EntityFrameworkCore
                    || type == typeof(byte[]) && !HasExternalConverter(property);
         }
 
-        private static bool HasConverter(IProperty property)
+        private static bool HasConverter(IReadOnlyProperty property)
             => GetConverter(property) != null;
 
-        private static bool HasExternalConverter(IProperty property)
+        private static bool HasExternalConverter(IReadOnlyProperty property)
         {
             var converter = GetConverter(property);
             return converter != null && !(converter is BytesToDateTimeConverter);
         }
 
-        private static ValueConverter GetConverter(IProperty property)
+        private static ValueConverter GetConverter(IReadOnlyProperty property)
             => property.FindTypeMapping()?.Converter ?? property.GetValueConverter();
 
         /// <summary>
@@ -163,7 +186,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="property">The property of which to get the columns charset from.</param>
         /// <returns>The name of the charset or null, if no explicit charset was set.</returns>
-        public static string GetCharSet([NotNull] this IProperty property)
+        public static string GetCharSet([NotNull] this IReadOnlyProperty property)
             => property[MySqlAnnotationNames.CharSet] as string;
 
         /// <summary>
@@ -175,12 +198,33 @@ namespace Microsoft.EntityFrameworkCore
             => property.SetOrRemoveAnnotation(MySqlAnnotationNames.CharSet, charSet);
 
         /// <summary>
+        /// Sets the name of the charset in use by the column of the property.
+        /// </summary>
+        /// <param name="property">The property to set the columns charset for.</param>
+        /// <param name="charSet">The name of the charset used for the column of the property.</param>
+        /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
+        public static string SetCharSet([NotNull] this IConventionProperty property, string charSet, bool fromDataAnnotation = false)
+        {
+            property.SetOrRemoveAnnotation(MySqlAnnotationNames.CharSet, charSet, fromDataAnnotation);
+
+            return charSet;
+        }
+
+        /// <summary>
+        /// Returns the <see cref="ConfigurationSource" /> for the character set.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>The <see cref="ConfigurationSource" /> for the character set.</returns>
+        public static ConfigurationSource? GetCharSetConfigurationSource(this IConventionProperty property)
+            => property.FindAnnotation(MySqlAnnotationNames.CharSet)?.GetConfigurationSource();
+
+        /// <summary>
         /// Returns the name of the collation used by the column of the property.
         /// </summary>
         /// <param name="property">The property of which to get the columns collation from.</param>
         /// <returns>The name of the collation or null, if no explicit collation was set.</returns>
 #pragma warning disable 618
-        internal static string GetMySqlLegacyCollation([NotNull] this IProperty property)
+        internal static string GetMySqlLegacyCollation([NotNull] this IReadOnlyProperty property)
             => property[MySqlAnnotationNames.Collation] as string;
 #pragma warning restore 618
 
@@ -189,7 +233,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="property">The property of which to get the columns SRID from.</param>
         /// <returns>The SRID or null, if no explicit SRID has been set.</returns>
-        public static int? GetSpatialReferenceSystem([NotNull] this IProperty property)
+        public static int? GetSpatialReferenceSystem([NotNull] this IReadOnlyProperty property)
             => (int?)property[MySqlAnnotationNames.SpatialReferenceSystemId];
 
         /// <summary>
@@ -199,5 +243,26 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="srid">The SRID to configure for the property's column.</param>
         public static void SetSpatialReferenceSystem([NotNull] this IMutableProperty property, int? srid)
             => property.SetOrRemoveAnnotation(MySqlAnnotationNames.SpatialReferenceSystemId, srid);
+
+        /// <summary>
+        /// Sets the Spatial Reference System Identifier (SRID) in use by the column of the property.
+        /// </summary>
+        /// <param name="property">The property to set the columns SRID for.</param>
+        /// <param name="srid">The SRID to configure for the property's column.</param>
+        /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
+        public static int? SetSpatialReferenceSystem([NotNull] this IConventionProperty property, int? srid, bool fromDataAnnotation = false)
+        {
+            property.SetOrRemoveAnnotation(MySqlAnnotationNames.SpatialReferenceSystemId, srid, fromDataAnnotation);
+
+            return srid;
+        }
+
+        /// <summary>
+        /// Returns the <see cref="ConfigurationSource" /> for the Spatial Reference System Identifier (SRID).
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>The <see cref="ConfigurationSource" /> for the Spatial Reference System Identifier (SRID).</returns>
+        public static ConfigurationSource? GetSpatialReferenceSystemConfigurationSource(this IConventionProperty property)
+            => property.FindAnnotation(MySqlAnnotationNames.SpatialReferenceSystemId)?.GetConfigurationSource();
     }
 }

@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -9,7 +8,7 @@ using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
-    public class OptimisticConcurrencyMySqlTest : OptimisticConcurrencyTestBase<F1MySqlFixture, byte[]>
+    public class OptimisticConcurrencyMySqlTest : OptimisticConcurrencyRelationalTestBase<F1MySqlFixture, byte[]>
     {
         public OptimisticConcurrencyMySqlTest(F1MySqlFixture fixture)
             : base(fixture)
@@ -26,8 +25,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             return base.ConcurrencyTestAsync(c =>
             {
                 storeChange(c);
+                // CHECK: Is this still/really needed?
                 // Need to wait to make CURRENT_TIMESTAMP return different values reliably
-                Thread.Sleep(500);
+                Task.Delay(100);
             }, clientChange, resolver, validator);
         }
 

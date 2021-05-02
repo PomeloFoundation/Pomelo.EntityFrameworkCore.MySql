@@ -26,11 +26,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             Views = GetBoolean(ViewsKey, true);
         }
 
-        public bool CharSet { get; set; }
-        public bool Collation { get; set; }
-        public bool Views { get; set; }
+        public virtual bool CharSet { get; set; }
+        public virtual bool Collation { get; set; }
+        public virtual bool Views { get; set; }
 
-        public string GetProviderCompatibleConnectionString()
+        public virtual string GetProviderCompatibleConnectionString()
         {
             var csb = new DbConnectionStringBuilder { ConnectionString = _csb.ConnectionString };
 
@@ -76,7 +76,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             return defaultValue;
         }
 
-        protected bool Equals(MySqlScaffoldingConnectionSettings other)
+        protected virtual bool Equals(MySqlScaffoldingConnectionSettings other)
         {
             return CharSet == other.CharSet &&
                    Collation == other.Collation &&

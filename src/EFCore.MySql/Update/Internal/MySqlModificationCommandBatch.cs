@@ -38,10 +38,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
             int? maxBatchSize)
             : base(dependencies)
         {
-            if (maxBatchSize.HasValue
-                && maxBatchSize.Value <= 0)
+            if (maxBatchSize is <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(maxBatchSize), RelationalStrings.InvalidMaxBatchSize);
+                throw new ArgumentOutOfRangeException(nameof(maxBatchSize), RelationalStrings.InvalidMaxBatchSize(maxBatchSize.Value));
             }
 
             _maxBatchSize = Math.Min(maxBatchSize ?? int.MaxValue, MaxRowCount);

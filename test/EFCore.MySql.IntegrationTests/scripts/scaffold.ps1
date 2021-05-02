@@ -12,7 +12,7 @@ try
   Remove-Item -Recurse -Force $targetDirectoryName -ErrorAction Ignore
   mkdir $targetDirectoryName
 
-  $connectionString = dotnet run connectionString
+  $connectionString = (Select-String config.json -Pattern '(?<="ConnectionString":\s*")(.*?)(?=")').Matches.Value
   $arguments = "ef", "dbcontext", "scaffold", $connectionString, "Pomelo.EntityFrameworkCore.MySql", "--output-dir", $targetDirectoryName
 
   foreach ($table in $tables)

@@ -44,7 +44,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     public abstract class MySqlJsonTypeMapping : MySqlStringTypeMapping
     {
         [NotNull]
-        protected IMySqlOptions Options { get; }
+        protected virtual IMySqlOptions Options { get; }
 
         public MySqlJsonTypeMapping(
             [NotNull] string storeType,

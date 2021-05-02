@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Tests;
 
@@ -6,14 +7,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
     public class SeedingMySqlTest : SeedingTestBase
     {
+        protected override TestStore TestStore => MySqlTestStore.Create("SeedingTest");
+
         protected override SeedingContext CreateContextWithEmptyDatabase(string testId)
-        {
-            var context = new SeedingMySqlContext(testId);
-
-            context.Database.EnsureClean();
-
-            return context;
-        }
+            => new SeedingMySqlContext(testId);
 
         protected class SeedingMySqlContext : SeedingContext
         {
@@ -23,7 +20,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             }
 
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-                => optionsBuilder.UseMySql(MySqlTestStore.CreateConnectionString($"Seeds{TestId}", false), AppConfig.ServerVersion);
+                => optionsBuilder.UseMySql(MySqlTestStore.CreateConnectionString($"Seeds{TestId}"), AppConfig.ServerVersion);
         }
     }
 }

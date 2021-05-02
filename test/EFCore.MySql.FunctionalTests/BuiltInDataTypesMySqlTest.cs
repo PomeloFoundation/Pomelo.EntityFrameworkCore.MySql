@@ -106,7 +106,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 Assert.Equal(
                     @"SELECT `m`.`Int`
 FROM `MappedNullableDataTypes` AS `m`
-WHERE `m`.`TimeSpanAsTime` = '00:01:02'",
+WHERE `m`.`TimeSpanAsTime` = TIME '00:01:02'",
                     Sql,
                     ignoreLineEndingDifferences: true);
             }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -35,7 +36,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
         }
 
-        protected override string Schema { get; } = null;
+        protected /*override*/ virtual string Schema { get; } = null;
 
         public override void AddColumnOperation_with_unicode_overridden()
         {
@@ -1497,19 +1498,19 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
         protected virtual void Generate(
             Action<MySqlDbContextOptionsBuilder> optionsAction,
             Action<ModelBuilder> buildAction,
-            MigrationOperation[] operation,
+            MigrationOperation[] operations,
             MigrationsSqlGenerationOptions options)
         {
+            // Might not be needed if we just set SchemaBehavior below.
+            // ResetSchemaProperties(operations);
+
             var optionsBuilder = new DbContextOptionsBuilder(ContextOptions);
             var mySqlOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder);
 
+            mySqlOptionsBuilder.SchemaBehavior(MySqlSchemaBehavior.Ignore);
             optionsAction?.Invoke(mySqlOptionsBuilder);
 
-            var contextOptions = optionsBuilder.Options;
-
-            var services = ContextOptions != null
-                ? TestHelpers.CreateContextServices(CustomServices, contextOptions)
-                : TestHelpers.CreateContextServices(CustomServices);
+            var services = TestHelpers.CreateContextServices(CustomServices, optionsBuilder.Options);
 
             IModel model = null;
             if (buildAction != null)
@@ -1518,21 +1519,27 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
                 modelBuilder.Model.RemoveAnnotation(CoreAnnotationNames.ProductVersion);
                 buildAction(modelBuilder);
 
-                model = modelBuilder.Model;
-                var conventionSet = services.GetRequiredService<IConventionSetBuilder>().CreateConventionSet();
-
-                var typeMappingConvention = conventionSet.ModelFinalizingConventions.OfType<TypeMappingConvention>().FirstOrDefault();
-                typeMappingConvention.ProcessModelFinalizing(((IConventionModel)model).Builder, null);
-
-                var relationalModelConvention = conventionSet.ModelFinalizedConventions.OfType<RelationalModelConvention>().First();
-                model = relationalModelConvention.ProcessModelFinalized((IConventionModel)model);
+                model = services.GetService<IModelRuntimeInitializer>().Initialize(
+                    modelBuilder.FinalizeModel(), designTime: true, validationLogger: null);
             }
 
-            var batch = services.GetRequiredService<IMigrationsSqlGenerator>().Generate(operation, model, options);
+            var batch = services.GetRequiredService<IMigrationsSqlGenerator>().Generate(operations, model, options);
 
             Sql = string.Join(
                 EOL,
                 batch.Select(b => b.CommandText));
+        }
+
+        private static void ResetSchemaProperties(MigrationOperation[] operations)
+        {
+            foreach (var operation in operations)
+            {
+                var schemaProperties = operation.GetType().GetRuntimeProperties().Where(p => p.Name.Contains("Schema"));
+                foreach (var schemaProperty in schemaProperties)
+                {
+                    schemaProperty.SetValue(operation, null);
+                }
+            }
         }
     }
 }
