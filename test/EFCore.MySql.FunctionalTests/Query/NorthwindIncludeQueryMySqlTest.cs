@@ -116,6 +116,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 entryCount: 8);
         }
 
+        public override Task Repro9735(bool async)
+        {
+            return AssertQuery(
+                async,
+                ss => ss.Set<Order>()
+                    .Include(b => b.OrderDetails)
+                    .OrderBy(b => b.Customer.CustomerID != null)
+                    .ThenBy(b => b.Customer != null ? b.Customer.CustomerID : string.Empty)
+                    .ThenBy(b => b.EmployeeID) // Needs to be explicitly ordered by EmployeeID as well
+                    .Take(2),
+                entryCount: 6);
+        }
+
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
