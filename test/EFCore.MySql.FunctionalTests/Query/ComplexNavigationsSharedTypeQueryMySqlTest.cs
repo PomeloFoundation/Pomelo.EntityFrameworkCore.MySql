@@ -347,6 +347,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Let_let_contains_from_outer_let(async);
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Complex_query_with_let_collection_projection_FirstOrDefault(bool async)
+        {
+            return base.Complex_query_with_let_collection_projection_FirstOrDefault(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Skip_Take_Select_collection_Skip_Take(bool async)
+        {
+            return base.Skip_Take_Select_collection_Skip_Take(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Take_Select_collection_Take(bool async)
+        {
+            return base.Take_Select_collection_Take(async);
+        }
+
         [ConditionalTheory(Skip = "https://bugs.mysql.com/bug.php?id=101276")]
         public override Task Filtered_include_complex_three_level_with_middle_having_filter1(bool async)
         {

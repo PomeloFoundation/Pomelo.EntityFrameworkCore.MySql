@@ -290,6 +290,18 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
             return base.Select_subquery_recursive_trivial(async);
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Correlated_collection_with_distinct_without_default_identifiers_projecting_columns(bool async)
+        {
+            return base.Correlated_collection_with_distinct_without_default_identifiers_projecting_columns(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Correlated_collection_with_distinct_without_default_identifiers_projecting_columns_with_navigation(bool async)
+        {
+            return base.Correlated_collection_with_distinct_without_default_identifiers_projecting_columns_with_navigation(async);
+        }
+
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
         public override Task SelectMany_correlated_subquery_hard(bool async)
         {

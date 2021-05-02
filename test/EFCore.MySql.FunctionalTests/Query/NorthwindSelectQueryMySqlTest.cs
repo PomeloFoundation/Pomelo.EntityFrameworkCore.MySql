@@ -220,6 +220,48 @@ FROM `Orders` AS `o`");
             return base.Project_single_element_from_collection_with_OrderBy_Take_and_SingleOrDefault(async);
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Collection_projection_selecting_outer_element_followed_by_take(bool async)
+        {
+            return base.Collection_projection_selecting_outer_element_followed_by_take(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Correlated_collection_after_distinct_not_containing_original_identifier(bool async)
+        {
+            return base.Correlated_collection_after_distinct_not_containing_original_identifier(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Correlated_collection_after_distinct_with_complex_projection_containing_original_identifier(bool async)
+        {
+            return base.Correlated_collection_after_distinct_with_complex_projection_containing_original_identifier(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Correlated_collection_after_groupby_with_complex_projection_containing_original_identifier(bool async)
+        {
+            return base.Correlated_collection_after_groupby_with_complex_projection_containing_original_identifier(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Projecting_after_navigation_and_distinct(bool async)
+        {
+            return base.Projecting_after_navigation_and_distinct(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Select_nested_collection_deep_distinct_no_identifiers(bool async)
+        {
+            return base.Select_nested_collection_deep_distinct_no_identifiers(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Take_on_correlated_collection_in_first(bool async)
+        {
+            return base.Take_on_correlated_collection_in_first(async);
+        }
+
         [ConditionalTheory]
         public override Task Member_binding_after_ctor_arguments_fails_with_client_eval(bool async)
         {

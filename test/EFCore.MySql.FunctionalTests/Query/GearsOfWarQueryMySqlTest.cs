@@ -177,6 +177,60 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Project_collection_navigation_nested_with_take_composite_key(async);
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Correlated_collection_after_distinct_3_levels(bool async)
+        {
+            return base.Correlated_collection_after_distinct_3_levels(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Correlated_collection_via_SelectMany_with_Distinct_missing_indentifying_columns_in_projection(bool async)
+        {
+            return base.Correlated_collection_via_SelectMany_with_Distinct_missing_indentifying_columns_in_projection(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Correlated_collection_with_distinct_not_projecting_identifier_column(bool async)
+        {
+            return base.Correlated_collection_with_distinct_not_projecting_identifier_column(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Correlated_collection_with_distinct_projecting_identifier_column(bool async)
+        {
+            return base.Correlated_collection_with_distinct_projecting_identifier_column(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Correlated_collection_with_groupby_not_projecting_identifier_column_but_only_grouping_key_in_final_projection(bool async)
+        {
+            return base.Correlated_collection_with_groupby_not_projecting_identifier_column_but_only_grouping_key_in_final_projection(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Correlated_collection_with_groupby_not_projecting_identifier_column_with_group_aggregate_in_final_projection(bool async)
+        {
+            return base.Correlated_collection_with_groupby_not_projecting_identifier_column_with_group_aggregate_in_final_projection(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Correlated_collection_with_groupby_not_projecting_identifier_column_with_group_aggregate_in_final_projection_multiple_grouping_keys(bool async)
+        {
+            return base.Correlated_collection_with_groupby_not_projecting_identifier_column_with_group_aggregate_in_final_projection_multiple_grouping_keys(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Correlated_collection_with_inner_collection_references_element_two_levels_up(bool async)
+        {
+            return base.Correlated_collection_with_inner_collection_references_element_two_levels_up(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Correlated_collections_with_Distinct(bool async)
+        {
+            return base.Correlated_collections_with_Distinct(async);
+        }
+
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override Task Project_entity_and_collection_element(bool async)
         {
@@ -247,6 +301,48 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         public override Task Where_subquery_distinct_orderby_firstordefault_boolean_with_pushdown(bool async)
         {
             return base.Where_subquery_distinct_orderby_firstordefault_boolean_with_pushdown(async);
+        }
+
+        [SupportedServerVersionCondition("8.0.18-mysql", Skip = "TODO: Pinpoint exact version number! Referencing outer column from WHERE subquery does not work in previous versions. Inverse of #573")]
+        public override Task Concat_with_collection_navigations(bool async)
+        {
+            return base.Concat_with_collection_navigations(async);
+        }
+
+        [SupportedServerVersionCondition("8.0.18-mysql", Skip = "TODO: Pinpoint exact version number! Referencing outer column from WHERE subquery does not work in previous versions. Inverse of #573")]
+        public override Task Select_navigation_with_concat_and_count(bool async)
+        {
+            return base.Select_navigation_with_concat_and_count(async);
+        }
+
+        [SupportedServerVersionCondition("8.0.18-mysql", Skip = "TODO: Pinpoint exact version number! Referencing outer column from WHERE subquery does not work in previous versions. Inverse of #573")]
+        public override Task Union_with_collection_navigations(bool async)
+        {
+            return base.Union_with_collection_navigations(async);
+        }
+
+        [SupportedServerVersionCondition("8.0.18-mysql", Skip = "TODO: Pinpoint exact version number! Referencing outer column from WHERE subquery does not work in previous versions. Inverse of #573")]
+        public override Task Where_subquery_concat_firstordefault_boolean(bool async)
+        {
+            return base.Where_subquery_concat_firstordefault_boolean(async);
+        }
+
+        [SupportedServerVersionCondition("8.0.18-mysql", Skip = "TODO: Pinpoint exact version number! Referencing outer column from WHERE subquery does not work in previous versions. Inverse of #573")]
+        public override Task Where_subquery_join_firstordefault_boolean(bool async)
+        {
+            return base.Where_subquery_join_firstordefault_boolean(async);
+        }
+
+        [SupportedServerVersionCondition("8.0.18-mysql", Skip = "TODO: Pinpoint exact version number! Referencing outer column from WHERE subquery does not work in previous versions. Inverse of #573")]
+        public override Task Where_subquery_left_join_firstordefault_boolean(bool async)
+        {
+            return base.Where_subquery_left_join_firstordefault_boolean(async);
+        }
+
+        [SupportedServerVersionCondition("8.0.18-mysql", Skip = "TODO: Pinpoint exact version number! Referencing outer column from WHERE subquery does not work in previous versions. Inverse of #573")]
+        public override Task Where_subquery_union_firstordefault_boolean(bool async)
+        {
+            return base.Where_subquery_union_firstordefault_boolean(async);
         }
 
         [ConditionalTheory( /*Skip = "https://github.com/mysql-net/MySqlConnector/pull/707"*/)]
