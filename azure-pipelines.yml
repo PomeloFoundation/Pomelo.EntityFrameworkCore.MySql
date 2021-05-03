@@ -318,10 +318,10 @@ jobs:
       $officialBuild = '$(Build.SourceBranch)' -match '(?<=^refs/tags/)\d+\.\d+\.\d+(?:\.[^.]+)*$'
       $officialVersion = $Matches.0
       $wipBuild = '$(Build.SourceBranch)' -match '^refs/heads/.*-wip$'
-      $ciBuildOnly = $wipBuild -or ('$(Build.SourceBranch)' -match '^refs/heads/(?:master|.*-maint)$')
+      $ciBuildOnly = $wipBuild -or ('$(Build.SourceBranch)' -match '^refs/heads/(?:master|release/.*)$')
       $continuousIntegrationTimestamp = Get-Date -Format yyyyMMddHHmmss
       $buildSha = '$(Build.SourceVersion)'.SubString(0, 7);
-      $pack = '$(buildAndTestSucceeded)' -eq "true" -and ($officialBuild -or $ciBuildOnly) -or $wipBuild
+      $pack = '$(buildAndTestSucceeded)' -eq "true" -and ($officialBuild -or $ciBuildOnly -or $wipBuild)
 
       echo "officialBuild: $officialBuild"
       echo "officialVersion: $officialVersion"
