@@ -279,6 +279,33 @@ jobs:
   pool:
     vmImage: 'windows-latest' # must be Windows for PublishSymbols task
   steps:
+  - pwsh: |
+      $dotnetVersion = ''
+      $dotnetEfToolUpdateVersion = ''
+      $useGlobalJson = $false
+
+      if ('$(majorDotnetVersion)' -ne '')
+      {
+        $dotnetVersion = '$(majorDotnetVersion).x'
+
+        if ('$(includeDotnetPrereleases)' -eq 'true')
+        {
+          $dotnetEfToolUpdateVersion = '$(majorDotnetVersion).*-*'
+        }
+        else
+        {
+          $dotnetEfToolUpdateVersion = '$(majorDotnetVersion).*'
+        }
+      }
+      else
+      {
+        $useGlobalJson = $true
+      }
+
+      echo "##vso[task.setvariable variable=dotnetVersion]$dotnetVersion"
+      echo "##vso[task.setvariable variable=dotnetEfToolUpdateVersion]$dotnetEfToolUpdateVersion"
+      echo "##vso[task.setvariable variable=useGlobalJson]$useGlobalJson"
+    displayName: Set additional variables
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK'
     inputs:
