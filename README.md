@@ -110,8 +110,8 @@ namespace YourNamespace
                 dbContextOptions => dbContextOptions
                     .UseMySql(connectionString, serverVersion)
                     .EnableSensitiveDataLogging() // These two calls are optional but help
-                    .EnableDetailedErrors();      // with debugging (remove for production).
-            ));
+                    .EnableDetailedErrors()       // with debugging (remove for production).
+            );
         }
     }
 }
