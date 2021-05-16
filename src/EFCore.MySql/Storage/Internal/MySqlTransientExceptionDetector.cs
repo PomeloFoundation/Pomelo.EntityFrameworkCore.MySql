@@ -17,32 +17,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public static bool ShouldRetryOn([NotNull] Exception ex)
-        {
-            if (ex is MySqlException mySqlException)
-            {
-                switch (mySqlException.ErrorCode)
-                {
-                    // Thrown if timer queue couldn't be cleared while reading sockets
-                    case MySqlErrorCode.CommandTimeoutExpired:
-                    // Unable to open connection
-                    case MySqlErrorCode.UnableToConnectToHost:
-                    // Too many connections
-                    case MySqlErrorCode.ConnectionCountError:
-                    // Lock wait timeout exceeded; try restarting transaction
-                    case MySqlErrorCode.LockWaitTimeout:
-                    // Deadlock found when trying to get lock; try restarting transaction
-                    case MySqlErrorCode.LockDeadlock:
-                    // Transaction branch was rolled back: deadlock was detected
-                    case MySqlErrorCode.XARBDeadlock:
-                        // Retry in all cases above
-                        return true;
-                }
-
-                // Otherwise don't retry
-                return false;
-            }
-
-            return ex is TimeoutException;
-        }
+            => ex is MySqlException mySqlException
+                ? mySqlException.IsTransient
+                : ex is TimeoutException;
     }
 }
