@@ -37,9 +37,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
                IsTestConditionMet<SupportedServerVersionConditionAttribute>(type) &&
                IsTestConditionMet<SupportedServerVersionLessThanConditionAttribute>(type);
 
-        protected virtual bool IsTestConditionMet<TType>(ITypeInfo type)
+        protected virtual bool IsTestConditionMet<TType>(ITypeInfo type) where TType : ITestCondition
         {
-            var condition = GetTestCondition<SupportedServerVersionConditionAttribute>(type);
+            var condition = GetTestCondition<TType>(type);
 
             if (condition == null)
             {
