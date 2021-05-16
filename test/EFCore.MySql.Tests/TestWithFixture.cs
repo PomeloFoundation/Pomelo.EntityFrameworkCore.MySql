@@ -8,21 +8,21 @@ namespace Pomelo.EntityFrameworkCore.MySql
     public class RawSqlTestWithFixture<TFixture> : TestWithFixture<TFixture>
         where TFixture : MySqlTestFixtureBase
     {
-        private readonly DbContext _context;
+        protected DbContext Context { get; }
         protected MySqlConnection Connection { get; }
 
         protected RawSqlTestWithFixture(TFixture fixture)
             : base(fixture)
         {
-            _context = Fixture.CreateDefaultDbContext();
-            _context.Database.OpenConnection();
+            Context = Fixture.CreateDefaultDbContext();
+            Context.Database.OpenConnection();
 
-            Connection = (MySqlConnection)_context.Database.GetDbConnection();
+            Connection = (MySqlConnection)Context.Database.GetDbConnection();
         }
 
         protected override void Dispose(bool disposing)
         {
-            _context.Dispose();
+            Context.Dispose();
             base.Dispose(disposing);
         }
     }

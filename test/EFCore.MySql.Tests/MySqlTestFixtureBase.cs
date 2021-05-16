@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 
 namespace Pomelo.EntityFrameworkCore.MySql
@@ -28,9 +29,25 @@ namespace Pomelo.EntityFrameworkCore.MySql
     {
         private const string FixtureSuffix = "Fixture";
 
-        public MySqlTestFixtureBase()
+        public MySqlTestFixtureBase(bool initializeEmpty = false)
         {
-            TestStore = MySqlTestStore.RecreateInitialized(StoreName);
+            // We branch here, because CreateDefaultDbContext depends on TestStore.Name by default, which would not be available yet in
+            // the MySqlTestStore.RecreateInitialized(StoreName) call.
+            if (initializeEmpty)
+            {
+                TestStore = MySqlTestStore.RecreateInitialized(StoreName);
+            }
+            else
+            {
+                TestStore = MySqlTestStore.Create(StoreName);
+
+                TestStore.InitializeMySql(null, CreateDefaultDbContext, null, c =>
+                {
+                    c.Database.EnsureDeleted();
+                    c.Database.EnsureCreated();
+                });
+            }
+
             SetupDatabase();
         }
 
@@ -57,18 +74,26 @@ namespace Pomelo.EntityFrameworkCore.MySql
         protected virtual string Sql => string.Join("\n\n", SqlCommands);
 
         public virtual TContext CreateContext(
-            Action<MySqlDbContextOptionsBuilder> jetOptions = null,
+            Action<MySqlDbContextOptionsBuilder> mySqlOptions = null,
             Action<IServiceProvider, DbContextOptionsBuilder> options = null,
-            Action<ModelBuilder> model = null)
+            Action<ModelBuilder> model = null,
+            Action<IServiceCollection> serviceCollection = null,
+            string databaseName = null)
         {
             var context = new TContext();
 
+            var collection = new ServiceCollection()
+                .AddEntityFrameworkMySql();
+
+            serviceCollection?.Invoke(collection);
+
             context.Initialize(
-                TestStore.Name,
+                databaseName ?? TestStore.Name,
                 command => SqlCommands.Add(command.CommandText),
-                model: model,
-                options: options,
-                mySqlOptions: jetOptions);
+                model,
+                options,
+                collection,
+                mySqlOptions);
 
             return context;
         }
