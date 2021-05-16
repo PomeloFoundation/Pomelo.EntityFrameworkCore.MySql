@@ -88,34 +88,26 @@ Ensure that your `.csproj` file contains the following reference:
 Add `Pomelo.EntityFrameworkCore.MySql` to the services configuration in your the `Startup.cs` file.
 
 ```csharp
-using System;
-using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-
-// Replace "YourNamespace" with the namespace of your application.
-namespace YourNamespace
+public class Startup
 {
-    public class Startup
+    public void ConfigureServices(IServiceCollection services)
     {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            // Replace with your connection string.
-            var connectionString = "server=localhost;user=root;password=1234;database=ef";
+        // Replace with your connection string.
+        var connectionString = "server=localhost;user=root;password=1234;database=ef";
 
-            // Replace with your server version and type.
-            // Use 'MariaDbServerVersion' for MariaDB.
-            // Alternatively, use 'ServerVersion.AutoDetect(connectionString)'.
-            // For common usages, see pull request #1233.
-            var serverVersion = new MySqlServerVersion(new Version(8, 0, 21));
+        // Replace with your server version and type.
+        // Use 'MariaDbServerVersion' for MariaDB.
+        // Alternatively, use 'ServerVersion.AutoDetect(connectionString)'.
+        // For common usages, see pull request #1233.
+        var serverVersion = new MySqlServerVersion(new Version(8, 0, 21));
 
-            // Replace 'YourDbContext' with the name of your own DbContext derived class.
-            services.AddDbContextPool<YourDbContext>(
-                dbContextOptions => dbContextOptions
-                    .UseMySql(connectionString, serverVersion)
-                    .EnableSensitiveDataLogging() // These two calls are optional but help
-                    .EnableDetailedErrors()       // with debugging (remove for production).
-            );
-        }
+        // Replace 'YourDbContext' with the name of your own DbContext derived class.
+        services.AddDbContext<YourDbContext>(
+            dbContextOptions => dbContextOptions
+                .UseMySql(connectionString, serverVersion)
+                .EnableSensitiveDataLogging() // <-- These two calls are optional but help
+                .EnableDetailedErrors()       // <-- with debugging (remove for production).
+        );
     }
 }
 ```
