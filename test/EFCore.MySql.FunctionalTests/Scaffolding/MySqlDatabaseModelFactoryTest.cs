@@ -486,6 +486,46 @@ CREATE TABLE `DefaultValueExpressionTable` (
 DROP TABLE IF EXISTS `DefaultValueExpressionTable`;");
         }
 
+        [ConditionalFact]
+        [SupportedServerVersionCondition("10.4.0-mariadb")]
+        public void Create_view_with_column_type_containing_comment_after_cast()
+        {
+            // Any cast (necessary or not) will result in MariaDB adding a comment to the column type
+            // when queried through `INFORMATION_SCHEMA`.`COLUMNS`.
+            Test(
+                @"
+CREATE TABLE `item_data` (
+    `id` INT(11) NOT NULL,
+    `text_datetime` TEXT NOT NULL,
+    `real_datetime_1` DATETIME NOT NULL,
+    `real_datetime_2` DATETIME NOT NULL,
+    PRIMARY KEY (`id`)
+);
+
+CREATE VIEW `item_data_view` AS
+SELECT `item`.`id`,
+       CAST(`item`.`text_datetime` AS DATETIME) AS `text_datetime_converted`,
+	   CAST(`item`.`real_datetime_1` AS DATETIME) AS `real_datetime_1_converted`,
+       `item`.`real_datetime_2` AS `real_datetime_2_original`
+FROM `item_data` `item`;",
+                Enumerable.Empty<string>(),
+                Enumerable.Empty<string>(),
+                dbModel =>
+                {
+                    var table = Assert.Single(dbModel.Tables.Where(t => t.Name == "item_data_view"));
+                    var textDateTimeConvertedColumn = Assert.Single(table.Columns.Where(c => c.Name == "text_datetime_converted"));
+                    var realDateTime1ConvertedColumn = Assert.Single(table.Columns.Where(c => c.Name == "real_datetime_1_converted"));
+                    var realDateTime2OriginalColumn = Assert.Single(table.Columns.Where(c => c.Name == "real_datetime_2_original"));
+
+                    Assert.Equal("datetime", textDateTimeConvertedColumn.StoreType);
+                    Assert.Equal("datetime", realDateTime1ConvertedColumn.StoreType);
+                    Assert.Equal("datetime", realDateTime2OriginalColumn.StoreType);
+                },
+                @"
+DROP VIEW IF EXISTS `item_data_view`;
+DROP TABLE IF EXISTS `item_data`;");
+        }
+
         #endregion
 
         #region ColumnFacets
