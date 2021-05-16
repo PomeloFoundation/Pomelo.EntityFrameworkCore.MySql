@@ -316,6 +316,11 @@ ORDER BY
                                 ? (bool?)extra.Contains("stored generated", StringComparison.OrdinalIgnoreCase)
                                 : null;
 
+                            // Cleanup the column type, because it might contain trailing C style comments on MariaDB, like the following,
+                            // if an explicit cast is being done in the SELECT of a VIEW:
+                            //     datetime /* mariadb-5.3 */
+                            columnType = Regex.Replace(columnType, @"\s*/\*(?:.*?)\*/\s*$", string.Empty, RegexOptions.Singleline);
+
                             // Override this column's type, if we detected earlier that this column should actually by added to the model
                             // with a different type than the one returned by INFORMATION_SCHEMA.COLUMNS.
                             // This ensures, that e.g. the `json` alias for the `longtext` type for MariaDB databases will be added to the
