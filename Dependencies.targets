@@ -23,7 +23,7 @@
     <PackageReference Update="Microsoft.Bcl.AsyncInterfaces" Version="$(DependencyPreviewVersion)" />
     <PackageReference Update="Microsoft.Bcl.HashCode" Version="1.1.1" />
     <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" />
-    <PackageReference Update="Microsoft.Extensions.Caching.Memory" Version="" />
+    <PackageReference Update="Microsoft.Extensions.Caching.Memory" Version="$(DependencyPreviewVersion)" />
     <PackageReference Update="Microsoft.Extensions.Configuration.Binder" Version="$(DependencyPreviewVersion)" />
     <PackageReference Update="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(DependencyPreviewVersion)" />
     <PackageReference Update="Microsoft.Extensions.Configuration.FileExtensions" Version="$(DependencyPreviewVersion)" />
