@@ -33,7 +33,7 @@
     <UseVersionSuffixOverride Condition="'$(VersionSuffix)' != ''">true</UseVersionSuffixOverride>
   </PropertyGroup>
 
-  <PropertyGroup Label="Version Suffix Handling" Condition="'$(UseVersionOverride)' != 'true' And '$(UseVersionSuffixOverride)' != 'true' And '$(OfficialVersion)' == ''">
+  <PropertyGroup Label="Version Suffix Handling" Condition="'$(UseVersionOverride)' != 'true' And '$(UseVersionSuffixOverride)' != 'true' And ('$(OfficialVersion)' == '' Or $(OfficialVersion.Contains('-')))">
     <VersionSuffix>$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</VersionSuffix>
     <VersionSuffix Condition="'$(ContinuousIntegrationTimestamp)' != ''">$(VersionSuffix).ci.$(ContinuousIntegrationTimestamp)</VersionSuffix>
     <VersionSuffix Condition="'$(BuildSha)' != ''">$(VersionSuffix)+sha.$(BuildSha)</VersionSuffix>
