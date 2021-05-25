@@ -315,7 +315,7 @@ jobs:
   - pwsh: dotnet --info
     displayName: .NET Information
   - pwsh: |
-      $officialBuild = '$(Build.SourceBranch)' -match '(?<=^refs/tags/)\d+\.\d+\.\d+(?:\.[^.]+)*$'
+      $officialBuild = '$(Build.SourceBranch)' -match '(?<=^refs/tags/)\d+\.\d+\.\d+.*$'
       $officialVersion = $Matches.0
       $wipBuild = '$(Build.SourceBranch)' -match '^refs/heads/.*-wip$'
       $ciBuildOnly = $wipBuild -or ('$(Build.SourceBranch)' -match '^refs/heads/(?:master|release/.*)$')

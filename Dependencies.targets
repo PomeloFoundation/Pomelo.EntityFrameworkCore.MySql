@@ -1,8 +1,9 @@
 <Project>
   <PropertyGroup Label="Common Versions">
-    <DotnetRuntimeVersion>6.0.0-preview.4.21222.10</DotnetRuntimeVersion>
-    <EFCoreVersion>6.0.0-preview.4.21227.4</EFCoreVersion> <!-- [$(DotnetRuntimeVersion), 7.0.0) -->
+    <DotnetRuntimeVersion>6.0.0-preview.4.21253.7</DotnetRuntimeVersion>
+    <EFCoreVersion>6.0.0-preview.4.21253.1</EFCoreVersion> <!-- [$(DotnetRuntimeVersion), 7.0.0) -->
     <DependencyPreviewVersion>$(DotnetRuntimeVersion)</DependencyPreviewVersion>
+    <AspNetCoreVersion>6.0.0-preview.4.21253.5</AspNetCoreVersion>
   </PropertyGroup>
 
   <ItemGroup Label="Dependencies">
@@ -11,15 +12,15 @@
     <PackageReference Update="Microsoft.EntityFrameworkCore.Relational" Version="$(EFCoreVersion)" />
     <PackageReference Update="Microsoft.EntityFrameworkCore" Version="$(EFCoreVersion)" />
 
-    <PackageReference Update="MySqlConnector" Version="1.3.7" />
+    <PackageReference Update="MySqlConnector" Version="1.3.8" />
 
     <PackageReference Update="NetTopologySuite" Version="2.2.0" />
     <PackageReference Update="System.Text.Json" Version="$(DependencyPreviewVersion)" />
     <PackageReference Update="Newtonsoft.Json" Version="13.0.1" />
 
     <PackageReference Update="Castle.Core" Version="4.4.1" />
-    <PackageReference Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(DotnetRuntimeVersion)" />
-    <PackageReference Update="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(DotnetRuntimeVersion)" />
+    <PackageReference Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(AspNetCoreVersion)" />
+    <PackageReference Update="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(AspNetCoreVersion)" />
     <PackageReference Update="Microsoft.Bcl.AsyncInterfaces" Version="$(DependencyPreviewVersion)" />
     <PackageReference Update="Microsoft.Bcl.HashCode" Version="1.1.1" />
     <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" />
