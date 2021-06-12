@@ -219,6 +219,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 right,
                 typeMapping);
 
+        public virtual MySqlColumnAliasReferenceExpression ColumnAliasReference(
+            string alias,
+            SqlExpression expression,
+            Type type,
+            RelationalTypeMapping typeMapping = null)
+            => new MySqlColumnAliasReferenceExpression(alias, expression, type, typeMapping);
+
         #endregion Expression factory methods
 
         public virtual MySqlBinaryExpression MakeBinary(

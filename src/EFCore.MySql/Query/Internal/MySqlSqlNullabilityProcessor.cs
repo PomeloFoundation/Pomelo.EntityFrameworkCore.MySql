@@ -39,8 +39,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 MySqlJsonArrayIndexExpression arrayIndexExpression => VisitJsonArrayIndex(arrayIndexExpression, allowOptimizedExpansion, out nullable),
                 MySqlJsonTraversalExpression jsonTraversalExpression => VisitJsonTraversal(jsonTraversalExpression, allowOptimizedExpansion, out nullable),
                 MySqlRegexpExpression regexpExpression => VisitRegexp(regexpExpression, allowOptimizedExpansion, out nullable),
+                MySqlColumnAliasReferenceExpression columnAliasReferenceExpression => VisitColumnAliasReference(columnAliasReferenceExpression, allowOptimizedExpansion, out nullable),
                 _ => base.VisitCustomSqlExpression(sqlExpression, allowOptimizedExpansion, out nullable)
             };
+
+        private SqlExpression VisitColumnAliasReference(MySqlColumnAliasReferenceExpression columnAliasReferenceExpression, bool allowOptimizedExpansion, out bool nullable)
+        {
+            Check.NotNull(columnAliasReferenceExpression, nameof(columnAliasReferenceExpression));
+
+            var expression = Visit(columnAliasReferenceExpression.Expression, allowOptimizedExpansion, out nullable);
+
+            return columnAliasReferenceExpression.Update(columnAliasReferenceExpression.Alias, expression);
+        }
 
         /// <summary>
         /// Visits a <see cref="MySqlBinaryExpression" /> and computes its nullability.

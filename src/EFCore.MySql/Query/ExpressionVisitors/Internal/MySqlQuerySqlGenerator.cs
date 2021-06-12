@@ -66,8 +66,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             => extensionExpression switch
             {
                 MySqlJsonTraversalExpression jsonTraversalExpression => VisitJsonPathTraversal(jsonTraversalExpression),
+                MySqlColumnAliasReferenceExpression columnAliasReferenceExpression => VisitColumnAliasReference(columnAliasReferenceExpression),
                 _ => base.VisitExtension(extensionExpression)
             };
+
+        private Expression VisitColumnAliasReference(MySqlColumnAliasReferenceExpression columnAliasReferenceExpression)
+        {
+            Sql.Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(columnAliasReferenceExpression.Alias));
+
+            return columnAliasReferenceExpression;
+        }
 
         protected virtual Expression VisitJsonPathTraversal(MySqlJsonTraversalExpression expression)
         {
