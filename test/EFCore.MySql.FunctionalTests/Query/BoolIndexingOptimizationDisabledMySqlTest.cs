@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -7,9 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.GearsOfWarModel;
-using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 using Xunit;
 using Xunit.Abstractions;
+
 // ReSharper disable NegativeEqualityExpression
 // ReSharper disable RedundantBoolCompare
 
