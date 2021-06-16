@@ -26,9 +26,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
         [ConditionalTheory]
         [MemberData(nameof(IsAsyncData))]
-        public virtual Task Select_with_function_using_having_clause(bool async)
+        public virtual async Task Select_with_function_using_having_clause(bool async)
         {
-            return AssertQuery(
+            await AssertQuery(
                 async,
                 ss => ss.Set<Order>()
                     .Where(o => o.CustomerID == "ALFKI" &&
@@ -38,6 +38,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     .Where(k => k.Year == 1995)
                     .OrderBy(k => k.Year),
                 assertOrder: true);
+
+            AssertSql(
+                @"SELECT EXTRACT(year FROM `o`.`OrderDate`) AS `Year`, COUNT(*) AS `Count`, (EXTRACT(year FROM `o`.`OrderDate`) = 1995) AND EXTRACT(year FROM `o`.`OrderDate`) IS NOT NULL AS `having`
+FROM `Orders` AS `o`
+WHERE (`o`.`CustomerID` = 'ALFKI') AND `o`.`OrderDate` IS NOT NULL
+GROUP BY `o`.`CustomerID`, EXTRACT(year FROM `o`.`OrderDate`), `having`
+HAVING `having`
+ORDER BY EXTRACT(year FROM `o`.`OrderDate`)");
         }
     }
 }
