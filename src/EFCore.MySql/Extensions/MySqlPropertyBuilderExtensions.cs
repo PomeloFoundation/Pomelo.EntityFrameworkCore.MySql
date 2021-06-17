@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
@@ -100,6 +101,46 @@ namespace Microsoft.EntityFrameworkCore
             [NotNull] this PropertyBuilder<TProperty> propertyBuilder,
             string charSet)
             => (PropertyBuilder<TProperty>)HasCharSet((PropertyBuilder)propertyBuilder, charSet);
+
+        /// <summary>
+        /// Configures the charset for the property's column.
+        /// </summary>
+        /// <param name="propertyBuilder">The builder for the property being configured.</param>
+        /// <param name="charSet">The name of the charset to configure for the property's column.</param>
+        /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
+        /// <returns>
+        ///     The same builder instance if the configuration was applied,
+        ///     <see langword="null" /> otherwise.
+        /// </returns>
+        public static IConventionPropertyBuilder HasCharSet(
+            this IConventionPropertyBuilder propertyBuilder,
+            string charSet,
+            bool fromDataAnnotation = false)
+        {
+            if (!propertyBuilder.CanSetCharSet(charSet, fromDataAnnotation))
+            {
+                return null;
+            }
+
+            propertyBuilder.Metadata.SetCharSet(charSet, fromDataAnnotation);
+            return propertyBuilder;
+        }
+
+        /// <summary>
+        /// Returns a value indicating whether the MySQL character set can be set on the column associated with this property.
+        /// </summary>
+        /// <param name="propertyBuilder"> The builder for the property being configured. </param>
+        /// <param name="charSet"> The name of the character set. </param>
+        /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
+        /// <returns> <see langword="true" /> if the given value can be set as the character set for the column. </returns>
+        public static bool CanSetCharSet(
+            this IConventionPropertyBuilder propertyBuilder,
+            string charSet,
+            bool fromDataAnnotation = false)
+            => propertyBuilder.CanSetAnnotation(
+                MySqlAnnotationNames.CharSet,
+                charSet,
+                fromDataAnnotation);
 
         /// <summary>
         /// Configures the collation for the property's column.
