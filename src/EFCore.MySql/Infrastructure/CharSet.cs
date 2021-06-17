@@ -21,6 +21,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
             MaxBytesPerChar = maxBytesPerChar > 0 ? maxBytesPerChar : throw new ArgumentOutOfRangeException(nameof(maxBytesPerChar));
         }
 
+        public static implicit operator string(CharSet charSet) => charSet?.ToString();
+
         public bool IsUnicode => MaxBytesPerChar >= 2;
 
         public override string ToString() => Name;

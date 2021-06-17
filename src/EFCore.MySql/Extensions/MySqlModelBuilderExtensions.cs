@@ -70,40 +70,6 @@ namespace Microsoft.EntityFrameworkCore
         /// Sets the default character set to use for the model/database.
         /// </summary>
         /// <param name="modelBuilder">The model builder.</param>
-        /// <param name="charSet">The character set to use.</param>
-        /// <param name="delegationModes">
-        /// Finely controls where to recursively apply the character set and where not (including this model/database).
-        /// Implicitly uses <see cref="DelegationModes.ApplyToAll"/> if set to <see langword="null"/>.
-        /// </param>
-        /// <returns>The same builder instance so that multiple calls can be chained.</returns>
-        public static ModelBuilder HasCharSet(
-            [NotNull] this ModelBuilder modelBuilder,
-            [CanBeNull] CharSet charSet,
-            DelegationModes? delegationModes = null)
-            => modelBuilder.HasCharSet(charSet?.Name, delegationModes);
-
-        /// <summary>
-        /// Sets the default character set to use for the model/database.
-        /// </summary>
-        /// <param name="modelBuilder">The model builder.</param>
-        /// <param name="charSet">The character set to use.</param>
-        /// <param name="explicitlyDelegateToChildren">
-        /// Entities/tables (and possibly properties/columns) don't explicitly inherit the character set if set to <see langword="false"/>.
-        /// They will explicitly inherit the character set if set to <see langword="true"/>.
-        /// </param>
-        /// <returns>The same builder instance so that multiple calls can be chained.</returns>
-        public static ModelBuilder HasCharSet(
-            [NotNull] this ModelBuilder modelBuilder,
-            [CanBeNull] CharSet charSet,
-            bool explicitlyDelegateToChildren)
-            => modelBuilder.HasCharSet(
-                charSet?.Name,
-                explicitlyDelegateToChildren);
-
-        /// <summary>
-        /// Sets the default character set to use for the model/database.
-        /// </summary>
-        /// <param name="modelBuilder">The model builder.</param>
         /// <param name="charSet">The name of the character set to use.</param>
         /// <param name="delegationModes">
         /// Finely controls where to recursively apply the character set and where not (including this model/database).
@@ -160,51 +126,6 @@ namespace Microsoft.EntityFrameworkCore
                 explicitlyDelegateToChildren == false
                     ? DelegationModes.ApplyToDatabases
                     : DelegationModes.ApplyToAll,
-                fromDataAnnotation);
-
-        /// <summary>
-        /// Sets the default character set to use for the model/database.
-        /// </summary>
-        /// <param name="modelBuilder">The model builder.</param>
-        /// <param name="charSet">The character set to use.</param>
-        /// <param name="delegationModes">
-        /// Finely controls where to recursively apply the character set and where not (including this model/database).
-        /// Implicitly uses <see cref="DelegationModes.ApplyToAll"/> if set to <see langword="null"/>.
-        /// </param>
-        /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
-        /// <returns>
-        ///     The same builder instance if the configuration was applied,
-        ///     <see langword="null" /> otherwise.
-        /// </returns>
-        public static IConventionModelBuilder HasCharSet(
-            [NotNull] this IConventionModelBuilder modelBuilder,
-            [CanBeNull] CharSet charSet,
-            DelegationModes? delegationModes = null,
-            bool fromDataAnnotation = false)
-            => modelBuilder.HasCharSet(charSet?.Name, delegationModes, fromDataAnnotation);
-
-        /// <summary>
-        /// Sets the default character set to use for the model/database.
-        /// </summary>
-        /// <param name="modelBuilder">The model builder.</param>
-        /// <param name="charSet">The character set to use.</param>
-        /// <param name="explicitlyDelegateToChildren">
-        /// Entities/tables (and possibly properties/columns) don't explicitly inherit the character set if set to <see langword="false"/>.
-        /// They will explicitly inherit the character set if set to <see langword="true"/>.
-        /// </param>
-        /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
-        /// <returns>
-        ///     The same builder instance if the configuration was applied,
-        ///     <see langword="null" /> otherwise.
-        /// </returns>
-        public static IConventionModelBuilder HasCharSet(
-            [NotNull] this IConventionModelBuilder modelBuilder,
-            [CanBeNull] CharSet charSet,
-            bool explicitlyDelegateToChildren,
-            bool fromDataAnnotation = false)
-            => modelBuilder.HasCharSet(
-                charSet?.Name,
-                explicitlyDelegateToChildren,
                 fromDataAnnotation);
 
         /// <summary>

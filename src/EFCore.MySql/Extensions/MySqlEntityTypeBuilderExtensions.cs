@@ -70,40 +70,6 @@ namespace Microsoft.EntityFrameworkCore
         /// uses its default collation.
         /// </summary>
         /// <param name="entityTypeBuilder"> The builder for the entity type being configured. </param>
-        /// <param name="charSet"> The character set. </param>
-        /// <param name="delegationModes">
-        /// Finely controls where to recursively apply the character set and where not (including this entity/table).
-        /// Implicitly uses <see cref="DelegationModes.ApplyToAll"/> if set to <see langword="null"/>.
-        /// </param>
-        /// <returns> The same builder instance so that multiple calls can be chained. </returns>
-        public static EntityTypeBuilder HasCharSet(
-            [NotNull] this EntityTypeBuilder entityTypeBuilder,
-            [CanBeNull] CharSet charSet,
-            DelegationModes? delegationModes = null)
-            => entityTypeBuilder.HasCharSet(charSet?.Name, delegationModes);
-
-        /// <summary>
-        /// Sets the MySQL character set on the table associated with this entity. When you only specify the character set, MySQL implicitly
-        /// uses its default collation.
-        /// </summary>
-        /// <param name="entityTypeBuilder"> The builder for the entity type being configured. </param>
-        /// <param name="charSet"> The character set. </param>
-        /// <param name="explicitlyDelegateToChildren">
-        /// Properties/columns don't explicitly inherit the character set if set to <see langword="false"/>.
-        /// They will explicitly inherit the character set if set to <see langword="true"/>.
-        /// </param>
-        /// <returns> The same builder instance so that multiple calls can be chained. </returns>
-        public static EntityTypeBuilder HasCharSet(
-            [NotNull] this EntityTypeBuilder entityTypeBuilder,
-            [CanBeNull] CharSet charSet,
-            bool explicitlyDelegateToChildren)
-            => entityTypeBuilder.HasCharSet(charSet?.Name, explicitlyDelegateToChildren);
-
-        /// <summary>
-        /// Sets the MySQL character set on the table associated with this entity. When you only specify the character set, MySQL implicitly
-        /// uses its default collation.
-        /// </summary>
-        /// <param name="entityTypeBuilder"> The builder for the entity type being configured. </param>
         /// <param name="charSet"> The name of the character set. </param>
         /// <param name="delegationModes">
         /// Finely controls where to recursively apply the character set and where not (including this entity/table).
@@ -134,42 +100,6 @@ namespace Microsoft.EntityFrameworkCore
             bool explicitlyDelegateToChildren)
             where TEntity : class
             => (EntityTypeBuilder<TEntity>)HasCharSet((EntityTypeBuilder)entityTypeBuilder, charSet, explicitlyDelegateToChildren);
-
-        /// <summary>
-        /// Sets the MySQL character set on the table associated with this entity. When you only specify the character set, MySQL implicitly
-        /// uses its default collation.
-        /// </summary>
-        /// <param name="entityTypeBuilder"> The builder for the entity type being configured. </param>
-        /// <param name="charSet"> The character set. </param>
-        /// <param name="delegationModes">
-        /// Finely controls where to recursively apply the character set and where not (including this entity/table).
-        /// Implicitly uses <see cref="DelegationModes.ApplyToAll"/> if set to <see langword="null"/>.
-        /// </param>
-        /// <returns> The same builder instance so that multiple calls can be chained. </returns>
-        public static EntityTypeBuilder<TEntity> HasCharSet<TEntity>(
-            [NotNull] this EntityTypeBuilder<TEntity> entityTypeBuilder,
-            [CanBeNull] CharSet charSet,
-            DelegationModes? delegationModes = null)
-            where TEntity : class
-            => entityTypeBuilder.HasCharSet(charSet?.Name, delegationModes);
-
-        /// <summary>
-        /// Sets the MySQL character set on the table associated with this entity. When you only specify the character set, MySQL implicitly
-        /// uses its default collation.
-        /// </summary>
-        /// <param name="entityTypeBuilder"> The builder for the entity type being configured. </param>
-        /// <param name="charSet"> The character set. </param>
-        /// <param name="explicitlyDelegateToChildren">
-        /// Properties/columns don't explicitly inherit the character set if set to <see langword="false"/>.
-        /// They will explicitly inherit the character set if set to <see langword="true"/>.
-        /// </param>
-        /// <returns> The same builder instance so that multiple calls can be chained. </returns>
-        public static EntityTypeBuilder<TEntity> HasCharSet<TEntity>(
-            [NotNull] this EntityTypeBuilder<TEntity> entityTypeBuilder,
-            [CanBeNull] CharSet charSet,
-            bool explicitlyDelegateToChildren)
-            where TEntity : class
-            => entityTypeBuilder.HasCharSet(charSet?.Name, explicitlyDelegateToChildren);
 
         /// <summary>
         /// Sets the MySQL character set on the table associated with this entity. When you only specify the character set, MySQL implicitly
@@ -228,44 +158,6 @@ namespace Microsoft.EntityFrameworkCore
                     ? DelegationModes.ApplyToTables
                     : DelegationModes.ApplyToAll,
                 fromDataAnnotation);
-
-        /// <summary>
-        /// Sets the MySQL character set on the table associated with this entity. When you only specify the character set, MySQL implicitly
-        /// uses its default collation.
-        /// </summary>
-        /// <param name="entityTypeBuilder"> The builder for the entity type being configured. </param>
-        /// <param name="charSet"> The character set. </param>
-        /// <param name="delegationModes">
-        /// Finely controls where to recursively apply the character set and where not (including this entity/table).
-        /// Implicitly uses <see cref="DelegationModes.ApplyToAll"/> if set to <see langword="null"/>.
-        /// </param>
-        /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
-        /// <returns> The same builder instance so that multiple calls can be chained. </returns>
-        public static IConventionEntityTypeBuilder HasCharSet(
-            [NotNull] this IConventionEntityTypeBuilder entityTypeBuilder,
-            [CanBeNull] CharSet charSet,
-            DelegationModes? delegationModes = null,
-            bool fromDataAnnotation = false)
-            => entityTypeBuilder.HasCharSet(charSet?.Name, delegationModes, fromDataAnnotation);
-
-        /// <summary>
-        /// Sets the MySQL character set on the table associated with this entity. When you only specify the character set, MySQL implicitly
-        /// uses its default collation.
-        /// </summary>
-        /// <param name="entityTypeBuilder"> The builder for the entity type being configured. </param>
-        /// <param name="charSet"> The character set. </param>
-        /// <param name="explicitlyDelegateToChildren">
-        /// Properties/columns don't explicitly inherit the character set if set to <see langword="false"/>.
-        /// They will explicitly inherit the character set if set to <see langword="true"/>.
-        /// </param>
-        /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
-        /// <returns> The same builder instance so that multiple calls can be chained. </returns>
-        public static IConventionEntityTypeBuilder HasCharSet(
-            [NotNull] this IConventionEntityTypeBuilder entityTypeBuilder,
-            [CanBeNull] CharSet charSet,
-            bool explicitlyDelegateToChildren,
-            bool fromDataAnnotation = false)
-            => entityTypeBuilder.HasCharSet(charSet?.Name, explicitlyDelegateToChildren, fromDataAnnotation);
 
         /// <summary>
         /// Returns a value indicating whether the MySQL character set can be set on the table associated with this entity.
