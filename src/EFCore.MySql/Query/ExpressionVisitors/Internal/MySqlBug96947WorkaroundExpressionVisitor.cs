@@ -82,7 +82,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             {
                 var expression = (SqlExpression)Visit(projectionExpression.Expression);
 
-                // Parameters trigger this bug as well, because the get inlined by MySqlConnector and
+                // Parameters trigger this bug as well, because they get inlined by MySqlConnector and
                 // become constant values in the end.
                 if (expression is SqlConstantExpression ||
                     expression is SqlParameterExpression)
@@ -91,14 +91,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                         expression,
                         projectionExpression.Type,
                         expression.TypeMapping);
-                }
-
-                if (expression is SqlParameterExpression parameterExpression)
-                {
-                    expression = _sqlExpressionFactory.Convert(
-                        parameterExpression,
-                        projectionExpression.Type,
-                        parameterExpression.TypeMapping);
                 }
 
                 return projectionExpression.Update(expression);
