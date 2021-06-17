@@ -102,35 +102,6 @@ namespace Microsoft.EntityFrameworkCore
             => (PropertyBuilder<TProperty>)HasCharSet((PropertyBuilder)propertyBuilder, charSet);
 
         /// <summary>
-        /// Configures the charset for the property's column.
-        /// </summary>
-        /// <param name="propertyBuilder">The builder for the property being configured.</param>
-        /// <param name="charSet">The <see cref="CharSet"/> to configure for the property's column.</param>
-        /// <returns>The same builder instance so that multiple calls can be chained.</returns>
-        public static PropertyBuilder HasCharSet(
-            [NotNull] this PropertyBuilder propertyBuilder,
-            CharSet charSet)
-        {
-            Check.NotNull(propertyBuilder, nameof(propertyBuilder));
-
-            var property = propertyBuilder.Metadata;
-            property.SetCharSet(charSet?.Name);
-
-            return propertyBuilder;
-        }
-
-        /// <summary>
-        /// Configures the charset for the property's column.
-        /// </summary>
-        /// <param name="propertyBuilder">The builder for the property being configured.</param>
-        /// <param name="charSet">The <see cref="CharSet"/> to configure for the property's column.</param>
-        /// <returns>The same builder instance so that multiple calls can be chained.</returns>
-        public static PropertyBuilder<TProperty> HasCharSet<TProperty>(
-            [NotNull] this PropertyBuilder<TProperty> propertyBuilder,
-            CharSet charSet)
-            => (PropertyBuilder<TProperty>)HasCharSet((PropertyBuilder)propertyBuilder, charSet);
-
-        /// <summary>
         /// Configures the collation for the property's column.
         /// </summary>
         /// <param name="propertyBuilder">The builder for the property being configured.</param>
