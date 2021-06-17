@@ -32,7 +32,10 @@ namespace Microsoft.EntityFrameworkCore
             var annotation = property[MySqlAnnotationNames.ValueGenerationStrategy];
             if (annotation != null)
             {
-                return (MySqlValueGenerationStrategy?)annotation;
+                // Allow users to use the underlying type value instead of the enum itself.
+                // Workaround for: https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1205
+                //return ObjectToEnumConverter.GetEnumValue<MySqlValueGenerationStrategy>(annotation);
+                return ObjectToEnumConverter.GetEnumValue<MySqlValueGenerationStrategy>(annotation);
             }
 
             if (property.GetDefaultValue() != null || property.GetDefaultValueSql() != null || property.GetComputedColumnSql() != null)
