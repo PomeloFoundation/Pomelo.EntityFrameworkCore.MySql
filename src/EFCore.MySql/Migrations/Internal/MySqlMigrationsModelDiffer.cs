@@ -210,7 +210,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
             where TOperation : MigrationOperation
         {
             // If the database collation should not be applied to the database itself, we need to reset the Collation property.
-            // It the CollationDelegation annotation does not exist, it is ApplyToAll implicitly.
+            // If the CollationDelegation annotation does not exist, it is ApplyToAll implicitly.
             if (operation[MySqlAnnotationNames.CollationDelegation] is DelegationModes databaseCollationDelegation)
             {
                 // Don't leak the CollationDelegation annotation to the MigrationOperation.
@@ -233,7 +233,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         private static void HandleCharSetDelegation(MigrationOperation operation, DelegationModes delegationModes)
         {
             // If the character set should not be applied to the database itself, we need to remove the CharSet annotation.
-            // It the CharSetDelegation annotation does not exist, it is ApplyToAll implicitly.
+            // If the CharSetDelegation annotation does not exist, it is ApplyToAll implicitly.
             if (operation[MySqlAnnotationNames.CharSetDelegation] is DelegationModes charSetDelegation)
             {
                 // Don't leak the CharSetDelegation annotation to the MigrationOperation.

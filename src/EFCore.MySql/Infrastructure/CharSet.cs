@@ -102,7 +102,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
         public static CharSet Utf16 = new CharSet(nameof(Utf16), 4);
         public static CharSet Utf16Le = new CharSet(nameof(Utf16Le), 4);
         public static CharSet Utf32 = new CharSet(nameof(Utf32), 4);
-        public static CharSet Utf8 = new CharSet(nameof(Utf8), 3);
+        [Obsolete("Use 'Utf8Mb4' instead.")] public static CharSet Utf8 = new CharSet(nameof(Utf8), 3);
         public static CharSet Utf8Mb3 = new CharSet(nameof(Utf8Mb3), 3); // Alias for "utf8"
         public static CharSet Utf8Mb4 = new CharSet(nameof(Utf8Mb4), 4);
 
