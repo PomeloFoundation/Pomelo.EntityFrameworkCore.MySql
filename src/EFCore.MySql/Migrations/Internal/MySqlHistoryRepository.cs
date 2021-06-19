@@ -118,7 +118,10 @@ DROP PROCEDURE {MigrationsScript};
 
                 // Use public API to remove the convention, issue #214
                 ConventionSet.Remove(conventionSet.ModelInitializedConventions, typeof(DbSetFindingConvention));
-                ConventionSet.Remove(conventionSet.ModelInitializedConventions, typeof(RelationalDbFunctionAttributeConvention));
+                if (!(AppContext.TryGetSwitch("Microsoft.EntityFrameworkCore.Issue23312", out var enabled) && enabled))
+                {
+                    ConventionSet.Remove(conventionSet.ModelInitializedConventions, typeof(RelationalDbFunctionAttributeConvention));
+                }
 
                 var modelBuilder = new ModelBuilder(conventionSet);
 
@@ -135,7 +138,7 @@ DROP PROCEDURE {MigrationsScript};
                         x.ToTable(TableName, TableSchema);
                     });
 
-                _model = Dependencies.ModelRuntimeInitializer.Initialize(modelBuilder.FinalizeModel(), designTime: true, validationLogger: null);
+                _model = modelBuilder.FinalizeModel();
             }
 
             return _model;
@@ -155,15 +158,15 @@ DROP PROCEDURE {MigrationsScript};
         // Original implementation.
         protected override string MigrationIdColumnName
             => _migrationIdColumnName ??= EnsureModel()
-                .FindEntityType(typeof(HistoryRow))!
-                .FindProperty(nameof(HistoryRow.MigrationId))!
+                .FindEntityType(typeof(HistoryRow))
+                .FindProperty(nameof(HistoryRow.MigrationId))
                 .GetColumnBaseName();
 
         // Original implementation.
         protected override string ProductVersionColumnName
             => _productVersionColumnName ??= EnsureModel()
-                .FindEntityType(typeof(HistoryRow))!
-                .FindProperty(nameof(HistoryRow.ProductVersion))!
+                .FindEntityType(typeof(HistoryRow))
+                .FindProperty(nameof(HistoryRow.ProductVersion))
                 .GetColumnBaseName();
 
         #endregion Necessary implementation because we cannot directly override EnsureModel
