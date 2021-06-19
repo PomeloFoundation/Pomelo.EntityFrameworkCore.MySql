@@ -2,13 +2,16 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Text;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Utilities;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
 {
@@ -24,8 +27,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         protected override void ConfigureTable([NotNull] EntityTypeBuilder<HistoryRow> history)
         {
             base.ConfigureTable(history);
-            history.Property(h => h.MigrationId).HasColumnType("varchar(95)");
-            history.Property(h => h.ProductVersion).HasColumnType("varchar(32)").IsRequired();
+
+            history.HasCharSet(CharSet.Utf8Mb4);
         }
 
         protected override string ExistsSql
@@ -96,5 +99,73 @@ DELIMITER ;
 CALL {MigrationsScript}();
 DROP PROCEDURE {MigrationsScript};
 ";
+
+        public virtual void ConfigureModel(ModelBuilder modelBuilder)
+            => modelBuilder.HasCharSet(null, DelegationModes.ApplyToDatabases);
+
+        #region Necessary implementation because we cannot directly override EnsureModel
+
+        private IModel _model;
+        private string _migrationIdColumnName;
+        private string _productVersionColumnName;
+
+        // Customized implementation.
+        protected virtual IModel EnsureModel()
+        {
+            if (_model == null)
+            {
+                var conventionSet = Dependencies.ConventionSetBuilder.CreateConventionSet();
+
+                // Use public API to remove the convention, issue #214
+                ConventionSet.Remove(conventionSet.ModelInitializedConventions, typeof(DbSetFindingConvention));
+                ConventionSet.Remove(conventionSet.ModelInitializedConventions, typeof(RelationalDbFunctionAttributeConvention));
+
+                var modelBuilder = new ModelBuilder(conventionSet);
+
+                #region Custom implementation
+
+                ConfigureModel(modelBuilder);
+
+                #endregion
+
+                modelBuilder.Entity<HistoryRow>(
+                    x =>
+                    {
+                        ConfigureTable(x);
+                        x.ToTable(TableName, TableSchema);
+                    });
+
+                _model = Dependencies.ModelRuntimeInitializer.Initialize(modelBuilder.FinalizeModel(), designTime: true, validationLogger: null);
+            }
+
+            return _model;
+        }
+
+        // Original implementation.
+        public override string GetCreateScript()
+        {
+            var model = EnsureModel();
+
+            var operations = Dependencies.ModelDiffer.GetDifferences(null, model.GetRelationalModel());
+            var commandList = Dependencies.MigrationsSqlGenerator.Generate(operations, model);
+
+            return string.Concat(commandList.Select(c => c.CommandText));
+        }
+
+        // Original implementation.
+        protected override string MigrationIdColumnName
+            => _migrationIdColumnName ??= EnsureModel()
+                .FindEntityType(typeof(HistoryRow))!
+                .FindProperty(nameof(HistoryRow.MigrationId))!
+                .GetColumnBaseName();
+
+        // Original implementation.
+        protected override string ProductVersionColumnName
+            => _productVersionColumnName ??= EnsureModel()
+                .FindEntityType(typeof(HistoryRow))!
+                .FindProperty(nameof(HistoryRow.ProductVersion))!
+                .GetColumnBaseName();
+
+        #endregion Necessary implementation because we cannot directly override EnsureModel
     }
 }
