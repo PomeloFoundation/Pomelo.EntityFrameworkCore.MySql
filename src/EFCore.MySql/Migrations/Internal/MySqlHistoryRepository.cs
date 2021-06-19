@@ -24,8 +24,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         protected override void ConfigureTable([NotNull] EntityTypeBuilder<HistoryRow> history)
         {
             base.ConfigureTable(history);
-            history.Property(h => h.MigrationId).HasColumnType("varchar(95)");
-            history.Property(h => h.ProductVersion).HasColumnType("varchar(32)").IsRequired();
+
+            history.HasCharSet(CharSet.Utf8Mb4);
         }
 
         protected override string ExistsSql
