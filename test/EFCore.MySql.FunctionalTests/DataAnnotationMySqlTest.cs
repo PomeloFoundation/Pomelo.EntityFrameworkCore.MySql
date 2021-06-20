@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Pomelo.EntityFrameworkCore.MySql.DataAnnotations;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -178,7 +177,7 @@ WHERE ROW_COUNT() = 1 AND `Unique_No` = LAST_INSERT_ID();");
         {
             public int Id { get; set; }
 
-            [CharSet("latin1")]
+            [MySqlCharSet("latin1")]
             public string PersonFirstName { get; set; }
         }
 
@@ -196,7 +195,7 @@ WHERE ROW_COUNT() = 1 AND `Unique_No` = LAST_INSERT_ID();");
             return modelBuilder;
         }
 
-        [CharSet("latin1")]
+        [MySqlCharSet("latin1")]
         protected class TableWithCharSet
         {
             public int Id { get; set; }

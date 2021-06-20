@@ -6,14 +6,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.DataAnnotations;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions
 {
     /// <summary>
-    ///     A convention that configures the column character set for a property or field based on the applied <see cref="CharSetAttribute" />.
+    ///     A convention that configures the column character set for a property or field based on the applied <see cref="MySqlCharSetAttribute" />.
     /// </summary>
-    public class ColumnCharSetAttributeConvention : PropertyAttributeConventionBase<CharSetAttribute>
+    public class ColumnCharSetAttributeConvention : PropertyAttributeConventionBase<MySqlCharSetAttribute>
     {
         /// <summary>
         ///     Creates a new instance of <see cref="UnicodeAttributeConvention" />.
@@ -27,7 +26,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions
         /// <inheritdoc />
         protected override void ProcessPropertyAdded(
             IConventionPropertyBuilder propertyBuilder,
-            CharSetAttribute attribute,
+            MySqlCharSetAttribute attribute,
             MemberInfo clrMember,
             IConventionContext context)
             => propertyBuilder.HasCharSet(attribute.CharSetName);

@@ -10,7 +10,6 @@ using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Utilities;
-using Pomelo.EntityFrameworkCore.MySql.DataAnnotations;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
@@ -149,7 +148,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
             {
                 var delegationModes = entityType[MySqlAnnotationNames.CharSetDelegation] as DelegationModes?;
                 return new AttributeCodeFragment(
-                    typeof(CharSetAttribute),
+                    typeof(MySqlCharSetAttribute),
                     new[] {annotation.Value}
                         .AppendIfTrue(delegationModes.HasValue, delegationModes)
                         .ToArray());
@@ -159,7 +158,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
                 entityType[MySqlAnnotationNames.CharSet] is null)
             {
                 return new AttributeCodeFragment(
-                    typeof(CharSetAttribute),
+                    typeof(MySqlCharSetAttribute),
                     null,
                     annotation.Value);
             }
@@ -174,7 +173,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
 
             return annotation.Name switch
             {
-                MySqlAnnotationNames.CharSet when annotation.Value is string {Length: > 0} charSet => new AttributeCodeFragment(typeof(CharSetAttribute), charSet),
+                MySqlAnnotationNames.CharSet when annotation.Value is string {Length: > 0} charSet => new AttributeCodeFragment(typeof(MySqlCharSetAttribute), charSet),
                 _ => base.GenerateDataAnnotation(property, annotation)
             };
         }
