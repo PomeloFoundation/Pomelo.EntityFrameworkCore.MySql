@@ -12,6 +12,26 @@ namespace System
     [DebuggerStepThrough]
     internal static class SharedTypeExtensions
     {
+        private static readonly Dictionary<Type, string> _builtInTypeNames = new()
+        {
+            { typeof(bool), "bool" },
+            { typeof(byte), "byte" },
+            { typeof(char), "char" },
+            { typeof(decimal), "decimal" },
+            { typeof(double), "double" },
+            { typeof(float), "float" },
+            { typeof(int), "int" },
+            { typeof(long), "long" },
+            { typeof(object), "object" },
+            { typeof(sbyte), "sbyte" },
+            { typeof(short), "short" },
+            { typeof(string), "string" },
+            { typeof(uint), "uint" },
+            { typeof(ulong), "ulong" },
+            { typeof(ushort), "ushort" },
+            { typeof(void), "void" }
+        };
+
         public static Type UnwrapNullableType(this Type type) => Nullable.GetUnderlyingType(type) ?? type;
 
         public static bool IsNullableType(this Type type)
@@ -252,6 +272,27 @@ namespace System
             return _commonTypeDictionary.TryGetValue(type, out var value)
                 ? value
                 : Activator.CreateInstance(type);
+        }
+
+        public static IEnumerable<string> GetNamespaces(this Type type)
+        {
+            if (_builtInTypeNames.ContainsKey(type))
+            {
+                yield break;
+            }
+
+            yield return type.Namespace!;
+
+            if (type.IsGenericType)
+            {
+                foreach (var typeArgument in type.GenericTypeArguments)
+                {
+                    foreach (var ns in typeArgument.GetNamespaces())
+                    {
+                        yield return ns;
+                    }
+                }
+            }
         }
     }
 }

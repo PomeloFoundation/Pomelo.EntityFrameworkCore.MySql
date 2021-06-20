@@ -139,6 +139,45 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
             return null;
         }
 
+        protected override AttributeCodeFragment GenerateDataAnnotation(IEntityType entityType, IAnnotation annotation)
+        {
+            Check.NotNull(entityType, nameof(entityType));
+            Check.NotNull(annotation, nameof(annotation));
+
+            if (annotation.Name == MySqlAnnotationNames.CharSet)
+            {
+                var delegationModes = entityType[MySqlAnnotationNames.CharSetDelegation] as DelegationModes?;
+                return new AttributeCodeFragment(
+                    typeof(MySqlCharSetAttribute),
+                    new[] {annotation.Value}
+                        .AppendIfTrue(delegationModes.HasValue, delegationModes)
+                        .ToArray());
+            }
+
+            if (annotation.Name == MySqlAnnotationNames.CharSetDelegation &&
+                entityType[MySqlAnnotationNames.CharSet] is null)
+            {
+                return new AttributeCodeFragment(
+                    typeof(MySqlCharSetAttribute),
+                    null,
+                    annotation.Value);
+            }
+
+            return base.GenerateDataAnnotation(entityType, annotation);
+        }
+
+        protected override AttributeCodeFragment GenerateDataAnnotation(IProperty property, IAnnotation annotation)
+        {
+            Check.NotNull(property, nameof(property));
+            Check.NotNull(annotation, nameof(annotation));
+
+            return annotation.Name switch
+            {
+                MySqlAnnotationNames.CharSet when annotation.Value is string {Length: > 0} charSet => new AttributeCodeFragment(typeof(MySqlCharSetAttribute), charSet),
+                _ => base.GenerateDataAnnotation(property, annotation)
+            };
+        }
+
         protected override MethodCallCodeFragment GenerateFluentApi(IProperty property, IAnnotation annotation)
         {
             Check.NotNull(property, nameof(property));

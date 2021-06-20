@@ -1,6 +1,7 @@
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -157,6 +158,51 @@ SELECT `Unique_No`
 FROM `Sample`
 WHERE ROW_COUNT() = 1 AND `Unique_No` = LAST_INSERT_ID();");
         }
+
+        [ConditionalFact]
+        public virtual ModelBuilder CharSet_attribute_is_applied_to_column()
+        {
+            var modelBuilder = CreateModelBuilder();
+
+            modelBuilder.Entity<ColumnWithCharSet>();
+
+            Validate(modelBuilder);
+
+            Assert.Equal("latin1", GetProperty<ColumnWithCharSet>(modelBuilder, "PersonFirstName").GetCharSet());
+
+            return modelBuilder;
+        }
+
+        protected class ColumnWithCharSet
+        {
+            public int Id { get; set; }
+
+            [MySqlCharSet("latin1")]
+            public string PersonFirstName { get; set; }
+        }
+
+        [ConditionalFact]
+        public virtual ModelBuilder CharSet_attribute_is_applied_to_table()
+        {
+            var modelBuilder = CreateModelBuilder();
+
+            modelBuilder.Entity<TableWithCharSet>();
+
+            Validate(modelBuilder);
+
+            Assert.Equal("latin1", GetEntityType<TableWithCharSet>(modelBuilder).GetCharSet());
+
+            return modelBuilder;
+        }
+
+        [MySqlCharSet("latin1")]
+        protected class TableWithCharSet
+        {
+            public int Id { get; set; }
+        }
+
+        protected static IMutableEntityType GetEntityType<TEntity>(ModelBuilder modelBuilder)
+            => modelBuilder.Model.FindEntityType(typeof(TEntity));
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
