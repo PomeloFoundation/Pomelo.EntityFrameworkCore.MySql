@@ -7,7 +7,7 @@ using System;
 namespace Microsoft.EntityFrameworkCore
 {
     /// <summary>
-    ///     Configures the property as capable of persisting unicode characters.
+    ///     Sets the character set of a type (table), property or field (column) for MySQL.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property | AttributeTargets.Field)]
     public class MySqlCharSetAttribute : Attribute

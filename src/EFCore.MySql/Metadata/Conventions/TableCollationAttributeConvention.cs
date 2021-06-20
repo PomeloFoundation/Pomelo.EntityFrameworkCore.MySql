@@ -9,15 +9,15 @@ using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
 namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions
 {
     /// <summary>
-    ///     A convention that configures the character set for an entity based on the applied <see cref="MySqlCharSetAttribute" />.
+    ///     A convention that configures the collation for an entity based on the applied <see cref="MySqlCollationAttribute" />.
     /// </summary>
-    public class TableCharSetAttributeConvention : EntityTypeAttributeConventionBase<MySqlCharSetAttribute>
+    public class TableCollationAttributeConvention : EntityTypeAttributeConventionBase<MySqlCollationAttribute>
     {
         /// <summary>
-        ///     Creates a new instance of <see cref="TableCharSetAttributeConvention" />.
+        ///     Creates a new instance of <see cref="TableCollationAttributeConvention" />.
         /// </summary>
         /// <param name="dependencies"> Parameter object containing dependencies for this convention. </param>
-        public TableCharSetAttributeConvention(ProviderConventionSetBuilderDependencies dependencies)
+        public TableCollationAttributeConvention(ProviderConventionSetBuilderDependencies dependencies)
             : base(dependencies)
         {
         }
@@ -25,8 +25,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions
         /// <inheritdoc />
         protected override void ProcessEntityTypeAdded(
             IConventionEntityTypeBuilder entityTypeBuilder,
-            MySqlCharSetAttribute attribute,
+            MySqlCollationAttribute attribute,
             IConventionContext<IConventionEntityTypeBuilder> context)
-            => entityTypeBuilder.HasCharSet(attribute.CharSetName, attribute.DelegationModes);
+            => entityTypeBuilder.UseCollation(attribute.CollationName, attribute.DelegationModes);
     }
 }

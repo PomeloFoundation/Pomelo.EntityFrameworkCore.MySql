@@ -163,19 +163,26 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
                     annotation.Value);
             }
 
-            return base.GenerateDataAnnotation(entityType, annotation);
-        }
-
-        protected override AttributeCodeFragment GenerateDataAnnotation(IProperty property, IAnnotation annotation)
-        {
-            Check.NotNull(property, nameof(property));
-            Check.NotNull(annotation, nameof(annotation));
-
-            return annotation.Name switch
+            if (annotation.Name == RelationalAnnotationNames.Collation)
             {
-                MySqlAnnotationNames.CharSet when annotation.Value is string {Length: > 0} charSet => new AttributeCodeFragment(typeof(MySqlCharSetAttribute), charSet),
-                _ => base.GenerateDataAnnotation(property, annotation)
-            };
+                var delegationModes = entityType[MySqlAnnotationNames.CollationDelegation] as DelegationModes?;
+                return new AttributeCodeFragment(
+                    typeof(MySqlCollationAttribute),
+                    new[] {annotation.Value}
+                        .AppendIfTrue(delegationModes.HasValue, delegationModes)
+                        .ToArray());
+            }
+
+            if (annotation.Name == MySqlAnnotationNames.CollationDelegation &&
+                entityType[RelationalAnnotationNames.Collation] is null)
+            {
+                return new AttributeCodeFragment(
+                    typeof(MySqlCollationAttribute),
+                    null,
+                    annotation.Value);
+            }
+
+            return base.GenerateDataAnnotation(entityType, annotation);
         }
 
         protected override MethodCallCodeFragment GenerateFluentApi(IProperty property, IAnnotation annotation)
@@ -196,6 +203,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
                 default:
                     return null;
             }
+        }
+
+        protected override AttributeCodeFragment GenerateDataAnnotation(IProperty property, IAnnotation annotation)
+        {
+            Check.NotNull(property, nameof(property));
+            Check.NotNull(annotation, nameof(annotation));
+
+            return annotation.Name switch
+            {
+                MySqlAnnotationNames.CharSet when annotation.Value is string {Length: > 0} charSet => new AttributeCodeFragment(typeof(MySqlCharSetAttribute), charSet),
+                RelationalAnnotationNames.Collation when annotation.Value is string {Length: > 0} collation => new AttributeCodeFragment(typeof(MySqlCollationAttribute), collation),
+                _ => base.GenerateDataAnnotation(property, annotation)
+            };
         }
     }
 }
