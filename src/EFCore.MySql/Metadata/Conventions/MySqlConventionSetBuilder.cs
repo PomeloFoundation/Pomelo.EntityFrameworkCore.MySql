@@ -38,7 +38,9 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
             conventionSet.ModelInitializedConventions.Add(new RelationalMaxIdentifierLengthConvention(64, Dependencies, RelationalDependencies));
 
             conventionSet.EntityTypeAddedConventions.Add(new TableCharSetAttributeConvention(Dependencies));
+            conventionSet.EntityTypeAddedConventions.Add(new TableCollationAttributeConvention(Dependencies));
             conventionSet.PropertyAddedConventions.Add(new ColumnCharSetAttributeConvention(Dependencies));
+            conventionSet.PropertyAddedConventions.Add(new ColumnCollationAttributeConvention(Dependencies));
 
             var valueGeneratorConvention = new MySqlValueGenerationConvention(Dependencies, RelationalDependencies);
             ReplaceConvention(conventionSet.EntityTypeBaseTypeChangedConventions, valueGeneratorConvention);

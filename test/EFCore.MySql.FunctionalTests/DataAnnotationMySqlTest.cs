@@ -201,6 +201,48 @@ WHERE ROW_COUNT() = 1 AND `Unique_No` = LAST_INSERT_ID();");
             public int Id { get; set; }
         }
 
+        [ConditionalFact]
+        public virtual ModelBuilder Collation_attribute_is_applied_to_column()
+        {
+            var modelBuilder = CreateModelBuilder();
+
+            modelBuilder.Entity<ColumnWithCollation>();
+
+            Validate(modelBuilder);
+
+            Assert.Equal("latin1_bin", GetProperty<ColumnWithCollation>(modelBuilder, "PersonFirstName").GetCollation());
+
+            return modelBuilder;
+        }
+
+        protected class ColumnWithCollation
+        {
+            public int Id { get; set; }
+
+            [MySqlCollation("latin1_bin")]
+            public string PersonFirstName { get; set; }
+        }
+
+        [ConditionalFact]
+        public virtual ModelBuilder Collation_attribute_is_applied_to_table()
+        {
+            var modelBuilder = CreateModelBuilder();
+
+            modelBuilder.Entity<TableWithCollation>();
+
+            Validate(modelBuilder);
+
+            Assert.Equal("latin1_bin", GetEntityType<TableWithCollation>(modelBuilder).GetCollation());
+
+            return modelBuilder;
+        }
+
+        [MySqlCollation("latin1_bin")]
+        protected class TableWithCollation
+        {
+            public int Id { get; set; }
+        }
+
         protected static IMutableEntityType GetEntityType<TEntity>(ModelBuilder modelBuilder)
             => modelBuilder.Model.FindEntityType(typeof(TEntity));
 
