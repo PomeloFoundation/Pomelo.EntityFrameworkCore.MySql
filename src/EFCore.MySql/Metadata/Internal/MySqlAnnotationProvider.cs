@@ -26,8 +26,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             _options = options;
         }
 
-        public override IEnumerable<IAnnotation> For(IRelationalModel model)
+        public override IEnumerable<IAnnotation> For(IRelationalModel model, bool designTime)
         {
+            if (!designTime)
+            {
+                yield break;
+            }
+
             if (GetActualModelCharSet(model.Model, DelegationModes.ApplyToDatabases) is string charSet)
             {
                 yield return new Annotation(
@@ -47,8 +52,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             }
         }
 
-        public override IEnumerable<IAnnotation> For(ITable table)
+        public override IEnumerable<IAnnotation> For(ITable table, bool designTime)
         {
+            if (!designTime)
+            {
+                yield break;
+            }
+
             // Model validation ensures that these facets are the same on all mapped entity types
             var entityType = table.EntityTypeMappings.First().EntityType;
 
@@ -79,8 +89,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             }
         }
 
-        public override IEnumerable<IAnnotation> For(IUniqueConstraint constraint)
+        public override IEnumerable<IAnnotation> For(IUniqueConstraint constraint, bool designTime)
         {
+            if (!designTime)
+            {
+                yield break;
+            }
+
             // Model validation ensures that these facets are the same on all mapped indexes
             var key = constraint.MappedKeys.First();
 
@@ -94,8 +109,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             }
         }
 
-        public override IEnumerable<IAnnotation> For(ITableIndex index)
+        public override IEnumerable<IAnnotation> For(ITableIndex index, bool designTime)
         {
+            if (!designTime)
+            {
+                yield break;
+            }
+
             // Model validation ensures that these facets are the same on all mapped indexes
             var modelIndex = index.MappedIndexes.First();
 
@@ -133,9 +153,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             }
         }
 
-        public override IEnumerable<IAnnotation> For(IColumn column)
+        public override IEnumerable<IAnnotation> For(IColumn column, bool designTime)
         {
-            var properties = column.PropertyMappings.Select(m => m.Property).ToArray();
+            if (!designTime)
+            {
+                yield break;
+            }
 
             if (properties.FirstOrDefault(p => p.GetValueGenerationStrategy() != null &&
                                                p.GetValueGenerationStrategy() != MySqlValueGenerationStrategy.None) is IProperty property)

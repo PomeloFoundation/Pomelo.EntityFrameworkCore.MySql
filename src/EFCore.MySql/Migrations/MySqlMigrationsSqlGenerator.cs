@@ -518,7 +518,7 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
                         IsUnique = index.IsUnique,
                         Filter = index.Filter,
                     };
-                    createIndexOperation.AddAnnotations(_annotationProvider.For(index));
+                    createIndexOperation.AddAnnotations(_annotationProvider.For(index, true)); // CHECK: necessary?
                     createIndexOperation.AddAnnotations(operation.GetAnnotations());
 
                     Generate(createIndexOperation, model, builder);
