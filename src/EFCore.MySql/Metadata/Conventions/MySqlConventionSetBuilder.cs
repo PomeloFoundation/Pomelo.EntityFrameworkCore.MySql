@@ -42,12 +42,13 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
             conventionSet.PropertyAddedConventions.Add(new ColumnCharSetAttributeConvention(Dependencies));
             conventionSet.PropertyAddedConventions.Add(new ColumnCollationAttributeConvention(Dependencies));
 
-            var valueGeneratorConvention = new MySqlValueGenerationConvention(Dependencies, RelationalDependencies);
-            ReplaceConvention(conventionSet.EntityTypeBaseTypeChangedConventions, valueGeneratorConvention);
-            ReplaceConvention(conventionSet.EntityTypePrimaryKeyChangedConventions, valueGeneratorConvention);
-            ReplaceConvention(conventionSet.ForeignKeyAddedConventions, valueGeneratorConvention);
-            ReplaceConvention(conventionSet.ForeignKeyRemovedConventions, valueGeneratorConvention);
-            conventionSet.PropertyAnnotationChangedConventions.Add(valueGeneratorConvention);
+            var valueGenerationConvention = new MySqlValueGenerationConvention(Dependencies, RelationalDependencies);
+            ReplaceConvention(conventionSet.EntityTypeBaseTypeChangedConventions, valueGenerationConvention);
+            ReplaceConvention(conventionSet.EntityTypeAnnotationChangedConventions, (RelationalValueGenerationConvention)valueGenerationConvention);
+            ReplaceConvention(conventionSet.EntityTypePrimaryKeyChangedConventions, valueGenerationConvention);
+            ReplaceConvention(conventionSet.ForeignKeyAddedConventions, valueGenerationConvention);
+            ReplaceConvention(conventionSet.ForeignKeyRemovedConventions, valueGenerationConvention);
+            conventionSet.PropertyAnnotationChangedConventions.Add(valueGenerationConvention);
 
             return conventionSet;
         }

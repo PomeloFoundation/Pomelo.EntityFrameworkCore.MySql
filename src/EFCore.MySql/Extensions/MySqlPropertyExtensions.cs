@@ -2,6 +2,7 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Linq;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -38,7 +39,10 @@ namespace Microsoft.EntityFrameworkCore
                 return ObjectToEnumConverter.GetEnumValue<MySqlValueGenerationStrategy>(annotation);
             }
 
-            if (property.GetDefaultValue() != null || property.GetDefaultValueSql() != null || property.GetComputedColumnSql() != null)
+            if (property.GetContainingForeignKeys().Any(fk => !fk.IsBaseLinking()) ||
+                property.TryGetDefaultValue(storeObject, out _) ||
+                property.GetDefaultValueSql() != null ||
+                property.GetComputedColumnSql() != null)
             {
                 return null;
             }
@@ -50,12 +54,14 @@ namespace Microsoft.EntityFrameworkCore
                     ?.GetValueGenerationStrategy(storeObject);
             }
 
-            if (IsCompatibleIdentityColumn(property) && property.ValueGenerated == ValueGenerated.OnAdd)
+            if (property.ValueGenerated == ValueGenerated.OnAdd &&
+                IsCompatibleIdentityColumn(property))
             {
                 return MySqlValueGenerationStrategy.IdentityColumn;
             }
 
-            if (IsCompatibleComputedColumn(property) && property.ValueGenerated == ValueGenerated.OnAddOrUpdate)
+            if (property.ValueGenerated == ValueGenerated.OnAddOrUpdate &&
+                IsCompatibleComputedColumn(property))
             {
                 return MySqlValueGenerationStrategy.ComputedColumn;
             }

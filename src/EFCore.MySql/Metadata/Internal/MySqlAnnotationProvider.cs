@@ -160,10 +160,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
                 yield break;
             }
 
-            if (properties.FirstOrDefault(p => p.GetValueGenerationStrategy() != null &&
-                                               p.GetValueGenerationStrategy() != MySqlValueGenerationStrategy.None) is IProperty property)
+            var table = StoreObjectIdentifier.Table(column.Table.Name, column.Table.Schema);
+            var properties = column.PropertyMappings.Select(m => m.Property).ToArray();
+
+            if (column.PropertyMappings.Where(
+                    m => m.TableMapping.IsSharedTablePrincipal &&
+                         m.TableMapping.EntityType == m.Property.DeclaringEntityType)
+                .Select(m => m.Property)
+                .FirstOrDefault(p => p.GetValueGenerationStrategy(table) == MySqlValueGenerationStrategy.IdentityColumn) is IProperty identityProperty)
             {
-                var valueGenerationStrategy = property.GetValueGenerationStrategy();
+                var valueGenerationStrategy = identityProperty.GetValueGenerationStrategy(table);
+                yield return new Annotation(
+                    MySqlAnnotationNames.ValueGenerationStrategy,
+                    valueGenerationStrategy);
+            }
+            else if (properties.FirstOrDefault(
+                p => p.GetValueGenerationStrategy(table) == MySqlValueGenerationStrategy.ComputedColumn) is IProperty computedProperty)
+            {
+                var valueGenerationStrategy = computedProperty.GetValueGenerationStrategy(table);
                 yield return new Annotation(
                     MySqlAnnotationNames.ValueGenerationStrategy,
                     valueGenerationStrategy);
