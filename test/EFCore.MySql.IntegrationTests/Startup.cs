@@ -29,14 +29,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
-            services.AddMvc(options =>
-            {
-                options.OutputFormatters.Clear();
-                options.OutputFormatters.Add(new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings()
-                {
-                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                }, ArrayPool<char>.Shared, options));
-            });
+            services
+                .AddMvc()
+                .AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
 
             ConfigureEntityFramework(services);
 
