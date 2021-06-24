@@ -30,7 +30,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             = typeof(string).GetRuntimeMethod(nameof(string.ToLower), Array.Empty<Type>());
         private static readonly MethodInfo _toUpperMethodInfo
             = typeof(string).GetRuntimeMethod(nameof(string.ToUpper), Array.Empty<Type>());
-        private static readonly MethodInfo _substringMethodInfo
+        private static readonly MethodInfo _substringMethodInfoWithOneArg
+            = typeof(string).GetRuntimeMethod(nameof(string.Substring), new[] { typeof(int) });
+        private static readonly MethodInfo _substringMethodInfoWithTwoArgs
             = typeof(string).GetRuntimeMethod(nameof(string.Substring), new[] { typeof(int), typeof(int) });
         private static readonly MethodInfo _isNullOrWhiteSpaceMethodInfo
             = typeof(string).GetRuntimeMethod(nameof(string.IsNullOrWhiteSpace), new[] { typeof(string) });
@@ -170,7 +172,28 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     instance.TypeMapping);
             }
 
-            if (_substringMethodInfo.Equals(method))
+            if (_substringMethodInfoWithOneArg.Equals(method))
+            {
+                return _sqlExpressionFactory.Function(
+                    "SUBSTRING",
+                    new[]
+                    {
+                        instance,
+                        _sqlExpressionFactory.Add(
+                            arguments[0],
+                            _sqlExpressionFactory.Constant(1)),
+                        _sqlExpressionFactory.NullableFunction(
+                            "CHAR_LENGTH",
+                            new[] { instance },
+                            typeof(int))
+                    },
+                    nullable: true,
+                    argumentsPropagateNullability: new[] { true, true, true },
+                    method.ReturnType,
+                    instance.TypeMapping);
+            }
+
+            if (_substringMethodInfoWithTwoArgs.Equals(method))
             {
                 return _sqlExpressionFactory.NullableFunction(
                     "SUBSTRING",
