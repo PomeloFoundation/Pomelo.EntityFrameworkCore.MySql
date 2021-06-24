@@ -51,11 +51,40 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             IReadOnlyList<SqlExpression> arguments,
             IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
+            if (instance == null ||
+                method.Name != nameof(ToString) ||
+                arguments.Count != 0)
+            {
+                return null;
+            }
+
+            if (instance.Type == typeof(bool))
+            {
+                return instance is ColumnExpression columnExpression &&
+                       columnExpression.IsNullable
+                    ? _sqlExpressionFactory.Case(
+                        new[]
+                        {
+                            new CaseWhenClause(
+                                _sqlExpressionFactory.Equal(instance, _sqlExpressionFactory.Constant(false)),
+                                _sqlExpressionFactory.Constant(false.ToString())),
+                            new CaseWhenClause(
+                                _sqlExpressionFactory.Equal(instance, _sqlExpressionFactory.Constant(true)),
+                                _sqlExpressionFactory.Constant(true.ToString()))
+                        },
+                        _sqlExpressionFactory.Constant(null))
+                    : _sqlExpressionFactory.Case(
+                        new[]
+                        {
+                            new CaseWhenClause(
+                                _sqlExpressionFactory.Equal(instance, _sqlExpressionFactory.Constant(false)),
+                                _sqlExpressionFactory.Constant(false.ToString()))
+                        },
+                        _sqlExpressionFactory.Constant(true.ToString()));
+            }
+
             // Translates parameterless Object.ToString() calls.
-            return method.Name == nameof(ToString)
-                   && arguments.Count == 0
-                   && instance != null
-                   && _supportedTypes.Contains(instance.Type.UnwrapNullableType())
+            return _supportedTypes.Contains(instance.Type.UnwrapNullableType())
                 ? _sqlExpressionFactory.Convert(instance, typeof(string))
                 : null;
         }
