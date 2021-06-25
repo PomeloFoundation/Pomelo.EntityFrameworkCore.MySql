@@ -44,6 +44,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Filtered_include_with_multiple_ordering(async);
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
+        public override Task Include_in_let_followed_by_FirstOrDefault(bool async)
+        {
+            return base.Include_in_let_followed_by_FirstOrDefault(async);
+        }
+
         public override Task Include_collection_with_multiple_conditional_order_by(bool async)
         {
             // The order of `Orders` can be different, becaues it is not explicitly sorted.

@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -9,6 +11,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
     {
         protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override async Task Multiple_single_result_in_projection_containing_owned_types(bool async)
         {
             await base.Multiple_single_result_in_projection_containing_owned_types(async);

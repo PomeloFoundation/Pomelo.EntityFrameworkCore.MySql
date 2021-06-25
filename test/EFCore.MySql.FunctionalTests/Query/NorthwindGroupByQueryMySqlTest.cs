@@ -1,9 +1,7 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
@@ -54,6 +52,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             // See https://github.com/mysql-net/MySqlConnector/issues/898.
             return base.GroupBy_group_Where_Select_Distinct_aggregate(async);
+        }
+
+        [SupportedServerVersionCondition("8.0.0-mysql", "0.0.0-mariadb")] // Is an issue issue in MySQL 5.7.34, but not in 8.0.25.
+        public override Task GroupBy_constant_with_where_on_grouping_with_aggregate_operators(bool async)
+        {
+            // See https://github.com/mysql-net/MySqlConnector/issues/980.
+            return base.GroupBy_constant_with_where_on_grouping_with_aggregate_operators(async);
         }
 
         private void AssertSql(params string[] expected)
