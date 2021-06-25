@@ -1415,7 +1415,8 @@ LEFT JOIN (
 ORDER BY `l`.`Id`, `t0`.`OneToMany_Optional_Inverse2Id`, `t0`.`Name`, `t0`.`Id`, `t1`.`OneToMany_Required_Inverse2Id`, `t1`.`Name` DESC, `t1`.`Id`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply), nameof(ServerVersionSupport.WindowFunctions))]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override async Task Filtered_include_after_different_filtered_include_different_level(bool async)
         {
             await base.Filtered_include_after_different_filtered_include_different_level(async);
@@ -1728,7 +1729,8 @@ LEFT JOIN LATERAL (
 ORDER BY `l`.`Id`, `t`.`Id`, `t`.`Id0`, `t0`.`Id`, `t0`.`Id0`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply), nameof(ServerVersionSupport.WindowFunctions))]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override async Task Complex_query_with_let_collection_projection_FirstOrDefault(bool async)
         {
             await base.Complex_query_with_let_collection_projection_FirstOrDefault(async);
