@@ -1,5 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
@@ -88,6 +90,7 @@ LEFT JOIN (
 ORDER BY `l`.`Id`, `t`.`Id`, `t`.`Name`, `t`.`FK`, `t0`.`Id`, `t0`.`Id0`");
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
         public override async Task Take_Select_collection_Take(bool async)
         {
             await base.Take_Select_collection_Take(async);
@@ -117,6 +120,7 @@ LEFT JOIN LATERAL (
 ORDER BY `t`.`Id`, `t0`.`Id`, `t0`.`Id00`, `t0`.`Id0`");
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
         public override async Task Skip_Take_Select_collection_Skip_Take(bool async)
         {
             await base.Skip_Take_Select_collection_Skip_Take(async);
@@ -144,6 +148,60 @@ LEFT JOIN LATERAL (
     INNER JOIN `Level1` AS `l1` ON `t1`.`Level1_Required_Id` = `l1`.`Id`
 ) AS `t0` ON TRUE
 ORDER BY `t`.`Id`, `t0`.`Id`, `t0`.`Id00`, `t0`.`Id0`");
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Complex_query_with_let_collection_projection_FirstOrDefault(bool async)
+        {
+            return base.Complex_query_with_let_collection_projection_FirstOrDefault(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Filtered_include_after_different_filtered_include_different_level(bool async)
+        {
+            return base.Filtered_include_after_different_filtered_include_different_level(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Filtered_include_same_filter_set_on_same_navigation_twice_followed_by_ThenIncludes(bool async)
+        {
+            return base.Filtered_include_same_filter_set_on_same_navigation_twice_followed_by_ThenIncludes(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Filtered_include_multiple_multi_level_includes_with_first_level_using_filter_include_on_one_of_the_chains_only(bool async)
+        {
+            return base.Filtered_include_multiple_multi_level_includes_with_first_level_using_filter_include_on_one_of_the_chains_only(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Filtered_include_and_non_filtered_include_followed_by_then_include_on_same_navigation(bool async)
+        {
+            return base.Filtered_include_and_non_filtered_include_followed_by_then_include_on_same_navigation(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Filtered_include_complex_three_level_with_middle_having_filter1(bool async)
+        {
+            return base.Filtered_include_complex_three_level_with_middle_having_filter1(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Filtered_include_complex_three_level_with_middle_having_filter2(bool async)
+        {
+            return base.Filtered_include_complex_three_level_with_middle_having_filter2(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Filtered_include_Take_with_another_Take_on_top_level(bool async)
+        {
+            return base.Filtered_include_Take_with_another_Take_on_top_level(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Filtered_include_Skip_Take_with_another_Skip_Take_on_top_level(bool async)
+        {
+            return base.Filtered_include_Skip_Take_with_another_Skip_Take_on_top_level(async);
         }
 
         private void AssertSql(params string[] expected)

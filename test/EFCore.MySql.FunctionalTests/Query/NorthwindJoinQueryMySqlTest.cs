@@ -1,9 +1,7 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit.Abstractions;
 
@@ -79,6 +77,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         public override Task SelectMany_with_selecting_outer_entity_column_and_inner_column(bool async)
         {
             return base.SelectMany_with_selecting_outer_entity_column_and_inner_column(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override Task Take_in_collection_projection_with_FirstOrDefault_on_top_level(bool async)
+        {
+            return base.Take_in_collection_projection_with_FirstOrDefault_on_top_level(async);
         }
 
         protected override void ClearLog()
