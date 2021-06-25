@@ -5,7 +5,13 @@ using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes
 {
-    // For facts and theories, they must be defined as conditional (ConditionalFact, ConditionalTheory) for this attribute to work.
+    /// <summary>
+    /// Use the `propertiesOrVersions` constructor parameter, for OR conditions.
+    /// Use multiple <see cref="SupportedServerVersionLessThanConditionAttribute"/> attributes, for AND conditions.
+    /// </summary>
+    /// <remarks>
+    /// For facts and theories, they must be defined as conditional (ConditionalFact, ConditionalTheory) for this attribute to work.
+    /// </remarks>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class SupportedServerVersionLessThanConditionAttribute : Attribute, ITestCondition
     {

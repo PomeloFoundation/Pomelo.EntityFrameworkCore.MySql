@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
@@ -38,25 +39,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
                IsTestConditionMet<SupportedServerVersionLessThanConditionAttribute>(type);
 
         protected virtual bool IsTestConditionMet<TType>(ITypeInfo type) where TType : ITestCondition
-        {
-            var condition = GetTestCondition<TType>(type);
+            => GetTestConditions<TType>(type).Aggregate(true, (current, next) => current && next.IsMetAsync().Result);
 
-            if (condition == null)
-            {
-                return true;
-            }
-
-            var isMetTask = condition.IsMetAsync();
-            return isMetTask.IsCompleted && isMetTask.Result;
-        }
-
-        protected virtual ITestCondition GetTestCondition<TType>(ITypeInfo type) where TType : ITestCondition
-        {
-            var attribute = type.GetCustomAttributes(typeof(TType)).FirstOrDefault();
-
-            return attribute != null
-                ? (TType)Activator.CreateInstance(typeof(TType), attribute.GetConstructorArguments().ToArray())
-                : null;
-        }
+        protected virtual IEnumerable<ITestCondition> GetTestConditions<TType>(ITypeInfo type) where TType : ITestCondition
+            => type.GetCustomAttributes(typeof(TType))
+                .Select(attribute => (TType)Activator.CreateInstance(typeof(TType), attribute.GetConstructorArguments().ToArray()))
+                .Cast<ITestCondition>();
     }
 }
