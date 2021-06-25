@@ -40,6 +40,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EFCore.MySql.Json.Microsoft
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EFCore.MySql.Json.Newtonsoft", "src\EFCore.MySql.Json.Newtonsoft\EFCore.MySql.Json.Newtonsoft.csproj", "{BBA0BB73-3D75-4F08-992F-A2CF9F52E7AD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QueryBaselineUpdater", "tools\QueryBaselineUpdater\QueryBaselineUpdater.csproj", "{57293669-2ADF-448F-AE22-B49BAC4A335E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{DD543966-92C7-4FE6-B953-3270E3E11D46}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,6 +78,10 @@ Global
 		{BBA0BB73-3D75-4F08-992F-A2CF9F52E7AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BBA0BB73-3D75-4F08-992F-A2CF9F52E7AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BBA0BB73-3D75-4F08-992F-A2CF9F52E7AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57293669-2ADF-448F-AE22-B49BAC4A335E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57293669-2ADF-448F-AE22-B49BAC4A335E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57293669-2ADF-448F-AE22-B49BAC4A335E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57293669-2ADF-448F-AE22-B49BAC4A335E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -86,6 +94,7 @@ Global
 		{7A727AB9-38F0-40E5-B134-7AC830B8D1EC} = {7E8380DB-F015-407B-99C2-26404E551673}
 		{C27A301A-F47E-4584-88DB-0474AE446405} = {7E8380DB-F015-407B-99C2-26404E551673}
 		{BBA0BB73-3D75-4F08-992F-A2CF9F52E7AD} = {7E8380DB-F015-407B-99C2-26404E551673}
+		{57293669-2ADF-448F-AE22-B49BAC4A335E} = {DD543966-92C7-4FE6-B953-3270E3E11D46}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {48E34212-4B35-4A81-92F9-3C25D4E76D6C}
