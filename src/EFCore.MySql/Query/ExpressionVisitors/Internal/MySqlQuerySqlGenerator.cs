@@ -198,7 +198,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         protected override Expression VisitCrossApply(CrossApplyExpression crossApplyExpression)
         {
-            Sql.Append("JOIN LATERAL ");
+            Sql.Append("JOIN ");
+
+            if (crossApplyExpression.Table is not TableExpression)
+            {
+                Sql.Append("LATERAL ");
+            }
 
             Visit(crossApplyExpression.Table);
 
@@ -209,7 +214,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         protected override Expression VisitOuterApply(OuterApplyExpression outerApplyExpression)
         {
-            Sql.Append("LEFT JOIN LATERAL ");
+            Sql.Append("LEFT JOIN ");
+
+            if (outerApplyExpression.Table is not TableExpression)
+            {
+                Sql.Append("LATERAL ");
+            }
 
             Visit(outerApplyExpression.Table);
 
