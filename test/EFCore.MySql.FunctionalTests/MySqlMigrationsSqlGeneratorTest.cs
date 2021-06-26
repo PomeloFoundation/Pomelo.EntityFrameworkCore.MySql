@@ -1136,7 +1136,7 @@ ALTER DATABASE COLLATE latin1_swedish_ci;" + EOL,
     `Brand` longtext COLLATE latin1_swedish_ci NOT NULL,
     `Name` varchar(255) NOT NULL,
     PRIMARY KEY (`Name`, `Brand`(20))
-) COLLATE latin1_general_ci;" + EOL,
+) COLLATE=latin1_general_ci;" + EOL,
                 Sql,
                 ignoreLineEndingDifferences: true);
         }
@@ -1169,7 +1169,7 @@ ALTER DATABASE COLLATE latin1_swedish_ci;" + EOL,
                 });
 
             Assert.Equal(
-                @"ALTER TABLE `IceCreams` COLLATE latin1_general_cs;" + EOL,
+                @"ALTER TABLE `IceCreams` COLLATE=latin1_general_cs;" + EOL,
                 Sql,
                 ignoreLineEndingDifferences: true);
         }
@@ -1251,7 +1251,7 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
     `Brand` longtext CHARACTER SET utf8mb4 NOT NULL,
     `Name` varchar(255) NOT NULL,
     PRIMARY KEY (`Name`, `Brand`(20))
-) CHARACTER SET latin1;" + EOL,
+) CHARACTER SET=latin1;" + EOL,
                 Sql,
                 ignoreLineEndingDifferences: true);
         }
@@ -1284,7 +1284,7 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
                 });
 
             Assert.Equal(
-                @"ALTER TABLE `IceCreams` CHARACTER SET utf8mb4;" + EOL,
+                @"ALTER TABLE `IceCreams` CHARACTER SET=utf8mb4;" + EOL,
                 Sql,
                 ignoreLineEndingDifferences: true);
         }
