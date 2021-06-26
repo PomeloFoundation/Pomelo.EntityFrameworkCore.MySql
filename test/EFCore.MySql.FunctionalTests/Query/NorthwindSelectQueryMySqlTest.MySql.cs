@@ -40,7 +40,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 assertOrder: true);
 
             AssertSql(
-                @"SELECT EXTRACT(year FROM `o`.`OrderDate`) AS `Year`, COUNT(*) AS `Count`, (EXTRACT(year FROM `o`.`OrderDate`) = 1995) AND EXTRACT(year FROM `o`.`OrderDate`) IS NOT NULL AS `having`
+                @"SELECT EXTRACT(year FROM `o`.`OrderDate`) AS `Year`, COUNT(*) AS `Count`, EXTRACT(year FROM `o`.`OrderDate`) = 1995 AS `having`
 FROM `Orders` AS `o`
 WHERE (`o`.`CustomerID` = 'ALFKI') AND `o`.`OrderDate` IS NOT NULL
 GROUP BY `o`.`CustomerID`, EXTRACT(year FROM `o`.`OrderDate`), `having`
