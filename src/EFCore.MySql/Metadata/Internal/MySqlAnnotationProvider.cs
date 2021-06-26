@@ -83,7 +83,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             // Handle other annotations (including the delegation annotations).
             foreach (var annotation in entityType.GetAnnotations()
                 .Where(a => a.Name is MySqlAnnotationNames.CharSetDelegation or
-                                      MySqlAnnotationNames.CollationDelegation))
+                                      MySqlAnnotationNames.CollationDelegation or
+                                      MySqlAnnotationNames.TableOptions))
             {
                 yield return annotation;
             }

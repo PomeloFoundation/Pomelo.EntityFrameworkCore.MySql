@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -231,6 +232,36 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.GeneratedColumns))]
         public override Task Alter_column_change_computed()
             => base.Alter_column_change_computed();
+
+        // We currently do not scaffold table options.
+        //
+        // [ConditionalFact]
+        // public virtual async Task Create_table_with_table_options()
+        // {
+        //     await Test(
+        //         builder => { },
+        //         builder => builder.Entity(
+        //             "IceCream", e =>
+        //             {
+        //                 e.Property<int>("IceCreamId");
+        //                 e.HasTableOption("CHECKSUM", "1");
+        //                 e.HasTableOption("MAX_ROWS", "100");
+        //             }),
+        //         model =>
+        //         {
+        //             var table = Assert.Single(model.Tables);
+        //             var options = (IDictionary<string, string>)MySqlEntityTypeExtensions.DeserializeTableOptions(
+        //                 table.FindAnnotation(MySqlAnnotationNames.TableOptions)?.Value as string);
+        //
+        //             Assert.Contains("CHECKSUM", options);
+        //             Assert.Equal("1", options["CHECKSUM"]);
+        //
+        //             Assert.Contains("MAX_ROWS", options);
+        //             Assert.Equal("100", options["MAX_ROWS"]);
+        //         });
+        //
+        //     AssertSql(@"");
+        // }
 
         [ConditionalFact]
         public virtual async Task Add_columns_with_collations()

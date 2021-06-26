@@ -1,6 +1,8 @@
 // Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -377,5 +379,120 @@ namespace Microsoft.EntityFrameworkCore
         }
 
         #endregion Collation and delegation
+
+        #region Table options
+
+        /// <summary>
+        /// Sets a table option for the table associated with this entity.
+        /// Can be called more then once to set multiple table options.
+        /// </summary>
+        /// <param name="entityTypeBuilder"> The builder for the entity type being configured. </param>
+        /// <param name="name"> The name of the table options. </param>
+        /// <param name="value"> The value of the table options. </param>
+        /// <returns> The same builder instance so that multiple calls can be chained. </returns>
+        public static EntityTypeBuilder HasTableOption(
+            [NotNull] this EntityTypeBuilder entityTypeBuilder,
+            [CanBeNull] string name,
+            [CanBeNull] string value)
+        {
+            Check.NotNull(entityTypeBuilder, nameof(entityTypeBuilder));
+
+            var options = entityTypeBuilder.Metadata.GetTableOptions();
+            UpdateTableOption(name, value, options);
+            entityTypeBuilder.Metadata.SetTableOptions(options);
+
+            return entityTypeBuilder;
+        }
+
+        /// <summary>
+        /// Sets a table option for the table associated with this entity.
+        /// Can be called more then once to set multiple table options.
+        /// </summary>
+        /// <param name="entityTypeBuilder"> The builder for the entity type being configured. </param>
+        /// <param name="name"> The name of the table options. </param>
+        /// <param name="value"> The value of the table options. </param>
+        /// <returns> The same builder instance so that multiple calls can be chained. </returns>
+        public static EntityTypeBuilder<TEntity> HasTableOption<TEntity>(
+            [NotNull] this EntityTypeBuilder<TEntity> entityTypeBuilder,
+            [CanBeNull] string name,
+            [CanBeNull] string value)
+            where TEntity : class
+            => (EntityTypeBuilder<TEntity>)HasTableOption((EntityTypeBuilder)entityTypeBuilder, name, value);
+
+        /// <summary>
+        /// Sets a table option for the table associated with this entity.
+        /// Can be called more then once to set multiple table options.
+        /// </summary>
+        /// <param name="entityTypeBuilder"> The builder for the entity type being configured. </param>
+        /// <param name="name"> The name of the table options. </param>
+        /// <param name="value"> The value of the table options. </param>
+        /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
+        /// <returns> The same builder instance so that multiple calls can be chained. </returns>
+        public static IConventionEntityTypeBuilder HasTableOption(
+            [NotNull] this IConventionEntityTypeBuilder entityTypeBuilder,
+            [CanBeNull] string name,
+            [CanBeNull] string value,
+            bool fromDataAnnotation = false)
+        {
+            Check.NotNull(entityTypeBuilder, nameof(entityTypeBuilder));
+
+            if (entityTypeBuilder.CanSetTableOption(name, value, fromDataAnnotation))
+            {
+                var options = entityTypeBuilder.Metadata.GetTableOptions();
+                UpdateTableOption(name, value, options);
+                entityTypeBuilder.Metadata.SetTableOptions(options, fromDataAnnotation);
+
+                return entityTypeBuilder;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Returns a value indicating whether the table options for the table associated with this entity can be set.
+        /// </summary>
+        /// <param name="entityTypeBuilder"> The builder for the entity type being configured. </param>
+        /// <param name="name"> The name of the table options. </param>
+        /// <param name="value"> The value of the table options. </param>
+        /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
+        /// <returns><see langword="true"/> if the value can be set.</returns>
+        public static bool CanSetTableOption(
+            [NotNull] this IConventionEntityTypeBuilder entityTypeBuilder,
+            [CanBeNull] string name,
+            [CanBeNull] string value,
+            bool fromDataAnnotation = false)
+        {
+            Check.NotNull(entityTypeBuilder, nameof(entityTypeBuilder));
+
+            var options = entityTypeBuilder.Metadata.GetTableOptions();
+            UpdateTableOption(name, value, options);
+            var optionsString = MySqlEntityTypeExtensions.SerializeTableOptions(options);
+
+            return entityTypeBuilder.CanSetAnnotation(MySqlAnnotationNames.TableOptions, optionsString, fromDataAnnotation);
+        }
+
+        private static void UpdateTableOption(string key, string value, Dictionary<string, string> options)
+        {
+            if (key == null)
+            {
+                if (value != null)
+                {
+                    throw new ArgumentException(nameof(value));
+                }
+
+                options.Clear();
+                return;
+            }
+
+            if (value == null)
+            {
+                options.Remove(key);
+                return;
+            }
+
+            options[key] = value;
+        }
+
+        #endregion Table options
     }
 }

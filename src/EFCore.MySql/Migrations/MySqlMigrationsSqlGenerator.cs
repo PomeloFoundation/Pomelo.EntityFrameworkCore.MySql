@@ -334,21 +334,35 @@ DELIMITER ;";
         {
             base.Generate(operation, model, builder, false);
 
+            var tableOptions = new List<(string, string)>();
+
             if (operation[MySqlAnnotationNames.CharSet] is string charSet)
             {
-                builder
-                    .Append(" CHARACTER SET ")
-                    .Append(charSet);
+                tableOptions.Add(("CHARACTER SET", charSet));
             }
 
             if (operation[RelationalAnnotationNames.Collation] is string collation)
             {
-                builder
-                    .Append(" COLLATE ")
-                    .Append(collation);
+                tableOptions.Add(("COLLATE", collation));
             }
 
-            GenerateComment(operation.Comment, builder);
+            if (operation.Comment != null)
+            {
+                tableOptions.Add(("COMMENT", _stringTypeMapping.GenerateSqlLiteral(operation.Comment)));
+            }
+
+            tableOptions.AddRange(
+                MySqlEntityTypeExtensions.DeserializeTableOptions(operation[MySqlAnnotationNames.TableOptions] as string)
+                    .Select(kvp => (kvp.Key, kvp.Value)));
+
+            foreach (var (key, value) in tableOptions)
+            {
+                builder
+                    .Append(" ")
+                    .Append(key)
+                    .Append("=")
+                    .Append(value);
+            }
 
             if (terminate)
             {
@@ -373,7 +387,7 @@ DELIMITER ;";
                 builder
                     .Append("ALTER TABLE ")
                     .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name, operation.Schema))
-                    .Append(" COLLATE ")
+                    .Append(" COLLATE=")
                     .Append(newCollation)
                     .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
 
@@ -389,7 +403,7 @@ DELIMITER ;";
                     builder
                         .Append("ALTER TABLE ")
                         .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name, operation.Schema))
-                        .Append(" CHARACTER SET ")
+                        .Append(" CHARACTER SET=")
                         .Append(newCharSet)
                         .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
 
@@ -421,6 +435,29 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
 
                 // An existing comment will be removed, when set to an empty string.
                 GenerateComment(operation.Comment ?? string.Empty, builder);
+
+                builder.AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
+                EndStatement(builder);
+            }
+
+            var oldTableOptions = MySqlEntityTypeExtensions.DeserializeTableOptions(operation.OldTable[MySqlAnnotationNames.TableOptions] as string);
+            var newTableOptions = MySqlEntityTypeExtensions.DeserializeTableOptions(operation[MySqlAnnotationNames.TableOptions] as string);
+            var addedOrChangedTableOptions = newTableOptions.Except(oldTableOptions).ToArray();
+
+            if (addedOrChangedTableOptions.Length > 0)
+            {
+                builder
+                    .Append("ALTER TABLE ")
+                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name, operation.Schema));
+
+                foreach (var (key, value) in addedOrChangedTableOptions)
+                {
+                    builder
+                        .Append(" ")
+                        .Append(key)
+                        .Append("=")
+                        .Append(value);
+                }
 
                 builder.AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
                 EndStatement(builder);
@@ -1327,7 +1364,7 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
             var charSet = operation[MySqlAnnotationNames.CharSet];
             if (charSet != null)
             {
-                const string characterSetClausePattern = @"CHARACTER SET \w+";
+                const string characterSetClausePattern = @"(CHARACTER SET|CHARSET)\s+\w+";
                 var characterSetClause = $@"CHARACTER SET {charSet}";
 
                 columnType = Regex.IsMatch(columnType, characterSetClausePattern, RegexOptions.IgnoreCase)

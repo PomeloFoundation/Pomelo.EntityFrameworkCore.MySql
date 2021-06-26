@@ -1330,6 +1330,71 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
                 ignoreLineEndingDifferences: true);
         }
 
+
+        [ConditionalFact]
+        public virtual void CreateTableOperation_with_table_options()
+        {
+            Generate(
+                new CreateTableOperation
+                {
+                    Name = "IceCreams",
+                    Columns =
+                    {
+                        new AddColumnOperation
+                        {
+                            Name = "Name",
+                            ColumnType = "varchar(128)",
+                            ClrType = typeof(string),
+                        },
+                    },
+                    PrimaryKey = new AddPrimaryKeyOperation
+                    {
+                        Columns = new[] { "Name" }
+                    },
+                    [MySqlAnnotationNames.TableOptions] = "CHECKSUM=1,MAX_ROWS=100",
+                });
+
+            Assert.Equal(
+                @"CREATE TABLE `IceCreams` (
+    `Name` varchar(128) NOT NULL,
+    PRIMARY KEY (`Name`)
+) CHECKSUM=1 MAX_ROWS=100;" + EOL,
+                Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        public virtual void AlterTableOperation_with_table_options()
+        {
+            Generate(
+                modelBuilder =>
+                {
+                    modelBuilder.Entity(
+                        "IceCreams",
+                        entity =>
+                        {
+                            entity.Property<string>("Name")
+                                .HasColumnType("varchar(128)");
+
+                            entity.HasKey("Name");
+
+                            entity.HasTableOption("CHECKSUM", "1");
+                            entity.HasTableOption("MAX_ROWS", "100");
+                        });
+                },
+                migrationBuilder =>
+                {
+                    migrationBuilder.AlterTable("IceCreams")
+                        .OldAnnotation(MySqlAnnotationNames.TableOptions, "CHECKSUM=1,MAX_ROWS=100")
+                        .Annotation(MySqlAnnotationNames.TableOptions, "CHECKSUM=1,MIN_ROWS=20,MAX_ROWS=200");
+                });
+
+            Assert.Equal(
+                @"ALTER TABLE `IceCreams` MIN_ROWS=20 MAX_ROWS=200;" + EOL,
+                Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
         [ConditionalFact]
         public virtual void CreateTableOperation_primary_key_with_prefix_lengths()
         {

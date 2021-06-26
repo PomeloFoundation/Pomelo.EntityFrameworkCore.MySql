@@ -1,6 +1,10 @@
 ﻿// Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Utilities;
@@ -267,5 +271,111 @@ namespace Microsoft.EntityFrameworkCore
         }
 
         #endregion CollationDelegation
+
+        #region TableOptions
+
+        /// <summary>
+        /// Gets the MySQL table options for the table associated with this entity.
+        /// </summary>
+        /// <param name="entityType"> The entity type. </param>
+        /// <returns> A dictionary of table options. </returns>
+        public static Dictionary<string, string> GetTableOptions([NotNull] this IReadOnlyEntityType entityType)
+            => DeserializeTableOptions(entityType[MySqlAnnotationNames.TableOptions] as string);
+
+        /// <summary>
+        /// Sets the MySQL table options for the table associated with this entity.
+        /// </summary>
+        /// <param name="entityType"> The entity type. </param>
+        /// <param name="options"> A dictionary of table options. </param>
+        public static void SetTableOptions(
+            [NotNull] this IMutableEntityType entityType,
+            [CanBeNull] Dictionary<string, string> options)
+            => entityType.SetOrRemoveAnnotation(MySqlAnnotationNames.TableOptions, SerializeTableOptions(options));
+
+        /// <summary>
+        /// Sets the MySQL table options for the table associated with this entity.
+        /// </summary>
+        /// <param name="entityType"> The entity type. </param>
+        /// <param name="options"> A dictionary of table options. </param>
+        /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
+        /// <returns> The configured value. </returns>
+        public static Dictionary<string, string> SetTableOptions(
+            [NotNull] this IConventionEntityType entityType,
+            [CanBeNull] Dictionary<string, string> options,
+            bool fromDataAnnotation = false)
+        {
+            entityType.SetOrRemoveAnnotation(MySqlAnnotationNames.TableOptions, SerializeTableOptions(options), fromDataAnnotation);
+
+            return options;
+        }
+
+        /// <summary>
+        ///     Gets the configuration source for the table options.
+        /// </summary>
+        /// <param name="entityType"> The entity type. </param>
+        /// <returns> The configuration source. </returns>
+        public static ConfigurationSource? GetTableOptionsConfigurationSource([NotNull] this IConventionEntityType entityType)
+            => entityType.FindAnnotation(MySqlAnnotationNames.TableOptions)?.GetConfigurationSource();
+
+        internal static string SerializeTableOptions(Dictionary<string, string> options)
+        {
+            var tableOptionsString = new StringBuilder();
+
+            if (options is not null)
+            {
+                foreach (var (key, value) in options)
+                {
+                    if (string.IsNullOrWhiteSpace(key) ||
+                        key.Contains(',') ||
+                        key.Contains('=') ||
+                        string.IsNullOrWhiteSpace(value))
+                    {
+                        throw new ArgumentException(nameof(options));
+                    }
+
+                    tableOptionsString
+                        .Append(key.Trim())
+                        .Append('=')
+                        .Append(value.Trim().Replace(",", ",,"))
+                        .Append(',');
+                }
+            }
+
+            if (tableOptionsString.Length == 0)
+            {
+                return null;
+            }
+
+            tableOptionsString.Remove(tableOptionsString.Length - 1, 1);
+            return tableOptionsString.ToString();
+        }
+
+        internal static Dictionary<string, string> DeserializeTableOptions(string optionsString)
+        {
+            var options = new Dictionary<string, string>();
+
+            if (!string.IsNullOrEmpty(optionsString))
+            {
+                var tableOptionParts = Regex.Split(optionsString, @"(?<=(?:$|[^,])(?:,,)*),(?!,)");
+
+                foreach (var part in tableOptionParts)
+                {
+                    var firstEquals = part.IndexOf('=');
+
+                    if (firstEquals > 0 &&
+                        firstEquals < part.Length - 1)
+                    {
+                        var key = part[..firstEquals];
+                        var value = part[(firstEquals + 1)..].Replace(",,", ",");
+
+                        options[key] = value;
+                    }
+                }
+            }
+
+            return options;
+        }
+
+        #endregion TableOptions
     }
 }
