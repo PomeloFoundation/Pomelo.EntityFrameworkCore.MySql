@@ -42,12 +42,12 @@
     <Reference Include="Microsoft.EntityFrameworkCore.Relational">
       <HintPath>$(LocalEFCoreRepository)\artifacts\bin\EFCore.Relational\Debug\$(TargetFramework)\Microsoft.EntityFrameworkCore.Relational.dll</HintPath>
     </Reference>
-    
+
     <!-- TODO: Remove after CSharpEntityTypeGenerator has been fixed in EF Core upstream (6.0.0-preview.6). -->
     <Reference Include="Microsoft.EntityFrameworkCore.Design">
       <HintPath>$(LocalEFCoreRepository)\artifacts\bin\EFCore.Design\Debug\$(TargetFramework)\Microsoft.EntityFrameworkCore.Design.dll</HintPath>
     </Reference>
-    
+
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
@@ -56,7 +56,6 @@
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="Microsoft.Bcl.HashCode" />
     <PackageReference Include="System.Collections.Immutable" />
-    <PackageReference Include="System.ComponentModel.Annotations" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 

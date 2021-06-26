@@ -190,9 +190,44 @@ WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
         [ConditionalTheory]
-        public override async Task Substring_with_zero_startindex(bool async)
+        public override async Task Substring_with_one_arg_with_zero_startindex(bool async)
         {
-            await base.Substring_with_zero_startindex(async);
+            await base.Substring_with_one_arg_with_zero_startindex(async);
+
+            AssertSql(
+                @"SELECT `c`.`ContactName`
+FROM `Customers` AS `c`
+WHERE SUBSTRING(`c`.`CustomerID`, 0 + 1, CHAR_LENGTH(`c`.`CustomerID`)) = 'ALFKI'");
+        }
+
+        [ConditionalTheory]
+        public override async Task Substring_with_one_arg_with_constant(bool async)
+        {
+            await base.Substring_with_one_arg_with_constant(async);
+
+            AssertSql(
+                @"SELECT `c`.`ContactName`
+FROM `Customers` AS `c`
+WHERE SUBSTRING(`c`.`CustomerID`, 1 + 1, CHAR_LENGTH(`c`.`CustomerID`)) = 'LFKI'");
+        }
+
+        [ConditionalTheory]
+        public override async Task Substring_with_one_arg_with_closure(bool async)
+        {
+            await base.Substring_with_one_arg_with_closure(async);
+
+            AssertSql(
+                @"@__start_0='2'
+
+SELECT `c`.`ContactName`
+FROM `Customers` AS `c`
+WHERE SUBSTRING(`c`.`CustomerID`, @__start_0 + 1, CHAR_LENGTH(`c`.`CustomerID`)) = 'FKI'");
+        }
+
+        [ConditionalTheory]
+        public override async Task Substring_with_two_args_with_zero_startindex(bool async)
+        {
+            await base.Substring_with_two_args_with_zero_startindex(async);
 
             AssertSql(
                 $@"SELECT SUBSTRING(`c`.`ContactName`, 0 + 1, 3)
@@ -201,9 +236,20 @@ WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
         [ConditionalTheory]
-        public override async Task Substring_with_constant(bool async)
+        public override async Task Substring_with_two_args_with_zero_length(bool async)
         {
-            await base.Substring_with_constant(async);
+            await base.Substring_with_two_args_with_zero_length(async);
+
+            AssertSql(
+                $@"SELECT SUBSTRING(`c`.`ContactName`, 2 + 1, 0)
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` = 'ALFKI'");
+        }
+
+        [ConditionalTheory]
+        public override async Task Substring_with_two_args_with_constant(bool async)
+        {
+            await base.Substring_with_two_args_with_constant(async);
 
             AssertSql(
                 $@"SELECT SUBSTRING(`c`.`ContactName`, 1 + 1, 3)
@@ -212,9 +258,9 @@ WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
         [ConditionalTheory]
-        public override async Task Substring_with_closure(bool async)
+        public override async Task Substring_with_two_args_with_closure(bool async)
         {
-            await base.Substring_with_closure(async);
+            await base.Substring_with_two_args_with_closure(async);
 
             AssertSql(
                 $@"@__start_0='2'
@@ -225,14 +271,36 @@ WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
         [ConditionalTheory]
-        public override async Task Substring_with_zero_length(bool async)
+        public override async Task Substring_with_two_args_with_Index_of(bool async)
         {
-            await base.Substring_with_zero_length(async);
+            await base.Substring_with_two_args_with_Index_of(async);
 
             AssertSql(
-                $@"SELECT SUBSTRING(`c`.`ContactName`, 2 + 1, 0)
+                $@"SELECT SUBSTRING(`c`.`ContactName`, (LOCATE('a', `c`.`ContactName`) - 1) + 1, 3)
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'ALFKI'");
+        }
+
+        [ConditionalTheory]
+        public override async Task Regex_IsMatch_MethodCall(bool async)
+        {
+            await base.Regex_IsMatch_MethodCall(async);
+
+            AssertSql(
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` REGEXP '^T'");
+        }
+
+        [ConditionalTheory]
+        public override async Task Regex_IsMatch_MethodCall_constant_input(bool async)
+        {
+            await base.Regex_IsMatch_MethodCall_constant_input(async);
+
+            AssertSql(
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE 'ALFKI' REGEXP `c`.`CustomerID`");
         }
 
         [ConditionalTheory]
@@ -696,16 +764,6 @@ WHERE UUID() <> '00000000-0000-0000-0000-000000000000'");
                 $@"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE POWER({CastAsDouble("CHAR_LENGTH(`c`.`CustomerID`)")}, 2.0) = 25.0");
-        }
-
-        public override async Task Substring_with_Index_of(bool async)
-        {
-            await base.Substring_with_Index_of(async);
-
-            AssertSql(
-                $@"SELECT SUBSTRING(`c`.`ContactName`, (LOCATE('a', `c`.`ContactName`) - 1) + 1, 3)
-FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` = 'ALFKI'");
         }
 
         public override async Task IsNullOrEmpty_in_predicate(bool async)

@@ -39,7 +39,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 => (TestSqlLoggerFactory)ListLoggerFactory;
 
             public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
-                => builder.DisableConcurrencyDetection();
+                => builder.EnableThreadSafetyChecks(false);
         }
     }
 }

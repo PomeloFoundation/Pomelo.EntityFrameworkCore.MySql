@@ -78,7 +78,6 @@
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="Microsoft.Bcl.HashCode" />
     <PackageReference Include="System.Collections.Immutable" />
-    <PackageReference Include="System.ComponentModel.Annotations" />
   </ItemGroup>
 
 </Project>

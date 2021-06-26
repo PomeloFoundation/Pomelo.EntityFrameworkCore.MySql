@@ -26,8 +26,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             _options = options;
         }
 
-        public override IEnumerable<IAnnotation> For(IRelationalModel model)
+        public override IEnumerable<IAnnotation> For(IRelationalModel model, bool designTime)
         {
+            if (!designTime)
+            {
+                yield break;
+            }
+
             if (GetActualModelCharSet(model.Model, DelegationModes.ApplyToDatabases) is string charSet)
             {
                 yield return new Annotation(
@@ -47,8 +52,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             }
         }
 
-        public override IEnumerable<IAnnotation> For(ITable table)
+        public override IEnumerable<IAnnotation> For(ITable table, bool designTime)
         {
+            if (!designTime)
+            {
+                yield break;
+            }
+
             // Model validation ensures that these facets are the same on all mapped entity types
             var entityType = table.EntityTypeMappings.First().EntityType;
 
@@ -79,8 +89,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             }
         }
 
-        public override IEnumerable<IAnnotation> For(IUniqueConstraint constraint)
+        public override IEnumerable<IAnnotation> For(IUniqueConstraint constraint, bool designTime)
         {
+            if (!designTime)
+            {
+                yield break;
+            }
+
             // Model validation ensures that these facets are the same on all mapped indexes
             var key = constraint.MappedKeys.First();
 
@@ -94,8 +109,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             }
         }
 
-        public override IEnumerable<IAnnotation> For(ITableIndex index)
+        public override IEnumerable<IAnnotation> For(ITableIndex index, bool designTime)
         {
+            if (!designTime)
+            {
+                yield break;
+            }
+
             // Model validation ensures that these facets are the same on all mapped indexes
             var modelIndex = index.MappedIndexes.First();
 
@@ -133,14 +153,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             }
         }
 
-        public override IEnumerable<IAnnotation> For(IColumn column)
+        public override IEnumerable<IAnnotation> For(IColumn column, bool designTime)
         {
+            if (!designTime)
+            {
+                yield break;
+            }
+
+            var table = StoreObjectIdentifier.Table(column.Table.Name, column.Table.Schema);
             var properties = column.PropertyMappings.Select(m => m.Property).ToArray();
 
-            if (properties.FirstOrDefault(p => p.GetValueGenerationStrategy() != null &&
-                                               p.GetValueGenerationStrategy() != MySqlValueGenerationStrategy.None) is IProperty property)
+            if (column.PropertyMappings.Where(
+                    m => m.TableMapping.IsSharedTablePrincipal &&
+                         m.TableMapping.EntityType == m.Property.DeclaringEntityType)
+                .Select(m => m.Property)
+                .FirstOrDefault(p => p.GetValueGenerationStrategy(table) == MySqlValueGenerationStrategy.IdentityColumn) is IProperty identityProperty)
             {
-                var valueGenerationStrategy = property.GetValueGenerationStrategy();
+                var valueGenerationStrategy = identityProperty.GetValueGenerationStrategy(table);
+                yield return new Annotation(
+                    MySqlAnnotationNames.ValueGenerationStrategy,
+                    valueGenerationStrategy);
+            }
+            else if (properties.FirstOrDefault(
+                p => p.GetValueGenerationStrategy(table) == MySqlValueGenerationStrategy.ComputedColumn) is IProperty computedProperty)
+            {
+                var valueGenerationStrategy = computedProperty.GetValueGenerationStrategy(table);
                 yield return new Annotation(
                     MySqlAnnotationNames.ValueGenerationStrategy,
                     valueGenerationStrategy);

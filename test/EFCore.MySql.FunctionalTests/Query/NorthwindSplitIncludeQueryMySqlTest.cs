@@ -1,12 +1,10 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
@@ -21,15 +19,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             ClearLog();
             //TestSqlLoggerFactory.CaptureOutput(testOutputHelper);
         }
-
-        public override Task Include_collection_with_last_no_orderby(bool async)
-            => AssertTranslationFailedWithDetails(
-                () => AssertLast(
-                    async,
-                    ss => ss.Set<Customer>()
-                        .Include(c => c.Orders),
-                    entryCount: 8),
-                RelationalStrings.MissingOrderingInSelectExpression);
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
         public override Task Include_collection_with_cross_apply_with_filter(bool async)
@@ -53,6 +42,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         public override Task Filtered_include_with_multiple_ordering(bool async)
         {
             return base.Filtered_include_with_multiple_ordering(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
+        public override Task Include_in_let_followed_by_FirstOrDefault(bool async)
+        {
+            return base.Include_in_let_followed_by_FirstOrDefault(async);
         }
 
         public override Task Include_collection_with_multiple_conditional_order_by(bool async)

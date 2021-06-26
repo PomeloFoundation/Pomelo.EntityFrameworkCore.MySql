@@ -1,7 +1,9 @@
 using System;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
@@ -10,6 +12,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         public CustomConvertersMySqlTest(CustomConvertersMySqlFixture fixture)
             : base(fixture)
         {
+        }
+
+        public override void Value_conversion_on_enum_collection_contains()
+        {
+            Assert.Contains(
+                CoreStrings.TranslationFailed("").Substring(47),
+                Assert.Throws<InvalidOperationException>(() => base.Value_conversion_on_enum_collection_contains()).Message);
         }
 
         public class CustomConvertersMySqlFixture : CustomConvertersFixtureBase
