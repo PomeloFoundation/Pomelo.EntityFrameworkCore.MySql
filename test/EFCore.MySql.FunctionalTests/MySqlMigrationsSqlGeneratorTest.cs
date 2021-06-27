@@ -1351,7 +1351,7 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
                     {
                         Columns = new[] { "Name" }
                     },
-                    [MySqlAnnotationNames.TableOptions] = "CHECKSUM=1,MAX_ROWS=100",
+                    [MySqlAnnotationNames.StoreOptions] = "CHECKSUM=1,MAX_ROWS=100",
                 });
 
             Assert.Equal(
@@ -1385,8 +1385,8 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
                 migrationBuilder =>
                 {
                     migrationBuilder.AlterTable("IceCreams")
-                        .OldAnnotation(MySqlAnnotationNames.TableOptions, "CHECKSUM=1,MAX_ROWS=100")
-                        .Annotation(MySqlAnnotationNames.TableOptions, "CHECKSUM=1,MIN_ROWS=20,MAX_ROWS=200");
+                        .OldAnnotation(MySqlAnnotationNames.StoreOptions, "CHECKSUM=1,MAX_ROWS=100")
+                        .Annotation(MySqlAnnotationNames.StoreOptions, "CHECKSUM=1,MIN_ROWS=20,MAX_ROWS=200");
                 });
 
             Assert.Equal(

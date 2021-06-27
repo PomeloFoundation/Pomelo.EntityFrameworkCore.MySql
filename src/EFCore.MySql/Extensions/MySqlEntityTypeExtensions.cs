@@ -272,7 +272,7 @@ namespace Microsoft.EntityFrameworkCore
 
         #endregion CollationDelegation
 
-        #region TableOptions
+        #region StoreOptions
 
         /// <summary>
         /// Gets the MySQL table options for the table associated with this entity.
@@ -280,7 +280,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="entityType"> The entity type. </param>
         /// <returns> A dictionary of table options. </returns>
         public static Dictionary<string, string> GetTableOptions([NotNull] this IReadOnlyEntityType entityType)
-            => DeserializeTableOptions(entityType[MySqlAnnotationNames.TableOptions] as string);
+            => DeserializeTableOptions(entityType[MySqlAnnotationNames.StoreOptions] as string);
 
         /// <summary>
         /// Sets the MySQL table options for the table associated with this entity.
@@ -290,7 +290,7 @@ namespace Microsoft.EntityFrameworkCore
         public static void SetTableOptions(
             [NotNull] this IMutableEntityType entityType,
             [CanBeNull] Dictionary<string, string> options)
-            => entityType.SetOrRemoveAnnotation(MySqlAnnotationNames.TableOptions, SerializeTableOptions(options));
+            => entityType.SetOrRemoveAnnotation(MySqlAnnotationNames.StoreOptions, SerializeTableOptions(options));
 
         /// <summary>
         /// Sets the MySQL table options for the table associated with this entity.
@@ -304,7 +304,7 @@ namespace Microsoft.EntityFrameworkCore
             [CanBeNull] Dictionary<string, string> options,
             bool fromDataAnnotation = false)
         {
-            entityType.SetOrRemoveAnnotation(MySqlAnnotationNames.TableOptions, SerializeTableOptions(options), fromDataAnnotation);
+            entityType.SetOrRemoveAnnotation(MySqlAnnotationNames.StoreOptions, SerializeTableOptions(options), fromDataAnnotation);
 
             return options;
         }
@@ -315,7 +315,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="entityType"> The entity type. </param>
         /// <returns> The configuration source. </returns>
         public static ConfigurationSource? GetTableOptionsConfigurationSource([NotNull] this IConventionEntityType entityType)
-            => entityType.FindAnnotation(MySqlAnnotationNames.TableOptions)?.GetConfigurationSource();
+            => entityType.FindAnnotation(MySqlAnnotationNames.StoreOptions)?.GetConfigurationSource();
 
         internal static string SerializeTableOptions(Dictionary<string, string> options)
         {
@@ -376,6 +376,6 @@ namespace Microsoft.EntityFrameworkCore
             return options;
         }
 
-        #endregion TableOptions
+        #endregion StoreOptions
     }
 }

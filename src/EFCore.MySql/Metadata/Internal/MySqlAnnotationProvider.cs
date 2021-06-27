@@ -84,7 +84,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             foreach (var annotation in entityType.GetAnnotations()
                 .Where(a => a.Name is MySqlAnnotationNames.CharSetDelegation or
                                       MySqlAnnotationNames.CollationDelegation or
-                                      MySqlAnnotationNames.TableOptions))
+                                      MySqlAnnotationNames.StoreOptions))
             {
                 yield return annotation;
             }

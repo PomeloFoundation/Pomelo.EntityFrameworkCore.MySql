@@ -251,7 +251,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         //         {
         //             var table = Assert.Single(model.Tables);
         //             var options = (IDictionary<string, string>)MySqlEntityTypeExtensions.DeserializeTableOptions(
-        //                 table.FindAnnotation(MySqlAnnotationNames.TableOptions)?.Value as string);
+        //                 table.FindAnnotation(MySqlAnnotationNames.StoreOptions)?.Value as string);
         //
         //             Assert.Contains("CHECKSUM", options);
         //             Assert.Equal("1", options["CHECKSUM"]);

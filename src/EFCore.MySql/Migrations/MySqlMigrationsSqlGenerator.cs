@@ -352,7 +352,7 @@ DELIMITER ;";
             }
 
             tableOptions.AddRange(
-                MySqlEntityTypeExtensions.DeserializeTableOptions(operation[MySqlAnnotationNames.TableOptions] as string)
+                MySqlEntityTypeExtensions.DeserializeTableOptions(operation[MySqlAnnotationNames.StoreOptions] as string)
                     .Select(kvp => (kvp.Key, kvp.Value)));
 
             foreach (var (key, value) in tableOptions)
@@ -440,8 +440,8 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
                 EndStatement(builder);
             }
 
-            var oldTableOptions = MySqlEntityTypeExtensions.DeserializeTableOptions(operation.OldTable[MySqlAnnotationNames.TableOptions] as string);
-            var newTableOptions = MySqlEntityTypeExtensions.DeserializeTableOptions(operation[MySqlAnnotationNames.TableOptions] as string);
+            var oldTableOptions = MySqlEntityTypeExtensions.DeserializeTableOptions(operation.OldTable[MySqlAnnotationNames.StoreOptions] as string);
+            var newTableOptions = MySqlEntityTypeExtensions.DeserializeTableOptions(operation[MySqlAnnotationNames.StoreOptions] as string);
             var addedOrChangedTableOptions = newTableOptions.Except(oldTableOptions).ToArray();
 
             if (addedOrChangedTableOptions.Length > 0)

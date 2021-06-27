@@ -468,7 +468,7 @@ namespace Microsoft.EntityFrameworkCore
             UpdateTableOption(name, value, options);
             var optionsString = MySqlEntityTypeExtensions.SerializeTableOptions(options);
 
-            return entityTypeBuilder.CanSetAnnotation(MySqlAnnotationNames.TableOptions, optionsString, fromDataAnnotation);
+            return entityTypeBuilder.CanSetAnnotation(MySqlAnnotationNames.StoreOptions, optionsString, fromDataAnnotation);
         }
 
         private static void UpdateTableOption(string key, string value, Dictionary<string, string> options)
