@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -232,6 +233,36 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         public override Task Alter_column_change_computed()
             => base.Alter_column_change_computed();
 
+        // We currently do not scaffold table options.
+        //
+        // [ConditionalFact]
+        // public virtual async Task Create_table_with_table_options()
+        // {
+        //     await Test(
+        //         builder => { },
+        //         builder => builder.Entity(
+        //             "IceCream", e =>
+        //             {
+        //                 e.Property<int>("IceCreamId");
+        //                 e.HasTableOption("CHECKSUM", "1");
+        //                 e.HasTableOption("MAX_ROWS", "100");
+        //             }),
+        //         model =>
+        //         {
+        //             var table = Assert.Single(model.Tables);
+        //             var options = (IDictionary<string, string>)MySqlEntityTypeExtensions.DeserializeTableOptions(
+        //                 table.FindAnnotation(MySqlAnnotationNames.StoreOptions)?.Value as string);
+        //
+        //             Assert.Contains("CHECKSUM", options);
+        //             Assert.Equal("1", options["CHECKSUM"]);
+        //
+        //             Assert.Contains("MAX_ROWS", options);
+        //             Assert.Equal("100", options["MAX_ROWS"]);
+        //         });
+        //
+        //     AssertSql(@"");
+        // }
+
         [ConditionalFact]
         public virtual async Task Add_columns_with_collations()
         {
@@ -289,7 +320,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 //
                 $@"CREATE TABLE `IceCream` (
     `IceCreamId` char(36) COLLATE ascii_general_ci NOT NULL
-) COLLATE {DefaultCollation};");
+) COLLATE={DefaultCollation};");
         }
 
         [ConditionalFact]
@@ -317,7 +348,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 //
                 $@"CREATE TABLE `IceCream` (
     `IceCreamId` char(36) COLLATE {NonDefaultCollation} NOT NULL
-) COLLATE {DefaultCollation};");
+) COLLATE={DefaultCollation};");
         }
 
         [ConditionalFact]
@@ -345,7 +376,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 //
                 $@"CREATE TABLE `IceCream` (
     `IceCreamId` char(36) COLLATE {NonDefaultCollation} NOT NULL
-) COLLATE {DefaultCollation};");
+) COLLATE={DefaultCollation};");
         }
 
         [ConditionalFact]
@@ -373,7 +404,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 //
                 $@"CREATE TABLE `IceCream` (
     `IceCreamId` char(36) NOT NULL
-) COLLATE {DefaultCollation};");
+) COLLATE={DefaultCollation};");
         }
 
         [ConditionalFact]
@@ -456,7 +487,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 });
 
             AssertSql(
-                $"ALTER TABLE `IceCream` COLLATE {NonDefaultCollation2};",
+                $"ALTER TABLE `IceCream` COLLATE={NonDefaultCollation2};",
                 //
                 $@"ALTER TABLE `IceCream` MODIFY COLUMN `Name` longtext COLLATE {NonDefaultCollation} NULL;",
                 //
@@ -535,7 +566,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 result => { });
 
             AssertSql(
-                $@"ALTER TABLE `IceCream` COLLATE {DefaultCollation};",
+                $@"ALTER TABLE `IceCream` COLLATE={DefaultCollation};",
                 //
                 $@"ALTER TABLE `IceCream` MODIFY COLUMN `Name` longtext COLLATE {NonDefaultCollation} NULL;",
                 //
@@ -578,7 +609,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
     `Brand` longtext CHARACTER SET {NonDefaultCharSet} NULL,
     `IceCreamId` int NOT NULL,
     `Name` longtext COLLATE {DefaultCollation} NULL
-) COLLATE {DefaultCollation};");
+) COLLATE={DefaultCollation};");
         }
 
         [ConditionalFact]
@@ -617,7 +648,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
     `Brand` longtext COLLATE {NonDefaultCollation2} NULL,
     `IceCreamId` int NOT NULL,
     `Name` longtext CHARACTER SET {NonDefaultCharSet} NULL
-) CHARACTER SET {NonDefaultCharSet};");
+) CHARACTER SET={NonDefaultCharSet};");
         }
 
         [ConditionalFact]

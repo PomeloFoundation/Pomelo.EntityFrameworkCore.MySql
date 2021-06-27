@@ -1136,7 +1136,7 @@ ALTER DATABASE COLLATE latin1_swedish_ci;" + EOL,
     `Brand` longtext COLLATE latin1_swedish_ci NOT NULL,
     `Name` varchar(255) NOT NULL,
     PRIMARY KEY (`Name`, `Brand`(20))
-) COLLATE latin1_general_ci;" + EOL,
+) COLLATE=latin1_general_ci;" + EOL,
                 Sql,
                 ignoreLineEndingDifferences: true);
         }
@@ -1169,7 +1169,7 @@ ALTER DATABASE COLLATE latin1_swedish_ci;" + EOL,
                 });
 
             Assert.Equal(
-                @"ALTER TABLE `IceCreams` COLLATE latin1_general_cs;" + EOL,
+                @"ALTER TABLE `IceCreams` COLLATE=latin1_general_cs;" + EOL,
                 Sql,
                 ignoreLineEndingDifferences: true);
         }
@@ -1251,7 +1251,7 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
     `Brand` longtext CHARACTER SET utf8mb4 NOT NULL,
     `Name` varchar(255) NOT NULL,
     PRIMARY KEY (`Name`, `Brand`(20))
-) CHARACTER SET latin1;" + EOL,
+) CHARACTER SET=latin1;" + EOL,
                 Sql,
                 ignoreLineEndingDifferences: true);
         }
@@ -1284,7 +1284,7 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
                 });
 
             Assert.Equal(
-                @"ALTER TABLE `IceCreams` CHARACTER SET utf8mb4;" + EOL,
+                @"ALTER TABLE `IceCreams` CHARACTER SET=utf8mb4;" + EOL,
                 Sql,
                 ignoreLineEndingDifferences: true);
         }
@@ -1326,6 +1326,71 @@ SET @__pomelo_SqlExpr = CONCAT('ALTER TABLE `IceCreams` CHARACTER SET = ', @__po
 PREPARE __pomelo_SqlExprExecute FROM @__pomelo_SqlExpr;
 EXECUTE __pomelo_SqlExprExecute;
 DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
+                Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
+
+        [ConditionalFact]
+        public virtual void CreateTableOperation_with_table_options()
+        {
+            Generate(
+                new CreateTableOperation
+                {
+                    Name = "IceCreams",
+                    Columns =
+                    {
+                        new AddColumnOperation
+                        {
+                            Name = "Name",
+                            ColumnType = "varchar(128)",
+                            ClrType = typeof(string),
+                        },
+                    },
+                    PrimaryKey = new AddPrimaryKeyOperation
+                    {
+                        Columns = new[] { "Name" }
+                    },
+                    [MySqlAnnotationNames.StoreOptions] = "CHECKSUM=1,MAX_ROWS=100",
+                });
+
+            Assert.Equal(
+                @"CREATE TABLE `IceCreams` (
+    `Name` varchar(128) NOT NULL,
+    PRIMARY KEY (`Name`)
+) CHECKSUM=1 MAX_ROWS=100;" + EOL,
+                Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        public virtual void AlterTableOperation_with_table_options()
+        {
+            Generate(
+                modelBuilder =>
+                {
+                    modelBuilder.Entity(
+                        "IceCreams",
+                        entity =>
+                        {
+                            entity.Property<string>("Name")
+                                .HasColumnType("varchar(128)");
+
+                            entity.HasKey("Name");
+
+                            entity.HasTableOption("CHECKSUM", "1");
+                            entity.HasTableOption("MAX_ROWS", "100");
+                        });
+                },
+                migrationBuilder =>
+                {
+                    migrationBuilder.AlterTable("IceCreams")
+                        .OldAnnotation(MySqlAnnotationNames.StoreOptions, "CHECKSUM=1,MAX_ROWS=100")
+                        .Annotation(MySqlAnnotationNames.StoreOptions, "CHECKSUM=1,MIN_ROWS=20,MAX_ROWS=200");
+                });
+
+            Assert.Equal(
+                @"ALTER TABLE `IceCreams` MIN_ROWS=20 MAX_ROWS=200;" + EOL,
                 Sql,
                 ignoreLineEndingDifferences: true);
         }

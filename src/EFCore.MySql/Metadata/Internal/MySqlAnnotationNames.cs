@@ -34,6 +34,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
         public const string IndexPrefixLength = Prefix + "IndexPrefixLength";
         public const string SpatialReferenceSystemId = Prefix + "SpatialReferenceSystemId";
         public const string GuidCollation = Prefix + "GuidCollation";
+        public const string StoreOptions = Prefix + "StoreOptions";
 
         [Obsolete("Use '" + nameof(RelationalAnnotationNames) + "." + nameof(RelationalAnnotationNames.Collation) + "' instead.")]
         public const string Collation = Prefix + "Collation";
