@@ -29,7 +29,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         {
             query = base.Process(query);
 
-            query = new MySqlHavingExpressionVisitor(_sqlExpressionFactory).Visit(query);
             query = new MySqlJsonParameterExpressionVisitor(_sqlExpressionFactory, _options).Visit(query);
 
             if (_options.ServerVersion.Supports.MySqlBug96947Workaround)
