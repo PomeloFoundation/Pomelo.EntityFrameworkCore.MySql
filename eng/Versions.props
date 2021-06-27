@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup Label="Version settings">
-    <VersionPrefix>3.2.6</VersionPrefix>
+    <VersionPrefix>3.2.7</VersionPrefix>
     <!--
       Use the following values for the different release types:
           - "preview" to match preview releases upstream (EF Core)
