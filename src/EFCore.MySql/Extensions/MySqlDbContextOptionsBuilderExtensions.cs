@@ -3,6 +3,7 @@
 
 using System;
 using System.Data.Common;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -36,11 +37,14 @@ namespace Microsoft.EntityFrameworkCore
         ///         The version of the database server.
         ///     </para>
         ///     <para>
-        ///         Create an object for this parameter from the classes <see cref="MySqlServerVersion"/> (for MySQL) and
-        ///         <see cref="MariaDbServerVersion"/> (for MariaDB), through a call to the static method
-        ///         <see cref="ServerVersion.AutoDetect(string)"/> (which retrieves the server version directly from the
-        ///         database server), or by parsing a version string using the static methods
-        ///         <see cref="ServerVersion.Parse(string)"/> or <see cref="ServerVersion.TryParse(string,out ServerVersion)"/>.
+        ///         Create an object for this parameter by calling the static method
+        ///         <see cref="ServerVersion.Create(System.Version,ServerType)"/>,
+        ///         by calling the static method <see cref="ServerVersion.AutoDetect(string)"/> (which retrieves the server version directly
+        ///         from the database server),
+        ///         by parsing a version string using the static methods
+        ///         <see cref="ServerVersion.Parse(string)"/> or <see cref="ServerVersion.TryParse(string,out ServerVersion)"/>,
+        ///         or by directly instantiating an object from the <see cref="MySqlServerVersion"/> (for MySQL) or
+        ///         <see cref="MariaDbServerVersion"/> (for MariaDB) classes.
         ///      </para>
         /// </param>
         /// <param name="mySqlOptionsAction"> An optional action to allow additional MySQL specific configuration. </param>
@@ -72,11 +76,14 @@ namespace Microsoft.EntityFrameworkCore
         ///         The version of the database server.
         ///     </para>
         ///     <para>
-        ///         Create an object for this parameter from the classes <see cref="MySqlServerVersion"/> (for MySQL) and
-        ///         <see cref="MariaDbServerVersion"/> (for MariaDB), through a call to the static method
-        ///         <see cref="ServerVersion.AutoDetect(string)"/> (which retrieves the server version directly from the
-        ///         database server), or by parsing a version string using the static methods
-        ///         <see cref="ServerVersion.Parse(string)"/> or <see cref="ServerVersion.TryParse(string,out ServerVersion)"/>.
+        ///         Create an object for this parameter by calling the static method
+        ///         <see cref="ServerVersion.Create(System.Version,ServerType)"/>,
+        ///         by calling the static method <see cref="ServerVersion.AutoDetect(string)"/> (which retrieves the server version directly
+        ///         from the database server),
+        ///         by parsing a version string using the static methods
+        ///         <see cref="ServerVersion.Parse(string)"/> or <see cref="ServerVersion.TryParse(string,out ServerVersion)"/>,
+        ///         or by directly instantiating an object from the <see cref="MySqlServerVersion"/> (for MySQL) or
+        ///         <see cref="MariaDbServerVersion"/> (for MariaDB) classes.
         ///      </para>
         /// </param>
         /// <param name="mySqlOptionsAction"> An optional action to allow additional MySQL specific configuration. </param>
@@ -123,11 +130,14 @@ namespace Microsoft.EntityFrameworkCore
         ///         The version of the database server.
         ///     </para>
         ///     <para>
-        ///         Create an object for this parameter from the classes <see cref="MySqlServerVersion"/> (for MySQL) and
-        ///         <see cref="MariaDbServerVersion"/> (for MariaDB), through a call to the static method
-        ///         <see cref="ServerVersion.AutoDetect(string)"/> (which retrieves the server version directly from the
-        ///         database server), or by parsing a version string using the static methods
-        ///         <see cref="ServerVersion.Parse(string)"/> or <see cref="ServerVersion.TryParse(string,out ServerVersion)"/>.
+        ///         Create an object for this parameter by calling the static method
+        ///         <see cref="ServerVersion.Create(System.Version,ServerType)"/>,
+        ///         by calling the static method <see cref="ServerVersion.AutoDetect(string)"/> (which retrieves the server version directly
+        ///         from the database server),
+        ///         by parsing a version string using the static methods
+        ///         <see cref="ServerVersion.Parse(string)"/> or <see cref="ServerVersion.TryParse(string,out ServerVersion)"/>,
+        ///         or by directly instantiating an object from the <see cref="MySqlServerVersion"/> (for MySQL) or
+        ///         <see cref="MariaDbServerVersion"/> (for MariaDB) classes.
         ///      </para>
         /// </param>
         /// <param name="mySqlOptionsAction"> An optional action to allow additional MySQL specific configuration. </param>
@@ -190,11 +200,14 @@ namespace Microsoft.EntityFrameworkCore
         ///         The version of the database server.
         ///     </para>
         ///     <para>
-        ///         Create an object for this parameter from the classes <see cref="MySqlServerVersion"/> (for MySQL) and
-        ///         <see cref="MariaDbServerVersion"/> (for MariaDB), through a call to the static method
-        ///         <see cref="ServerVersion.AutoDetect(string)"/> (which retrieves the server version directly from the
-        ///         database server), or by parsing a version string using the static methods
-        ///         <see cref="ServerVersion.Parse(string)"/> or <see cref="ServerVersion.TryParse(string,out ServerVersion)"/>.
+        ///         Create an object for this parameter by calling the static method
+        ///         <see cref="ServerVersion.Create(System.Version,ServerType)"/>,
+        ///         by calling the static method <see cref="ServerVersion.AutoDetect(string)"/> (which retrieves the server version directly
+        ///         from the database server),
+        ///         by parsing a version string using the static methods
+        ///         <see cref="ServerVersion.Parse(string)"/> or <see cref="ServerVersion.TryParse(string,out ServerVersion)"/>,
+        ///         or by directly instantiating an object from the <see cref="MySqlServerVersion"/> (for MySQL) or
+        ///         <see cref="MariaDbServerVersion"/> (for MariaDB) classes.
         ///      </para>
         /// </param>
         /// <param name="mySqlOptionsAction"> An optional action to allow additional MySQL specific configuration. </param>
@@ -218,11 +231,14 @@ namespace Microsoft.EntityFrameworkCore
         ///         The version of the database server.
         ///     </para>
         ///     <para>
-        ///         Create an object for this parameter from the classes <see cref="MySqlServerVersion"/> (for MySQL) and
-        ///         <see cref="MariaDbServerVersion"/> (for MariaDB), through a call to the static method
-        ///         <see cref="ServerVersion.AutoDetect(string)"/> (which retrieves the server version directly from the
-        ///         database server), or by parsing a version string using the static methods
-        ///         <see cref="ServerVersion.Parse(string)"/> or <see cref="ServerVersion.TryParse(string,out ServerVersion)"/>.
+        ///         Create an object for this parameter by calling the static method
+        ///         <see cref="ServerVersion.Create(System.Version,ServerType)"/>,
+        ///         by calling the static method <see cref="ServerVersion.AutoDetect(string)"/> (which retrieves the server version directly
+        ///         from the database server),
+        ///         by parsing a version string using the static methods
+        ///         <see cref="ServerVersion.Parse(string)"/> or <see cref="ServerVersion.TryParse(string,out ServerVersion)"/>,
+        ///         or by directly instantiating an object from the <see cref="MySqlServerVersion"/> (for MySQL) or
+        ///         <see cref="MariaDbServerVersion"/> (for MariaDB) classes.
         ///      </para>
         /// </param>
         /// <param name="mySqlOptionsAction"> An optional action to allow additional MySQL specific configuration. </param>
@@ -251,11 +267,14 @@ namespace Microsoft.EntityFrameworkCore
         ///         The version of the database server.
         ///     </para>
         ///     <para>
-        ///         Create an object for this parameter from the classes <see cref="MySqlServerVersion"/> (for MySQL) and
-        ///         <see cref="MariaDbServerVersion"/> (for MariaDB), through a call to the static method
-        ///         <see cref="ServerVersion.AutoDetect(string)"/> (which retrieves the server version directly from the
-        ///         database server), or by parsing a version string using the static methods
-        ///         <see cref="ServerVersion.Parse(string)"/> or <see cref="ServerVersion.TryParse(string,out ServerVersion)"/>.
+        ///         Create an object for this parameter by calling the static method
+        ///         <see cref="ServerVersion.Create(System.Version,ServerType)"/>,
+        ///         by calling the static method <see cref="ServerVersion.AutoDetect(string)"/> (which retrieves the server version directly
+        ///         from the database server),
+        ///         by parsing a version string using the static methods
+        ///         <see cref="ServerVersion.Parse(string)"/> or <see cref="ServerVersion.TryParse(string,out ServerVersion)"/>,
+        ///         or by directly instantiating an object from the <see cref="MySqlServerVersion"/> (for MySQL) or
+        ///         <see cref="MariaDbServerVersion"/> (for MariaDB) classes.
         ///      </para>
         /// </param>
         /// <param name="mySqlOptionsAction"> An optional action to allow additional MySQL specific configuration. </param>

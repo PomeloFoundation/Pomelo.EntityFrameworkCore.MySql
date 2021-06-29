@@ -196,5 +196,40 @@ namespace Microsoft.EntityFrameworkCore
 
             return serverVersion != null;
         }
+
+        /// <summary>
+        /// Creates a <see cref="ServerVersion"/> object from a version and type.
+        /// </summary>
+        /// <param name="version">The <see cref="Version"/> of the database server.</param>
+        /// <param name="serverType">The <see cref="ServerType"/> of the database server.</param>
+        /// <returns>The <see cref="ServerVersion"/>.</returns>
+        /// <remarks>
+        /// Call this static method to obtain a <see cref="ServerVersion"/> object to use in a `UseMySql()` call.
+        /// Alternatively, directly instantiate an instance of the <see cref="MySqlServerVersion"/> or <see cref="MariaDbServerVersion"/>
+        /// classes using <see langword="new"/>, or call the static `Parse()`, `TryParse()` or `AutoDetect()` methods.
+        /// </remarks>
+        public static ServerVersion Create(Version version, ServerType serverType)
+            => serverType switch
+            {
+                ServerType.MySql => new MySqlServerVersion(version),
+                ServerType.MariaDb => new MariaDbServerVersion(version),
+                _ => throw new ArgumentOutOfRangeException(nameof(serverType), serverType, null)
+            };
+
+        /// <summary>
+        /// Creates a <see cref="ServerVersion"/> object from a version and type.
+        /// </summary>
+        /// <param name="major">The major version of the database server.</param>
+        /// <param name="minor">The minor version of the database server.</param>
+        /// <param name="patch">The patch level of the database server.</param>
+        /// <param name="serverType">The <see cref="ServerType"/> of the database server.</param>
+        /// <returns>The <see cref="ServerVersion"/>.</returns>
+        /// <remarks>
+        /// Call this static method to obtain a <see cref="ServerVersion"/> object to use in a `UseMySql()` call.
+        /// Alternatively, directly instantiate an instance of the <see cref="MySqlServerVersion"/> or <see cref="MariaDbServerVersion"/>
+        /// classes using <see langword="new"/>, or call the static `Parse()`, `TryParse()` or `AutoDetect()` methods.
+        /// </remarks>
+        public static ServerVersion Create(int major, int minor, int patch, ServerType serverType)
+            => Create(new Version(major, minor, patch), serverType);
     }
 }
