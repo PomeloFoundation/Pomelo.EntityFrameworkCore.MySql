@@ -208,19 +208,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         }
 
         private static MySqlConnectionSettings GetConnectionSettings(MySqlOptionsExtension relationalOptions)
-        {
-            if (relationalOptions.Connection != null)
-            {
-                return new MySqlConnectionSettings(relationalOptions.Connection);
-            }
-
-            if (relationalOptions.ConnectionString != null)
-            {
-                return new MySqlConnectionSettings(relationalOptions.ConnectionString);
-            }
-
-            throw new InvalidOperationException(RelationalStrings.NoConnectionOrConnectionString);
-        }
+            => relationalOptions.Connection != null
+                ? new MySqlConnectionSettings(relationalOptions.Connection)
+                : new MySqlConnectionSettings(relationalOptions.ConnectionString);
 
         protected bool Equals(MySqlOptions other)
         {
