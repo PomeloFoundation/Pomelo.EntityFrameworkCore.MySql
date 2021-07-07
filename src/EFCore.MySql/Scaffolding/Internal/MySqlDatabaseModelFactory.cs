@@ -203,8 +203,9 @@ AND
     `COLLATION_NAME`,
     `COLUMN_TYPE`,
     `COLUMN_COMMENT`,
-    `EXTRA`,
-    `GENERATION_EXPRESSION` /*!80003 ,
+    `EXTRA`/*!50706 ,
+    `GENERATION_EXPRESSION` */ /*M!100200 ,
+    `GENERATION_EXPRESSION` */ /*!80003 ,
     `SRS_ID` */
 FROM
 	`INFORMATION_SCHEMA`.`COLUMNS`
@@ -237,11 +238,15 @@ ORDER BY
                             var collation = reader.GetValueOrDefault<string>("COLLATION_NAME");
                             var columType = reader.GetValueOrDefault<string>("COLUMN_TYPE");
                             var extra = reader.GetValueOrDefault<string>("EXTRA");
-                            var generation = reader.GetValueOrDefault<string>("GENERATION_EXPRESSION").NullIfEmpty();
                             var comment = reader.GetValueOrDefault<string>("COLUMN_COMMENT");
 
+                            // Generated colums are not supported on every MySQL/MariaDB version.
+                            var generation = reader.HasName("GENERATION_EXPRESSION")
+                                ? reader.GetValueOrDefault<string>("GENERATION_EXPRESSION").NullIfEmpty()
+                                : null;
+
                             // MariaDB does not support SRID column restrictions.
-                            var srid = reader.GetColumnSchema().Any(c => string.Equals(c.ColumnName, "SRS_ID", StringComparison.OrdinalIgnoreCase))
+                            var srid = reader.HasName("SRS_ID")
                                 ? reader.GetValueOrDefault<uint?>("SRS_ID")
                                 : null;
 

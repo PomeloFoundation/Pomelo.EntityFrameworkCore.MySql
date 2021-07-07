@@ -19,7 +19,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage
         public const string RenameIndexMySqlSupportVersionString = "5.7.0-mysql";
         // public const string RenameIndexMariaDbSupportVersionString = "?.?.?-mariadb";
 
-        public const string GeneratedColumnsMySqlSupportVersionString = "5.7.0-mysql";
+        public const string GeneratedColumnsMySqlSupportVersionString = "5.7.6-mysql";
         public const string GeneratedColumnsMariaDbSupportVersionString = "10.2.0-mariadb";
 
         public const string NullableGeneratedColumnsMySqlSupportVersionString = "5.7.0-mysql";
