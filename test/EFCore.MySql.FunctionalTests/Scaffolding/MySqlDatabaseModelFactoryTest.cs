@@ -676,6 +676,29 @@ CREATE TABLE `ComputedValues` (
                 @"DROP TABLE IF EXISTS `ComputedValues`");
 
         [ConditionalFact]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.GeneratedColumns))]
+        public void Computed_value_virtual_using_constant_string()
+            => Test(@"
+CREATE TABLE `Users` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `FirstName` varchar(150) NOT NULL,
+  `LastName` varchar(150) NOT NULL,
+  `FullName` varchar(301) GENERATED ALWAYS AS (concat(`FirstName`, _utf8mb4' ', `LastName`)) VIRTUAL,
+  PRIMARY KEY (`id`)
+);",
+                Enumerable.Empty<string>(),
+                Enumerable.Empty<string>(),
+                dbModel =>
+                {
+                    var columns = dbModel.Tables.Single().Columns;
+
+                    var column = columns.Single(c => c.Name == "FullName");
+                    Assert.Equal(@"concat(`FirstName`,_utf8mb4' ',`LastName`)", column.ComputedColumnSql);
+                    Assert.False(column.IsStored);
+                },
+                @"DROP TABLE IF EXISTS `Users`");
+
+        [ConditionalFact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.AlternativeDefaultExpression))]
         public void Default_value_curdate_mariadb()
         {
