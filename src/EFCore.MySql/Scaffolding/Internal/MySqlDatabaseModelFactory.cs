@@ -340,11 +340,18 @@ ORDER BY
                                 collation = null;
                             }
 
-                            // MySQL saves the generation expression with enclosing parenthesis, while MariaDB doesn't.
-                            generation = generation != null &&
-                                         _options.ServerVersion.Supports.ParenthesisEnclosedGeneratedColumnExpressions
-                                ? Regex.Replace(generation, @"^\((.*)\)$", "$1", RegexOptions.Singleline)
-                                : generation;
+                            if (generation is not null)
+                            {
+                                // MySQL saves the generation expression with enclosing parenthesis, while MariaDB doesn't.
+                                generation = _options.ServerVersion.Supports.ParenthesisEnclosedGeneratedColumnExpressions
+                                    ? Regex.Replace(generation, @"^\((.*)\)$", "$1", RegexOptions.Singleline)
+                                    : generation;
+
+                                // MySQL 8 contains a regression bug, that escapes the outer quotes of a string in a generated expression.
+                                generation = _options.ServerVersion.Supports.MySqlBug104294Workaround
+                                    ? generation.Replace(@"\'", @"'")
+                                    : generation;
+                            }
 
                             var isDefaultValueSqlFunction = IsDefaultValueSqlFunction(defaultValue, dataType);
                             var isDefaultValueExpression = false;
