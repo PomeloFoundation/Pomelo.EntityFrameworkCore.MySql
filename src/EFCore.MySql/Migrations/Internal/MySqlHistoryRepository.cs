@@ -66,13 +66,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         /// </summary>
         /// <param name="migrationId"> The migration identifier. </param>
         /// <returns> The generated SQL. </returns>
-        public override string GetBeginIfNotExistsScript(string migrationId) => $@"
-DROP PROCEDURE IF EXISTS {MigrationsScript};
-DELIMITER //
-CREATE PROCEDURE {MigrationsScript}()
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM {SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema)} WHERE {SqlGenerationHelper.DelimitIdentifier(MigrationIdColumnName)} = '{migrationId}') THEN
-";
+        public override string GetBeginIfNotExistsScript(string migrationId) => GetBeginIfScript(migrationId, true);
 
         /// <summary>
         ///     Overridden by database providers to generate a SQL Script that will `BEGIN` a block
@@ -80,12 +74,18 @@ BEGIN
         /// </summary>
         /// <param name="migrationId"> The migration identifier. </param>
         /// <returns> The generated SQL. </returns>
-        public override string GetBeginIfExistsScript(string migrationId) => $@"
+        public override string GetBeginIfExistsScript(string migrationId) => GetBeginIfScript(migrationId, false);
+
+        /// <summary>
+        ///     Overridden by database providers to generate a SQL script to `END` the SQL block.
+        /// </summary>
+        /// <returns> The generated SQL. </returns>
+        public virtual string GetBeginIfScript(string migrationId, bool notExists) => $@"
 DROP PROCEDURE IF EXISTS {MigrationsScript};
 DELIMITER //
 CREATE PROCEDURE {MigrationsScript}()
 BEGIN
-    IF EXISTS(SELECT 1 FROM {SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema)} WHERE {SqlGenerationHelper.DelimitIdentifier(MigrationIdColumnName)} = '{migrationId}') THEN
+    IF {(notExists ? "NOT" : null)}EXISTS(SELECT 1 FROM {SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema)} WHERE {SqlGenerationHelper.DelimitIdentifier(MigrationIdColumnName)} = '{migrationId}') THEN
 ";
 
         /// <summary>
