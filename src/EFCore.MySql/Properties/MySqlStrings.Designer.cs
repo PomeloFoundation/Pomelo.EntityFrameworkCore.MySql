@@ -532,5 +532,30 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
 
             return (EventDefinition<string, string, string, string>)definition;
         }
+
+        /// <summary>
+        ///     The default value '{defaultValue}' is being ignored, because the database server version {version} does not support constant
+        ///     default values for type '{type}' and does not support default value expressions in general.
+        /// </summary>
+        public static EventDefinition<string, string, string> LogDefaultValueNotSupported([NotNull] IDiagnosticsLogger logger)
+        {
+            var definition = ((Diagnostics.Internal.MySqlLoggingDefinitions)logger.Definitions).LogDefaultValueNotSupported;
+            if (definition == null)
+            {
+                definition = LazyInitializer.EnsureInitialized<EventDefinitionBase>(
+                    ref ((Diagnostics.Internal.MySqlLoggingDefinitions)logger.Definitions).LogDefaultValueNotSupported,
+                    () => new EventDefinition<string, string, string>(
+                        logger.Options,
+                        MySqlEventId.DefaultValueNotSupportedWarning,
+                        LogLevel.Warning,
+                        "MySqlEventId.DefaultValueNotSupportedWarning",
+                        level => LoggerMessage.Define<string, string, string>(
+                            level,
+                            MySqlEventId.DefaultValueNotSupportedWarning,
+                            _resourceManager.GetString("LogDefaultValueNotSupported"))));
+            }
+
+            return (EventDefinition<string, string, string>)definition;
+        }
     }
 }

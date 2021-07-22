@@ -8,6 +8,8 @@ using Microsoft.Extensions.Logging;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore.Diagnostics
 {
+    // CHECK: Ensure usage of Events/warnings.
+
     /// <summary>
     ///     <para>
     ///         Event IDs for MySql events that correspond to messages logged to an <see cref="ILogger" />
@@ -29,37 +31,38 @@ namespace Microsoft.EntityFrameworkCore.Diagnostics
             DecimalTypeDefaultWarning = CoreEventId.ProviderBaseId,
             ByteIdentityColumnWarning,
 
-            // Scaffolding events
-            ColumnFound = CoreEventId.ProviderDesignBaseId,
-            ColumnNotNamedWarning,
-            ColumnSkipped,
-            DefaultSchemaFound,
-            ForeignKeyColumnFound,
-            ForeignKeyColumnMissingWarning,
-            ForeignKeyColumnNotNamedWarning,
-            ForeignKeyColumnsNotMappedWarning,
-            ForeignKeyNotNamedWarning,
-            ForeignKeyReferencesMissingPrincipalTableWarning,
-            IndexColumnFound,
-            IndexColumnNotNamedWarning,
-            IndexColumnSkipped,
-            IndexColumnsNotMappedWarning,
-            IndexNotNamedWarning,
-            IndexTableMissingWarning,
-            MissingSchemaWarning,
-            MissingTableWarning,
-            SequenceFound,
-            SequenceNotNamedWarning,
-            TableFound,
-            TableSkipped,
-            TypeAliasFound,
-            ForeignKeyTableMissingWarning,
-            PrimaryKeyFound,
-            UniqueConstraintFound,
-            IndexFound,
-            ForeignKeyFound,
-            ForeignKeyPrincipalColumnMissingWarning,
-            ReflexiveConstraintIgnored
+            // Design events
+            ColumnFound = CoreEventId.ProviderDesignBaseId, // scaffolding
+            ColumnNotNamedWarning, // scaffolding
+            ColumnSkipped, // scaffolding
+            DefaultSchemaFound, // scaffolding
+            ForeignKeyColumnFound, // scaffolding
+            ForeignKeyColumnMissingWarning, // scaffolding
+            ForeignKeyColumnNotNamedWarning, // scaffolding
+            ForeignKeyColumnsNotMappedWarning, // scaffolding
+            ForeignKeyNotNamedWarning, // scaffolding
+            ForeignKeyReferencesMissingPrincipalTableWarning, // scaffolding
+            IndexColumnFound, // scaffolding
+            IndexColumnNotNamedWarning, // scaffolding
+            IndexColumnSkipped, // scaffolding
+            IndexColumnsNotMappedWarning, // scaffolding
+            IndexNotNamedWarning, // scaffolding
+            IndexTableMissingWarning, // scaffolding
+            MissingSchemaWarning, // scaffolding
+            MissingTableWarning, // scaffolding
+            SequenceFound, // scaffolding
+            SequenceNotNamedWarning, // scaffolding
+            TableFound, // scaffolding
+            TableSkipped, // scaffolding
+            TypeAliasFound, // scaffolding
+            ForeignKeyTableMissingWarning, // scaffolding
+            PrimaryKeyFound, // scaffolding
+            UniqueConstraintFound, // scaffolding
+            IndexFound, // scaffolding
+            ForeignKeyFound, // scaffolding
+            ForeignKeyPrincipalColumnMissingWarning, // scaffolding
+            ReflexiveConstraintIgnored, // scaffolding
+            DefaultValueExpressionNotSupportedWarning, // migrations
         }
 
         private static readonly string _validationPrefix = DbLoggerCategory.Model.Validation.Name + ".";
@@ -93,6 +96,9 @@ namespace Microsoft.EntityFrameworkCore.Diagnostics
 
         private static readonly string _scaffoldingPrefix = DbLoggerCategory.Scaffolding.Name + ".";
         private static EventId MakeScaffoldingId(Id id) => new EventId((int)id, _scaffoldingPrefix + id);
+
+        private static readonly string _migrationsPrefix = DbLoggerCategory.Migrations.Name + ".";
+        private static EventId MakeMigrationsId(Id id) => new EventId((int)id, _migrationsPrefix + id);
 
         /// <summary>
         ///     A column was found.
@@ -289,5 +295,11 @@ namespace Microsoft.EntityFrameworkCore.Diagnostics
         ///     This event is in the <see cref="DbLoggerCategory.Scaffolding" /> category.
         /// </summary>
         public static readonly EventId ReflexiveConstraintIgnored = MakeScaffoldingId(Id.ReflexiveConstraintIgnored);
+
+        /// <summary>
+        ///     A default value expression was used in conjunction wiht a column type and database server version that is not supported.
+        ///     This event is in the <see cref="DbLoggerCategory.Migrations" /> category.
+        /// </summary>
+        public static readonly EventId DefaultValueNotSupportedWarning = MakeMigrationsId(Id.DefaultValueExpressionNotSupportedWarning);
     }
 }

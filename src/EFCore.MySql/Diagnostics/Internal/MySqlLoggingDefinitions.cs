@@ -38,5 +38,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal
         public EventDefinitionBase LogPrincipalColumnNotFound;
 
         public EventDefinitionBase LogReflexiveConstraintIgnored;
+
+        public EventDefinitionBase LogDefaultValueNotSupported;
     }
 }

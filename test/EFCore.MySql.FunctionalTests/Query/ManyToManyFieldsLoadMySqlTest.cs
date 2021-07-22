@@ -34,11 +34,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 modelBuilder
                     .SharedTypeEntity<Dictionary<string, object>>("JoinOneToThreePayloadFullShared")
                     .IndexerProperty<string>("Payload")
+                        .HasMaxLength(255)
                     .HasDefaultValue("Generated");
 
                 modelBuilder
                     .Entity<JoinOneToThreePayloadFull>()
                     .Property(e => e.Payload)
+                        .HasMaxLength(255)
                     .HasDefaultValue("Generated");
             }
         }
