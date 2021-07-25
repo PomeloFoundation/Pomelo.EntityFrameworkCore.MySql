@@ -3,7 +3,6 @@
 
 using System;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Text.Json;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -44,19 +43,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Storage.Internal
             => new MySqlJsonMicrosoftTypeMapping<T>(parameters, MySqlDbType, Options);
 
         public override Expression GenerateCodeLiteral(object value)
-        {
-            var defaultJsonDocumentOptions = new Lazy<Expression>(() => Expression.New(typeof(JsonDocumentOptions)));
-            var parseMethod = new Lazy<MethodInfo>(() => typeof(JsonDocument).GetMethod(nameof(JsonDocument.Parse), new[] {typeof(string), typeof(JsonDocumentOptions)}));
-
-            return value switch
+            => value switch
             {
-                JsonDocument document => Expression.Call(parseMethod.Value, Expression.Constant(document.RootElement.ToString()), defaultJsonDocumentOptions.Value),
+                JsonDocument document => Expression.Call(
+                    typeof(JsonDocument).GetMethod(nameof(JsonDocument.Parse), new[] {typeof(string), typeof(JsonDocumentOptions)}),
+                    Expression.Constant(document.RootElement.ToString()),
+                    Expression.New(typeof(JsonDocumentOptions))),
                 JsonElement element => Expression.Property(
-                    Expression.Call(parseMethod.Value, Expression.Constant(element.ToString()), defaultJsonDocumentOptions.Value),
+                    Expression.Call(
+                        typeof(JsonDocument).GetMethod(nameof(JsonDocument.Parse), new[] {typeof(string), typeof(JsonDocumentOptions)}),
+                        Expression.Constant(element.ToString()),
+                        Expression.New(typeof(JsonDocumentOptions))),
                     nameof(JsonDocument.RootElement)),
                 string s => Expression.Constant(s),
                 _ => throw new NotSupportedException("Cannot generate code literals for JSON POCOs.")
             };
-        }
     }
 }

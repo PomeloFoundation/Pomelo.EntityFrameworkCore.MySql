@@ -45,16 +45,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Storage.Internal
             => new MySqlJsonNewtonsoftTypeMapping<T>(parameters, MySqlDbType, Options);
 
         public override Expression GenerateCodeLiteral(object value)
-        {
-            var defaultJsonLoadSettings = new Lazy<Expression>(() => Expression.New(typeof(JsonLoadSettings)));
-            var parseMethod = new Lazy<MethodInfo>(() => typeof(JToken).GetMethod(nameof(JToken.Parse), new[] {typeof(string), typeof(JsonLoadSettings)}));
-
-            return value switch
+            => value switch
             {
-                JToken jToken => Expression.Call(parseMethod.Value, Expression.Constant(jToken.ToString(Formatting.None)), defaultJsonLoadSettings.Value),
+                JToken jToken => Expression.Call(
+                    typeof(JToken).GetMethod(nameof(JToken.Parse), new[] {typeof(string), typeof(JsonLoadSettings)}),
+                    Expression.Constant(jToken.ToString(Formatting.None)),
+                    Expression.New(typeof(JsonLoadSettings))),
                 string s => Expression.Constant(s),
                 _ => throw new NotSupportedException("Cannot generate code literals for JSON POCOs.")
             };
-        }
     }
 }
