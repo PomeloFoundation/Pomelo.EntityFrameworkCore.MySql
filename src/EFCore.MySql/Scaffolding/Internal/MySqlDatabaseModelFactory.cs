@@ -576,7 +576,11 @@ ORDER BY
             {
                 using (var command = connection.CreateCommand())
                 {
-                    command.CommandText = string.Format(GetPrimaryQuery, connection.Database, table.Name);
+                    string getPrimaryQuery = GetPrimaryQuery;
+                    if (_options.ServerVersion.Supports.MySqlWL2649Workaround)
+                        getPrimaryQuery = getPrimaryQuery.Replace("IFNULL(`SUB_PART`, 0)", "CAST(IFNULL(`SUB_PART`, 0) AS CHAR)");
+
+                    command.CommandText = string.Format(getPrimaryQuery, connection.Database, table.Name);
 
                     using (var reader = command.ExecuteReader())
                     {
