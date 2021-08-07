@@ -657,7 +657,11 @@ ORDER BY
             {
                 using (var command = connection.CreateCommand())
                 {
-                    command.CommandText = string.Format(GetIndexesQuery, connection.Database, table.Name);
+                    string getIndexesQuery = GetIndexesQuery;
+                    if (_options.ServerVersion.Supports.MySqlWL2649Workaround)
+                        getIndexesQuery = getIndexesQuery.Replace("IFNULL(`SUB_PART`, 0)", "CAST(IFNULL(`SUB_PART`, 0) AS CHAR)");
+
+                    command.CommandText = string.Format(getIndexesQuery, connection.Database, table.Name);
 
                     using (var reader = command.ExecuteReader())
                     {
