@@ -561,7 +561,7 @@ ORDER BY
 
         private const string GetPrimaryQuery = @"SELECT `INDEX_NAME`,
      GROUP_CONCAT(`COLUMN_NAME` ORDER BY `SEQ_IN_INDEX` SEPARATOR ',') AS `COLUMNS`,
-     GROUP_CONCAT(IFNULL(`SUB_PART`, 0) ORDER BY `SEQ_IN_INDEX` SEPARATOR ',') AS `SUB_PARTS`
+     GROUP_CONCAT(CAST(IFNULL(`SUB_PART`, 0) AS CHAR) ORDER BY `SEQ_IN_INDEX` SEPARATOR ',') AS `SUB_PARTS`
      FROM `INFORMATION_SCHEMA`.`STATISTICS`
      WHERE `TABLE_SCHEMA` = '{0}'
      AND `TABLE_NAME` = '{1}'
@@ -576,11 +576,7 @@ ORDER BY
             {
                 using (var command = connection.CreateCommand())
                 {
-                    string getPrimaryQuery = GetPrimaryQuery;
-                    if (_options.ServerVersion.Supports.MySqlWL2649Workaround)
-                        getPrimaryQuery = getPrimaryQuery.Replace("IFNULL(`SUB_PART`, 0)", "CAST(IFNULL(`SUB_PART`, 0) AS CHAR)");
-
-                    command.CommandText = string.Format(getPrimaryQuery, connection.Database, table.Name);
+                    command.CommandText = string.Format(GetPrimaryQuery, connection.Database, table.Name);
 
                     using (var reader = command.ExecuteReader())
                     {
@@ -638,7 +634,7 @@ ORDER BY
         private const string GetIndexesQuery = @"SELECT `INDEX_NAME`,
      `NON_UNIQUE`,
      GROUP_CONCAT(`COLUMN_NAME` ORDER BY `SEQ_IN_INDEX` SEPARATOR ',') AS `COLUMNS`,
-     GROUP_CONCAT(IFNULL(`SUB_PART`, 0) ORDER BY `SEQ_IN_INDEX` SEPARATOR ',') AS `SUB_PARTS`,
+     GROUP_CONCAT(CAST(IFNULL(`SUB_PART`, 0) AS CHAR) ORDER BY `SEQ_IN_INDEX` SEPARATOR ',') AS `SUB_PARTS`,
      `INDEX_TYPE`
      FROM `INFORMATION_SCHEMA`.`STATISTICS`
      WHERE `TABLE_SCHEMA` = '{0}'
@@ -657,11 +653,7 @@ ORDER BY
             {
                 using (var command = connection.CreateCommand())
                 {
-                    string getIndexesQuery = GetIndexesQuery;
-                    if (_options.ServerVersion.Supports.MySqlWL2649Workaround)
-                        getIndexesQuery = getIndexesQuery.Replace("IFNULL(`SUB_PART`, 0)", "CAST(IFNULL(`SUB_PART`, 0) AS CHAR)");
-
-                    command.CommandText = string.Format(getIndexesQuery, connection.Database, table.Name);
+                    command.CommandText = string.Format(GetIndexesQuery, connection.Database, table.Name);
 
                     using (var reader = command.ExecuteReader())
                     {

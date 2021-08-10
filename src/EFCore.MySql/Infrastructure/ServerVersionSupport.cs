@@ -84,6 +84,5 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
         public virtual bool InformationSchemaCheckConstraintsTable => false;
         public virtual bool IdentifyJsonColumsByCheckConstraints => false;
         public virtual bool MySqlBugLimit0Offset0ExistsWorkaround => false;
-        public virtual bool MySqlWL2649Workaround => false;
     }
 }
