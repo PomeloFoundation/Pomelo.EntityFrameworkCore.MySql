@@ -701,6 +701,8 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
             // if the foreign key columns are listed as the first columns and in the same order as in the foreign key (#678).
             // We therefore drop and later recreate all foreign keys to ensure, that no other dependencies on the
             // alternate key exist, if explicitly requested by the user via `MySqlMigrationBuilderExtensions.DropUniqueConstraint()`.
+            // This particularily targets FK contraints, that are on the same table as the PK and might reuse indexes already used by the PK.
+            // A common case is a many-to-many relationship table, with a PK containing the 2 FK columns.
             if (operation.RecreateForeignKeys)
             {
                 TemporarilyDropForeignKeys(
@@ -708,12 +710,6 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
                     builder,
                     operation.Schema,
                     operation.Table,
-                    // model.GetRelationalModel()
-                    //     .FindTable(operation.Table, operation.Schema)
-                    //     ?.Columns
-                    //     .Select(c => c.Name)
-                    //     .ToArray(),
-                    null,
                     DropUniqueKey);
             }
             else
@@ -727,22 +723,19 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
             MigrationCommandListBuilder builder,
             string schemaName,
             string tableName,
-            string[] columnNames,
             Action action)
         {
             var foreignKeys = model.GetRelationalModel()
                 .FindTable(tableName, schemaName)
-                ?.ForeignKeyConstraints?.Where(cs => columnNames == null ||
-                                                     columnNames.Length == 0 ||
-                                                     cs.Columns.Select(c => c.Name).SequenceEqual(columnNames))
+                ?.ForeignKeyConstraints
                 .ToArray() ?? Array.Empty<IForeignKeyConstraint>();
 
             foreach (var foreignKey in foreignKeys)
             {
                 Generate(new DropForeignKeyOperation
                 {
-                    Schema = schemaName,
-                    Table = tableName,
+                    Schema = foreignKey.Table.Schema,
+                    Table = foreignKey.Table.Name,
                     Name = foreignKey.Name,
                 }, model, builder);
             }
@@ -1408,12 +1401,6 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
                     builder,
                     operation.Schema,
                     operation.Table,
-                    // model.GetRelationalModel()
-                    //     .FindTable(operation.Table, operation.Schema)
-                    //     ?.Columns
-                    //     .Select(c => c.Name)
-                    //     .ToArray(),
-                    null,
                     DropPrimaryKey);
             }
             else

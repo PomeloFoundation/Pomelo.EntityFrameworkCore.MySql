@@ -80,8 +80,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         ///     Overridden by database providers to generate a SQL script to `END` the SQL block.
         /// </summary>
         /// <returns> The generated SQL. </returns>
-        public virtual string GetBeginIfScript(string migrationId, bool notExists) => $@"
-DROP PROCEDURE IF EXISTS {MigrationsScript};
+        public virtual string GetBeginIfScript(string migrationId, bool notExists) => $@"DROP PROCEDURE IF EXISTS {MigrationsScript};
 DELIMITER //
 CREATE PROCEDURE {MigrationsScript}()
 BEGIN

@@ -108,6 +108,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
             string toMigration = null,
             MigrationsSqlGenerationOptions options = MigrationsSqlGenerationOptions.Default)
         {
+            options |= MigrationsSqlGenerationOptions.Script;
+
             if (!options.HasFlag(MigrationsSqlGenerationOptions.Idempotent))
             {
                 return base.GenerateScript(fromMigration, toMigration, options);
@@ -168,7 +170,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         }
 
         protected virtual string[] GetMigrationCommandTexts(
-            IReadOnlyList<MigrationOperation> migrationOperations, bool beginTexts,
+            IReadOnlyList<MigrationOperation> migrationOperations,
+            bool beginTexts,
             MigrationsSqlGenerationOptions options)
             => GetCustomCommands(migrationOperations)
                 .Select(
@@ -187,16 +190,25 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
 
         protected virtual string CleanUpScriptSpecificPseudoStatements(string commandText)
         {
-            const string delimiterPattern = @"^\s*DELIMITER\s*(?<Delimiter>;|//)\s*$";
-            const RegexOptions delimiterPatternRegexOptions = RegexOptions.IgnoreCase | RegexOptions.Multiline;
+            const string temporaryDelimiter = @"//";
+            const string defaultDelimiter = @";";
+            const string delimiterChangeRegexPatternFormatString = @"[\r\n]*[^\S\r\n]*DELIMITER[^\S\r\n]+{0}[^\S\r\n]*";
+            const string delimiterUseRegexPatternFormatString = @"\s*{0}\s*$";
 
-            var delimiter = Regex.Match(commandText, delimiterPattern, delimiterPatternRegexOptions);
+            var temporaryDelimiterRegexPattern = string.Format(
+                delimiterChangeRegexPatternFormatString,
+                $"(?:{Regex.Escape(temporaryDelimiter)}|{Regex.Escape(defaultDelimiter)})");
 
+            var delimiter = Regex.Match(commandText, temporaryDelimiterRegexPattern, RegexOptions.IgnoreCase);
             if (delimiter.Success)
             {
-                var result = Regex.Replace(commandText, delimiterPattern, string.Empty, delimiterPatternRegexOptions);
-                return Regex.Replace(
-                    result, $@"\s*{Regex.Escape(delimiter.Groups["Delimiter"].Value)}\s*$", ";", delimiterPatternRegexOptions);
+                commandText = Regex.Replace(commandText, temporaryDelimiterRegexPattern, string.Empty, RegexOptions.IgnoreCase);
+
+                commandText = Regex.Replace(
+                    commandText,
+                    string.Format(delimiterUseRegexPatternFormatString, temporaryDelimiter),
+                    defaultDelimiter,
+                    RegexOptions.IgnoreCase | RegexOptions.Multiline);
             }
 
             return commandText;
