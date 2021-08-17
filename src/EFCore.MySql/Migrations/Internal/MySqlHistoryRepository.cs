@@ -85,7 +85,7 @@ DROP PROCEDURE IF EXISTS {MigrationsScript};
 DELIMITER //
 CREATE PROCEDURE {MigrationsScript}()
 BEGIN
-    IF {(notExists ? "NOT" : null)}EXISTS(SELECT 1 FROM {SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema)} WHERE {SqlGenerationHelper.DelimitIdentifier(MigrationIdColumnName)} = '{migrationId}') THEN
+    IF{(notExists ? " NOT" : null)} EXISTS(SELECT 1 FROM {SqlGenerationHelper.DelimitIdentifier(TableName, TableSchema)} WHERE {SqlGenerationHelper.DelimitIdentifier(MigrationIdColumnName)} = '{migrationId}') THEN
 ";
 
         /// <summary>
