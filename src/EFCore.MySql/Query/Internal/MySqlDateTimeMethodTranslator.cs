@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
+using System.Data;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -65,7 +65,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                                     _sqlExpressionFactory.Fragment("INTERVAL"),
                                     datePart.Equals("microsecond")
                                         ? _sqlExpressionFactory.Multiply(
-                                            new SqlConstantExpression(Expression.Constant(1000), new IntTypeMapping("int")),
+                                            _sqlExpressionFactory.Constant(1000, new IntTypeMapping("int32", DbType.Int32)),
                                             _sqlExpressionFactory.Convert(arguments[0], typeof(int)))
                                         : _sqlExpressionFactory.Convert(arguments[0], typeof(int)),
                                     _sqlExpressionFactory.Fragment(datePart)
