@@ -145,7 +145,6 @@ COMMIT;
 
 START TRANSACTION;
 
-
 DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
 CREATE PROCEDURE MigrationsScript()
@@ -163,7 +162,6 @@ END //
 DELIMITER ;
 CALL MigrationsScript();
 DROP PROCEDURE MigrationsScript;
-
 
 DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
@@ -184,7 +182,6 @@ COMMIT;
 
 START TRANSACTION;
 
-
 DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
 CREATE PROCEDURE MigrationsScript()
@@ -198,7 +195,6 @@ END //
 DELIMITER ;
 CALL MigrationsScript();
 DROP PROCEDURE MigrationsScript;
-
 
 DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
@@ -218,7 +214,6 @@ DROP PROCEDURE MigrationsScript;
 COMMIT;
 
 START TRANSACTION;
-
 
 DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
@@ -315,7 +310,6 @@ COMMIT;
             Assert.Equal(
                 @"START TRANSACTION;
 
-
 DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
 CREATE PROCEDURE MigrationsScript()
@@ -329,7 +323,6 @@ END //
 DELIMITER ;
 CALL MigrationsScript();
 DROP PROCEDURE MigrationsScript;
-
 
 DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
@@ -350,7 +343,6 @@ COMMIT;
 
 START TRANSACTION;
 
-
 DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
 CREATE PROCEDURE MigrationsScript()
@@ -364,7 +356,6 @@ END //
 DELIMITER ;
 CALL MigrationsScript();
 DROP PROCEDURE MigrationsScript;
-
 
 DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
@@ -439,7 +430,6 @@ VALUES ('00000000000003_Migration3', '7.0.0-test');
     CONSTRAINT `PK___EFMigrationsHistory` PRIMARY KEY (`MigrationId`)
 ) CHARACTER SET=utf8mb4;
 
-
 DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
 CREATE PROCEDURE MigrationsScript()
@@ -458,7 +448,6 @@ DELIMITER ;
 CALL MigrationsScript();
 DROP PROCEDURE MigrationsScript;
 
-
 DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
 CREATE PROCEDURE MigrationsScript()
@@ -474,7 +463,6 @@ DELIMITER ;
 CALL MigrationsScript();
 DROP PROCEDURE MigrationsScript;
 
-
 DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
 CREATE PROCEDURE MigrationsScript()
@@ -488,7 +476,6 @@ END //
 DELIMITER ;
 CALL MigrationsScript();
 DROP PROCEDURE MigrationsScript;
-
 
 DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
@@ -504,7 +491,6 @@ END //
 DELIMITER ;
 CALL MigrationsScript();
 DROP PROCEDURE MigrationsScript;
-
 
 DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
