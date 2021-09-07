@@ -65,11 +65,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             await base.Alter_column_make_required();
 
             AssertSql(
-                @"ALTER TABLE `People` MODIFY COLUMN `SomeColumn` longtext CHARACTER SET utf8mb4 NOT NULL;",
-                //
                 @"UPDATE `People` SET `SomeColumn` = ''
 WHERE `SomeColumn` IS NULL;
-SELECT ROW_COUNT();");
+SELECT ROW_COUNT();",
+                //
+                @"ALTER TABLE `People` MODIFY COLUMN `SomeColumn` longtext CHARACTER SET utf8mb4 NOT NULL;");
         }
 
         [ConditionalFact]
@@ -93,11 +93,11 @@ SELECT ROW_COUNT();");
                 });
 
             AssertSql(
-                @"ALTER TABLE `People` MODIFY COLUMN `SomeColumn` longtext CHARACTER SET utf8mb4 NOT NULL;",
-                //
                 @"UPDATE `People` SET `SomeColumn` = ''
 WHERE `SomeColumn` IS NULL;
-SELECT ROW_COUNT();");
+SELECT ROW_COUNT();",
+                //
+                @"ALTER TABLE `People` MODIFY COLUMN `SomeColumn` longtext CHARACTER SET utf8mb4 NOT NULL;");
         }
 
         [ConditionalFact]

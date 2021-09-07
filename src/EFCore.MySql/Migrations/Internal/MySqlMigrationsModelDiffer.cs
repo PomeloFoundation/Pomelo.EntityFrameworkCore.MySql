@@ -122,8 +122,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                 {
                     alterColumnOperation.DefaultValue = null;
 
-                    yield return alterColumnOperation;
-
                     yield return new UpdateDataOperation
                     {
                         IsDestructiveChange = true,
@@ -136,6 +134,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                         ColumnTypes = new[] { alterColumnOperation.ColumnType },
                         Values = new object[,] { { string.Empty } }
                     };
+
+                    yield return alterColumnOperation;
                 }
                 else
                 {
