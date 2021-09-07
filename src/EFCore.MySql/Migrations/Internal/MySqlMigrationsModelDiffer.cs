@@ -86,7 +86,63 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         }
 
         protected override IEnumerable<MigrationOperation> Diff(IColumn source, IColumn target, DiffContext diffContext)
-            => PostFilterOperations(base.Diff(source, target, diffContext));
+            => PostFilterOperations(
+                MakeStringColumnsRequiredWithoutUnexpectedDefaultValue(
+                    source,
+                    target,
+                    base.Diff(source, target, diffContext)));
+
+        /// <summary>
+        /// Use a one-time `UPDATE` statement instead of an `ALTER COLUMN` operation in cases, where a non-required (`NULL`) string
+        /// property is changed to a required (`NOT NULL`) one.
+        /// EF Core generates an `ALTER COLUMN` statement with an unexpected default value of an empty string for those properties.
+        /// While it is usually nice to have existing `NULL` values converted to empty strings, this should be a one-time operation and have
+        /// no side effects on the table structure itself (so it should not introduce an unexpected default value).
+        /// </summary>
+        /// <remarks>
+        /// See https://github.com/dotnet/efcore/issues/25899
+        /// </remarks>
+        private static IEnumerable<MigrationOperation> MakeStringColumnsRequiredWithoutUnexpectedDefaultValue(
+            IColumn source,
+            IColumn target,
+            IEnumerable<MigrationOperation> migrationOperations)
+        {
+            foreach (var migrationOperation in migrationOperations)
+            {
+                if (migrationOperation is AlterColumnOperation alterColumnOperation &&
+                    alterColumnOperation.IsDestructiveChange &&
+                    alterColumnOperation.Schema == target.Table.Schema &&
+                    alterColumnOperation.Table == target.Table.Name &&
+                    alterColumnOperation.Name == target.Name &&
+                    alterColumnOperation.ClrType == typeof(string) &&
+                    alterColumnOperation.DefaultValue is "" &&
+                    target.DefaultValue is null &&
+                    !target.IsNullable &&
+                    source.IsNullable)
+                {
+                    alterColumnOperation.DefaultValue = null;
+
+                    yield return alterColumnOperation;
+
+                    yield return new UpdateDataOperation
+                    {
+                        IsDestructiveChange = true,
+                        Table = alterColumnOperation.Table,
+                        Schema = alterColumnOperation.Schema,
+                        KeyColumns = new[] { alterColumnOperation.Name },
+                        KeyColumnTypes = new[] { alterColumnOperation.ColumnType },
+                        KeyValues = new object[,] { { null } },
+                        Columns = new[] { alterColumnOperation.Name },
+                        ColumnTypes = new[] { alterColumnOperation.ColumnType },
+                        Values = new object[,] { { string.Empty } }
+                    };
+                }
+                else
+                {
+                    yield return migrationOperation;
+                }
+            }
+        }
 
         protected virtual IEnumerable<MigrationOperation> PostFilterOperations(IEnumerable<MigrationOperation> migrationOperations)
         {
