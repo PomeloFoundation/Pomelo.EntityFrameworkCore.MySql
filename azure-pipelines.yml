@@ -30,37 +30,43 @@ jobs:
       MySQL 8.0 (Windows):
         vmImageName: 'windows-latest'
         databaseServerType: 'mysql'
-        databaseServerVersion: '8.0.25'
+        databaseServerVersion: '8.0.26'
         sqlMode: $(mysqlCurrentSqlMode)
         skipTests: $(skipWindowsTests)
       MySQL 8.0 (Linux):
         vmImageName: 'ubuntu-latest'
         databaseServerType: 'mysql'
-        databaseServerVersion: '8.0.25'
+        databaseServerVersion: '8.0.26'
         sqlMode: $(mysqlCurrentSqlMode)
         skipTests: false
       MySQL 5.7 (Linux):
         vmImageName: 'ubuntu-latest'
         databaseServerType: 'mysql'
-        databaseServerVersion: '5.7.34'
+        databaseServerVersion: '5.7.35'
         sqlMode: $(mysqlLegacySqlMode)
+        skipTests: false
+      MariaDB 10.6 (Linux):
+        vmImageName: 'ubuntu-latest'
+        databaseServerType: 'mariadb'
+        databaseServerVersion: '10.6.4'
+        sqlMode: $(mariadbSqlMode)
         skipTests: false
       MariaDB 10.5 (Linux):
         vmImageName: 'ubuntu-latest'
         databaseServerType: 'mariadb'
-        databaseServerVersion: '10.5.11'
+        databaseServerVersion: '10.5.12'
         sqlMode: $(mariadbSqlMode)
         skipTests: false
       MariaDB 10.4 (Linux):
         vmImageName: 'ubuntu-latest'
         databaseServerType: 'mariadb'
-        databaseServerVersion: '10.4.20'
+        databaseServerVersion: '10.4.21'
         sqlMode: $(mariadbSqlMode)
         skipTests: false
       MariaDB 10.3 (Linux):
         vmImageName: 'ubuntu-latest'
         databaseServerType: 'mariadb'
-        databaseServerVersion: '10.3.30'
+        databaseServerVersion: '10.3.31'
         sqlMode: $(mariadbSqlMode)
         skipTests: false
   pool:
