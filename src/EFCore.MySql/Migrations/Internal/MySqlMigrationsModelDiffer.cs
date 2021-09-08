@@ -23,6 +23,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
 {
     public class MySqlMigrationsModelDiffer : MigrationsModelDiffer
     {
+        // CHECK: Might be a good use case for runtime annotations.
+        protected static class InternalLocalAnnotationNames
+        {
+            public const string InternalLocalPrefix = MySqlAnnotationNames.Prefix + "Internal:MigrationsModelDiffer:";
+
+            public const string ExecuteBefore = InternalLocalPrefix + "ExecuteBefore";
+        }
+
         public MySqlMigrationsModelDiffer(
             [NotNull] IRelationalTypeMappingSource typeMappingSource,
             [NotNull] IMigrationsAnnotationProvider migrationsAnnotations,
@@ -36,6 +44,52 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                 updateAdapterFactory,
                 commandBatchPreparerDependencies)
         {
+        }
+
+        public override IReadOnlyList<MigrationOperation> GetDifferences(IRelationalModel source, IRelationalModel target)
+        {
+            var operations = base.GetDifferences(source, target);
+
+            // Ensure that we don't leak internal local annotations.
+            AssertInternalLocalAnnotations(operations);
+
+            return operations;
+        }
+
+        protected override IReadOnlyList<MigrationOperation> Sort(IEnumerable<MigrationOperation> operations, DiffContext diffContext)
+        {
+            // EF Core sorts all migration operations in a predefined order.
+            // So because we want to execute certain operations in specific relation to one another, we anchor those operations via an
+            // internal annotation to each other and relocate them after EF Core is done sorting.
+
+            var sortedOperations = base.Sort(operations, diffContext);
+
+            var anchoredOperations = new List<MigrationOperation>();
+            var finalOperations = new List<MigrationOperation>();
+
+            foreach (var operation in sortedOperations)
+            {
+                if (operation[InternalLocalAnnotationNames.ExecuteBefore] is MigrationOperation)
+                {
+                    anchoredOperations.Add(operation);
+                }
+                else
+                {
+                    finalOperations.Add(operation);
+                }
+            }
+
+            foreach (var anchoredOperation in anchoredOperations)
+            {
+                var targetOperation = (MigrationOperation)anchoredOperation[InternalLocalAnnotationNames.ExecuteBefore];
+                var targetOperationIndex = finalOperations.IndexOf(targetOperation);
+
+                finalOperations.Insert(targetOperationIndex, anchoredOperation);
+
+                anchoredOperation[InternalLocalAnnotationNames.ExecuteBefore] = null;
+            }
+
+            return finalOperations;
         }
 
         protected override IEnumerable<MigrationOperation> Add(IRelationalModel target, DiffContext diffContext)
@@ -86,7 +140,64 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         }
 
         protected override IEnumerable<MigrationOperation> Diff(IColumn source, IColumn target, DiffContext diffContext)
-            => PostFilterOperations(base.Diff(source, target, diffContext));
+            => PostFilterOperations(
+                MakeStringColumnsRequiredWithoutUnexpectedDefaultValue(
+                    source,
+                    target,
+                    base.Diff(source, target, diffContext)));
+
+        /// <summary>
+        /// Use a one-time `UPDATE` statement instead of an `ALTER COLUMN` operation in cases, where a non-required (`NULL`) string
+        /// property is changed to a required (`NOT NULL`) one.
+        /// EF Core generates an `ALTER COLUMN` statement with an unexpected default value of an empty string for those properties.
+        /// While it is usually nice to have existing `NULL` values converted to empty strings, this should be a one-time operation and have
+        /// no side effects on the table structure itself (so it should not introduce an unexpected default value).
+        /// </summary>
+        /// <remarks>
+        /// See https://github.com/dotnet/efcore/issues/25899
+        /// </remarks>
+        private static IEnumerable<MigrationOperation> MakeStringColumnsRequiredWithoutUnexpectedDefaultValue(
+            IColumn source,
+            IColumn target,
+            IEnumerable<MigrationOperation> migrationOperations)
+        {
+            foreach (var migrationOperation in migrationOperations)
+            {
+                if (migrationOperation is AlterColumnOperation alterColumnOperation &&
+                    alterColumnOperation.IsDestructiveChange &&
+                    alterColumnOperation.Schema == target.Table.Schema &&
+                    alterColumnOperation.Table == target.Table.Name &&
+                    alterColumnOperation.Name == target.Name &&
+                    alterColumnOperation.ClrType == typeof(string) &&
+                    alterColumnOperation.DefaultValue is "" &&
+                    target.DefaultValue is null &&
+                    !target.IsNullable &&
+                    source.IsNullable)
+                {
+                    alterColumnOperation.DefaultValue = null;
+
+                    yield return new UpdateDataOperation
+                    {
+                        IsDestructiveChange = true,
+                        Table = alterColumnOperation.Table,
+                        Schema = alterColumnOperation.Schema,
+                        KeyColumns = new[] { alterColumnOperation.Name },
+                        KeyColumnTypes = new[] { alterColumnOperation.ColumnType },
+                        KeyValues = new object[,] { { null } },
+                        Columns = new[] { alterColumnOperation.Name },
+                        ColumnTypes = new[] { alterColumnOperation.ColumnType },
+                        Values = new object[,] { { string.Empty } },
+                        [InternalLocalAnnotationNames.ExecuteBefore] = alterColumnOperation,
+                    };
+
+                    yield return alterColumnOperation;
+                }
+                else
+                {
+                    yield return migrationOperation;
+                }
+            }
+        }
 
         protected virtual IEnumerable<MigrationOperation> PostFilterOperations(IEnumerable<MigrationOperation> migrationOperations)
         {
@@ -263,7 +374,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                 .FirstOrDefault() is string unexpectedProperty)
             {
                 throw new InvalidOperationException(
-                    $"The 'MigrationOperation' of type '{operation.GetType().Name}' contains an unexpected property '{unexpectedProperty}'.");
+                    $"The migration operation of type '{operation.GetType().Name}' contains an unexpected property '{unexpectedProperty}'.");
+            }
+        }
+
+        [Conditional("DEBUG")]
+        private static void AssertInternalLocalAnnotations(IReadOnlyList<MigrationOperation> operations)
+        {
+            foreach (var operation in operations)
+            {
+                foreach (var annotation in operation.GetAnnotations())
+                {
+                    if (annotation.Name.StartsWith(InternalLocalAnnotationNames.InternalLocalPrefix))
+                    {
+                        throw new InvalidOperationException(
+                            $"The migration operation of type '{operation.GetType().Name}' leaked the internal local annotation '{annotation.Name}'.");
+                    }
+                }
             }
         }
     }

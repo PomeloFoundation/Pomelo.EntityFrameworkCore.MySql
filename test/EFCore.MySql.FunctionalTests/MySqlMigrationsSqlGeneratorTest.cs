@@ -6,8 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
@@ -353,18 +351,20 @@ WHERE `First Name` = 'Daenerys';
 SELECT ROW_COUNT();");
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.DefaultExpression), nameof(ServerVersionSupport.AlternativeDefaultExpression))]
         public override void DefaultValue_with_line_breaks(bool isUnicode)
         {
             base.DefaultValue_with_line_breaks(isUnicode);
 
             AssertSql(
                 @"CREATE TABLE `TestLineBreaks` (
-    `TestDefaultValue` longtext NOT NULL
+    `TestDefaultValue` longtext NOT NULL DEFAULT (CONCAT('', CHAR(13, 10), 'Various Line', CHAR(13), 'Breaks', CHAR(10), ''))
 );");
         }
 
         [ConditionalFact]
-        public virtual void DefaultValue_not_generated_for_text_column()
+        [SupportedServerVersionLessThanCondition(nameof(ServerVersionSupport.DefaultExpression), nameof(ServerVersionSupport.AlternativeDefaultExpression))]
+        public virtual void DefaultValue_not_generated_for_unlimited_text_column_missing_default_expression_support()
         {
             Generate(
                 new CreateTableOperation
@@ -374,17 +374,75 @@ SELECT ROW_COUNT();");
                     {
                         new AddColumnOperation
                         {
+                            Table = "History",
                             Name = "Event",
                             ClrType = typeof(string),
-                            ColumnType = "TEXT",
-                            DefaultValue = new DateTime(2015, 4, 12, 17, 5, 0)
+                            DefaultValue = "The Battle of Waterloo"
                         }
                     }
                 });
 
             Assert.Equal(
                 @"CREATE TABLE `History` (
-    `Event` TEXT NOT NULL
+    `Event` longtext NOT NULL
+);
+",
+                Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.DefaultExpression), nameof(ServerVersionSupport.AlternativeDefaultExpression))]
+        public virtual void DefaultValue_generated_for_unlimited_text_column()
+        {
+            Generate(
+                new CreateTableOperation
+                {
+                    Name = "History",
+                    Columns =
+                    {
+                        new AddColumnOperation
+                        {
+                            Table = "History",
+                            Name = "Event",
+                            ClrType = typeof(string),
+                            DefaultValue = "The Battle of Waterloo"
+                        }
+                    }
+                });
+
+            Assert.Equal(
+                @"CREATE TABLE `History` (
+    `Event` longtext NOT NULL DEFAULT ('The Battle of Waterloo')
+);
+",
+                Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [ConditionalFact]
+        public virtual void DefaultValue_generated_for_limited_text_column()
+        {
+            Generate(
+                new CreateTableOperation
+                {
+                    Name = "History",
+                    Columns =
+                    {
+                        new AddColumnOperation
+                        {
+                            Table = "History",
+                            Name = "Event",
+                            ClrType = typeof(string),
+                            MaxLength = 128,
+                            DefaultValue = "The Battle of Waterloo"
+                        }
+                    }
+                });
+
+            Assert.Equal(
+                @"CREATE TABLE `History` (
+    `Event` varchar(128) NOT NULL DEFAULT 'The Battle of Waterloo'
 );
 ",
                 Sql,

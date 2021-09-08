@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
@@ -55,16 +51,142 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             return base.Add_column_with_collation();
         }
 
-        [ConditionalTheory(Skip = "TODO")]
-        public override Task Add_column_with_defaultValue_string()
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.DefaultExpression), nameof(ServerVersionSupport.AlternativeDefaultExpression))]
+        public override async Task Add_column_with_defaultValue_string()
         {
-            return base.Add_column_with_defaultValue_string();
+            await base.Add_column_with_defaultValue_string();
+
+            AssertSql(
+                @"ALTER TABLE `People` ADD `Name` longtext CHARACTER SET utf8mb4 NOT NULL DEFAULT ('John Doe');");
         }
 
-        [ConditionalTheory(Skip = "TODO")]
-        public override Task Add_column_with_defaultValueSql()
+        public override async Task Alter_column_make_required()
         {
-            return base.Add_column_with_defaultValueSql();
+            await base.Alter_column_make_required();
+
+            AssertSql(
+                @"UPDATE `People` SET `SomeColumn` = ''
+WHERE `SomeColumn` IS NULL;
+SELECT ROW_COUNT();",
+                //
+                @"ALTER TABLE `People` MODIFY COLUMN `SomeColumn` longtext CHARACTER SET utf8mb4 NOT NULL;");
+        }
+
+        [ConditionalFact]
+        public virtual async Task Alter_string_column_make_required_generates_update_statement_instead_of_default_value()
+        {
+            await Test(
+                builder => builder.Entity(
+                    "People", e =>
+                    {
+                        e.Property<int>("Id");
+                        e.Property<string>("SomeColumn");
+                    }),
+                builder => { },
+                builder => builder.Entity("People").Property<string>("SomeColumn").IsRequired(),
+                model =>
+                {
+                    var table = Assert.Single(model.Tables);
+                    var column = Assert.Single(table.Columns, c => c.Name != "Id");
+                    Assert.False(column.IsNullable);
+                    Assert.Null(column.DefaultValueSql);
+                });
+
+            AssertSql(
+                @"UPDATE `People` SET `SomeColumn` = ''
+WHERE `SomeColumn` IS NULL;
+SELECT ROW_COUNT();",
+                //
+                @"ALTER TABLE `People` MODIFY COLUMN `SomeColumn` longtext CHARACTER SET utf8mb4 NOT NULL;");
+        }
+
+        [ConditionalFact]
+        public virtual async Task Add_column_with_defaultValue_string_limited_length()
+        {
+            await Test(
+                builder => builder.Entity("People").Property<int>("Id"),
+                builder => { },
+                builder => builder.Entity("People")
+                    .Property<string>("Name")
+                    .HasMaxLength(128) // specify explicit length
+                    .IsRequired()
+                    .HasDefaultValue("John Doe"),
+                model =>
+                {
+                    var table = Assert.Single(model.Tables);
+                    Assert.Equal(2, table.Columns.Count);
+                    var nameColumn = Assert.Single(table.Columns, c => c.Name == "Name");
+                    Assert.False(nameColumn.IsNullable);
+                    Assert.Contains("John Doe", nameColumn.DefaultValueSql);
+                });
+
+            AssertSql(
+                @"ALTER TABLE `People` ADD `Name` varchar(128) CHARACTER SET utf8mb4 NOT NULL DEFAULT 'John Doe';");
+        }
+
+        [ConditionalFact]
+        [SupportedServerVersionLessThanCondition(nameof(ServerVersionSupport.DefaultExpression), nameof(ServerVersionSupport.AlternativeDefaultExpression))]
+        public virtual async Task Add_column_with_defaultValue_string_unlimited_length_without_default_value_expression_support_throws_warning()
+        {
+            await TestThrows<InvalidOperationException>(
+                builder => builder.Entity("People").Property<int>("Id"),
+                builder => { },
+                builder => builder.Entity("People")
+                    .Property<string>("Name")
+                    .IsRequired()
+                    .HasDefaultValue("John Doe"));
+        }
+
+        public override async Task Add_column_with_defaultValue_datetime()
+        {
+            await base.Add_column_with_defaultValue_datetime();
+
+            AssertSql(
+                @"ALTER TABLE `People` ADD `Birthday` datetime(6) NOT NULL DEFAULT '2015-04-12 17:05:00';");
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.DefaultExpression), nameof(ServerVersionSupport.AlternativeDefaultExpression))]
+        public override async Task Add_column_with_defaultValueSql()
+        {
+            await Test(
+                builder => builder.Entity("People").Property<int>("Id"),
+                builder => { },
+                builder => builder.Entity("People")
+                    .Property<int>("Sum")
+                    .HasDefaultValueSql("(1 + 2)"), // default expression needs to be wrapped in parenthesis
+                model =>
+                {
+                    var table = Assert.Single(model.Tables);
+                    Assert.Equal(2, table.Columns.Count);
+                    var sumColumn = Assert.Single(table.Columns, c => c.Name == "Sum");
+                    Assert.Contains("1", sumColumn.DefaultValueSql);
+                    Assert.Contains("+", sumColumn.DefaultValueSql);
+                    Assert.Contains("2", sumColumn.DefaultValueSql);
+                });
+
+            AssertSql(
+                @"ALTER TABLE `People` ADD `Sum` int NOT NULL DEFAULT (1 + 2);");
+        }
+
+        [ConditionalFact]
+        public virtual async Task Add_column_with_defaultValueSql_simple()
+        {
+            await Test(
+                builder => builder.Entity("People").Property<int>("Id"),
+                builder => { },
+                builder => builder.Entity("People")
+                    .Property<int>("Sum")
+                    .HasDefaultValueSql("3"), // simple value
+                model =>
+                {
+                    var table = Assert.Single(model.Tables);
+                    Assert.Equal(2, table.Columns.Count);
+                    var sumColumn = Assert.Single(table.Columns, c => c.Name == "Sum");
+                    Assert.Contains("3", sumColumn.DefaultValueSql);
+                });
+
+            AssertSql(
+                @"ALTER TABLE `People` ADD `Sum` int NOT NULL DEFAULT 3;");
         }
 
         [ConditionalTheory(Skip = "TODO")]

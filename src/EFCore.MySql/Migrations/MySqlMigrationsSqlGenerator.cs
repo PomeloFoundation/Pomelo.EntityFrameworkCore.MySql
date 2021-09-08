@@ -30,7 +30,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
     /// </summary>
     public class MySqlMigrationsSqlGenerator : MigrationsSqlGenerator
     {
-        private static readonly Regex _typeRegex = new Regex(@"([a-z0-9]+)\s*?(?:\(\s*(\d+)?\s*\))?",
+        private static readonly Regex _typeRegex = new Regex(@"(?<Name>[a-z0-9]+)\s*?(?:\(\s*(?<Length>\d+)?\s*\))?",
             RegexOptions.IgnoreCase);
 
         private static readonly HashSet<string> _spatialStoreTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -997,10 +997,10 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
             var match = _typeRegex.Match(matchType ?? "-");
             if (match.Success)
             {
-                matchType = match.Groups[1].Value.ToLower();
-                if (!string.IsNullOrWhiteSpace(match.Groups[2].Value))
+                matchType = match.Groups["Name"].Value.ToLower();
+                if (match.Groups["Length"].Success)
                 {
-                    matchLen = match.Groups[2].Value;
+                    matchLen = match.Groups["Length"].Value;
                 }
             }
 
@@ -1128,19 +1128,11 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
 
             builder.Append(operation.IsNullable ? " NULL" : " NOT NULL");
 
-            var isSpatialStoreType = IsSpatialStoreType(columnType);
-
-            if (columnType.IndexOf("blob", StringComparison.OrdinalIgnoreCase) < 0 &&
-                columnType.IndexOf("text", StringComparison.OrdinalIgnoreCase) < 0 &&
-                columnType.IndexOf("json", StringComparison.OrdinalIgnoreCase) < 0 &&
-                !isSpatialStoreType)
-            {
-                DefaultValue(operation.DefaultValue, operation.DefaultValueSql, columnType, builder);
-            }
+            DefaultValue(operation.DefaultValue, operation.DefaultValueSql, columnType, builder);
 
             var srid = operation[MySqlAnnotationNames.SpatialReferenceSystemId];
             if (srid is int &&
-                isSpatialStoreType)
+                IsSpatialStoreType(columnType))
             {
                 builder.Append($" /*!80003 SRID {srid} */");
             }
@@ -1194,18 +1186,33 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
             return columnType;
         }
 
-        protected override void DefaultValue(object defaultValue, string defaultValueSql, string columnType, MigrationCommandListBuilder builder)
+        protected override void DefaultValue(
+            object defaultValue,
+            string defaultValueSql,
+            string columnType,
+            MigrationCommandListBuilder builder)
         {
             Check.NotNull(builder, nameof(builder));
 
-            if (defaultValueSql != null)
+            if (defaultValueSql is not null)
             {
-                builder
-                    .Append(" DEFAULT ")
-                    .Append(defaultValueSql);
+                if (IsDefaultValueSqlSupported(defaultValueSql, columnType))
+                {
+                    builder
+                        .Append(" DEFAULT ")
+                        .Append(defaultValueSql);
+                }
+                else
+                {
+                    Dependencies.MigrationsLogger.DefaultValueNotSupportedWarning(defaultValueSql, _options.ServerVersion, columnType);
+                }
             }
-            else if (defaultValue != null)
+            else if (defaultValue is not null)
             {
+                var isDefaultValueSupported = IsDefaultValueSupported(columnType);
+                var supportsDefaultExpressionSyntax = _options.ServerVersion.Supports.DefaultExpression ||
+                                                      _options.ServerVersion.Supports.AlternativeDefaultExpression;
+
                 var typeMapping = Dependencies.TypeMappingSource.GetMappingForValue(defaultValue);
 
                 if (typeMapping is IDefaultValueCompatibilityAware defaultValueCompatibilityAware)
@@ -1213,10 +1220,63 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
                     typeMapping = defaultValueCompatibilityAware.Clone(true);
                 }
 
-                builder
-                    .Append(" DEFAULT ")
-                    .Append(typeMapping.GenerateSqlLiteral(defaultValue));
+                var sqlLiteralDefaultValue = typeMapping.GenerateSqlLiteral(defaultValue);
+
+                if (isDefaultValueSupported ||
+                    supportsDefaultExpressionSyntax)
+                {
+                    var useDefaultExpressionSyntax = !isDefaultValueSupported;
+
+                    builder.Append(" DEFAULT ");
+
+                    if (useDefaultExpressionSyntax)
+                    {
+                        builder.Append("(");
+                    }
+
+                    builder.Append(sqlLiteralDefaultValue);
+
+                    if (useDefaultExpressionSyntax)
+                    {
+                        builder.Append(")");
+                    }
+                }
+                else
+                {
+                    Dependencies.MigrationsLogger.DefaultValueNotSupportedWarning(
+                        sqlLiteralDefaultValue,
+                        _options.ServerVersion,
+                        columnType);
+                }
             }
+        }
+
+        private bool IsDefaultValueSqlSupported(string defaultValueSql, string columnType)
+        {
+            if (IsDefaultValueSupported(columnType))
+            {
+                return true;
+            }
+
+            var trimmedDefaultValueSql = defaultValueSql.Trim();
+
+            if (_options.ServerVersion.Supports.DefaultExpression)
+            {
+                if (trimmedDefaultValueSql.StartsWith("(") && trimmedDefaultValueSql.EndsWith(")"))
+                {
+                    return true;
+                }
+            }
+            else if (_options.ServerVersion.Supports.AlternativeDefaultExpression)
+            {
+                if ((trimmedDefaultValueSql.EndsWith("()") && !trimmedDefaultValueSql.StartsWith("(")) ||
+                    (trimmedDefaultValueSql.StartsWith("(") && trimmedDefaultValueSql.EndsWith(")")))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -1519,5 +1579,11 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
 
         private static bool IsSpatialStoreType(string storeType)
             => _spatialStoreTypes.Contains(storeType);
+
+        private static bool IsDefaultValueSupported(string columnType)
+            => !columnType.Contains("blob", StringComparison.OrdinalIgnoreCase) &&
+               !columnType.Contains("text", StringComparison.OrdinalIgnoreCase) &&
+               !columnType.Contains("json", StringComparison.OrdinalIgnoreCase) &&
+               !IsSpatialStoreType(columnType);
     }
 }
