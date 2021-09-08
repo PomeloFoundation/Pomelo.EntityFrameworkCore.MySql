@@ -14,6 +14,8 @@
 
   <ItemGroup>
     <Compile Include="..\Shared\*.cs" />
+    <Compile Remove="Storage\Internal\MySqlTimeSpanTypeMapping.cs" />
+    <Compile Remove="Storage\Internal\TimeSpanToMicrosecondsConverter.cs" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(LocalEFCoreRepository)' == ''">
