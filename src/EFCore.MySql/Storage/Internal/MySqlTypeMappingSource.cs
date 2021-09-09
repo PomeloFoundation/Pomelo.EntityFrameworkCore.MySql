@@ -61,8 +61,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         // DateTime
         private readonly MySqlYearTypeMapping _year = new MySqlYearTypeMapping("year");
-        private readonly MySqlDateTypeMapping _date = new MySqlDateTypeMapping("date");
-        private readonly MySqlTimeSpanTypeMapping _time = new MySqlTimeSpanTypeMapping("time");
+        private readonly MySqlDateTypeMapping _dateDateOnly = new MySqlDateTypeMapping("date", typeof(DateOnly));
+        private readonly MySqlDateTypeMapping _dateDateTime = new MySqlDateTypeMapping("date", typeof(DateTime));
+        private readonly MySqlTimeTypeMapping _timeTimeOnly = new MySqlTimeTypeMapping("time", typeof(TimeOnly));
+        private readonly MySqlTimeTypeMapping _timeTimeSpan = new MySqlTimeTypeMapping("time", typeof(TimeSpan));
         private readonly MySqlDateTimeTypeMapping _dateTime = new MySqlDateTimeTypeMapping("datetime");
         private readonly MySqlDateTimeTypeMapping _timeStamp = new MySqlDateTimeTypeMapping("timestamp");
         private readonly MySqlDateTimeOffsetTypeMapping _dateTimeOffset = new MySqlDateTimeOffsetTypeMapping("datetime");
@@ -196,8 +198,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
                     // DateTime
                     { "year",                      new[] { _year } },
-                    { "date",                      new[] { _date } },
-                    { "time",                      new[] { _time } },
+                    { "date",                      new RelationalTypeMapping[] { _dateDateOnly, _dateDateTime } },
+                    { "time",                      new RelationalTypeMapping[] { _timeTimeOnly, _timeTimeSpan } },
                     { "datetime",                  new RelationalTypeMapping[] { _dateTime, _dateTimeOffset } },
                     { "timestamp",                 new RelationalTypeMapping[] { _timeStamp, _timeStampOffset } },
                 };
@@ -206,26 +208,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 = new Dictionary<Type, RelationalTypeMapping>
                 {
 	                // integers
-	                { typeof(short),   _smallint },
-                    { typeof(ushort),  _usmallint },
-                    { typeof(int),     _int },
-                    { typeof(uint),    _uint },
-                    { typeof(long),    _bigint },
-                    { typeof(ulong),   _ubigint },
+	                { typeof(short),    _smallint },
+                    { typeof(ushort),   _usmallint },
+                    { typeof(int),      _int },
+                    { typeof(uint),     _uint },
+                    { typeof(long),     _bigint },
+                    { typeof(ulong),    _ubigint },
 
 	                // decimals
-	                { typeof(decimal), _decimal },
-                    { typeof(float),   _float },
-                    { typeof(double),  _double },
+	                { typeof(decimal),  _decimal },
+                    { typeof(float),    _float },
+                    { typeof(double),   _double },
 
 	                // byte / char
-	                { typeof(sbyte),   _tinyint },
-                    { typeof(byte),    _utinyint },
+	                { typeof(sbyte),    _tinyint },
+                    { typeof(byte),     _utinyint },
 
                     // datetimes
-                    { typeof(TimeSpan), _options.DefaultDataTypeMappings.ClrTimeSpan == MySqlTimeSpanType.Time6
-                        ? _time.Clone(6, null)
-                        : _time },
+                    { typeof(DateOnly), _dateDateOnly },
+                    { typeof(TimeOnly), _timeTimeOnly.Clone(_options.DefaultDataTypeMappings.ClrTimeOnlyPrecision, null) },
+                    { typeof(TimeSpan), _options.DefaultDataTypeMappings.ClrTimeSpan switch
+                        {
+                            MySqlTimeSpanType.Time6 => _timeTimeSpan.Clone(6, null),
+                            MySqlTimeSpanType.Time => _timeTimeSpan,
+                            _ => _timeTimeSpan
+                        }},
                     { typeof(DateTime), _options.DefaultDataTypeMappings.ClrDateTime switch
                         {
                             MySqlDateTimeType.DateTime6 =>_dateTime.Clone(6, null),

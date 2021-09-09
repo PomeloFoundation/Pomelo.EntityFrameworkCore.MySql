@@ -1,6 +1,8 @@
 // Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
+using System;
+
 namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
 {
     public class MySqlDefaultDataTypeMappings
@@ -15,12 +17,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
             ClrDateTime = copyFrom.ClrDateTime;
             ClrDateTimeOffset = copyFrom.ClrDateTimeOffset;
             ClrTimeSpan = copyFrom.ClrTimeSpan;
+            ClrTimeOnlyPrecision = copyFrom.ClrTimeOnlyPrecision;
         }
 
         public virtual MySqlBooleanType ClrBoolean { get; private set; }
         public virtual MySqlDateTimeType ClrDateTime { get; private set; }
         public virtual MySqlDateTimeType ClrDateTimeOffset { get; private set; }
         public virtual MySqlTimeSpanType ClrTimeSpan { get; private set; }
+        public virtual int ClrTimeOnlyPrecision { get; private set; } = -1;
 
         public virtual MySqlDefaultDataTypeMappings WithClrBoolean(MySqlBooleanType mysqlBooleanType)
         {
@@ -43,10 +47,30 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
             return clone;
         }
 
+        // TODO: Remove Time6, add optional precision parameter for Time types.
         public virtual MySqlDefaultDataTypeMappings WithClrTimeSpan(MySqlTimeSpanType mysqlTimeSpanType)
         {
             var clone = Clone();
             clone.ClrTimeSpan = mysqlTimeSpanType;
+            return clone;
+        }
+
+        /// <summary>
+        /// Set the default precision for `TimeOnly` CLR type mapping to a MySQL TIME type.
+        /// Set <paramref name="precision"/> to <see langword="null"/>, to use the highest supported precision.
+        /// Otherwise, set <paramref name="precision"/> to a valid value between `0` and `6`.
+        /// </summary>
+        /// <param name="precision">The precision used for the MySQL TIME type.</param>
+        /// <returns>The same instance, to allow chained method calls.</returns>
+        public virtual MySqlDefaultDataTypeMappings WithClrTimeOnly(int? precision = null)
+        {
+            if (precision is < 0 or > 6)
+            {
+                throw new ArgumentOutOfRangeException(nameof(precision));
+            }
+
+            var clone = Clone();
+            clone.ClrTimeOnlyPrecision = precision ?? -1;
             return clone;
         }
 
@@ -57,7 +81,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
             return ClrBoolean == other.ClrBoolean &&
                    ClrDateTime == other.ClrDateTime &&
                    ClrDateTimeOffset == other.ClrDateTimeOffset &&
-                   ClrTimeSpan == other.ClrTimeSpan;
+                   ClrTimeSpan == other.ClrTimeSpan &&
+                   ClrTimeOnlyPrecision == other.ClrTimeOnlyPrecision;
         }
 
         public override bool Equals(object obj)

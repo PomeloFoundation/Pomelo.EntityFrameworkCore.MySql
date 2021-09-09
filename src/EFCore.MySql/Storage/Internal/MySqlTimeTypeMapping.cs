@@ -2,6 +2,7 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Globalization;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -13,7 +14,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public class MySqlTimeSpanTypeMapping : TimeSpanTypeMapping, IDefaultValueCompatibilityAware
+    public class MySqlTimeTypeMapping : RelationalTypeMapping, IDefaultValueCompatibilityAware
     {
         private readonly bool _isDefaultValueCompatible;
 
@@ -21,13 +22,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public MySqlTimeSpanTypeMapping(
+        public MySqlTimeTypeMapping(
             [NotNull] string storeType,
+            [NotNull] Type clrType,
             int? precision = null,
             bool isDefaultValueCompatible = false)
             : this(
                 new RelationalTypeMappingParameters(
-                    new CoreTypeMappingParameters(typeof(TimeSpan)),
+                    new CoreTypeMappingParameters(clrType),
                     storeType,
                     StoreTypePostfix.Precision,
                     System.Data.DbType.Time,
@@ -40,7 +42,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        protected MySqlTimeSpanTypeMapping(RelationalTypeMappingParameters parameters, bool isDefaultValueCompatible)
+        protected MySqlTimeTypeMapping(RelationalTypeMappingParameters parameters, bool isDefaultValueCompatible)
             : base(parameters)
         {
             _isDefaultValueCompatible = isDefaultValueCompatible;
@@ -52,7 +54,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// <param name="parameters"> The parameters for this mapping. </param>
         /// <returns> The newly created mapping. </returns>
         protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
-            => new MySqlTimeSpanTypeMapping(parameters, _isDefaultValueCompatible);
+            => new MySqlTimeTypeMapping(parameters, _isDefaultValueCompatible);
 
         /// <summary>
         ///     Creates a copy of this mapping.
@@ -60,7 +62,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// <param name="isDefaultValueCompatible"> Use a default value compatible syntax, or not. </param>
         /// <returns> The newly created mapping. </returns>
         public virtual RelationalTypeMapping Clone(bool isDefaultValueCompatible = false)
-            => new MySqlTimeSpanTypeMapping(Parameters, isDefaultValueCompatible);
+            => new MySqlTimeTypeMapping(Parameters, isDefaultValueCompatible);
 
         /// <summary>
         ///     Generates the SQL representation of a non-null literal value.
@@ -71,29 +73,32 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// </returns>
         protected override string GenerateNonNullSqlLiteral([NotNull] object value)
         {
-            // Custom TimeSpan formats do not handle the fraction point character as gracefully as System.DateTime does.
-            var literal = base.GenerateNonNullSqlLiteral(value);
+            // Custom TimeSpan formats do not handle the fraction point character as gracefully as System.DateTime does, and emit a trailing
+            // decimal point even when there are no decimal places to output (probably a bug that is not going to be corrected in .NET).
+            // TimeOnly only outputs a decimal point, if actual decimal places will be output as well.
+            var literal = string.Format(CultureInfo.InvariantCulture, $"{{0:{GetTimeFormatString(value, Precision)}}}", value);
             return literal.EndsWith(".")
                 ? $"{(_isDefaultValueCompatible ? null : "TIME ")}'{literal[..^1]}'"
                 : $"{(_isDefaultValueCompatible ? null : "TIME ")}'{literal}'";
         }
 
-        /// <summary>
-        ///     Gets the string format to be used to generate SQL literals of this type.
-        /// </summary>
-        protected override string SqlLiteralFormatString
-            => $"{{0:{GetFormatString()}}}";
-
-        public virtual string GetFormatString()
-            => GetTimeSpanFormatString(Parameters.Precision);
-
-        public static string GetTimeSpanFormatString(int? precision)
+        // TODO: Just implicitly rely on TIME_TRUNCATE_FRACTIONAL SQL mode and use a default-like implementation instead (check for
+        //       fractions in the actual value and then use a format with fractions or without). Then use this format for any precision.
+        //       Check support in different MySQL/MariaDB versions first.
+        protected static string GetTimeFormatString(object value, int? precision)
         {
             var validPrecision = Math.Min(Math.Max(precision.GetValueOrDefault(), 0), 6);
-            var precisionFormat = validPrecision > 0
-                ? @"\." + new string('F', validPrecision)
-                : null;
-            return @"hh\:mm\:ss" + precisionFormat;
+
+            var format = value switch
+            {
+                TimeOnly => @"HH\:mm\:ss",
+                TimeSpan => @"hh\:mm\:ss",
+                _ => throw new InvalidCastException($"Can't generate time SQL literal for CLR type '{value.GetType()}'.")
+            };
+
+            return validPrecision > 0
+                ? $@"{format}\.{new string('F', validPrecision)}"
+                : format;
         }
     }
 }
