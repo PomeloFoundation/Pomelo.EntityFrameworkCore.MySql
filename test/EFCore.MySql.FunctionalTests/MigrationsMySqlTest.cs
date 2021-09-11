@@ -842,6 +842,38 @@ ALTER TABLE `Foo` DROP PRIMARY KEY;",
         }
 
         [ConditionalFact]
+        public virtual async Task Create_table_longtext_column_with_string_length_and_legacy_charset_definition_in_column_type()
+        {
+            await Test(
+                common => { },
+                source => { },
+                target => target
+                    .Entity(
+                        "IceCream",
+                        e =>
+                        {
+                            e.Property<int>("IceCreamId");
+                            e.Property<string>("Name")
+                                .HasColumnType($"longtext CHARACTER SET {NonDefaultCharSet}")
+                                .HasMaxLength(2048);
+                        }),
+                result =>
+                {
+                    var table = Assert.Single(result.Tables);
+                    var nameColumn = Assert.Single(table.Columns.Where(c => c.Name == "Name"));
+
+                    Assert.Equal(NonDefaultCharSet, nameColumn[MySqlAnnotationNames.CharSet]);
+                    Assert.Equal("longtext", nameColumn.StoreType);
+                });
+
+            AssertSql(
+                $@"CREATE TABLE `IceCream` (
+    `IceCreamId` int NOT NULL,
+    `Name` longtext CHARACTER SET {NonDefaultCharSet} NULL
+) CHARACTER SET utf8mb4;");
+        }
+
+        [ConditionalFact]
         public virtual async Task Drop_unique_constraint_without_recreating_foreign_keys()
         {
             await Test(

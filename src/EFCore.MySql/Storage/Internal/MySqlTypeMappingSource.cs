@@ -425,9 +425,30 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         {
             var storeTypeBaseName = base.ParseStoreTypeName(storeTypeName, out unicode, out size, out precision, out scale);
 
-            return (storeTypeName?.IndexOf("unsigned", StringComparison.OrdinalIgnoreCase) ?? -1) >= 0
-                ? storeTypeBaseName + " unsigned"
-                : storeTypeBaseName;
+            if (storeTypeBaseName is not null)
+            {
+                // We are checking for a character set clause as part of the store type base name here, because it was common before 5.0
+                // to specify charsets this way, because there were no character set specific annotations available yet.
+                // Users might still use migrations generated with previous versions and just add newer migrations on top of those.
+                var characterSetOccurrenceIndex = storeTypeBaseName.IndexOf("character set", StringComparison.OrdinalIgnoreCase);
+
+                if (characterSetOccurrenceIndex < 0)
+                {
+                    characterSetOccurrenceIndex = storeTypeBaseName.IndexOf("charset", StringComparison.OrdinalIgnoreCase);
+                }
+
+                if (characterSetOccurrenceIndex >= 0)
+                {
+                    storeTypeBaseName = storeTypeBaseName[..characterSetOccurrenceIndex].TrimEnd();
+                }
+
+                if (storeTypeName.Contains("unsigned", StringComparison.OrdinalIgnoreCase))
+                {
+                    storeTypeBaseName += " unsigned";
+                }
+            }
+
+            return storeTypeBaseName;
         }
     }
 }
