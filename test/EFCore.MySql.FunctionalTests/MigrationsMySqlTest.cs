@@ -870,7 +870,7 @@ ALTER TABLE `Foo` DROP PRIMARY KEY;",
                 $@"CREATE TABLE `IceCream` (
     `IceCreamId` int NOT NULL,
     `Name` longtext CHARACTER SET {NonDefaultCharSet} NULL
-) CHARACTER SET=utf8mb4;");
+) CHARACTER SET utf8mb4;");
         }
 
         [ConditionalFact]
