@@ -196,7 +196,52 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="property">The property of which to get the columns charset from.</param>
         /// <returns>The name of the charset or null, if no explicit charset was set.</returns>
         public static string GetCharSet([NotNull] this IReadOnlyProperty property)
-            => property[MySqlAnnotationNames.CharSet] as string;
+            => property[MySqlAnnotationNames.CharSet] as string ??
+               property.GetMySqlLegacyCharSet();
+
+        /// <summary>
+        /// Returns the name of the charset used by the column of the property, defined as part of the column type.
+        /// </summary>
+        /// <remarks>
+        /// It was common before 5.0 to specify charsets this way, because there were no character set specific annotations available yet.
+        /// Users might still use migrations generated with previous versions and just add newer migrations on top of those.
+        /// </remarks>
+        /// <param name="property">The property of which to get the columns charset from.</param>
+        /// <returns>The name of the charset or null, if no explicit charset was set.</returns>
+        internal static string GetMySqlLegacyCharSet([NotNull] this IReadOnlyProperty property)
+        {
+            var columnType = property.GetColumnType();
+
+            if (columnType is not null)
+            {
+                const string characterSet = "character set";
+                const string charSet = "charset";
+
+                var characterSetOccurrenceIndex = columnType.IndexOf(characterSet, StringComparison.OrdinalIgnoreCase);
+                var clauseLength = characterSet.Length;
+
+                if (characterSetOccurrenceIndex < 0)
+                {
+                    characterSetOccurrenceIndex = columnType.IndexOf(charSet, StringComparison.OrdinalIgnoreCase);
+                    clauseLength = charSet.Length;
+                }
+
+                if (characterSetOccurrenceIndex >= 0)
+                {
+                    var result = string.Concat(
+                        columnType.Skip(characterSetOccurrenceIndex + clauseLength)
+                            .SkipWhile(c => c == ' ')
+                            .TakeWhile(c => c != ' '));
+
+                    if (result.Length > 0)
+                    {
+                        return result;
+                    }
+                }
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Sets the name of the charset in use by the column of the property.
