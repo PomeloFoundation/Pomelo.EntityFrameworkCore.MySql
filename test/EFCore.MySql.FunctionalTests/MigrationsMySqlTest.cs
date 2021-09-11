@@ -12,6 +12,7 @@ using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
@@ -187,6 +188,51 @@ SELECT ROW_COUNT();",
 
             AssertSql(
                 @"ALTER TABLE `People` ADD `Sum` int NOT NULL DEFAULT 3;");
+        }
+
+        public override async Task Rename_index()
+        {
+            await base.Rename_index();
+
+            AssertSql(
+                AppConfig.ServerVersion.Supports.RenameIndex
+                    ? new[] { @"ALTER TABLE `People` RENAME INDEX `Foo` TO `foo`;" }
+                    : new[]
+                    {
+                        @"ALTER TABLE `People` DROP INDEX `Foo`;",
+                        //
+                        "CREATE INDEX `foo` ON `People` (`FirstName`);"
+                    });
+        }
+
+        [ConditionalFact]
+        public virtual async Task Rename_index_with_prefix_length()
+        {
+            await Test(
+                builder => builder.Entity(
+                    "People", e =>
+                    {
+                        e.Property<int>("Id");
+                        e.Property<string>("FirstName");
+                    }),
+                builder => builder.Entity("People").HasIndex(new[] { "FirstName" }, "OldIndex").HasPrefixLength(50),
+                builder => builder.Entity("People").HasIndex(new[] { "FirstName" }, "NewIndex").HasPrefixLength(50),
+                model =>
+                {
+                    var table = Assert.Single(model.Tables);
+                    var index = Assert.Single(table.Indexes);
+                    Assert.Equal("NewIndex", index.Name);
+                });
+
+            AssertSql(
+                AppConfig.ServerVersion.Supports.RenameIndex
+                    ? new[] { @"ALTER TABLE `People` RENAME INDEX `OldIndex` TO `NewIndex`;" }
+                    : new[]
+                    {
+                        @"ALTER TABLE `People` DROP INDEX `OldIndex`;",
+                        //
+                        "CREATE INDEX `NewIndex` ON `People` (`FirstName`(50));"
+                    });
         }
 
         [ConditionalTheory(Skip = "TODO")]

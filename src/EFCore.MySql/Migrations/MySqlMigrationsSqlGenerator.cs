@@ -350,17 +350,8 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
                         Name = operation.Name
                     }, model, builder);
 
-                    var createIndexOperation = new CreateIndexOperation
-                    {
-                        Schema = operation.Schema,
-                        Table = operation.Table,
-                        Name = operation.NewName,
-                        Columns = index.Columns.Select(c => c.Name).ToArray(),
-                        IsUnique = index.IsUnique,
-                        Filter = index.Filter,
-                    };
-                    createIndexOperation.AddAnnotations(_annotationProvider.For(index, true)); // CHECK: necessary?
-                    createIndexOperation.AddAnnotations(operation.GetAnnotations());
+                    var createIndexOperation = CreateIndexOperation.CreateFrom(index);
+                    createIndexOperation.Name = operation.NewName;
 
                     Generate(createIndexOperation, model, builder);
                 }

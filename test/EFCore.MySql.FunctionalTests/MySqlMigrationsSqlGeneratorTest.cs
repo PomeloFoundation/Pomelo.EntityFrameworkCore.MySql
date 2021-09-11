@@ -1035,32 +1035,6 @@ ALTER DATABASE COLLATE latin1_swedish_ci;" + EOL,
         }
 
         [ConditionalFact]
-        public virtual void RenameIndexOperation_with_model()
-        {
-            Generate(
-                modelBuilder => modelBuilder.Entity(
-                    "Person",
-                    x =>
-                    {
-                        x.Property<int>("Id");
-                        x.Property<string>("FullName");
-                        x.HasIndex("FullName").IsUnique().HasFilter("`Id` > 2");
-                    }),
-                new RenameIndexOperation
-                {
-                    Table = "Person",
-                    Name = "IX_Person_Name",
-                    NewName = "IX_Person_FullName"
-                });
-
-            Assert.Equal(
-                AppConfig.ServerVersion.Supports.RenameIndex
-                ? @"ALTER TABLE `Person` RENAME INDEX `IX_Person_Name` TO `IX_Person_FullName`;" + EOL
-                : @"ALTER TABLE `Person` DROP INDEX `IX_Person_Name`;" + EOL + EOL + "CREATE UNIQUE INDEX `IX_Person_FullName` ON `Person` (`FullName`);" + EOL,
-                Sql);
-        }
-
-        [ConditionalFact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.RenameColumn))]
         public virtual void RenameColumnOperation()
         {
