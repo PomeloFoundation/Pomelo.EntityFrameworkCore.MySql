@@ -16,7 +16,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     ///         not used in application code.
     ///     </para>
     /// </summary>
-    public class MySqlDateTypeMapping : DateTimeTypeMapping, IDefaultValueCompatibilityAware
+    public class MySqlDateTypeMapping : RelationalTypeMapping, IDefaultValueCompatibilityAware
     {
         private readonly bool _isDefaultValueCompatible;
 
@@ -26,10 +26,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         ///     any release. You should only use it directly in your code with extreme caution and knowing that
         ///     doing so can result in application failures when updating to a new Entity Framework Core release.
         /// </summary>
-        public MySqlDateTypeMapping([NotNull] string storeType, bool isDefaultValueCompatible = false)
+        public MySqlDateTypeMapping([NotNull] string storeType, Type clrType, bool isDefaultValueCompatible = false)
             : this(
                 new RelationalTypeMappingParameters(
-                    new CoreTypeMappingParameters(typeof(DateTime)),
+                    new CoreTypeMappingParameters(clrType),
                     storeType,
                     dbType: System.Data.DbType.Date),
                 isDefaultValueCompatible)
@@ -65,6 +65,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// <summary>
         ///     Gets the string format to be used to generate SQL literals of this type.
         /// </summary>
-        protected override string SqlLiteralFormatString => $@"{(_isDefaultValueCompatible ? null : "DATE ")}'{0:yyyy-MM-dd}'";
+        protected override string SqlLiteralFormatString => $@"{(_isDefaultValueCompatible ? null : "DATE ")}'{{0:yyyy-MM-dd}}'";
     }
 }

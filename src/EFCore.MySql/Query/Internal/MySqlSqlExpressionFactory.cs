@@ -285,33 +285,32 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     typeMapping));
 
         public override SqlExpression ApplyTypeMapping(SqlExpression sqlExpression, RelationalTypeMapping typeMapping)
-        {
-            if (sqlExpression == null
-                || sqlExpression.TypeMapping != null)
-            {
-                return sqlExpression;
-            }
-
-            return ApplyNewTypeMapping(sqlExpression, typeMapping);
-        }
+            => sqlExpression is not { TypeMapping: null }
+                ? sqlExpression
+                : ApplyNewTypeMapping(sqlExpression, typeMapping);
 
         private SqlExpression ApplyNewTypeMapping(SqlExpression sqlExpression, RelationalTypeMapping typeMapping)
-        {
-            return sqlExpression switch
+            => sqlExpression switch
             {
+                // Customize handling for binary expressions.
+                SqlBinaryExpression e => ApplyTypeMappingOnSqlBinary(e, typeMapping),
+
+                // MySQL specific expression types:
                 MySqlComplexFunctionArgumentExpression e => ApplyTypeMappingOnComplexFunctionArgument(e),
                 MySqlCollateExpression e => ApplyTypeMappingOnCollate(e),
                 MySqlRegexpExpression e => ApplyTypeMappingOnRegexp(e),
                 MySqlBinaryExpression e => ApplyTypeMappingOnMySqlBinary(e, typeMapping),
                 MySqlMatchExpression e => ApplyTypeMappingOnMatch(e),
                 MySqlJsonArrayIndexExpression e => e.ApplyTypeMapping(typeMapping),
-                SqlBinaryExpression e => ApplyTypeMappingOnSqlBinary(e, typeMapping),
+
                 _ => base.ApplyTypeMapping(sqlExpression, typeMapping)
             };
-        }
 
         private SqlBinaryExpression ApplyTypeMappingOnSqlBinary(SqlBinaryExpression sqlBinaryExpression, RelationalTypeMapping typeMapping)
         {
+            // The default SqlExpressionFactory behavior is to assume that the two operands have the same type, and so to infer one side's
+            // mapping from the other if needed. Here we take care of some heterogeneous operand cases where this doesn't work.
+
             var left = sqlBinaryExpression.Left;
             var right = sqlBinaryExpression.Right;
 

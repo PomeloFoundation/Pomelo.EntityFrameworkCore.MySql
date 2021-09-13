@@ -115,11 +115,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
                 if (binaryExpression.Left.Type == typeof(byte[]))
                 {
-                    var left = Visit(binaryExpression.Left);
-                    var right = Visit(binaryExpression.Right);
-
-                    if (left is SqlExpression leftSql &&
-                        right is SqlExpression rightSql)
+                    if (Visit(binaryExpression.Left) is SqlExpression leftSql &&
+                        Visit(binaryExpression.Right) is SqlExpression rightSql)
                     {
                         return _sqlExpressionFactory.NullableFunction(
                             "ASCII",
@@ -152,25 +149,118 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 }
             }
 
-            var visitedExpression = base.VisitBinary(binaryExpression);
+            // These are all legal operations in .NET:
+            //     DateTime = DateTime + TimeSpan
+            //     DateTimeOffset = DateTimeOffset + TimeSpan
+            //     TimeSpan = TimeSpan + TimeSpan
+            //
+            // .NET does currently not support the following operations:
+            //     DateOnly = DateOnly + TimeSpan
+            //     TimeOnly = TimeOnly + TimeSpan
+            //
+            // TODO: Add support for DateTime and DateTimeOffset.
+            // To support DateTime and DateTimeOffset in Pomelo, we need propert TimeSpan support (representing MICROSECONDS or Ticks stored
+            // as BIGINT, not just a simple mapping to TIME, which is very limited in its range).
+            // if (binaryExpression.NodeType == ExpressionType.Add &&
+            //     Visit(binaryExpression.Left) is SqlExpression addLeftVisited &&
+            //     Visit(binaryExpression.Right) is SqlExpression addRightVisited &&
+            //     addRightVisited.Type == typeof(TimeSpan) &&
+            //     (addLeftVisited.Type == typeof(DateTime) ||
+            //      // addLeftVisited.Type == typeof(TimeSpan) || // <-- This should work out-of-the-box for TimeSpan -> TIME mappings.
+            //      addLeftVisited.Type == typeof(DateTimeOffset)))
+            // {
+            //     // Possible avenue for DateTime and DateTimeOffset support:
+            //     //
+            //     // return _sqlExpressionFactory.Add(
+            //     //     addLeftVisited,
+            //     //     _sqlExpressionFactory.ComplexFunctionArgument(
+            //     //         new SqlExpression[]
+            //     //         {
+            //     //             _sqlExpressionFactory.Fragment("INTERVAL"), addRightVisited is SqlConstantExpression { Value: TimeSpan timeSpanValue }
+            //     //                 ? _sqlExpressionFactory.Constant(timeSpanValue.Ticks / 10)
+            //     //                 : _sqlExpressionFactory.NullableFunction(
+            //     //                     "TIMESTAMPDIFF",
+            //     //                     new[]
+            //     //                     {
+            //     //                         _sqlExpressionFactory.Fragment("MICROSECOND"),
+            //     //                         _sqlExpressionFactory.Constant(DateTime.MinValue), addRightVisited,
+            //     //                     },
+            //     //                     typeof(TimeSpan),
+            //     //                     typeMapping: null,
+            //     //                     onlyNullWhenAnyNullPropagatingArgumentIsNull: true,
+            //     //                     argumentsPropagateNullability: new[] { false, true, true }),
+            //     //             _sqlExpressionFactory.Fragment("MICROSECOND")
+            //     //         },
+            //     //         " ",
+            //     //         typeof(string)),
+            //     //     addLeftVisited.TypeMapping);
+            // }
 
-            if (visitedExpression is SqlBinaryExpression visitedBinaryExpression)
+            // These are all legal operations in .NET:
+            //     TimeSpan = DateTime - DateTime
+            //     TimeSpan = DateTimeOffset - DateTimeOffset
+            //     TimeSpan = TimeOnly - TimeOnly
+            //
+            // .NET does currently not support the following operations:
+            //     TimeSpan = DateOnly - DateOnly
+            //
+            // TODO: Add support for DateTime and DateTimeOffset.
+            // To support DateTime and DateTimeOffset in Pomelo, we need propert TimeSpan support (representing MICROSECONDS or Ticks stored
+            // as BIGINT, not just a simple mapping to TIME, which is very limited in its range).
+            if (binaryExpression.NodeType == ExpressionType.Subtract &&
+                Visit(binaryExpression.Left) is SqlExpression subtractLeftVisited &&
+                Visit(binaryExpression.Right) is SqlExpression subtractRightVisited &&
+                (/*subtractLeftVisited.Type == typeof(DateTime) && subtractRightVisited.Type == typeof(DateTime) ||
+                 subtractLeftVisited.Type == typeof(DateTimeOffset) && subtractRightVisited.Type == typeof(DateTimeOffset) ||*/
+                 subtractLeftVisited.Type == typeof(TimeOnly) && subtractRightVisited.Type == typeof(TimeOnly)))
             {
-                // TODO: Is this still true in .NET Core 3.0?
-                switch (visitedBinaryExpression.OperatorType)
-                {
-                    case ExpressionType.Add:
-                    case ExpressionType.Subtract:
-                    case ExpressionType.Multiply:
-                    case ExpressionType.Divide:
-                    case ExpressionType.Modulo:
-                        return IsDateTimeBasedOperation(visitedBinaryExpression)
-                            ? QueryCompilationContext.NotTranslatedExpression
-                            : visitedBinaryExpression;
-                }
+                return _sqlExpressionFactory.Subtract(
+                    subtractLeftVisited,
+                    subtractRightVisited,
+                    Dependencies.TypeMappingSource.FindMapping(typeof(TimeSpan)));
+
+                // Previous statement is simpler than this:
+                //
+                // return _sqlExpressionFactory.NullableFunction(
+                //     "TIMEDIFF",
+                //     new[]
+                //     {
+                //         left,
+                //         right,
+                //     },
+                //     typeof(TimeSpan));
+
+                // Possible avenue for DateTime and DateTimeOffset support:
+                //
+                // var left = subtractLeftVisited.Type == typeof(TimeOnly)
+                //     ? _sqlExpressionFactory.NullableFunction(
+                //         "ADDTIME",
+                //         new[] { _sqlExpressionFactory.Constant(_options.NeutralDateTime), subtractLeftVisited },
+                //         typeof(DateTime))
+                //     : subtractLeftVisited;
+                //
+                // var right = subtractRightVisited.Type == typeof(TimeOnly)
+                //     ? _sqlExpressionFactory.NullableFunction(
+                //         "ADDTIME",
+                //         new[] { _sqlExpressionFactory.Constant(_options.NeutralDateTime), subtractRightVisited },
+                //         typeof(DateTime))
+                //     : subtractRightVisited;
+                //
+                // return _sqlExpressionFactory.NullableFunction(
+                //     "TIMESTAMPDIFF",
+                //     new[]
+                //     {
+                //         _sqlExpressionFactory.Fragment("MICROSECOND"),
+                //         right,
+                //         left,
+                //     },
+                //     typeof(TimeSpan),
+                //     typeMapping: null,
+                //     onlyNullWhenAnyNullPropagatingArgumentIsNull: true,
+                //     argumentsPropagateNullability: new[] { false, true, true });
             }
 
-            return visitedExpression;
+            return base.VisitBinary(binaryExpression);
         }
 
         protected virtual Expression VisitMethodCallNewArray(NewArrayExpression newArrayExpression)
@@ -253,24 +343,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return result;
         }
 
-        private static bool IsDateTimeBasedOperation(SqlBinaryExpression binaryExpression)
-        {
-            if (binaryExpression.TypeMapping is RelationalTypeMapping typeMapping &&
-                (typeMapping.StoreType.StartsWith("date") || typeMapping.StoreType.StartsWith("time")))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
         protected virtual void ResetTranslationErrorDetails()
         {
             // When we try translating an expression and later decide that we want to discard the result, we need to remove any translation
             // error details, or those details might end up more than once in generated exceptions down the stack.
             //
             // We use a workaround here, that will result in the TranslationErrorDetails being set to `null` again.
-            // Otherwise, we would need to override  TranslationErrorDetails, AddTranslationErrorDetails and Translate, reimplement the
+            // Otherwise, we would need to override TranslationErrorDetails, AddTranslationErrorDetails and Translate, reimplement the
             // TranslationErrorDetails functionality and maintain everything just to support resetting the TranslationErrorDetails property.
             base.Translate(Expression.Constant(0));
         }

@@ -595,6 +595,8 @@ ALTER DATABASE COLLATE latin1_swedish_ci;" + EOL,
                     modelBuilder.Entity(
                         "Person", eb =>
                         {
+                            eb.Property<int>("Id");
+
                             var pb = eb.Property<string>("Name");
 
                             if (isUnicode.HasValue)
@@ -853,6 +855,7 @@ ALTER DATABASE COLLATE latin1_swedish_ci;" + EOL,
                     ((Model)builder.Model).SetProductVersion("2.1.0");
                     builder.Entity("People", eb =>
                     {
+                        eb.Property<int>("Id");
                         eb.Property<string>("Blob");
                         eb.HasIndex("Blob");
                     });
@@ -884,6 +887,7 @@ ALTER DATABASE COLLATE latin1_swedish_ci;" + EOL,
                     ((Model)builder.Model).SetProductVersion("2.1.0");
                     builder.Entity("People", eb =>
                     {
+                        eb.Property<int>("Id");
                         eb.Property<string>("Blob");
                         eb.HasIndex("Blob");
                     });
@@ -1031,31 +1035,6 @@ ALTER DATABASE COLLATE latin1_swedish_ci;" + EOL,
         }
 
         [ConditionalFact]
-        public virtual void RenameIndexOperation_with_model()
-        {
-            Generate(
-                modelBuilder => modelBuilder.Entity(
-                    "Person",
-                    x =>
-                    {
-                        x.Property<string>("FullName");
-                        x.HasIndex("FullName").IsUnique().HasFilter("`Id` > 2");
-                    }),
-                new RenameIndexOperation
-                {
-                    Table = "Person",
-                    Name = "IX_Person_Name",
-                    NewName = "IX_Person_FullName"
-                });
-
-            Assert.Equal(
-                AppConfig.ServerVersion.Supports.RenameIndex
-                ? @"ALTER TABLE `Person` RENAME INDEX `IX_Person_Name` TO `IX_Person_FullName`;" + EOL
-                : @"ALTER TABLE `Person` DROP INDEX `IX_Person_Name`;" + EOL + EOL + "CREATE UNIQUE INDEX `IX_Person_FullName` ON `Person` (`FullName`);" + EOL,
-                Sql);
-        }
-
-        [ConditionalFact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.RenameColumn))]
         public virtual void RenameColumnOperation()
         {
@@ -1086,7 +1065,11 @@ ALTER DATABASE COLLATE latin1_swedish_ci;" + EOL,
             Generate(
                 modelBuilder => modelBuilder.Entity(
                     "Person",
-                    x => { x.Property<string>("FullName"); }),
+                    x =>
+                    {
+                        x.Property<int>("Id");
+                        x.Property<string>("FullName");
+                    }),
                 migrationBuilder.Operations.ToArray());
 
             Assert.Equal(
@@ -1209,6 +1192,8 @@ ALTER DATABASE COLLATE latin1_swedish_ci;" + EOL,
                         "IceCreams",
                         entity =>
                         {
+                            entity.Property<int>("Id");
+
                             entity.Property<string>("Brand")
                                 .HasColumnType("longtext")
                                 .UseCollation("latin1_swedish_ci");
@@ -1242,6 +1227,8 @@ ALTER DATABASE COLLATE latin1_swedish_ci;" + EOL,
                         "IceCreams",
                         entity =>
                         {
+                            entity.Property<int>("Id");
+
                             entity.Property<string>("Brand")
                                 .HasColumnType("longtext")
                                 .UseCollation("latin1_swedish_ci");
@@ -1324,6 +1311,8 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
                         "IceCreams",
                         entity =>
                         {
+                            entity.Property<int>("Id");
+
                             entity.Property<string>("Brand")
                                 .HasColumnType("longtext")
                                 .HasCharSet("utf8mb4");
@@ -1357,6 +1346,8 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
                         "IceCreams",
                         entity =>
                         {
+                            entity.Property<int>("Id");
+
                             entity.Property<string>("Brand")
                                 .HasColumnType("longtext")
                                 .HasCharSet("utf8mb4");

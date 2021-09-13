@@ -22,9 +22,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DefaultNetCoreTargetFramework>net5.0</DefaultNetCoreTargetFramework>
-    <DefaultNetCoreLegacyTargetFramework>net6.0</DefaultNetCoreLegacyTargetFramework>
-    <DefaultNetStandardTargetFramework>netstandard2.1</DefaultNetStandardTargetFramework>
+    <DefaultNetCoreTargetFramework>net6.0</DefaultNetCoreTargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -204,6 +204,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                         : MySqlTimeSpanType.Time);
             }
 
+            if (defaultDataTypeMappings.ClrTimeOnlyPrecision < 0)
+            {
+                defaultDataTypeMappings = defaultDataTypeMappings.WithClrTimeOnly(
+                    ServerVersion.Supports.DateTime6
+                        ? 6
+                        : 0);
+            }
+
             return defaultDataTypeMappings;
         }
 

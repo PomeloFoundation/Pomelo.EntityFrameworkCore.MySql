@@ -29,7 +29,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddMinutes), new[] { typeof(double) }), "minute" },
             { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddSeconds), new[] { typeof(double) }), "second" },
             { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddMilliseconds), new[] { typeof(double) }), "microsecond" },
+            { typeof(DateOnly).GetRuntimeMethod(nameof(DateOnly.AddYears), new[] { typeof(int) }), "year" },
+            { typeof(DateOnly).GetRuntimeMethod(nameof(DateOnly.AddMonths), new[] { typeof(int) }), "month" },
+            { typeof(DateOnly).GetRuntimeMethod(nameof(DateOnly.AddDays), new[] { typeof(int) }), "day" },
+            { typeof(TimeOnly).GetRuntimeMethod(nameof(TimeOnly.AddHours), new[] { typeof(double) }), "hour" },
+            { typeof(TimeOnly).GetRuntimeMethod(nameof(TimeOnly.AddMinutes), new[] { typeof(double) }), "minute" },
         };
+
+        private static readonly MethodInfo _timeOnlyAddTimeSpanMethod = typeof(TimeOnly).GetRuntimeMethod(nameof(TimeOnly.Add), new[] { typeof(TimeSpan) })!;
+        private static readonly MethodInfo _timeOnlyIsBetweenMethod = typeof(TimeOnly).GetRuntimeMethod(nameof(TimeOnly.IsBetween), new[] { typeof(TimeOnly), typeof(TimeOnly) })!;
 
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
@@ -48,9 +56,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             {
                 return !datePart.Equals("year")
                        && !datePart.Equals("month")
-                       && arguments[0] is SqlConstantExpression sqlConstant
-                       && ((double)sqlConstant.Value >= int.MaxValue
-                           || (double)sqlConstant.Value <= int.MinValue)
+                       && arguments[0] is SqlConstantExpression { Value: double and (>= int.MaxValue or <= int.MinValue) }
                     ? null
                     : _sqlExpressionFactory.NullableFunction(
                         "DATE_ADD",
@@ -75,6 +81,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         instance.TypeMapping,
                         true,
                         new[] {true, false});
+            }
+
+            if (method.DeclaringType == typeof(TimeOnly))
+            {
+                if (method == _timeOnlyAddTimeSpanMethod)
+                {
+                    return _sqlExpressionFactory.Add(instance, arguments[0]);
+                }
+
+                if (method == _timeOnlyIsBetweenMethod)
+                {
+                    return _sqlExpressionFactory.And(
+                        _sqlExpressionFactory.GreaterThanOrEqual(instance, arguments[0]),
+                        _sqlExpressionFactory.LessThan(instance, arguments[1]));
+                }
             }
 
             return null;

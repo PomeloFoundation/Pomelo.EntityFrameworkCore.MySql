@@ -40,7 +40,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             var declaringType = member.DeclaringType;
 
             if (declaringType == typeof(DateTime)
-                || declaringType == typeof(DateTimeOffset))
+                || declaringType == typeof(DateTimeOffset)
+                || declaringType == typeof(DateOnly)
+                || declaringType == typeof(TimeOnly))
             {
                 var memberName = member.Name;
 
@@ -114,6 +116,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                                 : "CURDATE",
                             Array.Empty<SqlExpression>(),
                             returnType);
+
+                    case nameof(DateTime.DayOfWeek):
+                        return _sqlExpressionFactory.Subtract(
+                            _sqlExpressionFactory.NullableFunction(
+                                "DAYOFWEEK",
+                                new[] { instance },
+                                returnType,
+                                false),
+                            _sqlExpressionFactory.Constant(1));
                 }
             }
 

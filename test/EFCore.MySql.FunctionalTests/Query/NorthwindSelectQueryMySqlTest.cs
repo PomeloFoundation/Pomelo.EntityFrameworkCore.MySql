@@ -298,6 +298,12 @@ FROM `Orders` AS `o`");
             return base.Take_on_top_level_and_on_collection_projection_with_outer_apply(async);
         }
 
+        [ConditionalTheory(Skip = "Needs proper TimeSpan support, with a wider range than the current TIME mapping can provide.")]
+        public override Task Projection_containing_DateTime_subtraction(bool async)
+        {
+            return base.Projection_containing_DateTime_subtraction(async);
+        }
+
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
