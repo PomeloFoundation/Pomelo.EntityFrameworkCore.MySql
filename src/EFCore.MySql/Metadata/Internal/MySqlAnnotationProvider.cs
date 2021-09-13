@@ -40,7 +40,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
                     charSet);
             }
 
-            // If a collation delegation modes has been set, but does not contain DelegationMode.ApplyToDatabase, we reset the EF Core
+            // If a collation delegation modes has been set, but does not contain DelegationModes.ApplyToDatabase, we reset the EF Core
             // handled Collation property in MySqlMigrationsModelDiffer.
 
             // Handle other annotations (including the delegation annotations).
@@ -237,12 +237,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             // There are the following variations at the entity level:
             //    1. entityTypeBuilder.HasCharSet(null, null) [or no call at all]
             //            -> Check the charset and delegation at the database level.
-            //    2. a. entityTypeBuilder.HasCharSet(null, DelegationMode.ApplyToAll)
-            //       b. entityTypeBuilder.HasCharSet(null, DelegationMode.ApplyToColumns)
+            //    2. a. entityTypeBuilder.HasCharSet(null, DelegationModes.ApplyToAll)
+            //       b. entityTypeBuilder.HasCharSet(null, DelegationModes.ApplyToColumns)
             //            -> Do not explicitly use any charset.
             //    3. a. entityTypeBuilder.HasCharSet("latin1")
-            //       b. entityTypeBuilder.HasCharSet("latin1", DelegationMode.ApplyToAll)
-            //       c. entityTypeBuilder.HasCharSet("latin1", DelegationMode.ApplyToColumns)
+            //       b. entityTypeBuilder.HasCharSet("latin1", DelegationModes.ApplyToAll)
+            //       c. entityTypeBuilder.HasCharSet("latin1", DelegationModes.ApplyToColumns)
             //            -> Explicitly use the specified charset.
             return (entityType.GetCharSet() is not null || // 3abc
                     entityType.GetCharSet() is null && entityType.GetCharSetDelegation() is not null) && // 2ab
@@ -263,12 +263,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             // There are the following variations at the entity level:
             //    1. entityTypeBuilder.HasCollation(null, null) [or no call at all]
             //            -> Check the collation and delegation at the database level.
-            //    2. a. entityTypeBuilder.HasCollation(null, DelegationMode.ApplyToAll)
-            //       b. entityTypeBuilder.HasCollation(null, DelegationMode.ApplyToColumns)
+            //    2. a. entityTypeBuilder.HasCollation(null, DelegationModes.ApplyToAll)
+            //       b. entityTypeBuilder.HasCollation(null, DelegationModes.ApplyToColumns)
             //            -> Do not explicitly use any collation.
             //    3. a. entityTypeBuilder.HasCollation("latin1_general_ci")
-            //       b. entityTypeBuilder.HasCollation("latin1_general_ci", DelegationMode.ApplyToAll)
-            //       c. entityTypeBuilder.HasCollation("latin1_general_ci", DelegationMode.ApplyToColumns)
+            //       b. entityTypeBuilder.HasCollation("latin1_general_ci", DelegationModes.ApplyToAll)
+            //       c. entityTypeBuilder.HasCollation("latin1_general_ci", DelegationModes.ApplyToColumns)
             //            -> Explicitly use the specified collation.
             return (entityType.GetCollation() is not null || // 3abc
                     entityType.GetCollation() is null && entityType.GetCollationDelegation() is not null) && // 2ab
