@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
@@ -142,10 +143,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
 
         protected override IEnumerable<MigrationOperation> Diff(IColumn source, IColumn target, DiffContext diffContext)
             => PostFilterOperations(
-                MakeStringColumnsRequiredWithoutUnexpectedDefaultValue(
-                    source,
-                    target,
-                    base.Diff(source, target, diffContext)));
+                SkipRedundantCharSetSpecifyingAlterColumnOperations(
+                    MakeStringColumnsRequiredWithoutUnexpectedDefaultValue(
+                        source,
+                        target,
+                        base.Diff(source, target, diffContext))));
 
         /// <summary>
         /// Use a one-time `UPDATE` statement instead of an `ALTER COLUMN` operation in cases, where a non-required (`NULL`) string
@@ -196,6 +198,53 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                 else
                 {
                     yield return migrationOperation;
+                }
+            }
+        }
+
+        /// <remarks>
+        /// When generating the first migration in Pomelo 5.0+, after previously using Pomelo 3.x, a significant amount of
+        /// AlterColumnOperation might be generated, that don't really need to change anything in the database, because the legacy way of
+        /// specifying a character set was used before and now the store type got cleaned-up and a CharSet annotation got added.
+        /// This method ensures, that no useless operations get generated for this case.
+        /// Everything between the old and the new column needs to be the same, except the store type definition, which contains the
+        /// charset clause in the old, but not in the new store type.
+        /// </remarks>
+        private IEnumerable<MigrationOperation> SkipRedundantCharSetSpecifyingAlterColumnOperations(
+            IEnumerable<MigrationOperation> migrationOperations)
+        {
+            foreach (var operation in migrationOperations)
+            {
+                const string charSetMatchPattern = @"^\s*(?<StoreType>[\w\s]*\w+)\s+(CHARACTER SET|CHARSET)\s+(?<CharSet>\w+)\s*$";
+
+                // Depends on AssertMigrationOperationProperties check.
+                if (operation is not AlterColumnOperation alterColumnOperation ||
+                    alterColumnOperation.OldColumn[MySqlAnnotationNames.CharSet] is not string oldColumnCharSet ||
+                    alterColumnOperation[MySqlAnnotationNames.CharSet] is not string newColumnCharSet ||
+                    oldColumnCharSet != newColumnCharSet||
+                    alterColumnOperation.ColumnType is not string newColumnType ||
+                    alterColumnOperation.OldColumn.ColumnType is not string oldColumnType ||
+                    newColumnType == oldColumnType ||
+                    Regex.Match(oldColumnType, charSetMatchPattern, RegexOptions.IgnoreCase) is not Match sourceStoreTypeMatch ||
+                    !sourceStoreTypeMatch.Success ||
+                    !newColumnType.Trim().Equals(sourceStoreTypeMatch.Groups["StoreType"].Value, StringComparison.Ordinal) ||
+                    !Equals(alterColumnOperation.ClrType, alterColumnOperation.OldColumn.ClrType) ||
+                    !Equals(alterColumnOperation.IsUnicode, alterColumnOperation.OldColumn.IsUnicode) ||
+                    !Equals(alterColumnOperation.IsFixedLength, alterColumnOperation.OldColumn.IsFixedLength) ||
+                    !Equals(alterColumnOperation.MaxLength, alterColumnOperation.OldColumn.MaxLength) ||
+                    !Equals(alterColumnOperation.Precision, alterColumnOperation.OldColumn.Precision) ||
+                    !Equals(alterColumnOperation.Scale, alterColumnOperation.OldColumn.Scale) ||
+                    !Equals(alterColumnOperation.IsRowVersion, alterColumnOperation.OldColumn.IsRowVersion) ||
+                    !Equals(alterColumnOperation.IsNullable, alterColumnOperation.OldColumn.IsNullable) ||
+                    !Equals(alterColumnOperation.DefaultValue, alterColumnOperation.OldColumn.DefaultValue) ||
+                    !Equals(alterColumnOperation.DefaultValueSql, alterColumnOperation.OldColumn.DefaultValueSql) ||
+                    !Equals(alterColumnOperation.ComputedColumnSql, alterColumnOperation.OldColumn.ComputedColumnSql) ||
+                    !Equals(alterColumnOperation.IsStored, alterColumnOperation.OldColumn.IsStored) ||
+                    !Equals(alterColumnOperation.Comment, alterColumnOperation.OldColumn.Comment) ||
+                    !Equals(alterColumnOperation.Collation, alterColumnOperation.OldColumn.Collation) ||
+                    HasDifferences(alterColumnOperation.GetAnnotations(), alterColumnOperation.OldColumn.GetAnnotations()))
+                {
+                    yield return operation;
                 }
             }
         }

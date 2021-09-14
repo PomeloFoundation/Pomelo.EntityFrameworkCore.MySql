@@ -744,6 +744,62 @@ SELECT ROW_COUNT();",
         }
 
         [ConditionalFact]
+        public virtual void Upgrade_legacy_charset_to_annotation_charset_only_does_not_generate_alter_column_operations()
+        {
+            var context = MySqlTestHelpers.Instance.CreateContext();
+
+            var sourceModel = context.GetService<IModelRuntimeInitializer>()
+                .Initialize(
+                    new ModelBuilder()
+                        .Entity(
+                            "IssueConsoleTemplate.IceCream", b =>
+                            {
+                                b.Property<int>("IceCreamId")
+                                    .HasColumnType("int");
+
+                                b.Property<string>("Name")
+                                    .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                                b.HasKey("IceCreamId");
+
+                                b.ToTable("IceCreams");
+                            })
+                        .Model
+                        .FinalizeModel(),
+                    designTime: true,
+                    validationLogger: null);
+
+            var targetModel = context.GetService<IModelRuntimeInitializer>()
+                .Initialize(
+                    new ModelBuilder()
+                        .Entity(
+                            "IssueConsoleTemplate.IceCream", b =>
+                            {
+                                b.Property<int>("IceCreamId")
+                                    .HasColumnType("int");
+
+                                b.Property<string>("Name")
+                                    .HasColumnType("longtext");
+
+                                b.HasKey("IceCreamId");
+
+                                b.ToTable("IceCreams");
+                            })
+                        .Model
+                        .FinalizeModel(),
+                    designTime: true,
+                    validationLogger: null);
+
+            var modelDiffer = context.GetService<IMigrationsModelDiffer>();
+
+            var operations = modelDiffer.GetDifferences(
+                sourceModel.GetRelationalModel(),
+                targetModel.GetRelationalModel());
+
+            Assert.Empty(operations);
+        }
+
+        [ConditionalFact]
         public virtual async Task Create_table_explicit_column_charset_takes_precedence_over_inherited_collation()
         {
             await Test(
