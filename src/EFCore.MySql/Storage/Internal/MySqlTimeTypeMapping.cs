@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.Linq.Expressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -99,6 +100,36 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             return validPrecision > 0
                 ? $@"{format}\.{new string('F', validPrecision)}"
                 : format;
+        }
+
+        /// <summary>
+        /// Workaround https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1513.
+        /// CHECK: Remove once fixed upstream in EF Core.
+        /// </summary>
+        public override Expression GenerateCodeLiteral(object value)
+        {
+            if (value is not TimeOnly timeOnlyValue)
+            {
+                return base.GenerateCodeLiteral(value);
+            }
+
+            return timeOnlyValue.Ticks % 10000 > 0
+                ? Expression.New(
+                    typeof(TimeOnly).GetConstructor(new[] { typeof(long) })!,
+                    Expression.Constant(timeOnlyValue.Ticks))
+                : Expression.New(
+                    typeof(TimeOnly).GetConstructor(
+                        new[]
+                        {
+                            typeof(int),
+                            typeof(int),
+                            typeof(int),
+                            typeof(int),
+                        })!,
+                    Expression.Constant(timeOnlyValue.Hour),
+                    Expression.Constant(timeOnlyValue.Minute),
+                    Expression.Constant(timeOnlyValue.Second),
+                    Expression.Constant(timeOnlyValue.Millisecond));
         }
     }
 }

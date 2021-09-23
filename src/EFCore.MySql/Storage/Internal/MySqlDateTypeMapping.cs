@@ -2,6 +2,7 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Linq.Expressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -66,5 +67,29 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         ///     Gets the string format to be used to generate SQL literals of this type.
         /// </summary>
         protected override string SqlLiteralFormatString => $@"{(_isDefaultValueCompatible ? null : "DATE ")}'{{0:yyyy-MM-dd}}'";
+
+        /// <summary>
+        /// Workaround https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1513.
+        /// CHECK: Remove once fixed upstream in EF Core.
+        /// </summary>
+        public override Expression GenerateCodeLiteral(object value)
+        {
+            if (value is not DateOnly dateOnlyValue)
+            {
+                return base.GenerateCodeLiteral(value);
+            }
+
+            return Expression.New(
+                typeof(DateOnly).GetConstructor(
+                    new[]
+                    {
+                        typeof(int),
+                        typeof(int),
+                        typeof(int),
+                    })!,
+                Expression.Constant(dateOnlyValue.Year),
+                Expression.Constant(dateOnlyValue.Month),
+                Expression.Constant(dateOnlyValue.Day));
+        }
     }
 }
