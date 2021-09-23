@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
@@ -44,6 +45,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                 updateAdapterFactory,
                 commandBatchPreparerDependencies)
         {
+            AssertAllMigrationOperationProperties();
         }
 
         public override IReadOnlyList<MigrationOperation> GetDifferences(IRelationalModel source, IRelationalModel target)
@@ -141,10 +143,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
 
         protected override IEnumerable<MigrationOperation> Diff(IColumn source, IColumn target, DiffContext diffContext)
             => PostFilterOperations(
-                MakeStringColumnsRequiredWithoutUnexpectedDefaultValue(
-                    source,
-                    target,
-                    base.Diff(source, target, diffContext)));
+                SkipRedundantCharSetSpecifyingAlterColumnOperations(
+                    MakeStringColumnsRequiredWithoutUnexpectedDefaultValue(
+                        source,
+                        target,
+                        base.Diff(source, target, diffContext))));
 
         /// <summary>
         /// Use a one-time `UPDATE` statement instead of an `ALTER COLUMN` operation in cases, where a non-required (`NULL`) string
@@ -199,6 +202,53 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
             }
         }
 
+        /// <remarks>
+        /// When generating the first migration in Pomelo 5.0+, after previously using Pomelo 3.x, a significant amount of
+        /// AlterColumnOperation might be generated, that don't really need to change anything in the database, because the legacy way of
+        /// specifying a character set was used before and now the store type got cleaned-up and a CharSet annotation got added.
+        /// This method ensures, that no useless operations get generated for this case.
+        /// Everything between the old and the new column needs to be the same, except the store type definition, which contains the
+        /// charset clause in the old, but not in the new store type.
+        /// </remarks>
+        private IEnumerable<MigrationOperation> SkipRedundantCharSetSpecifyingAlterColumnOperations(
+            IEnumerable<MigrationOperation> migrationOperations)
+        {
+            foreach (var operation in migrationOperations)
+            {
+                const string charSetMatchPattern = @"^\s*(?<StoreType>[\w\s]*\w+)\s+(CHARACTER SET|CHARSET)\s+(?<CharSet>\w+)\s*$";
+
+                // Depends on AssertMigrationOperationProperties check.
+                if (operation is not AlterColumnOperation alterColumnOperation ||
+                    alterColumnOperation.OldColumn[MySqlAnnotationNames.CharSet] is not string oldColumnCharSet ||
+                    alterColumnOperation[MySqlAnnotationNames.CharSet] is not string newColumnCharSet ||
+                    oldColumnCharSet != newColumnCharSet||
+                    alterColumnOperation.ColumnType is not string newColumnType ||
+                    alterColumnOperation.OldColumn.ColumnType is not string oldColumnType ||
+                    newColumnType == oldColumnType ||
+                    Regex.Match(oldColumnType, charSetMatchPattern, RegexOptions.IgnoreCase) is not Match sourceStoreTypeMatch ||
+                    !sourceStoreTypeMatch.Success ||
+                    !newColumnType.Trim().Equals(sourceStoreTypeMatch.Groups["StoreType"].Value, StringComparison.Ordinal) ||
+                    !Equals(alterColumnOperation.ClrType, alterColumnOperation.OldColumn.ClrType) ||
+                    !Equals(alterColumnOperation.IsUnicode, alterColumnOperation.OldColumn.IsUnicode) ||
+                    !Equals(alterColumnOperation.IsFixedLength, alterColumnOperation.OldColumn.IsFixedLength) ||
+                    !Equals(alterColumnOperation.MaxLength, alterColumnOperation.OldColumn.MaxLength) ||
+                    !Equals(alterColumnOperation.Precision, alterColumnOperation.OldColumn.Precision) ||
+                    !Equals(alterColumnOperation.Scale, alterColumnOperation.OldColumn.Scale) ||
+                    !Equals(alterColumnOperation.IsRowVersion, alterColumnOperation.OldColumn.IsRowVersion) ||
+                    !Equals(alterColumnOperation.IsNullable, alterColumnOperation.OldColumn.IsNullable) ||
+                    !Equals(alterColumnOperation.DefaultValue, alterColumnOperation.OldColumn.DefaultValue) ||
+                    !Equals(alterColumnOperation.DefaultValueSql, alterColumnOperation.OldColumn.DefaultValueSql) ||
+                    !Equals(alterColumnOperation.ComputedColumnSql, alterColumnOperation.OldColumn.ComputedColumnSql) ||
+                    !Equals(alterColumnOperation.IsStored, alterColumnOperation.OldColumn.IsStored) ||
+                    !Equals(alterColumnOperation.Comment, alterColumnOperation.OldColumn.Comment) ||
+                    !Equals(alterColumnOperation.Collation, alterColumnOperation.OldColumn.Collation) ||
+                    HasDifferences(alterColumnOperation.GetAnnotations(), alterColumnOperation.OldColumn.GetAnnotations()))
+                {
+                    yield return operation;
+                }
+            }
+        }
+
         protected virtual IEnumerable<MigrationOperation> PostFilterOperations(IEnumerable<MigrationOperation> migrationOperations)
         {
             foreach (var migrationOperation in migrationOperations)
@@ -228,17 +278,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
             ApplyCollationAnnotation(operation.OldDatabase, (operation, collation) => operation.Collation ??= collation);
             HandleCollationDelegation(operation, DelegationModes.ApplyToDatabases, o => o.Collation = null);
 
-            // Ensure, that no properties have been added by the EF Core team in the meantime.
-            // If they have, they need to be checked below.
-            AssertMigrationOperationProperties(
-                operation,
-                new[]
-                {
-                    nameof(AlterDatabaseOperation.OldDatabase),
-                    nameof(AlterDatabaseOperation.Collation),
-                });
-
             // Ensure, that this hasn't become an empty operation.
+            // Depends on AssertMigrationOperationProperties check.
             return operation.Collation != operation.OldDatabase.Collation ||
                    operation.IsReadOnly != operation.OldDatabase.IsReadOnly ||
                    HasDifferences(operation.GetAnnotations(), operation.OldDatabase.GetAnnotations())
@@ -270,20 +311,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
             HandleCharSetDelegation(operation, DelegationModes.ApplyToTables);
             HandleCollationDelegation(operation, DelegationModes.ApplyToTables);
 
-            // Ensure, that no properties have been added by the EF Core team in the meantime.
-            // If they have, they need to be checked below.
-            AssertMigrationOperationProperties(
-                operation,
-                new[]
-                {
-                    nameof(AlterTableOperation.OldTable),
-                    nameof(AlterTableOperation.Name),
-                    nameof(AlterTableOperation.Schema),
-                    nameof(AlterTableOperation.Comment),
-                });
-
             // Ensure, that this hasn't become an empty operation.
             // We do not check Name and Schema, because changes would have resulted in a RenameTableOperation already.
+            // Depends on AssertMigrationOperationProperties check.
             return operation.Comment != operation.OldTable.Comment ||
                    HasDifferences(operation.GetAnnotations(), operation.OldTable.GetAnnotations())
                 ? operation
@@ -357,10 +387,62 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
             }
         }
 
+        /// <summary>
+        /// Ensure, that no properties have been added by the EF Core team in the meantime.
+        /// If they have, they may need to be added to checks in methods of this class
+        /// (search for "Depends on AssertMigrationOperationProperties check").
+        /// </summary>
         [Conditional("DEBUG")]
-        private static void AssertMigrationOperationProperties(MigrationOperation operation, IEnumerable<string> propertyNames)
+        private static void AssertAllMigrationOperationProperties()
         {
-            if (operation.GetType()
+            AssertMigrationOperationProperties(
+                typeof(AlterDatabaseOperation),
+                new[]
+                {
+                    nameof(AlterDatabaseOperation.OldDatabase),
+                    nameof(AlterDatabaseOperation.Collation),
+                });
+
+            AssertMigrationOperationProperties(
+                typeof(AlterTableOperation),
+                new[]
+                {
+                    nameof(AlterTableOperation.OldTable),
+                    nameof(AlterTableOperation.Name),
+                    nameof(AlterTableOperation.Schema),
+                    nameof(AlterTableOperation.Comment),
+                });
+
+            AssertMigrationOperationProperties(
+                typeof(AlterColumnOperation),
+                new[]
+                {
+                    nameof(AlterColumnOperation.OldColumn),
+                    nameof(AlterColumnOperation.Name),
+                    nameof(AlterColumnOperation.Schema),
+                    nameof(AlterColumnOperation.Table),
+                    nameof(AlterColumnOperation.ClrType),
+                    nameof(AlterColumnOperation.ColumnType),
+                    nameof(AlterColumnOperation.IsUnicode),
+                    nameof(AlterColumnOperation.IsFixedLength),
+                    nameof(AlterColumnOperation.MaxLength),
+                    nameof(AlterColumnOperation.Precision),
+                    nameof(AlterColumnOperation.Scale),
+                    nameof(AlterColumnOperation.IsRowVersion),
+                    nameof(AlterColumnOperation.IsNullable),
+                    nameof(AlterColumnOperation.DefaultValue),
+                    nameof(AlterColumnOperation.DefaultValueSql),
+                    nameof(AlterColumnOperation.ComputedColumnSql),
+                    nameof(AlterColumnOperation.IsStored),
+                    nameof(AlterColumnOperation.Comment),
+                    nameof(AlterColumnOperation.Collation),
+                });
+        }
+
+        [Conditional("DEBUG")]
+        private static void AssertMigrationOperationProperties(Type migrationOperationType, IEnumerable<string> propertyNames)
+        {
+            if (migrationOperationType
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
                 .Select(p => p.Name)
                 .Except(
@@ -374,7 +456,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                 .FirstOrDefault() is string unexpectedProperty)
             {
                 throw new InvalidOperationException(
-                    $"The migration operation of type '{operation.GetType().Name}' contains an unexpected property '{unexpectedProperty}'.");
+                    $"The migration operation of type '{migrationOperationType.Name}' contains an unexpected property '{unexpectedProperty}'.");
             }
         }
 
