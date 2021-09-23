@@ -68,7 +68,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethods()
                 .Where(method => method.Name == nameof(MySqlDbFunctionsExtensions.Like)
                                  && method.IsGenericMethod
-                                 && method.GetParameters().Length >= 3 && method.GetParameters().Length <= 4)
+                                 && method.GetParameters().Length is >= 3 and <= 4)
                 .SelectMany(method => _supportedLikeTypes.Select(type => method.MakeGenericMethod(type))).ToArray();
 
         private static readonly MethodInfo _matchMethodInfo

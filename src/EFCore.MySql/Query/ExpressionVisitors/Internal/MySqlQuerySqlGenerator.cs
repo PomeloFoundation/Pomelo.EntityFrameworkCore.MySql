@@ -392,13 +392,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 {
                     Sql.Append(" + 0e0)");
                 }
-                else if (castMapping.EndsWith("char"))
-                {
-                    // Expressions like `"mystring" + 1` can lead to collation mismatches.
-                    // We force `utf8mb4_bin` here, that should always work. It might however change the case sensitivity of
-                    // operations it is part of.
-                    Sql.Append(" COLLATE utf8mb4_bin");
-                }
             }
             else
             {
