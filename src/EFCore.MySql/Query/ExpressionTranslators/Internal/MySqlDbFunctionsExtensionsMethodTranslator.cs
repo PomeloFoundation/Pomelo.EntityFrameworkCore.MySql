@@ -41,6 +41,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             typeof(ushort),
             typeof(ulong),
             typeof(sbyte),
+            typeof(DateOnly),
+            typeof(TimeOnly),
             typeof(int?),
             typeof(long?),
             typeof(DateTime?),
@@ -58,6 +60,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             typeof(ushort?),
             typeof(ulong?),
             typeof(sbyte?),
+            typeof(DateOnly?),
+            typeof(TimeOnly?),
         };
 
         private static readonly MethodInfo[] _likeMethodInfos
