@@ -163,10 +163,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         protected virtual AlterDatabaseOperation PostFilterOperation(AlterDatabaseOperation operation)
         {
             HandleCharSetDelegation(operation, DelegationModes.ApplyToDatabases);
+            HandleCharSetDelegation(operation.OldDatabase, DelegationModes.ApplyToDatabases);
 
             ApplyCollationAnnotation(operation, (operation, collation) => operation.Collation ??= collation);
             ApplyCollationAnnotation(operation.OldDatabase, (operation, collation) => operation.Collation ??= collation);
+
             HandleCollationDelegation(operation, DelegationModes.ApplyToDatabases, o => o.Collation = null);
+            HandleCollationDelegation(operation.OldDatabase, DelegationModes.ApplyToDatabases, o => o.Collation = null);
 
             // Ensure, that this hasn't become an empty operation.
             // Depends on AssertMigrationOperationProperties check.
@@ -198,7 +201,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         protected virtual AlterTableOperation PostFilterOperation(AlterTableOperation operation)
         {
             HandleCharSetDelegation(operation, DelegationModes.ApplyToTables);
+            HandleCharSetDelegation(operation.OldTable, DelegationModes.ApplyToTables);
+
             HandleCollationDelegation(operation, DelegationModes.ApplyToTables);
+            HandleCollationDelegation(operation.OldTable, DelegationModes.ApplyToTables);
 
             // Ensure, that this hasn't become an empty operation.
             // We do not check Name and Schema, because changes would have resulted in a RenameTableOperation already.
@@ -220,7 +226,26 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         {
             ApplyCollationAnnotation(operation, (operation, collation) => operation.Collation ??= collation);
 
-            return operation;
+            // Ensure, that this hasn't become an empty operation.
+            // Depends on AssertMigrationOperationProperties check.
+            return !Equals(operation.ClrType, operation.OldColumn.ClrType) ||
+                   !Equals(operation.ColumnType, operation.OldColumn.ColumnType) ||
+                   !Equals(operation.IsUnicode, operation.OldColumn.IsUnicode) ||
+                   !Equals(operation.IsFixedLength, operation.OldColumn.IsFixedLength) ||
+                   !Equals(operation.MaxLength, operation.OldColumn.MaxLength) ||
+                   !Equals(operation.Precision, operation.OldColumn.Precision) ||
+                   !Equals(operation.Scale, operation.OldColumn.Scale) ||
+                   !Equals(operation.IsRowVersion, operation.OldColumn.IsRowVersion) ||
+                   !Equals(operation.IsNullable, operation.OldColumn.IsNullable) ||
+                   !Equals(operation.DefaultValue, operation.OldColumn.DefaultValue) ||
+                   !Equals(operation.DefaultValueSql, operation.OldColumn.DefaultValueSql) ||
+                   !Equals(operation.ComputedColumnSql, operation.OldColumn.ComputedColumnSql) ||
+                   !Equals(operation.IsStored, operation.OldColumn.IsStored) ||
+                   !Equals(operation.Comment, operation.OldColumn.Comment) ||
+                   !Equals(operation.Collation, operation.OldColumn.Collation) ||
+                   HasDifferences(operation.GetAnnotations(), operation.OldColumn.GetAnnotations())
+                ? operation
+                : null;
         }
 
         private static void ApplyCollationAnnotation<TOperation>(TOperation operation, Action<TOperation, string> applyCollation)
