@@ -234,54 +234,172 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
 
         protected virtual string GetActualEntityTypeCharSet(IEntityType entityType, DelegationModes currentLevel)
         {
-            // There are the following variations at the entity level:
-            //    1. entityTypeBuilder.HasCharSet(null, null) [or no call at all]
-            //            -> Check the charset and delegation at the database level.
-            //    2. a. entityTypeBuilder.HasCharSet(null, DelegationModes.ApplyToAll)
-            //       b. entityTypeBuilder.HasCharSet(null, DelegationModes.ApplyToColumns)
-            //            -> Do not explicitly use any charset.
-            //    3. a. entityTypeBuilder.HasCharSet("latin1")
-            //       b. entityTypeBuilder.HasCharSet("latin1", DelegationModes.ApplyToAll)
-            //       c. entityTypeBuilder.HasCharSet("latin1", DelegationModes.ApplyToColumns)
-            //            -> Explicitly use the specified charset.
-            return (entityType.GetCharSet() is not null || // 3abc
-                    entityType.GetCharSet() is null && entityType.GetCharSetDelegation() is not null) && // 2ab
-                   entityType.GetActualCharSetDelegation().HasFlag(currentLevel) // 3abc, 2ab
-                ? entityType.GetCharSet()
-                // An explicitly defined collation on the current entity level takes precedence over an inherited charset.
-                : GetActualModelCharSet(entityType.Model, currentLevel) is string charSet && // 1
-                  (currentLevel != DelegationModes.ApplyToTables ||
-                   entityType.GetCollation() is not string collation ||
-                   !entityType.GetActualCollationDelegation().HasFlag(DelegationModes.ApplyToTables) ||
-                   collation.StartsWith(charSet, StringComparison.OrdinalIgnoreCase))
-                    ? charSet
-                    : null;
+            // 1. Use explicitly defined charset:
+            //     entityTypeBuilder.HasCharSet(null, currentLevel)
+            //     entityTypeBuilder.HasCharSet("latin1", null)
+            //     entityTypeBuilder.HasCharSet("latin1", currentLevel)
+            // 2. Check charset and delegation at the database level:
+            //     entityTypeBuilder.HasCharSet(null, null) [or no call at all]
+            //     entityTypeBuilder.HasCharSet(null, !currentLevel)
+            //     entityTypeBuilder.HasCharSet("latin1", !currentLevel)
+            // 3: Do not explicitly use any charset:
+            //     all other cases
+
+            var entityTypeCharSet = entityType.GetCharSet();
+            var entityTypeCharSetDelegation = entityType.GetCharSetDelegation();
+            var actualEntityTypeCharSetDelegation = entityType.GetActualCharSetDelegation();
+
+            // Cases 1:
+            // An explicitly set charset (which can be null) on the entity level.
+            // We return it, if it also applies to the current level (which could be the property level, instead of the entity level).
+            //     This enables users to set a default charset for properties of an entity, without having to also necessarily apply it to
+            //     the entity itself.
+            if (actualEntityTypeCharSetDelegation.HasFlag(currentLevel) &&
+                (entityTypeCharSet is not null || entityTypeCharSetDelegation is not null))
+            {
+                return entityTypeCharSet;
+            }
+
+            //
+            // At this point, no charset has been explicitly setup at the entity level, that applies to the current (entity/property) level.
+            //
+
+            // Case 2:
+            // Use an explicitly set collation at the entity level, an inherited collation from the model level, or an inherited charset
+            // from the model level.
+            if (!actualEntityTypeCharSetDelegation.HasFlag(currentLevel) ||
+                entityTypeCharSet is null && entityTypeCharSetDelegation is null)
+            {
+                var entityTypeCollation = entityType.GetCollation();
+                var actualCollationDelegation = entityType.GetActualCollationDelegation();
+                var actualModelCharSet = GetActualModelCharSet(entityType.Model, currentLevel);
+
+                // An explicitly defined collation on the entity level takes precedence over an inherited charset from the model
+                // level.
+                if (entityTypeCollation is not null &&
+                    actualCollationDelegation.HasFlag(currentLevel))
+                {
+                    // However, if the collation on the entity level is compatible with the inheritable charset from the model level, then
+                    // we can apply the charset after all, since there should be no harm in doing so and it is probably the behavior that
+                    // users expect.
+                    return actualModelCharSet is not null &&
+                           entityTypeCollation.StartsWith(actualModelCharSet, StringComparison.OrdinalIgnoreCase)
+                        ? actualModelCharSet
+                        : null;
+                }
+
+                var actualModelCollation = GetActualModelCollation(entityType.Model, currentLevel);
+
+                // An inheritable collation from the model level takes precedence over an inheritable charset from the model level.
+                if (actualModelCollation is not null)
+                {
+                    // However, if the inheritable collation from the model level is compatible with the inheritable charset from the model
+                    // level (which is usually the case), then we can apply the charset after all, since there should be no harm in doing
+                    // so and it is probably the behavior that users expect.
+                    return actualModelCharSet is not null &&
+                           actualModelCollation.StartsWith(actualModelCharSet, StringComparison.OrdinalIgnoreCase)
+                        ? actualModelCharSet
+                        : null;
+                }
+
+                // Return either the inherited model charset, or null if none applies to the current level.
+                return actualModelCharSet;
+            }
+
+            // Case 3:
+            // All remaining cases don't set a charset.
+            return null;
+
+            // return (entityType.GetCharSet() is not null || // 3abc
+            //         entityType.GetCharSet() is null && entityType.GetCharSetDelegation() is not null) && // 2ab
+            //        entityType.GetActualCharSetDelegation().HasFlag(currentLevel) // 3abc, 2ab
+            //     ? entityType.GetCharSet()
+            //     // An explicitly defined collation on the current entity level takes precedence over an inherited charset.
+            //     : GetActualModelCharSet(entityType.Model, currentLevel) is string charSet && // 1
+            //       (currentLevel != DelegationModes.ApplyToTables ||
+            //        entityType.GetCollation() is not string collation ||
+            //        !entityType.GetActualCollationDelegation().HasFlag(DelegationModes.ApplyToTables) ||
+            //        collation.StartsWith(charSet, StringComparison.OrdinalIgnoreCase))
+            //         ? charSet
+            //         : null;
         }
 
         protected virtual string GetActualEntityTypeCollation(IEntityType entityType, DelegationModes currentLevel)
         {
-            // There are the following variations at the entity level:
-            //    1. entityTypeBuilder.HasCollation(null, null) [or no call at all]
-            //            -> Check the collation and delegation at the database level.
-            //    2. a. entityTypeBuilder.HasCollation(null, DelegationModes.ApplyToAll)
-            //       b. entityTypeBuilder.HasCollation(null, DelegationModes.ApplyToColumns)
-            //            -> Do not explicitly use any collation.
-            //    3. a. entityTypeBuilder.HasCollation("latin1_general_ci")
-            //       b. entityTypeBuilder.HasCollation("latin1_general_ci", DelegationModes.ApplyToAll)
-            //       c. entityTypeBuilder.HasCollation("latin1_general_ci", DelegationModes.ApplyToColumns)
-            //            -> Explicitly use the specified collation.
-            return (entityType.GetCollation() is not null || // 3abc
-                    entityType.GetCollation() is null && entityType.GetCollationDelegation() is not null) && // 2ab
-                   entityType.GetActualCollationDelegation().HasFlag(currentLevel)
-                ? entityType.GetCollation()
-                // An explicitly defined charset on the current entity level takes precedence over an inherited collation.
-                : GetActualModelCollation(entityType.Model, currentLevel) is string collation && // 1
-                  (currentLevel != DelegationModes.ApplyToTables ||
-                   entityType.GetCharSet() is not string charSet ||
-                   !entityType.GetActualCharSetDelegation().HasFlag(DelegationModes.ApplyToTables) ||
-                   collation.StartsWith(charSet, StringComparison.OrdinalIgnoreCase))
-                    ? collation
-                    : null;
+            // 1. Use explicitly defined collation:
+            //     entityTypeBuilder.HasCollation(null, currentLevel)
+            //     entityTypeBuilder.HasCollation("latin1_general_ci", null)
+            //     entityTypeBuilder.HasCollation("latin1_general_ci", currentLevel)
+            // 2. Check collation and delegation at the database level:
+            //     entityTypeBuilder.HasCollation(null, null) [or no call at all]
+            //     entityTypeBuilder.HasCollation(null, !currentLevel)
+            //     entityTypeBuilder.HasCollation("latin1_general_ci", !currentLevel)
+            // 3: Do not explicitly use any collation:
+            //     all other cases
+
+            var entityTypeCollation = entityType.GetCollation();
+            var entityTypeCollationDelegation = entityType.GetCollationDelegation();
+            var actualEntityTypeCollationDelegation = entityType.GetActualCollationDelegation();
+
+            // Cases 1:
+            // An explicitly set collation (which can be null) on the entity level.
+            // We return it, if it applies to the current level (which could be the property level, instead of the entity level).
+            //     This enables users to set a default collation for properties of an entity, without having to also necessarily apply it to
+            //     the entity itself.
+            if (actualEntityTypeCollationDelegation.HasFlag(currentLevel) &&
+                (entityTypeCollation is not null || entityTypeCollationDelegation is not null))
+            {
+                return entityTypeCollation;
+            }
+
+            //
+            // At this point, no collation has been explicitly setup at the entity level, that applies to the current (entity/property) level.
+            //
+
+            // Case 2:
+            // Use an explicitly set charset at the entity level, an inheritable collation from the model level, or an inheritable charset
+            // from the model level.
+            if (!actualEntityTypeCollationDelegation.HasFlag(currentLevel) ||
+                entityTypeCollation is null && entityTypeCollationDelegation is null)
+            {
+                var entityTypeCharSet = entityType.GetCharSet();
+                var actualCharSetDelegation = entityType.GetActualCharSetDelegation();
+                var actualModelCollation = GetActualModelCollation(entityType.Model, currentLevel);
+
+                // An explicitly defined charset on the entity level takes precedence over an inherited collation from the model
+                // level.
+                if (entityTypeCharSet is not null &&
+                    actualCharSetDelegation.HasFlag(currentLevel))
+                {
+                    // However, if the charset on the entity level is compatible with the inheritable collation from the model level, then
+                    // we can apply the collation after all, since there should be no harm in doing so and it is probably the behavior that
+                    // users expect.
+                    return actualModelCollation is not null &&
+                           actualModelCollation.StartsWith(entityTypeCharSet, StringComparison.OrdinalIgnoreCase)
+                        ? actualModelCollation
+                        : null;
+                }
+
+                // Return either the inherited model collation, or null if none applies to the current level.
+                return actualModelCollation;
+            }
+
+            // Case 3:
+            // All remaining cases don't set a collation.
+            return null;
+
+            // return (entityType.GetCollation() is not null || // 3abc
+            //         entityType.GetCollation() is null && entityType.GetCollationDelegation() is not null) && // 2ab
+            //        entityType.GetActualCollationDelegation().HasFlag(currentLevel)
+            //     ? entityType.GetCollation()
+            //     // An explicitly defined charset on the current entity level takes precedence over an inherited collation.
+            //     : GetActualModelCollation(entityType.Model, currentLevel) is string collation && // 1
+            //       (currentLevel != DelegationModes.ApplyToTables ||
+            //        entityType.GetCharSet() is not string charSet ||
+            //        !entityType.GetActualCharSetDelegation().HasFlag(DelegationModes.ApplyToTables) ||
+            //        collation.StartsWith(charSet, StringComparison.OrdinalIgnoreCase))
+            //         ? collation
+            //         : null;
         }
 
         protected virtual string GetActualPropertyCharSet(IProperty[] properties, DelegationModes currentLevel)
