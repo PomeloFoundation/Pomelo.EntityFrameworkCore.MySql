@@ -910,6 +910,48 @@ SELECT ROW_COUNT();",
         }
 
         [ConditionalFact]
+        public virtual async Task Alter_column_charsets_using_delegated_charset_with_tableonly_charset_inbetween()
+        {
+            await Test(
+                common => common
+                    .Entity(
+                        "IceCream",
+                        e =>
+                        {
+                            e.Property<int>("IceCreamId");
+                            e.Property<string>("Name");
+                            e.Property<string>("Brand");
+                        }),
+                source => source
+                    .HasCharSet(DefaultCharSet, DelegationModes.ApplyToColumns)
+                    .Entity(
+                        "IceCream",
+                        e =>
+                        {
+                            e.Property<string>("Brand")
+                                .HasCharSet(NonDefaultCharSet);
+                        }),
+                target => target
+                    .HasCharSet(NonDefaultCharSet2, DelegationModes.ApplyToColumns)
+                    .Entity(
+                        "IceCream",
+                        e =>
+                        {
+                            e.HasCharSet(DefaultCharSet, DelegationModes.ApplyToTables);
+                            e.Property<string>("Name")
+                                .HasCharSet(NonDefaultCharSet);
+                        }),
+                result => { });
+
+            AssertSql(
+                $@"ALTER TABLE `IceCream` CHARACTER SET={DefaultCharSet};",
+                //
+                $@"ALTER TABLE `IceCream` MODIFY COLUMN `Name` longtext CHARACTER SET {NonDefaultCharSet} NULL;",
+                //
+                $@"ALTER TABLE `IceCream` MODIFY COLUMN `Brand` longtext CHARACTER SET {NonDefaultCharSet2} NULL;");
+        }
+
+        [ConditionalFact]
         public virtual async Task Drop_unique_constraint_without_recreating_foreign_keys()
         {
             await Test(
@@ -1023,6 +1065,7 @@ SELECT ROW_COUNT();",
 
         protected virtual string DefaultCharSet => ((MySqlTestStore)Fixture.TestStore).DatabaseCharSet;
         protected virtual string NonDefaultCharSet => "latin1";
+        protected virtual string NonDefaultCharSet2 => "ascii";
 
         protected virtual TestHelpers TestHelpers => MySqlTestHelpers.Instance;
 
