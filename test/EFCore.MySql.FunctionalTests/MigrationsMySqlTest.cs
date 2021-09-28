@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
@@ -539,6 +539,54 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 $@"ALTER TABLE `IceCream` MODIFY COLUMN `Name` longtext COLLATE {NonDefaultCollation} NULL;",
                 //
                 $@"ALTER TABLE `IceCream` MODIFY COLUMN `Brand` longtext COLLATE {NonDefaultCollation2} NULL;");
+        }
+
+        [ConditionalFact]
+        public virtual void Upgrade_legacy_charset_to_annotation_charset_only_does_not_generate_alter_column_operations()
+        {
+            var context = MySqlTestHelpers.Instance.CreateContext();
+
+            var sourceModel = CreateConventionlessModelBuilder()
+                .Entity(
+                    "IssueConsoleTemplate.IceCream", b =>
+                    {
+                        b.Property<int>("IceCreamId")
+                            .HasColumnType("int");
+
+                        b.Property<string>("Name")
+                            .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                        b.HasKey("IceCreamId");
+
+                        b.ToTable("IceCreams");
+                    })
+                .Model
+                .FinalizeModel();
+
+            var targetModel = CreateConventionlessModelBuilder()
+                .Entity(
+                    "IssueConsoleTemplate.IceCream", b =>
+                    {
+                        b.Property<int>("IceCreamId")
+                            .HasColumnType("int");
+
+                        b.Property<string>("Name")
+                            .HasColumnType("longtext");
+
+                        b.HasKey("IceCreamId");
+
+                        b.ToTable("IceCreams");
+                    })
+                .Model
+                .FinalizeModel();
+
+            var modelDiffer = context.GetService<IMigrationsModelDiffer>();
+
+            var operations = modelDiffer.GetDifferences(
+                sourceModel.GetRelationalModel(),
+                targetModel.GetRelationalModel());
+
+            Assert.Empty(operations);
         }
 
         [ConditionalFact]
