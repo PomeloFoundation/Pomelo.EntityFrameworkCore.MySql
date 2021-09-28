@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
@@ -546,47 +546,39 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
             var context = MySqlTestHelpers.Instance.CreateContext();
 
-            var sourceModel = context.GetService<IModelRuntimeInitializer>()
-                .Initialize(
-                    new ModelBuilder()
-                        .Entity(
-                            "IssueConsoleTemplate.IceCream", b =>
-                            {
-                                b.Property<int>("IceCreamId")
-                                    .HasColumnType("int");
+            var sourceModel = CreateConventionlessModelBuilder()
+                .Entity(
+                    "IssueConsoleTemplate.IceCream", b =>
+                    {
+                        b.Property<int>("IceCreamId")
+                            .HasColumnType("int");
 
-                                b.Property<string>("Name")
-                                    .HasColumnType("longtext CHARACTER SET utf8mb4");
+                        b.Property<string>("Name")
+                            .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                                b.HasKey("IceCreamId");
+                        b.HasKey("IceCreamId");
 
-                                b.ToTable("IceCreams");
-                            })
-                        .Model
-                        .FinalizeModel(),
-                    designTime: true,
-                    validationLogger: null);
+                        b.ToTable("IceCreams");
+                    })
+                .Model
+                .FinalizeModel();
 
-            var targetModel = context.GetService<IModelRuntimeInitializer>()
-                .Initialize(
-                    new ModelBuilder()
-                        .Entity(
-                            "IssueConsoleTemplate.IceCream", b =>
-                            {
-                                b.Property<int>("IceCreamId")
-                                    .HasColumnType("int");
+            var targetModel = CreateConventionlessModelBuilder()
+                .Entity(
+                    "IssueConsoleTemplate.IceCream", b =>
+                    {
+                        b.Property<int>("IceCreamId")
+                            .HasColumnType("int");
 
-                                b.Property<string>("Name")
-                                    .HasColumnType("longtext");
+                        b.Property<string>("Name")
+                            .HasColumnType("longtext");
 
-                                b.HasKey("IceCreamId");
+                        b.HasKey("IceCreamId");
 
-                                b.ToTable("IceCreams");
-                            })
-                        .Model
-                        .FinalizeModel(),
-                    designTime: true,
-                    validationLogger: null);
+                        b.ToTable("IceCreams");
+                    })
+                .Model
+                .FinalizeModel();
 
             var modelDiffer = context.GetService<IMigrationsModelDiffer>();
 
