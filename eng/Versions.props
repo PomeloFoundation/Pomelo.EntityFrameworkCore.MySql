@@ -29,7 +29,7 @@
   <PropertyGroup Label="Dependencies">
     <!-- Runtime Dependencies -->
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.1.19</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCoreAppInternalPackageVersion>3.1.19-servicing.21417.2</MicrosoftNETCoreAppInternalPackageVersion>
+    <MicrosoftNETCoreAppInternalPackageVersion>3.1.19-servicing.21416.14</MicrosoftNETCoreAppInternalPackageVersion>
     <!-- EFCore.MySql Dependencies -->
     <MicrosoftEntityFrameworkCoreRelationalVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreRelationalVersion>
     <MySqlConnectorVersion>[0.69.10, 1.0.0)</MySqlConnectorVersion>
@@ -40,7 +40,7 @@
     <MicrosoftExtensionsLoggingVersion>3.1.19</MicrosoftExtensionsLoggingVersion>
     <MicrosoftBclAsyncInterfacesVersion>1.1.1</MicrosoftBclAsyncInterfacesVersion>
     <MicrosoftBclHashCodeVersion>1.1.1</MicrosoftBclHashCodeVersion>
-    <MicrosoftExtensionsHostFactoryResolverSourcesVersion>3.1.19-servicing.21403.3</MicrosoftExtensionsHostFactoryResolverSourcesVersion>
+    <MicrosoftExtensionsHostFactoryResolverSourcesVersion>3.1.19-servicing.21417.2</MicrosoftExtensionsHostFactoryResolverSourcesVersion>
     <MicrosoftExtensionsConfigurationVersion>3.1.19</MicrosoftExtensionsConfigurationVersion>
     <SystemCollectionsImmutableVersion>1.7.1</SystemCollectionsImmutableVersion>
     <SystemComponentModelAnnotationsVersion>4.7.0</SystemComponentModelAnnotationsVersion>
