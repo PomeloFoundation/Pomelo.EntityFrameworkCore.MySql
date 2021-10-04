@@ -26,8 +26,8 @@ jobs:
         DOCKER_IMAGE: mysql:8.0.26
         SQL_MODE: $(mysql_current_sql_mode)
         INTEGRATION_TESTS: "true"
-      MySQL 5.7.34:
-        DOCKER_IMAGE: mysql:5.7.34
+      MySQL 5.7.35:
+        DOCKER_IMAGE: mysql:5.7.35
         SQL_MODE: $(mysql_legacy_sql_mode)
         INTEGRATION_TESTS: "true"
       MariaDB 10.6.4:
