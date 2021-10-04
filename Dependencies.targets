@@ -12,7 +12,7 @@
     <PackageReference Update="Microsoft.EntityFrameworkCore.Relational" Version="$(EFCoreVersion)" />
     <PackageReference Update="Microsoft.EntityFrameworkCore" Version="$(EFCoreVersion)" />
 
-    <PackageReference Update="MySqlConnector" Version="1.4.0-beta.1" />
+    <PackageReference Update="MySqlConnector" Version="1.4.0-beta.4" />
 
     <PackageReference Update="NetTopologySuite" Version="2.3.0" />
     <PackageReference Update="System.Text.Json" Version="$(DependencyPreviewVersion)" />
@@ -33,7 +33,7 @@
     <PackageReference Update="Microsoft.Extensions.DependencyInjection" Version="$(DependencyPreviewVersion)" />
     <PackageReference Update="Microsoft.Extensions.DependencyModel" Version="$(DependencyPreviewVersion)" />
     <PackageReference Update="Microsoft.Extensions.Logging" Version="$(DependencyPreviewVersion)" />
-    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.10.0" />
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.11.0" />
     <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
     <PackageReference Update="Moq" Version="4.16.1" />
     <PackageReference Update="System.Collections.Immutable" Version="$(DependencyPreviewVersion)" />
