@@ -28,7 +28,7 @@
     <PackageReference Update="Microsoft.Extensions.Configuration.FileExtensions" Version="5.0.0" />
     <PackageReference Update="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
     <PackageReference Update="Microsoft.Extensions.Configuration" Version="5.0.0" />
-    <PackageReference Update="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
+    <PackageReference Update="Microsoft.Extensions.DependencyInjection" Version="5.0.2" />
     <PackageReference Update="Microsoft.Extensions.DependencyModel" Version="5.0.0" />
     <PackageReference Update="Microsoft.Extensions.Logging" Version="5.0.0" />
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.9.4" />
