@@ -24,24 +24,24 @@
     <UsingToolXliff>False</UsingToolXliff>
   </PropertyGroup>
   <PropertyGroup Label="Common Versions">
-    <EntityFrameworkCoreVersion>[3.1.15, 5.0.0)</EntityFrameworkCoreVersion>
+    <EntityFrameworkCoreVersion>[3.1.19, 5.0.0)</EntityFrameworkCoreVersion>
   </PropertyGroup>
   <PropertyGroup Label="Dependencies">
     <!-- Runtime Dependencies -->
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.1.15</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCoreAppInternalPackageVersion>3.1.15-servicing.21214.3</MicrosoftNETCoreAppInternalPackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.1.19</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNETCoreAppInternalPackageVersion>3.1.19-servicing.21214.3</MicrosoftNETCoreAppInternalPackageVersion>
     <!-- EFCore.MySql Dependencies -->
     <MicrosoftEntityFrameworkCoreRelationalVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreRelationalVersion>
     <MySqlConnectorVersion>[0.69.10, 1.0.0)</MySqlConnectorVersion>
     <PomeloJsonObjectVersion>2.2.1</PomeloJsonObjectVersion>
-    <MicrosoftExtensionsCachingMemoryVersion>3.1.15</MicrosoftExtensionsCachingMemoryVersion>
-    <MicrosoftExtensionsDependencyInjection>3.1.15</MicrosoftExtensionsDependencyInjection>
+    <MicrosoftExtensionsCachingMemoryVersion>3.1.19</MicrosoftExtensionsCachingMemoryVersion>
+    <MicrosoftExtensionsDependencyInjection>3.1.19</MicrosoftExtensionsDependencyInjection>
     <SystemDiagnosticsDiagnosticSourceVersion>4.7.1</SystemDiagnosticsDiagnosticSourceVersion>
-    <MicrosoftExtensionsLoggingVersion>3.1.15</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftExtensionsLoggingVersion>3.1.19</MicrosoftExtensionsLoggingVersion>
     <MicrosoftBclAsyncInterfacesVersion>1.1.1</MicrosoftBclAsyncInterfacesVersion>
     <MicrosoftBclHashCodeVersion>1.1.1</MicrosoftBclHashCodeVersion>
-    <MicrosoftExtensionsHostFactoryResolverSourcesVersion>3.1.15-servicing.21207.2</MicrosoftExtensionsHostFactoryResolverSourcesVersion>
-    <MicrosoftExtensionsConfigurationVersion>3.1.15</MicrosoftExtensionsConfigurationVersion>
+    <MicrosoftExtensionsHostFactoryResolverSourcesVersion>3.1.19-servicing.21403.3</MicrosoftExtensionsHostFactoryResolverSourcesVersion>
+    <MicrosoftExtensionsConfigurationVersion>3.1.19</MicrosoftExtensionsConfigurationVersion>
     <SystemCollectionsImmutableVersion>1.7.1</SystemCollectionsImmutableVersion>
     <SystemComponentModelAnnotationsVersion>4.7.0</SystemComponentModelAnnotationsVersion>
     <!-- EFCore.MySql.NTS Dependencies -->
@@ -63,14 +63,14 @@
     <MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreRelationalSpecificationTestsVersion>
     <!-- EFCoreMySqlFunctionalTests Dependencies -->
     <MicrosoftEntityFrameworkCoreDesignVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreDesignVersion>
-    <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>3.1.15</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
-    <MicrosoftExtensionsConfigurationFileExtensionsVersion>3.1.15</MicrosoftExtensionsConfigurationFileExtensionsVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>3.1.19</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
+    <MicrosoftExtensionsConfigurationFileExtensionsVersion>3.1.19</MicrosoftExtensionsConfigurationFileExtensionsVersion>
     <MicrosoftExtensionsConfigurationJsonVersion>3.0.3</MicrosoftExtensionsConfigurationJsonVersion>
     <SystemComponentModelTypeConverterVersion>4.3.0</SystemComponentModelTypeConverterVersion>
     <CastleCoreVersion>4.4.0</CastleCoreVersion>
     <!-- EFCoreMySqlIntegrationTests Dependencies -->
-    <MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>3.1.15</MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>
-    <MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>3.1.15</MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>
+    <MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>3.1.19</MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion>
+    <MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>3.1.19</MicrosoftAspNetCoreMvcNewtonsoftJsonVersion>
     <!-- EFCoreMySqlTests Dependencies -->
     <MicrosoftEntityFrameworkCoreDesignVersion>$(EntityFrameworkCoreVersion)</MicrosoftEntityFrameworkCoreDesignVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>3.7.0</MicrosoftCodeAnalysisCSharpPackageVersion>

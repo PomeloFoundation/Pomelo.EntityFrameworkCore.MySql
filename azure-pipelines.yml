@@ -14,7 +14,7 @@ variables:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   dotnet_version: 3.1.x
-  dotnet_ef_tools_version: 3.1.15
+  dotnet_ef_tools_version: 3.1.19
 
 # TODO: Simplify (PWSH for most cases etc.)
 jobs:
@@ -22,24 +22,28 @@ jobs:
 - job: Linux
   strategy:
     matrix:
-      MySQL 8.0.21:
-        DOCKER_IMAGE: mysql:8.0.25
+      MySQL 8.0.26:
+        DOCKER_IMAGE: mysql:8.0.26
         SQL_MODE: $(mysql_current_sql_mode)
         INTEGRATION_TESTS: "true"
-      MySQL 5.7.32:
+      MySQL 5.7.34:
         DOCKER_IMAGE: mysql:5.7.34
         SQL_MODE: $(mysql_legacy_sql_mode)
         INTEGRATION_TESTS: "true"
-      MariaDB 10.5.5:
-        DOCKER_IMAGE: mariadb:10.5.11
+      MariaDB 10.6.4:
+        DOCKER_IMAGE: mariadb:10.6.4
         SQL_MODE: $(mariadb_sql_mode)
         INTEGRATION_TESTS: "false"
-      MariaDB 10.4.14:
-        DOCKER_IMAGE: mariadb:10.4.20
+      MariaDB 10.5.12:
+        DOCKER_IMAGE: mariadb:10.5.12
         SQL_MODE: $(mariadb_sql_mode)
         INTEGRATION_TESTS: "false"
-      MariaDB 10.3.24:
-        DOCKER_IMAGE: mariadb:10.3.30
+      MariaDB 10.4.21:
+        DOCKER_IMAGE: mariadb:10.4.21
+        SQL_MODE: $(mariadb_sql_mode)
+        INTEGRATION_TESTS: "false"
+      MariaDB 10.3.31:
+        DOCKER_IMAGE: mariadb:10.3.31
         SQL_MODE: $(mariadb_sql_mode)
         INTEGRATION_TESTS: "false"
   pool:
@@ -170,7 +174,7 @@ jobs:
     mysql_ini_path: C:\tools\mysql\current\my.ini
     mysql_data_path: C:\ProgramData\MySQL\data
     mysql_service_name: MySQL
-    mysql_server_version: 8.0.25
+    mysql_server_version: 8.0.26
   steps:
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK'
