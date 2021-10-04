@@ -5,21 +5,21 @@
       to compile against that version for better development and local
       debugging support.
 
-      Rename this file "development.props".
+      Rename this file to "development.props".
 
       The EFCore assemblies are being compiled with an AssemblyVersion of
       "42.42.42.42" by default. To not get any compilation errors
-      for the EFCore.MySql.IntegrationTests project, which uses
+      for the EFCore.MySql.IntegrationTests project, that uses
       Microsoft.AspNetCore.Identity.EntityFrameworkCore, which references
-      it's own version of EFCore, you have to make sure, that your local
+      it's own version of EFCore, you have to make sure that your local
       EFCore assemblies are compiled with an AssemblyVersion <= the one
       referenced by Microsoft.AspNetCore.Identity.EntityFrameworkCore
-      (e.g. "3.1.0.0").
+      (e.g. "6.0.0.0").
 
       To achive that, run the following command in your EntityFrameworkCore
       base directory:
 
-      dotnet build "/p:AssemblyVersion=3.1.0.0"
+      dotnet build "/p:AssemblyVersion=6.0.0.0"
     -->
     <LocalEFCoreRepository>C:\Repositories\EntityFrameworkCore</LocalEFCoreRepository>
     <LocalMySqlConnectorRepository>C:\Repositories\MySqlConnector</LocalMySqlConnectorRepository>

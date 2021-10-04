@@ -1,9 +1,9 @@
 <Project>
   <PropertyGroup Label="Common Versions">
-    <DotnetRuntimeVersion>6.0.0-preview.6.21352.12</DotnetRuntimeVersion>
-    <EFCoreVersion>6.0.0-preview.6.21352.1</EFCoreVersion> <!-- [$(DotnetRuntimeVersion), 7.0.0) -->
+    <DotnetRuntimeVersion>6.0.0-preview.7.21377.19</DotnetRuntimeVersion>
+    <EFCoreVersion>6.0.0-preview.7.21378.4</EFCoreVersion> <!-- [$(DotnetRuntimeVersion), 7.0.0) -->
     <DependencyPreviewVersion>$(DotnetRuntimeVersion)</DependencyPreviewVersion>
-    <AspNetCoreVersion>6.0.0-preview.6.21355.2</AspNetCoreVersion>
+    <AspNetCoreVersion>6.0.0-preview.7.21378.6</AspNetCoreVersion>
   </PropertyGroup>
 
   <ItemGroup Label="Dependencies">
