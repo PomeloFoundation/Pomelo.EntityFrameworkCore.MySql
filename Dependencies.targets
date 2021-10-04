@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup Label="Common Versions">
-    <DotnetRuntimeVersion>5.0.7</DotnetRuntimeVersion>
+    <DotnetRuntimeVersion>5.0.10</DotnetRuntimeVersion>
     <EFCoreVersion>[$(DotnetRuntimeVersion), 6.0.0)</EFCoreVersion>
   </PropertyGroup>
 
@@ -10,7 +10,7 @@
     <PackageReference Update="Microsoft.EntityFrameworkCore.Relational" Version="$(EFCoreVersion)" />
     <PackageReference Update="Microsoft.EntityFrameworkCore" Version="$(EFCoreVersion)" />
 
-    <PackageReference Update="MySqlConnector" Version="1.3.10" />
+    <PackageReference Update="MySqlConnector" Version="1.3.13" />
 
     <PackageReference Update="NetTopologySuite" Version="2.2.0" />
     <PackageReference Update="System.Text.Json" Version="5.0.2" />
