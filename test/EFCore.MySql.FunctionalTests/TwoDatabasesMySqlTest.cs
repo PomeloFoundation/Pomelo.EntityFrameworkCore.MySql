@@ -24,6 +24,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         protected override TwoDatabasesWithDataContext CreateBackingContext(string databaseName)
             => new TwoDatabasesWithDataContext(Fixture.CreateOptions(MySqlTestStore.Create(databaseName)));
 
-        protected override string DummyConnectionString { get; } = "Server=localhost;Database=DoesNotExist;AllowUserVariables=True;Use Affected Rows=False";
+        protected override string DummyConnectionString { get; } = "Server=localhost;Database=DoesNotExist;Allow User Variables=True;Use Affected Rows=False";
     }
 }
