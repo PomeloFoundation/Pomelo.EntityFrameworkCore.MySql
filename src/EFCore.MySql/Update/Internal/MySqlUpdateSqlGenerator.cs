@@ -77,7 +77,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
 
                 if (nonIdentityOperations.Count > 1)
                 {
-                    nonIdentityOperations = new List<ColumnModification> { nonIdentityOperations.First() };
+                    nonIdentityOperations = new List<IColumnModification> { nonIdentityOperations.First() };
                 }
             }
 
@@ -97,7 +97,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
         private ResultSetMapping AppendBulkInsertWithoutServerValues(
             StringBuilder commandStringBuilder,
             IReadOnlyList<ModificationCommand> modificationCommands,
-            List<ColumnModification> writeOperations)
+            List<IColumnModification> writeOperations)
         {
             Debug.Assert(writeOperations.Count > 0);
 
@@ -109,7 +109,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
             AppendValues(commandStringBuilder, name, schema, writeOperations);
             for (var i = 1; i < modificationCommands.Count; i++)
             {
-                commandStringBuilder.Append(",").AppendLine();
+                commandStringBuilder.Append(',').AppendLine();
                 AppendValues(commandStringBuilder, name, schema, modificationCommands[i].ColumnModifications.Where(o => o.IsWrite).ToList());
             }
             commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
@@ -121,7 +121,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
             [NotNull] StringBuilder commandStringBuilder,
             [NotNull] string name,
             [CanBeNull] string schema,
-            [NotNull] IReadOnlyList<ColumnModification> operations)
+            [NotNull] IReadOnlyList<IColumnModification> operations)
         {
             Check.NotNull(commandStringBuilder, nameof(commandStringBuilder));
             Check.NotEmpty(name, nameof(name));
@@ -139,7 +139,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
 
         protected override void AppendValuesHeader(
             [NotNull] StringBuilder commandStringBuilder,
-            [NotNull] IReadOnlyList<ColumnModification> operations)
+            [NotNull] IReadOnlyList<IColumnModification> operations)
         {
             Check.NotNull(commandStringBuilder, nameof(commandStringBuilder));
             Check.NotNull(operations, nameof(operations));
@@ -152,7 +152,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
             [NotNull] StringBuilder commandStringBuilder,
             [NotNull] string name,
             [CanBeNull] string schema,
-            [NotNull] IReadOnlyList<ColumnModification> operations)
+            [NotNull] IReadOnlyList<IColumnModification> operations)
         {
             base.AppendValues(commandStringBuilder, name, schema, operations);
 
@@ -174,7 +174,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
 
         protected override void AppendWhereAffectedClause(
             [NotNull] StringBuilder commandStringBuilder,
-            [NotNull] IReadOnlyList<ColumnModification> operations)
+            [NotNull] IReadOnlyList<IColumnModification> operations)
         {
             Check.NotNull(commandStringBuilder, nameof(commandStringBuilder));
             Check.NotNull(operations, nameof(operations));
@@ -201,7 +201,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
             base.AppendWhereAffectedClause(commandStringBuilder, nonDefaultOperations);
         }
 
-        protected override void AppendIdentityWhereCondition(StringBuilder commandStringBuilder, ColumnModification columnModification)
+        protected override void AppendIdentityWhereCondition(StringBuilder commandStringBuilder, IColumnModification columnModification)
         {
             SqlGenerationHelper.DelimitIdentifier(commandStringBuilder, columnModification.ColumnName);
             commandStringBuilder.Append(" = ")
