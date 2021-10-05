@@ -179,7 +179,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
 
         private sealed class ExtensionInfo : RelationalExtensionInfo
         {
-            private long? _serviceProviderHash;
+            private int? _serviceProviderHash;
             private string _logFragment;
 
             public ExtensionInfo(IDbContextOptionsExtension extension)
@@ -216,7 +216,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                 }
             }
 
-            public override long GetServiceProviderHashCode()
+            public override int GetServiceProviderHashCode()
             {
                 if (_serviceProviderHash == null)
                 {
