@@ -26,7 +26,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
         private const int MaxRowCount = 1000;
         private int _parameterCount = 1; // Implicit parameter for the command text
         private readonly int _maxBatchSize;
-        private readonly List<ModificationCommand> _bulkInsertCommands = new List<ModificationCommand>();
+        private readonly List<IReadOnlyModificationCommand> _bulkInsertCommands = new List<IReadOnlyModificationCommand>();
         private int _commandsLeftToLengthCheck = 50;
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        protected override bool CanAddCommand(ModificationCommand modificationCommand)
+        protected override bool CanAddCommand(IReadOnlyModificationCommand modificationCommand)
         {
             if (ModificationCommands.Count >= _maxBatchSize)
             {
@@ -103,7 +103,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
         protected override int GetParameterCount()
             => _parameterCount;
 
-        private static int CountParameters(ModificationCommand modificationCommand)
+        private static int CountParameters(IReadOnlyModificationCommand modificationCommand)
         {
             var parameterCount = 0;
             foreach (var columnModification in modificationCommand.ColumnModifications)
@@ -190,7 +190,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
             }
         }
 
-        private static bool CanBeInsertedInSameStatement(ModificationCommand firstCommand, ModificationCommand secondCommand)
+        private static bool CanBeInsertedInSameStatement(IReadOnlyModificationCommand firstCommand, IReadOnlyModificationCommand secondCommand)
             => string.Equals(firstCommand.TableName, secondCommand.TableName, StringComparison.Ordinal)
                && string.Equals(firstCommand.Schema, secondCommand.Schema, StringComparison.Ordinal)
                && firstCommand.ColumnModifications.Where(o => o.IsWrite).Select(o => o.ColumnName).SequenceEqual(
