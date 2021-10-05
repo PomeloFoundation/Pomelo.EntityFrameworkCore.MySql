@@ -117,6 +117,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 
         private static readonly MethodInfo _unhexMethodInfo = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(nameof(MySqlDbFunctionsExtensions.Unhex), new[] {typeof(DbFunctions), typeof(string)});
 
+        private static readonly MethodInfo _degreesDoubleMethodInfo = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(nameof(MySqlDbFunctionsExtensions.Degrees), new[] { typeof(DbFunctions), typeof(double) });
+        private static readonly MethodInfo _degreesFloatMethodInfo = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(nameof(MySqlDbFunctionsExtensions.Degrees), new[] { typeof(DbFunctions), typeof(float) });
+
+        private static readonly MethodInfo _radiansDoubleMethodInfo = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(nameof(MySqlDbFunctionsExtensions.Radians), new[] { typeof(DbFunctions), typeof(double) });
+        private static readonly MethodInfo _radiansFloatMethodInfo = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(nameof(MySqlDbFunctionsExtensions.Radians), new[] { typeof(DbFunctions), typeof(float) });
+
         public MySqlDbFunctionsExtensionsMethodTranslator(ISqlExpressionFactory sqlExpressionFactory)
         {
             _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
@@ -200,6 +206,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     new[] {arguments[1]},
                     typeof(string),
                     false);
+            }
+
+            if (Equals(method, _degreesDoubleMethodInfo) ||
+                Equals(method, _degreesFloatMethodInfo))
+            {
+                return _sqlExpressionFactory.NullableFunction(
+                    "DEGREES",
+                    new[] { arguments[1] },
+                    method.ReturnType);
+            }
+
+            if (Equals(method, _radiansDoubleMethodInfo) ||
+                Equals(method, _radiansFloatMethodInfo))
+            {
+                return _sqlExpressionFactory.NullableFunction(
+                    "RADIANS",
+                    new[] { arguments[1] },
+                    method.ReturnType);
             }
 
             return null;
