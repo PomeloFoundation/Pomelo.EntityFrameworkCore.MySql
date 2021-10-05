@@ -37,7 +37,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
         /// </summary>
         public virtual ResultSetMapping AppendBulkInsertOperation(
             StringBuilder commandStringBuilder,
-            IReadOnlyList<ModificationCommand> modificationCommands,
+            IReadOnlyList<IReadOnlyModificationCommand> modificationCommands,
             int commandPosition)
         {
             var table = StoreObjectIdentifier.Table(modificationCommands[0].TableName, modificationCommands[0].Schema);
@@ -96,7 +96,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
 
         private ResultSetMapping AppendBulkInsertWithoutServerValues(
             StringBuilder commandStringBuilder,
-            IReadOnlyList<ModificationCommand> modificationCommands,
+            IReadOnlyList<IReadOnlyModificationCommand> modificationCommands,
             List<IColumnModification> writeOperations)
         {
             Debug.Assert(writeOperations.Count > 0);
