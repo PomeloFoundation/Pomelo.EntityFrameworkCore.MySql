@@ -206,7 +206,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                         {
                             builder.Append("ServerVersion ")
                                 .Append(Extension.ServerVersion)
-                                .Append(" ");
+                                .Append(' ');
                         }
 
                         _logFragment = builder.ToString();
