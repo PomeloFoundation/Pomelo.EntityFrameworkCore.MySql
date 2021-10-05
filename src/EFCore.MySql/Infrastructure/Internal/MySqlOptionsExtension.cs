@@ -179,7 +179,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
 
         private sealed class ExtensionInfo : RelationalExtensionInfo
         {
-            private long? _serviceProviderHash;
+            private int? _serviceProviderHash;
             private string _logFragment;
 
             public ExtensionInfo(IDbContextOptionsExtension extension)
@@ -216,7 +216,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                 }
             }
 
-            public override long GetServiceProviderHashCode()
+            public override int GetServiceProviderHashCode()
             {
                 if (_serviceProviderHash == null)
                 {
@@ -238,6 +238,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
 
                 return _serviceProviderHash.Value;
             }
+
+            public override bool ShouldUseSameServiceProvider(DbContextOptionsExtensionInfo other)
+                => other is ExtensionInfo otherInfo &&
+                   base.ShouldUseSameServiceProvider(other) &&
+                   Equals(Extension.ServerVersion, otherInfo.Extension.ServerVersion) &&
+                   Extension.NoBackslashEscapes == otherInfo.Extension.NoBackslashEscapes &&
+                   Extension.UpdateSqlModeOnOpen == otherInfo.Extension.UpdateSqlModeOnOpen &&
+                   Extension.ReplaceLineBreaksWithCharFunction == otherInfo.Extension.ReplaceLineBreaksWithCharFunction &&
+                   Equals(Extension.DefaultDataTypeMappings, otherInfo.Extension.DefaultDataTypeMappings) &&
+                   Extension.SchemaBehavior == otherInfo.Extension.SchemaBehavior &&
+                   Extension.SchemaNameTranslator == otherInfo.Extension.SchemaNameTranslator &&
+                   Extension.IndexOptimizedBooleanColumns == otherInfo.Extension.IndexOptimizedBooleanColumns &&
+                   Extension.LimitKeyedOrIndexedStringColumnLength == otherInfo.Extension.LimitKeyedOrIndexedStringColumnLength &&
+                   Extension.StringComparisonTranslations == otherInfo.Extension.StringComparisonTranslations;
 
             public override void PopulateDebugInfo(IDictionary<string, string> debugInfo)
             {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -17,6 +18,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 .UseMySql("Database=DummyDatabase", AppConfig.ServerVersion, relationalAction);
 
         protected override string ProviderName => "Pomelo.EntityFrameworkCore.MySql";
+
+        protected override string ProviderVersion => typeof(MySqlOptionsExtension).Assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            ?.InformationalVersion;
+
         protected override string DefaultOptions => $"ServerVersion {AppConfig.ServerVersion}";
     }
 }

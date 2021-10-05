@@ -1,14 +1,17 @@
 // Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 
@@ -16,6 +19,46 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
 {
     public class MySqlAnnotationCodeGenerator : AnnotationCodeGenerator
     {
+        private static readonly MethodInfo _modelHasCharSetMethodInfo
+            = typeof(MySqlModelBuilderExtensions).GetRequiredRuntimeMethod(
+                nameof(MySqlModelBuilderExtensions.HasCharSet),
+                typeof(ModelBuilder),
+                typeof(string),
+                typeof(DelegationModes?));
+
+        private static readonly MethodInfo _modelUseCollationMethodInfo
+            = typeof(MySqlModelBuilderExtensions).GetRequiredRuntimeMethod(
+                nameof(MySqlModelBuilderExtensions.UseCollation),
+                typeof(ModelBuilder),
+                typeof(string),
+                typeof(DelegationModes?));
+
+        private static readonly MethodInfo _modelUseGuidCollationMethodInfo
+            = typeof(MySqlModelBuilderExtensions).GetRequiredRuntimeMethod(
+                nameof(MySqlModelBuilderExtensions.UseGuidCollation),
+                typeof(ModelBuilder),
+                typeof(string));
+
+        private static readonly MethodInfo _entityTypeHasCharSetMethodInfo
+            = typeof(MySqlEntityTypeBuilderExtensions).GetRequiredRuntimeMethod(
+                nameof(MySqlEntityTypeBuilderExtensions.HasCharSet),
+                typeof(EntityTypeBuilder),
+                typeof(string),
+                typeof(DelegationModes?));
+
+        private static readonly MethodInfo _entityTypeUseCollationMethodInfo
+            = typeof(MySqlEntityTypeBuilderExtensions).GetRequiredRuntimeMethod(
+                nameof(MySqlEntityTypeBuilderExtensions.UseCollation),
+                typeof(EntityTypeBuilder),
+                typeof(string),
+                typeof(DelegationModes?));
+
+        private static readonly MethodInfo _propertyHasCharSetMethodInfo
+            = typeof(MySqlPropertyBuilderExtensions).GetRequiredRuntimeMethod(
+                nameof(MySqlPropertyBuilderExtensions.HasCharSet),
+                typeof(PropertyBuilder),
+                typeof(string));
+
         public MySqlAnnotationCodeGenerator([NotNull] AnnotationCodeGeneratorDependencies dependencies)
             : base(dependencies)
         {
@@ -50,7 +93,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
             {
                 var delegationModes = model[MySqlAnnotationNames.CharSetDelegation] as DelegationModes?;
                 return new MethodCallCodeFragment(
-                    nameof(MySqlModelBuilderExtensions.HasCharSet),
+                    _modelHasCharSetMethodInfo,
                     new[] {annotation.Value}
                         .AppendIfTrue(delegationModes.HasValue, delegationModes)
                         .ToArray());
@@ -60,7 +103,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
                 model[MySqlAnnotationNames.CharSet] is null)
             {
                 return new MethodCallCodeFragment(
-                    nameof(MySqlModelBuilderExtensions.HasCharSet),
+                    _modelHasCharSetMethodInfo,
                     null,
                     annotation.Value);
             }
@@ -71,7 +114,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
             {
                 var delegationModes = model[MySqlAnnotationNames.CollationDelegation] as DelegationModes?;
                 return new MethodCallCodeFragment(
-                    nameof(MySqlModelBuilderExtensions.UseCollation),
+                    _modelUseCollationMethodInfo,
                     new[] {annotation.Value}
                         .AppendIfTrue(delegationModes.HasValue, delegationModes)
                         .ToArray());
@@ -81,7 +124,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
                 model[RelationalAnnotationNames.Collation] is null)
             {
                 return new MethodCallCodeFragment(
-                    nameof(MySqlModelBuilderExtensions.UseCollation),
+                    _modelUseCollationMethodInfo,
                     null,
                     annotation.Value);
             }
@@ -89,7 +132,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
             if (annotation.Name == MySqlAnnotationNames.GuidCollation)
             {
                 return new MethodCallCodeFragment(
-                    nameof(MySqlModelBuilderExtensions.UseGuidCollation),
+                    _modelUseGuidCollationMethodInfo,
                     annotation.Value);
             }
 
@@ -102,7 +145,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
             {
                 var delegationModes = entityType[MySqlAnnotationNames.CharSetDelegation] as DelegationModes?;
                 return new MethodCallCodeFragment(
-                    nameof(MySqlEntityTypeBuilderExtensions.HasCharSet),
+                    _entityTypeHasCharSetMethodInfo,
                     new[] {annotation.Value}
                         .AppendIfTrue(delegationModes.HasValue, delegationModes)
                         .ToArray());
@@ -112,7 +155,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
                 entityType[MySqlAnnotationNames.CharSet] is null)
             {
                 return new MethodCallCodeFragment(
-                    nameof(MySqlEntityTypeBuilderExtensions.HasCharSet),
+                    _entityTypeHasCharSetMethodInfo,
                     null,
                     annotation.Value);
             }
@@ -121,7 +164,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
             {
                 var delegationModes = entityType[MySqlAnnotationNames.CollationDelegation] as DelegationModes?;
                 return new MethodCallCodeFragment(
-                    nameof(MySqlEntityTypeBuilderExtensions.UseCollation),
+                    _entityTypeUseCollationMethodInfo,
                     new[] {annotation.Value}
                         .AppendIfTrue(delegationModes.HasValue, delegationModes)
                         .ToArray());
@@ -131,7 +174,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
                 entityType[RelationalAnnotationNames.Collation] is null)
             {
                 return new MethodCallCodeFragment(
-                    nameof(MySqlEntityTypeBuilderExtensions.UseCollation),
+                    _entityTypeUseCollationMethodInfo,
                     null,
                     annotation.Value);
             }
@@ -198,7 +241,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
             switch (annotation.Name)
             {
                 case MySqlAnnotationNames.CharSet when annotation.Value is string {Length: > 0} charSet:
-                    return new MethodCallCodeFragment(nameof(MySqlPropertyBuilderExtensions.HasCharSet), charSet);
+                    return new MethodCallCodeFragment(
+                        _propertyHasCharSetMethodInfo,
+                        charSet);
 
                 default:
                     return null;
