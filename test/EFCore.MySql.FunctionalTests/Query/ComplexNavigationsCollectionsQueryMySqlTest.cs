@@ -1928,6 +1928,112 @@ LEFT JOIN LATERAL (
 ORDER BY `t`.`Id` DESC, `t0`.`Name` DESC, `t0`.`Id`");
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override async Task Skip_Take_on_grouping_element_inside_collection_projection(bool async)
+        {
+            await base.Skip_Take_on_grouping_element_inside_collection_projection(async);
+
+            AssertSql(
+                @"SELECT `l`.`Id`, `t2`.`Date`, `t2`.`Id`, `t2`.`Date0`, `t2`.`Name`, `t2`.`OneToMany_Optional_Self_Inverse1Id`, `t2`.`OneToMany_Required_Self_Inverse1Id`, `t2`.`OneToOne_Optional_Self1Id`
+FROM `LevelOne` AS `l`
+LEFT JOIN LATERAL (
+    SELECT `t`.`Date`, `t0`.`Id`, `t0`.`Date` AS `Date0`, `t0`.`Name`, `t0`.`OneToMany_Optional_Self_Inverse1Id`, `t0`.`OneToMany_Required_Self_Inverse1Id`, `t0`.`OneToOne_Optional_Self1Id`
+    FROM (
+        SELECT `l0`.`Date`
+        FROM `LevelOne` AS `l0`
+        WHERE (`l0`.`Name` = `l`.`Name`) OR (`l0`.`Name` IS NULL AND (`l`.`Name` IS NULL))
+        GROUP BY `l0`.`Date`
+    ) AS `t`
+    LEFT JOIN (
+        SELECT `t1`.`Id`, `t1`.`Date`, `t1`.`Name`, `t1`.`OneToMany_Optional_Self_Inverse1Id`, `t1`.`OneToMany_Required_Self_Inverse1Id`, `t1`.`OneToOne_Optional_Self1Id`
+        FROM (
+            SELECT `l1`.`Id`, `l1`.`Date`, `l1`.`Name`, `l1`.`OneToMany_Optional_Self_Inverse1Id`, `l1`.`OneToMany_Required_Self_Inverse1Id`, `l1`.`OneToOne_Optional_Self1Id`, ROW_NUMBER() OVER(PARTITION BY `l1`.`Date` ORDER BY `l1`.`Name`) AS `row`
+            FROM `LevelOne` AS `l1`
+            WHERE (`l1`.`Name` = `l`.`Name`) OR (`l1`.`Name` IS NULL AND (`l`.`Name` IS NULL))
+        ) AS `t1`
+        WHERE (1 < `t1`.`row`) AND (`t1`.`row` <= 6)
+    ) AS `t0` ON `t`.`Date` = `t0`.`Date`
+) AS `t2` ON TRUE
+ORDER BY `l`.`Id`, `t2`.`Date`, `t2`.`Date0`, `t2`.`Name`");
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override async Task Skip_Take_on_grouping_element_with_collection_include(bool async)
+        {
+            await base.Skip_Take_on_grouping_element_with_collection_include(async);
+
+            AssertSql(
+                @"SELECT `t`.`Date`, `t0`.`Id`, `t0`.`Date`, `t0`.`Name`, `t0`.`OneToMany_Optional_Self_Inverse1Id`, `t0`.`OneToMany_Required_Self_Inverse1Id`, `t0`.`OneToOne_Optional_Self1Id`, `t0`.`Id0`, `t0`.`Date0`, `t0`.`Level1_Optional_Id`, `t0`.`Level1_Required_Id`, `t0`.`Name0`, `t0`.`OneToMany_Optional_Inverse2Id`, `t0`.`OneToMany_Optional_Self_Inverse2Id`, `t0`.`OneToMany_Required_Inverse2Id`, `t0`.`OneToMany_Required_Self_Inverse2Id`, `t0`.`OneToOne_Optional_PK_Inverse2Id`, `t0`.`OneToOne_Optional_Self2Id`
+FROM (
+    SELECT `l`.`Date`
+    FROM `LevelOne` AS `l`
+    GROUP BY `l`.`Date`
+) AS `t`
+LEFT JOIN LATERAL (
+    SELECT `t1`.`Id`, `t1`.`Date`, `t1`.`Name`, `t1`.`OneToMany_Optional_Self_Inverse1Id`, `t1`.`OneToMany_Required_Self_Inverse1Id`, `t1`.`OneToOne_Optional_Self1Id`, `l0`.`Id` AS `Id0`, `l0`.`Date` AS `Date0`, `l0`.`Level1_Optional_Id`, `l0`.`Level1_Required_Id`, `l0`.`Name` AS `Name0`, `l0`.`OneToMany_Optional_Inverse2Id`, `l0`.`OneToMany_Optional_Self_Inverse2Id`, `l0`.`OneToMany_Required_Inverse2Id`, `l0`.`OneToMany_Required_Self_Inverse2Id`, `l0`.`OneToOne_Optional_PK_Inverse2Id`, `l0`.`OneToOne_Optional_Self2Id`
+    FROM (
+        SELECT `l1`.`Id`, `l1`.`Date`, `l1`.`Name`, `l1`.`OneToMany_Optional_Self_Inverse1Id`, `l1`.`OneToMany_Required_Self_Inverse1Id`, `l1`.`OneToOne_Optional_Self1Id`
+        FROM `LevelOne` AS `l1`
+        WHERE `t`.`Date` = `l1`.`Date`
+        ORDER BY `l1`.`Name`
+        LIMIT 5 OFFSET 1
+    ) AS `t1`
+    LEFT JOIN `LevelTwo` AS `l0` ON `t1`.`Id` = `l0`.`OneToMany_Optional_Inverse2Id`
+) AS `t0` ON TRUE
+ORDER BY `t`.`Date`, `t0`.`Name`, `t0`.`Date`");
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override async Task Skip_Take_on_grouping_element_with_reference_include(bool async)
+        {
+            await base.Skip_Take_on_grouping_element_with_reference_include(async);
+
+            AssertSql(
+                @"SELECT `t`.`Date`, `t0`.`Id`, `t0`.`Date`, `t0`.`Name`, `t0`.`OneToMany_Optional_Self_Inverse1Id`, `t0`.`OneToMany_Required_Self_Inverse1Id`, `t0`.`OneToOne_Optional_Self1Id`, `t0`.`Id0`, `t0`.`Date0`, `t0`.`Level1_Optional_Id`, `t0`.`Level1_Required_Id`, `t0`.`Name0`, `t0`.`OneToMany_Optional_Inverse2Id`, `t0`.`OneToMany_Optional_Self_Inverse2Id`, `t0`.`OneToMany_Required_Inverse2Id`, `t0`.`OneToMany_Required_Self_Inverse2Id`, `t0`.`OneToOne_Optional_PK_Inverse2Id`, `t0`.`OneToOne_Optional_Self2Id`
+FROM (
+    SELECT `l`.`Date`
+    FROM `LevelOne` AS `l`
+    GROUP BY `l`.`Date`
+) AS `t`
+LEFT JOIN LATERAL (
+    SELECT `t1`.`Id`, `t1`.`Date`, `t1`.`Name`, `t1`.`OneToMany_Optional_Self_Inverse1Id`, `t1`.`OneToMany_Required_Self_Inverse1Id`, `t1`.`OneToOne_Optional_Self1Id`, `l0`.`Id` AS `Id0`, `l0`.`Date` AS `Date0`, `l0`.`Level1_Optional_Id`, `l0`.`Level1_Required_Id`, `l0`.`Name` AS `Name0`, `l0`.`OneToMany_Optional_Inverse2Id`, `l0`.`OneToMany_Optional_Self_Inverse2Id`, `l0`.`OneToMany_Required_Inverse2Id`, `l0`.`OneToMany_Required_Self_Inverse2Id`, `l0`.`OneToOne_Optional_PK_Inverse2Id`, `l0`.`OneToOne_Optional_Self2Id`
+    FROM (
+        SELECT `l1`.`Id`, `l1`.`Date`, `l1`.`Name`, `l1`.`OneToMany_Optional_Self_Inverse1Id`, `l1`.`OneToMany_Required_Self_Inverse1Id`, `l1`.`OneToOne_Optional_Self1Id`
+        FROM `LevelOne` AS `l1`
+        WHERE `t`.`Date` = `l1`.`Date`
+        ORDER BY `l1`.`Name`
+        LIMIT 5 OFFSET 1
+    ) AS `t1`
+    LEFT JOIN `LevelTwo` AS `l0` ON `t1`.`Id` = `l0`.`Level1_Optional_Id`
+) AS `t0` ON TRUE
+ORDER BY `t`.`Date`, `t0`.`Name`, `t0`.`Date`");
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        public override async Task Skip_Take_Distinct_on_grouping_element(bool async)
+        {
+            await base.Skip_Take_Distinct_on_grouping_element(async);
+
+            AssertSql(
+                @"SELECT `t`.`Date`, `t0`.`Id`, `t0`.`Date`, `t0`.`Name`, `t0`.`OneToMany_Optional_Self_Inverse1Id`, `t0`.`OneToMany_Required_Self_Inverse1Id`, `t0`.`OneToOne_Optional_Self1Id`
+FROM (
+    SELECT `l`.`Date`
+    FROM `LevelOne` AS `l`
+    GROUP BY `l`.`Date`
+) AS `t`
+LEFT JOIN LATERAL (
+    SELECT DISTINCT `t1`.`Id`, `t1`.`Date`, `t1`.`Name`, `t1`.`OneToMany_Optional_Self_Inverse1Id`, `t1`.`OneToMany_Required_Self_Inverse1Id`, `t1`.`OneToOne_Optional_Self1Id`
+    FROM (
+        SELECT `l0`.`Id`, `l0`.`Date`, `l0`.`Name`, `l0`.`OneToMany_Optional_Self_Inverse1Id`, `l0`.`OneToMany_Required_Self_Inverse1Id`, `l0`.`OneToOne_Optional_Self1Id`
+        FROM `LevelOne` AS `l0`
+        WHERE `t`.`Date` = `l0`.`Date`
+        ORDER BY `l0`.`Name`
+        LIMIT 5 OFFSET 1
+    ) AS `t1`
+) AS `t0` ON TRUE
+ORDER BY `t`.`Date`");
+        }
+
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override Task Project_collection_navigation_nested_with_take(bool async)
         {
