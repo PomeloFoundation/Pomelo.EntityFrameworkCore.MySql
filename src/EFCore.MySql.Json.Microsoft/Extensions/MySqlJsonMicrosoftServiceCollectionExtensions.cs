@@ -29,11 +29,11 @@ namespace Microsoft.Extensions.DependencyInjection
             Check.NotNull(serviceCollection, nameof(serviceCollection));
 
             new EntityFrameworkRelationalServicesBuilder(serviceCollection)
+                .TryAdd<IRelationalTypeMappingSourcePlugin, MySqlJsonMicrosoftTypeMappingSourcePlugin>()
+                .TryAdd<IMethodCallTranslatorPlugin, MySqlJsonMicrosoftMethodCallTranslatorPlugin>()
+                .TryAdd<IMemberTranslatorPlugin, MySqlJsonMicrosoftMemberTranslatorPlugin>()
                 .TryAddProviderSpecificServices(
-                    x => x.TryAddSingletonEnumerable<IRelationalTypeMappingSourcePlugin, MySqlJsonMicrosoftTypeMappingSourcePlugin>()
-                        .TryAddSingletonEnumerable<IMethodCallTranslatorPlugin, MySqlJsonMicrosoftMethodCallTranslatorPlugin>()
-                        .TryAddSingletonEnumerable<IMemberTranslatorPlugin, MySqlJsonMicrosoftMemberTranslatorPlugin>()
-                        .TryAddSingleton<IMySqlJsonPocoTranslator, MySqlJsonMicrosoftPocoTranslator>());
+                    x => x.TryAddScopedEnumerable<IMySqlJsonPocoTranslator, MySqlJsonMicrosoftPocoTranslator>());
 
             return serviceCollection;
         }
