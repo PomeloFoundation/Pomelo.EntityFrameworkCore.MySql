@@ -223,6 +223,125 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
                 MySqlStrings.QueryUnableToTranslateMethodWithStringComparison(nameof(String), nameof(string.Equals), nameof(MySqlDbContextOptionsBuilder.EnableStringComparisonTranslations)));
         }
 
+        /// <summary>
+        /// Needs explicit ordering of ProductIds to work with MariaDB.
+        /// </summary>
+        public override async Task Projection_skip_collection_projection(bool async)
+        {
+            // await base.Projection_skip_collection_projection(async);
+            await AssertQuery(
+                async,
+                ss => ss.Set<Order>()
+                    .Where(o => o.OrderID < 10300)
+                    .OrderBy(o => o.OrderID)
+                    .Select(o => new { Item = o })
+                    .Skip(5)
+                    .Select(e => new { e.Item.OrderID, ProductIds = e.Item.OrderDetails.OrderBy(od => od.ProductID).Select(od => od.ProductID).ToList() }), // added .OrderBy(od => od.ProductID)
+                assertOrder: true,
+                elementAsserter: (e, a) =>
+                {
+                    Assert.Equal(e.OrderID, a.OrderID);
+                    AssertCollection(e.ProductIds, a.ProductIds, ordered: true, elementAsserter: (ie, ia) => Assert.Equal(ie, ia));
+                });
+
+            AssertSql(
+                @"@__p_0='5'
+
+SELECT `t`.`OrderID`, `t0`.`ProductID`, `t0`.`OrderID`
+FROM (
+    SELECT `o`.`OrderID`
+    FROM `Orders` AS `o`
+    WHERE `o`.`OrderID` < 10300
+    ORDER BY `o`.`OrderID`
+    LIMIT 18446744073709551610 OFFSET @__p_0
+) AS `t`
+LEFT JOIN (
+    SELECT `o0`.`ProductID`, `o0`.`OrderID`
+    FROM `Order Details` AS `o0`
+) AS `t0` ON `t`.`OrderID` = `t0`.`OrderID`
+ORDER BY `t`.`OrderID`, `t0`.`ProductID`");
+        }
+
+        /// <summary>
+        /// Needs explicit ordering of ProductIds to work with MariaDB.
+        /// </summary>
+        public override async Task Projection_skip_take_collection_projection(bool async)
+        {
+            // await base.Projection_skip_take_collection_projection(async);
+            await AssertQuery(
+                async,
+                ss => ss.Set<Order>()
+                    .Where(o => o.OrderID < 10300)
+                    .OrderBy(o => o.OrderID)
+                    .Select(o => new { Item = o })
+                    .Skip(5)
+                    .Take(10)
+                    .Select(e => new { e.Item.OrderID, ProductIds = e.Item.OrderDetails.OrderBy(od => od.ProductID).Select(od => od.ProductID).ToList() }), // added .OrderBy(od => od.ProductID)
+                assertOrder: true,
+                elementAsserter: (e, a) =>
+                {
+                    Assert.Equal(e.OrderID, a.OrderID);
+                    AssertCollection(e.ProductIds, a.ProductIds, ordered: true, elementAsserter: (ie, ia) => Assert.Equal(ie, ia));
+                });
+
+            AssertSql(
+                @"@__p_1='10'
+@__p_0='5'
+
+SELECT `t`.`OrderID`, `t0`.`ProductID`, `t0`.`OrderID`
+FROM (
+    SELECT `o`.`OrderID`
+    FROM `Orders` AS `o`
+    WHERE `o`.`OrderID` < 10300
+    ORDER BY `o`.`OrderID`
+    LIMIT @__p_1 OFFSET @__p_0
+) AS `t`
+LEFT JOIN (
+    SELECT `o0`.`ProductID`, `o0`.`OrderID`
+    FROM `Order Details` AS `o0`
+) AS `t0` ON `t`.`OrderID` = `t0`.`OrderID`
+ORDER BY `t`.`OrderID`, `t0`.`ProductID`");
+        }
+
+        /// <summary>
+        /// Needs explicit ordering of ProductIds to work with MariaDB.
+        /// </summary>
+        public override async Task Projection_take_collection_projection(bool async)
+        {
+            // await base.Projection_take_collection_projection(async);
+            await AssertQuery(
+                async,
+                ss => ss.Set<Order>()
+                    .Where(o => o.OrderID < 10300)
+                    .OrderBy(o => o.OrderID)
+                    .Select(o => new { Item = o })
+                    .Take(10)
+                    .Select(e => new { e.Item.OrderID, ProductIds = e.Item.OrderDetails.OrderBy(od => od.ProductID).Select(od => od.ProductID).ToList() }), // added .OrderBy(od => od.ProductID)
+                assertOrder: true,
+                elementAsserter: (e, a) =>
+                {
+                    Assert.Equal(e.OrderID, a.OrderID);
+                    AssertCollection(e.ProductIds, a.ProductIds, ordered: true, elementAsserter: (ie, ia) => Assert.Equal(ie, ia));
+                });
+
+            AssertSql(
+                @"@__p_0='10'
+
+SELECT `t`.`OrderID`, `t0`.`ProductID`, `t0`.`OrderID`
+FROM (
+    SELECT `o`.`OrderID`
+    FROM `Orders` AS `o`
+    WHERE `o`.`OrderID` < 10300
+    ORDER BY `o`.`OrderID`
+    LIMIT @__p_0
+) AS `t`
+LEFT JOIN (
+    SELECT `o0`.`ProductID`, `o0`.`OrderID`
+    FROM `Order Details` AS `o0`
+) AS `t0` ON `t`.`OrderID` = `t0`.`OrderID`
+ORDER BY `t`.`OrderID`, `t0`.`ProductID`");
+        }
+
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override Task SelectMany_Joined_Take(bool async)
         {
