@@ -1083,6 +1083,14 @@ SELECT ROW_COUNT();",
                 @"ALTER TABLE `Foo` ADD CONSTRAINT `FK_Foo_Bar_BarFK` FOREIGN KEY (`BarFK`) REFERENCES `Bar` (`BarPK`);");
         }
 
+        public override async Task Add_foreign_key()
+        {
+            await base.Add_foreign_key();
+
+            AssertSql(
+                @"ALTER TABLE `Orders` ADD CONSTRAINT `FK_Orders_Customers_CustomerId` FOREIGN KEY (`CustomerId`) REFERENCES `Customers` (`Id`);");
+        }
+
         protected virtual string DefaultCollation => ((MySqlTestStore)Fixture.TestStore).DatabaseCollation;
 
         protected override string NonDefaultCollation
