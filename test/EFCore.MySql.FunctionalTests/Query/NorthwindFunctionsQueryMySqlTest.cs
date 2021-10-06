@@ -573,7 +573,7 @@ WHERE (`o`.`Quantity` < 5) AND (FLOOR(`o`.`UnitPrice`) > 10.0)");
             AssertSql(
                 $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE POWER({CastAsDouble("`o`.`Discount`")}, 2.0) > 0.05000000074505806");
+WHERE POWER({CastAsDouble("`o`.`Discount`")}, 3.0) > 0.004999999888241291");
         }
 
         public override async Task Where_math_round(bool async)

@@ -2101,7 +2101,6 @@ ORDER BY -`l`.`Level1_Required_Id`, `l`.`Name`, `l`.`Id`");
 FROM (
     SELECT `l`.`Name`
     FROM `LevelOne` AS `l`
-    WHERE `l`.`Id` > 3
     GROUP BY `l`.`Name`
 ) AS `t`
 LEFT JOIN (
@@ -2109,7 +2108,6 @@ LEFT JOIN (
     FROM (
         SELECT `l0`.`Id`, `l0`.`Date`, `l0`.`Name`, `l0`.`OneToMany_Optional_Self_Inverse1Id`, `l0`.`OneToMany_Required_Self_Inverse1Id`, `l0`.`OneToOne_Optional_Self1Id`, ROW_NUMBER() OVER(PARTITION BY `l0`.`Name` ORDER BY `l0`.`Id`) AS `row`
         FROM `LevelOne` AS `l0`
-        WHERE `l0`.`Id` > 3
     ) AS `t1`
     WHERE `t1`.`row` <= 1
 ) AS `t0` ON `t`.`Name` = `t0`.`Name`
@@ -2119,7 +2117,6 @@ ORDER BY `t`.`Name`, `t0`.`Name`",
 FROM (
     SELECT `l`.`Name`
     FROM `LevelOne` AS `l`
-    WHERE `l`.`Id` > 3
     GROUP BY `l`.`Name`
 ) AS `t`
 LEFT JOIN (
@@ -2127,7 +2124,6 @@ LEFT JOIN (
     FROM (
         SELECT `l0`.`Id`, `l0`.`Name`, ROW_NUMBER() OVER(PARTITION BY `l0`.`Name` ORDER BY `l0`.`Id`) AS `row`
         FROM `LevelOne` AS `l0`
-        WHERE `l0`.`Id` > 3
     ) AS `t1`
     WHERE `t1`.`row` <= 1
 ) AS `t0` ON `t`.`Name` = `t0`.`Name`
@@ -2182,7 +2178,41 @@ ORDER BY `t`.`Name`, `t0`.`Name`");
         {
             await base.Include_collection_with_groupby_in_subquery_and_filter_after_groupby(async);
 
-            AssertSql(" ");
+            AssertSql(
+                @"SELECT `t0`.`Id`, `t0`.`Date`, `t0`.`Name`, `t0`.`OneToMany_Optional_Self_Inverse1Id`, `t0`.`OneToMany_Required_Self_Inverse1Id`, `t0`.`OneToOne_Optional_Self1Id`, `t`.`Name`
+FROM (
+    SELECT `l`.`Name`, (`l`.`Name` <> 'Foo') OR `l`.`Name` IS NULL AS `having`
+    FROM `LevelOne` AS `l`
+    GROUP BY `l`.`Name`, `having`
+    HAVING `having`
+) AS `t`
+LEFT JOIN (
+    SELECT `t1`.`Id`, `t1`.`Date`, `t1`.`Name`, `t1`.`OneToMany_Optional_Self_Inverse1Id`, `t1`.`OneToMany_Required_Self_Inverse1Id`, `t1`.`OneToOne_Optional_Self1Id`
+    FROM (
+        SELECT `l0`.`Id`, `l0`.`Date`, `l0`.`Name`, `l0`.`OneToMany_Optional_Self_Inverse1Id`, `l0`.`OneToMany_Required_Self_Inverse1Id`, `l0`.`OneToOne_Optional_Self1Id`, ROW_NUMBER() OVER(PARTITION BY `l0`.`Name` ORDER BY `l0`.`Id`) AS `row`
+        FROM `LevelOne` AS `l0`
+    ) AS `t1`
+    WHERE `t1`.`row` <= 1
+) AS `t0` ON `t`.`Name` = `t0`.`Name`
+ORDER BY `t`.`Name`, `t0`.`Name`",
+                //
+                @"SELECT `l1`.`Id`, `l1`.`Date`, `l1`.`Level1_Optional_Id`, `l1`.`Level1_Required_Id`, `l1`.`Name`, `l1`.`OneToMany_Optional_Inverse2Id`, `l1`.`OneToMany_Optional_Self_Inverse2Id`, `l1`.`OneToMany_Required_Inverse2Id`, `l1`.`OneToMany_Required_Self_Inverse2Id`, `l1`.`OneToOne_Optional_PK_Inverse2Id`, `l1`.`OneToOne_Optional_Self2Id`, `t`.`Name`, `t0`.`Name`
+FROM (
+    SELECT `l`.`Name`, (`l`.`Name` <> 'Foo') OR `l`.`Name` IS NULL AS `having`
+    FROM `LevelOne` AS `l`
+    GROUP BY `l`.`Name`, `having`
+    HAVING `having`
+) AS `t`
+LEFT JOIN (
+    SELECT `t1`.`Id`, `t1`.`Name`
+    FROM (
+        SELECT `l0`.`Id`, `l0`.`Name`, ROW_NUMBER() OVER(PARTITION BY `l0`.`Name` ORDER BY `l0`.`Id`) AS `row`
+        FROM `LevelOne` AS `l0`
+    ) AS `t1`
+    WHERE `t1`.`row` <= 1
+) AS `t0` ON `t`.`Name` = `t0`.`Name`
+INNER JOIN `LevelTwo` AS `l1` ON `t0`.`Id` = `l1`.`OneToMany_Optional_Inverse2Id`
+ORDER BY `t`.`Name`, `t0`.`Name`");
         }
 
         public override async Task Include_reference_collection_order_by_reference_navigation(bool async)
