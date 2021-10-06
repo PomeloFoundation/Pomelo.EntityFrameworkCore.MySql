@@ -50,9 +50,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                     // Hack around the fact, that EF Core does not allow us to add our own ProjectionExpression with an alias.
                     // We can however indirectly control the alias, by first setting a ColumnExpression, whose name is then used as the base
                     // for the alias, and then update it afterwards with the actual expression we are interested in, when it gets visited.
+                    //
+                    // Unfortunately, EF Core 6 changed its internal algorithm a bit and now visits the expression before it considers its
+                    // name (if a ColumnExpression), so we now have to wrap our HatSwappingColumnExpression inside of another (dummy)
+                    // HatSwappingColumnExpression, so that the outer one can get visited/peeled off by EF Core immediately without
+                    // touching the inner one, which can then present the actual expression when visited.
                     selectExpression.AddToProjection(
                         new HatSwappingColumnExpression(
-                            havingExpression,
+                            new HatSwappingColumnExpression(
+                                havingExpression,
+                                alias,
+                                havingExpression.Type,
+                                havingExpression.TypeMapping),
                             alias,
                             havingExpression.Type,
                             havingExpression.TypeMapping));
