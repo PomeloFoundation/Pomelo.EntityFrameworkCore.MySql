@@ -3,21 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
+using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
 {
-    public class MySqlXunitTestFramework : XunitTestFramework
-    {
-        public MySqlXunitTestFramework(IMessageSink messageSink) : base(messageSink)
-        {
-        }
-
-        protected override ITestFrameworkDiscoverer CreateDiscoverer(IAssemblyInfo assemblyInfo)
-            => new MySqlXunitTestFrameworkDiscoverer(assemblyInfo, SourceInformationProvider, DiagnosticMessageSink);
-    }
-
     public class MySqlXunitTestFrameworkDiscoverer : XunitTestFrameworkDiscoverer
     {
         public MySqlXunitTestFrameworkDiscoverer(
@@ -31,6 +22,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
                 diagnosticMessageSink,
                 collectionFactory)
         {
+            // Prime the cache with our own discoverers, so they get used over the original ones from EF Core.
+            DiscovererTypeCache.Add(typeof(ConditionalFactAttribute), typeof(MySqlConditionalFactDiscoverer));
+            DiscovererTypeCache.Add(typeof(ConditionalTheoryAttribute), typeof(MySqlConditionalTheoryDiscoverer));
         }
 
         protected override bool IsValidTestClass(ITypeInfo type)
