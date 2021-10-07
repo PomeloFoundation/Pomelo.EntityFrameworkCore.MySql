@@ -24,12 +24,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             Assert.NotEmpty(Fixture.TestSqlLoggerFactory.SqlStatements);
         }
 
-        // TODO: Will be fixed by https://github.com/dotnet/efcore/pull/24819
-        public override Task FromSql(bool async)
-            => ConcurrencyDetectorTest(async c => async
-                ? await c.Products.FromSqlRaw("SELECT * FROM `Products`").ToListAsync()
-                : c.Products.FromSqlRaw("SELECT * FROM `Products`").ToList());
-
         public class ConcurrencyDetectorMySqlFixture : ConcurrencyDetectorFixtureBase
         {
             protected override ITestStoreFactory TestStoreFactory
