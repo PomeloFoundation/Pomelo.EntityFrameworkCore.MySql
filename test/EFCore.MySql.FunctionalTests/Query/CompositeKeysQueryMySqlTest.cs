@@ -27,7 +27,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 FROM `CompositeOnes` AS `c`
 LEFT JOIN `CompositeTwos` AS `c0` ON (`c`.`Id1` = `c0`.`OneToMany_Optional_Inverse2Id1`) AND (`c`.`Id2` = `c0`.`OneToMany_Optional_Inverse2Id2`)
 LEFT JOIN `CompositeTwos` AS `c1` ON (`c`.`Id1` = `c1`.`OneToMany_Required_Inverse2Id1`) AND (`c`.`Id2` = `c1`.`OneToMany_Required_Inverse2Id2`)
-ORDER BY `c`.`Id2`, `c`.`Id1`, `c0`.`Id1`, `c0`.`Id2`, `c1`.`Id1`, `c1`.`Id2`");
+ORDER BY `c`.`Id2`, `c`.`Id1`, `c0`.`Id1`, `c0`.`Id2`, `c1`.`Id1`");
         }
 
         public override async Task Projecting_multiple_collections_same_level_top_level_ordering_using_entire_composite_key(bool async)
@@ -39,7 +39,7 @@ ORDER BY `c`.`Id2`, `c`.`Id1`, `c0`.`Id1`, `c0`.`Id2`, `c1`.`Id1`, `c1`.`Id2`");
 FROM `CompositeOnes` AS `c`
 LEFT JOIN `CompositeTwos` AS `c0` ON (`c`.`Id1` = `c0`.`OneToMany_Optional_Inverse2Id1`) AND (`c`.`Id2` = `c0`.`OneToMany_Optional_Inverse2Id2`)
 LEFT JOIN `CompositeTwos` AS `c1` ON (`c`.`Id1` = `c1`.`OneToMany_Required_Inverse2Id1`) AND (`c`.`Id2` = `c1`.`OneToMany_Required_Inverse2Id2`)
-ORDER BY `c`.`Id2`, `c`.`Id1` DESC, `c0`.`Id1`, `c0`.`Id2`, `c1`.`Id1`, `c1`.`Id2`");
+ORDER BY `c`.`Id2`, `c`.`Id1` DESC, `c0`.`Id1`, `c0`.`Id2`, `c1`.`Id1`");
         }
 
         public override async Task Projecting_multiple_collections_with_ordering_same_level(bool async)
@@ -57,7 +57,7 @@ LEFT JOIN (
     SELECT `c1`.`Id1`, `c1`.`Id2`, `c1`.`Date`, `c1`.`Level1_Optional_Id1`, `c1`.`Level1_Optional_Id2`, `c1`.`Level1_Required_Id1`, `c1`.`Level1_Required_Id2`, `c1`.`Name`, `c1`.`OneToMany_Optional_Inverse2Id1`, `c1`.`OneToMany_Optional_Inverse2Id2`, `c1`.`OneToMany_Optional_Self_Inverse2Id1`, `c1`.`OneToMany_Optional_Self_Inverse2Id2`, `c1`.`OneToMany_Required_Inverse2Id1`, `c1`.`OneToMany_Required_Inverse2Id2`, `c1`.`OneToMany_Required_Self_Inverse2Id1`, `c1`.`OneToMany_Required_Self_Inverse2Id2`, `c1`.`OneToOne_Optional_PK_Inverse2Id1`, `c1`.`OneToOne_Optional_PK_Inverse2Id2`, `c1`.`OneToOne_Optional_Self2Id1`, `c1`.`OneToOne_Optional_Self2Id2`
     FROM `CompositeTwos` AS `c1`
 ) AS `t0` ON (`c`.`Id1` = `t0`.`OneToMany_Required_Inverse2Id1`) AND (`c`.`Id2` = `t0`.`OneToMany_Required_Inverse2Id2`)
-ORDER BY `c`.`Id1`, `c`.`Id2`, `t`.`Id2`, `t`.`Id1`, `t0`.`Name` DESC, `t0`.`Id1`, `t0`.`Id2`");
+ORDER BY `c`.`Id1`, `c`.`Id2`, `t`.`Id2`, `t`.`Id1`, `t0`.`Name` DESC, `t0`.`Id1`");
         }
 
         public override async Task Projecting_multiple_collections_with_ordering_same_level_top_level_ordering(bool async)
@@ -75,7 +75,7 @@ LEFT JOIN (
     SELECT `c1`.`Id1`, `c1`.`Id2`, `c1`.`Date`, `c1`.`Level1_Optional_Id1`, `c1`.`Level1_Optional_Id2`, `c1`.`Level1_Required_Id1`, `c1`.`Level1_Required_Id2`, `c1`.`Name`, `c1`.`OneToMany_Optional_Inverse2Id1`, `c1`.`OneToMany_Optional_Inverse2Id2`, `c1`.`OneToMany_Optional_Self_Inverse2Id1`, `c1`.`OneToMany_Optional_Self_Inverse2Id2`, `c1`.`OneToMany_Required_Inverse2Id1`, `c1`.`OneToMany_Required_Inverse2Id2`, `c1`.`OneToMany_Required_Self_Inverse2Id1`, `c1`.`OneToMany_Required_Self_Inverse2Id2`, `c1`.`OneToOne_Optional_PK_Inverse2Id1`, `c1`.`OneToOne_Optional_PK_Inverse2Id2`, `c1`.`OneToOne_Optional_Self2Id1`, `c1`.`OneToOne_Optional_Self2Id2`
     FROM `CompositeTwos` AS `c1`
 ) AS `t0` ON (`c`.`Id1` = `t0`.`OneToMany_Required_Inverse2Id1`) AND (`c`.`Id2` = `t0`.`OneToMany_Required_Inverse2Id2`)
-ORDER BY `c`.`Id2`, `c`.`Id1`, `t`.`Id2`, `t`.`Id1`, `t0`.`Name` DESC, `t0`.`Id1`, `t0`.`Id2`");
+ORDER BY `c`.`Id2`, `c`.`Id1`, `t`.`Id2`, `t`.`Id1`, `t0`.`Name` DESC, `t0`.`Id1`");
         }
 
         public override async Task Projecting_collections_multi_level(bool async)
@@ -93,7 +93,7 @@ LEFT JOIN (
         FROM `CompositeThrees` AS `c1`
     ) AS `t` ON (`c0`.`Id1` = `t`.`OneToMany_Required_Inverse3Id1`) AND (`c0`.`Id2` = `t`.`OneToMany_Required_Inverse3Id2`)
 ) AS `t0` ON (`c`.`Id1` = `t0`.`OneToMany_Optional_Inverse2Id1`) AND (`c`.`Id2` = `t0`.`OneToMany_Optional_Inverse2Id2`)
-ORDER BY `c`.`Id2`, `c`.`Id1`, `t0`.`Id2`, `t0`.`Id1`, `t0`.`Id20` DESC, `t0`.`Id10`");
+ORDER BY `c`.`Id2`, `c`.`Id1`, `t0`.`Id2`, `t0`.`Id1`, `t0`.`Id20` DESC");
         }
 
         public override async Task Projecting_multiple_collections_on_multiple_levels_no_explicit_ordering(bool async)
@@ -135,7 +135,7 @@ LEFT JOIN (
         LEFT JOIN `CompositeFours` AS `c13` ON (`c11`.`Id1` = `c13`.`OneToMany_Required_Inverse4Id1`) AND (`c11`.`Id2` = `c13`.`OneToMany_Required_Inverse4Id2`)
     ) AS `t4` ON (`c7`.`Id1` = `t4`.`OneToMany_Optional_Inverse3Id1`) AND (`c7`.`Id2` = `t4`.`OneToMany_Optional_Inverse3Id2`)
 ) AS `t2` ON (`c`.`Id1` = `t2`.`OneToMany_Required_Inverse2Id1`) AND (`c`.`Id2` = `t2`.`OneToMany_Required_Inverse2Id2`)
-ORDER BY `c`.`Id1`, `c`.`Id2`, `t1`.`Id1`, `t1`.`Id2`, `t1`.`Id10`, `t1`.`Id20`, `t1`.`Id100`, `t1`.`Id200`, `t1`.`Id11`, `t1`.`Id21`, `t1`.`Id12`, `t1`.`Id22`, `t1`.`Id101`, `t1`.`Id201`, `t1`.`Id110`, `t1`.`Id210`, `t2`.`Id1`, `t2`.`Id2`, `t2`.`Id10`, `t2`.`Id20`, `t2`.`Id100`, `t2`.`Id200`, `t2`.`Id11`, `t2`.`Id21`, `t2`.`Id12`, `t2`.`Id22`, `t2`.`Id101`, `t2`.`Id201`, `t2`.`Id110`, `t2`.`Id210`");
+ORDER BY `c`.`Id1`, `c`.`Id2`, `t1`.`Id1`, `t1`.`Id2`, `t1`.`Id10`, `t1`.`Id20`, `t1`.`Id100`, `t1`.`Id200`, `t1`.`Id11`, `t1`.`Id21`, `t1`.`Id12`, `t1`.`Id22`, `t1`.`Id101`, `t1`.`Id201`, `t1`.`Id110`, `t1`.`Id210`, `t2`.`Id1`, `t2`.`Id2`, `t2`.`Id10`, `t2`.`Id20`, `t2`.`Id100`, `t2`.`Id200`, `t2`.`Id11`, `t2`.`Id21`, `t2`.`Id12`, `t2`.`Id22`, `t2`.`Id101`, `t2`.`Id201`, `t2`.`Id110`");
         }
 
         public override async Task Projecting_multiple_collections_on_multiple_levels_some_explicit_ordering(bool async)
@@ -180,7 +180,7 @@ LEFT JOIN (
         ) AS `t5` ON (`c11`.`Id1` = `t5`.`OneToMany_Required_Inverse4Id1`) AND (`c11`.`Id2` = `t5`.`OneToMany_Required_Inverse4Id2`)
     ) AS `t4` ON (`c7`.`Id1` = `t4`.`OneToMany_Optional_Inverse3Id1`) AND (`c7`.`Id2` = `t4`.`OneToMany_Optional_Inverse3Id2`)
 ) AS `t2` ON (`c`.`Id1` = `t2`.`OneToMany_Required_Inverse2Id1`) AND (`c`.`Id2` = `t2`.`OneToMany_Required_Inverse2Id2`)
-ORDER BY `c`.`Name`, `c`.`Id1`, `c`.`Id2`, `t1`.`Id1`, `t1`.`Id2`, `t1`.`Id20` DESC, `t1`.`Id10` DESC, `t1`.`Id100`, `t1`.`Id200`, `t1`.`Id11`, `t1`.`Id21`, `t1`.`Id12`, `t1`.`Id22`, `t1`.`Id101`, `t1`.`Id201`, `t1`.`Id110`, `t1`.`Id210`, `t2`.`c`, `t2`.`Id1`, `t2`.`Id2`, `t2`.`Id10`, `t2`.`Id20`, `t2`.`Id100`, `t2`.`Id200`, `t2`.`Id11`, `t2`.`Id21`, `t2`.`Id12`, `t2`.`Id22`, `t2`.`Id101`, `t2`.`Id201`, `t2`.`c0` DESC, `t2`.`Id110`, `t2`.`Id210`");
+ORDER BY `c`.`Name`, `c`.`Id1`, `c`.`Id2`, `t1`.`Id1`, `t1`.`Id2`, `t1`.`Id20` DESC, `t1`.`Id10` DESC, `t1`.`Id100`, `t1`.`Id200`, `t1`.`Id11`, `t1`.`Id21`, `t1`.`Id12`, `t1`.`Id22`, `t1`.`Id101`, `t1`.`Id201`, `t1`.`Id110`, `t1`.`Id210`, `t2`.`c`, `t2`.`Id1`, `t2`.`Id2`, `t2`.`Id10`, `t2`.`Id20`, `t2`.`Id100`, `t2`.`Id200`, `t2`.`Id11`, `t2`.`Id21`, `t2`.`Id12`, `t2`.`Id22`, `t2`.`Id101`, `t2`.`Id201`, `t2`.`c0` DESC, `t2`.`Id110`");
         }
 
         private void AssertSql(params string[] expected)

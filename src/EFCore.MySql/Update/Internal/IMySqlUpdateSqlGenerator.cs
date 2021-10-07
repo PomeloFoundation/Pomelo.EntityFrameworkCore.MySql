@@ -12,7 +12,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
     {
         ResultSetMapping AppendBulkInsertOperation(
             [NotNull] StringBuilder commandStringBuilder,
-            [NotNull] IReadOnlyList<ModificationCommand> modificationCommands,
+            [NotNull] IReadOnlyList<IReadOnlyModificationCommand> modificationCommands,
             int commandPosition);
     }
 }
