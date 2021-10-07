@@ -239,5 +239,51 @@ FROM `Orders` AS `o`
 WHERE UNHEX(HEX(`o`.`CustomerID`)) = 'VINET'");
             }
         }
+
+        [ConditionalFact]
+        public virtual void Degrees()
+        {
+            var degrees = 90.0;
+            var radians = Math.PI / 180.0 * degrees;
+
+            using var context = CreateContext();
+
+            var office = context.Customers
+                .Select(c => new { c.CustomerID, OfficeRoofAngleDegrees = EF.Functions.Degrees(radians) })
+                .First(c => c.CustomerID == "VINET");
+
+            Assert.Equal(degrees, office.OfficeRoofAngleDegrees);
+
+            AssertSql(
+                @"@__radians_1='1.5707963267948966'
+
+SELECT `c`.`CustomerID`, DEGREES(@__radians_1) AS `OfficeRoofAngleDegrees`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` = 'VINET'
+LIMIT 1");
+        }
+
+        [ConditionalFact]
+        public virtual void Radians()
+        {
+            var degrees = 90.0;
+            var radians = Math.PI / 180.0 * degrees;
+
+            using var context = CreateContext();
+
+            var office = context.Customers
+                .Select(c => new { c.CustomerID, OfficeRoofAngleRadians = EF.Functions.Radians(degrees) })
+                .First(c => c.CustomerID == "VINET");
+
+            Assert.Equal(radians, office.OfficeRoofAngleRadians);
+
+            AssertSql(
+                @"@__degrees_1='90'
+
+SELECT `c`.`CustomerID`, RADIANS(@__degrees_1) AS `OfficeRoofAngleRadians`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` = 'VINET'
+LIMIT 1");
+        }
     }
 }

@@ -530,5 +530,49 @@ namespace Microsoft.EntityFrameworkCore
             [CanBeNull] this DbFunctions _,
             [CanBeNull] string value)
             => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(Hex)));
+
+        /// <summary>
+        /// Converts radians to degrees.
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="radians">The value in radians.</param>
+        /// <returns>The value in degrees.</returns>
+        public static double Degrees(
+            this DbFunctions _,
+            double radians)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(Degrees)));
+
+        /// <summary>
+        /// Converts radians to degrees.
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="radians">The value in radians.</param>
+        /// <returns>The value in degrees.</returns>
+        public static float Degrees(
+            this DbFunctions _,
+            float radians)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(Degrees)));
+
+        /// <summary>
+        /// Converts degrees to radians.
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="degrees">The value in degrees.</param>
+        /// <returns>The value in radians.</returns>
+        public static double Radians(
+            this DbFunctions _,
+            double degrees)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(Radians)));
+
+        /// <summary>
+        /// Converts degrees to radians.
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="degrees">The value in degrees.</param>
+        /// <returns>The value in radians.</returns>
+        public static float Radians(
+            this DbFunctions _,
+            float degrees)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(Radians)));
     }
 }
