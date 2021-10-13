@@ -6,7 +6,7 @@ using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public class ComplexNavigationsCollectionsSplitSharedTypeQueryMySqlTest : ComplexNavigationsCollectionsSplitSharedQueryTypeRelationalTestBase<ComplexNavigationsSharedTypeQueryMySqlFixture>
+    public class ComplexNavigationsCollectionsSplitSharedTypeQueryMySqlTest : ComplexNavigationsCollectionsSplitSharedTypeQueryRelationalTestBase<ComplexNavigationsSharedTypeQueryMySqlFixture>
     {
         public ComplexNavigationsCollectionsSplitSharedTypeQueryMySqlTest(
             ComplexNavigationsSharedTypeQueryMySqlFixture fixture,
@@ -174,39 +174,39 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
-        public override void Filtered_include_context_accessed_inside_filter()
+        public override Task Filtered_include_context_accessed_inside_filter(bool async)
         {
-            base.Filtered_include_context_accessed_inside_filter();
+            return base.Filtered_include_context_accessed_inside_filter(async);
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
-        public override void Filtered_include_context_accessed_inside_filter_correlated()
+        public override Task Filtered_include_context_accessed_inside_filter_correlated(bool async)
         {
-            base.Filtered_include_context_accessed_inside_filter_correlated();
+           return  base.Filtered_include_context_accessed_inside_filter_correlated(async);
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
-        public override void Filtered_include_is_considered_loaded()
+        public override Task Filtered_include_is_considered_loaded(bool async)
         {
-            base.Filtered_include_is_considered_loaded();
+            return base.Filtered_include_is_considered_loaded(async);
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
-        public override void Filtered_include_Skip_without_OrderBy()
+        public override Task Filtered_include_Skip_without_OrderBy(bool async)
         {
-            base.Filtered_include_Skip_without_OrderBy();
+            return base.Filtered_include_Skip_without_OrderBy(async);
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
-        public override void Filtered_include_Take_without_OrderBy()
+        public override Task Filtered_include_Take_without_OrderBy(bool async)
         {
-            base.Filtered_include_Take_without_OrderBy();
+            return base.Filtered_include_Take_without_OrderBy(async);
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
-        public override void Filtered_include_variable_used_inside_filter()
+        public override Task Filtered_include_variable_used_inside_filter(bool async)
         {
-            base.Filtered_include_variable_used_inside_filter();
+            return base.Filtered_include_variable_used_inside_filter(async);
         }
     }
 }

@@ -776,14 +776,13 @@ FROM `Customers` AS `c`
 WHERE `c`.`Region` IS NULL OR (`c`.`Region` = '')");
         }
 
-        public override void IsNullOrEmpty_in_projection()
+        public override async Task IsNullOrEmpty_in_projection(bool async)
         {
-            base.IsNullOrEmpty_in_projection();
+            await base.IsNullOrEmpty_in_projection(async);
         }
-
-        public override void IsNullOrEmpty_negated_in_projection()
+        public override async Task IsNullOrEmpty_negated_in_projection(bool async)
         {
-            base.IsNullOrEmpty_negated_in_projection();
+            await base.IsNullOrEmpty_negated_in_projection(async);
         }
 
         public override async Task IsNullOrWhiteSpace_in_predicate_on_non_nullable_column(bool async)
@@ -1706,5 +1705,7 @@ WHERE (`o`.`CustomerID` = 'ALFKI') AND ((CAST(`o`.`OrderDate` AS char) LIKE '%19
 
         protected override void ClearLog()
             => Fixture.TestSqlLoggerFactory.Clear();
+
+        
     }
 }

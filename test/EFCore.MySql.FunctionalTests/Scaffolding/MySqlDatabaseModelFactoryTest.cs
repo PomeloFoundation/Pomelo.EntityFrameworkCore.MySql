@@ -396,6 +396,8 @@ CREATE TABLE `GuidTable`  (
                 Enumerable.Empty<string>(),
                 dbModel =>
                     {
+                        
+
                         var table = Assert.Single(dbModel.Tables.Where(t => t.Name == "GuidTable"));
                         var guidTableIdColumn = Assert.Single(table.Columns.Where(c => c.Name == "GuidTableId"));
                         var defaultUuidColumn = Assert.Single(table.Columns.Where(c => c.Name == "DefaultUuid"));

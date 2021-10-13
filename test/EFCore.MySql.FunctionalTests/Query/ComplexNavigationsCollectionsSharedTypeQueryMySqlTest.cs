@@ -6,7 +6,7 @@ using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public class ComplexNavigationsCollectionsSharedTypeQueryMySqlTest : ComplexNavigationsCollectionsSharedQueryTypeRelationalTestBase<
+    public class ComplexNavigationsCollectionsSharedTypeQueryMySqlTest : ComplexNavigationsCollectionsSharedTypeQueryRelationalTestBase<
         ComplexNavigationsSharedTypeQueryMySqlTest.ComplexNavigationsSharedTypeQueryMySqlFixture>
     {
         public ComplexNavigationsCollectionsSharedTypeQueryMySqlTest(
@@ -399,39 +399,39 @@ ORDER BY `t`.`Date`, `t1`.`Name`, `t1`.`Date`, `t1`.`Id0`");
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
-        public override void Filtered_include_context_accessed_inside_filter()
+        public override async Task Filtered_include_context_accessed_inside_filter(bool async)
         {
-            base.Filtered_include_context_accessed_inside_filter();
+           await base.Filtered_include_context_accessed_inside_filter(async);
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
-        public override void Filtered_include_context_accessed_inside_filter_correlated()
+        public override async Task Filtered_include_context_accessed_inside_filter_correlated(bool async)
         {
-            base.Filtered_include_context_accessed_inside_filter_correlated();
+            await base.Filtered_include_context_accessed_inside_filter_correlated(async);
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
-        public override void Filtered_include_is_considered_loaded()
+        public override async Task Filtered_include_is_considered_loaded(bool async)
         {
-            base.Filtered_include_is_considered_loaded();
+            await base.Filtered_include_is_considered_loaded(async);
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
-        public override void Filtered_include_Skip_without_OrderBy()
+        public override async Task Filtered_include_Skip_without_OrderBy(bool async)
         {
-            base.Filtered_include_Skip_without_OrderBy();
+            await base.Filtered_include_Skip_without_OrderBy(async);
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
-        public override void Filtered_include_Take_without_OrderBy()
+        public override async Task Filtered_include_Take_without_OrderBy(bool async)
         {
-            base.Filtered_include_Take_without_OrderBy();
+            await base.Filtered_include_Take_without_OrderBy(async);
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
-        public override void Filtered_include_variable_used_inside_filter()
+        public override async Task Filtered_include_variable_used_inside_filter(bool async)
         {
-            base.Filtered_include_variable_used_inside_filter();
+            await base.Filtered_include_variable_used_inside_filter(async);
         }
 
         private void AssertSql(params string[] expected)

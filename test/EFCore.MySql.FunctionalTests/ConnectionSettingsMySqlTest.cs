@@ -20,7 +20,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         [InlineData(MySqlGuidFormat.TimeSwapBinary16, "UUID_TO_BIN('850368D8-93EA-4023-ACC7-6FA6E4C3B27F', 1)", "8.0.0-mysql")]
         [InlineData(MySqlGuidFormat.TimeSwapBinary16, "X'402393EA850368D8ACC76FA6E4C3B27F'", null)]
         [InlineData(MySqlGuidFormat.LittleEndianBinary16, "X'D8680385EA932340ACC76FA6E4C3B27F'", null)]
+
+        //This Part of the test is failing...
         [InlineData(MySqlGuidFormat.None, "X'D8680385EA932340ACC76FA6E4C3B27F'", null)]
+
         public virtual void Insert_and_read_Guid_value(MySqlGuidFormat guidFormat, string sqlEquivalent, string supportedServerVersion)
         {
             if (supportedServerVersion != null &&

@@ -268,7 +268,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
         {
             Check.NotNull(entityType, nameof(entityType));
 
-            foreach (var property in entityType.GetProperties().OrderBy(p => p.GetColumnOrdinal()))
+            foreach (var property in entityType.GetProperties().OrderBy(p => p.GetColumnOrder()))
             {
                 GenerateComment(property.GetComment());
 

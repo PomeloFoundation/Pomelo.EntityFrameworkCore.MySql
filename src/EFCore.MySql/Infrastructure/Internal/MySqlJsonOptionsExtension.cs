@@ -139,11 +139,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                     = Extension.JsonChangeTrackingOptions.GetHashCode().ToString(CultureInfo.InvariantCulture);
             }
 
-            //NOT IMPLEMENTED!!! - This is needed to implement IDbContextOptionsExtensionInfo Interface in EF Core
-            public override bool ShouldUseSameServiceProvider(DbContextOptionsExtensionInfo other)
-            {
-                throw new NotImplementedException();
-            }
             
             public override string LogFragment => $"using {Extension.UseJsonOptionName}";
         }

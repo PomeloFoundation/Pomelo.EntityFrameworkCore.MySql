@@ -14,7 +14,7 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
     public class TestRelationalTypeMappingSource : RelationalTypeMappingSource
     {
         private static readonly RelationalTypeMapping _string
-            = new StringTypeMapping("just_string(2000)");
+            = new StringTypeMapping("just_string(2000)", DbType.String, size: 2000);
 
         private static readonly RelationalTypeMapping _binary
             = new ByteArrayTypeMapping("just_binary(max)", dbType: DbType.Binary);
