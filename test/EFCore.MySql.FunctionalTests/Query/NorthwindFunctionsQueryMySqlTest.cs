@@ -1695,6 +1695,13 @@ FROM `Orders` AS `o`
 WHERE (`o`.`CustomerID` = 'ALFKI') AND ((CAST(`o`.`OrderDate` AS char) LIKE '%1997%') OR (CAST(`o`.`OrderDate` AS char) LIKE '%1998%'))");
         }
 
+        public override async Task Datetime_subtraction_TotalDays(bool async)
+        {
+            await base.Datetime_subtraction_TotalDays(async);
+
+            AssertSql(" ");
+        }
+
         private string CastAsDouble(string innerSql)
             => AppConfig.ServerVersion.Supports.DoubleCast
                 ? $@"CAST({innerSql} AS double)"

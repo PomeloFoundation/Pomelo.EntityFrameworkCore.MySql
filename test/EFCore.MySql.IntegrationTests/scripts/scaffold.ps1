@@ -4,7 +4,7 @@ Push-Location (Join-Path (Split-Path $MyInvocation.MyCommand.Path) "../")
 
 try
 {
-  dotnet tool restore;
+  C:\'Program Files'\dotnet\dotnet.exe tool restore;
 
   $targetDirectoryName = "Scaffold"
   $tables = 'DataTypesSimple', 'DataTypesVariable'
@@ -20,7 +20,7 @@ try
     $arguments += "--table", $table
   }
 
-  & dotnet $arguments
+  & C:\'Program Files'\dotnet\dotnet.exe $arguments
 
   foreach ($table in $tables)
   {

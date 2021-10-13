@@ -139,5 +139,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
         protected override void ClearLog()
             => Fixture.TestSqlLoggerFactory.Clear();
+
+        
     }
 }

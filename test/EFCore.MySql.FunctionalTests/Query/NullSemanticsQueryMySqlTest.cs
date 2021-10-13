@@ -73,5 +73,14 @@ WHERE @__prm_0 = (`e`.`NullableBoolC` IS NOT NULL)");
 
             return context;
         }
+
+        public override async Task Comparison_compared_to_null_check_on_bool(bool async)
+        {
+            await base.Comparison_compared_to_null_check_on_bool(async);
+
+            AssertSql(" ");
+        }
+
+
     }
 }

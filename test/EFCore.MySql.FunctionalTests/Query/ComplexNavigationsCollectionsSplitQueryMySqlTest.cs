@@ -2486,47 +2486,56 @@ ORDER BY `l0`.`Id`, `l`.`Id`");
         public override async Task Include_collection_ThenInclude_two_references(bool async)
         {
             await base.Include_collection_ThenInclude_two_references(async);
+
+            AssertSql(" ");
         }
 
         public override async Task Include_collection_and_another_navigation_chain_followed_by_projecting_the_first_collection(bool async)
         {
             await base.Include_collection_and_another_navigation_chain_followed_by_projecting_the_first_collection(async);
+            AssertSql(" ");
         }
 
         public override async Task Include_collection_followed_by_complex_includes_and_projecting_the_included_collection(bool async)
         {
             await base.Include_collection_followed_by_complex_includes_and_projecting_the_included_collection(async);
+            AssertSql(" ");
         }
 
         public override async Task Include_collection_followed_by_include_reference(bool async)
         {
             await base.Include_collection_followed_by_include_reference(async);
-
+            AssertSql(" ");
         }
 
         public override async Task Include_collection_followed_by_projecting_the_included_collection(bool async)
         {
             await base.Include_collection_followed_by_projecting_the_included_collection(async);
+            AssertSql(" ");
         }
 
         public override async Task Include_collection_multiple(bool async)
         {
             await base.Include_collection_multiple(async);
+            AssertSql(" ");
         }
 
         public override async Task Include_collection_multiple_with_filter(bool async)
         {
            await base.Include_collection_multiple_with_filter(async);
+            AssertSql(" ");
         }
 
         public override async Task Include_collection_ThenInclude_reference_followed_by_projection_into_anonmous_type(bool async)
         {
             await base.Include_collection_ThenInclude_reference_followed_by_projection_into_anonmous_type(async);
+            AssertSql(" ");
         }
 
         public override async Task Include_collection(bool async)
         {
             await base.Include_collection(async);
+            AssertSql(" ");
         }
 
 

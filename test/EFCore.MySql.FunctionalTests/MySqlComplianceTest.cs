@@ -22,5 +22,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         };
 
         protected override Assembly TargetAssembly { get; } = typeof(MySqlComplianceTest).Assembly;
+
+        public override void All_test_bases_must_be_implemented()
+        {
+            base.All_test_bases_must_be_implemented();
+        }
     }
 }

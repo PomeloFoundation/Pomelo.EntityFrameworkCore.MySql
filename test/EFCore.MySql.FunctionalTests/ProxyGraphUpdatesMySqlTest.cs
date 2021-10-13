@@ -71,6 +71,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             protected override bool DoesChangeTracking
                 => true;
 
+            public override void Attempting_to_save_two_entity_cycle_with_lazy_loading_throws()
+            {
+                base.Attempting_to_save_two_entity_cycle_with_lazy_loading_throws();
+            }
+
             public class ProxyGraphUpdatesWithChangeTrackingMySqlFixture : ProxyGraphUpdatesMySqlFixtureBase
             {
                 protected override string StoreName { get; } = "ProxyGraphChangeTrackingUpdatesTest";

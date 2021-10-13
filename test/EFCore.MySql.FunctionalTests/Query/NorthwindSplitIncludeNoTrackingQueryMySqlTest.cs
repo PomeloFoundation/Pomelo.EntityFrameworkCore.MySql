@@ -48,6 +48,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Include_in_let_followed_by_FirstOrDefault(async);
         }
 
+        public override Task Include_duplicate_collection_result_operator(bool async)
+        {
+            return base.Include_duplicate_collection_result_operator(async);
+        }
+
+
         public override Task Include_duplicate_collection_result_operator2(bool async)
         {
             // The order of `Orders` can be different, becaues it is not explicitly sorted.
@@ -79,5 +85,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     .Take(2),
                 entryCount: 6);
         }
+
+
     }
 }

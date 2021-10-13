@@ -38,5 +38,10 @@ LEFT JOIN (
     WHERE `t2`.`row` <= 1
 ) AS `t1` ON `e`.`Id` = `t1`.`Entity20277Id`");
         }
+
+        public override async Task Owned_collection_basic_split_query(bool async)
+        {
+            await  base.Owned_collection_basic_split_query(async);
+        }
     }
 }

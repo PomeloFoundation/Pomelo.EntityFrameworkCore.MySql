@@ -322,11 +322,15 @@ CREATE TABLE DependentTable (
     ForeignKeyId int,
     FOREIGN KEY (ForeignKeyId) REFERENCES PrincipalTable(Id)
 );",
+                //lowercase table name?
                 new[] { "DependentTable" },
                 Enumerable.Empty<string>(),
                 dbModel =>
                 {
+                    
                     var table = Assert.Single(dbModel.Tables);
+
+                    //lowercase table name?
                     Assert.Equal("DependentTable", table.Name);
                 },
                 @"
@@ -397,7 +401,7 @@ CREATE TABLE `GuidTable`  (
                 dbModel =>
                     {
                         
-
+                        //Running the above sql statement appears to generate the table in lowercase on my system
                         var table = Assert.Single(dbModel.Tables.Where(t => t.Name == "GuidTable"));
                         var guidTableIdColumn = Assert.Single(table.Columns.Where(c => c.Name == "GuidTableId"));
                         var defaultUuidColumn = Assert.Single(table.Columns.Where(c => c.Name == "DefaultUuid"));
@@ -426,6 +430,8 @@ CREATE TABLE `DefaultValueTable` (
                 Enumerable.Empty<string>(),
                 dbModel =>
                     {
+
+                        //lowercase table name?  
                         var table = Assert.Single(dbModel.Tables.Where(t => t.Name == "DefaultValueTable"));
                         var defaultValueIntColumn = Assert.Single(table.Columns.Where(c => c.Name == "DefaultValueInt"));
                         var defaultValueStringColumn = Assert.Single(table.Columns.Where(c => c.Name == "DefaultValueString"));
@@ -475,6 +481,7 @@ CREATE TABLE `DefaultValueExpressionTable` (
                 Enumerable.Empty<string>(),
                 dbModel =>
                     {
+                        //lowercase table name?
                         var table = Assert.Single(dbModel.Tables.Where(t => t.Name == "DefaultValueExpressionTable"));
                         var defaultValueExpressionColumn = Assert.Single(table.Columns.Where(c => c.Name == "DefaultValueExpression"));
                         var defaultValueExpressionIntColumn = Assert.Single(table.Columns.Where(c => c.Name == "DefaultValueExpressionInt"));

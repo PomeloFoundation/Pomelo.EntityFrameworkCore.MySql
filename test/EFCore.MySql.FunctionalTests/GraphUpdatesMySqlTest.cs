@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using System.Threading.Tasks;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
@@ -18,6 +19,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
             protected override void UseTransaction(DatabaseFacade facade, IDbContextTransaction transaction)
                 => facade.UseTransaction(transaction.GetDbTransaction());
+
 
             public class MySqlFixture : GraphUpdatesMySqlFixtureBase
             {
@@ -39,6 +41,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                     }
                 }
             }
+
+            public override Task Can_insert_when_FK_has_default_value(bool async)
+            {
+                return base.Can_insert_when_FK_has_default_value(async);
+            }
         }
 
         public class ClientNoAction : GraphUpdatesMySqlTestBase<ClientNoAction.MySqlFixture>
@@ -50,6 +57,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
             protected override void UseTransaction(DatabaseFacade facade, IDbContextTransaction transaction)
                 => facade.UseTransaction(transaction.GetDbTransaction());
+
+            public override Task Can_insert_when_FK_has_default_value(bool async)
+            {
+                return base.Can_insert_when_FK_has_default_value(async);
+            }
 
             public class MySqlFixture : GraphUpdatesMySqlFixtureBase
             {

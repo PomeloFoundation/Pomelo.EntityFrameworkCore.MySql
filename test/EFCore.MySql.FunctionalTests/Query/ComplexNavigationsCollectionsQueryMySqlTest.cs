@@ -1094,67 +1094,82 @@ ORDER BY `l`.`Id`, `l0`.`Id`, `l1`.`Id`");
         public override async Task Include_collection(bool async)
         {
             await base.Include_collection(async);
+
+            AssertSql(" ");
         }
         public override async Task Include_collection_and_another_navigation_chain_followed_by_projecting_the_first_collection(bool async)
         {
             await base.Include_collection_and_another_navigation_chain_followed_by_projecting_the_first_collection(async);
+            AssertSql(" ");
         }
 
         public override async Task Include_collection_followed_by_projecting_the_included_collection(bool async)
         {
             await base.Include_collection_followed_by_projecting_the_included_collection(async);
+            AssertSql(" ");
         }
 
         public override async Task Include_collection_followed_by_complex_includes_and_projecting_the_included_collection(bool async)
         {
            await base.Include_collection_followed_by_complex_includes_and_projecting_the_included_collection(async);
+            AssertSql(" ");
         }
         public override async Task Include_collection_followed_by_include_reference(bool async)
         {
             await base.Include_collection_followed_by_include_reference(async);
+            AssertSql(" ");
         }
 
         public override async Task Include_collection_multiple(bool async)
         {
             await base.Include_collection_multiple(async);
+            AssertSql(" ");
         }
 
         public override async Task Include_collection_multiple_with_filter(bool async)
         {
             await base.Include_collection_multiple_with_filter(async);
+            AssertSql(" ");
         }
         public override async Task Include_collection_ThenInclude_reference_followed_by_projection_into_anonmous_type(bool async)
         {
             await base.Include_collection_ThenInclude_reference_followed_by_projection_into_anonmous_type(async);
+            AssertSql(" ");
         }
 
         public override async Task Include_collection_ThenInclude_two_references(bool async)
         {
             await base.Include_collection_ThenInclude_two_references(async);
+            AssertSql(" ");
         }
 
         public override async Task Include_collection_with_groupby_in_subquery(bool async)
         {
             await base.Include_collection_with_groupby_in_subquery(async);
+            AssertSql(" ");
         }
 
         public override async Task Include_collection_with_groupby_in_subquery_and_filter_after_groupby(bool async)
         {
            await base.Include_collection_with_groupby_in_subquery_and_filter_after_groupby(async);
+            AssertSql(" ");
         }
 
         public override async Task Include_collection_with_groupby_in_subquery_and_filter_before_groupby(bool async)
         {
             await base.Include_collection_with_groupby_in_subquery_and_filter_before_groupby(async);
+            AssertSql(" ");
         }
 
         public override async Task Include_collection_with_multiple_orderbys_complex_repeated_checked(bool async)
         {
             await base.Include_collection_with_multiple_orderbys_complex_repeated_checked(async);
+            AssertSql(" ");
         }
         public override async Task Select_nav_prop_collection_one_to_many_required(bool async)
         {
             await base.Select_nav_prop_collection_one_to_many_required(async);
+            AssertSql(" ");
         }
 
         #endregion
