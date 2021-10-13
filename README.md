@@ -11,11 +11,11 @@
 
 ### Dependencies
 
-The following versions of MySqlConnector, EF Core, .NET (Core), .NET Standard and .NET Framework are compatible with `Pomelo.EntityFrameworkCore.MySql`:
+The following versions of MySqlConnector, EF Core, .NET (Core), .NET Standard and .NET Framework are compatible with published releases of `Pomelo.EntityFrameworkCore.MySql`:
 
 Release | Branch | MySqlConnector | EF Core | .NET Standard | .NET (Core) | .NET Framework
 --- | --- | --- | --- | --- | --- | ---
-[6.0.0-<br />preview.6](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/6.0.0-preview.6) | [master](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/master) | >= 1.4.0-beta.4 | 6.0.0-<br />preview.6 | N/A | 6.0+ | N/A
+[6.0.0-<br />preview.7](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/6.0.0-preview.7) | [master](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/master) | >= 1.4.0-beta.4 | 6.0.0-<br />preview.7 | N/A | 6.0+ | N/A
 [5.0.2](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/5.0.2) | [5.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/5.0-maint) | >= 1.3.13 | 5.0.x | 2.1 | 3.0+ | N/A
 [3.2.7](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.2.7) | [3.2-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/3.2-maint) | >= 0.69.10 < 1.0.0 | 3.1.x | 2.0 | 2.0+ | 4.6.1+
 [2.2.6](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/2.2.6) | [2.2-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/2.2-maint) | >= 0.59.2 < 1.0.0 | 2.2.6 | 2.0 | 2.0+ | 4.6.1+
@@ -45,6 +45,7 @@ Currently supported versions are:
 Milestone | Status | Release Date
 ----------|--------|-------------
 6.0.0 | In Development | TBA (see [#1413](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1413))
+6.0.0-preview.7 | Released | 2021-10-07
 6.0.0-preview.6 | Released | 2021-10-04
 6.0.0-preview.5 | Released | 2021-06-27
 6.0.0-preview.4 | Released | 2021-05-25
@@ -55,6 +56,8 @@ Milestone | Status | Release Date
 2.1.4 | Released | 2018-11-29
 
 ## Nightly Builds
+
+Our **latest** nightly builds currently target EF Core `6.0.0-rc.1`.
 
 To use nightly builds from our Azure DevOps feed, add a `NuGet.config` file to your solution root with the following content and enable _prereleases_:
 

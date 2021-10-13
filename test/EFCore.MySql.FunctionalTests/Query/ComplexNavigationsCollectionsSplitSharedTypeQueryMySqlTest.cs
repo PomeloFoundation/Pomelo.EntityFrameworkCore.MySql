@@ -59,6 +59,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Filtered_include_Take_with_another_Take_on_top_level(async);
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
+        public override async Task Skip_Take_on_grouping_element_inside_collection_projection(bool async)
+        {
+            await base.Skip_Take_on_grouping_element_inside_collection_projection(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
+        public override async Task Skip_Take_on_grouping_element_with_reference_include(bool async)
+        {
+            await base.Skip_Take_on_grouping_element_with_reference_include(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
+        public override async Task Skip_Take_Distinct_on_grouping_element(bool async)
+        {
+            await base.Skip_Take_Distinct_on_grouping_element(async);
+        }
+
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override Task Filtered_include_after_different_filtered_include_different_level(bool async)
         {

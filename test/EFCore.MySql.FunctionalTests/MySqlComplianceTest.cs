@@ -15,6 +15,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             typeof(TransactionInterceptionTestBase),
             typeof(CommandInterceptionTestBase),
             typeof(NorthwindQueryTaggingQueryTestBase<>),
+
+            // TODO: Reenable LoggingMySqlTest once its issue has been fixed in EF Core upstream.
+            typeof(LoggingTestBase),
+            typeof(LoggingRelationalTestBase<,>)
         };
 
         protected override Assembly TargetAssembly { get; } = typeof(MySqlComplianceTest).Assembly;

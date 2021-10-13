@@ -118,10 +118,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
         }
 
         protected override void AppendInsertCommandHeader(
-            [NotNull] StringBuilder commandStringBuilder,
-            [NotNull] string name,
-            [CanBeNull] string schema,
-            [NotNull] IReadOnlyList<IColumnModification> operations)
+            StringBuilder commandStringBuilder,
+            string name,
+            string schema,
+            IReadOnlyList<IColumnModification> operations)
         {
             Check.NotNull(commandStringBuilder, nameof(commandStringBuilder));
             Check.NotEmpty(name, nameof(name));
@@ -138,8 +138,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
         }
 
         protected override void AppendValuesHeader(
-            [NotNull] StringBuilder commandStringBuilder,
-            [NotNull] IReadOnlyList<IColumnModification> operations)
+            StringBuilder commandStringBuilder,
+            IReadOnlyList<IColumnModification> operations)
         {
             Check.NotNull(commandStringBuilder, nameof(commandStringBuilder));
             Check.NotNull(operations, nameof(operations));
@@ -149,10 +149,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
         }
 
         protected override void AppendValues(
-            [NotNull] StringBuilder commandStringBuilder,
-            [NotNull] string name,
-            [CanBeNull] string schema,
-            [NotNull] IReadOnlyList<IColumnModification> operations)
+            StringBuilder commandStringBuilder,
+            string name,
+            string schema,
+            IReadOnlyList<IColumnModification> operations)
         {
             base.AppendValues(commandStringBuilder, name, schema, operations);
 
@@ -173,8 +173,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
         }
 
         protected override void AppendWhereAffectedClause(
-            [NotNull] StringBuilder commandStringBuilder,
-            [NotNull] IReadOnlyList<IColumnModification> operations)
+            StringBuilder commandStringBuilder,
+            IReadOnlyList<IColumnModification> operations)
         {
             Check.NotNull(commandStringBuilder, nameof(commandStringBuilder));
             Check.NotNull(operations, nameof(operations));

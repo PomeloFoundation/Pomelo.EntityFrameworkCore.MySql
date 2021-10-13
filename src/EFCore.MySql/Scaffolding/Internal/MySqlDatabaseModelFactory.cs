@@ -913,10 +913,10 @@ WHERE `t`.`TABLE_SCHEMA` = '{0}' AND `t`.`CONSTRAINT_SCHEMA` = `t`.`TABLE_SCHEMA
         protected virtual ReferentialAction? ConvertToReferentialAction(string onDeleteAction)
             => onDeleteAction.ToUpperInvariant() switch
             {
-                "RESTRICT" => ReferentialAction.Restrict,
+                "NO ACTION" => ReferentialAction.NoAction,
+                "RESTRICT" => ReferentialAction.NoAction, // RESTRICT is the same as NO ACTION in MySQL/MariaDB
                 "CASCADE" => ReferentialAction.Cascade,
                 "SET NULL" => ReferentialAction.SetNull,
-                "NO ACTION" => ReferentialAction.NoAction,
                 _ => null
             };
 

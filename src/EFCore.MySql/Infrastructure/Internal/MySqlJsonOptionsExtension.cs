@@ -114,12 +114,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                 => (MySqlJsonOptionsExtension)base.Extension;
 
             public override bool IsDatabaseProvider => false;
+
             public override int GetServiceProviderHashCode()
             {
                 var hashCode = new HashCode();
                 hashCode.Add(Extension.JsonChangeTrackingOptions);
+                hashCode.Add(Extension.UseJsonOptionName);
+                hashCode.Add(Extension.AddEntityFrameworkName);
+                hashCode.Add(Extension.TypeMappingSourcePluginType);
                 return hashCode.ToHashCode();
             }
+
+            public override bool ShouldUseSameServiceProvider(DbContextOptionsExtensionInfo other)
+                => other is ExtensionInfo otherInfo &&
+                   Extension.JsonChangeTrackingOptions == otherInfo.Extension.JsonChangeTrackingOptions &&
+                   Extension.UseJsonOptionName == otherInfo.Extension.UseJsonOptionName &&
+                   Extension.AddEntityFrameworkName == otherInfo.Extension.AddEntityFrameworkName &&
+                   Extension.TypeMappingSourcePluginType == otherInfo.Extension.TypeMappingSourcePluginType;
 
             public override void PopulateDebugInfo(IDictionary<string, string> debugInfo)
             {

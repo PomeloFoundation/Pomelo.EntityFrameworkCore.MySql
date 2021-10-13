@@ -32,11 +32,11 @@ namespace Microsoft.Extensions.DependencyInjection
             serviceCollection.TryAddSingleton(NtsGeometryServices.Instance);
 
             new EntityFrameworkRelationalServicesBuilder(serviceCollection)
+                .TryAdd<IRelationalTypeMappingSourcePlugin, MySqlNetTopologySuiteTypeMappingSourcePlugin>()
+                .TryAdd<IMethodCallTranslatorPlugin, MySqlNetTopologySuiteMethodCallTranslatorPlugin>()
+                .TryAdd<IMemberTranslatorPlugin, MySqlNetTopologySuiteMemberTranslatorPlugin>()
                 .TryAddProviderSpecificServices(
-                    x => x.TryAddSingletonEnumerable<IRelationalTypeMappingSourcePlugin, MySqlNetTopologySuiteTypeMappingSourcePlugin>()
-                        .TryAddSingletonEnumerable<IMethodCallTranslatorPlugin, MySqlNetTopologySuiteMethodCallTranslatorPlugin>()
-                        .TryAddSingletonEnumerable<IMemberTranslatorPlugin, MySqlNetTopologySuiteMemberTranslatorPlugin>()
-                        .TryAddSingletonEnumerable<IMySqlEvaluatableExpressionFilter, MySqlNetTopologySuiteEvaluatableExpressionFilter>());
+                    x => x.TryAddSingletonEnumerable<IMySqlEvaluatableExpressionFilter, MySqlNetTopologySuiteEvaluatableExpressionFilter>());
 
             return serviceCollection;
         }

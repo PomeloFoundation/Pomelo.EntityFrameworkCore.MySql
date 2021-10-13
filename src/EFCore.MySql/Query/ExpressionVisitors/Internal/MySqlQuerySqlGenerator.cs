@@ -13,7 +13,6 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
@@ -45,7 +44,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         private const ulong LimitUpperBound = 18446744073709551610;
 
-        [NotNull] private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
         private readonly IMySqlOptions _options;
 
         /// <summary>
@@ -54,11 +52,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         /// </summary>
         public MySqlQuerySqlGenerator(
             [NotNull] QuerySqlGeneratorDependencies dependencies,
-            [NotNull] MySqlSqlExpressionFactory sqlExpressionFactory,
             [CanBeNull] IMySqlOptions options)
             : base(dependencies)
         {
-            _sqlExpressionFactory = sqlExpressionFactory;
             _options = options;
         }
 
@@ -488,7 +484,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         {
             if (mySqlBinaryExpression.OperatorType == MySqlBinaryExpressionOperatorType.NonOptimizedEqual)
             {
-                Visit(_sqlExpressionFactory.Equal(mySqlBinaryExpression.Left, mySqlBinaryExpression.Right));
+                var equalExpression = new SqlBinaryExpression(
+                    ExpressionType.Equal,
+                    mySqlBinaryExpression.Left,
+                    mySqlBinaryExpression.Right,
+                    mySqlBinaryExpression.Type,
+                    mySqlBinaryExpression.TypeMapping);
+
+                Visit(equalExpression);
             }
             else
             {

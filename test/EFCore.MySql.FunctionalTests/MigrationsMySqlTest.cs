@@ -73,6 +73,36 @@ SELECT ROW_COUNT();",
                 @"ALTER TABLE `People` MODIFY COLUMN `SomeColumn` longtext CHARACTER SET utf8mb4 NOT NULL;");
         }
 
+        /// <remarks>
+        /// MySQL only supports changing STORED computed columns to non-computed ones.
+        /// </remarks>
+        [ConditionalFact]
+        public override async Task Alter_column_make_non_computed()
+        {
+            await Test(
+                builder => builder.Entity(
+                    "People", e =>
+                    {
+                        e.Property<int>("Id");
+                        e.Property<int>("X");
+                        e.Property<int>("Y");
+                    }),
+                builder => builder.Entity("People")
+                    .Property<int>("Sum")
+                    .HasComputedColumnSql($"{DelimitIdentifier("X")} + {DelimitIdentifier("Y")}", stored: true), // <-- added "stored: true"
+                builder => builder.Entity("People").Property<int>("Sum"),
+                model =>
+                {
+                    var table = Assert.Single(model.Tables);
+                    var sumColumn = Assert.Single(table.Columns, c => c.Name == "Sum");
+                    Assert.Null(sumColumn.ComputedColumnSql);
+                    Assert.NotEqual(true, sumColumn.IsStored);
+                });
+
+            AssertSql(
+                @"ALTER TABLE `People` MODIFY COLUMN `Sum` int NOT NULL;");
+        }
+
         [ConditionalFact]
         public virtual async Task Alter_string_column_make_required_generates_update_statement_instead_of_default_value()
         {
@@ -1050,7 +1080,15 @@ SELECT ROW_COUNT();",
                 //
                 @"ALTER TABLE `Foo` DROP KEY `AK_Foo_FooAK`;",
                 //
-                @"ALTER TABLE `Foo` ADD CONSTRAINT `FK_Foo_Bar_BarFK` FOREIGN KEY (`BarFK`) REFERENCES `Bar` (`BarPK`) ON DELETE RESTRICT;");
+                @"ALTER TABLE `Foo` ADD CONSTRAINT `FK_Foo_Bar_BarFK` FOREIGN KEY (`BarFK`) REFERENCES `Bar` (`BarPK`);");
+        }
+
+        public override async Task Add_foreign_key()
+        {
+            await base.Add_foreign_key();
+
+            AssertSql(
+                @"ALTER TABLE `Orders` ADD CONSTRAINT `FK_Orders_Customers_CustomerId` FOREIGN KEY (`CustomerId`) REFERENCES `Customers` (`Id`);");
         }
 
         protected virtual string DefaultCollation => ((MySqlTestStore)Fixture.TestStore).DatabaseCollation;
