@@ -17,12 +17,12 @@ Push-Location (Join-Path (Split-Path $MyInvocation.MyCommand.Path) "../")
 
 try
 {
-  C:\'Program Files'\dotnet\dotnet.exe tool restore;
+  dotnet tool restore;
 
   Remove-Item (Join-Path "Migrations" "*.cs")
 
-  C:\'Program Files'\dotnet\dotnet.exe ef database drop -f
-  C:\'Program Files'\dotnet\dotnet.exe ef migrations add initial
+  dotnet ef database drop -f
+  dotnet ef migrations add initial
 
   # add using System.Collections.Generic to the migration files
   Get-ChildItem (Join-Path "Migrations" "*.cs") | ForEach-Object {
@@ -33,7 +33,7 @@ try
     }
   }
 
-  C:\'Program Files'\dotnet\dotnet.exe ef database update
+  dotnet ef database update
 }
 finally
 {
