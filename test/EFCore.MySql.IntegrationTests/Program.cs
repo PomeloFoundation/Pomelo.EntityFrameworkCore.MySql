@@ -30,7 +30,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
                     .AddSingleton<ITestMigrateCommand, TestMigrateCommand>()
                     .AddSingleton<ITestPerformanceCommand, TestPerformanceCommand>();
                 Startup.ConfigureEntityFramework(serviceCollection);
+
+#pragma warning disable ASP0000
                 var serviceProvider = serviceCollection.BuildServiceProvider();
+#pragma warning restore ASP0000
 
                 var commandRunner = serviceProvider.GetService<ICommandRunner>();
 
