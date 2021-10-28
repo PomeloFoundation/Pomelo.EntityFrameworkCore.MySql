@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Internal;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
 {
@@ -33,9 +34,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
             };
 
         private readonly IMigrationsAssembly _migrationsAssembly;
+        [NotNull] private readonly IHistoryRepository _historyRepository;
         private readonly IRawSqlCommandBuilder _rawSqlCommandBuilder;
+        [NotNull] private readonly ISqlGenerationHelper _sqlGenerationHelper;
         private readonly ICurrentDbContext _currentContext;
-        private readonly IRelationalCommandDiagnosticsLogger _commandLogger;
+        private readonly IDiagnosticsLogger<DbLoggerCategory.Database.Command> _commandLogger;
 
         public MySqlMigrator(
             [NotNull] IMigrationsAssembly migrationsAssembly,
@@ -47,9 +50,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
             [NotNull] IRelationalConnection connection,
             [NotNull] ISqlGenerationHelper sqlGenerationHelper,
             [NotNull] ICurrentDbContext currentContext,
-            [NotNull] IModelRuntimeInitializer modelRuntimeInitializer,
+            [NotNull] IConventionSetBuilder conventionSetBuilder,
             [NotNull] IDiagnosticsLogger<DbLoggerCategory.Migrations> logger,
-            [NotNull] IRelationalCommandDiagnosticsLogger commandLogger,
+            [NotNull] IDiagnosticsLogger<DbLoggerCategory.Database.Command> commandLogger,
             [NotNull] IDatabaseProvider databaseProvider)
             : base(
                 migrationsAssembly,
@@ -61,13 +64,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                 connection,
                 sqlGenerationHelper,
                 currentContext,
-                modelRuntimeInitializer,
+                conventionSetBuilder,
                 logger,
                 commandLogger,
                 databaseProvider)
         {
             _migrationsAssembly = migrationsAssembly;
+            _historyRepository = historyRepository;
             _rawSqlCommandBuilder = rawSqlCommandBuilder;
+            _sqlGenerationHelper = sqlGenerationHelper;
             _currentContext = currentContext;
             _commandLogger = commandLogger;
         }
@@ -108,25 +113,38 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
             string toMigration = null,
             MigrationsSqlGenerationOptions options = MigrationsSqlGenerationOptions.Default)
         {
+            var script = base.GenerateScript(fromMigration, toMigration, options);
+
             options |= MigrationsSqlGenerationOptions.Script;
 
             if (!options.HasFlag(MigrationsSqlGenerationOptions.Idempotent))
             {
-                return base.GenerateScript(fromMigration, toMigration, options);
+                return script;
             }
 
-            var operations = GetAllMigrationOperations(fromMigration, toMigration);
+            // Add helper stored procedures after database creation, but before applying migrations.
+            // Remove them after all migrations have been apllied.
+            var createScript = new StringBuilder(_historyRepository.GetCreateIfNotExistsScript())
+                .Append(_sqlGenerationHelper.BatchTerminator)
+                .ToString();
 
+            var operations = GetIdempotentScriptMigrationOperations(fromMigration, toMigration);
             var builder = new StringBuilder();
 
+            if (script.StartsWith(createScript))
+            {
+                script = script.Remove(0, createScript.Length);
+                builder.Append(createScript);
+            }
+
             builder.AppendJoin(string.Empty, GetMigrationCommandTexts(operations, true, options));
-            builder.Append(base.GenerateScript(fromMigration, toMigration, options));
+            builder.Append(script);
             builder.AppendJoin(string.Empty, GetMigrationCommandTexts(operations, false, options));
 
             return builder.ToString();
         }
 
-        protected virtual List<MigrationOperation> GetAllMigrationOperations(string fromMigration, string toMigration)
+        private List<MigrationOperation> GetIdempotentScriptMigrationOperations(string fromMigration, string toMigration)
         {
             IEnumerable<string> appliedMigrations;
             if (string.IsNullOrEmpty(fromMigration)
@@ -155,21 +173,32 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                 .ToList();
         }
 
-        protected virtual IReadOnlyList<MigrationCommand> WrapWithCustomCommands(
+        private IReadOnlyList<MigrationCommand> WrapWithCustomCommands(
             IReadOnlyList<MigrationOperation> migrationOperations,
-            IReadOnlyList<MigrationCommand> migrationCommands,
+            List<MigrationCommand> migrationCommands,
             MigrationsSqlGenerationOptions options)
         {
             var beginCommandTexts = GetMigrationCommandTexts(migrationOperations, true, options);
             var endCommandTexts = GetMigrationCommandTexts(migrationOperations, false, options);
 
-            return new List<MigrationCommand>(
-                beginCommandTexts.Select(t => new MigrationCommand(_rawSqlCommandBuilder.Build(t), _currentContext.Context, _commandLogger))
-                    .Concat(migrationCommands)
-                    .Concat(endCommandTexts.Select(t => new MigrationCommand(_rawSqlCommandBuilder.Build(t), _currentContext.Context, _commandLogger))));
+            migrationCommands.InsertRange(
+                0, beginCommandTexts.Select(
+                    t => new MigrationCommand(
+                        _rawSqlCommandBuilder.Build(t),
+                        _currentContext.Context,
+                        _commandLogger)));
+
+            migrationCommands.AddRange(
+                endCommandTexts.Select(
+                    t => new MigrationCommand(
+                        _rawSqlCommandBuilder.Build(t),
+                        _currentContext.Context,
+                        _commandLogger)));
+
+            return migrationCommands;
         }
 
-        protected virtual string[] GetMigrationCommandTexts(
+        private string[] GetMigrationCommandTexts(
             IReadOnlyList<MigrationOperation> migrationOperations,
             bool beginTexts,
             MigrationsSqlGenerationOptions options)
@@ -178,43 +207,33 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                     t => PrepareString(
                         beginTexts
                             ? t.Item1
-                            : t.Item2,
-                        options))
+                            : t.Item2, options))
                 .ToArray();
 
-        protected virtual IReadOnlyList<Tuple<string, string>> GetCustomCommands(IReadOnlyList<MigrationOperation> migrationOperations)
+        private static IReadOnlyList<Tuple<string, string>> GetCustomCommands(IReadOnlyList<MigrationOperation> migrationOperations)
             => _customMigrationCommands
                 .Where(c => migrationOperations.Any(o => c.Key.IsInstanceOfType(o)) && c.Value != null)
                 .Select(kvp => kvp.Value)
                 .ToList();
 
-        protected virtual string CleanUpScriptSpecificPseudoStatements(string commandText)
+        private static string CleanUpScriptSpecificPseudoStatements(string commandText)
         {
-            const string temporaryDelimiter = @"//";
-            const string defaultDelimiter = @";";
-            const string delimiterChangeRegexPatternFormatString = @"[\r\n]*[^\S\r\n]*DELIMITER[^\S\r\n]+{0}[^\S\r\n]*";
-            const string delimiterUseRegexPatternFormatString = @"\s*{0}\s*$";
+            const string delimiterPattern = @"^\s*DELIMITER\s*(?<Delimiter>;|//)\s*$";
+            const RegexOptions delimiterPatternRegexOptions = RegexOptions.IgnoreCase | RegexOptions.Multiline;
 
-            var temporaryDelimiterRegexPattern = string.Format(
-                delimiterChangeRegexPatternFormatString,
-                $"(?:{Regex.Escape(temporaryDelimiter)}|{Regex.Escape(defaultDelimiter)})");
+            var delimiter = Regex.Match(commandText, delimiterPattern, delimiterPatternRegexOptions);
 
-            var delimiter = Regex.Match(commandText, temporaryDelimiterRegexPattern, RegexOptions.IgnoreCase);
             if (delimiter.Success)
             {
-                commandText = Regex.Replace(commandText, temporaryDelimiterRegexPattern, string.Empty, RegexOptions.IgnoreCase);
-
-                commandText = Regex.Replace(
-                    commandText,
-                    string.Format(delimiterUseRegexPatternFormatString, temporaryDelimiter),
-                    defaultDelimiter,
-                    RegexOptions.IgnoreCase | RegexOptions.Multiline);
+                var result = Regex.Replace(commandText, delimiterPattern, string.Empty, delimiterPatternRegexOptions);
+                return Regex.Replace(
+                    result, $@"\s*{Regex.Escape(delimiter.Groups["Delimiter"].Value)}\s*$", ";", delimiterPatternRegexOptions);
             }
 
             return commandText;
         }
 
-        protected virtual string PrepareString(string str, MigrationsSqlGenerationOptions options)
+        private string PrepareString(string str, MigrationsSqlGenerationOptions options)
         {
             str = options.HasFlag(MigrationsSqlGenerationOptions.Script)
                 ? str
@@ -233,8 +252,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
 
             return str;
         }
-
-        #region Custom SQL
 
         private const string BeforeDropPrimaryKeyMigrationBegin = @"DROP PROCEDURE IF EXISTS `POMELO_BEFORE_DROP_PRIMARY_KEY`;
 DELIMITER //
@@ -321,7 +338,5 @@ END //
 DELIMITER ;";
 
         private const string AfterAddPrimaryKeyMigrationEnd = @"DROP PROCEDURE `POMELO_AFTER_ADD_PRIMARY_KEY`;";
-
-        #endregion Custom SQL
     }
 }

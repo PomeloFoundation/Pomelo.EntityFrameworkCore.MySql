@@ -6,6 +6,7 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Migrations.Internal;
@@ -26,9 +27,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             [NotNull] IRelationalConnection connection,
             [NotNull] ISqlGenerationHelper sqlGenerationHelper,
             [NotNull] ICurrentDbContext currentContext,
-            [NotNull] IModelRuntimeInitializer modelRuntimeInitializer,
+            [NotNull] IConventionSetBuilder conventionSetBuilder,
             [NotNull] IDiagnosticsLogger<DbLoggerCategory.Migrations> logger,
-            [NotNull] IRelationalCommandDiagnosticsLogger commandLogger,
+            [NotNull] IDiagnosticsLogger<DbLoggerCategory.Database.Command> commandLogger,
             [NotNull] IDatabaseProvider databaseProvider)
             : base(
                 migrationsAssembly,
@@ -40,7 +41,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 connection,
                 sqlGenerationHelper,
                 currentContext,
-                modelRuntimeInitializer,
+                conventionSetBuilder,
                 logger,
                 commandLogger,
                 databaseProvider)
