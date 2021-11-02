@@ -1,7 +1,5 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -109,7 +107,6 @@ INNER JOIN (
 ORDER BY `l`.`Id`, `t`.`Name`, `t`.`Id`, `t0`.`Name` DESC");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override async Task Filtered_include_basic_OrderBy_Take(bool async)
         {
             await base.Filtered_include_basic_OrderBy_Take(async);
@@ -132,7 +129,6 @@ INNER JOIN (
 ORDER BY `l`.`Id`, `t0`.`OneToMany_Optional_Inverse2Id`, `t0`.`Name`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override async Task Filtered_include_basic_OrderBy_Skip(bool async)
         {
             await base.Filtered_include_basic_OrderBy_Skip(async);
@@ -155,7 +151,6 @@ INNER JOIN (
 ORDER BY `l`.`Id`, `t0`.`OneToMany_Optional_Inverse2Id`, `t0`.`Name`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override async Task Filtered_include_basic_OrderBy_Skip_Take(bool async)
         {
             await base.Filtered_include_basic_OrderBy_Skip_Take(async);
@@ -196,7 +191,6 @@ ORDER BY `l`.`Id`, `t0`.`OneToMany_Optional_Inverse2Id`, `t0`.`Name`");
                 @"TODO");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override async Task Filtered_include_on_ThenInclude(bool async)
         {
             await base.Filtered_include_on_ThenInclude(async);
@@ -222,7 +216,6 @@ INNER JOIN (
 ORDER BY `l`.`Id`, `l0`.`Id`, `t0`.`OneToMany_Optional_Inverse3Id`, `t0`.`Name`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override async Task Filtered_include_after_reference_navigation(bool async)
         {
             await base.Filtered_include_after_reference_navigation(async);
@@ -248,7 +241,6 @@ INNER JOIN (
 ORDER BY `l`.`Id`, `l0`.`Id`, `t0`.`OneToMany_Optional_Inverse3Id`, `t0`.`Name`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override async Task Filtered_include_after_different_filtered_include_same_level(bool async)
         {
             await base.Filtered_include_after_different_filtered_include_same_level(async);
@@ -285,7 +277,6 @@ INNER JOIN (
 ORDER BY `l`.`Id`, `t0`.`OneToMany_Required_Inverse2Id`, `t0`.`Name` DESC");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override async Task Filtered_include_after_different_filtered_include_different_level(bool async)
         {
             await base.Filtered_include_after_different_filtered_include_different_level(async);
@@ -331,7 +322,6 @@ INNER JOIN (
 ORDER BY `l`.`Id`, `t0`.`OneToMany_Optional_Inverse2Id`, `t0`.`Name`, `t0`.`Id`, `t1`.`OneToMany_Required_Inverse3Id`, `t1`.`Name` DESC");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override async Task Filtered_include_same_filter_set_on_same_navigation_twice(bool async)
         {
             await base.Filtered_include_same_filter_set_on_same_navigation_twice(async);
@@ -355,7 +345,6 @@ INNER JOIN (
 ORDER BY `l`.`Id`, `t0`.`OneToMany_Optional_Inverse2Id`, `t0`.`Id` DESC");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
         public override async Task Filtered_include_same_filter_set_on_same_navigation_twice_followed_by_ThenIncludes(bool async)
         {
             await base.Filtered_include_same_filter_set_on_same_navigation_twice_followed_by_ThenIncludes(async);
@@ -397,7 +386,6 @@ INNER JOIN `LevelThree` AS `l2` ON `t0`.`Id` = `l2`.`OneToMany_Optional_Inverse3
 ORDER BY `l`.`Id`, `t0`.`Id`, `t0`.`Id0`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
         public override async Task Filtered_include_multiple_multi_level_includes_with_first_level_using_filter_include_on_one_of_the_chains_only(bool async)
         {
             await base.Filtered_include_multiple_multi_level_includes_with_first_level_using_filter_include_on_one_of_the_chains_only(async);
@@ -439,7 +427,6 @@ INNER JOIN `LevelThree` AS `l2` ON `t0`.`Id` = `l2`.`OneToMany_Optional_Inverse3
 ORDER BY `l`.`Id`, `t0`.`Id`, `t0`.`Id0`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override async Task Filtered_include_and_non_filtered_include_on_same_navigation1(bool async)
         {
             await base.Filtered_include_and_non_filtered_include_on_same_navigation1(async);
@@ -463,7 +450,6 @@ INNER JOIN (
 ORDER BY `l`.`Id`, `t0`.`OneToMany_Optional_Inverse2Id`, `t0`.`Id`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override async Task Filtered_include_and_non_filtered_include_on_same_navigation2(bool async)
         {
             await base.Filtered_include_and_non_filtered_include_on_same_navigation2(async);
@@ -487,7 +473,6 @@ INNER JOIN (
 ORDER BY `l`.`Id`, `t0`.`OneToMany_Optional_Inverse2Id`, `t0`.`Id`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
         public override async Task Filtered_include_and_non_filtered_include_followed_by_then_include_on_same_navigation(bool async)
         {
             await base.Filtered_include_and_non_filtered_include_followed_by_then_include_on_same_navigation(async);
@@ -533,7 +518,6 @@ INNER JOIN (
 ORDER BY `l`.`Id`, `t0`.`Id`, `t0`.`Id0`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override async Task Filtered_include_complex_three_level_with_middle_having_filter1(bool async)
         {
             await base.Filtered_include_complex_three_level_with_middle_having_filter1(async);
@@ -593,7 +577,6 @@ INNER JOIN `LevelFour` AS `l2` ON `t0`.`Id` = `l2`.`OneToMany_Required_Inverse4I
 ORDER BY `l`.`Id`, `l0`.`Id`, `t0`.`OneToMany_Optional_Inverse3Id`, `t0`.`Id`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override async Task Filtered_include_complex_three_level_with_middle_having_filter2(bool async)
         {
             await base.Filtered_include_complex_three_level_with_middle_having_filter2(async);
@@ -680,7 +663,6 @@ ORDER BY `l`.`Id`, `l0`.`Id`, `t0`.`OneToMany_Optional_Inverse3Id`, `t0`.`Id`");
                 @"TODO");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
         public override async Task Filtered_include_outer_parameter_used_inside_filter(bool async)
         {
             await base.Filtered_include_outer_parameter_used_inside_filter(async);
@@ -824,7 +806,6 @@ INNER JOIN `LevelThree` AS `l1` ON `l0`.`Id` = `l1`.`OneToMany_Optional_Inverse3
 ORDER BY `l`.`Id`, `l0`.`Id`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override async Task Project_collection_navigation_nested_with_take(bool async)
         {
             await base.Project_collection_navigation_nested_with_take(async);
@@ -956,7 +937,6 @@ INNER JOIN `LevelThree` AS `l1` ON `l0`.`Id` = `l1`.`OneToMany_Optional_Inverse3
 ORDER BY `l`.`Id`, `l0`.`Id`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
         public override async Task Include_inside_subquery(bool async)
         {
             await base.Include_inside_subquery(async);
@@ -1086,7 +1066,6 @@ INNER JOIN `LevelThree` AS `l1` ON `l0`.`Id` = `l1`.`OneToMany_Optional_Inverse3
 ORDER BY `l`.`Id`, `l0`.`Id`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override async Task Lift_projection_mapping_when_pushing_down_subquery(bool async)
         {
             await base.Lift_projection_mapping_when_pushing_down_subquery(async);
@@ -1122,7 +1101,6 @@ INNER JOIN `LevelTwo` AS `l0` ON `t`.`Id` = `l0`.`OneToMany_Required_Inverse2Id`
 ORDER BY `t`.`Id`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override async Task Select_subquery_single_nested_subquery(bool async)
         {
             await base.Select_subquery_single_nested_subquery(async);
@@ -1157,7 +1135,6 @@ INNER JOIN (
 ORDER BY `l`.`Id`, `t0`.`Id`, `t1`.`Id`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override async Task Select_subquery_single_nested_subquery2(bool async)
         {
             await base.Select_subquery_single_nested_subquery2(async);
@@ -1218,7 +1195,6 @@ ORDER BY `l`.`Id`, `t`.`Id`, `t0`.`Id`, `t2`.`Id`");
             AssertSql(" ");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
         public override async Task Complex_query_with_let_collection_projection_FirstOrDefault(bool async)
         {
             await base.Complex_query_with_let_collection_projection_FirstOrDefault(async);
@@ -1322,7 +1298,6 @@ WHERE (`l11`.`Name` <> 'Foo') OR `l11`.`Name` IS NULL
 ORDER BY `l12`.`Id`, `l`.`Id`, `l0`.`Id`, `l1`.`Id`, `l2`.`Id`, `t`.`Id`, `t`.`Id0`, `t`.`Id1`, `t`.`Id2`, `t0`.`Id`, `t0`.`Id0`, `t0`.`Id1`, `t0`.`Id2`, `l11`.`Id`, `l13`.`Id`, `l14`.`Id`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
         public override async Task Take_Select_collection_Take(bool async)
         {
             await base.Take_Select_collection_Take(async);
@@ -1358,7 +1333,6 @@ JOIN LATERAL (
 ORDER BY `t`.`Id`, `t0`.`Id`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
         public override async Task Skip_Take_Select_collection_Skip_Take(bool async)
         {
             await base.Skip_Take_Select_collection_Skip_Take(async);
@@ -2537,7 +2511,6 @@ ORDER BY `l`.`Id`, `l0`.`Id`");
                 );
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
         public override void Filtered_include_is_considered_loaded()
         {
             base.Filtered_include_is_considered_loaded();
@@ -2572,7 +2545,6 @@ ORDER BY `l`.`Id`, `t0`.`OneToMany_Optional_Inverse2Id`, `t0`.`Id`");
                 );
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
         public override async Task Filtered_include_Take_with_another_Take_on_top_level(bool async)
         {
             await base.Filtered_include_Take_with_another_Take_on_top_level(async);
@@ -2608,7 +2580,6 @@ JOIN LATERAL (
 ORDER BY `t`.`Id`, `t0`.`Name` DESC");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
         public override async Task Filtered_include_Skip_Take_with_another_Skip_Take_on_top_level(bool async)
         {
             await base.Filtered_include_Skip_Take_with_another_Skip_Take_on_top_level(async);
@@ -2646,7 +2617,6 @@ JOIN LATERAL (
 ORDER BY `t`.`Id` DESC, `t0`.`Name` DESC");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
         public override async Task Skip_Take_Distinct_on_grouping_element(bool async)
         {
             await base.Skip_Take_Distinct_on_grouping_element(async);
@@ -2676,7 +2646,6 @@ JOIN LATERAL (
 ORDER BY `t`.`Date`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
         public override async Task Skip_Take_on_grouping_element_inside_collection_projection(bool async)
         {
             await base.Skip_Take_on_grouping_element_inside_collection_projection(async);
@@ -2715,7 +2684,6 @@ INNER JOIN (
 ORDER BY `l`.`Id`, `t`.`Date`, `t0`.`Name`, `t0`.`Date`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
         public override async Task Skip_Take_on_grouping_element_with_reference_include(bool async)
         {
             await base.Skip_Take_on_grouping_element_with_reference_include(async);

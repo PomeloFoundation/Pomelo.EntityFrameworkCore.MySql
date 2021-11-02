@@ -23,25 +23,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         protected override bool CanExecuteQueryString
             => true;
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
-        public override Task Select_uncorrelated_collection_with_groupby_works(bool async)
-        {
-            return base.Select_uncorrelated_collection_with_groupby_works(async);
-        }
-
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
-        public override Task Select_uncorrelated_collection_with_groupby_multiple_collections_work(bool async)
-        {
-            return base.Select_uncorrelated_collection_with_groupby_multiple_collections_work(async);
-        }
-
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
-        public override Task Select_uncorrelated_collection_with_groupby_when_outer_is_distinct(bool async)
-        {
-            return base.Select_uncorrelated_collection_with_groupby_when_outer_is_distinct(async);
-        }
-
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
         public override async Task AsEnumerable_in_subquery_for_GroupBy(bool async)
         {
             await base.AsEnumerable_in_subquery_for_GroupBy(async);
@@ -71,7 +52,6 @@ WHERE `c`.`CustomerID` LIKE 'F%'
 ORDER BY `c`.`CustomerID`, `t2`.`CustomerID0`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
         public override async Task Complex_query_with_groupBy_in_subquery1(bool async)
         {
             await base.Complex_query_with_groupBy_in_subquery1(async);
@@ -88,7 +68,6 @@ LEFT JOIN LATERAL (
 ORDER BY `c`.`CustomerID`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
         public override async Task Complex_query_with_groupBy_in_subquery2(bool async)
         {
             await base.Complex_query_with_groupBy_in_subquery2(async);
@@ -105,7 +84,6 @@ LEFT JOIN LATERAL (
 ORDER BY `c`.`CustomerID`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
         public override async Task Complex_query_with_groupBy_in_subquery3(bool async)
         {
             await base.Complex_query_with_groupBy_in_subquery3(async);
@@ -121,7 +99,6 @@ LEFT JOIN LATERAL (
 ORDER BY `c`.`CustomerID`");
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
         public override async Task Select_nested_collection_with_groupby(bool async)
         {
             await base.Select_nested_collection_with_groupby(async);

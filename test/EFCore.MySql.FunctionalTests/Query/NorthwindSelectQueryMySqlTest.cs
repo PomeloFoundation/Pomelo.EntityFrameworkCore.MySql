@@ -139,35 +139,10 @@ FROM `Orders` AS `o`");
             return base.Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault(async);
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
-        public override Task Project_keyless_entity_FirstOrDefault_without_orderby(bool async)
-        {
-            return base.Project_keyless_entity_FirstOrDefault_without_orderby(async);
-        }
-
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
-        public override Task Collection_include_over_result_of_single_non_scalar(bool async)
-        {
-            return base.Collection_include_over_result_of_single_non_scalar(async);
-        }
-
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
-        public override Task SelectMany_correlated_with_outer_1(bool async)
-        {
-            return base.SelectMany_correlated_with_outer_1(async);
-        }
-
-        // [SupportedServerVersionCondition(ServerVersion.CrossApplySupportKey)]
         [ConditionalTheory(Skip = "Leads to a different result set in CI on Linux with MySQL 8.0.17. TODO: Needs investigation!")]
         public override Task SelectMany_correlated_with_outer_2(bool async)
         {
             return base.SelectMany_correlated_with_outer_2(async);
-        }
-
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
-        public override Task SelectMany_correlated_with_outer_3(bool async)
-        {
-            return base.SelectMany_correlated_with_outer_3(async);
         }
 
         // TODO:
@@ -178,118 +153,22 @@ FROM `Orders` AS `o`");
             return base.SelectMany_correlated_with_outer_4(async);
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
-        public override Task SelectMany_correlated_with_outer_5(bool async)
-        {
-            return base.SelectMany_correlated_with_outer_5(async);
-        }
-
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
-        public override Task SelectMany_correlated_with_outer_6(bool async)
-        {
-            return base.SelectMany_correlated_with_outer_6(async);
-        }
-
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
-        public override Task SelectMany_correlated_with_outer_7(bool async)
-        {
-            return base.SelectMany_correlated_with_outer_7(async);
-        }
-
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
-        public override Task Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault_2(bool async)
-        {
-            return base.Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault_2(async);
-        }
-
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
-        public override Task Select_nested_collection_deep(bool async)
-        {
-            return base.Select_nested_collection_deep(async);
-        }
-
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
-        public override void Select_nested_collection_multi_level()
-        {
-            base.Select_nested_collection_multi_level();
-        }
-
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
         public override Task Project_single_element_from_collection_with_OrderBy_Distinct_and_FirstOrDefault_followed_by_projecting_length(bool async)
         {
             return base.Project_single_element_from_collection_with_OrderBy_Distinct_and_FirstOrDefault_followed_by_projecting_length(async);
         }
 
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
         public override Task Project_single_element_from_collection_with_OrderBy_Take_and_SingleOrDefault(bool async)
         {
             return base.Project_single_element_from_collection_with_OrderBy_Take_and_SingleOrDefault(async);
-        }
-
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
-        public override Task Collection_projection_selecting_outer_element_followed_by_take(bool async)
-        {
-            return base.Collection_projection_selecting_outer_element_followed_by_take(async);
-        }
-
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
-        public override Task Correlated_collection_after_distinct_not_containing_original_identifier(bool async)
-        {
-            return base.Correlated_collection_after_distinct_not_containing_original_identifier(async);
-        }
-
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
-        public override Task Correlated_collection_after_distinct_with_complex_projection_containing_original_identifier(bool async)
-        {
-            return base.Correlated_collection_after_distinct_with_complex_projection_containing_original_identifier(async);
-        }
-
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
-        public override Task Correlated_collection_after_groupby_with_complex_projection_containing_original_identifier(bool async)
-        {
-            return base.Correlated_collection_after_groupby_with_complex_projection_containing_original_identifier(async);
-        }
-
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
-        public override Task Projecting_after_navigation_and_distinct(bool async)
-        {
-            return base.Projecting_after_navigation_and_distinct(async);
-        }
-
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
-        public override Task Select_nested_collection_deep_distinct_no_identifiers(bool async)
-        {
-            return base.Select_nested_collection_deep_distinct_no_identifiers(async);
-        }
-
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
-        public override Task Take_on_correlated_collection_in_first(bool async)
-        {
-            return base.Take_on_correlated_collection_in_first(async);
         }
 
         [ConditionalTheory]
         public override Task Member_binding_after_ctor_arguments_fails_with_client_eval(bool async)
         {
             return AssertTranslationFailed(() => base.Member_binding_after_ctor_arguments_fails_with_client_eval(async));
-        }
-
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
-        public override Task SelectMany_whose_selector_references_outer_source(bool async)
-        {
-            return base.SelectMany_whose_selector_references_outer_source(async);
-        }
-
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.CrossApply))]
-        public override Task SelectMany_with_collection_being_correlated_subquery_which_references_inner_and_outer_entity(bool async)
-        {
-            return base.SelectMany_with_collection_being_correlated_subquery_which_references_inner_and_outer_entity(async);
-        }
-
-        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WindowFunctions))]
-        public override Task Do_not_erase_projection_mapping_when_adding_single_projection(bool async)
-        {
-            return base.Do_not_erase_projection_mapping_when_adding_single_projection(async);
         }
 
         [ConditionalTheory(Skip = "TODO: Seems to be a MySQL bug. Needs to be verified and reported, if not already.")]
