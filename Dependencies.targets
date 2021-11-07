@@ -1,9 +1,9 @@
 <Project>
   <PropertyGroup Label="Common Versions">
-    <DotnetRuntimeVersion>6.0.0-rc.1.21452.15</DotnetRuntimeVersion>
-    <EFCoreVersion>6.0.0-rc.1.21452.10</EFCoreVersion> <!-- [$(DotnetRuntimeVersion), 7.0.0) -->
-    <DependencyPreviewVersion>6.0.0-rc.1.21451.13</DependencyPreviewVersion>
-    <AspNetCoreVersion>6.0.0-rc.1.21452.15</AspNetCoreVersion>
+    <DotnetRuntimeVersion>6.0.0-rc.2.21480.5</DotnetRuntimeVersion>
+    <EFCoreVersion>$(DotnetRuntimeVersion)</EFCoreVersion> <!-- [$(DotnetRuntimeVersion), 7.0.0) -->
+    <DependencyPreviewVersion>$(DotnetRuntimeVersion)</DependencyPreviewVersion>
+    <AspNetCoreVersion>6.0.0-rc.2.21480.10</AspNetCoreVersion>
   </PropertyGroup>
 
   <ItemGroup Label="Dependencies">
@@ -12,7 +12,7 @@
     <PackageReference Update="Microsoft.EntityFrameworkCore.Relational" Version="$(EFCoreVersion)" />
     <PackageReference Update="Microsoft.EntityFrameworkCore" Version="$(EFCoreVersion)" />
 
-    <PackageReference Update="MySqlConnector" Version="1.4.0-beta.4" />
+    <PackageReference Update="MySqlConnector" Version="2.0.0-rc.1" />
 
     <PackageReference Update="NetTopologySuite" Version="2.3.0" />
     <PackageReference Update="System.Text.Json" Version="$(DependencyPreviewVersion)" />
@@ -33,7 +33,7 @@
     <PackageReference Update="Microsoft.Extensions.DependencyInjection" Version="$(DependencyPreviewVersion)" />
     <PackageReference Update="Microsoft.Extensions.DependencyModel" Version="$(DependencyPreviewVersion)" />
     <PackageReference Update="Microsoft.Extensions.Logging" Version="$(DependencyPreviewVersion)" />
-    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.11.0" />
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.0.0" />
     <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
     <PackageReference Update="Moq" Version="4.16.1" />
     <PackageReference Update="System.Collections.Immutable" Version="$(DependencyPreviewVersion)" />
