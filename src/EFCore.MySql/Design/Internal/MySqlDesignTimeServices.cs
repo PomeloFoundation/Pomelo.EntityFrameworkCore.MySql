@@ -4,7 +4,6 @@
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Scaffolding;
-using Microsoft.EntityFrameworkCore.Scaffolding.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
@@ -18,8 +17,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
                 .TryAdd<IAnnotationCodeGenerator, MySqlAnnotationCodeGenerator>()
                 .TryAdd<IDatabaseModelFactory, MySqlDatabaseModelFactory>()
                 .TryAdd<IProviderConfigurationCodeGenerator, MySqlCodeGenerator>()
-                .TryAddProviderSpecificServices(serviceMap => serviceMap
-                    .TryAddSingleton<ICSharpEntityTypeGenerator, FixedCSharpEntityTypeGenerator>()) // TODO: Remove after CSharpEntityTypeGenerator has been fixed in EF Core upstream (6.0.0-preview.6).
                 .TryAddCoreServices();
         }
     }
