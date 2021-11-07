@@ -57,6 +57,25 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 entryCount: 6);
         }
 
+        public override Task Include_duplicate_collection_result_operator(bool async)
+        {
+            // The order of `Orders` can be different, becaues it is not explicitly sorted.
+            // The order of the end result can be different as well.
+            // This is the case on MariaDB.
+            return AssertQuery(
+                async,
+                ss => (from c1 in ss.Set<Customer>().Include(c => c.Orders).OrderBy(c => c.CustomerID).ThenBy(c => c.Orders.FirstOrDefault() != null ? c.Orders.FirstOrDefault().CustomerID : null).Take(2)
+                    from c2 in ss.Set<Customer>().Include(c => c.Orders).OrderBy(c => c.CustomerID).Skip(2).Take(2)
+                    select new { c1, c2 }).OrderBy(t => t.c1.CustomerID).ThenBy(t => t.c2.CustomerID).Take(1),
+                elementSorter: e => (e.c1.CustomerID, e.c2.CustomerID),
+                elementAsserter: (e, a) =>
+                {
+                    AssertInclude(e.c1, a.c1, new ExpectedInclude<Customer>(c => c.Orders));
+                    AssertInclude(e.c2, a.c2, new ExpectedInclude<Customer>(c => c.Orders));
+                },
+                entryCount: 15);
+        }
+
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 

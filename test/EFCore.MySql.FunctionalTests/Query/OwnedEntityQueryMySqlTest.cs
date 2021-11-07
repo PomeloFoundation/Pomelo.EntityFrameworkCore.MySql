@@ -1,7 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -34,6 +38,29 @@ LEFT JOIN (
     ) AS `t2`
     WHERE `t2`.`row` <= 1
 ) AS `t1` ON `e`.`Id` = `t1`.`Entity20277Id`");
+        }
+
+        public override async Task Owned_collection_basic_split_query(bool async)
+        {
+            // Use custom context to set prefix length, so we don't exhaust the max. key length.
+            var contextFactory = await InitializeAsync<Context25680>(onModelCreating: modelBuilder =>
+            {
+                modelBuilder.Entity<Location25680>().OwnsMany(e => e.PublishTokenTypes,
+                    b =>
+                    {
+                        b.WithOwner(e => e.Location).HasForeignKey(e => e.LocationId);
+                        b.HasKey(e => new { e.LocationId, e.ExternalId, e.VisualNumber, e.TokenGroupId })
+                            .HasPrefixLength(0, 128, 128, 128); // <-- set prefix length, so we don't exhaust the max. key length
+                    });
+            });
+
+            using var context = contextFactory.CreateContext();
+
+            var id = new Guid("6c1ae3e5-30b9-4c77-8d98-f02075974a0a");
+            var query = context.Set<Location25680>().Where(e => e.Id == id).AsSplitQuery();
+            var result = async
+                ? await query.FirstOrDefaultAsync()
+                : query.FirstOrDefault();
         }
     }
 }

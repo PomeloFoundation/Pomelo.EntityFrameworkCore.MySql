@@ -776,14 +776,14 @@ FROM `Customers` AS `c`
 WHERE `c`.`Region` IS NULL OR (`c`.`Region` = '')");
         }
 
-        public override void IsNullOrEmpty_in_projection()
+        public override async Task IsNullOrEmpty_in_projection(bool async)
         {
-            base.IsNullOrEmpty_in_projection();
+            await base.IsNullOrEmpty_in_projection(async);
         }
 
-        public override void IsNullOrEmpty_negated_in_projection()
+        public override async Task IsNullOrEmpty_negated_in_projection(bool async)
         {
-            base.IsNullOrEmpty_negated_in_projection();
+            await base.IsNullOrEmpty_negated_in_projection(async);
         }
 
         public override async Task IsNullOrWhiteSpace_in_predicate_on_non_nullable_column(bool async)
@@ -1695,6 +1695,9 @@ WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST(`o`.`OrderID` % 1 AS char) <> '10')
 FROM `Orders` AS `o`
 WHERE (`o`.`CustomerID` = 'ALFKI') AND ((CAST(`o`.`OrderDate` AS char) LIKE '%1997%') OR (CAST(`o`.`OrderDate` AS char) LIKE '%1998%'))");
         }
+
+        public override Task Datetime_subtraction_TotalDays(bool async)
+            => AssertTranslationFailed(() => base.Datetime_subtraction_TotalDays(async));
 
         private string CastAsDouble(string innerSql)
             => AppConfig.ServerVersion.Supports.DoubleCast

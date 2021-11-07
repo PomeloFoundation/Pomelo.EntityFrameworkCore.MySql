@@ -92,8 +92,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         ///     doing so can result in application failures when updating to a new Entity Framework Core release.
         /// </summary>
         public override bool HasTables()
-            => Dependencies.ExecutionStrategyFactory
-                .Create()
+            => Dependencies.ExecutionStrategy
                 .Execute(
                     _relationalConnection,
                     connection => Convert.ToInt64(CreateHasTablesCommand() // MySQL returns a Int64, MariaDb returns a Int32
@@ -112,7 +111,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         ///     doing so can result in application failures when updating to a new Entity Framework Core release.
         /// </summary>
         public override Task<bool> HasTablesAsync(CancellationToken cancellationToken = default)
-            => Dependencies.ExecutionStrategyFactory.Create()
+            => Dependencies.ExecutionStrategy
                 .ExecuteAsync(
                     _relationalConnection,
                     async (connection, ct) => Convert.ToInt64(
@@ -160,7 +159,7 @@ WHERE table_type = 'BASE TABLE' AND table_schema = '" + _relationalConnection.Db
             => Exists(retryOnNotExists: false);
 
         private bool Exists(bool retryOnNotExists)
-            => Dependencies.ExecutionStrategyFactory.Create().Execute(
+            => Dependencies.ExecutionStrategy.Execute(
                 DateTime.UtcNow + RetryTimeout, giveUp =>
                 {
                     while (true)
@@ -221,7 +220,7 @@ WHERE table_type = 'BASE TABLE' AND table_schema = '" + _relationalConnection.Db
             => ExistsAsync(retryOnNotExists: false, cancellationToken: cancellationToken);
 
         private Task<bool> ExistsAsync(bool retryOnNotExists, CancellationToken cancellationToken)
-            => Dependencies.ExecutionStrategyFactory.Create().ExecuteAsync(
+            => Dependencies.ExecutionStrategy.ExecuteAsync(
                 DateTime.UtcNow + RetryTimeout, async (giveUp, ct) =>
                 {
                     while (true)
