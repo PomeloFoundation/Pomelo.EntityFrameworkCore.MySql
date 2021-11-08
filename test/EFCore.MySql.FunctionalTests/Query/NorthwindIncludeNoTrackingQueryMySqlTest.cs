@@ -76,6 +76,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 entryCount: 15);
         }
 
+        public override Task Include_collection_with_multiple_conditional_order_by(bool async)
+        {
+            return AssertQuery(
+                async,
+                ss => ss.Set<Order>()
+                    .Include(c => c.OrderDetails)
+                    .OrderBy(o => o.OrderID > 0)
+                    .ThenBy(o => o.Customer != null ? o.Customer.City : string.Empty)
+                    .ThenBy(b => b.EmployeeID) // Needs to be explicitly ordered by EmployeeID as well
+                    .Take(5),
+                elementAsserter: (e, a) => AssertInclude(e, a, new ExpectedInclude<Order>(o => o.OrderDetails)),
+                entryCount: 14);
+        }
+
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 

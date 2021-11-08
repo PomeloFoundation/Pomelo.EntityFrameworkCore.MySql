@@ -136,6 +136,12 @@ FROM `Orders` AS `o`
 GROUP BY `o`.`CustomerID`");
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
+        public override Task GroupBy_Count_in_projection(bool async)
+        {
+            return base.GroupBy_Count_in_projection(async);
+        }
+
         [ConditionalTheory(Skip = "Does not work when using ONLY_FULL_GROUP_BY. See https://github.com/dotnet/efcore/issues/19027")]
         public override Task GroupBy_scalar_subquery(bool async)
         {
