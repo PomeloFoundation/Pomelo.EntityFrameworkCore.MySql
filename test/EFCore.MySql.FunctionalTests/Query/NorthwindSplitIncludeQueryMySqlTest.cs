@@ -52,6 +52,28 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 entryCount: 4);
         }
 
+        public override Task Include_collection_Join_GroupBy_Select(bool async)
+        {
+            // The original EF Core query depends on a specific implicit order of the Order.OrderDetails collection.
+            // This order is not returned for some database server implementations (which is not a bug of the DBMS, but an inaccuracy of the
+            // EF Core LINQ query definition).
+            // Because it is tricky to manipulate the order of the Order.OrderDetails collection for this query, we just filter it to the
+            // entities in question.
+            return AssertQuery(
+                async,
+                ss => ss.Set<Order>()
+                    .Where(o => o.OrderID == 10248)
+                    .Include(o => o.OrderDetails)
+                    .Join(
+                        ss.Set<OrderDetail>().Where(od => od.OrderID == 10248), // <-- explicit filtering needed for some MariaDB versions, because we cannot manually influence the order of the Order.OrderDetails property
+                        o => o.OrderID,
+                        od => od.OrderID,
+                        (o, od) => o)
+                    .GroupBy(e => e.OrderID)
+                    .Select(e => e.OrderBy(o => o.OrderID).FirstOrDefault()),
+                entryCount: 4);
+        }
+
         public override Task SelectMany_Include_collection_GroupBy_Select(bool async)
         {
             // The original EF Core query depends on a specific implicit order of the Order.OrderDetails collection.
