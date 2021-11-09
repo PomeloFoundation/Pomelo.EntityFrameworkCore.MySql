@@ -142,12 +142,6 @@ GROUP BY `o`.`CustomerID`");
             return base.GroupBy_Count_in_projection(async);
         }
 
-        [ConditionalTheory(Skip = "Does not work when using ONLY_FULL_GROUP_BY. See https://github.com/dotnet/efcore/issues/19027")]
-        public override Task GroupBy_scalar_subquery(bool async)
-        {
-            return base.GroupBy_scalar_subquery(async);
-        }
-
         [SupportedServerVersionCondition("8.0.22-mysql", "0.0.0-mariadb")]
         public override Task GroupBy_group_Where_Select_Distinct_aggregate(bool async)
         {

@@ -388,6 +388,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                                         : string.Empty))));
                 }
 
+                // TODO: EF Core 5
                 // https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/996#issuecomment-607876040
                 // Can return NULL in .NET 5 after https://github.com/dotnet/efcore/issues/20498 has been fixed.
                 // `something LIKE NULL` always returns `NULL`. We will return `false`, to indicate, that no match
