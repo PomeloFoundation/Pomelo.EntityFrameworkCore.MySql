@@ -62,5 +62,27 @@ LEFT JOIN (
                 ? await query.FirstOrDefaultAsync()
                 : query.FirstOrDefault();
         }
+
+        public override async Task Projecting_correlated_collection_property_for_owned_entity(bool async)
+        {
+            var contextFactory = await InitializeAsync<MyContext18582>(seed: c => c.Seed());
+
+            using var context = contextFactory.CreateContext();
+            var query = context.Warehouses.Select(x => new WarehouseModel
+            {
+                WarehouseCode = x.WarehouseCode,
+                DestinationCountryCodes = x.DestinationCountries.Select(c => c.CountryCode)
+                    .OrderByDescending(c => c) // <-- explicitly order
+                    .ToArray()
+            }).AsNoTracking();
+
+            var result = async
+                ? await query.ToListAsync()
+                : query.ToList();
+
+            var warehouseModel = Assert.Single(result);
+            Assert.Equal("W001", warehouseModel.WarehouseCode);
+            Assert.True(new[] { "US", "CA" }.SequenceEqual(warehouseModel.DestinationCountryCodes));
+        }
     }
 }
