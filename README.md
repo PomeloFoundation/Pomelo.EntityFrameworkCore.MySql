@@ -15,7 +15,7 @@ The following versions of MySqlConnector, EF Core, .NET (Core), .NET Standard an
 
 Release | Branch | MySqlConnector | EF Core | .NET Standard | .NET (Core) | .NET Framework
 --- | --- | --- | --- | --- | --- | ---
-[6.0.0-<br />rc.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/6.0.0-rc.1) | [master](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/master) | >= 1.4.0-beta.4 | 6.0.0-<br />rc.1 | N/A | 6.0+ | N/A
+[6.0.0-<br />rc.2](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/6.0.0-rc.2) | [master](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/master) | >= 2.0.0-rc.1 | 6.0.0-<br />rc.2 | N/A | 6.0+ | N/A
 [5.0.2](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/5.0.2) | [5.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/5.0-maint) | >= 1.3.13 | 5.0.x | 2.1 | 3.0+ | N/A
 [3.2.7](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.2.7) | [3.2-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/3.2-maint) | >= 0.69.10 < 1.0.0 | 3.1.x | 2.0 | 2.0+ | 4.6.1+
 [2.2.6](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/2.2.6) | [2.2-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/2.2-maint) | >= 0.59.2 < 1.0.0 | 2.2.6 | 2.0 | 2.0+ | 4.6.1+
@@ -45,7 +45,7 @@ Currently supported versions are:
 Milestone | Status | Release Date
 ----------|--------|-------------
 6.0.0 | Announced | 2021-11-09 (see [#1413](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1413))
-6.0.0-rc.2 | Announced | 2021-11-09
+6.0.0-rc.2 | Released | 2021-11-09
 6.0.0-rc.1 | Released | 2021-11-09
 6.0.0-preview.7 | Released | 2021-10-07
 6.0.0-preview.6 | Released | 2021-10-04
@@ -59,17 +59,17 @@ Milestone | Status | Release Date
 
 ## Nightly Builds
 
-Our **latest** nightly builds currently target EF Core `6.0.0-rc.1`.
+Our **latest** nightly builds currently target EF Core `6.0.0` RTM.
 
 To use nightly builds from our Azure DevOps feed, add a `NuGet.config` file to your solution root with the following content and enable _prereleases_:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
-  <packageSources>
-    <add key="Pomelo" value="https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-public/nuget/v3/index.json" />
-    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
-  </packageSources>
+    <packageSources>
+        <add key="Pomelo" value="https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-public/nuget/v3/index.json" />
+        <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+    </packageSources>
 </configuration>
 ```
 
