@@ -4,11 +4,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
+    [SupportedServerVersionCondition("8.0.0-mysql", Skip = "The way some of the test queries have been implemented upstream relies on a specific way of implicit ordering and can be non-deterministic on MariaDB and MySQL < 8.0. We therefore skip them for now in these cases, so our CI tests don't non-deterministically fail (false positive).")]
     public class NorthwindSplitIncludeQueryMySqlTest : NorthwindSplitIncludeQueryTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>
     {
         public NorthwindSplitIncludeQueryMySqlTest(NorthwindQueryMySqlFixture<NoopModelCustomizer> fixture, ITestOutputHelper testOutputHelper)
