@@ -15,7 +15,7 @@ The following versions of MySqlConnector, EF Core, .NET (Core), .NET Standard an
 
 Release | Branch | MySqlConnector | EF Core | .NET Standard | .NET (Core) | .NET Framework
 --- | --- | --- | --- | --- | --- | ---
-[6.0.0-<br />preview.7](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/6.0.0-preview.7) | [master](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/master) | >= 1.4.0-beta.4 | 6.0.0-<br />preview.7 | N/A | 6.0+ | N/A
+[6.0.0-<br />rc.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/6.0.0-rc.1) | [master](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/master) | >= 1.4.0-beta.4 | 6.0.0-<br />rc.1 | N/A | 6.0+ | N/A
 [5.0.2](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/5.0.2) | [5.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/5.0-maint) | >= 1.3.13 | 5.0.x | 2.1 | 3.0+ | N/A
 [3.2.7](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.2.7) | [3.2-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/3.2-maint) | >= 0.69.10 < 1.0.0 | 3.1.x | 2.0 | 2.0+ | 4.6.1+
 [2.2.6](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/2.2.6) | [2.2-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/2.2-maint) | >= 0.59.2 < 1.0.0 | 2.2.6 | 2.0 | 2.0+ | 4.6.1+
@@ -29,7 +29,7 @@ Release | Branch | MySqlConnector | EF Core | .NET Standard | .NET (Core) | .NET
 
 ### Supported Database Servers and Versions
 
-`Pomelo.EntityFrameworkCore.MySql` is tested at least against the latest 2 minor versions of `MySQL` and `MariaDB`. Older versions (e.g. MySQL 5.6) and other server implementations (e.g. Amazon Aurora) are usually compatible to a high degree as well, but are not _officially_ supported or tested.
+`Pomelo.EntityFrameworkCore.MySql` is tested against all actively maintained versions of `MySQL` and `MariaDB`. Older versions (e.g. MySQL 5.6) and other server implementations (e.g. Amazon Aurora) are usually compatible to a high degree as well, but are not tested as part of our CI.
 
 Currently supported versions are:
 
@@ -44,7 +44,9 @@ Currently supported versions are:
 
 Milestone | Status | Release Date
 ----------|--------|-------------
-6.0.0 | In Development | TBA (see [#1413](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1413))
+6.0.0 | Announced | 2021-11-09 (see [#1413](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1413))
+6.0.0-rc.2 | Announced | 2021-11-09
+6.0.0-rc.1 | Released | 2021-11-09
 6.0.0-preview.7 | Released | 2021-10-07
 6.0.0-preview.6 | Released | 2021-10-04
 6.0.0-preview.5 | Released | 2021-06-27
@@ -97,7 +99,7 @@ public class Startup
         // Use 'MariaDbServerVersion' for MariaDB.
         // Alternatively, use 'ServerVersion.AutoDetect(connectionString)'.
         // For common usages, see pull request #1233.
-        var serverVersion = new MySqlServerVersion(new Version(8, 0, 26));
+        var serverVersion = new MySqlServerVersion(new Version(8, 0, 27));
 
         // Replace 'YourDbContext' with the name of your own DbContext derived class.
         services.AddDbContext<YourDbContext>(
