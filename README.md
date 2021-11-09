@@ -15,8 +15,8 @@ The following versions of MySqlConnector, EF Core, .NET (Core), .NET Standard an
 
 Release | Branch | MySqlConnector | EF Core | .NET Standard | .NET (Core) | .NET Framework
 --- | --- | --- | --- | --- | --- | ---
-[6.0.0-<br />rc.2](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/6.0.0-rc.2) | [master](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/master) | >= 2.0.0-rc.1 | 6.0.0-<br />rc.2 | N/A | 6.0+ | N/A
-[5.0.2](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/5.0.2) | [5.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/5.0-maint) | >= 1.3.13 | 5.0.x | 2.1 | 3.0+ | N/A
+[6.0.0](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/6.0.0) | [master](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/master) | >= 2.0.0 | 6.0.x | N/A | 6.0+ | N/A
+[5.0.3](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/5.0.3) | [5.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/5.0-maint) | >= 1.3.13 | 5.0.x | 2.1 | 3.0+ | N/A
 [3.2.7](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.2.7) | [3.2-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/3.2-maint) | >= 0.69.10 < 1.0.0 | 3.1.x | 2.0 | 2.0+ | 4.6.1+
 [2.2.6](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/2.2.6) | [2.2-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/2.2-maint) | >= 0.59.2 < 1.0.0 | 2.2.6 | 2.0 | 2.0+ | 4.6.1+
 
@@ -44,13 +44,8 @@ Currently supported versions are:
 
 Milestone | Status | Release Date
 ----------|--------|-------------
-6.0.0 | Announced | 2021-11-09 (see [#1413](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1413))
-6.0.0-rc.2 | Released | 2021-11-09
-6.0.0-rc.1 | Released | 2021-11-09
-6.0.0-preview.7 | Released | 2021-10-07
-6.0.0-preview.6 | Released | 2021-10-04
-6.0.0-preview.5 | Released | 2021-06-27
-6.0.0-preview.4 | Released | 2021-05-25
+6.0.0 | Released | 2021-11-09 (see [#1413](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1413))
+5.0.3 | Released | 2021-11-09
 5.0.2 | Released | 2021-10-04
 3.2.7 | Released | 2021-10-04
 3.0.1 | Released | 2019-12-04
@@ -58,8 +53,6 @@ Milestone | Status | Release Date
 2.1.4 | Released | 2018-11-29
 
 ## Nightly Builds
-
-Our **latest** nightly builds currently target EF Core `6.0.0` RTM.
 
 To use nightly builds from our Azure DevOps feed, add a `NuGet.config` file to your solution root with the following content and enable _prereleases_:
 
@@ -80,7 +73,7 @@ To use nightly builds from our Azure DevOps feed, add a `NuGet.config` file to y
 Ensure that your `.csproj` file contains the following reference:
 
 ```xml
-<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="5.0.2" />
+<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.0" />
 ```
 
 ### 2. Services Configuration
