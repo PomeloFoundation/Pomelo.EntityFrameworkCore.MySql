@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
@@ -20,7 +19,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         [InlineData(MySqlGuidFormat.TimeSwapBinary16, "UUID_TO_BIN('850368D8-93EA-4023-ACC7-6FA6E4C3B27F', 1)", "8.0.0-mysql")]
         [InlineData(MySqlGuidFormat.TimeSwapBinary16, "X'402393EA850368D8ACC76FA6E4C3B27F'", null)]
         [InlineData(MySqlGuidFormat.LittleEndianBinary16, "X'D8680385EA932340ACC76FA6E4C3B27F'", null)]
-        [InlineData(MySqlGuidFormat.None, "X'D8680385EA932340ACC76FA6E4C3B27F'", null)]
+        [InlineData(MySqlGuidFormat.None, "'850368d8-93ea-4023-acc7-6fa6e4c3b27f'", null)]
         public virtual void Insert_and_read_Guid_value(MySqlGuidFormat guidFormat, string sqlEquivalent, string supportedServerVersion)
         {
             if (supportedServerVersion != null &&
@@ -42,7 +41,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 .ToList();
 
             var sqlResult = context.SimpleGuidEntities
-                .FromSqlRaw(@"select * from `SimpleGuidEntities` where `GuidValue` = " + string.Format(sqlEquivalent, new Guid("850368D8-93EA-4023-ACC7-6FA6E4C3B27F")))
+                .FromSqlRaw("select * from `SimpleGuidEntities` where `GuidValue` = " + sqlEquivalent)
                 .ToList();
 
             Assert.Single(result);

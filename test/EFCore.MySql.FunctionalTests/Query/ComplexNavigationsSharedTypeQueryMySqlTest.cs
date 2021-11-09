@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public class ComplexNavigationsSharedTypeQueryMySqlTest : ComplexNavigationsSharedQueryTypeRelationalTestBase<
+    public class ComplexNavigationsSharedTypeQueryMySqlTest : ComplexNavigationsSharedTypeQueryRelationalTestBase<
         ComplexNavigationsSharedTypeQueryMySqlTest.ComplexNavigationsSharedTypeQueryMySqlFixture>
     {
         // ReSharper disable once UnusedParameter.Local

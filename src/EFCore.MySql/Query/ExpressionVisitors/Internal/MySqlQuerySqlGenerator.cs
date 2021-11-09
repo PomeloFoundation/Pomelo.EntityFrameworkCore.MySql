@@ -282,8 +282,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         }
 
         private static bool RequiresBrackets(SqlExpression expression)
-            => expression is SqlBinaryExpression ||
-               expression is LikeExpression;
+            => expression is SqlBinaryExpression
+               || expression is LikeExpression
+               || (expression is SqlUnaryExpression unary
+                   && unary.Operand.Type == typeof(bool)
+                   && (unary.OperatorType == ExpressionType.Equal
+                       || unary.OperatorType == ExpressionType.NotEqual));
 
         public virtual Expression VisitMySqlRegexp(MySqlRegexpExpression mySqlRegexpExpression)
         {

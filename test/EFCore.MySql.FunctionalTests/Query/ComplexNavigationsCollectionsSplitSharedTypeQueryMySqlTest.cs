@@ -3,7 +3,7 @@ using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public class ComplexNavigationsCollectionsSplitSharedTypeQueryMySqlTest : ComplexNavigationsCollectionsSplitSharedQueryTypeRelationalTestBase<ComplexNavigationsSharedTypeQueryMySqlFixture>
+    public class ComplexNavigationsCollectionsSplitSharedTypeQueryMySqlTest : ComplexNavigationsCollectionsSplitSharedTypeQueryRelationalTestBase<ComplexNavigationsSharedTypeQueryMySqlFixture>
     {
         public ComplexNavigationsCollectionsSplitSharedTypeQueryMySqlTest(
             ComplexNavigationsSharedTypeQueryMySqlFixture fixture,

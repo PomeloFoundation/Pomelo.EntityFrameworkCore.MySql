@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
@@ -46,6 +47,44 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     .ThenBy(b => b.EmployeeID) // Needs to be explicitly ordered by EmployeeID as well
                     .Take(2),
                 entryCount: 6);
+        }
+
+        public override Task Include_collection_with_multiple_conditional_order_by(bool async)
+        {
+            return AssertQuery(
+                async,
+                ss => ss.Set<Order>()
+                    .Include(c => c.OrderDetails)
+                    .OrderBy(o => o.OrderID > 0)
+                    .ThenBy(o => o.Customer != null ? o.Customer.City : string.Empty)
+                    .ThenBy(b => b.EmployeeID) // Needs to be explicitly ordered by EmployeeID as well
+                    .Take(5),
+                elementAsserter: (e, a) => AssertInclude(e, a, new ExpectedInclude<Order>(o => o.OrderDetails)),
+                entryCount: 14);
+        }
+
+        [ConditionalTheory(Skip = "https://github.com/dotnet/efcore/issues/21202")]
+        public override Task Include_collection_skip_no_order_by(bool async)
+        {
+            return base.Include_collection_skip_no_order_by(async);
+        }
+
+        [ConditionalTheory(Skip = "https://github.com/dotnet/efcore/issues/21202")]
+        public override Task Include_collection_skip_take_no_order_by(bool async)
+        {
+            return base.Include_collection_skip_take_no_order_by(async);
+        }
+
+        [ConditionalTheory(Skip = "https://github.com/dotnet/efcore/issues/21202")]
+        public override Task Include_collection_take_no_order_by(bool async)
+        {
+            return base.Include_collection_take_no_order_by(async);
+        }
+
+        [ConditionalTheory(Skip = "https://github.com/dotnet/efcore/issues/21202")]
+        public override Task Include_duplicate_collection_result_operator(bool async)
+        {
+            return base.Include_duplicate_collection_result_operator(async);
         }
     }
 }

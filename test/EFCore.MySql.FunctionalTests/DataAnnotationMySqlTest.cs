@@ -24,7 +24,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         protected override void UseTransaction(DatabaseFacade facade, IDbContextTransaction transaction)
             => facade.UseTransaction(transaction.GetDbTransaction());
 
-        public override ModelBuilder Non_public_annotations_are_enabled()
+        public override IModel Non_public_annotations_are_enabled()
         {
             var modelBuilder = CreateModelBuilder();
 
@@ -32,14 +32,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                     PrivateMemberAnnotationClass.PersonFirstNameExpr)
                 .HasColumnType("varchar(128)");
 
-            Validate(modelBuilder);
+            var model = Validate(modelBuilder);
 
-            Assert.True(GetProperty<PrivateMemberAnnotationClass>(modelBuilder, "PersonFirstName").IsPrimaryKey());
+            Assert.True(GetProperty<PrivateMemberAnnotationClass>(model, "PersonFirstName").IsPrimaryKey());
 
-            return modelBuilder;
+            return model;
         }
 
-        public override ModelBuilder Field_annotations_are_enabled()
+        public override IModel Field_annotations_are_enabled()
         {
             var modelBuilder = CreateModelBuilder();
 
@@ -47,14 +47,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 .Property<string>("_personFirstName")
                 .HasColumnType("varchar(128)");
 
-            Validate(modelBuilder);
+            var model = Validate(modelBuilder);
 
-            Assert.True(GetProperty<FieldAnnotationClass>(modelBuilder, "_personFirstName").IsPrimaryKey());
+            Assert.True(GetProperty<FieldAnnotationClass>(model, "_personFirstName").IsPrimaryKey());
 
-            return modelBuilder;
+            return model;
         }
 
-        public override ModelBuilder Key_and_column_work_together()
+        public override IModel Key_and_column_work_together()
         {
             var modelBuilder = CreateModelBuilder();
 
@@ -62,47 +62,47 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 .Property(c => c.PersonFirstName)
                 .HasColumnType("varchar(128)");
 
-            Validate(modelBuilder);
+            var model = Validate(modelBuilder);
 
-            Assert.True(GetProperty<ColumnKeyAnnotationClass1>(modelBuilder, "PersonFirstName").IsPrimaryKey());
+            Assert.True(GetProperty<ColumnKeyAnnotationClass1>(model, "PersonFirstName").IsPrimaryKey());
 
-            return modelBuilder;
+            return model;
         }
 
-        public override ModelBuilder Key_and_MaxLength_64_produce_nvarchar_64()
+        public override IModel Key_and_MaxLength_64_produce_nvarchar_64()
         {
-            var modelBuilder = base.Key_and_MaxLength_64_produce_nvarchar_64();
+            var model = base.Key_and_MaxLength_64_produce_nvarchar_64();
 
-            var property = GetProperty<ColumnKeyAnnotationClass2>(modelBuilder, "PersonFirstName");
+            var property = GetProperty<ColumnKeyAnnotationClass2>(model, "PersonFirstName");
 
             var storeType = property.GetRelationalTypeMapping().StoreType;
 
             Assert.Equal("varchar(64)", storeType);
 
-            return modelBuilder;
+            return model;
         }
 
-        public override ModelBuilder Timestamp_takes_precedence_over_MaxLength()
+        public override IModel Timestamp_takes_precedence_over_MaxLength()
         {
-            var modelBuilder = base.Timestamp_takes_precedence_over_MaxLength();
+            var model = base.Timestamp_takes_precedence_over_MaxLength();
 
-            var property = GetProperty<TimestampAndMaxlen>(modelBuilder, "MaxTimestamp");
+            var property = GetProperty<TimestampAndMaxlen>(model, "MaxTimestamp");
 
             var storeTypeNameBase = property.GetRelationalTypeMapping().StoreTypeNameBase;
 
             Assert.Equal("timestamp", storeTypeNameBase);
 
-            return modelBuilder;
+            return model;
         }
 
-        public override ModelBuilder TableNameAttribute_affects_table_name_in_TPH()
+        public override IModel TableNameAttribute_affects_table_name_in_TPH()
         {
-            var modelBuilder = base.TableNameAttribute_affects_table_name_in_TPH();
+            var model = base.TableNameAttribute_affects_table_name_in_TPH();
 
-            var relational = modelBuilder.Model.FindEntityType(typeof(TNAttrBase));
+            var relational = model.FindEntityType(typeof(TNAttrBase));
             Assert.Equal("A", relational.GetTableName());
 
-            return modelBuilder;
+            return model;
         }
 
         public override void ConcurrencyCheckAttribute_throws_if_value_in_database_changed()
@@ -160,17 +160,17 @@ WHERE ROW_COUNT() = 1 AND `Unique_No` = LAST_INSERT_ID();");
         }
 
         [ConditionalFact]
-        public virtual ModelBuilder CharSet_attribute_is_applied_to_column()
+        public virtual IModel CharSet_attribute_is_applied_to_column()
         {
             var modelBuilder = CreateModelBuilder();
 
             modelBuilder.Entity<ColumnWithCharSet>();
 
-            Validate(modelBuilder);
+            var model = Validate(modelBuilder);
 
-            Assert.Equal("latin1", GetProperty<ColumnWithCharSet>(modelBuilder, "PersonFirstName").GetCharSet());
+            Assert.Equal("latin1", GetProperty<ColumnWithCharSet>(model, "PersonFirstName").GetCharSet());
 
-            return modelBuilder;
+            return model;
         }
 
         protected class ColumnWithCharSet
@@ -182,17 +182,17 @@ WHERE ROW_COUNT() = 1 AND `Unique_No` = LAST_INSERT_ID();");
         }
 
         [ConditionalFact]
-        public virtual ModelBuilder CharSet_attribute_is_applied_to_table()
+        public virtual IModel CharSet_attribute_is_applied_to_table()
         {
             var modelBuilder = CreateModelBuilder();
 
             modelBuilder.Entity<TableWithCharSet>();
 
-            Validate(modelBuilder);
+            var model = Validate(modelBuilder);
 
-            Assert.Equal("latin1", GetEntityType<TableWithCharSet>(modelBuilder).GetCharSet());
+            Assert.Equal("latin1", model.FindEntityType(typeof(TableWithCharSet)).GetCharSet());
 
-            return modelBuilder;
+            return model;
         }
 
         [MySqlCharSet("latin1")]
@@ -202,17 +202,17 @@ WHERE ROW_COUNT() = 1 AND `Unique_No` = LAST_INSERT_ID();");
         }
 
         [ConditionalFact]
-        public virtual ModelBuilder Collation_attribute_is_applied_to_column()
+        public virtual IModel Collation_attribute_is_applied_to_column()
         {
             var modelBuilder = CreateModelBuilder();
 
             modelBuilder.Entity<ColumnWithCollation>();
 
-            Validate(modelBuilder);
+            var model = Validate(modelBuilder);
 
-            Assert.Equal("latin1_bin", GetProperty<ColumnWithCollation>(modelBuilder, "PersonFirstName").GetCollation());
+            Assert.Equal("latin1_bin", GetProperty<ColumnWithCollation>(model, "PersonFirstName").GetCollation());
 
-            return modelBuilder;
+            return model;
         }
 
         protected class ColumnWithCollation
@@ -224,17 +224,17 @@ WHERE ROW_COUNT() = 1 AND `Unique_No` = LAST_INSERT_ID();");
         }
 
         [ConditionalFact]
-        public virtual ModelBuilder Collation_attribute_is_applied_to_table()
+        public virtual IModel Collation_attribute_is_applied_to_table()
         {
             var modelBuilder = CreateModelBuilder();
 
             modelBuilder.Entity<TableWithCollation>();
 
-            Validate(modelBuilder);
+            var model = Validate(modelBuilder);
 
-            Assert.Equal("latin1_bin", GetEntityType<TableWithCollation>(modelBuilder).GetCollation());
+            Assert.Equal("latin1_bin", model.FindEntityType(typeof(TableWithCollation)).GetCollation());
 
-            return modelBuilder;
+            return model;
         }
 
         [MySqlCollation("latin1_bin")]

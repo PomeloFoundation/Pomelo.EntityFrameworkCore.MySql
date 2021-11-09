@@ -1,7 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -17,6 +14,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
             protected ProxyGraphUpdatesMySqlTestBase(TFixture fixture)
                 : base(fixture)
+            {
+            }
+
+            // Needs lazy-loading
+            public override void Attempting_to_save_two_entity_cycle_with_lazy_loading_throws()
             {
             }
 

@@ -4,7 +4,7 @@ using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public class ComplexNavigationsCollectionsSharedTypeQueryMySqlTest : ComplexNavigationsCollectionsSharedQueryTypeRelationalTestBase<
+    public class ComplexNavigationsCollectionsSharedTypeQueryMySqlTest : ComplexNavigationsCollectionsSharedTypeQueryRelationalTestBase<
         ComplexNavigationsSharedTypeQueryMySqlTest.ComplexNavigationsSharedTypeQueryMySqlFixture>
     {
         public ComplexNavigationsCollectionsSharedTypeQueryMySqlTest(
@@ -39,7 +39,9 @@ LEFT JOIN (
         WHERE (`l3`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`l3`.`Level1_Required_Id` IS NOT NULL)) AND `l3`.`OneToMany_Required_Inverse2Id` IS NOT NULL
     ) AS `t1` ON `l2`.`Id` = `t1`.`Id`
     WHERE `l2`.`Level2_Required_Id` IS NOT NULL AND (`l2`.`OneToMany_Required_Inverse3Id` IS NOT NULL)
-) AS `t0` ON `t`.`Id` = `t0`.`OneToMany_Optional_Inverse3Id`
+) AS `t0` ON CASE
+    WHEN (`t`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`t`.`Level1_Required_Id` IS NOT NULL)) AND `t`.`OneToMany_Required_Inverse2Id` IS NOT NULL THEN `t`.`Id`
+END = `t0`.`OneToMany_Optional_Inverse3Id`
 ORDER BY `l`.`Id`, `t`.`Id`, `t`.`Id0`, `t0`.`Id`, `t0`.`Id0`");
         }
 
@@ -66,28 +68,6 @@ WHERE (`t`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`t`.`Level1_Required_Id`
 ORDER BY `l`.`Id`, `t`.`Id`, `t0`.`Id`");
         }
 
-        public override async Task SelectMany_with_navigation_and_Distinct_projecting_columns_including_join_key(bool async)
-        {
-            await base.SelectMany_with_navigation_and_Distinct_projecting_columns_including_join_key(async);
-
-            AssertSql(
-                @"SELECT `l`.`Id`, `l`.`Date`, `l`.`Name`, `t`.`Id`, `t`.`Name`, `t`.`FK`, `t0`.`Id`, `t0`.`OneToOne_Required_PK_Date`, `t0`.`Level1_Optional_Id`, `t0`.`Level1_Required_Id`, `t0`.`Level2_Name`, `t0`.`OneToMany_Optional_Inverse2Id`, `t0`.`OneToMany_Required_Inverse2Id`, `t0`.`OneToOne_Optional_PK_Inverse2Id`, `t0`.`Id0`
-FROM `Level1` AS `l`
-INNER JOIN (
-    SELECT DISTINCT `l0`.`Id`, `l0`.`Level2_Name` AS `Name`, `l0`.`OneToMany_Optional_Inverse2Id` AS `FK`
-    FROM `Level1` AS `l0`
-    INNER JOIN `Level1` AS `l1` ON `l0`.`Id` = `l1`.`Id`
-    WHERE (`l0`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`l0`.`Level1_Required_Id` IS NOT NULL)) AND `l0`.`OneToMany_Required_Inverse2Id` IS NOT NULL
-) AS `t` ON `l`.`Id` = `t`.`FK`
-LEFT JOIN (
-    SELECT `l2`.`Id`, `l2`.`OneToOne_Required_PK_Date`, `l2`.`Level1_Optional_Id`, `l2`.`Level1_Required_Id`, `l2`.`Level2_Name`, `l2`.`OneToMany_Optional_Inverse2Id`, `l2`.`OneToMany_Required_Inverse2Id`, `l2`.`OneToOne_Optional_PK_Inverse2Id`, `l3`.`Id` AS `Id0`
-    FROM `Level1` AS `l2`
-    INNER JOIN `Level1` AS `l3` ON `l2`.`Id` = `l3`.`Id`
-    WHERE (`l2`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`l2`.`Level1_Required_Id` IS NOT NULL)) AND `l2`.`OneToMany_Required_Inverse2Id` IS NOT NULL
-) AS `t0` ON `l`.`Id` = `t0`.`OneToMany_Optional_Inverse2Id`
-ORDER BY `l`.`Id`, `t`.`Id`, `t`.`Name`, `t`.`FK`, `t0`.`Id`");
-        }
-
         public override async Task Take_Select_collection_Take(bool async)
         {
             await base.Take_Select_collection_Take(async);
@@ -95,7 +75,7 @@ ORDER BY `l`.`Id`, `t`.`Id`, `t`.`Name`, `t`.`FK`, `t0`.`Id`");
             AssertSql(
                 @"@__p_0='1'
 
-SELECT `t`.`Id`, `t`.`Name`, `t0`.`Id`, `t0`.`Name`, `t0`.`Level1Id`, `t0`.`Level2Id`, `t0`.`Id0`, `t0`.`Date`, `t0`.`Name0`, `t0`.`Id00`
+SELECT `t`.`Id`, `t`.`Name`, `t0`.`Id`, `t0`.`Name`, `t0`.`Level1Id`, `t0`.`Level2Id`, `t0`.`Id0`, `t0`.`Date`, `t0`.`Name0`, `t0`.`Id1`, `t0`.`Id00`
 FROM (
     SELECT `l`.`Id`, `l`.`Name`
     FROM `Level1` AS `l`
@@ -103,18 +83,24 @@ FROM (
     LIMIT @__p_0
 ) AS `t`
 LEFT JOIN LATERAL (
-    SELECT `t1`.`Id`, `t1`.`Level2_Name` AS `Name`, `t1`.`OneToMany_Required_Inverse2Id` AS `Level1Id`, `t1`.`Level1_Required_Id` AS `Level2Id`, `l1`.`Id` AS `Id0`, `l1`.`Date`, `l1`.`Name` AS `Name0`, `t1`.`Id0` AS `Id00`
+    SELECT CASE
+        WHEN (`t1`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`t1`.`Level1_Required_Id` IS NOT NULL)) AND `t1`.`OneToMany_Required_Inverse2Id` IS NOT NULL THEN `t1`.`Id`
+    END AS `Id`, `t1`.`Level2_Name` AS `Name`, `t1`.`OneToMany_Required_Inverse2Id` AS `Level1Id`, `t1`.`Level1_Required_Id` AS `Level2Id`, `l1`.`Id` AS `Id0`, `l1`.`Date`, `l1`.`Name` AS `Name0`, `t1`.`Id` AS `Id1`, `t1`.`Id0` AS `Id00`, `t1`.`c`
     FROM (
-        SELECT `l0`.`Id`, `l0`.`Level1_Required_Id`, `l0`.`Level2_Name`, `l0`.`OneToMany_Required_Inverse2Id`, `l2`.`Id` AS `Id0`
+        SELECT `l0`.`Id`, `l0`.`OneToOne_Required_PK_Date`, `l0`.`Level1_Required_Id`, `l0`.`Level2_Name`, `l0`.`OneToMany_Required_Inverse2Id`, `l2`.`Id` AS `Id0`, CASE
+            WHEN (`l0`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`l0`.`Level1_Required_Id` IS NOT NULL)) AND `l0`.`OneToMany_Required_Inverse2Id` IS NOT NULL THEN `l0`.`Id`
+        END AS `c`
         FROM `Level1` AS `l0`
         INNER JOIN `Level1` AS `l2` ON `l0`.`Id` = `l2`.`Id`
         WHERE ((`l0`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`l0`.`Level1_Required_Id` IS NOT NULL)) AND `l0`.`OneToMany_Required_Inverse2Id` IS NOT NULL) AND (`t`.`Id` = `l0`.`OneToMany_Required_Inverse2Id`)
-        ORDER BY `l0`.`Id`
+        ORDER BY CASE
+            WHEN (`l0`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`l0`.`Level1_Required_Id` IS NOT NULL)) AND `l0`.`OneToMany_Required_Inverse2Id` IS NOT NULL THEN `l0`.`Id`
+        END
         LIMIT 3
     ) AS `t1`
     INNER JOIN `Level1` AS `l1` ON `t1`.`Level1_Required_Id` = `l1`.`Id`
 ) AS `t0` ON TRUE
-ORDER BY `t`.`Id`, `t0`.`Id`, `t0`.`Id00`");
+ORDER BY `t`.`Id`, `t0`.`c`, `t0`.`Id1`, `t0`.`Id00`");
         }
 
         public override async Task Skip_Take_Select_collection_Skip_Take(bool async)
@@ -124,7 +110,7 @@ ORDER BY `t`.`Id`, `t0`.`Id`, `t0`.`Id00`");
             AssertSql(
                 @"@__p_0='1'
 
-SELECT `t`.`Id`, `t`.`Name`, `t0`.`Id`, `t0`.`Name`, `t0`.`Level1Id`, `t0`.`Level2Id`, `t0`.`Id0`, `t0`.`Date`, `t0`.`Name0`, `t0`.`Id00`
+SELECT `t`.`Id`, `t`.`Name`, `t0`.`Id`, `t0`.`Name`, `t0`.`Level1Id`, `t0`.`Level2Id`, `t0`.`Id0`, `t0`.`Date`, `t0`.`Name0`, `t0`.`Id1`, `t0`.`Id00`
 FROM (
     SELECT `l`.`Id`, `l`.`Name`
     FROM `Level1` AS `l`
@@ -132,18 +118,24 @@ FROM (
     LIMIT @__p_0 OFFSET @__p_0
 ) AS `t`
 LEFT JOIN LATERAL (
-    SELECT `t1`.`Id`, `t1`.`Level2_Name` AS `Name`, `t1`.`OneToMany_Required_Inverse2Id` AS `Level1Id`, `t1`.`Level1_Required_Id` AS `Level2Id`, `l1`.`Id` AS `Id0`, `l1`.`Date`, `l1`.`Name` AS `Name0`, `t1`.`Id0` AS `Id00`
+    SELECT CASE
+        WHEN (`t1`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`t1`.`Level1_Required_Id` IS NOT NULL)) AND `t1`.`OneToMany_Required_Inverse2Id` IS NOT NULL THEN `t1`.`Id`
+    END AS `Id`, `t1`.`Level2_Name` AS `Name`, `t1`.`OneToMany_Required_Inverse2Id` AS `Level1Id`, `t1`.`Level1_Required_Id` AS `Level2Id`, `l1`.`Id` AS `Id0`, `l1`.`Date`, `l1`.`Name` AS `Name0`, `t1`.`Id` AS `Id1`, `t1`.`Id0` AS `Id00`, `t1`.`c`
     FROM (
-        SELECT `l0`.`Id`, `l0`.`Level1_Required_Id`, `l0`.`Level2_Name`, `l0`.`OneToMany_Required_Inverse2Id`, `l2`.`Id` AS `Id0`
+        SELECT `l0`.`Id`, `l0`.`OneToOne_Required_PK_Date`, `l0`.`Level1_Required_Id`, `l0`.`Level2_Name`, `l0`.`OneToMany_Required_Inverse2Id`, `l2`.`Id` AS `Id0`, CASE
+            WHEN (`l0`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`l0`.`Level1_Required_Id` IS NOT NULL)) AND `l0`.`OneToMany_Required_Inverse2Id` IS NOT NULL THEN `l0`.`Id`
+        END AS `c`
         FROM `Level1` AS `l0`
         INNER JOIN `Level1` AS `l2` ON `l0`.`Id` = `l2`.`Id`
         WHERE ((`l0`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`l0`.`Level1_Required_Id` IS NOT NULL)) AND `l0`.`OneToMany_Required_Inverse2Id` IS NOT NULL) AND (`t`.`Id` = `l0`.`OneToMany_Required_Inverse2Id`)
-        ORDER BY `l0`.`Id`
+        ORDER BY CASE
+            WHEN (`l0`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`l0`.`Level1_Required_Id` IS NOT NULL)) AND `l0`.`OneToMany_Required_Inverse2Id` IS NOT NULL THEN `l0`.`Id`
+        END
         LIMIT 3 OFFSET 1
     ) AS `t1`
     INNER JOIN `Level1` AS `l1` ON `t1`.`Level1_Required_Id` = `l1`.`Id`
 ) AS `t0` ON TRUE
-ORDER BY `t`.`Id`, `t0`.`Id`, `t0`.`Id00`");
+ORDER BY `t`.`Id`, `t0`.`c`, `t0`.`Id1`, `t0`.`Id00`");
         }
 
         public override async Task Skip_Take_on_grouping_element_inside_collection_projection(bool async)
@@ -225,7 +217,7 @@ LEFT JOIN LATERAL (
         WHERE (`l1`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`l1`.`Level1_Required_Id` IS NOT NULL)) AND `l1`.`OneToMany_Required_Inverse2Id` IS NOT NULL
     ) AS `t2` ON `t0`.`Id` = `t2`.`OneToMany_Optional_Inverse2Id`
 ) AS `t1` ON TRUE
-ORDER BY `t`.`Date`, `t1`.`Name`, `t1`.`Date`, `t1`.`Id0`");
+ORDER BY `t`.`Date`, `t1`.`Name`, `t1`.`Id`, `t1`.`Id0`");
         }
 
         public override async Task Skip_Take_on_grouping_element_with_reference_include(bool async)
@@ -255,7 +247,7 @@ LEFT JOIN LATERAL (
         WHERE (`l1`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`l1`.`Level1_Required_Id` IS NOT NULL)) AND `l1`.`OneToMany_Required_Inverse2Id` IS NOT NULL
     ) AS `t2` ON `t0`.`Id` = `t2`.`Level1_Optional_Id`
 ) AS `t1` ON TRUE
-ORDER BY `t`.`Date`, `t1`.`Name`, `t1`.`Date`, `t1`.`Id0`");
+ORDER BY `t`.`Date`, `t1`.`Name`, `t1`.`Id`, `t1`.`Id0`");
         }
 
         private void AssertSql(params string[] expected)
