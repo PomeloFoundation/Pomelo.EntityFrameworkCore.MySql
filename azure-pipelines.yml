@@ -17,8 +17,8 @@ variables:
   runIntegrationTests: true
 
   # Dotnet + Tools versioning:
-  majorDotnetVersion: 6 # empty uses global.json (for rtm/servicing releases)
-  includeDotnetPrereleases: true
+  majorDotnetVersion: # empty uses global.json (for rtm/servicing releases), otherwise the major version, e.g. 6
+  includeDotnetPrereleases: false
 
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
@@ -42,7 +42,7 @@ jobs:
       MySQL 5.7 (Linux):
         vmImageName: 'ubuntu-latest'
         databaseServerType: 'mysql'
-        databaseServerVersion: '5.7.35'
+        databaseServerVersion: '5.7.34'
         sqlMode: $(mysqlLegacySqlMode)
         skipTests: false
       MariaDB 10.6 (Linux):
