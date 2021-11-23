@@ -3,6 +3,7 @@
 
 using System;
 using System.Data.Common;
+using System.Diagnostics;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
@@ -26,7 +27,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         public virtual bool IsUnquoted { get; }
         public virtual bool IsNationalChar
-            => StoreTypeNameBase.StartsWith("n") && StoreTypeNameBase.Contains("char");
+            => StoreTypeNameBase.StartsWith("n", StringComparison.OrdinalIgnoreCase) &&
+               StoreTypeNameBase.Contains("char", StringComparison.OrdinalIgnoreCase);
 
         public MySqlStringTypeMapping(
             [NotNull] string storeType,
