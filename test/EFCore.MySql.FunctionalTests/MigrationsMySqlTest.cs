@@ -293,7 +293,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 $@"CREATE TABLE `IceCream` (
     `IceCreamId` int NOT NULL,
     `Name` NVARCHAR(45) NULL
-) CHARACTER SET=utf8mb4;");
+) CHARACTER SET utf8mb4;");
         }
 
         [ConditionalFact]
