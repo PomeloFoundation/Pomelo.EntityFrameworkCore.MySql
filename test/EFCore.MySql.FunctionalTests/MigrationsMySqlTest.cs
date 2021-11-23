@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -262,6 +263,37 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 $@"ALTER TABLE `IceCream` ADD `Brand` longtext COLLATE {NonDefaultCollation} NULL;",
                 //
                 $@"ALTER TABLE `IceCream` ADD `Name` longtext COLLATE {DefaultCollation} NULL;");
+        }
+
+        [ConditionalFact]
+        public virtual async Task Create_table_NVARCHAR_UPPERCASE_column()
+        {
+            await Test(
+                common => { },
+                source => { },
+                target => target.Entity(
+                    "IceCream",
+                    e =>
+                    {
+                        e.Property<int>("IceCreamId");
+                        e.Property<string>("Name")
+                            .HasColumnType("NVARCHAR") // UPPERCASE
+                            .HasMaxLength(45);
+                    }),
+                result =>
+                {
+                    var table = Assert.Single(result.Tables);
+                    var nameColumn = Assert.Single(table.Columns.Where(c => c.Name == "Name"));
+
+                    Assert.True(nameColumn[MySqlAnnotationNames.CharSet] is "utf8mb3"
+                        or "utf8");
+                });
+
+            AssertSql(
+                $@"CREATE TABLE `IceCream` (
+    `IceCreamId` int NOT NULL,
+    `Name` NVARCHAR(45) NULL
+) CHARACTER SET utf8mb4;");
         }
 
         [ConditionalFact]

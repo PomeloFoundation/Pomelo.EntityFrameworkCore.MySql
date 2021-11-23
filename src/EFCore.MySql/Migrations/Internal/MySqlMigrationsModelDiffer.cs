@@ -67,14 +67,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                         // Ensure that null will be set for the columns default value, if CURRENT_TIMESTAMP has been required,
                         // or when the store type of the column does not support default values at all.
                         inline = inline ||
-                                 (storeType.StoreTypeNameBase == "datetime" ||
-                                  storeType.StoreTypeNameBase == "timestamp") &&
+                                 (storeType.StoreTypeNameBase.Equals("datetime", StringComparison.OrdinalIgnoreCase) ||
+                                  storeType.StoreTypeNameBase.Equals("timestamp", StringComparison.OrdinalIgnoreCase)) &&
                                  (valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn ||
                                   valueGenerationStrategy == MySqlValueGenerationStrategy.ComputedColumn) ||
-                                 storeType.StoreTypeNameBase.Contains("text") ||
-                                 storeType.StoreTypeNameBase.Contains("blob") ||
-                                 storeType.StoreTypeNameBase == "geometry" ||
-                                 storeType.StoreTypeNameBase == "json";
+                                 storeType.StoreTypeNameBase.Contains("text", StringComparison.OrdinalIgnoreCase) ||
+                                 storeType.StoreTypeNameBase.Contains("blob", StringComparison.OrdinalIgnoreCase) ||
+                                 storeType.StoreTypeNameBase.Equals("geometry", StringComparison.OrdinalIgnoreCase) ||
+                                 storeType.StoreTypeNameBase.Equals("json", StringComparison.OrdinalIgnoreCase);
 
                         if (inline)
                         {
