@@ -326,10 +326,12 @@ SELECT ROW_COUNT();",
             return base.Alter_sequence_increment_by();
         }
 
-        [ConditionalTheory(Skip = "TODO")]
-        public override Task Alter_table_add_comment_non_default_schema()
+        public override async Task Alter_table_add_comment_non_default_schema()
         {
-            return base.Alter_table_add_comment_non_default_schema();
+            await base.Alter_table_add_comment_non_default_schema();
+
+            AssertSql(
+                @"ALTER TABLE `SomeOtherSchema_People` COMMENT 'Table comment';");
         }
 
         [ConditionalTheory(Skip = "TODO")]
@@ -362,10 +364,21 @@ SELECT ROW_COUNT();",
             return base.Create_table_all_settings();
         }
 
-        [ConditionalTheory(Skip = "TODO")]
-        public override Task Create_table_with_multiline_comments()
+        public override async Task Create_table_with_multiline_comments()
         {
-            return base.Create_table_with_multiline_comments();
+            await base.Create_table_with_multiline_comments();
+
+            AssertSql(
+                @"CREATE TABLE `People` (
+    `Id` int NOT NULL,
+    `Name` longtext CHARACTER SET utf8mb4 NULL COMMENT 'This is a multi-line
+column comment.
+More information can
+be found in the docs.'
+) CHARACTER SET=utf8mb4 COMMENT='This is a multi-line
+table comment.
+More information can
+be found in the docs.';");
         }
 
         [ConditionalTheory(Skip = "TODO")]
@@ -1169,9 +1182,19 @@ SELECT ROW_COUNT();",
 
         public class MigrationsMySqlFixture : MigrationsFixtureBase
         {
-            protected override string StoreName { get; } = nameof(MigrationsMySqlTest);
+            protected override string StoreName
+                => nameof(MigrationsMySqlTest);
+
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
             public override TestHelpers TestHelpers => MySqlTestHelpers.Instance;
+
+            public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
+            {
+                new MySqlDbContextOptionsBuilder(builder)
+                    .SchemaBehavior(MySqlSchemaBehavior.Translate, (schema, table) => $"{schema}_{table}");
+
+                return base.AddOptions(builder);
+            }
 
             protected override IServiceCollection AddServices(IServiceCollection serviceCollection)
                 => base.AddServices(serviceCollection)

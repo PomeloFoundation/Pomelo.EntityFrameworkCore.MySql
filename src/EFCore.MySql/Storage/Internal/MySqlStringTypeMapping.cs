@@ -3,7 +3,6 @@
 
 using System;
 using System.Data.Common;
-using System.Diagnostics;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
@@ -145,13 +144,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 : (string)value;
 
             return IsUnquoted
-                ? EscapeSqlLiteral(stringValue)
-                : EscapeSqlLiteralWithLineBreaks(stringValue, _options);
+                ? EscapeSqlLiteral(stringValue, !_options.NoBackslashEscapes)
+                : EscapeSqlLiteralWithLineBreaks(stringValue, !_options.NoBackslashEscapes, _options.ReplaceLineBreaksWithCharFunction);
         }
 
-        public static string EscapeSqlLiteralWithLineBreaks(string value, IMySqlOptions options)
+        public static string EscapeSqlLiteralWithLineBreaks(string value, bool escapeBackslashes, bool replaceLineBreaksWithCharFunction)
         {
-            var escapedLiteral = $"'{EscapeSqlLiteral(value, options)}'";
+            var escapedLiteral = $"'{EscapeSqlLiteral(value, escapeBackslashes)}'";
 
             // BUG: EF Core indents idempotent scripts, which can lead to unexpected values for strings
             //      that contain line breaks.
@@ -159,7 +158,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             //
             //      Convert line break characters to their CHAR() representation as a workaround.
 
-            if (options.ReplaceLineBreaksWithCharFunction
+            if (replaceLineBreaksWithCharFunction
                 && (value.Contains("\r") || value.Contains("\n")))
             {
                 escapedLiteral = "CONCAT(" + escapedLiteral
@@ -171,17 +170,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             return escapedLiteral;
         }
 
-        protected virtual string EscapeSqlLiteral(string literal)
-            => EscapeSqlLiteral(literal, _options);
+        public static string EscapeSqlLiteral(string literal, bool escapeBackslashes)
+            => EscapeBackslashes(Check.NotNull(literal, nameof(literal)).Replace("'", "''"), escapeBackslashes);
 
-        public static string EscapeSqlLiteral(string literal, IMySqlOptions options)
-            => EscapeBackslashes(Check.NotNull(literal, nameof(literal)).Replace("'", "''"), options);
-
-        public static string EscapeBackslashes(string literal, IMySqlOptions options)
+        public static string EscapeBackslashes(string literal, bool escapeBackslashes)
         {
-            return options.NoBackslashEscapes
-                ? literal
-                : literal.Replace(@"\", @"\\");
+            return escapeBackslashes
+                ? literal.Replace(@"\", @"\\")
+                : literal;
         }
     }
 }
