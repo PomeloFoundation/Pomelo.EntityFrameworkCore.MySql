@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
 {
@@ -19,9 +20,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
     {
         private const string MigrationsScript = nameof(MigrationsScript);
 
+        private readonly MySqlSqlGenerationHelper _sqlGenerationHelper;
+
         public MySqlHistoryRepository([NotNull] HistoryRepositoryDependencies dependencies)
             : base(dependencies)
         {
+            _sqlGenerationHelper = (MySqlSqlGenerationHelper)dependencies.SqlGenerationHelper;
         }
 
         protected override void ConfigureTable([NotNull] EntityTypeBuilder<HistoryRow> history)
@@ -43,9 +47,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
 
                 builder
                     .Append("TABLE_SCHEMA=")
-                    .Append(stringTypeMapping.GenerateSqlLiteral(TableSchema ?? Dependencies.Connection.DbConnection.Database))
+                    .Append(
+                        stringTypeMapping.GenerateSqlLiteral(
+                            _sqlGenerationHelper.GetSchemaName(TableName, TableSchema) ??
+                            Dependencies.Connection.DbConnection.Database))
                     .Append(" AND TABLE_NAME=")
-                    .Append(stringTypeMapping.GenerateSqlLiteral(TableName))
+                    .Append(
+                        stringTypeMapping.GenerateSqlLiteral(
+                            _sqlGenerationHelper.GetObjectName(TableName, TableSchema)))
                     .Append(";");
 
                 return builder.ToString();
