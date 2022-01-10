@@ -152,7 +152,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
 
             if (operation.Comment != null)
             {
-                tableOptions.Add(("COMMENT", _stringTypeMapping.GenerateSqlLiteral(operation.Comment)));
+                tableOptions.Add(("COMMENT", MySqlStringTypeMapping.EscapeSqlLiteralWithLineBreaks(operation.Comment, !_options.NoBackslashEscapes, false)));
             }
 
             tableOptions.AddRange(
@@ -1096,10 +1096,12 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
         private void GenerateComment(string comment, MigrationCommandListBuilder builder)
         {
             if (comment == null)
+            {
                 return;
+            }
 
             builder.Append(" COMMENT ")
-                .Append(_stringTypeMapping.GenerateSqlLiteral(comment));
+                .Append(MySqlStringTypeMapping.EscapeSqlLiteralWithLineBreaks(comment, !_options.NoBackslashEscapes, false));
         }
 
         private void ColumnDefinitionWithCharSet(string schema, string table, string name, ColumnOperation operation, IModel model, MigrationCommandListBuilder builder)
