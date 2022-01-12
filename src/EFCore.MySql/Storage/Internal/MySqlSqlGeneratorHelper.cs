@@ -80,11 +80,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public override void DelimitIdentifier(StringBuilder builder, string name, string schema)
             => base.DelimitIdentifier(builder, GetObjectName(name, schema), GetSchemaName(name, schema));
 
-        protected virtual string GetObjectName(string name, string schema)
+        public virtual string GetObjectName(string name, string schema)
             => !string.IsNullOrEmpty(schema) && _options.SchemaNameTranslator != null
                 ? _options.SchemaNameTranslator(schema, name)
                 : name;
 
-        protected virtual string GetSchemaName(string name, string schema) => null;
+        public virtual string GetSchemaName(string name, string schema) => null;
     }
 }
