@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup Label="Common Versions">
-    <DotnetRuntimeVersion>6.0.0</DotnetRuntimeVersion>
+    <DotnetRuntimeVersion>6.0.1</DotnetRuntimeVersion>
     <EFCoreVersion>[$(DotnetRuntimeVersion), 7.0.0)</EFCoreVersion>
     <DependencyPreviewVersion>$(DotnetRuntimeVersion)</DependencyPreviewVersion>
     <AspNetCoreVersion>$(DotnetRuntimeVersion)</AspNetCoreVersion>
@@ -12,33 +12,33 @@
     <PackageReference Update="Microsoft.EntityFrameworkCore.Relational" Version="$(EFCoreVersion)" />
     <PackageReference Update="Microsoft.EntityFrameworkCore" Version="$(EFCoreVersion)" />
 
-    <PackageReference Update="MySqlConnector" Version="2.0.0" />
+    <PackageReference Update="MySqlConnector" Version="2.1.2" />
 
     <PackageReference Update="NetTopologySuite" Version="2.3.0" />
-    <PackageReference Update="System.Text.Json" Version="$(DependencyPreviewVersion)" />
+    <PackageReference Update="System.Text.Json" Version="6.0.1" />
     <PackageReference Update="Newtonsoft.Json" Version="13.0.1" />
 
     <PackageReference Update="Castle.Core" Version="4.4.1" />
     <PackageReference Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(AspNetCoreVersion)" />
     <PackageReference Update="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(AspNetCoreVersion)" />
-    <PackageReference Update="Microsoft.Bcl.AsyncInterfaces" Version="$(DependencyPreviewVersion)" />
+    <PackageReference Update="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
     <PackageReference Update="Microsoft.Bcl.HashCode" Version="1.1.1" />
     <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="3.10.0" />
-    <PackageReference Update="Microsoft.Extensions.Caching.Memory" Version="$(DependencyPreviewVersion)" />
-    <PackageReference Update="Microsoft.Extensions.Configuration.Binder" Version="$(DependencyPreviewVersion)" />
-    <PackageReference Update="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(DependencyPreviewVersion)" />
-    <PackageReference Update="Microsoft.Extensions.Configuration.FileExtensions" Version="$(DependencyPreviewVersion)" />
-    <PackageReference Update="Microsoft.Extensions.Configuration.Json" Version="$(DependencyPreviewVersion)" />
-    <PackageReference Update="Microsoft.Extensions.Configuration" Version="$(DependencyPreviewVersion)" />
-    <PackageReference Update="Microsoft.Extensions.DependencyInjection" Version="$(DependencyPreviewVersion)" />
-    <PackageReference Update="Microsoft.Extensions.DependencyModel" Version="$(DependencyPreviewVersion)" />
-    <PackageReference Update="Microsoft.Extensions.Logging" Version="$(DependencyPreviewVersion)" />
+    <PackageReference Update="Microsoft.Extensions.Caching.Memory" Version="6.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Configuration.FileExtensions" Version="6.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Configuration" Version="6.0.0" />
+    <PackageReference Update="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
+    <PackageReference Update="Microsoft.Extensions.DependencyModel" Version="6.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Logging" Version="6.0.0" />
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.0.0" />
-    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.1.1" />
     <PackageReference Update="Moq" Version="4.16.1" />
-    <PackageReference Update="System.Collections.Immutable" Version="$(DependencyPreviewVersion)" />
+    <PackageReference Update="System.Collections.Immutable" Version="6.0.0" />
     <PackageReference Update="System.ComponentModel.TypeConverter" Version="4.3.0" />
-    <PackageReference Update="System.Diagnostics.DiagnosticSource" Version="$(DependencyPreviewVersion)" />
+    <PackageReference Update="System.Diagnostics.DiagnosticSource" Version="6.0.0" />
     <PackageReference Update="xunit.assert" Version="2.4.1" />
     <PackageReference Update="xunit.core" Version="2.4.1" />
     <PackageReference Update="xunit.runner.console" Version="2.4.1" />
