@@ -257,7 +257,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Storage.ValueCompariso
             return v => JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(v, (JsonSerializerOptions)null), (JsonSerializerOptions)null);
         }
 
-        // REF: Based on https://stackoverflow.com/a/60592310/2618319
+        // REF: Based on https://dotnetfiddle.net/ijrDBZ
+        //      For more context, see https://stackoverflow.com/a/60592310/2618319.
         protected class JsonElementComparer : IEqualityComparer<JsonElement>
         {
             private static JsonElementComparer _instance;
