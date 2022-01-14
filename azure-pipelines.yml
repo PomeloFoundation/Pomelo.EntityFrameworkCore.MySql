@@ -30,45 +30,45 @@ jobs:
       MySQL 8.0 (Windows):
         vmImageName: 'windows-latest'
         databaseServerType: 'mysql'
-        databaseServerVersion: '8.0.26'
+        databaseServerVersion: '8.0.27'
         sqlMode: $(mysqlCurrentSqlMode)
         skipTests: $(skipWindowsTests)
       MySQL 8.0 (Linux):
         vmImageName: 'ubuntu-latest'
         databaseServerType: 'mysql'
-        databaseServerVersion: '8.0.26'
+        databaseServerVersion: '8.0.27'
         sqlMode: $(mysqlCurrentSqlMode)
-        skipTests: false
+        skipTests: true
       MySQL 5.7 (Linux):
         vmImageName: 'ubuntu-latest'
         databaseServerType: 'mysql'
-        databaseServerVersion: '5.7.34'
+        databaseServerVersion: '5.7.36'
         sqlMode: $(mysqlLegacySqlMode)
-        skipTests: false
+        skipTests: true
       MariaDB 10.6 (Linux):
         vmImageName: 'ubuntu-latest'
         databaseServerType: 'mariadb'
-        databaseServerVersion: '10.6.4'
+        databaseServerVersion: '10.6.5'
         sqlMode: $(mariadbSqlMode)
-        skipTests: false
+        skipTests: true
       MariaDB 10.5 (Linux):
         vmImageName: 'ubuntu-latest'
         databaseServerType: 'mariadb'
-        databaseServerVersion: '10.5.12'
+        databaseServerVersion: '10.5.13'
         sqlMode: $(mariadbSqlMode)
-        skipTests: false
+        skipTests: true
       MariaDB 10.4 (Linux):
         vmImageName: 'ubuntu-latest'
         databaseServerType: 'mariadb'
-        databaseServerVersion: '10.4.21'
+        databaseServerVersion: '10.4.22'
         sqlMode: $(mariadbSqlMode)
-        skipTests: false
+        skipTests: true
       MariaDB 10.3 (Linux):
         vmImageName: 'ubuntu-latest'
         databaseServerType: 'mariadb'
-        databaseServerVersion: '10.3.31'
+        databaseServerVersion: '10.3.32'
         sqlMode: $(mariadbSqlMode)
-        skipTests: false
+        skipTests: true
   pool:
     vmImage: $(vmImageName)
   steps:
