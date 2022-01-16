@@ -71,6 +71,34 @@ namespace Microsoft.EntityFrameworkCore
             => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(DateDiffYear)));
 
         /// <summary>
+        ///     Counts the number of year boundaries crossed between the startDate and endDate.
+        ///     Corresponds to TIMESTAMPDIFF(YEAR,startDate,endDate).
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="startDate">Starting date for the calculation.</param>
+        /// <param name="endDate">Ending date for the calculation.</param>
+        /// <returns>Number of year boundaries crossed between the dates.</returns>
+        public static int DateDiffYear(
+            [CanBeNull] this DbFunctions _,
+            DateOnly startDate,
+            DateOnly endDate)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(DateDiffYear)));
+
+        /// <summary>
+        ///     Counts the number of year boundaries crossed between the startDate and endDate.
+        ///     Corresponds to TIMESTAMPDIFF(YEAR,startDate,endDate).
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="startDate">Starting date for the calculation.</param>
+        /// <param name="endDate">Ending date for the calculation.</param>
+        /// <returns>Number of year boundaries crossed between the dates.</returns>
+        public static int? DateDiffYear(
+            [CanBeNull] this DbFunctions _,
+            DateOnly? startDate,
+            DateOnly? endDate)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(DateDiffYear)));
+
+        /// <summary>
         ///     Counts the number of month boundaries crossed between the startDate and endDate.
         ///     Corresponds to TIMESTAMPDIFF(MONTH,startDate,endDate).
         /// </summary>
@@ -124,6 +152,34 @@ namespace Microsoft.EntityFrameworkCore
             [CanBeNull] this DbFunctions _,
             DateTimeOffset? startDate,
             DateTimeOffset? endDate)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(DateDiffMonth)));
+
+        /// <summary>
+        ///     Counts the number of month boundaries crossed between the startDate and endDate.
+        ///     Corresponds to TIMESTAMPDIFF(MONTH,startDate,endDate).
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="startDate">Starting date for the calculation.</param>
+        /// <param name="endDate">Ending date for the calculation.</param>
+        /// <returns>Number of month boundaries crossed between the dates.</returns>
+        public static int DateDiffMonth(
+            [CanBeNull] this DbFunctions _,
+            DateOnly startDate,
+            DateOnly endDate)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(DateDiffMonth)));
+
+        /// <summary>
+        ///     Counts the number of month boundaries crossed between the startDate and endDate.
+        ///     Corresponds to TIMESTAMPDIFF(MONTH,startDate,endDate).
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="startDate">Starting date for the calculation.</param>
+        /// <param name="endDate">Ending date for the calculation.</param>
+        /// <returns>Number of month boundaries crossed between the dates.</returns>
+        public static int? DateDiffMonth(
+            [CanBeNull] this DbFunctions _,
+            DateOnly? startDate,
+            DateOnly? endDate)
             => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(DateDiffMonth)));
 
         /// <summary>
@@ -183,6 +239,34 @@ namespace Microsoft.EntityFrameworkCore
             => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(DateDiffDay)));
 
         /// <summary>
+        ///     Counts the number of day boundaries crossed between the startDate and endDate.
+        ///     Corresponds to TIMESTAMPDIFF(DAY,startDate,endDate).
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="startDate">Starting date for the calculation.</param>
+        /// <param name="endDate">Ending date for the calculation.</param>
+        /// <returns>Number of day boundaries crossed between the dates.</returns>
+        public static int DateDiffDay(
+            [CanBeNull] this DbFunctions _,
+            DateOnly startDate,
+            DateOnly endDate)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(DateDiffDay)));
+
+        /// <summary>
+        ///     Counts the number of day boundaries crossed between the startDate and endDate.
+        ///     Corresponds to TIMESTAMPDIFF(DAY,startDate,endDate).
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="startDate">Starting date for the calculation.</param>
+        /// <param name="endDate">Ending date for the calculation.</param>
+        /// <returns>Number of day boundaries crossed between the dates.</returns>
+        public static int? DateDiffDay(
+            [CanBeNull] this DbFunctions _,
+            DateOnly? startDate,
+            DateOnly? endDate)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(DateDiffDay)));
+
+        /// <summary>
         ///     Counts the number of hour boundaries crossed between the startDate and endDate.
         ///     Corresponds to TIMESTAMPDIFF(HOUR,startDate,endDate).
         /// </summary>
@@ -236,6 +320,34 @@ namespace Microsoft.EntityFrameworkCore
             [CanBeNull] this DbFunctions _,
             DateTimeOffset? startDate,
             DateTimeOffset? endDate)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(DateDiffHour)));
+
+        /// <summary>
+        ///     Counts the number of hour boundaries crossed between the startDate and endDate.
+        ///     Corresponds to TIMESTAMPDIFF(HOUR,startDate,endDate).
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="startDate">Starting date for the calculation.</param>
+        /// <param name="endDate">Ending date for the calculation.</param>
+        /// <returns>Number of hour boundaries crossed between the dates.</returns>
+        public static int DateDiffHour(
+            [CanBeNull] this DbFunctions _,
+            DateOnly startDate,
+            DateOnly endDate)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(DateDiffHour)));
+
+        /// <summary>
+        ///     Counts the number of hour boundaries crossed between the startDate and endDate.
+        ///     Corresponds to TIMESTAMPDIFF(HOUR,startDate,endDate).
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="startDate">Starting date for the calculation.</param>
+        /// <param name="endDate">Ending date for the calculation.</param>
+        /// <returns>Number of hour boundaries crossed between the dates.</returns>
+        public static int? DateDiffHour(
+            [CanBeNull] this DbFunctions _,
+            DateOnly? startDate,
+            DateOnly? endDate)
             => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(DateDiffHour)));
 
         /// <summary>
@@ -295,6 +407,34 @@ namespace Microsoft.EntityFrameworkCore
             => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(DateDiffMinute)));
 
         /// <summary>
+        ///     Counts the number of minute boundaries crossed between the startDate and endDate.
+        ///     Corresponds to TIMESTAMPDIFF(MINUTE,startDate,endDate).
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="startDate">Starting date for the calculation.</param>
+        /// <param name="endDate">Ending date for the calculation.</param>
+        /// <returns>Number of minute boundaries crossed between the dates.</returns>
+        public static int DateDiffMinute(
+            [CanBeNull] this DbFunctions _,
+            DateOnly startDate,
+            DateOnly endDate)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(DateDiffMinute)));
+
+        /// <summary>
+        ///     Counts the number of minute boundaries crossed between the startDate and endDate.
+        ///     Corresponds to TIMESTAMPDIFF(MINUTE,startDate,endDate).
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="startDate">Starting date for the calculation.</param>
+        /// <param name="endDate">Ending date for the calculation.</param>
+        /// <returns>Number of minute boundaries crossed between the dates.</returns>
+        public static int? DateDiffMinute(
+            [CanBeNull] this DbFunctions _,
+            DateOnly? startDate,
+            DateOnly? endDate)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(DateDiffMinute)));
+
+        /// <summary>
         ///     Counts the number of second boundaries crossed between the startDate and endDate.
         ///     Corresponds to TIMESTAMPDIFF(SECOND,startDate,endDate).
         /// </summary>
@@ -348,6 +488,34 @@ namespace Microsoft.EntityFrameworkCore
             [CanBeNull] this DbFunctions _,
             DateTimeOffset? startDate,
             DateTimeOffset? endDate)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(DateDiffSecond)));
+
+        /// <summary>
+        ///     Counts the number of second boundaries crossed between the startDate and endDate.
+        ///     Corresponds to TIMESTAMPDIFF(SECOND,startDate,endDate).
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="startDate">Starting date for the calculation.</param>
+        /// <param name="endDate">Ending date for the calculation.</param>
+        /// <returns>Number of second boundaries crossed between the dates.</returns>
+        public static int DateDiffSecond(
+            [CanBeNull] this DbFunctions _,
+            DateOnly startDate,
+            DateOnly endDate)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(DateDiffSecond)));
+
+        /// <summary>
+        ///     Counts the number of second boundaries crossed between the startDate and endDate.
+        ///     Corresponds to TIMESTAMPDIFF(SECOND,startDate,endDate).
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="startDate">Starting date for the calculation.</param>
+        /// <param name="endDate">Ending date for the calculation.</param>
+        /// <returns>Number of second boundaries crossed between the dates.</returns>
+        public static int? DateDiffSecond(
+            [CanBeNull] this DbFunctions _,
+            DateOnly? startDate,
+            DateOnly? endDate)
             => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(DateDiffSecond)));
 
         /// <summary>
@@ -404,6 +572,34 @@ namespace Microsoft.EntityFrameworkCore
             [CanBeNull] this DbFunctions _,
             DateTimeOffset? startDate,
             DateTimeOffset? endDate)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(DateDiffMicrosecond)));
+
+        /// <summary>
+        ///     Counts the number of microsecond boundaries crossed between the startDate and endDate.
+        ///     Corresponds to TIMESTAMPDIFF(MICROSECOND,startDate,endDate).
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="startDate">Starting date for the calculation.</param>
+        /// <param name="endDate">Ending date for the calculation.</param>
+        /// <returns>Number of microsecond boundaries crossed between the dates.</returns>
+        public static int DateDiffMicrosecond(
+            [CanBeNull] this DbFunctions _,
+            DateOnly startDate,
+            DateOnly endDate)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(DateDiffMicrosecond)));
+
+        /// <summary>
+        ///     Counts the number of microsecond boundaries crossed between the startDate and endDate.
+        ///     Corresponds to TIMESTAMPDIFF(MICROSECOND,startDate,endDate).
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="startDate">Starting date for the calculation.</param>
+        /// <param name="endDate">Ending date for the calculation.</param>
+        /// <returns>Number of microsecond boundaries crossed between the dates.</returns>
+        public static int? DateDiffMicrosecond(
+            [CanBeNull] this DbFunctions _,
+            DateOnly? startDate,
+            DateOnly? endDate)
             => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(DateDiffMicrosecond)));
 
         /// <summary>

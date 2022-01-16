@@ -39,6 +39,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         private static readonly MethodInfo _timeOnlyAddTimeSpanMethod = typeof(TimeOnly).GetRuntimeMethod(nameof(TimeOnly.Add), new[] { typeof(TimeSpan) })!;
         private static readonly MethodInfo _timeOnlyIsBetweenMethod = typeof(TimeOnly).GetRuntimeMethod(nameof(TimeOnly.IsBetween), new[] { typeof(TimeOnly), typeof(TimeOnly) })!;
 
+        private static readonly MethodInfo _dateOnlyFromDateTimeMethod = typeof(DateOnly).GetRuntimeMethod(nameof(DateOnly.FromDateTime), new[] { typeof(DateTime) })!;
+        private static readonly MethodInfo _dateOnlyToDateTimeMethod = typeof(DateOnly).GetRuntimeMethod(nameof(DateOnly.ToDateTime), new[] { typeof(TimeOnly) })!;
+
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
         public MySqlDateTimeMethodTranslator(ISqlExpressionFactory sqlExpressionFactory)
@@ -95,6 +98,40 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     return _sqlExpressionFactory.And(
                         _sqlExpressionFactory.GreaterThanOrEqual(instance, arguments[0]),
                         _sqlExpressionFactory.LessThan(instance, arguments[1]));
+                }
+            }
+
+            if (method.DeclaringType == typeof(DateOnly))
+            {
+                if (method == _dateOnlyFromDateTimeMethod)
+                {
+                    return _sqlExpressionFactory.NullableFunction(
+                        "DATE",
+                        new[] { arguments[0] },
+                        method.ReturnType);
+                }
+
+                if (method == _dateOnlyToDateTimeMethod)
+                {
+                    var convertExpression = _sqlExpressionFactory.Convert(
+                        instance,
+                        method.ReturnType);
+
+                    if (arguments[0] is SqlConstantExpression sqlConstantExpression &&
+                        sqlConstantExpression.Value is TimeOnly timeOnly &&
+                        timeOnly == default)
+                    {
+                        return convertExpression;
+                    }
+
+                    return _sqlExpressionFactory.NullableFunction(
+                        "ADDTIME",
+                        new[]
+                        {
+                            convertExpression,
+                            arguments[0]
+                        },
+                        method.ReturnType);
                 }
             }
 
