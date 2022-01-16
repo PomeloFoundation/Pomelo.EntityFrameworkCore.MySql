@@ -128,6 +128,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 }
             }
 
+            if (declaringType == typeof(DateOnly))
+            {
+                if (member.Name == nameof(DateOnly.DayNumber))
+                {
+                    return _sqlExpressionFactory.Subtract(
+                        _sqlExpressionFactory.NullableFunction(
+                            "TO_DAYS",
+                            new[] { instance },
+                            returnType),
+                        _sqlExpressionFactory.Constant(366));
+                }
+            }
+
             return null;
         }
     }
