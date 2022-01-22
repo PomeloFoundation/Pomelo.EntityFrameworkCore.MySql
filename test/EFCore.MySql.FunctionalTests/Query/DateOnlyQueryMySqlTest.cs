@@ -33,7 +33,7 @@ public class DateOnlyQueryMySqlTest : DateOnlyQueryMySqlTestBase<DateOnlyQueryMy
                 .Where(i => i.BestServedBefore.DayNumber - todayDateTime.DayNumber < 30));
 
         AssertSql(
-            @"@__todayDateTime_DayNumber_0='738170'
+            $@"@__todayDateTime_DayNumber_0='{todayDateTime.DayNumber}'
 
 SELECT `i`.`IceCreamId`, `i`.`BestServedBefore`, `i`.`Name`
 FROM `IceCream` AS `i`
@@ -131,7 +131,7 @@ LIMIT 2");
         Assert.Single(result);
 
         AssertSql(
-            @"@__todayDateOnly_1='01/16/2022' (DbType = Date)
+            $@"@__todayDateOnly_1='{todayDateOnly:MM'/'dd'/'yyyy}' (DbType = Date)
 
 SELECT `i`.`IceCreamId`, `i`.`BestServedBefore`, `i`.`Name`
 FROM `IceCream` AS `i`
