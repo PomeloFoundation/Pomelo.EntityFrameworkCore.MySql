@@ -8,6 +8,7 @@ using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
 using MySqlConnector;
 
@@ -97,17 +98,20 @@ namespace Microsoft.EntityFrameworkCore
             Check.NotNull(optionsBuilder, nameof(optionsBuilder));
             Check.NotEmpty(connectionString, nameof(connectionString));
 
-            var csb = new MySqlConnectionStringBuilder(connectionString)
+            var resolvedConnectionString = new NamedConnectionStringResolver(optionsBuilder.Options)
+                .ResolveConnectionString(connectionString);
+
+            var csb = new MySqlConnectionStringBuilder(resolvedConnectionString)
             {
                 AllowUserVariables = true,
                 UseAffectedRows = false
             };
 
-            connectionString = csb.ConnectionString;
+            resolvedConnectionString = csb.ConnectionString;
 
             var extension = (MySqlOptionsExtension)GetOrCreateExtension(optionsBuilder)
                 .WithServerVersion(serverVersion)
-                .WithConnectionString(connectionString);
+                .WithConnectionString(resolvedConnectionString);
 
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
             ConfigureWarnings(optionsBuilder);
@@ -151,7 +155,12 @@ namespace Microsoft.EntityFrameworkCore
             Check.NotNull(optionsBuilder, nameof(optionsBuilder));
             Check.NotNull(connection, nameof(connection));
 
-            var csb = new MySqlConnectionStringBuilder(connection.ConnectionString);
+            var resolvedConnectionString = connection.ConnectionString is not null
+                ? new NamedConnectionStringResolver(optionsBuilder.Options)
+                    .ResolveConnectionString(connection.ConnectionString)
+                : null;
+
+            var csb = new MySqlConnectionStringBuilder(resolvedConnectionString);
 
             if (!csb.AllowUserVariables ||
                 csb.UseAffectedRows)
