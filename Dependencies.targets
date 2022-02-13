@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup Label="Common Versions">
-    <DotnetRuntimeVersion>6.0.1</DotnetRuntimeVersion>
+    <DotnetRuntimeVersion>6.0.2</DotnetRuntimeVersion>
     <EFCoreVersion>[$(DotnetRuntimeVersion), 7.0.0)</EFCoreVersion>
     <DependencyPreviewVersion>$(DotnetRuntimeVersion)</DependencyPreviewVersion>
     <AspNetCoreVersion>$(DotnetRuntimeVersion)</AspNetCoreVersion>
@@ -12,10 +12,10 @@
     <PackageReference Update="Microsoft.EntityFrameworkCore.Relational" Version="$(EFCoreVersion)" />
     <PackageReference Update="Microsoft.EntityFrameworkCore" Version="$(EFCoreVersion)" />
 
-    <PackageReference Update="MySqlConnector" Version="2.1.2" />
+    <PackageReference Update="MySqlConnector" Version="2.1.6" />
 
     <PackageReference Update="NetTopologySuite" Version="2.3.0" />
-    <PackageReference Update="System.Text.Json" Version="6.0.1" />
+    <PackageReference Update="System.Text.Json" Version="6.0.2" />
     <PackageReference Update="Newtonsoft.Json" Version="13.0.1" />
 
     <PackageReference Update="Castle.Core" Version="4.4.1" />
@@ -23,10 +23,10 @@
     <PackageReference Update="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(AspNetCoreVersion)" />
     <PackageReference Update="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
     <PackageReference Update="Microsoft.Bcl.HashCode" Version="1.1.1" />
-    <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="3.10.0" />
+    <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" />
     <PackageReference Update="Microsoft.Extensions.Caching.Memory" Version="6.0.0" />
     <PackageReference Update="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
-    <PackageReference Update="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.1" />
     <PackageReference Update="Microsoft.Extensions.Configuration.FileExtensions" Version="6.0.0" />
     <PackageReference Update="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageReference Update="Microsoft.Extensions.Configuration" Version="6.0.0" />
