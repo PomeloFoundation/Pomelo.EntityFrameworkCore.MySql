@@ -1,10 +1,10 @@
 trigger:
   branches:
     include:
-    - '*'
+      - '*'
   tags:
     include:
-    - '*'
+      - '*'
 variables:
   isPullRequest: $[eq(variables['Build.Reason'], 'PullRequest')]
   pullRequestSourceBranch: $[variables['System.PullRequest.SourceBranch']]
@@ -23,375 +23,388 @@ variables:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
 jobs:
-- job: BuildAndTest
-  displayName: Build and Test
-  strategy:
-    matrix:
-      MySQL 8.0 (Windows):
-        vmImageName: 'windows-latest'
-        databaseServerType: 'mysql'
-        databaseServerVersion: '8.0.27'
-        sqlMode: $(mysqlCurrentSqlMode)
-        skipTests: $(skipWindowsTests)
-      MySQL 8.0 (Linux):
-        vmImageName: 'ubuntu-latest'
-        databaseServerType: 'mysql'
-        databaseServerVersion: '8.0.27'
-        sqlMode: $(mysqlCurrentSqlMode)
-        skipTests: false
-      MySQL 5.7 (Linux):
-        vmImageName: 'ubuntu-latest'
-        databaseServerType: 'mysql'
-        databaseServerVersion: '5.7.36'
-        sqlMode: $(mysqlLegacySqlMode)
-        skipTests: false
-      MariaDB 10.6 (Linux):
-        vmImageName: 'ubuntu-latest'
-        databaseServerType: 'mariadb'
-        databaseServerVersion: '10.6.5'
-        sqlMode: $(mariadbSqlMode)
-        skipTests: false
-      MariaDB 10.5 (Linux):
-        vmImageName: 'ubuntu-latest'
-        databaseServerType: 'mariadb'
-        databaseServerVersion: '10.5.13'
-        sqlMode: $(mariadbSqlMode)
-        skipTests: false
-      MariaDB 10.4 (Linux):
-        vmImageName: 'ubuntu-latest'
-        databaseServerType: 'mariadb'
-        databaseServerVersion: '10.4.22'
-        sqlMode: $(mariadbSqlMode)
-        skipTests: false
-      MariaDB 10.3 (Linux):
-        vmImageName: 'ubuntu-latest'
-        databaseServerType: 'mariadb'
-        databaseServerVersion: '10.3.32'
-        sqlMode: $(mariadbSqlMode)
-        skipTests: false
-  pool:
-    vmImage: $(vmImageName)
-  steps:
-  - pwsh: |
-      $dotnetVersion = ''
-      $dotnetEfToolUpdateVersion = ''
-      $useGlobalJson = $false
+  - job: BuildAndTest
+    displayName: Build and Test
+    strategy:
+      matrix:
+        MySQL 8.0 (Windows):
+          vmImageName: 'windows-latest'
+          databaseServerType: 'mysql'
+          databaseServerVersion: '8.0.27'
+          sqlMode: $(mysqlCurrentSqlMode)
+          skipTests: $(skipWindowsTests)
+        MySQL 8.0 (Linux):
+          vmImageName: 'ubuntu-latest'
+          databaseServerType: 'mysql'
+          databaseServerVersion: '8.0.27'
+          sqlMode: $(mysqlCurrentSqlMode)
+          skipTests: false
+        MySQL 5.7 (Linux):
+          vmImageName: 'ubuntu-latest'
+          databaseServerType: 'mysql'
+          databaseServerVersion: '5.7.36'
+          sqlMode: $(mysqlLegacySqlMode)
+          skipTests: false
+        MariaDB 10.6 (Linux):
+          vmImageName: 'ubuntu-latest'
+          databaseServerType: 'mariadb'
+          databaseServerVersion: '10.6.5'
+          sqlMode: $(mariadbSqlMode)
+          skipTests: false
+        MariaDB 10.5 (Linux):
+          vmImageName: 'ubuntu-latest'
+          databaseServerType: 'mariadb'
+          databaseServerVersion: '10.5.13'
+          sqlMode: $(mariadbSqlMode)
+          skipTests: false
+        MariaDB 10.4 (Linux):
+          vmImageName: 'ubuntu-latest'
+          databaseServerType: 'mariadb'
+          databaseServerVersion: '10.4.22'
+          sqlMode: $(mariadbSqlMode)
+          skipTests: false
+        MariaDB 10.3 (Linux):
+          vmImageName: 'ubuntu-latest'
+          databaseServerType: 'mariadb'
+          databaseServerVersion: '10.3.32'
+          sqlMode: $(mariadbSqlMode)
+          skipTests: false
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+      - pwsh: |
+          $dotnetVersion = ''
+          $dotnetEfToolUpdateVersion = ''
+          $useGlobalJson = $false
 
-      if ('$(majorDotnetVersion)' -ne '')
-      {
-        $dotnetVersion = '$(majorDotnetVersion).x'
+          if ('$(majorDotnetVersion)' -ne '')
+          {
+            $dotnetVersion = '$(majorDotnetVersion).x'
 
-        if ('$(includeDotnetPrereleases)' -eq 'true')
-        {
-          $dotnetEfToolUpdateVersion = '$(majorDotnetVersion).*-*'
-        }
-        else
-        {
-          $dotnetEfToolUpdateVersion = '$(majorDotnetVersion).*'
-        }
-      }
-      else
-      {
-        $useGlobalJson = $true
-      }
+            if ('$(includeDotnetPrereleases)' -eq 'true')
+            {
+              $dotnetEfToolUpdateVersion = '$(majorDotnetVersion).*-*'
+            }
+            else
+            {
+              $dotnetEfToolUpdateVersion = '$(majorDotnetVersion).*'
+            }
+          }
+          else
+          {
+            $useGlobalJson = $true
+          }
 
-      echo "##vso[task.setvariable variable=dotnetVersion]$dotnetVersion"
-      echo "##vso[task.setvariable variable=dotnetEfToolUpdateVersion]$dotnetEfToolUpdateVersion"
-      echo "##vso[task.setvariable variable=useGlobalJson]$useGlobalJson"
-    displayName: Set additional variables
-  - pwsh: |
-      echo "skipTests: $(skipTests)"
-      echo "skipWindowsTests: $(skipWindowsTests)"
-      echo "pullRequestSourceBranch: $(pullRequestSourceBranch)"
-      echo "isPullRequest: $(isPullRequest)"
-      echo "Build.SourceBranchName: $(Build.SourceBranchName)"
-      echo "Build.SourceVersionMessage: $(Build.SourceVersionMessage)"
-      echo "dotnetVersion: $(dotnetVersion)"
-      echo "includeDotnetPrereleases: $(includeDotnetPrereleases)"
-      echo "useGlobalJson: $(useGlobalJson)"
-    displayName: Output Variables
-  - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK'
-    inputs:
-      version: $(dotnetVersion)
-      includePreviewVersions: $(includeDotnetPrereleases)
-      useGlobalJson: $(useGlobalJson)
-  - pwsh: |
-      if ('$(Agent.OS)' -eq 'Windows_NT')
-      {
-        echo "Chocolatey command: choco install '$(databaseServerType)' '--version=$(databaseServerVersion)'"
-        choco install '$(databaseServerType)' '--version=$(databaseServerVersion)'
+          echo "##vso[task.setvariable variable=dotnetVersion]$dotnetVersion"
+          echo "##vso[task.setvariable variable=dotnetEfToolUpdateVersion]$dotnetEfToolUpdateVersion"
+          echo "##vso[task.setvariable variable=useGlobalJson]$useGlobalJson"
+        displayName: Set additional variables
+      - pwsh: |
+          echo "skipTests: $(skipTests)"
+          echo "skipWindowsTests: $(skipWindowsTests)"
+          echo "pullRequestSourceBranch: $(pullRequestSourceBranch)"
+          echo "isPullRequest: $(isPullRequest)"
+          echo "Build.SourceBranchName: $(Build.SourceBranchName)"
+          echo "Build.SourceVersionMessage: $(Build.SourceVersionMessage)"
+          echo "dotnetVersion: $(dotnetVersion)"
+          echo "includeDotnetPrereleases: $(includeDotnetPrereleases)"
+          echo "useGlobalJson: $(useGlobalJson)"
+        displayName: Output Variables
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK'
+        inputs:
+          version: $(dotnetVersion)
+          includePreviewVersions: $(includeDotnetPrereleases)
+          useGlobalJson: $(useGlobalJson)
+      - pwsh: |
+          if ('$(Agent.OS)' -eq 'Windows_NT')
+          {
+            $mySqlServiceName = '$(databaseServerType)_$(databaseServerVersion)'
+            $lowerCaseTableNames = 2
+            $mySqlBinPath = 'C:\tools\mysql\current\bin'
+            $mySqlIniPath = 'C:\tools\mysql\current\my.ini'
+            $mySqlDataPath = 'C:\ProgramData\MySQL\data'
 
-        $mySqlServiceName = 'MySQL'
-        $lowerCaseTableNames = 2
-        $mySqlIniPath = 'C:\tools\mysql\current\my.ini'
-        $mySqlDataPath = 'C:\ProgramData\MySQL\data'
+            echo "Chocolatey command: choco install '$(databaseServerType)' '--version=$(databaseServerVersion)' --params `"/serviceName:$mySqlServiceName`""
+            choco install '$(databaseServerType)' '--version=$(databaseServerVersion)' --params "/serviceName:$mySqlServiceName"
 
-        Stop-Service $mySqlServiceName
-        "lower_case_table_names=$lowerCaseTableNames" >> $mySqlIniPath
-        Remove-Item $mySqlDataPath/* -Recurse -Force
-        mysqld --defaults-file="$mySqlIniPath" --initialize-insecure
-        Start-Service $mySqlServiceName
+            Get-Service *MySQL* -ErrorAction SilentlyContinue
+            Stop-Service $mySqlServiceName -Verbose
 
-        mysql -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
-        mysql -h localhost -u root -pPassword12! -e "SELECT @@version;"
-      }
-      else
-      {
-        sudo systemctl stop mysql
-        docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -p 3306:3306 -d '$(databaseServerType):$(databaseServerVersion)'
+            echo "Update PATH environment variable"
+            Write-Host "##vso[task.prependpath]$mySqlBinPath"
+            $env:PATH = "$mySqlBinPath;$env:PATH"
 
-        $waitMinutes = 5
-        $pollingIntervalSeconds = 3
-        $startTime = Get-Date
-        $started = $false
+            echo "Update configuration file"
+            "lower_case_table_names=$lowerCaseTableNames" >> $mySqlIniPath
 
-        while (!($started = docker exec mysql mysqladmin --protocol=tcp -h localhost -P 3306 -u root -pPassword12! status) -and ((Get-Date) - $startTime).TotalMinutes -lt $waitMinutes)
-        {
-          Start-Sleep -Seconds $pollingIntervalSeconds
-        }
+            Remove-Item $mySqlDataPath/* -Recurse -Force -Verbose
 
-        if (!$started)
-        {
-          throw "$(databaseServerType):$(databaseServerVersion) docker container failed to start in $(waitMinutes) minutes"
-          exit 1
-        }
-      }
-    displayName: Install Database Server
-  - pwsh: |
-      $mySqlCommand = "mysql --protocol=tcp -h localhost -P 3306 -u root -pPassword12! -e ""SET GLOBAL sql_mode = '$(sqlMode)'; SET GLOBAL max_connections = $(maxConnections);"""
+            echo "Reinitialize database server"
+            mysqld --defaults-file="$mySqlIniPath" --initialize-insecure
 
-      if ('$(Agent.OS)' -ne 'Windows_NT')
-      {
-        $mySqlCommand = 'docker exec mysql ' + $mySqlCommand
-      }
+            Start-Service $mySqlServiceName -Verbose
 
-      $mySqlCommand
+            echo "Setup credentials"
+            mysql -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
+            mysql -h localhost -u root -pPassword12! -e "SELECT @@version;"
+          }
+          else
+          {
+            sudo systemctl stop mysql
+            docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -p 3306:3306 -d '$(databaseServerType):$(databaseServerVersion)'
 
-      Invoke-Expression $mySqlCommand
-      echo "Exit code: $?"
-    displayName: Setup Database
-    ignoreLASTEXITCODE: true
-  - pwsh: |
-      $mySqlCommand = 'mysql --protocol=tcp -h localhost -P 3306 -u root -pPassword12! -e "SHOW VARIABLES;"'
+            $waitMinutes = 5
+            $pollingIntervalSeconds = 3
+            $startTime = Get-Date
+            $started = $false
 
-      if ('$(Agent.OS)' -ne 'Windows_NT')
-      {
-        $mySqlCommand = 'docker exec mysql ' + $mySqlCommand
-      }
+            while (!($started = docker exec mysql mysqladmin --protocol=tcp -h localhost -P 3306 -u root -pPassword12! status) -and ((Get-Date) - $startTime).TotalMinutes -lt $waitMinutes)
+            {
+              Start-Sleep -Seconds $pollingIntervalSeconds
+            }
 
-      $mySqlCommand
+            if (!$started)
+            {
+              throw "$(databaseServerType):$(databaseServerVersion) docker container failed to start in $(waitMinutes) minutes"
+              exit 1
+            }
+          }
+        displayName: Install Database Server
+      - pwsh: |
+          $mySqlCommand = "mysql --protocol=tcp -h localhost -P 3306 -u root -pPassword12! -e ""SET GLOBAL sql_mode = '$(sqlMode)'; SET GLOBAL max_connections = $(maxConnections);"""
 
-      Invoke-Expression $mySqlCommand
-      echo "Exit code: $?"
-    displayName: Database Information
-    continueOnError: true
-    failOnStderr: false
-    ignoreLASTEXITCODE: true
-  - pwsh: dotnet --info
-    displayName: .NET Information
-  - pwsh: |
-      if ('$(dotnetEfToolUpdateVersion)' -ne '')
-      {
-        dotnet tool update dotnet-ef --version $(dotnetEfToolUpdateVersion)
-      }
+          if ('$(Agent.OS)' -ne 'Windows_NT')
+          {
+            $mySqlCommand = 'docker exec mysql ' + $mySqlCommand
+          }
 
-      dotnet tool restore
-      dotnet ef --version
-    displayName: Install EF Core Tools
-  - pwsh: |
-      cp test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
-      cp test/EFCore.MySql.IntegrationTests/appsettings.ci.json test/EFCore.MySql.IntegrationTests/appsettings.json
-      cp test/EFCore.MySql.IntegrationTests/config.json.example test/EFCore.MySql.IntegrationTests/config.json
-    displayName: Setup Solution
-  - pwsh: |
-      ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
-    displayName: Setup Integration Tests
-    condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
-  - pwsh: |
-      dotnet build -c Debug
-      dotnet build -c Release
-    displayName: Build Solution
-  - pwsh: |
-      dotnet test test/EFCore.MySql.FunctionalTests -c Debug --no-build --logger trx --verbosity detailed
-    displayName: Functional Tests
-    condition: ne(variables['skipTests'], true)
-  - pwsh: |
-      dotnet test --logger trx test/EFCore.MySql.Tests
-    displayName: Tests
-    condition: ne(variables['skipTests'], true)
-  - pwsh: |
-      Get-ChildItem QueryBaseline.txt -Recurse | % { $_.FullName }
-      Get-Content QueryBaseline.txt -ErrorAction Ignore
-    displayName: Show Query Baseline
-    condition: ne(variables['skipTests'], true)
-  - pwsh: |
-      dotnet run --project test/EFCore.MySql.IntegrationTests -c Release testMigrate
-    displayName: Integration Tests - Applying migrations
-    condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
-  - pwsh: |
-      ./test/EFCore.MySql.IntegrationTests/scripts/scaffold.ps1
-    displayName: Integration Tests - Scaffolding
-    condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
-  - pwsh: |
-      $env:EF_BATCH_SIZE = "1"
-      dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
-    displayName: Integration Tests - With EF_BATCH_SIZE = 1
-    condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
-  - pwsh: |
-      $env:EF_BATCH_SIZE = "10"
-      dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
-    displayName: Integration Tests - With EF_BATCH_SIZE = 10
-    condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
-  - pwsh: |
-      $env:EF_RETRY_ON_FAILURE = "3"
-      dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
-    displayName: Integration Tests - With EF_RETRY_ON_FAILURE = 3
-    condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
-  - pwsh: ./test/EFCore.MySql.IntegrationTests/scripts/legacy.ps1
-    displayName: Integration Tests - Legacy migrations
-    condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
-  - pwsh: |
-      $env:EF_DATABASE = "pomelo_test2"
-      dotnet build ./test/EFCore.MySql.IntegrationTests -c Release
-    displayName: Integration Tests - Building migrations with EF_DATABASE = pomelo_test2
-    condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
-  - pwsh: |
-      $env:EF_DATABASE = "pomelo_test2"
-      ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
-    displayName: Integration Tests - Setup migrations with EF_DATABASE = pomelo_test2
-    condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
-  - pwsh: |
-      $env:EF_DATABASE = "pomelo_test2"
-      dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
-    displayName: Integration Tests - With EF_DATABASE = pomelo_test2
-    condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
-  - task: PublishTestResults@2
-    displayName: Publish Test Results
-    condition: and(ne(variables['skipTests'], true), succeededOrFailed())
-    inputs:
-      testResultsFormat: VSTest
-      testResultsFiles: test/**/*.trx
-      testRunTitle: $(Agent.OS) $(databaseServerType):$(databaseServerVersion)
-      mergeTestResults: true
-      failTaskOnFailedTests: true
-- job: NuGet
-  dependsOn:
-    - BuildAndTest
-  condition: and(succeededOrFailed(), ne(variables['isPullRequest'], true))
-  variables:
-    runDespiteIssues: $[endsWith(variables['Build.SourceBranch'], '-wip')]
-    buildAndTestSucceeded: $[or(eq(dependencies.BuildAndTest.result, 'Succeeded'), and(eq(dependencies.BuildAndTest.result, 'SucceededWithIssues'), variables['runDespiteIssues']))]
-  pool:
-    vmImage: 'windows-latest' # must be Windows for PublishSymbols task
-  steps:
-  - pwsh: |
-      $dotnetVersion = ''
-      $dotnetEfToolUpdateVersion = ''
-      $useGlobalJson = $false
+          $mySqlCommand
 
-      if ('$(majorDotnetVersion)' -ne '')
-      {
-        $dotnetVersion = '$(majorDotnetVersion).x'
+          Invoke-Expression $mySqlCommand
+          echo "Exit code: $?"
+        displayName: Setup Database
+        ignoreLASTEXITCODE: true
+      - pwsh: |
+          $mySqlCommand = 'mysql --protocol=tcp -h localhost -P 3306 -u root -pPassword12! -e "SHOW VARIABLES;"'
 
-        if ('$(includeDotnetPrereleases)' -eq 'true')
-        {
-          $dotnetEfToolUpdateVersion = '$(majorDotnetVersion).*-*'
-        }
-        else
-        {
-          $dotnetEfToolUpdateVersion = '$(majorDotnetVersion).*'
-        }
-      }
-      else
-      {
-        $useGlobalJson = $true
-      }
+          if ('$(Agent.OS)' -ne 'Windows_NT')
+          {
+            $mySqlCommand = 'docker exec mysql ' + $mySqlCommand
+          }
 
-      echo "##vso[task.setvariable variable=dotnetVersion]$dotnetVersion"
-      echo "##vso[task.setvariable variable=dotnetEfToolUpdateVersion]$dotnetEfToolUpdateVersion"
-      echo "##vso[task.setvariable variable=useGlobalJson]$useGlobalJson"
-    displayName: Set additional variables
-  - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK'
-    inputs:
-      version: $(dotnetVersion)
-      includePreviewVersions: $(includeDotnetPrereleases)
-      useGlobalJson: $(useGlobalJson)
-  - pwsh: dotnet --info
-    displayName: .NET Information
-  - pwsh: |
-      $officialBuild = '$(Build.SourceBranch)' -match '(?<=^refs/tags/)\d+\.\d+\.\d+.*$'
-      $officialVersion = $Matches.0
-      $wipBuild = '$(Build.SourceBranch)' -match '^refs/heads/.*-wip$'
-      $ciBuildOnly = $wipBuild -or ('$(Build.SourceBranch)' -match '^refs/heads/(?:master|release/.*)$')
-      $continuousIntegrationTimestamp = Get-Date -Format yyyyMMddHHmmss
-      $buildSha = '$(Build.SourceVersion)'.SubString(0, 7);
-      $pack = '$(buildAndTestSucceeded)' -eq "true" -and ($officialBuild -or $ciBuildOnly -or $wipBuild)
+          $mySqlCommand
 
-      echo "officialBuild: $officialBuild"
-      echo "officialVersion: $officialVersion"
-      echo "wipBuild: $wipBuild"
-      echo "ciBuildOnly: $ciBuildOnly"
-      echo "continuousIntegrationTimestamp: $continuousIntegrationTimestamp"
-      echo "buildSha: $buildSha"
-      echo "pack: $pack"
+          Invoke-Expression $mySqlCommand
+          echo "Exit code: $?"
+        displayName: Database Information
+        continueOnError: true
+        failOnStderr: false
+        ignoreLASTEXITCODE: true
+      - pwsh: dotnet --info
+        displayName: .NET Information
+      - pwsh: |
+          if ('$(dotnetEfToolUpdateVersion)' -ne '')
+          {
+            dotnet tool update dotnet-ef --version $(dotnetEfToolUpdateVersion)
+          }
 
-      if ($pack)
-      {
-        $arguments = 'pack', '-c', 'Release', '-o', '$(Build.ArtifactStagingDirectory)', '-p:ContinuousIntegrationBuild=true'
+          dotnet tool restore
+          dotnet ef --version
+        displayName: Install EF Core Tools
+      - pwsh: |
+          cp test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
+          cp test/EFCore.MySql.IntegrationTests/appsettings.ci.json test/EFCore.MySql.IntegrationTests/appsettings.json
+          cp test/EFCore.MySql.IntegrationTests/config.json.example test/EFCore.MySql.IntegrationTests/config.json
+        displayName: Setup Solution
+      - pwsh: |
+          ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
+        displayName: Setup Integration Tests
+        condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
+      - pwsh: |
+          dotnet build -c Debug
+          dotnet build -c Release
+        displayName: Build Solution
+      - pwsh: |
+          dotnet test test/EFCore.MySql.FunctionalTests -c Debug --no-build --logger trx --verbosity detailed
+        displayName: Functional Tests
+        condition: ne(variables['skipTests'], true)
+      - pwsh: |
+          dotnet test --logger trx test/EFCore.MySql.Tests
+        displayName: Tests
+        condition: ne(variables['skipTests'], true)
+      - pwsh: |
+          Get-ChildItem QueryBaseline.txt -Recurse | % { $_.FullName }
+          Get-Content QueryBaseline.txt -ErrorAction Ignore
+        displayName: Show Query Baseline
+        condition: ne(variables['skipTests'], true)
+      - pwsh: |
+          dotnet run --project test/EFCore.MySql.IntegrationTests -c Release testMigrate
+        displayName: Integration Tests - Applying migrations
+        condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
+      - pwsh: |
+          ./test/EFCore.MySql.IntegrationTests/scripts/scaffold.ps1
+        displayName: Integration Tests - Scaffolding
+        condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
+      - pwsh: |
+          $env:EF_BATCH_SIZE = "1"
+          dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
+        displayName: Integration Tests - With EF_BATCH_SIZE = 1
+        condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
+      - pwsh: |
+          $env:EF_BATCH_SIZE = "10"
+          dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
+        displayName: Integration Tests - With EF_BATCH_SIZE = 10
+        condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
+      - pwsh: |
+          $env:EF_RETRY_ON_FAILURE = "3"
+          dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
+        displayName: Integration Tests - With EF_RETRY_ON_FAILURE = 3
+        condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
+      - pwsh: ./test/EFCore.MySql.IntegrationTests/scripts/legacy.ps1
+        displayName: Integration Tests - Legacy migrations
+        condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
+      - pwsh: |
+          $env:EF_DATABASE = "pomelo_test2"
+          dotnet build ./test/EFCore.MySql.IntegrationTests -c Release
+        displayName: Integration Tests - Building migrations with EF_DATABASE = pomelo_test2
+        condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
+      - pwsh: |
+          $env:EF_DATABASE = "pomelo_test2"
+          ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
+        displayName: Integration Tests - Setup migrations with EF_DATABASE = pomelo_test2
+        condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
+      - pwsh: |
+          $env:EF_DATABASE = "pomelo_test2"
+          dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
+        displayName: Integration Tests - With EF_DATABASE = pomelo_test2
+        condition: and(ne(variables['skipTests'], true), eq(variables['runIntegrationTests'],'true'))
+      - task: PublishTestResults@2
+        displayName: Publish Test Results
+        condition: and(ne(variables['skipTests'], true), succeededOrFailed())
+        inputs:
+          testResultsFormat: VSTest
+          testResultsFiles: test/**/*.trx
+          testRunTitle: $(Agent.OS) $(databaseServerType):$(databaseServerVersion)
+          mergeTestResults: true
+          failTaskOnFailedTests: true
+  - job: NuGet
+    dependsOn:
+      - BuildAndTest
+    condition: and(succeededOrFailed(), ne(variables['isPullRequest'], true))
+    variables:
+      runDespiteIssues: $[endsWith(variables['Build.SourceBranch'], '-wip')]
+      buildAndTestSucceeded: $[or(eq(dependencies.BuildAndTest.result, 'Succeeded'), and(eq(dependencies.BuildAndTest.result, 'SucceededWithIssues'), variables['runDespiteIssues']))]
+    pool:
+      vmImage: 'windows-latest' # must be Windows for PublishSymbols task
+    steps:
+      - pwsh: |
+          $dotnetVersion = ''
+          $dotnetEfToolUpdateVersion = ''
+          $useGlobalJson = $false
 
-        if ($officialBuild)
-        {
-          $arguments += "-p:OfficialVersion=$officialVersion"
-        }
+          if ('$(majorDotnetVersion)' -ne '')
+          {
+            $dotnetVersion = '$(majorDotnetVersion).x'
 
-        if ($ciBuildOnly)
-        {
-          $arguments += "-p:ContinuousIntegrationTimestamp=$continuousIntegrationTimestamp"
-          $arguments += "-p:BuildSha=$buildSha"
-        }
+            if ('$(includeDotnetPrereleases)' -eq 'true')
+            {
+              $dotnetEfToolUpdateVersion = '$(majorDotnetVersion).*-*'
+            }
+            else
+            {
+              $dotnetEfToolUpdateVersion = '$(majorDotnetVersion).*'
+            }
+          }
+          else
+          {
+            $useGlobalJson = $true
+          }
 
-        $projectFiles = Get-ChildItem src/*/*.csproj -Recurse | % { $_.FullName }
+          echo "##vso[task.setvariable variable=dotnetVersion]$dotnetVersion"
+          echo "##vso[task.setvariable variable=dotnetEfToolUpdateVersion]$dotnetEfToolUpdateVersion"
+          echo "##vso[task.setvariable variable=useGlobalJson]$useGlobalJson"
+        displayName: Set additional variables
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK'
+        inputs:
+          version: $(dotnetVersion)
+          includePreviewVersions: $(includeDotnetPrereleases)
+          useGlobalJson: $(useGlobalJson)
+      - pwsh: dotnet --info
+        displayName: .NET Information
+      - pwsh: |
+          $officialBuild = '$(Build.SourceBranch)' -match '(?<=^refs/tags/)\d+\.\d+\.\d+.*$'
+          $officialVersion = $Matches.0
+          $wipBuild = '$(Build.SourceBranch)' -match '^refs/heads/.*-wip$'
+          $ciBuildOnly = $wipBuild -or ('$(Build.SourceBranch)' -match '^refs/heads/(?:master|release/.*)$')
+          $continuousIntegrationTimestamp = Get-Date -Format yyyyMMddHHmmss
+          $buildSha = '$(Build.SourceVersion)'.SubString(0, 7);
+          $pack = '$(buildAndTestSucceeded)' -eq "true" -and ($officialBuild -or $ciBuildOnly -or $wipBuild)
 
-        foreach ($projectFile in $projectFiles)
-        {
-          echo "Pack command: dotnet " + (($arguments + $projectFile) -join ' ')
-          & dotnet ($arguments + $projectFile)
-        }
+          echo "officialBuild: $officialBuild"
+          echo "officialVersion: $officialVersion"
+          echo "wipBuild: $wipBuild"
+          echo "ciBuildOnly: $ciBuildOnly"
+          echo "continuousIntegrationTimestamp: $continuousIntegrationTimestamp"
+          echo "buildSha: $buildSha"
+          echo "pack: $pack"
 
-        $pushToAzureArtifacts = $pack
-        $publishSymbolsForAzureArtifacts = $pushToAzureArtifacts
-        $pushToNugetOrg = $officialBuild
+          if ($pack)
+          {
+            $arguments = 'pack', '-c', 'Release', '-o', '$(Build.ArtifactStagingDirectory)', '-p:ContinuousIntegrationBuild=true'
 
-        echo "pushToAzureArtifacts: $pushToAzureArtifacts"
-        echo "publishSymbolsForAzureArtifacts: $publishSymbolsForAzureArtifacts"
-        echo "pushToNugetOrg: $pushToNugetOrg"
+            if ($officialBuild)
+            {
+              $arguments += "-p:OfficialVersion=$officialVersion"
+            }
 
-        echo "##vso[task.setvariable variable=Pack.PushToAzureArtifacts]$pushToAzureArtifacts"
-        echo "##vso[task.setvariable variable=Pack.PublishSymbolsForAzureArtifacts]$publishSymbolsForAzureArtifacts"
-        echo "##vso[task.setvariable variable=Pack.PushToNugetOrg]$pushToNugetOrg"
-      }
-    displayName: "NuGet Pack"
-  - task: NuGetCommand@2
-    displayName: "NuGet Push - AZDO Feed"
-    inputs:
-      command: push
-      publishVstsFeed: 'Pomelo.EntityFrameworkCore.MySql/pomelo-efcore-public'
-      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
-    condition: and(succeededOrFailed(), eq(variables['Pack.PushToAzureArtifacts'],'true'))
-  - task: PublishSymbols@2 # AZDO still has no snupkg support, so we need to publish the PDB files to a symbol server
-    displayName: "Publish Symbols to Azure Artifacts symbol server"
-    inputs:
-      symbolServerType: 'TeamServices'
-      treatNotIndexedAsWarning: false
-      indexSources: false
-    condition: and(succeededOrFailed(), eq(variables['Pack.PublishSymbolsForAzureArtifacts'],'true'))
-  - task: NuGetCommand@2
-    displayName: "NuGet Push - nuget.org"
-    inputs:
-      command: push
-      nuGetFeedType: external
-      publishFeedCredentials: NugetOrg-PomeloFoundation-AllPackages-PushNew
-      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
-    condition: and(succeededOrFailed(), eq(variables['Pack.PushToNugetOrg'],'true'))
+            if ($ciBuildOnly)
+            {
+              $arguments += "-p:ContinuousIntegrationTimestamp=$continuousIntegrationTimestamp"
+              $arguments += "-p:BuildSha=$buildSha"
+            }
+
+            $projectFiles = Get-ChildItem src/*/*.csproj -Recurse | % { $_.FullName }
+
+            foreach ($projectFile in $projectFiles)
+            {
+              echo "Pack command: dotnet " + (($arguments + $projectFile) -join ' ')
+              & dotnet ($arguments + $projectFile)
+            }
+
+            $pushToAzureArtifacts = $pack
+            $publishSymbolsForAzureArtifacts = $pushToAzureArtifacts
+            $pushToNugetOrg = $officialBuild
+
+            echo "pushToAzureArtifacts: $pushToAzureArtifacts"
+            echo "publishSymbolsForAzureArtifacts: $publishSymbolsForAzureArtifacts"
+            echo "pushToNugetOrg: $pushToNugetOrg"
+
+            echo "##vso[task.setvariable variable=Pack.PushToAzureArtifacts]$pushToAzureArtifacts"
+            echo "##vso[task.setvariable variable=Pack.PublishSymbolsForAzureArtifacts]$publishSymbolsForAzureArtifacts"
+            echo "##vso[task.setvariable variable=Pack.PushToNugetOrg]$pushToNugetOrg"
+          }
+        displayName: "NuGet Pack"
+      - task: NuGetCommand@2
+        displayName: "NuGet Push - AZDO Feed"
+        inputs:
+          command: push
+          publishVstsFeed: 'Pomelo.EntityFrameworkCore.MySql/pomelo-efcore-public'
+          packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+        condition: and(succeededOrFailed(), eq(variables['Pack.PushToAzureArtifacts'],'true'))
+      - task: PublishSymbols@2 # AZDO still has no snupkg support, so we need to publish the PDB files to a symbol server
+        displayName: "Publish Symbols to Azure Artifacts symbol server"
+        inputs:
+          symbolServerType: 'TeamServices'
+          treatNotIndexedAsWarning: false
+          indexSources: false
+        condition: and(succeededOrFailed(), eq(variables['Pack.PublishSymbolsForAzureArtifacts'],'true'))
+      - task: NuGetCommand@2
+        displayName: "NuGet Push - nuget.org"
+        inputs:
+          command: push
+          nuGetFeedType: external
+          publishFeedCredentials: NugetOrg-PomeloFoundation-AllPackages-PushNew
+          packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+        condition: and(succeededOrFailed(), eq(variables['Pack.PushToNugetOrg'],'true'))
