@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using JetBrains.Annotations;
@@ -52,8 +51,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
             [CanBeNull] RelationalTypeMapping typeMapping)
             : base(type, typeMapping)
         {
-            if (returnsText && type != typeof(string))
-                throw new ArgumentException($"{nameof(type)} must be string", nameof(type));
+            if (returnsText && !TypeReturnsText(type))
+                throw new ArgumentException($"{nameof(type)} is not a type that returns text", nameof(type));
 
             Expression = expression;
             Path = path;
@@ -114,5 +113,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
         }
 
         public override string ToString() => $"{Expression}{(ReturnsText ? "->>" : "->")}{Path}";
+
+        public static bool TypeReturnsText(Type type)
+            => type == typeof(string) ||
+               type == typeof(Guid);
     }
 }
