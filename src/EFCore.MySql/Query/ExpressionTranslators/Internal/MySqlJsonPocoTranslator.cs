@@ -20,7 +20,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
         private readonly RelationalTypeMapping _unquotedStringTypeMapping;
         private readonly RelationalTypeMapping _intTypeMapping;
-        private readonly RelationalTypeMapping _boolTypeMapping;
 
         public MySqlJsonPocoTranslator(
             [NotNull] IRelationalTypeMappingSource typeMappingSource,
@@ -30,7 +29,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             _sqlExpressionFactory = sqlExpressionFactory;
             _unquotedStringTypeMapping = ((MySqlStringTypeMapping)_typeMappingSource.FindMapping(typeof(string))).Clone(true);
             _intTypeMapping = _typeMappingSource.FindMapping(typeof(int));
-            _boolTypeMapping = _typeMappingSource.FindMapping(typeof(bool));
         }
 
         public virtual SqlExpression Translate(
@@ -72,7 +70,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 return ConvertFromJsonExtract(
                     _sqlExpressionFactory.JsonTraversal(
                             columnExpression,
-                            returnsText: returnType == typeof(string),
+                            returnsText: MySqlJsonTraversalExpression.TypeReturnsText(returnType),
                             returnType)
                         .Append(
                             member,
@@ -103,14 +101,57 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     false)
                 : null;
 
-        private SqlExpression ConvertFromJsonExtract(SqlExpression expression, Type returnType)
-            => returnType == typeof(bool)
-                ? _sqlExpressionFactory.NonOptimizedEqual(
-                    expression,
-                    _sqlExpressionFactory.Constant(true, _boolTypeMapping))
-                : expression;
+        protected virtual SqlExpression ConvertFromJsonExtract(SqlExpression expression, Type returnType)
+        {
+            var unwrappedReturnType = returnType.UnwrapNullableType();
+            var typeMapping = FindPocoTypeMapping(returnType);
 
-        private RelationalTypeMapping FindPocoTypeMapping(Type type)
-            => _typeMappingSource.FindMapping(type) ?? _typeMappingSource.FindMapping(type, "json");
+            switch (Type.GetTypeCode(unwrappedReturnType))
+            {
+                case TypeCode.Boolean:
+                    return _sqlExpressionFactory.NonOptimizedEqual(
+                        expression,
+                        _sqlExpressionFactory.Constant(true, typeMapping));
+
+                case TypeCode.Byte:
+                case TypeCode.DateTime:
+                case TypeCode.Decimal:
+                case TypeCode.Double:
+                case TypeCode.Int16:
+                case TypeCode.Int32:
+                case TypeCode.Int64:
+                case TypeCode.SByte:
+                case TypeCode.Single:
+                case TypeCode.UInt16:
+                case TypeCode.UInt32:
+                case TypeCode.UInt64:
+                    return _sqlExpressionFactory.Convert(
+                        expression,
+                        returnType,
+                        typeMapping);
+            }
+
+            if (unwrappedReturnType == typeof(Guid)
+                || unwrappedReturnType == typeof(DateTimeOffset)
+                || unwrappedReturnType == typeof(DateOnly)
+                || unwrappedReturnType == typeof(TimeOnly))
+            {
+                return _sqlExpressionFactory.Convert(
+                    expression,
+                    returnType,
+                    typeMapping);
+            }
+
+            return expression;
+        }
+
+        protected virtual RelationalTypeMapping FindPocoTypeMapping(Type type)
+            => GetJsonSpecificTypeMapping(_typeMappingSource.FindMapping(type) ??
+                                   _typeMappingSource.FindMapping(type, "json"));
+
+        protected virtual RelationalTypeMapping GetJsonSpecificTypeMapping(RelationalTypeMapping typeMapping)
+            => typeMapping is IJsonSpecificTypeMapping jsonSpecificTypeMapping
+                ? jsonSpecificTypeMapping.CloneAsJsonCompatible()
+                : typeMapping;
     }
 }

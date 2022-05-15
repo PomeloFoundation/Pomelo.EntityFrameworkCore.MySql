@@ -28,17 +28,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         protected override string OpenDelimiter => "`";
         protected override string CloseDelimiter => "`";
 
-        public static MySqlTestStore GetOrCreate(string name, bool useConnectionString = false, bool noBackslashEscapes = false, string databaseCollation = null)
-            => new MySqlTestStore(name, useConnectionString: useConnectionString, shared: true, noBackslashEscapes: noBackslashEscapes, databaseCollation: databaseCollation);
+        public static MySqlTestStore GetOrCreate(string name, bool useConnectionString = false, bool noBackslashEscapes = false, string databaseCollation = null, MySqlGuidFormat guidFormat = MySqlGuidFormat.Default)
+            => new MySqlTestStore(name, useConnectionString: useConnectionString, shared: true, noBackslashEscapes: noBackslashEscapes, databaseCollation: databaseCollation, guidFormat: guidFormat);
 
-        public static MySqlTestStore GetOrCreate(string name, string scriptPath, bool noBackslashEscapes = false, string databaseCollation = null)
-            => new MySqlTestStore(name, scriptPath: scriptPath, noBackslashEscapes: noBackslashEscapes, databaseCollation: databaseCollation);
+        public static MySqlTestStore GetOrCreate(string name, string scriptPath, bool noBackslashEscapes = false, string databaseCollation = null, MySqlGuidFormat guidFormat = MySqlGuidFormat.Default)
+            => new MySqlTestStore(name, scriptPath: scriptPath, noBackslashEscapes: noBackslashEscapes, databaseCollation: databaseCollation, guidFormat: guidFormat);
 
         public static MySqlTestStore GetOrCreateInitialized(string name)
             => new MySqlTestStore(name, shared: true).InitializeMySql(null, (Func<DbContext>)null, null);
 
-        public static MySqlTestStore Create(string name, bool useConnectionString = false, bool noBackslashEscapes = false, string databaseCollation = null)
-            => new MySqlTestStore(name, useConnectionString: useConnectionString, shared: false, noBackslashEscapes: noBackslashEscapes, databaseCollation: databaseCollation);
+        public static MySqlTestStore Create(string name, bool useConnectionString = false, bool noBackslashEscapes = false, string databaseCollation = null, MySqlGuidFormat guidFormat = MySqlGuidFormat.Default)
+            => new MySqlTestStore(name, useConnectionString: useConnectionString, shared: false, noBackslashEscapes: noBackslashEscapes, databaseCollation: databaseCollation, guidFormat: guidFormat);
 
         public static MySqlTestStore CreateInitialized(string name)
             => new MySqlTestStore(name, shared: false).InitializeMySql(null, null, null);
@@ -62,7 +62,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             bool useConnectionString = false,
             string scriptPath = null,
             bool shared = true,
-            bool noBackslashEscapes = false)
+            bool noBackslashEscapes = false,
+            MySqlGuidFormat guidFormat = MySqlGuidFormat.Default)
             : base(name, shared)
         {
             DatabaseCharSet = databaseCharSet ?? "utf8mb4";
@@ -78,7 +79,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                             .Assembly.Location), scriptPath);
             }
 
-            ConnectionString = CreateConnectionString(name, _noBackslashEscapes);
+            ConnectionString = CreateConnectionString(name, _noBackslashEscapes, guidFormat);
             Connection = new MySqlConnection(ConnectionString);
             ServerVersion = new Lazy<ServerVersion>(() => Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect((MySqlConnection)Connection));
         }

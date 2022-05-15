@@ -8,7 +8,7 @@ using Pomelo.EntityFrameworkCore.MySql.Utilities;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
-    public class MySqlGuidTypeMapping : GuidTypeMapping
+    public class MySqlGuidTypeMapping : GuidTypeMapping, IJsonSpecificTypeMapping
     {
         private readonly MySqlGuidFormat _guidFormat;
 
@@ -121,5 +121,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
             return bytes;
         }
+
+        /// <summary>
+        /// For JSON values, we will always use the 36 character string representation.
+        /// </summary>
+        public virtual RelationalTypeMapping CloneAsJsonCompatible()
+            => new MySqlGuidTypeMapping(MySqlGuidFormat.Char36);
     }
 }

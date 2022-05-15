@@ -115,7 +115,7 @@ LIMIT 2");
             AssertSql(
                 @"SELECT `j`.`Id`, `j`.`Customer`, `j`.`ToplevelArray`
 FROM `JsonEntities` AS `j`
-WHERE JSON_EXTRACT(`j`.`Customer`, '$.Age') < 30
+WHERE CAST(JSON_EXTRACT(`j`.`Customer`, '$.Age') AS signed) < 30
 LIMIT 2");
         }
 
@@ -129,7 +129,7 @@ LIMIT 2");
             AssertSql(
                 @"SELECT `j`.`Id`, `j`.`Customer`, `j`.`ToplevelArray`
 FROM `JsonEntities` AS `j`
-WHERE JSON_EXTRACT(`j`.`Customer`, '$.ID') = '00000000-0000-0000-0000-000000000000'
+WHERE CAST(JSON_UNQUOTE(JSON_EXTRACT(`j`.`Customer`, '$.ID')) AS char) = '00000000-0000-0000-0000-000000000000'
 LIMIT 2");
         }
 
@@ -561,7 +561,11 @@ WHERE JSON_TYPE(JSON_EXTRACT(`j`.`Customer`, '$.Statistics.Visits')) = 'INTEGER'
         public class JsonPocoQueryFixtureBase : SharedStoreFixtureBase<JsonPocoQueryContext>
         {
             protected override string StoreName => "JsonPocoQueryTest";
-            protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
+
+            // We explicitly setup MySqlGuidFormat.Binary16 here, to ensure that this is being ignored for JSON values, and instead
+            // MySqlGuidFormat.Char36 is being used.
+            protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.GuidBinary16Instance;
+
             public TestSqlLoggerFactory TestSqlLoggerFactory => (TestSqlLoggerFactory)ListLoggerFactory;
             protected override void Seed(JsonPocoQueryContext context) => JsonPocoQueryContext.Seed(context);
         }
