@@ -24,6 +24,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
         private static readonly MethodInfo _indexOfMethodInfo
             = typeof(string).GetRuntimeMethod(nameof(string.IndexOf), new[] { typeof(string) });
+        private static readonly MethodInfo _indexOfMethodInfoWithOneArg
+            = typeof(string).GetRuntimeMethod(nameof(string.IndexOf), new[] { typeof(string), typeof(int) });
         private static readonly MethodInfo _replaceMethodInfo
             = typeof(string).GetRuntimeMethod(nameof(string.Replace), new[] { typeof(string), typeof(string) });
         private static readonly MethodInfo _toLowerMethodInfo
@@ -131,6 +133,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             {
                 return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory, _options)
                     .MakeIndexOfExpression(instance, arguments[0]);
+            }
+
+            if(_indexOfMethodInfoWithOneArg.Equals(method))
+            {
+                return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory, _options)
+                    .MakeIndexOfExpression(instance, arguments[0], startIndex: arguments[1]);
             }
 
             if (_replaceMethodInfo.Equals(method))
