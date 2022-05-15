@@ -3,17 +3,16 @@
 
 using System;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
@@ -24,37 +23,36 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private readonly MySqlOptionsExtension _mySqlOptionsExtension;
 
         // ReSharper disable once VirtualMemberCallInConstructor
-        public MySqlRelationalConnection(
-            [NotNull] RelationalConnectionDependencies dependencies)
+        public MySqlRelationalConnection(RelationalConnectionDependencies dependencies)
             : base(dependencies)
         {
             _mySqlOptionsExtension = Dependencies.ContextOptions.FindExtension<MySqlOptionsExtension>() ?? new MySqlOptionsExtension();
         }
 
+        // TODO: Remove, because we don't use it anywhere.
         private bool IsMasterConnection { get; set; }
 
         protected override DbConnection CreateDbConnection()
-            => new MySqlConnection(AddConnectionStringOptions(new MySqlConnectionStringBuilder(ConnectionString)).ConnectionString);
+            => new MySqlConnection(AddConnectionStringOptions(new MySqlConnectionStringBuilder(ConnectionString!)).ConnectionString);
 
         public virtual IMySqlRelationalConnection CreateMasterConnection()
         {
-            var relationalOptions = RelationalOptionsExtension.Extract(Dependencies.ContextOptions);
-            var connection = (MySqlConnection)relationalOptions.Connection;
-            var connectionString = connection?.ConnectionString ?? relationalOptions.ConnectionString;
-
             // Add master connection specific options.
-            var csb = new MySqlConnectionStringBuilder(connectionString)
+            var csb = new MySqlConnectionStringBuilder(ConnectionString!)
             {
                 Database = string.Empty,
-                Pooling = false
+                Pooling = false,
             };
 
             csb = AddConnectionStringOptions(csb);
 
+            var connectionString = csb.ConnectionString;
+            var relationalOptions = RelationalOptionsExtension.Extract(Dependencies.ContextOptions);
+
             // Apply modified connection string.
-            relationalOptions = connection is null
-                ? relationalOptions.WithConnectionString(csb.ConnectionString)
-                : relationalOptions.WithConnection(connection.CloneWith(csb.ConnectionString));
+            relationalOptions = relationalOptions.Connection is null
+                ? relationalOptions.WithConnectionString(connectionString)
+                : relationalOptions.WithConnection(DbConnection.CloneWith(connectionString));
 
             var optionsBuilder = new DbContextOptionsBuilder();
             var optionsBuilderInfrastructure = (IDbContextOptionsBuilderInfrastructure)optionsBuilder;
@@ -65,6 +63,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             {
                 IsMasterConnection = true
             };
+        }
+
+        [AllowNull]
+        public new virtual MySqlConnection DbConnection
+        {
+            get => (MySqlConnection)base.DbConnection;
+            set => base.DbConnection = value;
         }
 
         private MySqlConnectionStringBuilder AddConnectionStringOptions(MySqlConnectionStringBuilder builder)
