@@ -706,11 +706,26 @@ END = 1");
         }
 
         [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public async Task StringIndexOf_with_constant_start_index(bool async)
+        {
+            await AssertQuery(
+                async,
+                ss => ss.Set<Customer>().Where(c => c.CustomerID.IndexOf("nt", 0, StringComparison.OrdinalIgnoreCase) == 1),
+                entryCount: 1);
+
+            AssertSql(
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE (LOCATE(CONVERT(LCASE('nt') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`), 1) - 1) = 1");
+        }
+
+        [ConditionalTheory]
         [InlineData(0, 1, false)]
         [InlineData(2, 0, false)]
         [InlineData(0, 1, true)]
         [InlineData(2, 0, true)]
-        public async Task StringIndexOf_with_start_index(int startIndex, int expected, bool async)
+        public async Task StringIndexOf_with_parameter_start_index(int startIndex, int expected, bool async)
         {
             await AssertQuery(
                 async,

@@ -622,9 +622,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 
         private SqlExpression Locate(SqlExpression sub, SqlExpression str, SqlExpression startIndex = null)
         {
-            var args = startIndex is null
-                ? new SqlExpression[] { sub, str }
-                : new SqlExpression[] { sub, str, _sqlExpressionFactory.Add(startIndex, _sqlExpressionFactory.Constant(1)) };
+            var args = startIndex switch
+            {
+                null => new SqlExpression[] { sub, str },
+                SqlConstantExpression { Value:int idx } => new SqlExpression[] { sub, str, _sqlExpressionFactory.Constant(idx + 1) },
+                _ => new SqlExpression[] { sub, str, _sqlExpressionFactory.Add(startIndex, _sqlExpressionFactory.Constant(1)) }
+            };
             return _sqlExpressionFactory.NullableFunction("LOCATE", args, typeof(int));
         }
 
