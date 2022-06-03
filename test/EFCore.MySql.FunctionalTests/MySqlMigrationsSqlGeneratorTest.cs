@@ -1080,6 +1080,35 @@ ALTER DATABASE COLLATE latin1_swedish_ci;" + EOL,
         }
 
         [ConditionalFact]
+        public virtual void RenameColumnOperation_with_model_required_without_default_value()
+        {
+            var migrationBuilder = new MigrationBuilder("MySql");
+
+            migrationBuilder.RenameColumn(
+                table: "Person",
+                name: "Name",
+                newName: "FullName");
+
+            Generate(
+                modelBuilder => modelBuilder.Entity(
+                    "Person",
+                    x =>
+                    {
+                        x.Property<int>("Id");
+                        x.Property<string>("FullName")
+                            .HasMaxLength(64)
+                            .IsRequired();
+                    }),
+                migrationBuilder.Operations.ToArray());
+
+            Assert.Equal(
+                AppConfig.ServerVersion.Supports.RenameColumn
+                    ? "ALTER TABLE `Person` RENAME COLUMN `Name` TO `FullName`;" + EOL
+                    : "ALTER TABLE `Person` CHANGE `Name` `FullName` varchar(64) NOT NULL;" + EOL,
+                Sql);
+        }
+
+        [ConditionalFact]
         public override void SqlOperation()
         {
             base.SqlOperation();
