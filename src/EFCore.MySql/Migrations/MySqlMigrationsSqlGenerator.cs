@@ -830,23 +830,11 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name))
                 .Append(" ");
 
-            var column = model?.GetRelationalModel().FindTable(operation.Table, operation.Schema).FindColumn(operation.NewName);
-            if (column == null)
+            var column = model?.GetRelationalModel().FindTable(operation.Table, operation.Schema)?.FindColumn(operation.NewName);
+            if (column is null)
             {
-                if (!(operation[RelationalAnnotationNames.ColumnType] is string type))
-                {
-                    throw new InvalidOperationException(
-                        $"Could not find the column: {Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}.{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName)}. Specify the column type explicitly on 'RenameColumn' using the \"{RelationalAnnotationNames.ColumnType}\" annotation");
-                }
-
-                builder
-                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName))
-                    .Append(" ")
-                    .Append(type)
-                    .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
-
-                EndStatement(builder);
-                return;
+                throw new InvalidOperationException(
+                    $"The column '{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Table, operation.Schema)}.{Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName)}' could not be found in the target model. Make sure the table name exists in the target model and check the order of all migration operations. Generally, rename tables first, then columns.");
             }
 
             var typeMapping = column.PropertyMappings.FirstOrDefault()?.TypeMapping;
