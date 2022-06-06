@@ -849,41 +849,28 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
                 return;
             }
 
+            var columnType = (string)(operation[RelationalAnnotationNames.ColumnType] ??
+                                      column[RelationalAnnotationNames.ColumnType] ??
+                                      column.StoreType);
+
             var typeMapping = column.PropertyMappings.FirstOrDefault()?.TypeMapping;
             var converter = typeMapping?.Converter;
-            var clrType = (converter?.ProviderClrType ?? typeMapping?.ClrType).UnwrapNullableType();
-            var columnType = (string)(operation[RelationalAnnotationNames.ColumnType]
-                                      ?? column[RelationalAnnotationNames.ColumnType]);
-            var isNullable = column.IsNullable;
-
-            var defaultValue = column.DefaultValue;
-            defaultValue = converter != null
-                ? converter.ConvertToProvider(defaultValue)
-                : defaultValue;
-            defaultValue = (defaultValue == DBNull.Value ? null : defaultValue)
-                           ?? (isNullable
-                               ? null
-                               : clrType == typeof(string)
-                                   ? string.Empty
-                                   : clrType.IsArray
-                                       ? Array.CreateInstance(clrType.GetElementType(), 0)
-                                       : clrType.GetDefaultValue());
-
-            var isRowVersion = (clrType == typeof(DateTime) || clrType == typeof(byte[])) &&
-                               column.IsRowVersion;
+            var defaultValue = converter != null
+                ? converter.ConvertToProvider(column.DefaultValue)
+                : column.DefaultValue;
 
             var addColumnOperation = new AddColumnOperation
             {
                 Schema = operation.Schema,
                 Table = operation.Table,
                 Name = operation.NewName,
-                ClrType = clrType,
+                ClrType = (converter?.ProviderClrType ?? typeMapping?.ClrType).UnwrapNullableType(),
                 ColumnType = columnType,
                 IsUnicode = column.IsUnicode,
                 MaxLength = column.MaxLength,
                 IsFixedLength = column.IsFixedLength,
-                IsRowVersion = isRowVersion,
-                IsNullable = isNullable,
+                IsRowVersion = column.IsRowVersion,
+                IsNullable = column.IsNullable,
                 DefaultValue = defaultValue,
                 DefaultValueSql = column.DefaultValueSql,
                 ComputedColumnSql = column.ComputedColumnSql,
