@@ -315,6 +315,11 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
+            if (string.IsNullOrEmpty(operation.Table))
+            {
+                throw new InvalidOperationException(MySqlStrings.IndexTableRequired);
+            }
+
             if (operation.NewName != null)
             {
                 if (_options.ServerVersion.Supports.RenameIndex)
@@ -638,6 +643,11 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
         {
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
+
+            if (string.IsNullOrEmpty(operation.Table))
+            {
+                throw new InvalidOperationException(MySqlStrings.IndexTableRequired);
+            }
 
             builder
                 .Append("ALTER TABLE ")

@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
@@ -1032,6 +1033,35 @@ ALTER DATABASE COLLATE latin1_swedish_ci;" + EOL,
             Assert.Equal(
                 @"ALTER TABLE `Person` RENAME INDEX `IX_Person_Name` TO `IX_Person_FullName`;" + EOL,
                 Sql);
+        }
+
+        [ConditionalFact]
+        public virtual void RenameIndexOperations_throws_when_no_table()
+        {
+            var migrationBuilder = new MigrationBuilder("MySql");
+
+            migrationBuilder.RenameIndex(
+                name: "IX_OldIndex",
+                newName: "IX_NewIndex");
+
+            var ex = Assert.Throws<InvalidOperationException>(
+                () => Generate(migrationBuilder.Operations.ToArray()));
+
+            Assert.Equal(MySqlStrings.IndexTableRequired, ex.Message);
+        }
+
+        [ConditionalFact]
+        public virtual void DropIndexOperations_throws_when_no_table()
+        {
+            var migrationBuilder = new MigrationBuilder("MySql");
+
+            migrationBuilder.DropIndex(
+                name: "IX_Name");
+
+            var ex = Assert.Throws<InvalidOperationException>(
+                () => Generate(migrationBuilder.Operations.ToArray()));
+
+            Assert.Equal(MySqlStrings.IndexTableRequired, ex.Message);
         }
 
         [ConditionalFact]
