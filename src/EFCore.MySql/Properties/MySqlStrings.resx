@@ -130,7 +130,7 @@
     <value>MySQL sequences cannot be used to generate values for the property '{property}' on entity type '{entityType}' because the property type is '{propertyType}'. Sequences can only be used with integer properties.</value>
   </data>
   <data name="IndexTableRequired" xml:space="preserve">
-    <value>MySQL requires the table name to be specified for rename index operations. Specify table name in the call to MigrationBuilder.RenameIndex.</value>
+    <value>MySQL requires the table name to be specified for index operations. Specify table name in calls to 'MigrationBuilder.RenameIndex' and 'DropIndex'.</value>
   </data>
   <data name="AlterMemoryOptimizedTable" xml:space="preserve">
     <value>To set memory-optimized on a table on or off the table needs to be dropped and recreated.</value>
