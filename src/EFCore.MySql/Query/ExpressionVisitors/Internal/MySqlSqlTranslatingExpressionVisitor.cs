@@ -27,7 +27,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
         protected static readonly MethodInfo[] NewArrayExpressionSupportMethodInfos = Array.Empty<MethodInfo>()
-            .Concat(typeof(MySqlDbFunctionsExtensions).GetRuntimeMethods().Where(m => m.Name == nameof(MySqlDbFunctionsExtensions.Match)))
+            .Concat(typeof(MySqlDbFunctionsExtensions).GetRuntimeMethods().Where(m => m.Name is nameof(MySqlDbFunctionsExtensions.Match)
+                                                                                             or nameof(MySqlDbFunctionsExtensions.IsMatch)))
             .Concat(typeof(string).GetRuntimeMethods().Where(m => m.Name == nameof(string.Concat)))
             .Where(m => m.GetParameters().Any(p => p.ParameterType.IsArray))
             .ToArray();

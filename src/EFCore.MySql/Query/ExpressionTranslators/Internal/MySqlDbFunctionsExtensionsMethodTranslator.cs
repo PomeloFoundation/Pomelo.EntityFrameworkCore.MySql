@@ -71,6 +71,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                                  && method.GetParameters().Length is >= 3 and <= 4)
                 .SelectMany(method => _supportedLikeTypes.Select(type => method.MakeGenericMethod(type))).ToArray();
 
+        private static readonly MethodInfo _isMatchMethodInfo
+            = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(
+                nameof(MySqlDbFunctionsExtensions.IsMatch),
+                new[] {typeof(DbFunctions), typeof(string), typeof(string), typeof(MySqlMatchSearchMode)});
+
+        private static readonly MethodInfo _isMatchWithMultiplePropertiesMethodInfo
+            = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(
+                nameof(MySqlDbFunctionsExtensions.IsMatch),
+                new[] {typeof(DbFunctions), typeof(string[]), typeof(string), typeof(MySqlMatchSearchMode)});
+
         private static readonly MethodInfo _matchMethodInfo
             = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(
                 nameof(MySqlDbFunctionsExtensions.Match),
@@ -158,15 +168,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     excapeChar);
             }
 
-            if (Equals(method, _matchMethodInfo) ||
-                Equals(method, _matchWithMultiplePropertiesMethodInfo))
+            if (Equals(method, _isMatchMethodInfo) ||
+                Equals(method, _isMatchWithMultiplePropertiesMethodInfo))
             {
                 if (arguments[3] is SqlConstantExpression constant)
                 {
-                    return _sqlExpressionFactory.MakeMatch(
-                        arguments[1],
-                        arguments[2],
-                        (MySqlMatchSearchMode)constant.Value);
+                    return _sqlExpressionFactory.GreaterThan(
+                        _sqlExpressionFactory.MakeMatch(
+                            arguments[1],
+                            arguments[2],
+                            (MySqlMatchSearchMode)constant.Value),
+                        _sqlExpressionFactory.Constant(0));
                 }
 
                 if (arguments[3] is SqlParameterExpression parameter)
@@ -180,7 +192,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                         .OrderByDescending(m => m)
                         .Select(m => _sqlExpressionFactory.AndAlso(
                             _sqlExpressionFactory.Equal(parameter, _sqlExpressionFactory.Constant(m)),
-                            _sqlExpressionFactory.MakeMatch(arguments[1], arguments[2], m)))
+                            _sqlExpressionFactory.GreaterThan(
+                                _sqlExpressionFactory.MakeMatch(arguments[1], arguments[2], m),
+                                _sqlExpressionFactory.Constant(0))))
                         .ToArray();
 
                     return andClauses
@@ -188,6 +202,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                         .Aggregate(
                             andClauses.First(),
                             (currentAnd, previousExpression) => _sqlExpressionFactory.OrElse(previousExpression, currentAnd));
+                }
+            }
+
+            if (Equals(method, _matchMethodInfo) ||
+                Equals(method, _matchWithMultiplePropertiesMethodInfo))
+            {
+                if (arguments[3] is SqlConstantExpression constant)
+                {
+                    return _sqlExpressionFactory.MakeMatch(
+                        arguments[1],
+                        arguments[2],
+                        (MySqlMatchSearchMode)constant.Value);
                 }
             }
 
