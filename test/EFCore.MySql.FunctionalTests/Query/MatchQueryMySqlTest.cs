@@ -18,133 +18,281 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [ConditionalFact]
-        public virtual void Match_in_natural_language_mode()
+        public virtual void IsMatch_in_natural_language_mode()
         {
             using var context = CreateContext();
-            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(herb.Name, "First", MySqlMatchSearchMode.NaturalLanguage));
+            var count = context.Set<Herb>().Count(herb => EF.Functions.IsMatch(herb.Name, "First", MySqlMatchSearchMode.NaturalLanguage));
 
             Assert.Equal(3, count);
 
             AssertSql(@"SELECT COUNT(*)
 FROM `Herb` AS `h`
-WHERE MATCH (`h`.`Name`) AGAINST ('First')");
+WHERE MATCH (`h`.`Name`) AGAINST ('First') > 0.0");
+        }
+
+        [ConditionalFact]
+        public virtual void Match_in_natural_language_mode()
+        {
+            using var context = CreateContext();
+            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(herb.Name, "First", MySqlMatchSearchMode.NaturalLanguage) > 0);
+
+            Assert.Equal(3, count);
+
+            AssertSql(@"SELECT COUNT(*)
+FROM `Herb` AS `h`
+WHERE MATCH (`h`.`Name`) AGAINST ('First') > 0.0");
+        }
+
+        [ConditionalFact]
+        public virtual void IsMatch_in_natural_language_mode_multiple_columns()
+        {
+            using var context = CreateContext();
+            var count = context.Set<Herb>().Count(herb => EF.Functions.IsMatch(new []{herb.Name, herb.Garden}, "First", MySqlMatchSearchMode.NaturalLanguage));
+
+            Assert.Equal(5, count);
+
+            AssertSql(@"SELECT COUNT(*)
+FROM `Herb` AS `h`
+WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First') > 0.0");
         }
 
         [ConditionalFact]
         public virtual void Match_in_natural_language_mode_multiple_columns()
         {
             using var context = CreateContext();
-            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(new []{herb.Name, herb.Garden}, "First", MySqlMatchSearchMode.NaturalLanguage));
+            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(new []{herb.Name, herb.Garden}, "First", MySqlMatchSearchMode.NaturalLanguage) > 0);
 
             Assert.Equal(5, count);
 
             AssertSql(@"SELECT COUNT(*)
 FROM `Herb` AS `h`
-WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First')");
+WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First') > 0.0");
+        }
+
+        [ConditionalFact]
+        public virtual void IsMatch_in_natural_language_mode_keywords_separated()
+        {
+            using var context = CreateContext();
+            var count = context.Set<Herb>().Count(herb => EF.Functions.IsMatch(herb.Name, "First, Second", MySqlMatchSearchMode.NaturalLanguage));
+
+            Assert.Equal(6, count);
+
+            AssertSql(@"SELECT COUNT(*)
+FROM `Herb` AS `h`
+WHERE MATCH (`h`.`Name`) AGAINST ('First, Second') > 0.0");
         }
 
         [ConditionalFact]
         public virtual void Match_in_natural_language_mode_keywords_separated()
         {
             using var context = CreateContext();
-            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(herb.Name, "First, Second", MySqlMatchSearchMode.NaturalLanguage));
+            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(herb.Name, "First, Second", MySqlMatchSearchMode.NaturalLanguage) > 0);
 
             Assert.Equal(6, count);
 
             AssertSql(@"SELECT COUNT(*)
 FROM `Herb` AS `h`
-WHERE MATCH (`h`.`Name`) AGAINST ('First, Second')");
+WHERE MATCH (`h`.`Name`) AGAINST ('First, Second') > 0.0");
+        }
+
+        [ConditionalFact]
+        public virtual void IsMatch_in_natural_language_mode_keywords_separated_multiple_columns()
+        {
+            using var context = CreateContext();
+            var count = context.Set<Herb>().Count(herb => EF.Functions.IsMatch(new []{herb.Name, herb.Garden}, "First, Second", MySqlMatchSearchMode.NaturalLanguage));
+
+            Assert.Equal(8, count);
+
+            AssertSql(@"SELECT COUNT(*)
+FROM `Herb` AS `h`
+WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First, Second') > 0.0");
         }
 
         [ConditionalFact]
         public virtual void Match_in_natural_language_mode_keywords_separated_multiple_columns()
         {
             using var context = CreateContext();
-            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(new []{herb.Name, herb.Garden}, "First, Second", MySqlMatchSearchMode.NaturalLanguage));
+            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(new []{herb.Name, herb.Garden}, "First, Second", MySqlMatchSearchMode.NaturalLanguage) > 0);
 
             Assert.Equal(8, count);
 
             AssertSql(@"SELECT COUNT(*)
 FROM `Herb` AS `h`
-WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First, Second')");
+WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First, Second') > 0.0");
+        }
+
+        [ConditionalFact]
+        public virtual void IsMatch_in_natural_language_mode_multiple_keywords()
+        {
+            using var context = CreateContext();
+            var count = context.Set<Herb>().Count(herb => EF.Functions.IsMatch(herb.Name, "First Herb", MySqlMatchSearchMode.NaturalLanguage));
+
+            Assert.Equal(9, count);
+
+            AssertSql(@"SELECT COUNT(*)
+FROM `Herb` AS `h`
+WHERE MATCH (`h`.`Name`) AGAINST ('First Herb') > 0.0");
         }
 
         [ConditionalFact]
         public virtual void Match_in_natural_language_mode_multiple_keywords()
         {
             using var context = CreateContext();
-            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(herb.Name, "First Herb", MySqlMatchSearchMode.NaturalLanguage));
+            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(herb.Name, "First Herb", MySqlMatchSearchMode.NaturalLanguage) > 0);
 
             Assert.Equal(9, count);
 
             AssertSql(@"SELECT COUNT(*)
 FROM `Herb` AS `h`
-WHERE MATCH (`h`.`Name`) AGAINST ('First Herb')");
+WHERE MATCH (`h`.`Name`) AGAINST ('First Herb') > 0.0");
+        }
+
+        [ConditionalFact]
+        public virtual void IsMatch_in_natural_language_mode_multiple_keywords_multiple_columns()
+        {
+            using var context = CreateContext();
+            var count = context.Set<Herb>().Count(herb => EF.Functions.IsMatch(new []{herb.Name, herb.Garden}, "First Herb", MySqlMatchSearchMode.NaturalLanguage));
+
+            Assert.Equal(9, count);
+
+            AssertSql(@"SELECT COUNT(*)
+FROM `Herb` AS `h`
+WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First Herb') > 0.0");
         }
 
         [ConditionalFact]
         public virtual void Match_in_natural_language_mode_multiple_keywords_multiple_columns()
         {
             using var context = CreateContext();
-            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(new []{herb.Name, herb.Garden}, "First Herb", MySqlMatchSearchMode.NaturalLanguage));
+            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(new []{herb.Name, herb.Garden}, "First Herb", MySqlMatchSearchMode.NaturalLanguage) > 0);
 
             Assert.Equal(9, count);
 
             AssertSql(@"SELECT COUNT(*)
 FROM `Herb` AS `h`
-WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First Herb')");
+WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First Herb') > 0.0");
+        }
+
+        [ConditionalFact]
+        public virtual void IsMatch_in_natural_language_mode_multiple_keywords_separated()
+        {
+            using var context = CreateContext();
+            var count = context.Set<Herb>().Count(herb => EF.Functions.IsMatch(herb.Name, "First, Second", MySqlMatchSearchMode.NaturalLanguage));
+
+            Assert.Equal(6, count);
+
+            AssertSql(@"SELECT COUNT(*)
+FROM `Herb` AS `h`
+WHERE MATCH (`h`.`Name`) AGAINST ('First, Second') > 0.0");
         }
 
         [ConditionalFact]
         public virtual void Match_in_natural_language_mode_multiple_keywords_separated()
         {
             using var context = CreateContext();
-            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(herb.Name, "First, Second", MySqlMatchSearchMode.NaturalLanguage));
+            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(herb.Name, "First, Second", MySqlMatchSearchMode.NaturalLanguage) > 0);
 
             Assert.Equal(6, count);
 
             AssertSql(@"SELECT COUNT(*)
 FROM `Herb` AS `h`
-WHERE MATCH (`h`.`Name`) AGAINST ('First, Second')");
+WHERE MATCH (`h`.`Name`) AGAINST ('First, Second') > 0.0");
+        }
+
+        [ConditionalFact]
+        public virtual void IsMatch_in_natural_language_mode_multiple_keywords_separated_multiple_columns()
+        {
+            using var context = CreateContext();
+            var count = context.Set<Herb>().Count(herb => EF.Functions.IsMatch(new []{herb.Name, herb.Garden}, "First, Second", MySqlMatchSearchMode.NaturalLanguage));
+
+            Assert.Equal(8, count);
+
+            AssertSql(@"SELECT COUNT(*)
+FROM `Herb` AS `h`
+WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First, Second') > 0.0");
         }
 
         [ConditionalFact]
         public virtual void Match_in_natural_language_mode_multiple_keywords_separated_multiple_columns()
         {
             using var context = CreateContext();
-            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(new []{herb.Name, herb.Garden}, "First, Second", MySqlMatchSearchMode.NaturalLanguage));
+            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(new []{herb.Name, herb.Garden}, "First, Second", MySqlMatchSearchMode.NaturalLanguage) > 0);
 
             Assert.Equal(8, count);
 
             AssertSql(@"SELECT COUNT(*)
 FROM `Herb` AS `h`
-WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First, Second')");
+WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First, Second') > 0.0");
+        }
+
+        [ConditionalFact]
+        public virtual void IsMatch_in_boolean_mode()
+        {
+            using var context = CreateContext();
+            var count = context.Set<Herb>().Count(herb => EF.Functions.IsMatch(herb.Name, "First*", MySqlMatchSearchMode.Boolean));
+
+            Assert.Equal(3, count);
+
+            AssertSql(@"SELECT COUNT(*)
+FROM `Herb` AS `h`
+WHERE MATCH (`h`.`Name`) AGAINST ('First*' IN BOOLEAN MODE) > 0.0");
         }
 
         [ConditionalFact]
         public virtual void Match_in_boolean_mode()
         {
             using var context = CreateContext();
-            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(herb.Name, "First*", MySqlMatchSearchMode.Boolean));
+            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(herb.Name, "First*", MySqlMatchSearchMode.Boolean) > 0);
 
             Assert.Equal(3, count);
 
             AssertSql(@"SELECT COUNT(*)
 FROM `Herb` AS `h`
-WHERE MATCH (`h`.`Name`) AGAINST ('First*' IN BOOLEAN MODE)");
+WHERE MATCH (`h`.`Name`) AGAINST ('First*' IN BOOLEAN MODE) > 0.0");
+        }
+
+        [ConditionalFact]
+        public virtual void IsMatch_in_boolean_mode_multiple_columns()
+        {
+            using var context = CreateContext();
+            var count = context.Set<Herb>().Count(herb => EF.Functions.IsMatch(new []{herb.Name, herb.Garden}, "First*", MySqlMatchSearchMode.Boolean));
+
+            Assert.Equal(5, count);
+
+            AssertSql(@"SELECT COUNT(*)
+FROM `Herb` AS `h`
+WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*' IN BOOLEAN MODE) > 0.0");
         }
 
         [ConditionalFact]
         public virtual void Match_in_boolean_mode_multiple_columns()
         {
             using var context = CreateContext();
-            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(new []{herb.Name, herb.Garden}, "First*", MySqlMatchSearchMode.Boolean));
+            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(new []{herb.Name, herb.Garden}, "First*", MySqlMatchSearchMode.Boolean) > 0);
 
             Assert.Equal(5, count);
 
             AssertSql(@"SELECT COUNT(*)
 FROM `Herb` AS `h`
-WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*' IN BOOLEAN MODE)");
+WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*' IN BOOLEAN MODE) > 0.0");
+        }
+
+        [ConditionalFact]
+        public virtual void IsMatch_in_boolean_mode_with_search_mode_parameter()
+        {
+            using var context = CreateContext();
+
+            var searchMode = MySqlMatchSearchMode.Boolean;
+            var count = context.Set<Herb>().Count(herb => EF.Functions.IsMatch(herb.Name, "First*", searchMode));
+
+            Assert.Equal(3, count);
+
+            AssertSql(
+                @"@__searchMode_1='2'
+
+SELECT COUNT(*)
+FROM `Herb` AS `h`
+WHERE ((@__searchMode_1 = 0) AND (MATCH (`h`.`Name`) AGAINST ('First*') > 0.0)) OR (((@__searchMode_1 = 1) AND (MATCH (`h`.`Name`) AGAINST ('First*' WITH QUERY EXPANSION) > 0.0)) OR ((@__searchMode_1 = 2) AND (MATCH (`h`.`Name`) AGAINST ('First*' IN BOOLEAN MODE) > 0.0)))");
         }
 
         [ConditionalFact]
@@ -153,25 +301,18 @@ WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*' IN BOOLEAN MODE)");
             using var context = CreateContext();
 
             var searchMode = MySqlMatchSearchMode.Boolean;
-            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(herb.Name, "First*", searchMode));
 
-            Assert.Equal(3, count);
-
-            AssertSql(
-                @"@__searchMode_1='2'
-
-SELECT COUNT(*)
-FROM `Herb` AS `h`
-WHERE ((@__searchMode_1 = 0) AND MATCH (`h`.`Name`) AGAINST ('First*')) OR (((@__searchMode_1 = 1) AND MATCH (`h`.`Name`) AGAINST ('First*' WITH QUERY EXPANSION)) OR ((@__searchMode_1 = 2) AND MATCH (`h`.`Name`) AGAINST ('First*' IN BOOLEAN MODE)))");
+            Assert.Throws<InvalidOperationException>(
+                () => context.Set<Herb>().Count(herb => EF.Functions.Match(herb.Name, "First*", searchMode) > 0));
         }
 
         [ConditionalFact]
-        public virtual void Match_in_boolean_mode_with_search_mode_parameter_multiple_columns()
+        public virtual void IsMatch_in_boolean_mode_with_search_mode_parameter_multiple_columns()
         {
             using var context = CreateContext();
 
             var searchMode = MySqlMatchSearchMode.Boolean;
-            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(new []{herb.Name, herb.Garden}, "First*", searchMode));
+            var count = context.Set<Herb>().Count(herb => EF.Functions.IsMatch(new []{herb.Name, herb.Garden}, "First*", searchMode));
 
             Assert.Equal(5, count);
 
@@ -180,85 +321,191 @@ WHERE ((@__searchMode_1 = 0) AND MATCH (`h`.`Name`) AGAINST ('First*')) OR (((@_
 
 SELECT COUNT(*)
 FROM `Herb` AS `h`
-WHERE ((@__searchMode_1 = 0) AND MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*')) OR (((@__searchMode_1 = 1) AND MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*' WITH QUERY EXPANSION)) OR ((@__searchMode_1 = 2) AND MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*' IN BOOLEAN MODE)))");
+WHERE ((@__searchMode_1 = 0) AND (MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*') > 0.0)) OR (((@__searchMode_1 = 1) AND (MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*' WITH QUERY EXPANSION) > 0.0)) OR ((@__searchMode_1 = 2) AND (MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*' IN BOOLEAN MODE) > 0.0)))");
+        }
+
+        [ConditionalFact]
+        public virtual void Match_in_boolean_mode_with_search_mode_parameter_multiple_columns()
+        {
+            using var context = CreateContext();
+
+            var searchMode = MySqlMatchSearchMode.Boolean;
+
+            Assert.Throws<InvalidOperationException>(
+                () => context.Set<Herb>().Count(herb => EF.Functions.Match(new[] { herb.Name, herb.Garden }, "First*", searchMode) > 0));
+        }
+
+        [ConditionalFact]
+        public virtual void IsMatch_in_boolean_mode_keywords()
+        {
+            using var context = CreateContext();
+            var count = context.Set<Herb>().Count(herb => EF.Functions.IsMatch(herb.Name, "+First +Herb", MySqlMatchSearchMode.Boolean));
+
+            Assert.Equal(3, count);
+
+            AssertSql(@"SELECT COUNT(*)
+FROM `Herb` AS `h`
+WHERE MATCH (`h`.`Name`) AGAINST ('+First +Herb' IN BOOLEAN MODE) > 0.0");
         }
 
         [ConditionalFact]
         public virtual void Match_in_boolean_mode_keywords()
         {
             using var context = CreateContext();
-            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(herb.Name, "First* Herb*", MySqlMatchSearchMode.Boolean));
+            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(herb.Name, "+First +Herb", MySqlMatchSearchMode.Boolean) > 0);
+
+            Assert.Equal(3, count);
+
+            AssertSql(@"SELECT COUNT(*)
+FROM `Herb` AS `h`
+WHERE MATCH (`h`.`Name`) AGAINST ('+First +Herb' IN BOOLEAN MODE) > 0.0");
+        }
+
+        [ConditionalFact]
+        public virtual void Match_in_boolean_mode_keywords_evaluate_score()
+        {
+            var minScore = 0.2;
+
+            using var context = CreateContext();
+            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(herb.Name, "First* Herb*", MySqlMatchSearchMode.Boolean) > minScore);
+
+            Assert.Equal(3, count);
+
+            AssertSql(@"@__minScore_1='0.2'
+
+SELECT COUNT(*)
+FROM `Herb` AS `h`
+WHERE MATCH (`h`.`Name`) AGAINST ('First* Herb*' IN BOOLEAN MODE) > @__minScore_1");
+        }
+
+        [ConditionalFact]
+        public virtual void IsMatch_in_boolean_mode_keywords_multiple_columns()
+        {
+            using var context = CreateContext();
+            var count = context.Set<Herb>().Count(herb => EF.Functions.IsMatch(new []{herb.Name, herb.Garden}, "First* Herb*", MySqlMatchSearchMode.Boolean));
 
             Assert.Equal(9, count);
 
             AssertSql(@"SELECT COUNT(*)
 FROM `Herb` AS `h`
-WHERE MATCH (`h`.`Name`) AGAINST ('First* Herb*' IN BOOLEAN MODE)");
+WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First* Herb*' IN BOOLEAN MODE) > 0.0");
         }
 
         [ConditionalFact]
         public virtual void Match_in_boolean_mode_keywords_multiple_columns()
         {
             using var context = CreateContext();
-            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(new []{herb.Name, herb.Garden}, "First* Herb*", MySqlMatchSearchMode.Boolean));
+            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(new []{herb.Name, herb.Garden}, "First* Herb*", MySqlMatchSearchMode.Boolean) > 0);
 
             Assert.Equal(9, count);
 
             AssertSql(@"SELECT COUNT(*)
 FROM `Herb` AS `h`
-WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First* Herb*' IN BOOLEAN MODE)");
+WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First* Herb*' IN BOOLEAN MODE) > 0.0");
+        }
+
+        [ConditionalFact]
+        public virtual void IsMatch_in_boolean_mode_keyword_excluded()
+        {
+            using var context = CreateContext();
+            var count = context.Set<Herb>().Count(herb => EF.Functions.IsMatch(herb.Name, "Herb* -Second", MySqlMatchSearchMode.Boolean));
+
+            Assert.Equal(6, count);
+
+            AssertSql(@"SELECT COUNT(*)
+FROM `Herb` AS `h`
+WHERE MATCH (`h`.`Name`) AGAINST ('Herb* -Second' IN BOOLEAN MODE) > 0.0");
         }
 
         [ConditionalFact]
         public virtual void Match_in_boolean_mode_keyword_excluded()
         {
             using var context = CreateContext();
-            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(herb.Name, "Herb* -Second", MySqlMatchSearchMode.Boolean));
+            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(herb.Name, "Herb* -Second", MySqlMatchSearchMode.Boolean) > 0);
 
             Assert.Equal(6, count);
 
             AssertSql(@"SELECT COUNT(*)
 FROM `Herb` AS `h`
-WHERE MATCH (`h`.`Name`) AGAINST ('Herb* -Second' IN BOOLEAN MODE)");
+WHERE MATCH (`h`.`Name`) AGAINST ('Herb* -Second' IN BOOLEAN MODE) > 0.0");
+        }
+
+        [ConditionalFact]
+        public virtual void IsMatch_in_boolean_mode_keyword_excluded_multiple_columns()
+        {
+            using var context = CreateContext();
+            var count = context.Set<Herb>().Count(herb => EF.Functions.IsMatch(new []{herb.Name, herb.Garden}, "Herb* -Second", MySqlMatchSearchMode.Boolean));
+
+            Assert.Equal(4, count);
+
+            AssertSql(@"SELECT COUNT(*)
+FROM `Herb` AS `h`
+WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('Herb* -Second' IN BOOLEAN MODE) > 0.0");
         }
 
         [ConditionalFact]
         public virtual void Match_in_boolean_mode_keyword_excluded_multiple_columns()
         {
             using var context = CreateContext();
-            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(new []{herb.Name, herb.Garden}, "Herb* -Second", MySqlMatchSearchMode.Boolean));
+            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(new []{herb.Name, herb.Garden}, "Herb* -Second", MySqlMatchSearchMode.Boolean) > 0);
 
             Assert.Equal(4, count);
 
             AssertSql(@"SELECT COUNT(*)
 FROM `Herb` AS `h`
-WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('Herb* -Second' IN BOOLEAN MODE)");
+WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('Herb* -Second' IN BOOLEAN MODE) > 0.0");
+        }
+
+        [ConditionalFact]
+        public virtual void IsMatch_with_query_expansion()
+        {
+            using var context = CreateContext();
+            var count = context.Set<Herb>().Count(herb => EF.Functions.IsMatch(herb.Name, "First", MySqlMatchSearchMode.NaturalLanguageWithQueryExpansion));
+
+            Assert.Equal(9, count);
+
+            AssertSql(@"SELECT COUNT(*)
+FROM `Herb` AS `h`
+WHERE MATCH (`h`.`Name`) AGAINST ('First' WITH QUERY EXPANSION) > 0.0");
         }
 
         [ConditionalFact]
         public virtual void Match_with_query_expansion()
         {
             using var context = CreateContext();
-            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(herb.Name, "First", MySqlMatchSearchMode.NaturalLanguageWithQueryExpansion));
+            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(herb.Name, "First", MySqlMatchSearchMode.NaturalLanguageWithQueryExpansion) > 0);
 
             Assert.Equal(9, count);
 
             AssertSql(@"SELECT COUNT(*)
 FROM `Herb` AS `h`
-WHERE MATCH (`h`.`Name`) AGAINST ('First' WITH QUERY EXPANSION)");
+WHERE MATCH (`h`.`Name`) AGAINST ('First' WITH QUERY EXPANSION) > 0.0");
+        }
+
+        [ConditionalFact]
+        public virtual void IsMatch_with_query_expansion_multiple_columns()
+        {
+            using var context = CreateContext();
+            var count = context.Set<Herb>().Count(herb => EF.Functions.IsMatch(new []{herb.Name, herb.Garden}, "First", MySqlMatchSearchMode.NaturalLanguageWithQueryExpansion));
+
+            Assert.Equal(9, count);
+
+            AssertSql(@"SELECT COUNT(*)
+FROM `Herb` AS `h`
+WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First' WITH QUERY EXPANSION) > 0.0");
         }
 
         [ConditionalFact]
         public virtual void Match_with_query_expansion_multiple_columns()
         {
             using var context = CreateContext();
-            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(new []{herb.Name, herb.Garden}, "First", MySqlMatchSearchMode.NaturalLanguageWithQueryExpansion));
+            var count = context.Set<Herb>().Count(herb => EF.Functions.Match(new []{herb.Name, herb.Garden}, "First", MySqlMatchSearchMode.NaturalLanguageWithQueryExpansion) > 0);
 
             Assert.Equal(9, count);
 
             AssertSql(@"SELECT COUNT(*)
 FROM `Herb` AS `h`
-WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First' WITH QUERY EXPANSION)");
+WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First' WITH QUERY EXPANSION) > 0.0");
         }
 
         private void AssertSql(params string[] expected) => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
