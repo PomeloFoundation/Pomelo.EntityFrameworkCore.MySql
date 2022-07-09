@@ -2177,10 +2177,13 @@ ORDER BY `t`.`Name`, `t0`.`Id`");
             AssertSql(
                 @"SELECT `t0`.`Id`, `t0`.`Date`, `t0`.`Name`, `t0`.`OneToMany_Optional_Self_Inverse1Id`, `t0`.`OneToMany_Required_Self_Inverse1Id`, `t0`.`OneToOne_Optional_Self1Id`, `t`.`Name`
 FROM (
-    SELECT `l`.`Name`, (`l`.`Name` <> 'Foo') OR `l`.`Name` IS NULL AS `having`
-    FROM `LevelOne` AS `l`
-    GROUP BY `l`.`Name`, `having`
-    HAVING `having`
+    SELECT `t`.`Name`
+    FROM (
+        SELECT `l`.`Name`, (`l`.`Name` <> 'Foo') OR `l`.`Name` IS NULL AS `having`
+        FROM `LevelOne` AS `l`
+        GROUP BY `l`.`Name`, `having`
+        HAVING `having`
+    ) AS `t`
 ) AS `t`
 LEFT JOIN (
     SELECT `t1`.`Id`, `t1`.`Date`, `t1`.`Name`, `t1`.`OneToMany_Optional_Self_Inverse1Id`, `t1`.`OneToMany_Required_Self_Inverse1Id`, `t1`.`OneToOne_Optional_Self1Id`
@@ -2194,10 +2197,13 @@ ORDER BY `t`.`Name`, `t0`.`Id`",
                 //
                 @"SELECT `l1`.`Id`, `l1`.`Date`, `l1`.`Level1_Optional_Id`, `l1`.`Level1_Required_Id`, `l1`.`Name`, `l1`.`OneToMany_Optional_Inverse2Id`, `l1`.`OneToMany_Optional_Self_Inverse2Id`, `l1`.`OneToMany_Required_Inverse2Id`, `l1`.`OneToMany_Required_Self_Inverse2Id`, `l1`.`OneToOne_Optional_PK_Inverse2Id`, `l1`.`OneToOne_Optional_Self2Id`, `t`.`Name`, `t0`.`Id`
 FROM (
-    SELECT `l`.`Name`, (`l`.`Name` <> 'Foo') OR `l`.`Name` IS NULL AS `having`
-    FROM `LevelOne` AS `l`
-    GROUP BY `l`.`Name`, `having`
-    HAVING `having`
+    SELECT `t`.`Name`
+    FROM (
+        SELECT `l`.`Name`, (`l`.`Name` <> 'Foo') OR `l`.`Name` IS NULL AS `having`
+        FROM `LevelOne` AS `l`
+        GROUP BY `l`.`Name`, `having`
+        HAVING `having`
+    ) AS `t`
 ) AS `t`
 LEFT JOIN (
     SELECT `t1`.`Id`, `t1`.`Name`

@@ -9,6 +9,7 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
+using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
@@ -40,12 +41,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             // This is only an issue for HAVING expressions that do not contain any aggregate functions.
             var havingExpression = selectExpression.Having;
             if (havingExpression is not null &&
-                havingExpression is not SqlConstantExpression)
+                havingExpression is not SqlConstantExpression &&
+                havingExpression is not MySqlColumnAliasReferenceExpression)
             {
                 _containsAggregateFunctionExpressionVisitor ??= new MySqlContainsAggregateFunctionExpressionVisitor();
                 if (!_containsAggregateFunctionExpressionVisitor.Process(havingExpression))
                 {
-                    var alias = GetUniqueAlias(selectExpression.Projection);
+                    selectExpression.PushdownIntoSubquery();
+                    var subQuery = (SelectExpression) selectExpression.Tables.Single();
+
+                    var alias = GetUniqueAlias(subQuery.Projection);
 
                     // Hack around the fact, that EF Core does not allow us to add our own ProjectionExpression with an alias.
                     // We can however indirectly control the alias, by first setting a ColumnExpression, whose name is then used as the base
@@ -55,7 +60,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                     // name (if a ColumnExpression), so we now have to wrap our HatSwappingColumnExpression inside of another (dummy)
                     // HatSwappingColumnExpression, so that the outer one can get visited/peeled off by EF Core immediately without
                     // touching the inner one, which can then present the actual expression when visited.
-                    selectExpression.AddToProjection(
+                    subQuery.AddToProjection(
                         new HatSwappingColumnExpression(
                             new HatSwappingColumnExpression(
                                 havingExpression,
@@ -74,15 +79,25 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
                     // Having expressions, not containing an aggregate function, need to be part of the GROUP BY clause, because they now also
                     // appear as part of the SELECT clause.
-                    var groupBy = selectExpression.GroupBy.ToList();
+                    var groupBy = subQuery.GroupBy.ToList();
                     groupBy.Add(columnAliasReferenceExpression);
+
+                    subQuery = subQuery.Update(
+                        subQuery.Projection,
+                        subQuery.Tables,
+                        subQuery.Predicate,
+                        groupBy,
+                        columnAliasReferenceExpression,
+                        subQuery.Orderings,
+                        subQuery.Limit,
+                        subQuery.Offset);
 
                     selectExpression = selectExpression.Update(
                         selectExpression.Projection,
-                        selectExpression.Tables,
+                        new[] {subQuery},
                         selectExpression.Predicate,
-                        groupBy,
-                        columnAliasReferenceExpression,
+                        selectExpression.GroupBy,
+                        selectExpression.Having,
                         selectExpression.Orderings,
                         selectExpression.Limit,
                         selectExpression.Offset);

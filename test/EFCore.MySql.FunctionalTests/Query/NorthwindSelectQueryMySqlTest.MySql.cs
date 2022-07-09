@@ -40,12 +40,53 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 assertOrder: true);
 
             AssertSql(
-                @"SELECT EXTRACT(year FROM `o`.`OrderDate`) AS `Year`, COUNT(*) AS `Count`, EXTRACT(year FROM `o`.`OrderDate`) = 1995 AS `having`
-FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND `o`.`OrderDate` IS NOT NULL
-GROUP BY `o`.`CustomerID`, EXTRACT(year FROM `o`.`OrderDate`), `having`
-HAVING `having`
-ORDER BY EXTRACT(year FROM `o`.`OrderDate`)");
+                @"SELECT `t`.`Year`, `t`.`Count`
+FROM (
+    SELECT EXTRACT(year FROM `o`.`OrderDate`) AS `Year`, COUNT(*) AS `Count`, `o`.`CustomerID`, EXTRACT(year FROM `o`.`OrderDate`) = 1995 AS `having`
+    FROM `Orders` AS `o`
+    WHERE (`o`.`CustomerID` = 'ALFKI') AND `o`.`OrderDate` IS NOT NULL
+    GROUP BY `o`.`CustomerID`, EXTRACT(year FROM `o`.`OrderDate`), `having`
+    HAVING `having`
+) AS `t`
+ORDER BY `t`.`Year`");
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual async Task Select_with_function_using_having_clause_concatenated(bool async)
+        {
+            await AssertQueryScalar(
+                async,
+                ss => ss.Set<Order>()
+                    .Where(o => o.CustomerID == "ALFKI" &&
+                                o.OrderDate != null)
+                    .GroupBy(o => new {o.CustomerID, o.OrderDate.Value.Year})
+                    .Select(g => new {g.Key.Year, Count = g.Count()})
+                    .Where(k => k.Year == 1995)
+                    .Select(k => k.Year)
+                    .Concat(ss.Set<Order>()
+                        .Where(o => o.OrderDate != null)
+                        .GroupBy(o => o.OrderDate.Value.Year)
+                        .Select(g => new {Year = g.Key, Count = g.Count()})
+                        .Where(k => k.Count > 0)
+                        .Select(k => k.Year)),
+                assertOrder: true);
+
+            AssertSql(
+                @"SELECT `t`.`c`
+FROM (
+    SELECT EXTRACT(year FROM `o`.`OrderDate`) AS `c`, `o`.`CustomerID`, EXTRACT(year FROM `o`.`OrderDate`) = 1995 AS `having`
+    FROM `Orders` AS `o`
+    WHERE (`o`.`CustomerID` = 'ALFKI') AND `o`.`OrderDate` IS NOT NULL
+    GROUP BY `o`.`CustomerID`, EXTRACT(year FROM `o`.`OrderDate`), `having`
+    HAVING `having`
+) AS `t`
+UNION ALL
+SELECT EXTRACT(year FROM `o0`.`OrderDate`) AS `c`
+FROM `Orders` AS `o0`
+WHERE `o0`.`OrderDate` IS NOT NULL
+GROUP BY EXTRACT(year FROM `o0`.`OrderDate`)
+HAVING COUNT(*) > 0");
         }
     }
 }
