@@ -42,11 +42,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             AssertSql(
                 @"SELECT `t`.`Year`, `t`.`Count`
 FROM (
-    SELECT EXTRACT(year FROM `o`.`OrderDate`) AS `Year`, COUNT(*) AS `Count`, `o`.`CustomerID`, EXTRACT(year FROM `o`.`OrderDate`) = 1995 AS `having`
+    SELECT EXTRACT(year FROM `o`.`OrderDate`) AS `Year`, COUNT(*) AS `Count`, `o`.`CustomerID`, EXTRACT(year FROM `o`.`OrderDate`) = 1995 AS `c`
     FROM `Orders` AS `o`
     WHERE (`o`.`CustomerID` = 'ALFKI') AND `o`.`OrderDate` IS NOT NULL
-    GROUP BY `o`.`CustomerID`, EXTRACT(year FROM `o`.`OrderDate`), `having`
-    HAVING `having`
+    GROUP BY `o`.`CustomerID`, EXTRACT(year FROM `o`.`OrderDate`), `c`
+    HAVING `c`
 ) AS `t`
 ORDER BY `t`.`Year`");
         }
@@ -75,11 +75,11 @@ ORDER BY `t`.`Year`");
             AssertSql(
                 @"SELECT `t`.`c`
 FROM (
-    SELECT EXTRACT(year FROM `o`.`OrderDate`) AS `c`, `o`.`CustomerID`, EXTRACT(year FROM `o`.`OrderDate`) = 1995 AS `having`
+    SELECT EXTRACT(year FROM `o`.`OrderDate`) AS `c`, `o`.`CustomerID`, EXTRACT(year FROM `o`.`OrderDate`) = 1995 AS `c0`
     FROM `Orders` AS `o`
     WHERE (`o`.`CustomerID` = 'ALFKI') AND `o`.`OrderDate` IS NOT NULL
-    GROUP BY `o`.`CustomerID`, EXTRACT(year FROM `o`.`OrderDate`), `having`
-    HAVING `having`
+    GROUP BY `o`.`CustomerID`, EXTRACT(year FROM `o`.`OrderDate`), `c0`
+    HAVING `c0`
 ) AS `t`
 UNION ALL
 SELECT EXTRACT(year FROM `o0`.`OrderDate`) AS `c`
