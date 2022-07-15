@@ -2179,10 +2179,10 @@ ORDER BY `t`.`Name`, `t0`.`Id`");
 FROM (
     SELECT `t`.`Name`
     FROM (
-        SELECT `l`.`Name`, (`l`.`Name` <> 'Foo') OR `l`.`Name` IS NULL AS `having`
+        SELECT `l`.`Name`, (`l`.`Name` <> 'Foo') OR `l`.`Name` IS NULL AS `c`
         FROM `LevelOne` AS `l`
-        GROUP BY `l`.`Name`, `having`
-        HAVING `having`
+        GROUP BY `l`.`Name`, `c`
+        HAVING `c`
     ) AS `t`
 ) AS `t`
 LEFT JOIN (
@@ -2199,10 +2199,10 @@ ORDER BY `t`.`Name`, `t0`.`Id`",
 FROM (
     SELECT `t`.`Name`
     FROM (
-        SELECT `l`.`Name`, (`l`.`Name` <> 'Foo') OR `l`.`Name` IS NULL AS `having`
+        SELECT `l`.`Name`, (`l`.`Name` <> 'Foo') OR `l`.`Name` IS NULL AS `c`
         FROM `LevelOne` AS `l`
-        GROUP BY `l`.`Name`, `having`
-        HAVING `having`
+        GROUP BY `l`.`Name`, `c`
+        HAVING `c`
     ) AS `t`
 ) AS `t`
 LEFT JOIN (
