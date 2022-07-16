@@ -5,10 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
@@ -50,26 +48,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                     selectExpression.PushdownIntoSubquery();
                     var subQuery = (SelectExpression) selectExpression.Tables.Single();
 
-                    var alias = GetUniqueAlias(subQuery.Projection);
-
-                    // Hack around the fact, that EF Core does not allow us to add our own ProjectionExpression with an alias.
-                    // We can however indirectly control the alias, by first setting a ColumnExpression, whose name is then used as the base
-                    // for the alias, and then update it afterwards with the actual expression we are interested in, when it gets visited.
-                    //
-                    // Unfortunately, EF Core 6 changed its internal algorithm a bit and now visits the expression before it considers its
-                    // name (if a ColumnExpression), so we now have to wrap our HatSwappingColumnExpression inside of another (dummy)
-                    // HatSwappingColumnExpression, so that the outer one can get visited/peeled off by EF Core immediately without
-                    // touching the inner one, which can then present the actual expression when visited.
-                    subQuery.AddToProjection(
-                        new HatSwappingColumnExpression(
-                            new HatSwappingColumnExpression(
-                                havingExpression,
-                                alias,
-                                havingExpression.Type,
-                                havingExpression.TypeMapping),
-                            alias,
-                            havingExpression.Type,
-                            havingExpression.TypeMapping));
+                    var projectionIndex = subQuery.AddToProjection(havingExpression);
+                    var alias = subQuery.Projection[projectionIndex].Alias;
 
                     var columnAliasReferenceExpression = _sqlExpressionFactory.ColumnAliasReference(
                         alias,
@@ -105,70 +85,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             }
 
             return base.VisitExtension(selectExpression);
-        }
-
-        private static string GetUniqueAlias(IReadOnlyCollection<ProjectionExpression> projection)
-        {
-            const string baseAlias = "having";
-
-            var counter = 0;
-            var currentAlias = baseAlias;
-
-            while (projection.Any(pe => string.Equals(pe.Alias, currentAlias, StringComparison.OrdinalIgnoreCase)))
-            {
-                currentAlias = $"{baseAlias}{counter++}";
-            }
-
-            return currentAlias;
-        }
-
-        /// <summary>
-        /// This is just a magic wrapper for an arbitrary SqlExpression, posing as a ColumnExpression.
-        /// Returns the inner SqlExpression, when visited.
-        /// </summary>
-        private sealed class HatSwappingColumnExpression : ColumnExpression
-        {
-            private readonly SqlExpression _expression;
-
-            public HatSwappingColumnExpression(
-                SqlExpression expression,
-                [CanBeNull] string name,
-                [NotNull] Type type,
-                [CanBeNull] RelationalTypeMapping typeMapping)
-                : base(type, typeMapping)
-            {
-                _expression = expression;
-                Name = name;
-            }
-
-            public override ColumnExpression MakeNullable()
-                => this;
-
-            public override string Name { get; }
-            public override TableExpressionBase Table { get; }
-            public override string TableAlias { get; }
-            public override bool IsNullable { get; }
-
-            protected override Expression VisitChildren(ExpressionVisitor visitor)
-                => _expression; // does not return itself or a copy of itself, but the inner expression instead
-
-            public override bool Equals(object obj)
-                => Equals(obj as HatSwappingColumnExpression);
-
-            public bool Equals(HatSwappingColumnExpression other)
-                => ReferenceEquals(this, other) ||
-                   other != null &&
-                   base.Equals(other) &&
-                   Equals(_expression, other._expression);
-
-            public override int GetHashCode()
-                => HashCode.Combine(base.GetHashCode(), _expression);
-
-            protected override void Print(ExpressionPrinter expressionPrinter)
-                => expressionPrinter.Visit(_expression);
-
-            public override string ToString()
-                => _expression.ToString();
         }
 
         /// <summary>
