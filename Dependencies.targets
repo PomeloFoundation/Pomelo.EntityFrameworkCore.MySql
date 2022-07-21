@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup Label="Common Versions">
-    <DotnetRuntimeVersion>6.0.2</DotnetRuntimeVersion>
+    <DotnetRuntimeVersion>6.0.7</DotnetRuntimeVersion>
     <EFCoreVersion>[$(DotnetRuntimeVersion), 7.0.0)</EFCoreVersion>
     <DependencyPreviewVersion>$(DotnetRuntimeVersion)</DependencyPreviewVersion>
     <AspNetCoreVersion>$(DotnetRuntimeVersion)</AspNetCoreVersion>
@@ -15,7 +15,7 @@
     <PackageReference Update="MySqlConnector" Version="2.1.2" />
 
     <PackageReference Update="NetTopologySuite" Version="2.3.0" />
-    <PackageReference Update="System.Text.Json" Version="6.0.2" />
+    <PackageReference Update="System.Text.Json" Version="6.0.7" />
     <PackageReference Update="Newtonsoft.Json" Version="13.0.1" />
 
     <PackageReference Update="Castle.Core" Version="4.4.1" />
