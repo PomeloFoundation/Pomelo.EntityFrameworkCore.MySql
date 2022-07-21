@@ -137,8 +137,16 @@ jobs:
             $mySqlIniPath = 'C:\tools\mysql\current\my.ini'
             $mySqlDataPath = 'C:\ProgramData\MySQL\data'
 
-            echo "Chocolatey command: choco install '$(databaseServerType)' '--version=$(databaseServerVersion)' --params `"/serviceName:$mySqlServiceName`""
-            choco install '$(databaseServerType)' '--version=$(databaseServerVersion)' --params "/serviceName:$mySqlServiceName"
+            # Manually install chocolatey package, because the files size can lead to the package being exempted on the official repository.
+            git clone https://github.com/mkevenaar/chocolatey-packages.git
+
+            $localChocolateyRepositoryName = 'local-chocolatey-repository'
+            mkdir $localChocolateyRepositoryName
+            choco pack '.\chocolatey-packages\automatic\$(databaseServerType)\$(databaseServerType).nuspec' --out $localChocolateyRepositoryName
+            choco source add -n $localChocolateyRepositoryName -s "$((Get-Item $localChocolateyRepositoryName).FullName)"
+
+            echo "Chocolatey command: choco install $(databaseServerType) -s `"$localChocolateyRepositoryName;chocolatey`" '--version=$(databaseServerVersion)' --params `"/serviceName:$mySqlServiceName`""
+            choco install $(databaseServerType) -s "$localChocolateyRepositoryName;chocolatey" '--version=$(databaseServerVersion)' --params "/serviceName:$mySqlServiceName"
 
             Get-Service *MySQL* -ErrorAction SilentlyContinue
             Stop-Service $mySqlServiceName -Verbose
