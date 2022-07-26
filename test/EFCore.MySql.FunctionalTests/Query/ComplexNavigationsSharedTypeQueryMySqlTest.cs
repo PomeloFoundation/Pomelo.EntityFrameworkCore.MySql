@@ -49,6 +49,34 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                         select l3).Distinct().OrderBy(e => e.Id).Skip(1).FirstOrDefault().Name); // Apply OrderBy before Skip
         }
 
+        public override async Task SelectMany_subquery_with_custom_projection(bool async)
+        {
+            // TODO: Fix test in EF Core upstream.
+            //           ORDER BY `l`.`Id`
+            //       is ambiguous, since all 5 queried rows have an `Id` of `1`.
+            await AssertQuery(
+                async,
+                ss => ss.Set<Level1>()/*.OrderBy(l1 => l1.Id)*/.SelectMany( // <-- has no effect anymore
+                        l1 => l1.OneToMany_Optional1.Select(
+                            l2 => new { l2.Name }))
+                    .OrderBy(e => e.Name) // <-- fix
+                    .Take(1));
+
+            AssertSql(
+                @"@__p_0='1'
+
+SELECT `t`.`Name`
+FROM `Level1` AS `l`
+INNER JOIN (
+    SELECT `l0`.`Level2_Name` AS `Name`, `l0`.`OneToMany_Optional_Inverse2Id`
+    FROM `Level1` AS `l0`
+    INNER JOIN `Level1` AS `l1` ON `l0`.`Id` = `l1`.`Id`
+    WHERE (`l0`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`l0`.`Level1_Required_Id` IS NOT NULL)) AND `l0`.`OneToMany_Required_Inverse2Id` IS NOT NULL
+) AS `t` ON `l`.`Id` = `t`.`OneToMany_Optional_Inverse2Id`
+ORDER BY `t`.`Name`
+LIMIT @__p_0");
+        }
+
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
