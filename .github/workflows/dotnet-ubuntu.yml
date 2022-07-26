@@ -1,0 +1,274 @@
+name: .NET Buil
+
+on:
+  push:
+    branches: [ master ]
+    paths-ignore:
+    - '**.md'
+    - '.github/**'
+  pull_request:
+    branches: [ master ]
+    paths-ignore:
+    - '**.md'
+    - '.github/**'
+
+env:
+  isPullRequest: $[eq(variables['Build.Reason'], 'PullRequest')]
+  pullRequestSourceBranch: $[variables['System.PullRequest.SourceBranch']]
+  skipWindowsTests: $[and(eq(variables['isPullRequest'], 'True'), ne(contains(variables['pullRequestSourceBranch'], 'windows'), 'True'))]
+  mysqlCurrentSqlMode: ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+  mysqlLegacySqlMode: ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+  # Currently no ONLY_FULL_GROUP_BY, see #1167:
+  mariadbSqlMode: STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+  maxConnections: 255
+  runIntegrationTests: true
+
+  # Dotnet + Tools versioning:
+  majorDotnetVersion: # empty uses global.json (for rtm/servicing releases), otherwise the major version, e.g. 6
+  includeDotnetPrereleases: false
+
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  skipTests: false
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        db: [mysql,mariadb]
+        version: ["5.7.36", "8.0.27", "10.3.35", "10.4.25", "10.5.16","10.6.8", "10.7.4", "10.8.3"]
+        os: [ubuntu-latest, windows-latest]
+        exclude:
+          - db: mysql
+            version: "10.3.35"
+          - db: mysql
+            version: "10.4.25"
+          - db: mysql
+            version: "10.5.16"
+          - db: mysql
+            version: "10.6.8"
+          - db: mysql
+            version: "10.7.4"
+          - db: mysql
+            version: "10.8.3"
+          - db: mariadb
+            version: "5.7.36"
+          - db: mariadb
+            version: "8.0.27"
+          - db: mariadb
+            version: "10.3.35"
+            os: windows-latest
+          - db: mariadb
+            version: "10.4.25"
+            os: windows-latest
+          - db: mariadb
+            version: "10.5.16"
+            os: windows-latest
+          - db: mariadb
+            version: "10.6.8"
+            os: windows-latest
+          - db: mariadb
+            version: "10.7.4"
+            os: windows-latest
+          - db: mariadb
+            version: "10.8.3"
+            os: windows-latest
+          - db: mysql
+            version: "5.7.36"
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set additional variables
+      shell: pwsh
+      run: |
+        $dotnetVersion = ''
+        $dotnetEfToolUpdateVersion = ''
+        $useGlobalJson = $false
+        if ('${{ env.majorDotnetVersion }}' -ne '')
+        {
+          $dotnetVersion = '${{ env.majorDotnetVersion }}.x'
+          if ('$(includeDotnetPrereleases)' -eq 'true')
+          {
+            $dotnetEfToolUpdateVersion = '${{ env.majorDotnetVersion }}.*-*'
+          }
+          else
+          {
+            $dotnetEfToolUpdateVersion = '${{ env.majorDotnetVersion }}.*'
+          }
+        }
+        else
+        {
+          $useGlobalJson = $true
+        }
+        echo "##vso[task.setvariable variable=dotnetVersion]$dotnetVersion"
+        echo "##vso[task.setvariable variable=dotnetEfToolUpdateVersion]$dotnetEfToolUpdateVersion"
+        echo "##vso[task.setvariable variable=useGlobalJson]$useGlobalJson"
+    - name: Output Variables
+      run: |
+        echo "skipTests: $skipTests"
+        echo "skipWindowsTests: $skipWindowsTests"
+        echo "pullRequestSourceBranch: $pullRequestSourceBranch"
+        echo "isPullRequest: $isPullRequest"
+        echo "Build.SourceBranchName: $Build.SourceBranchName"
+        echo "Build.SourceVersionMessage: $Build.SourceVersionMessage"
+        echo "dotnetVersion: $dotnetVersion"
+        echo "includeDotnetPrereleases: $includeDotnetPrereleases"
+        echo "useGlobalJson: $useGlobalJson"
+    - name: Pull ${{matrix.db}}:${{matrix.version}} and setup Docker
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: |
+        echo "Pulling ${{matrix.db}}:${{matrix.version}}"
+        docker pull ${{matrix.db}}:${{matrix.version}}
+    - name: Setup Test Database
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      shell: pwsh
+      run: |
+        sudo systemctl stop mysql
+            docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -p 3306:3306 -d '${{ matrix.db }}:${{ matrix.version }}'
+            $waitMinutes = 5
+            $pollingIntervalSeconds = 3
+            $startTime = Get-Date
+            $started = $false
+            while (!($started = docker exec mysql mysqladmin --protocol=tcp -h localhost -P 3306 -u root -pPassword12! status) -and ((Get-Date) - $startTime).TotalMinutes -lt $waitMinutes)
+            {
+              Start-Sleep -Seconds $pollingIntervalSeconds
+            }
+            if (!$started)
+            {
+              throw "$(databaseServerType):$(databaseServerVersion) docker container failed to start in $(waitMinutes) minutes"
+              exit 1
+            }
+    - name: Install Database Server
+      if: ${{ matrix.os == 'windows-latest' }}
+      shell: pwsh
+      run: |
+          $mySqlServiceName = '${{ matrix.db }}_${{ matrix.version }}'
+          $lowerCaseTableNames = 2
+          $mySqlBinPath = 'C:\tools\mysql\current\bin'
+          $mySqlIniPath = 'C:\tools\mysql\current\my.ini'
+          $mySqlDataPath = 'C:\ProgramData\MySQL\data'
+          echo "Chocolatey command: choco install '${{ matrix.db }}' '--version=${{ matrix.version }}' --params `"/serviceName:$mySqlServiceName`""
+          choco install '${{ matrix.db }}' '--version=${{ matrix.version }}' --params "/serviceName:$mySqlServiceName"
+          Get-Service *${{matrix.db}}*
+          Stop-Service $mySqlServiceName -Verbose
+          echo "Update PATH environment variable"
+          Write-Host "##vso[task.prependpath]$mySqlBinPath"
+          $env:PATH = "$mySqlBinPath;$env:PATH"
+          echo "Update configuration file"
+          "lower_case_table_names=$lowerCaseTableNames" >> $mySqlIniPath
+          Remove-Item $mySqlDataPath/* -Recurse -Force -Verbose
+          echo "Reinitialize database server"
+          mysqld --defaults-file="$mySqlIniPath" --initialize-insecure
+          Start-Service $mySqlServiceName -Verbose
+          echo "Setup credentials"
+          mysql -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
+          mysql -h localhost -u root -pPassword12! -e "SELECT @@version;"
+    - name: Setup Database MariaDB
+      if: ${{ matrix.db == 'mariadb' }}
+      shell: pwsh
+      run: |
+        $mySqlCommand = "mysql --protocol=tcp -h localhost -P 3306 -u root -pPassword12! -e ""SET GLOBAL sql_mode = '${{ env.mariadbSqlMode }}'; SET GLOBAL max_connections = ${{ env.maxConnections}};"""
+        $mySqlCommand = 'docker exec mysql ' + $mySqlCommand
+        $mySqlCommand
+        Invoke-Expression $mySqlCommand
+    - name: Setup Database MySQL
+      if: ${{ matrix.version == '8.0.27' && matrix.os == 'ubuntu-latest'}}
+      shell: pwsh
+      run: |
+        $mySqlCommand = "mysql --protocol=tcp -h localhost -P 3306 -u root -pPassword12! -e ""SET GLOBAL sql_mode = '${{ env.mysqlCurrentSqlMode }}'; SET GLOBAL max_connections = ${{ env.maxConnections}};"""
+        $mySqlCommand = 'docker exec mysql ' + $mySqlCommand
+        $mySqlCommand
+        Invoke-Expression $mySqlCommand
+    - name: Setup Database MySQL Windows
+      if: ${{ matrix.version == '8.0.27' && matrix.os == 'windows-latest'}}
+      shell: pwsh
+      run: |
+        $mySqlCommand = "mysql --protocol=tcp -h localhost -P 3306 -u root -pPassword12! -e ""SET GLOBAL sql_mode = '${{ env.mysqlCurrentSqlMode }}'; SET GLOBAL max_connections = ${{ env.maxConnections}};"""
+        $mySqlCommand
+        Invoke-Expression $mySqlCommand
+    - name: Setup Database MySQL Legacy
+      if: ${{ matrix.version == '5.7.36' }}
+      shell: pwsh
+      run: |
+        $mySqlCommand = "mysql --protocol=tcp -h localhost -P 3306 -u root -pPassword12! -e ""SET GLOBAL sql_mode = '${{ env.mysqlLegacySqlMode }}'; SET GLOBAL max_connections = ${{ env.maxConnections}};"""
+        $mySqlCommand = 'docker exec mysql ' + $mySqlCommand
+        $mySqlCommand
+        Invoke-Expression $mySqlCommand
+    - name: Setup .NET 6.0
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Install EF Core Tools
+      shell: pwsh
+      run: |
+        if ('$dotnetEfToolUpdateVersion' -ne '')
+        {
+          dotnet tool update dotnet-ef --version $dotnetEfToolUpdateVersion
+        }
+        dotnet tool restore
+        dotnet ef --version
+    - name: Setup Solution
+      run: |
+        cp test/EFCore.MySql.IntegrationTests/config.json.example test/EFCore.MySql.IntegrationTests/config.json
+        cp test/EFCore.MySql.Tests/config.json.example test/EFCore.MySql.Tests/config.json
+        cp test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
+    - name: Setup Integration Tests
+      shell: pwsh
+      run: |
+        ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
+    - name: Build Solution
+      run: |
+        dotnet build -c Debug
+        dotnet build -c Release
+    - name: Functional Tests
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: dotnet test test/EFCore.MySql.FunctionalTests -c Debug --no-build --logger trx --verbosity detailed
+    - name: Tests
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: dotnet test --logger trx test/EFCore.MySql.Tests
+    - name: Integration Tests - Applying migrations
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: dotnet run --project test/EFCore.MySql.IntegrationTests -c Release testMigrate
+    - name: Integration Tests - Scaffolding
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      shell: pwsh
+      run: ./test/EFCore.MySql.IntegrationTests/scripts/scaffold.ps1
+    - name: Integration Tests - With EF_BATCH_SIZE = 1
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: |
+        export EF_BATCH_SIZE="1"
+        dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
+    - name: Integration Tests - With EF_BATCH_SIZE = 10
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: |
+        export EF_BATCH_SIZE="10"
+        dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
+    - name: Integration Tests - With EF_BATCH_SIZE = 1
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: |
+        export EF_RETRY_ON_FAILURE="3"
+        dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
+    - name: Integration Tests - Legacy migrations
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      shell: pwsh
+      run: ./test/EFCore.MySql.IntegrationTests/scripts/legacy.ps1
+    - name: Integration Tests - Building migrations with EF_DATABASE = pomelo_test2
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: |
+        export EF_DATABASE="pomelo_test2"
+        dotnet build ./test/EFCore.MySql.IntegrationTests -c Release
+    - name: Integration Tests - Setup migrations with EF_DATABASE = pomelo_test2
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      shell: pwsh
+      run: |
+        $env:EF_DATABASE = "pomelo_test2"
+        ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
+    - name: Integration Tests - With EF_DATABASE = pomelo_test2
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: |
+        export EF_DATABASE="pomelo_test2"
+        dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
