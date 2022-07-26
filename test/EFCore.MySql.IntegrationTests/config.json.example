@@ -1,6 +1,6 @@
 ﻿{
   "Data": {
-    "ConnectionString": "server=127.0.0.1;user id=root;password=Password12!;port=3306;sslmode=none;database=pomelo_test;",
+    "ConnectionString": "server=127.0.0.1;user id=root;password=Password12!;port=3306;sslmode=Preferred;database=pomelo_test;",
     "ServerVersion": "auto",
     "CommandTimeout": "600"
   }
