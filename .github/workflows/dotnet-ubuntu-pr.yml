@@ -1,0 +1,97 @@
+name: .NET Ubuntu PR
+
+on:
+  pull_request:
+    branches: [ master, release/7 ]
+    paths-ignore:
+    - '**.md'
+    - '.github/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        test: ["mysql:8.0","mariadb:10.3","mariadb:10.4","mariadb:10.5","mariadb:10.6","mariadb:10.7","mariadb:10.8"]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Pull ${{matrix.test}} and setup Docker
+      run: |
+        echo "Pulling ${{matrix.test}}"
+        docker pull ${{matrix.test}}
+    - name: Setup Test Database
+      run: |
+        # Start ${{matrix.test}} Database
+        echo "Starting ${{matrix.test}} Container..."
+        docker run --name db-server -p 3306:3306 -e MYSQL_ROOT_PASSWORD=Password12! -d ${{matrix.test}}
+        # Wait for ${{matrix.test}} to Start. The ${{matrix.test}} container takes a long time to start
+        echo "Waiting for ${{matrix.test}} Container to start..."
+        sleep 90
+    - name: Setup .NET 6.0
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Copy config.json.example to config.json
+      run: |
+        cp test/EFCore.MySql.IntegrationTests/config.json.example test/EFCore.MySql.IntegrationTests/config.json
+        cp test/EFCore.MySql.Tests/config.json.example test/EFCore.MySql.Tests/config.json
+        cp test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
+    - name: Build
+      run: dotnet build --no-restore -c Release /p:EnableSourceLink=false
+    - name: rebuild the test db
+      run: |
+        dotnet tool install --global dotnet-ef
+        cd test/EFCore.MySql.IntegrationTests/scripts/
+        ./rebuild.sh
+    - name: Test EFCore.MySql.Tests
+      run: dotnet test test/EFCore.MySql.Tests --no-build --verbosity normal -c Release /p:WarningLevel=3 /p:EnableSourceLink=false
+    - name: Test EFCore.MySql.FunctionalTests
+      run: dotnet test test/EFCore.MySql.FunctionalTests --no-build --verbosity normal -c Release /p:WarningLevel=3 /p:EnableSourceLink=false
+    - name: Test EFCore.MySql.IntegrationTests
+      run: dotnet test test/EFCore.MySql.IntegrationTests --no-build --verbosity normal -c Release /p:WarningLevel=3 /p:EnableSourceLink=false
+  mysql57:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Pull mysql:5.7 and setup Docker
+      run: |
+        echo "Pulling mysql:5.7"
+        docker pull mysql:5.7
+    - name: Setup Test Database
+      run: |
+        # Start mysql:5.7 Database
+        echo "Starting mysql:5.7 Container..."
+        docker run --name db-server -p 3306:3306 -e MYSQL_ROOT_PASSWORD=Password12! -d mysql:5.7
+        # Wait for mysql:5.7 to Start. The mysql:5.7 container takes a long time to start
+        echo "Waiting for mysql:5.7 Container to start..."
+        sleep 90
+    - name: Setup .NET 6.0
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Copy config.json.example to config.json
+      run: |
+        cp test/EFCore.MySql.IntegrationTests/config.json.example test/EFCore.MySql.IntegrationTests/config.json
+        sed -i "s/Preferred/None/g" test/EFCore.MySql.IntegrationTests/config.json
+        cp test/EFCore.MySql.Tests/config.json.example test/EFCore.MySql.Tests/config.json
+        sed -i "s/Preferred/None/g" test/EFCore.MySql.Tests/config.json
+        cp test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
+        sed -i "s/Preferred/None/g" test/EFCore.MySql.FunctionalTests/config.json
+    - name: Build
+      run: dotnet build --no-restore -c Release /p:EnableSourceLink=false
+    - name: rebuild the test db
+      run: |
+        dotnet tool install --global dotnet-ef
+        cd test/EFCore.MySql.IntegrationTests/scripts/
+        ./rebuild.sh
+    - name: Test EFCore.MySql.Tests
+      run: dotnet test test/EFCore.MySql.Tests --no-build --verbosity normal -c Release /p:WarningLevel=3 /p:EnableSourceLink=false
+    - name: Test EFCore.MySql.FunctionalTests
+      run: dotnet test test/EFCore.MySql.FunctionalTests --no-build --verbosity normal -c Release /p:WarningLevel=3 /p:EnableSourceLink=false
+    - name: Test EFCore.MySql.IntegrationTests
+      run: dotnet test test/EFCore.MySql.IntegrationTests --no-build --verbosity normal -c Release /p:WarningLevel=3 /p:EnableSourceLink=false
