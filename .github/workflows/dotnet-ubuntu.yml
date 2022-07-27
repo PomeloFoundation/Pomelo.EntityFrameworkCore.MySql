@@ -2,7 +2,7 @@ name: .NET Ubuntu
 
 on:
   push:
-    branches: [ master, release/7 ]
+    branches: [ master ]
     paths-ignore:
     - '**.md'
     - '.github/**'
@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test: ["mysql:8.0","mariadb:10.3","mariadb:10.4","mariadb:10.5","mariadb:10.6","mariadb:10.7","mariadb:10.8"]
+        test: ["mysql:8.0.27","mariadb:10.3.32","mariadb:10.4.22","mariadb:10.5.13","mariadb:10.6.5","mariadb:10.7","mariadb:10.8"]
     steps:
     - uses: actions/checkout@v2
     - name: Pull ${{matrix.test}} and setup Docker
@@ -34,39 +34,80 @@ jobs:
         dotnet-version: 6.0.x
     - name: Restore dependencies
       run: dotnet restore
-    - name: Copy config.json.example to config.json
+    - name: Install EF Core Tools
+      shell: pwsh
+      run: |
+        if ('$(dotnetEfToolUpdateVersion)' -ne '')
+        {
+          dotnet tool update dotnet-ef --version $(dotnetEfToolUpdateVersion)
+        }
+        dotnet tool restore
+        dotnet ef --version
+    - name: Setup Solution
       run: |
         cp test/EFCore.MySql.IntegrationTests/config.json.example test/EFCore.MySql.IntegrationTests/config.json
         cp test/EFCore.MySql.Tests/config.json.example test/EFCore.MySql.Tests/config.json
         cp test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
-    - name: Build
-      run: dotnet build --no-restore -c Release /p:EnableSourceLink=false
-    - name: rebuild the test db
+    - name: Setup Integration Tests
+      shell: pwsh
       run: |
-        dotnet tool install --global dotnet-ef
-        cd test/EFCore.MySql.IntegrationTests/scripts/
-        ./rebuild.sh
-    - name: Test EFCore.MySql.Tests
-      run: dotnet test test/EFCore.MySql.Tests --no-build --verbosity normal -c Release /p:WarningLevel=3 /p:EnableSourceLink=false
-    - name: Test EFCore.MySql.FunctionalTests
-      run: dotnet test test/EFCore.MySql.FunctionalTests --no-build --verbosity normal -c Release /p:WarningLevel=3 /p:EnableSourceLink=false
-    - name: Test EFCore.MySql.IntegrationTests
-      run: dotnet test test/EFCore.MySql.IntegrationTests --no-build --verbosity normal -c Release /p:WarningLevel=3 /p:EnableSourceLink=false
+        ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
+    - name: Build Solution
+      run: |
+        dotnet build -c Debug
+        dotnet build -c Release
+    - name: Functional Tests
+      run: dotnet test test/EFCore.MySql.FunctionalTests -c Debug --no-build --logger trx --verbosity detailed
+    - name: Tests
+      run: dotnet test --logger trx test/EFCore.MySql.Tests
+    - name: Integration Tests - Applying migrations
+      run: dotnet run --project test/EFCore.MySql.IntegrationTests -c Release testMigrate
+    - name: Integration Tests - Scaffolding
+      shell: pwsh
+      run: ./test/EFCore.MySql.IntegrationTests/scripts/scaffold.ps1
+    - name: Integration Tests - With EF_BATCH_SIZE = 1
+      run: |
+        export EF_BATCH_SIZE = "1"
+        dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
+    - name: Integration Tests - With EF_BATCH_SIZE = 10
+      run: |
+        export EF_BATCH_SIZE = "10"
+        dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
+    - name: Integration Tests - With EF_BATCH_SIZE = 1
+      run: |
+        export EF_RETRY_ON_FAILURE = "3"
+        dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
+    - name: Integration Tests - Legacy migrations
+      shell: pwsh
+      run: ./test/EFCore.MySql.IntegrationTests/scripts/legacy.ps1
+    - name: Integration Tests - Building migrations with EF_DATABASE = pomelo_test2
+      run: |
+        export EF_DATABASE = "pomelo_test2"
+        dotnet build ./test/EFCore.MySql.IntegrationTests -c Release
+    - name: Integration Tests - Setup migrations with EF_DATABASE = pomelo_test2
+      shell: pwsh
+      run: |
+        export EF_DATABASE = "pomelo_test2"
+        ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
+    - name: Integration Tests - With EF_DATABASE = pomelo_test2
+      run: |
+        export EF_DATABASE = "pomelo_test2"
+        dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
   mysql57:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Pull mysql:5.7 and setup Docker
+    - name: Pull mysql:5.7.36 and setup Docker
       run: |
-        echo "Pulling mysql:5.7"
-        docker pull mysql:5.7
+        echo "Pulling mysql:5.7.36"
+        docker pull mysql:5.7.36
     - name: Setup Test Database
       run: |
-        # Start mysql:5.7 Database
-        echo "Starting mysql:5.7 Container..."
-        docker run --name db-server -p 3306:3306 -e MYSQL_ROOT_PASSWORD=Password12! -d mysql:5.7
-        # Wait for mysql:5.7 to Start. The mysql:5.7 container takes a long time to start
-        echo "Waiting for mysql:5.7 Container to start..."
+        # Start mysql:5.7.36 Database
+        echo "Starting mysql:5.7.36 Container..."
+        docker run --name db-server -p 3306:3306 -e MYSQL_ROOT_PASSWORD=Password12! -d mysql:5.7.36
+        # Wait for mysql:5.7.36 to Start. The mysql:5.7.36 container takes a long time to start
+        echo "Waiting for mysql:5.7.36 Container to start..."
         sleep 90
     - name: Setup .NET 6.0
       uses: actions/setup-dotnet@v1
@@ -74,7 +115,16 @@ jobs:
         dotnet-version: 6.0.x
     - name: Restore dependencies
       run: dotnet restore
-    - name: Copy config.json.example to config.json
+    - name: Install EF Core Tools
+      shell: pwsh
+      run: |
+        if ('$(dotnetEfToolUpdateVersion)' -ne '')
+        {
+          dotnet tool update dotnet-ef --version $(dotnetEfToolUpdateVersion)
+        }
+        dotnet tool restore
+        dotnet ef --version
+    - name: Setup Solution
       run: |
         cp test/EFCore.MySql.IntegrationTests/config.json.example test/EFCore.MySql.IntegrationTests/config.json
         sed -i "s/Preferred/None/g" test/EFCore.MySql.IntegrationTests/config.json
@@ -82,16 +132,48 @@ jobs:
         sed -i "s/Preferred/None/g" test/EFCore.MySql.Tests/config.json
         cp test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
         sed -i "s/Preferred/None/g" test/EFCore.MySql.FunctionalTests/config.json
-    - name: Build
-      run: dotnet build --no-restore -c Release /p:EnableSourceLink=false
-    - name: rebuild the test db
+    - name: Setup Integration Tests
+      shell: pwsh
       run: |
-        dotnet tool install --global dotnet-ef
-        cd test/EFCore.MySql.IntegrationTests/scripts/
-        ./rebuild.sh
-    - name: Test EFCore.MySql.Tests
-      run: dotnet test test/EFCore.MySql.Tests --no-build --verbosity normal -c Release /p:WarningLevel=3 /p:EnableSourceLink=false
-    - name: Test EFCore.MySql.FunctionalTests
-      run: dotnet test test/EFCore.MySql.FunctionalTests --no-build --verbosity normal -c Release /p:WarningLevel=3 /p:EnableSourceLink=false
-    - name: Test EFCore.MySql.IntegrationTests
-      run: dotnet test test/EFCore.MySql.IntegrationTests --no-build --verbosity normal -c Release /p:WarningLevel=3 /p:EnableSourceLink=false
+        ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
+    - name: Build Solution
+      run: |
+        dotnet build -c Debug
+        dotnet build -c Release
+    - name: Functional Tests
+      run: dotnet test test/EFCore.MySql.FunctionalTests -c Debug --no-build --logger trx --verbosity detailed
+    - name: Tests
+      run: dotnet test --logger trx test/EFCore.MySql.Tests
+    - name: Integration Tests - Applying migrations
+      run: dotnet run --project test/EFCore.MySql.IntegrationTests -c Release testMigrate
+    - name: Integration Tests - Scaffolding
+      shell: pwsh
+      run: ./test/EFCore.MySql.IntegrationTests/scripts/scaffold.ps1
+    - name: Integration Tests - With EF_BATCH_SIZE = 1
+      run: |
+        export EF_BATCH_SIZE = "1"
+        dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
+    - name: Integration Tests - With EF_BATCH_SIZE = 10
+      run: |
+        export EF_BATCH_SIZE = "10"
+        dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
+    - name: Integration Tests - With EF_BATCH_SIZE = 1
+      run: |
+        export EF_RETRY_ON_FAILURE = "3"
+        dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
+    - name: Integration Tests - Legacy migrations
+      shell: pwsh
+      run: ./test/EFCore.MySql.IntegrationTests/scripts/legacy.ps1
+    - name: Integration Tests - Building migrations with EF_DATABASE = pomelo_test2
+      run: |
+        export EF_DATABASE = "pomelo_test2"
+        dotnet build ./test/EFCore.MySql.IntegrationTests -c Release
+    - name: Integration Tests - Setup migrations with EF_DATABASE = pomelo_test2
+      shell: pwsh
+      run: |
+        export EF_DATABASE = "pomelo_test2"
+        ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
+    - name: Integration Tests - With EF_DATABASE = pomelo_test2
+      run: |
+        export EF_DATABASE = "pomelo_test2"
+        dotnet test -c Release --no-build --logger trx test/EFCore.MySql.IntegrationTests
