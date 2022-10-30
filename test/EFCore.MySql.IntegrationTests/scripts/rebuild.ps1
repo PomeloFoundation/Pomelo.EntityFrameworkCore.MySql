@@ -22,7 +22,7 @@ try
   Remove-Item (Join-Path "Migrations" "*.cs")
 
   dotnet ef database drop -f
-  dotnet ef migrations add initial
+  dotnet ef migrations add Initial
 
   # add using System.Collections.Generic to the migration files
   Get-ChildItem (Join-Path "Migrations" "*.cs") | ForEach-Object {

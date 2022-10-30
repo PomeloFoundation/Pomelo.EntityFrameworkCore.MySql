@@ -6,7 +6,6 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal;
@@ -45,14 +44,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
             if (_options.IndexOptimizedBooleanColumns)
             {
-                queryExpression = (SelectExpression)new MySqlBoolOptimizingExpressionVisitor(Dependencies.SqlExpressionFactory)
+                queryExpression = new MySqlBoolOptimizingExpressionVisitor(Dependencies.SqlExpressionFactory)
                     .Visit(queryExpression);
             }
 
-            queryExpression = (SelectExpression)new MySqlHavingExpressionVisitor(_sqlExpressionFactory).Visit(queryExpression);
+            queryExpression = new MySqlHavingExpressionVisitor(_sqlExpressionFactory).Visit(queryExpression);
 
             // Run the compatibility checks as late in the query pipeline (before the actual SQL translation happens) as reasonable.
-            queryExpression = (SelectExpression)new MySqlCompatibilityExpressionVisitor(_options).Visit(queryExpression);
+            queryExpression = new MySqlCompatibilityExpressionVisitor(_options).Visit(queryExpression);
 
             return queryExpression;
         }
