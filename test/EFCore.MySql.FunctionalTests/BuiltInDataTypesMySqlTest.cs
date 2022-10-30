@@ -723,7 +723,7 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
             Assert.Equal(81.1m, entity.DecimalAsDecimal);
             Assert.Equal(82.2m, entity.DecimalAsFixed);
             Assert.Equal(83.3, entity.DoubleAsReal.Value, 1);
-            Assert.Equal(84.4f, entity.FloatAsFloat.Value, 1);
+            Assert.Equal(84.4f, entity.FloatAsFloat.Value, 0.1f);
             Assert.Equal(85.5, entity.DoubleAsDoublePrecision.Value, 1);
             Assert.Equal(new DateTime(2015, 1, 2), entity.DateTimeAsDate);
             Assert.Equal(new DateTimeOffset(new DateTime(2016, 1, 2, 11, 11, 12), TimeSpan.Zero), entity.DateTimeOffsetAsDatetime);

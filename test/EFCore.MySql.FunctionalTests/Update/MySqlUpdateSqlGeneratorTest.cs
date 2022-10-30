@@ -38,7 +38,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Update
             var command = CreateInsertCommand();
 
             var sqlGenerator = (IMySqlUpdateSqlGenerator)CreateSqlGenerator();
-            var grouping = sqlGenerator.AppendBulkInsertOperation(stringBuilder, new[] { command, command }, 0);
+            var grouping = sqlGenerator.AppendBulkInsertOperation(stringBuilder, new[] { command, command }, 0, out _);
 
             AssertBaseline(
                 @"INSERT INTO `Ducks` (`Name`, `Quacks`, `ConcurrencyToken`)
@@ -65,7 +65,7 @@ WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();
             var command = CreateInsertCommand(identityKey: false, isComputed: false);
 
             var sqlGenerator = (IMySqlUpdateSqlGenerator)CreateSqlGenerator();
-            var grouping = sqlGenerator.AppendBulkInsertOperation(stringBuilder, new[] { command, command }, 0);
+            var grouping = sqlGenerator.AppendBulkInsertOperation(stringBuilder, new[] { command, command }, 0, out _);
 
             AssertBaseline(
                 @"INSERT INTO `Ducks` (`Id`, `Name`, `Quacks`, `ConcurrencyToken`)
@@ -73,7 +73,7 @@ VALUES (@p0, @p1, @p2, @p3),
 (@p0, @p1, @p2, @p3);
 ",
                 stringBuilder.ToString());
-            Assert.Equal(ResultSetMapping.NoResultSet, grouping);
+            Assert.Equal(ResultSetMapping.NoResults, grouping);
         }
 
         [ConditionalFact]
@@ -83,7 +83,7 @@ VALUES (@p0, @p1, @p2, @p3),
             var command = CreateInsertCommand(identityKey: true, isComputed: true, defaultsOnly: true);
 
             var sqlGenerator = (IMySqlUpdateSqlGenerator)CreateSqlGenerator();
-            var grouping = sqlGenerator.AppendBulkInsertOperation(stringBuilder, new[] { command, command }, 0);
+            var grouping = sqlGenerator.AppendBulkInsertOperation(stringBuilder, new[] { command, command }, 0, out _);
 
             AssertBaseline(
                 @"INSERT INTO `Ducks` ()
@@ -110,7 +110,7 @@ WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();
             var command = CreateInsertCommand(identityKey: false, isComputed: false, defaultsOnly: true);
 
             var sqlGenerator = (IMySqlUpdateSqlGenerator)CreateSqlGenerator();
-            var grouping = sqlGenerator.AppendBulkInsertOperation(stringBuilder, new[] { command, command }, 0);
+            var grouping = sqlGenerator.AppendBulkInsertOperation(stringBuilder, new[] { command, command }, 0, out _);
 
             var expectedText = @"INSERT INTO "
                                + SchemaPrefix
@@ -125,10 +125,57 @@ WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();
             AssertBaseline(
                 expectedText + expectedText,
                 stringBuilder.ToString());
-            Assert.Equal(ResultSetMapping.NoResultSet, grouping);
+            Assert.Equal(ResultSetMapping.NoResults, grouping);
         }
 
-        protected override void AppendInsertOperation_appends_insert_and_select_for_all_store_generated_columns_verification(
+        // TODO: Adjust for MySQL.
+        protected override void AppendDeleteOperation_creates_full_delete_command_text_verification(StringBuilder stringBuilder)
+            => AssertBaseline(
+                @"DELETE FROM [dbo].[Ducks]
+OUTPUT 1
+WHERE [Id] = @p0;
+",
+                stringBuilder.ToString());
+
+        // TODO: Adjust for MySQL.
+        protected override void AppendDeleteOperation_creates_full_delete_command_text_with_concurrency_check_verification(
+            StringBuilder stringBuilder)
+            => AssertBaseline(
+                @"DELETE FROM [dbo].[Ducks]
+OUTPUT 1
+WHERE [Id] = @p0 AND [ConcurrencyToken] IS NULL;
+",
+                stringBuilder.ToString());
+
+        // TODO: Adjust for MySQL.
+        protected override void AppendInsertOperation_insert_if_store_generated_columns_exist_verification(StringBuilder stringBuilder)
+            => AssertBaseline(
+                @"INSERT INTO [dbo].[Ducks] ([Name], [Quacks], [ConcurrencyToken])
+OUTPUT INSERTED.[Id], INSERTED.[Computed]
+VALUES (@p0, @p1, @p2);
+",
+                stringBuilder.ToString());
+
+        // TODO: Adjust for MySQL.
+        protected override void AppendInsertOperation_for_store_generated_columns_but_no_identity_verification(
+            StringBuilder stringBuilder)
+            => AssertBaseline(
+                @"INSERT INTO [dbo].[Ducks] ([Id], [Name], [Quacks], [ConcurrencyToken])
+OUTPUT INSERTED.[Computed]
+VALUES (@p0, @p1, @p2, @p3);
+",
+                stringBuilder.ToString());
+
+        // TODO: Adjust for MySQL.
+        protected override void AppendInsertOperation_for_only_identity_verification(StringBuilder stringBuilder)
+            => AssertBaseline(
+                @"INSERT INTO [dbo].[Ducks] ([Name], [Quacks], [ConcurrencyToken])
+OUTPUT INSERTED.[Id]
+VALUES (@p0, @p1, @p2);
+",
+                stringBuilder.ToString());
+
+        protected override void AppendInsertOperation_for_all_store_generated_columns_verification(
             StringBuilder stringBuilder)
         {
             Assert.Equal(
@@ -169,7 +216,7 @@ WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();
                 stringBuilder.ToString());
         }
 
-        protected override void AppendInsertOperation_appends_insert_and_select_for_only_single_identity_columns_verification(
+        protected override void AppendInsertOperation_for_only_single_identity_columns_verification(
             StringBuilder stringBuilder)
         {
             Assert.Equal(
@@ -205,6 +252,44 @@ WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();
                 + Environment.NewLine,
                 stringBuilder.ToString());
         }
+
+        // TODO: Adjust for MySQL.
+        protected override void AppendUpdateOperation_if_store_generated_columns_exist_verification(
+            StringBuilder stringBuilder)
+            => AssertBaseline(
+                @"UPDATE [dbo].[Ducks] SET [Name] = @p0, [Quacks] = @p1, [ConcurrencyToken] = @p2
+OUTPUT INSERTED.[Computed]
+WHERE [Id] = @p3 AND [ConcurrencyToken] IS NULL;
+",
+                stringBuilder.ToString());
+
+        // TODO: Adjust for MySQL.
+        protected override void AppendUpdateOperation_if_store_generated_columns_dont_exist_verification(
+            StringBuilder stringBuilder)
+            => AssertBaseline(
+                @"UPDATE [dbo].[Ducks] SET [Name] = @p0, [Quacks] = @p1, [ConcurrencyToken] = @p2
+OUTPUT 1
+WHERE [Id] = @p3;
+",
+                stringBuilder.ToString());
+
+        // TODO: Adjust for MySQL.
+        protected override void AppendUpdateOperation_appends_where_for_concurrency_token_verification(StringBuilder stringBuilder)
+            => AssertBaseline(
+                @"UPDATE [dbo].[Ducks] SET [Name] = @p0, [Quacks] = @p1, [ConcurrencyToken] = @p2
+OUTPUT 1
+WHERE [Id] = @p3 AND [ConcurrencyToken] IS NULL;
+",
+                stringBuilder.ToString());
+
+        // TODO: Adjust for MySQL.
+        protected override void AppendUpdateOperation_for_computed_property_verification(StringBuilder stringBuilder)
+            => AssertBaseline(
+                @"UPDATE [dbo].[Ducks] SET [Name] = @p0, [Quacks] = @p1, [ConcurrencyToken] = @p2
+OUTPUT INSERTED.[Computed]
+WHERE [Id] = @p3;
+",
+                stringBuilder.ToString());
 
         protected override string RowsAffected
             => "ROW_COUNT()";

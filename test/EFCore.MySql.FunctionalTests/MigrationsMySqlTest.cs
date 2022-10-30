@@ -4,7 +4,10 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations.Design;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -267,9 +270,15 @@ SELECT ROW_COUNT();",
         }
 
         [ConditionalTheory(Skip = "TODO")]
-        public override Task Add_primary_key()
+        public override Task Add_primary_key_int()
         {
-            return base.Add_primary_key();
+            return base.Add_primary_key_int();
+        }
+
+        [ConditionalTheory(Skip = "TODO")]
+        public override async Task Add_primary_key_string()
+        {
+            await base.Add_primary_key_string();
         }
 
         [ConditionalTheory(Skip = "TODO")]
@@ -400,9 +409,15 @@ be found in the docs.';");
         }
 
         [ConditionalTheory(Skip = "TODO")]
-        public override Task Drop_primary_key()
+        public override Task Drop_primary_key_int()
         {
-            return base.Drop_primary_key();
+            return base.Drop_primary_key_int();
+        }
+
+        [ConditionalTheory(Skip = "TODO")]
+        public override async Task Drop_primary_key_string()
+        {
+            await base.Drop_primary_key_string();
         }
 
         [ConditionalTheory(Skip = "TODO")]
@@ -1157,22 +1172,32 @@ be found in the docs.';");
             Action<ModelBuilder> buildSourceAction,
             Action<ModelBuilder> buildTargetAction,
             Action<MigrationBuilder> migrationBuilderAction,
-            Action<DatabaseModel> asserter)
+            Action<DatabaseModel> asserter,
+            bool withConventions = true)
         {
             var services = TestHelpers.CreateContextServices();
+            var modelRuntimeInitializer = services.GetRequiredService<IModelRuntimeInitializer>();
 
-            // Build the source and target models. Add current/latest product version if one wasn't set.
-            var sourceModelBuilder = CreateConventionlessModelBuilder();
+            // Build the source model, possibly with conventions
+            var sourceModelBuilder = CreateModelBuilder(withConventions);
             buildCommonAction(sourceModelBuilder);
             buildSourceAction(sourceModelBuilder);
-            var sourceModel = services.GetRequiredService<IModelRuntimeInitializer>()
-                .Initialize(sourceModelBuilder.FinalizeModel(), designTime: true, validationLogger: null);
+            var preSnapshotSourceModel = modelRuntimeInitializer.Initialize(
+                (IModel)sourceModelBuilder.Model, designTime: true, validationLogger: null);
 
-            var targetModelBuilder = CreateConventionlessModelBuilder();
+            // Round-trip the source model through a snapshot, compiling it and then extracting it back again.
+            // This simulates the real-world migration flow and can expose errors in snapshot generation
+            var migrationsCodeGenerator = Fixture.TestHelpers.CreateDesignServiceProvider().GetRequiredService<IMigrationsCodeGenerator>();
+            var sourceModelSnapshot = migrationsCodeGenerator.GenerateSnapshot(
+                modelSnapshotNamespace: null, typeof(DbContext), "MigrationsTestSnapshot", preSnapshotSourceModel);
+            var sourceModel = BuildModelFromSnapshotSource(sourceModelSnapshot);
+
+            // Build the target model, possibly with conventions
+            var targetModelBuilder = CreateModelBuilder(withConventions);
             buildCommonAction(targetModelBuilder);
             buildTargetAction(targetModelBuilder);
-            var targetModel = services.GetRequiredService<IModelRuntimeInitializer>()
-                .Initialize(targetModelBuilder.FinalizeModel(), designTime: true, validationLogger: null);
+            var targetModel = modelRuntimeInitializer.Initialize(
+                (IModel)targetModelBuilder.Model, designTime: true, validationLogger: null);
 
             var migrationBuilder = new MigrationBuilder(null);
             migrationBuilderAction(migrationBuilder);
@@ -1180,13 +1205,16 @@ be found in the docs.';");
             return Test(sourceModel, targetModel, migrationBuilder.Operations, asserter);
         }
 
+        private ModelBuilder CreateModelBuilder(bool withConventions)
+            => withConventions ? Fixture.TestHelpers.CreateConventionBuilder() : new ModelBuilder(new ConventionSet());
+
         public class MigrationsMySqlFixture : MigrationsFixtureBase
         {
             protected override string StoreName
                 => nameof(MigrationsMySqlTest);
 
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
-            public override TestHelpers TestHelpers => MySqlTestHelpers.Instance;
+            public override RelationalTestHelpers TestHelpers => MySqlTestHelpers.Instance;
 
             public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
             {

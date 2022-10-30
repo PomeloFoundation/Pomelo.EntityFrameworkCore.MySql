@@ -12,7 +12,7 @@ using Pomelo.EntityFrameworkCore.MySql.Tests;
 //ReSharper disable once CheckNamespace
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {
-    public class MySqlTestHelpers : TestHelpers
+    public class MySqlTestHelpers : RelationalTestHelpers
     {
         protected MySqlTestHelpers()
         {
@@ -23,7 +23,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         public override IServiceCollection AddProviderServices(IServiceCollection services)
             => services.AddEntityFrameworkMySql();
 
-        public override void UseProviderOptions(DbContextOptionsBuilder optionsBuilder)
+        public override DbContextOptionsBuilder UseProviderOptions(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder.UseMySql("Database=DummyDatabase", AppConfig.ServerVersion);
 
         public IServiceProvider CreateContextServices(ServerVersion serverVersion)

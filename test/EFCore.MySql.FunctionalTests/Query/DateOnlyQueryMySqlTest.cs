@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -208,6 +209,9 @@ public abstract class DateOnlyQueryMySqlTestBase<TFixture> : QueryTestBase<TFixt
 
         public ISetSource GetExpectedData()
             => new DateOnlyQueryData();
+
+        public IReadOnlyDictionary<Type, object> EntitySorters { get; } = new Dictionary<Type, object>().AsReadOnly();
+        public IReadOnlyDictionary<Type, object> EntityAsserters { get; } = new Dictionary<Type, object>().AsReadOnly();
 
         public IReadOnlyDictionary<Type, object> GetEntitySorters()
             => new Dictionary<Type, Func<object, object>> { { typeof(Model.IceCream), e => ((Model.IceCream)e)?.IceCreamId }, }.ToDictionary(

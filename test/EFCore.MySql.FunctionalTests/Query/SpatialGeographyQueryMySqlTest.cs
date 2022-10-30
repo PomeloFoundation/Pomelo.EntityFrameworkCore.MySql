@@ -16,6 +16,7 @@ using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
+    // TODO: Inherit from SpatialQueryRelationalTestBase<TFixture>.
     public class SpatialGeographyQueryMySqlTest : QueryTestBase<SpatialGeographyQueryMySqlTest.SpatialGeographyQueryMySqlFixture>
     {
         public SpatialGeographyQueryMySqlTest(SpatialGeographyQueryMySqlFixture fixture, ITestOutputHelper testOutputHelper)
@@ -200,6 +201,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             }
         }
 
+        // TODO: Inherit from SpatialQueryRelationalFixture.
         public class SpatialGeographyQueryMySqlFixture : SharedStoreFixtureBase<SpatialGeographyContext>, IQueryFixtureBase
         {
             private GeometryFactory _geometryFactory;
@@ -254,6 +256,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             // CHECK: Unused?
             public ISetSource GetExpectedData()
                 => new SpatialGeographyData(_geometryFactory);
+
+            public IReadOnlyDictionary<Type, object> EntitySorters { get; } = new Dictionary<Type, object>().AsReadOnly();
+            public IReadOnlyDictionary<Type, object> EntityAsserters { get; } = new Dictionary<Type, object>().AsReadOnly();
 
             // CHECK: Unused?
             public IReadOnlyDictionary<Type, object> GetEntitySorters()
