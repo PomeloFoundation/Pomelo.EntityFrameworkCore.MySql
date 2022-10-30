@@ -15,7 +15,7 @@ using Microsoft.EntityFrameworkCore.Utilities;
 namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
 {
     // TODO: Revamp
-    public class MySqlUpdateSqlGenerator : UpdateSqlGenerator, IMySqlUpdateSqlGenerator
+    public class MySqlUpdateSqlGenerator : UpdateAndSelectSqlGenerator, IMySqlUpdateSqlGenerator
     {
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -38,7 +38,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
         public virtual ResultSetMapping AppendBulkInsertOperation(
             StringBuilder commandStringBuilder,
             IReadOnlyList<IReadOnlyModificationCommand> modificationCommands,
-            int commandPosition)
+            int commandPosition,
+            out bool requiresTransaction)
         {
             var table = StoreObjectIdentifier.Table(modificationCommands[0].TableName, modificationCommands[0].Schema);
 
@@ -48,47 +49,46 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
                     || !o.IsRead
                     || o.Property?.GetValueGenerationStrategy(table) == MySqlValueGenerationStrategy.IdentityColumn))
             {
-                return AppendInsertOperation(commandStringBuilder, modificationCommands[0], commandPosition);
+                return AppendInsertOperation(commandStringBuilder, modificationCommands[0], commandPosition, out requiresTransaction);
             }
 
             var readOperations = modificationCommands[0].ColumnModifications.Where(o => o.IsRead).ToList();
             var writeOperations = modificationCommands[0].ColumnModifications.Where(o => o.IsWrite).ToList();
-            var keyOperations = modificationCommands[0].ColumnModifications.Where(o => o.IsKey).ToList();
 
-            var nonIdentityOperations = modificationCommands[0].ColumnModifications
-                .Where(o => o.Property?.GetValueGenerationStrategy(table) != MySqlValueGenerationStrategy.IdentityColumn)
+            var writableOperations = modificationCommands[0].ColumnModifications
+                .Where(o => o.Property?.GetValueGenerationStrategy(table) != MySqlValueGenerationStrategy.IdentityColumn
+                            && o.Property?.GetComputedColumnSql() is null)
                 .ToList();
 
             var defaultValuesOnly = writeOperations.Count == 0;
             if (defaultValuesOnly)
             {
-                if (nonIdentityOperations.Count == 0
+                if (writableOperations.Count == 0
                     || readOperations.Count == 0)
                 {
+                    requiresTransaction = modificationCommands.Count > 1;
                     foreach (var modification in modificationCommands)
                     {
-                        AppendInsertOperation(commandStringBuilder, modification, commandPosition);
+                        AppendInsertOperation(commandStringBuilder, modification, commandPosition, out var localRequiresTransaction);
+                        requiresTransaction = requiresTransaction || localRequiresTransaction;
                     }
 
                     return readOperations.Count == 0
-                        ? ResultSetMapping.NoResultSet
+                        ? ResultSetMapping.NoResults
                         : ResultSetMapping.LastInResultSet;
-                }
-
-                if (nonIdentityOperations.Count > 1)
-                {
-                    nonIdentityOperations = new List<IColumnModification> { nonIdentityOperations.First() };
                 }
             }
 
             if (readOperations.Count == 0)
             {
-                return AppendBulkInsertWithoutServerValues(commandStringBuilder, modificationCommands, writeOperations);
+                return AppendBulkInsertWithoutServerValues(commandStringBuilder, modificationCommands, writeOperations, out requiresTransaction);
             }
 
+            requiresTransaction = modificationCommands.Count > 1;
             foreach (var modification in modificationCommands)
             {
-                AppendInsertOperation(commandStringBuilder, modification, commandPosition);
+                AppendInsertOperation(commandStringBuilder, modification, commandPosition, out var localRequiresTransaction);
+                requiresTransaction = requiresTransaction || localRequiresTransaction;
             }
 
             return ResultSetMapping.LastInResultSet;
@@ -97,7 +97,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
         private ResultSetMapping AppendBulkInsertWithoutServerValues(
             StringBuilder commandStringBuilder,
             IReadOnlyList<IReadOnlyModificationCommand> modificationCommands,
-            List<IColumnModification> writeOperations)
+            List<IColumnModification> writeOperations,
+            out bool requiresTransaction)
         {
             Debug.Assert(writeOperations.Count > 0);
 
@@ -114,7 +115,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
             }
             commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
 
-            return ResultSetMapping.NoResultSet;
+            // A single INSERT command should run atomically, regardless of how many value lists it contains.
+            requiresTransaction = false;
+
+            return ResultSetMapping.NoResults;
         }
 
         protected override void AppendInsertCommandHeader(
