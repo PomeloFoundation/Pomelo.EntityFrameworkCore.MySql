@@ -635,6 +635,7 @@ ORDER BY
      `NON_UNIQUE`,
      GROUP_CONCAT(`COLUMN_NAME` ORDER BY `SEQ_IN_INDEX` SEPARATOR ',') AS `COLUMNS`,
      GROUP_CONCAT(CAST(IFNULL(`SUB_PART`, 0) AS CHAR) ORDER BY `SEQ_IN_INDEX` SEPARATOR ',') AS `SUB_PARTS`,
+     GROUP_CONCAT(IFNULL(`COLLATION`, 'A') ORDER BY `SEQ_IN_INDEX` SEPARATOR ',') AS `COLLATION`,
      `INDEX_TYPE`
      FROM `INFORMATION_SCHEMA`.`STATISTICS`
      WHERE `TABLE_SCHEMA` = '{0}'
@@ -723,6 +724,11 @@ ORDER BY
                                     // then don't use any prefices.
                                     index[MySqlAnnotationNames.IndexPrefixLength] = null;
                                 }
+
+                                index.IsDescending = reader.GetValueOrDefault<string>("COLLATION")
+                                    .Split(',')
+                                    .Select(c => c == "D")
+                                    .ToArray();
 
                                 var indexType = reader.GetValueOrDefault<string>("INDEX_TYPE");
 
