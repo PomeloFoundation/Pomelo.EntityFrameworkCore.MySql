@@ -33,12 +33,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Where_subquery_on_navigation2(async);
         }
 
-        [ConditionalFact(Skip = "Issue #573")]
-        public override Task Navigation_in_subquery_referencing_outer_query_with_client_side_result_operator_and_count(bool async)
-        {
-            return base.Navigation_in_subquery_referencing_outer_query_with_client_side_result_operator_and_count(async);
-        }
-
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 

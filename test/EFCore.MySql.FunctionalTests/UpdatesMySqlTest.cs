@@ -4,6 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestModels.UpdatesModel;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
+using Pomelo.EntityFrameworkCore.MySql.ValueGeneration.Internal;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
@@ -30,6 +34,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             }
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.DefaultExpression), nameof(ServerVersionSupport.AlternativeDefaultExpression))]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.Returning))]
+        public override void Save_with_shared_foreign_key()
+        {
+            base.Save_with_shared_foreign_key();
+        }
+
         public class UpdatesMySqlFixture : UpdatesRelationalFixture
         {
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
@@ -37,6 +48,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
             {
                 base.OnModelCreating(modelBuilder, context);
+
+                // Necessary for test `Save_with_shared_foreign_key` to run correctly.
+                if (AppConfig.ServerVersion.Supports.DefaultExpression ||
+                    AppConfig.ServerVersion.Supports.AlternativeDefaultExpression)
+                {
+                    modelBuilder.Entity<ProductBase>()
+                        .Property(p => p.Id).HasDefaultValueSql("(UUID())");
+                }
 
                 Models.Issue1300.Setup(modelBuilder, context);
             }

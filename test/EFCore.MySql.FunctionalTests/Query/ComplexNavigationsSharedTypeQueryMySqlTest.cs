@@ -1,12 +1,16 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.ComplexNavigationsModel;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
+using Xunit;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -70,11 +74,45 @@ FROM `Level1` AS `l`
 INNER JOIN (
     SELECT `l0`.`Level2_Name` AS `Name`, `l0`.`OneToMany_Optional_Inverse2Id`
     FROM `Level1` AS `l0`
-    INNER JOIN `Level1` AS `l1` ON `l0`.`Id` = `l1`.`Id`
     WHERE (`l0`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`l0`.`Level1_Required_Id` IS NOT NULL)) AND `l0`.`OneToMany_Required_Inverse2Id` IS NOT NULL
 ) AS `t` ON `l`.`Id` = `t`.`OneToMany_Optional_Inverse2Id`
 ORDER BY `t`.`Name`
 LIMIT @__p_0");
+        }
+
+        [ConditionalTheory(Skip = "https://github.com/dotnet/efcore/issues/26104")]
+        public override Task GroupBy_aggregate_where_required_relationship(bool async)
+            => base.GroupBy_aggregate_where_required_relationship(async);
+
+        [ConditionalTheory(Skip = "https://github.com/dotnet/efcore/issues/26104")]
+        public override Task GroupBy_aggregate_where_required_relationship_2(bool async)
+            => base.GroupBy_aggregate_where_required_relationship_2(async);
+
+        public override async Task GroupJoin_client_method_in_OrderBy(bool async)
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                async () => await base.GroupJoin_client_method_in_OrderBy(async));
+
+            AssertSql();
+        }
+
+        public override async Task Join_with_result_selector_returning_queryable_throws_validation_error(bool async)
+        {
+            // Expression cannot be used for return type. Issue #23302.
+            await Assert.ThrowsAsync<ArgumentException>(
+                () => base.Join_with_result_selector_returning_queryable_throws_validation_error(async));
+
+            AssertSql();
+        }
+
+        [ConditionalTheory(Skip = "Does not throw an EqualException, but still does not work.")]
+        public override async Task Nested_SelectMany_correlated_with_join_table_correctly_translated_to_apply(bool async)
+        {
+            // DefaultIfEmpty on child collection. Issue #19095.
+            await Assert.ThrowsAsync<EqualException>(
+                async () => await base.Nested_SelectMany_correlated_with_join_table_correctly_translated_to_apply(async));
+
+            AssertSql();
         }
 
         private void AssertSql(params string[] expected)

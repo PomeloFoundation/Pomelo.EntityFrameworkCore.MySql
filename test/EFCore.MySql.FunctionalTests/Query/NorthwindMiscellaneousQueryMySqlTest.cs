@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
@@ -248,7 +249,7 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
             AssertSql(
                 @"@__p_0='5'
 
-SELECT `t`.`OrderID`, `t0`.`ProductID`, `t0`.`OrderID`
+SELECT `t`.`OrderID`, `o0`.`ProductID`, `o0`.`OrderID`
 FROM (
     SELECT `o`.`OrderID`
     FROM `Orders` AS `o`
@@ -256,11 +257,8 @@ FROM (
     ORDER BY `o`.`OrderID`
     LIMIT 18446744073709551610 OFFSET @__p_0
 ) AS `t`
-LEFT JOIN (
-    SELECT `o0`.`ProductID`, `o0`.`OrderID`
-    FROM `Order Details` AS `o0`
-) AS `t0` ON `t`.`OrderID` = `t0`.`OrderID`
-ORDER BY `t`.`OrderID`, `t0`.`ProductID`");
+LEFT JOIN `Order Details` AS `o0` ON `t`.`OrderID` = `o0`.`OrderID`
+ORDER BY `t`.`OrderID`, `o0`.`ProductID`");
         }
 
         /// <summary>
@@ -289,7 +287,7 @@ ORDER BY `t`.`OrderID`, `t0`.`ProductID`");
                 @"@__p_1='10'
 @__p_0='5'
 
-SELECT `t`.`OrderID`, `t0`.`ProductID`, `t0`.`OrderID`
+SELECT `t`.`OrderID`, `o0`.`ProductID`, `o0`.`OrderID`
 FROM (
     SELECT `o`.`OrderID`
     FROM `Orders` AS `o`
@@ -297,11 +295,8 @@ FROM (
     ORDER BY `o`.`OrderID`
     LIMIT @__p_1 OFFSET @__p_0
 ) AS `t`
-LEFT JOIN (
-    SELECT `o0`.`ProductID`, `o0`.`OrderID`
-    FROM `Order Details` AS `o0`
-) AS `t0` ON `t`.`OrderID` = `t0`.`OrderID`
-ORDER BY `t`.`OrderID`, `t0`.`ProductID`");
+LEFT JOIN `Order Details` AS `o0` ON `t`.`OrderID` = `o0`.`OrderID`
+ORDER BY `t`.`OrderID`, `o0`.`ProductID`");
         }
 
         /// <summary>
@@ -328,7 +323,7 @@ ORDER BY `t`.`OrderID`, `t0`.`ProductID`");
             AssertSql(
                 @"@__p_0='10'
 
-SELECT `t`.`OrderID`, `t0`.`ProductID`, `t0`.`OrderID`
+SELECT `t`.`OrderID`, `o0`.`ProductID`, `o0`.`OrderID`
 FROM (
     SELECT `o`.`OrderID`
     FROM `Orders` AS `o`
@@ -336,11 +331,8 @@ FROM (
     ORDER BY `o`.`OrderID`
     LIMIT @__p_0
 ) AS `t`
-LEFT JOIN (
-    SELECT `o0`.`ProductID`, `o0`.`OrderID`
-    FROM `Order Details` AS `o0`
-) AS `t0` ON `t`.`OrderID` = `t0`.`OrderID`
-ORDER BY `t`.`OrderID`, `t0`.`ProductID`");
+LEFT JOIN `Order Details` AS `o0` ON `t`.`OrderID` = `o0`.`OrderID`
+ORDER BY `t`.`OrderID`, `o0`.`ProductID`");
         }
 
         public override Task Complex_nested_query_doesnt_try_binding_to_grandparent_when_parent_returns_complex_result(bool async)
@@ -357,6 +349,76 @@ ORDER BY `t`.`OrderID`, `t0`.`ProductID`");
                 return Assert.ThrowsAsync<InvalidOperationException>(
                     () => base.Complex_nested_query_doesnt_try_binding_to_grandparent_when_parent_returns_complex_result(async));
             }
+        }
+
+        public override async Task Client_code_using_instance_method_throws(bool async)
+        {
+            Assert.Equal(
+                CoreStrings.ClientProjectionCapturingConstantInMethodInstance(
+                    "Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query.NorthwindMiscellaneousQueryMySqlTest",
+                    "InstanceMethod"),
+                (await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => base.Client_code_using_instance_method_throws(async))).Message);
+
+            AssertSql();
+        }
+
+        public override async Task Client_code_using_instance_in_static_method(bool async)
+        {
+            Assert.Equal(
+                CoreStrings.ClientProjectionCapturingConstantInMethodArgument(
+                    "Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query.NorthwindMiscellaneousQueryMySqlTest",
+                    "StaticMethod"),
+                (await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => base.Client_code_using_instance_in_static_method(async))).Message);
+
+            AssertSql();
+        }
+
+        public override async Task Client_code_using_instance_in_anonymous_type(bool async)
+        {
+            Assert.Equal(
+                CoreStrings.ClientProjectionCapturingConstantInTree(
+                    "Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query.NorthwindMiscellaneousQueryMySqlTest"),
+                (await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => base.Client_code_using_instance_in_anonymous_type(async))).Message);
+
+            AssertSql();
+        }
+
+        public override async Task Client_code_unknown_method(bool async)
+        {
+            await AssertTranslationFailedWithDetails(
+                () => base.Client_code_unknown_method(async),
+                CoreStrings.QueryUnableToTranslateMethod(
+                    "Microsoft.EntityFrameworkCore.Query.NorthwindMiscellaneousQueryTestBase<Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query.NorthwindQueryMySqlFixture<Microsoft.EntityFrameworkCore.TestUtilities.NoopModelCustomizer>>",
+                    nameof(UnknownMethod)));
+
+            AssertSql();
+        }
+
+        public override async Task Entity_equality_through_subquery_composite_key(bool async)
+        {
+            var message = (await Assert.ThrowsAsync<InvalidOperationException>(
+                () => base.Entity_equality_through_subquery_composite_key(async))).Message;
+
+            Assert.Equal(
+                CoreStrings.EntityEqualityOnCompositeKeyEntitySubqueryNotSupported("==", nameof(OrderDetail)),
+                message);
+
+            AssertSql();
+        }
+
+        public override async Task Max_on_empty_sequence_throws(bool async)
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(() => base.Max_on_empty_sequence_throws(async));
+
+            AssertSql(
+                @"SELECT (
+    SELECT MAX(`o`.`OrderID`)
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`) AS `Max`
+FROM `Customers` AS `c`");
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]

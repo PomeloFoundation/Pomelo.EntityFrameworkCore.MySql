@@ -210,5 +210,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             return base.Subquery_projecting_non_nullable_scalar_contains_non_nullable_value_doesnt_need_null_expansion(async);
         }
+
+        [ConditionalTheory(Skip = "Another LATERAL JOIN bug in MySQL. Grouping leads to unexpected result set.")]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Correlated_collection_with_groupby_with_complex_grouping_key_not_projecting_identifier_column_with_group_aggregate_in_final_projection(bool async)
+        {
+            return base.Correlated_collection_with_groupby_with_complex_grouping_key_not_projecting_identifier_column_with_group_aggregate_in_final_projection(async);
+        }
     }
 }

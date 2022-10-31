@@ -125,13 +125,7 @@ ORDER BY `c`.`CustomerID`");
             await base.GroupBy_group_Distinct_Select_Distinct_aggregate(async);
 
             AssertSql(
-                @"SELECT `o`.`CustomerID` AS `Key`, (
-    SELECT DISTINCT MAX(DISTINCT (`t`.`OrderDate`))
-    FROM (
-        SELECT DISTINCT `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
-        FROM `Orders` AS `o0`
-        WHERE (`o`.`CustomerID` = `o0`.`CustomerID`) OR (`o`.`CustomerID` IS NULL AND (`o0`.`CustomerID` IS NULL))
-    ) AS `t`) AS `Max`
+                @"SELECT `o`.`CustomerID` AS `Key`, MAX(DISTINCT (`o`.`OrderDate`)) AS `Max`
 FROM `Orders` AS `o`
 GROUP BY `o`.`CustomerID`");
         }

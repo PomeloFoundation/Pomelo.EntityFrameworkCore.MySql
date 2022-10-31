@@ -257,18 +257,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             public ISetSource GetExpectedData()
                 => new SpatialGeographyData(_geometryFactory);
 
-            public IReadOnlyDictionary<Type, object> EntitySorters { get; } = new Dictionary<Type, object>().AsReadOnly();
-            public IReadOnlyDictionary<Type, object> EntityAsserters { get; } = new Dictionary<Type, object>().AsReadOnly();
-
             // CHECK: Unused?
-            public IReadOnlyDictionary<Type, object> GetEntitySorters()
+            public IReadOnlyDictionary<Type, object> EntitySorters
                 => new Dictionary<Type, Func<object, object>>
                 {
                     { typeof(SpatialGeographyContext.City), e => ((SpatialGeographyContext.City)e)?.CityId },
                 }.ToDictionary(e => e.Key, e => (object)e.Value);
 
             // CHECK: Unused?
-            public IReadOnlyDictionary<Type, object> GetEntityAsserters()
+            public IReadOnlyDictionary<Type, object> EntityAsserters
                 => new Dictionary<Type, Action<object, object>>
                 {
                     {

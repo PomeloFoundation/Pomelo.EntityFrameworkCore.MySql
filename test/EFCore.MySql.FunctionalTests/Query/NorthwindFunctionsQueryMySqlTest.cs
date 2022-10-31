@@ -173,9 +173,9 @@ WHERE `c`.`Region` IS NULL OR (TRIM(`c`.`Region`) = '')");
             await base.Indexof_with_emptystring(async);
 
             AssertSql(
-                $@"SELECT LOCATE('', `c`.`ContactName`) - 1
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` = 'ALFKI'");
+WHERE (LOCATE('', `c`.`ContactName`) - 1) = 0");
         }
 
         [ConditionalTheory]
@@ -184,9 +184,9 @@ WHERE `c`.`CustomerID` = 'ALFKI'");
             await base.Replace_with_emptystring(async);
 
             AssertSql(
-                $@"SELECT REPLACE(`c`.`ContactName`, 'ari', '')
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` = 'ALFKI'");
+WHERE REPLACE(`c`.`ContactName`, 'ia', '') = 'Mar Anders'");
         }
 
         [ConditionalTheory]

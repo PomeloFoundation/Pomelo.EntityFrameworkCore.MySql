@@ -1,10 +1,10 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.SpatialModel;
+using NetTopologySuite.Geometries;
+using NetTopologySuite.Geometries.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
@@ -55,6 +55,28 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.SpatialSupportFunctionAdditions))] // Actually supported since MySQL 5.7.5 (not 5.7.6)
         public override Task ConvexHull(bool async)
             => base.ConvexHull(async);
+
+        public override Task Combine_aggregate(bool async)
+            => AssertQuery(
+                async,
+                ss => ss.Set<PointEntity>()
+                    .Where(e => e.Point != null)
+                    .GroupBy(e => e.Group)
+                    .Select(g => new { Id = g.Key, Combined = GeometryCombiner.Combine(g.Select(e => e.Point)
+                        .OrderBy(p => p.X).ThenBy(p => p.Y)) }), // <-- needs to be explicitly ordered to be deterministic
+                elementSorter: x => x.Id,
+                elementAsserter: (e, a) =>
+                {
+                    Assert.Equal(e.Id, a.Id);
+
+                    // Note that NTS returns a MultiPoint (which is a subclass of GeometryCollection), whereas SQL Server returns a
+                    // GeometryCollection.
+                    var eCollection = (GeometryCollection)e.Combined;
+                    var aCollection = (GeometryCollection)a.Combined;
+
+                    Assert.Equal(eCollection.Geometries, aCollection.Geometries);
+                });
+
 
         #region Not supported by MySQL and MariaDB
 

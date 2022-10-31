@@ -873,6 +873,84 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
             }
         }
 
+        // Overridden because of TestNullableDateTimeOffset, since MySQL does not offer a native data type to save a date/time with
+        // timezone.
+        public override void Can_insert_and_read_back_all_nullable_data_types_with_values_set_to_non_null()
+        {
+            using (var context = CreateContext())
+            {
+                context.Set<BuiltInNullableDataTypes>().Add(
+                    new BuiltInNullableDataTypes
+                    {
+                        Id = 101,
+                        PartitionId = 101,
+                        TestString = "TestString",
+                        TestByteArray = new byte[] { 10, 9, 8, 7, 6 },
+                        TestNullableInt16 = -1234,
+                        TestNullableInt32 = -123456789,
+                        TestNullableInt64 = -1234567890123456789L,
+                        TestNullableDouble = -1.23456789,
+                        TestNullableDecimal = -1234567890.01M,
+                        TestNullableDateTime = DateTime.Parse("01/01/2000 12:34:56").ToUniversalTime(),
+                        TestNullableDateTimeOffset = new DateTimeOffset(DateTime.Parse("01/01/2000 12:34:56"), TimeSpan.FromHours(-8.0)),
+                        TestNullableTimeSpan = new TimeSpan(0, 10, 9, 8, 7),
+                        TestNullableSingle = -1.234F,
+                        TestNullableBoolean = false,
+                        TestNullableByte = 255,
+                        TestNullableUnsignedInt16 = 1234,
+                        TestNullableUnsignedInt32 = 1234565789U,
+                        TestNullableUnsignedInt64 = 1234567890123456789UL,
+                        TestNullableCharacter = 'a',
+                        TestNullableSignedByte = -128,
+                        Enum64 = Enum64.SomeValue,
+                        Enum32 = Enum32.SomeValue,
+                        Enum16 = Enum16.SomeValue,
+                        Enum8 = Enum8.SomeValue,
+                        EnumU64 = EnumU64.SomeValue,
+                        EnumU32 = EnumU32.SomeValue,
+                        EnumU16 = EnumU16.SomeValue,
+                        EnumS8 = EnumS8.SomeValue
+                    });
+
+                Assert.Equal(1, context.SaveChanges());
+            }
+
+            using (var context = CreateContext())
+            {
+                var dt = context.Set<BuiltInNullableDataTypes>().Where(ndt => ndt.Id == 101).ToList().Single();
+
+                var entityType = context.Model.FindEntityType(typeof(BuiltInNullableDataTypes));
+                AssertEqualIfMapped(entityType, "TestString", () => dt.TestString);
+                AssertEqualIfMapped(entityType, new byte[] { 10, 9, 8, 7, 6 }, () => dt.TestByteArray);
+                AssertEqualIfMapped(entityType, (short)-1234, () => dt.TestNullableInt16);
+                AssertEqualIfMapped(entityType, -123456789, () => dt.TestNullableInt32);
+                AssertEqualIfMapped(entityType, -1234567890123456789L, () => dt.TestNullableInt64);
+                AssertEqualIfMapped(entityType, -1.23456789, () => dt.TestNullableDouble);
+                AssertEqualIfMapped(entityType, -1234567890.01M, () => dt.TestNullableDecimal);
+                AssertEqualIfMapped(entityType, DateTime.Parse("01/01/2000 12:34:56").ToUniversalTime(), () => dt.TestNullableDateTime);
+                AssertEqualIfMapped(
+                    entityType, new DateTimeOffset(DateTime.Parse("01/01/2000 12:34:56"), TimeSpan.FromHours(-8.0)).ToUniversalTime(), // adjusted for Pomelo's translation
+                    () => dt.TestNullableDateTimeOffset);
+                AssertEqualIfMapped(entityType, new TimeSpan(0, 10, 9, 8, 7), () => dt.TestNullableTimeSpan);
+                AssertEqualIfMapped(entityType, -1.234F, () => dt.TestNullableSingle);
+                AssertEqualIfMapped(entityType, false, () => dt.TestNullableBoolean);
+                AssertEqualIfMapped(entityType, (byte)255, () => dt.TestNullableByte);
+                AssertEqualIfMapped(entityType, Enum64.SomeValue, () => dt.Enum64);
+                AssertEqualIfMapped(entityType, Enum32.SomeValue, () => dt.Enum32);
+                AssertEqualIfMapped(entityType, Enum16.SomeValue, () => dt.Enum16);
+                AssertEqualIfMapped(entityType, Enum8.SomeValue, () => dt.Enum8);
+                AssertEqualIfMapped(entityType, (ushort)1234, () => dt.TestNullableUnsignedInt16);
+                AssertEqualIfMapped(entityType, 1234565789U, () => dt.TestNullableUnsignedInt32);
+                AssertEqualIfMapped(entityType, 1234567890123456789UL, () => dt.TestNullableUnsignedInt64);
+                AssertEqualIfMapped(entityType, 'a', () => dt.TestNullableCharacter);
+                AssertEqualIfMapped(entityType, (sbyte)-128, () => dt.TestNullableSignedByte);
+                AssertEqualIfMapped(entityType, EnumU64.SomeValue, () => dt.EnumU64);
+                AssertEqualIfMapped(entityType, EnumU32.SomeValue, () => dt.EnumU32);
+                AssertEqualIfMapped(entityType, EnumU16.SomeValue, () => dt.EnumU16);
+                AssertEqualIfMapped(entityType, EnumS8.SomeValue, () => dt.EnumS8);
+            }
+        }
+
         private static void AssertNullMappedNullableDataTypes(MappedNullableDataTypes entity, int id)
         {
             Assert.Equal(id, entity.Int);
