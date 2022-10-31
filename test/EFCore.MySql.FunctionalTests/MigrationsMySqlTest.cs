@@ -323,13 +323,13 @@ SELECT ROW_COUNT();",
             return base.Alter_column_set_collation();
         }
 
-        [ConditionalTheory(Skip = "TODO")]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
         public override Task Alter_sequence_all_settings()
         {
             return base.Alter_sequence_all_settings();
         }
 
-        [ConditionalTheory(Skip = "TODO")]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
         public override Task Alter_sequence_increment_by()
         {
             return base.Alter_sequence_increment_by();
@@ -355,13 +355,25 @@ SELECT ROW_COUNT();",
             return base.Create_schema();
         }
 
-        [ConditionalTheory(Skip = "TODO")]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
         public override Task Create_sequence()
         {
             return base.Create_sequence();
         }
 
-        [ConditionalTheory(Skip = "TODO")]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
+        public override Task Create_sequence_long()
+        {
+            return base.Create_sequence_long();
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
+        public override Task Create_sequence_short()
+        {
+            return base.Create_sequence_short();
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
         public override Task Create_sequence_all_settings()
         {
             return base.Create_sequence_all_settings();
@@ -379,11 +391,12 @@ SELECT ROW_COUNT();",
 
             AssertSql(
                 @"CREATE TABLE `People` (
-    `Id` int NOT NULL,
+    `Id` int NOT NULL AUTO_INCREMENT,
     `Name` longtext CHARACTER SET utf8mb4 NULL COMMENT 'This is a multi-line
 column comment.
 More information can
-be found in the docs.'
+be found in the docs.',
+    CONSTRAINT `PK_People` PRIMARY KEY (`Id`)
 ) CHARACTER SET=utf8mb4 COMMENT='This is a multi-line
 table comment.
 More information can
@@ -449,13 +462,13 @@ be found in the docs.';");
             await base.Drop_primary_key_string();
         }
 
-        [ConditionalTheory(Skip = "TODO")]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
         public override Task Drop_sequence()
         {
             return base.Drop_sequence();
         }
 
-        [ConditionalTheory(Skip = "TODO")]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
         public override Task Move_sequence()
         {
             return base.Move_sequence();
@@ -467,7 +480,7 @@ be found in the docs.';");
             return base.Move_table();
         }
 
-        [ConditionalTheory(Skip = "TODO")]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
         public override Task Rename_sequence()
         {
             return base.Rename_sequence();
@@ -579,9 +592,10 @@ be found in the docs.';");
                 });
 
             AssertSql(
-                $@"CREATE TABLE `IceCream` (
-    `IceCreamId` int NOT NULL,
-    `Name` NVARCHAR(45) NULL
+                @"CREATE TABLE `IceCream` (
+    `IceCreamId` int NOT NULL AUTO_INCREMENT,
+    `Name` NVARCHAR(45) NULL,
+    CONSTRAINT `PK_IceCream` PRIMARY KEY (`IceCreamId`)
 ) CHARACTER SET=utf8mb4;");
         }
 
@@ -608,7 +622,8 @@ be found in the docs.';");
                 $@"ALTER DATABASE COLLATE {DefaultCollation};",
                 //
                 $@"CREATE TABLE `IceCream` (
-    `IceCreamId` char(36) COLLATE ascii_general_ci NOT NULL
+    `IceCreamId` char(36) COLLATE ascii_general_ci NOT NULL,
+    CONSTRAINT `PK_IceCream` PRIMARY KEY (`IceCreamId`)
 ) COLLATE={DefaultCollation};");
         }
 
@@ -636,7 +651,8 @@ be found in the docs.';");
                 $@"ALTER DATABASE COLLATE {DefaultCollation};",
                 //
                 $@"CREATE TABLE `IceCream` (
-    `IceCreamId` char(36) COLLATE {NonDefaultCollation} NOT NULL
+    `IceCreamId` char(36) COLLATE {NonDefaultCollation} NOT NULL,
+    CONSTRAINT `PK_IceCream` PRIMARY KEY (`IceCreamId`)
 ) COLLATE={DefaultCollation};");
         }
 
@@ -664,7 +680,8 @@ be found in the docs.';");
                 $@"ALTER DATABASE COLLATE {DefaultCollation};",
                 //
                 $@"CREATE TABLE `IceCream` (
-    `IceCreamId` char(36) COLLATE {NonDefaultCollation} NOT NULL
+    `IceCreamId` char(36) COLLATE {NonDefaultCollation} NOT NULL,
+    CONSTRAINT `PK_IceCream` PRIMARY KEY (`IceCreamId`)
 ) COLLATE={DefaultCollation};");
         }
 
@@ -692,7 +709,8 @@ be found in the docs.';");
                 $@"ALTER DATABASE COLLATE {DefaultCollation};",
                 //
                 $@"CREATE TABLE `IceCream` (
-    `IceCreamId` char(36) NOT NULL
+    `IceCreamId` char(36) NOT NULL,
+    CONSTRAINT `PK_IceCream` PRIMARY KEY (`IceCreamId`)
 ) COLLATE={DefaultCollation};");
         }
 
@@ -815,6 +833,17 @@ be found in the docs.';");
                 result => { });
 
             AssertSql(
+                @"set @__pomelo_TableCharset = (
+    SELECT `ccsa`.`CHARACTER_SET_NAME` as `TABLE_CHARACTER_SET`
+    FROM `INFORMATION_SCHEMA`.`TABLES` as `t`
+    LEFT JOIN `INFORMATION_SCHEMA`.`COLLATION_CHARACTER_SET_APPLICABILITY` as `ccsa` ON `ccsa`.`COLLATION_NAME` = `t`.`TABLE_COLLATION`
+    WHERE `TABLE_SCHEMA` = SCHEMA() AND `TABLE_NAME` = 'IceCream' AND `TABLE_TYPE` IN ('BASE TABLE', 'VIEW'));
+
+SET @__pomelo_SqlExpr = CONCAT('ALTER TABLE `IceCream` CHARACTER SET = ', @__pomelo_TableCharset, ';');
+PREPARE __pomelo_SqlExprExecute FROM @__pomelo_SqlExpr;
+EXECUTE __pomelo_SqlExprExecute;
+DEALLOCATE PREPARE __pomelo_SqlExprExecute;",
+                //
                 $@"ALTER TABLE `IceCream` MODIFY COLUMN `Name` longtext COLLATE {NonDefaultCollation} NULL;",
                 //
                 $@"ALTER TABLE `IceCream` MODIFY COLUMN `Brand` longtext COLLATE {NonDefaultCollation2} NULL;");
@@ -855,8 +884,6 @@ be found in the docs.';");
                 result => { });
 
             AssertSql(
-                $@"ALTER TABLE `IceCream` COLLATE={DefaultCollation};",
-                //
                 $@"ALTER TABLE `IceCream` MODIFY COLUMN `Name` longtext COLLATE {NonDefaultCollation} NULL;",
                 //
                 $@"ALTER TABLE `IceCream` MODIFY COLUMN `Brand` longtext COLLATE {NonDefaultCollation2} NULL;");
@@ -951,9 +978,10 @@ be found in the docs.';");
                 $@"ALTER DATABASE COLLATE {DefaultCollation};",
                 //
                 $@"CREATE TABLE `IceCream` (
+    `IceCreamId` int NOT NULL AUTO_INCREMENT,
     `Brand` longtext CHARACTER SET {NonDefaultCharSet} NULL,
-    `IceCreamId` int NOT NULL,
-    `Name` longtext COLLATE {DefaultCollation} NULL
+    `Name` longtext COLLATE {DefaultCollation} NULL,
+    CONSTRAINT `PK_IceCream` PRIMARY KEY (`IceCreamId`)
 ) COLLATE={DefaultCollation};");
         }
 
@@ -990,9 +1018,10 @@ be found in the docs.';");
                 $@"ALTER DATABASE CHARACTER SET {NonDefaultCharSet};",
                 //
                 $@"CREATE TABLE `IceCream` (
+    `IceCreamId` int NOT NULL AUTO_INCREMENT,
     `Brand` longtext COLLATE {NonDefaultCollation2} NULL,
-    `IceCreamId` int NOT NULL,
-    `Name` longtext CHARACTER SET {NonDefaultCharSet} NULL
+    `Name` longtext CHARACTER SET {NonDefaultCharSet} NULL,
+    CONSTRAINT `PK_IceCream` PRIMARY KEY (`IceCreamId`)
 ) CHARACTER SET={NonDefaultCharSet};");
         }
 
@@ -1023,8 +1052,9 @@ be found in the docs.';");
 
             AssertSql(
                 $@"CREATE TABLE `IceCream` (
-    `IceCreamId` int NOT NULL,
-    `Name` longtext CHARACTER SET {NonDefaultCharSet} NULL
+    `IceCreamId` int NOT NULL AUTO_INCREMENT,
+    `Name` longtext CHARACTER SET {NonDefaultCharSet} NULL,
+    CONSTRAINT `PK_IceCream` PRIMARY KEY (`IceCreamId`)
 ) CHARACTER SET=utf8mb4;");
         }
 
@@ -1169,7 +1199,7 @@ be found in the docs.';");
                 //
                 @"ALTER TABLE `Foo` DROP KEY `AK_Foo_FooAK`;",
                 //
-                @"ALTER TABLE `Foo` ADD CONSTRAINT `FK_Foo_Bar_BarFK` FOREIGN KEY (`BarFK`) REFERENCES `Bar` (`BarPK`);");
+                @"ALTER TABLE `Foo` ADD CONSTRAINT `FK_Foo_Bar_BarFK` FOREIGN KEY (`BarFK`) REFERENCES `Bar` (`BarPK`) ON DELETE CASCADE;");
         }
 
         public override async Task Add_foreign_key()
@@ -1177,8 +1207,21 @@ be found in the docs.';");
             await base.Add_foreign_key();
 
             AssertSql(
-                @"ALTER TABLE `Orders` ADD CONSTRAINT `FK_Orders_Customers_CustomerId` FOREIGN KEY (`CustomerId`) REFERENCES `Customers` (`Id`);");
+                @"CREATE INDEX `IX_Orders_CustomerId` ON `Orders` (`CustomerId`);",
+                //
+                @"ALTER TABLE `Orders` ADD CONSTRAINT `FK_Orders_Customers_CustomerId` FOREIGN KEY (`CustomerId`) REFERENCES `Customers` (`Id`) ON DELETE CASCADE;");
         }
+
+        public override Task Rename_table()
+            => Test(
+                builder => builder.Entity("People").Property<int>("Id"),
+                builder => builder.Entity("People").ToTable("Persons").Property<int>("Id"),
+                model =>
+                {
+                    var table = Assert.Single(model.Tables);
+                    Assert.Equal("Persons", table.Name);
+                },
+                withConventions: false);
 
         protected virtual string DefaultCollation => ((MySqlTestStore)Fixture.TestStore).DatabaseCollation;
 

@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
@@ -15,12 +16,14 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.Logging;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Update.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Migrations
 {
@@ -51,17 +54,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             "multipolygon",
         };
 
-        private readonly IRelationalAnnotationProvider _annotationProvider;
+        private readonly ICommandBatchPreparer _commandBatchPreparer;
         private readonly IMySqlOptions _options;
         private readonly RelationalTypeMapping _stringTypeMapping;
 
         public MySqlMigrationsSqlGenerator(
             [NotNull] MigrationsSqlGeneratorDependencies dependencies,
-            [NotNull] IRelationalAnnotationProvider annotationProvider,
+            [NotNull] ICommandBatchPreparer commandBatchPreparer,
             [NotNull] IMySqlOptions options)
             : base(dependencies)
         {
-            _annotationProvider = annotationProvider;
+            _commandBatchPreparer = commandBatchPreparer;
             _options = options;
             _stringTypeMapping = dependencies.TypeMappingSource.GetMapping(typeof(string));
         }
@@ -1526,6 +1529,29 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
             else
             {
                 base.ForeignKeyAction(referentialAction, builder);
+            }
+        }
+
+        /// <summary>
+        /// Use VALUES batches for INSERT commands where possible.
+        /// </summary>
+        protected override void Generate(InsertDataOperation operation, IModel model, MigrationCommandListBuilder builder, bool terminate = true)
+        {
+            var sqlBuilder = new StringBuilder();
+
+            var modificationCommands = GenerateModificationCommands(operation, model).ToList();
+            var updateSqlGenerator = (IMySqlUpdateSqlGenerator)Dependencies.UpdateSqlGenerator;
+
+            foreach (var batch in _commandBatchPreparer.CreateCommandBatches(modificationCommands, moreCommandSets: true))
+            {
+                updateSqlGenerator.AppendBulkInsertOperation(sqlBuilder, batch.ModificationCommands, commandPosition: 0, out _);
+            }
+
+            builder.Append(sqlBuilder.ToString());
+
+            if (terminate)
+            {
+                builder.EndCommand();
             }
         }
 
