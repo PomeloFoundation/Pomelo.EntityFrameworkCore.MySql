@@ -7,6 +7,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -279,6 +280,105 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             }
 
             return sqlBinaryExpression;
+        }
+
+        protected override Expression VisitDelete(DeleteExpression deleteExpression)
+        {
+            var selectExpression = deleteExpression.SelectExpression;
+
+            if (selectExpression.Offset == null
+                && selectExpression.Having == null
+                && selectExpression.GroupBy.Count == 0
+                && selectExpression.Projection.Count == 0
+                && (selectExpression.Tables.Count == 1 || selectExpression.Orderings.Count == 0))
+            {
+                Sql.Append($"DELETE");
+
+                if (selectExpression.Tables.Count > 1)
+                {
+                    Sql.Append($" {Dependencies.SqlGenerationHelper.DelimitIdentifier(deleteExpression.Table.Alias)}");
+                }
+
+                Sql.AppendLine().Append("FROM ");
+                GenerateList(selectExpression.Tables, e => Visit(e), sql => sql.AppendLine());
+
+                if (selectExpression.Predicate != null)
+                {
+                    Sql.AppendLine().Append("WHERE ");
+
+                    Visit(selectExpression.Predicate);
+                }
+
+                GenerateOrderings(selectExpression);
+                GenerateLimitOffset(selectExpression);
+
+                return deleteExpression;
+            }
+
+            throw new InvalidOperationException(
+                RelationalStrings.ExecuteOperationWithUnsupportedOperatorInSqlGeneration(nameof(RelationalQueryableExtensions.ExecuteDelete)));
+        }
+
+        protected override Expression VisitUpdate(UpdateExpression updateExpression)
+        {
+            var selectExpression = updateExpression.SelectExpression;
+
+            if (selectExpression.Offset == null
+                && selectExpression.Having == null
+                && selectExpression.Orderings.Count == 0
+                && selectExpression.GroupBy.Count == 0
+                && selectExpression.Projection.Count == 0)
+            {
+                Sql.Append("UPDATE ");
+                GenerateList(selectExpression.Tables, e => Visit(e), sql => sql.AppendLine());
+
+                Sql.AppendLine().Append("SET ");
+                Visit(updateExpression.ColumnValueSetters[0].Column);
+                Sql.Append(" = ");
+                Visit(updateExpression.ColumnValueSetters[0].Value);
+
+                using (Sql.Indent())
+                {
+                    foreach (var columnValueSetter in updateExpression.ColumnValueSetters.Skip(1))
+                    {
+                        Sql.AppendLine(",");
+                        Visit(columnValueSetter.Column);
+                        Sql.Append(" = ");
+                        Visit(columnValueSetter.Value);
+                    }
+                }
+
+                if (selectExpression.Predicate != null)
+                {
+                    Sql.AppendLine().Append("WHERE ");
+                    Visit(selectExpression.Predicate);
+                }
+
+                GenerateLimitOffset(selectExpression);
+
+                return updateExpression;
+            }
+
+            throw new InvalidOperationException(
+                RelationalStrings.ExecuteOperationWithUnsupportedOperatorInSqlGeneration(nameof(RelationalQueryableExtensions.ExecuteUpdate)));
+        }
+
+        protected virtual void GenerateList<T>(
+            IReadOnlyList<T> items,
+            Action<T> generationAction,
+            Action<IRelationalCommandBuilder> joinAction = null)
+        {
+            joinAction ??= (isb => isb.Append(", "));
+
+            for (var i = 0; i < items.Count; i++)
+            {
+                if (i > 0)
+                {
+                    joinAction(Sql);
+                }
+
+                generationAction(items[i]);
+            }
         }
 
         private static bool RequiresBrackets(SqlExpression expression)

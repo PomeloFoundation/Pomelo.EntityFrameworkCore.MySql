@@ -115,6 +115,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<IHistoryRepository, MySqlHistoryRepository>()
                 .TryAdd<ICompiledQueryCacheKeyGenerator, MySqlCompiledQueryCacheKeyGenerator>()
                 .TryAdd<IExecutionStrategyFactory, MySqlExecutionStrategyFactory>()
+                .TryAdd<IQueryableMethodTranslatingExpressionVisitorFactory, MySqlQueryableMethodTranslatingExpressionVisitorFactory>()
                 .TryAdd<IRelationalQueryStringFactory, MySqlQueryStringFactory>()
                 .TryAdd<IMethodCallTranslatorProvider, MySqlMethodCallTranslatorProvider>()
                 .TryAdd<IMemberTranslatorProvider, MySqlMemberTranslatorProvider>()
