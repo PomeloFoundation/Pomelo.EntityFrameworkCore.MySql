@@ -94,5 +94,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 
         public int GetIndexedStringPropertyDefaultLength
             => Math.Min(AppConfig.ServerVersion.MaxKeyLength / (CharSet.Utf8Mb4.MaxBytesPerChar * 2), 255);
+
+        public static DateTimeOffset GetExpectedValue(DateTimeOffset value)
+        {
+            const int mySqlMaxMillisecondDecimalPlaces = 6;
+            var decimalPlacesFactor = (decimal)Math.Pow(10, 7 - mySqlMaxMillisecondDecimalPlaces);
+
+            // Change DateTimeOffset values, because MySQL does not preserve offsets and has a maximum of 6 decimal places, in contrast to
+            // .NET which has 7.
+            return new DateTimeOffset(
+                (long)(Math.Truncate(value.UtcTicks / decimalPlacesFactor) * decimalPlacesFactor),
+                TimeSpan.Zero);
+        }
     }
 }

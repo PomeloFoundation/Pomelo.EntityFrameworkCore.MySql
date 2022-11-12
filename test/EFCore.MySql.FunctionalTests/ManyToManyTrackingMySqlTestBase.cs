@@ -15,8 +15,8 @@ using Pomelo.EntityFrameworkCore.MySql.Tests;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
-    public abstract class ManyToManyTrackingMySqlTestBase<TFixture> : ManyToManyTrackingTestBase<TFixture>
-        where TFixture : ManyToManyTrackingTestBase<TFixture>.ManyToManyTrackingFixtureBase
+    public abstract class ManyToManyTrackingMySqlTestBase<TFixture> : ManyToManyTrackingRelationalTestBase<TFixture>
+        where TFixture : ManyToManyTrackingMySqlTestBase<TFixture>.ManyToManyTrackingMySqlFixtureBase
     {
         protected ManyToManyTrackingMySqlTestBase(TFixture fixture)
             : base(fixture)
@@ -26,7 +26,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         protected override void UseTransaction(DatabaseFacade facade, IDbContextTransaction transaction)
             => facade.UseTransaction(transaction.GetDbTransaction());
 
-        public class ManyToManyTrackingMySqlFixtureBase : ManyToManyTrackingFixtureBase
+        public class ManyToManyTrackingMySqlFixtureBase : ManyToManyTrackingRelationalFixture
         {
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
 

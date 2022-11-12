@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.GearsOfWarModel;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
@@ -25,7 +26,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
         public override Task DateTimeOffset_Contains_Less_than_Greater_than(bool async)
         {
-            var dto = GearsOfWarQueryMySqlFixture.GetExpectedValue(new DateTimeOffset(599898024001234567, new TimeSpan(1, 30, 0)));
+            var dto = MySqlTestHelpers.GetExpectedValue(new DateTimeOffset(599898024001234567, new TimeSpan(1, 30, 0)));
             var start = dto.AddDays(-1);
             var end = dto.AddDays(1);
             var dates = new[] { dto };
@@ -38,7 +39,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
         public override Task Where_datetimeoffset_milliseconds_parameter_and_constant(bool async)
         {
-            var dateTimeOffset = GearsOfWarQueryMySqlFixture.GetExpectedValue(new DateTimeOffset(599898024001234567, new TimeSpan(1, 30, 0)));
+            var dateTimeOffset = MySqlTestHelpers.GetExpectedValue(new DateTimeOffset(599898024001234567, new TimeSpan(1, 30, 0)));
 
             // Literal where clause
             var p = Expression.Parameter(typeof(Mission), "i");

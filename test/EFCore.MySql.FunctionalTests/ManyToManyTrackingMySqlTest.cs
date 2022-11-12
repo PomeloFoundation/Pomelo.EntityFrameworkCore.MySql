@@ -10,6 +10,8 @@
 
         public class ManyToManyTrackingMySqlFixture : ManyToManyTrackingMySqlFixtureBase
         {
+            protected override string StoreName
+                => "ManyToManyTrackingMySqlTest";
         }
     }
 }
