@@ -1,10 +1,19 @@
 // Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Update;
+using Microsoft.EntityFrameworkCore.Utilities;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal;
 
@@ -18,12 +27,6 @@ public class MySqlModificationCommandBatch : AffectedCountModificationCommandBat
 {
     private readonly List<IReadOnlyModificationCommand> _pendingBulkInsertCommands = new();
 
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
     public MySqlModificationCommandBatch(
         ModificationCommandBatchFactoryDependencies dependencies,
         int maxBatchSize)
@@ -31,27 +34,30 @@ public class MySqlModificationCommandBatch : AffectedCountModificationCommandBat
     {
     }
 
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
     protected new virtual IMySqlUpdateSqlGenerator UpdateSqlGenerator
         => (IMySqlUpdateSqlGenerator)base.UpdateSqlGenerator;
 
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
     protected override void RollbackLastCommand(IReadOnlyModificationCommand modificationCommand)
     {
         if (_pendingBulkInsertCommands.Count > 0)
         {
             _pendingBulkInsertCommands.RemoveAt(_pendingBulkInsertCommands.Count - 1);
         }
+
+        //////
+        // Pulled up from the base implementation to support our _pendingParameters field:
+
+        for (var i = 0; i < _pendingParameters; i++)
+        {
+            var parameterIndex = RelationalCommandBuilder.Parameters.Count - 1;
+            var parameter = RelationalCommandBuilder.Parameters[parameterIndex];
+
+            RelationalCommandBuilder.RemoveParameterAt(parameterIndex);
+            ParameterValues.Remove(parameter.InvariantName);
+        }
+
+        //
+        //////
 
         base.RollbackLastCommand(modificationCommand);
     }
@@ -83,12 +89,6 @@ public class MySqlModificationCommandBatch : AffectedCountModificationCommandBat
         }
     }
 
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
     protected override void AddCommand(IReadOnlyModificationCommand modificationCommand)
     {
         if (modificationCommand.EntityState == EntityState.Added && modificationCommand.StoreStoredProcedure is null)
@@ -130,16 +130,267 @@ public class MySqlModificationCommandBatch : AffectedCountModificationCommandBat
             && firstCommand.ColumnModifications.Where(o => o.IsRead).Select(o => o.ColumnName).SequenceEqual(
                 secondCommand.ColumnModifications.Where(o => o.IsRead).Select(o => o.ColumnName));
 
-    /// <summary>
-    ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-    ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-    ///     any release. You should only use it directly in your code with extreme caution and knowing that
-    ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-    /// </summary>
     public override void Complete(bool moreBatchesExpected)
     {
         ApplyPendingBulkInsertCommands();
 
         base.Complete(moreBatchesExpected);
     }
+
+    /// <summary>
+    ///     Consumes the data reader created by <see cref="ReaderModificationCommandBatch.Execute" />,
+    ///     propagating values back into the <see cref="ModificationCommand" />.
+    /// </summary>
+    /// <param name="startCommandIndex">The ordinal of the first command being consumed.</param>
+    /// <param name="reader">The data reader.</param>
+    /// <returns>The ordinal of the next result set that must be consumed.</returns>
+    protected override int ConsumeResultSet(int startCommandIndex, RelationalDataReader reader)
+    {
+        var commandIndex = startCommandIndex;
+        var rowsAffected = 0;
+        do
+        {
+            if (!reader.Read())
+            {
+                var expectedRowsAffected = rowsAffected + 1;
+                while (++commandIndex < ResultSetMappings.Count
+                       && ResultSetMappings[commandIndex - 1].HasFlag(ResultSetMapping.NotLastInResultSet))
+                {
+                    expectedRowsAffected++;
+                }
+
+                ThrowAggregateUpdateConcurrencyException(reader, commandIndex, expectedRowsAffected, rowsAffected);
+            }
+            else
+            {
+                var resultSetMapping = ResultSetMappings[commandIndex];
+
+                var command = ModificationCommands[
+                    resultSetMapping.HasFlag(ResultSetMapping.IsPositionalResultMappingEnabled)
+                        ? startCommandIndex + reader.DbDataReader.GetInt32(reader.DbDataReader.FieldCount - 1)
+                        : commandIndex];
+
+                Check.DebugAssert(
+                    !resultSetMapping.HasFlag(ResultSetMapping.ResultSetWithRowsAffectedOnly),
+                    "!resultSetMapping.HasFlag(ResultSetMapping.ResultSetWithRowsAffectedOnly)");
+
+                //////
+                // Addition to base method:
+                ConsumeRowsAffectedFromResultSet(command, reader, commandIndex);
+                //
+                //////
+
+                command.PropagateResults(reader);
+            }
+
+            rowsAffected++;
+        }
+        while (++commandIndex < ResultSetMappings.Count
+               && ResultSetMappings[commandIndex - 1].HasFlag(ResultSetMapping.NotLastInResultSet));
+
+        return commandIndex - 1;
+    }
+
+    /// <summary>
+    ///     Consumes the data reader created by <see cref="ReaderModificationCommandBatch.ExecuteAsync" />,
+    ///     propagating values back into the <see cref="ModificationCommand" />.
+    /// </summary>
+    /// <param name="startCommandIndex">The ordinal of the first result set being consumed.</param>
+    /// <param name="reader">The data reader.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
+    /// <returns>
+    ///     A task that represents the asynchronous operation.
+    ///     The task contains the ordinal of the next command that must be consumed.
+    /// </returns>
+    /// <exception cref="OperationCanceledException">If the <see cref="CancellationToken" /> is canceled.</exception>
+    protected override async Task<int> ConsumeResultSetAsync(int startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
+    {
+        var commandIndex = startCommandIndex;
+        var rowsAffected = 0;
+        do
+        {
+            if (!await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                var expectedRowsAffected = rowsAffected + 1;
+                while (++commandIndex < ResultSetMappings.Count
+                       && ResultSetMappings[commandIndex - 1].HasFlag(ResultSetMapping.NotLastInResultSet))
+                {
+                    expectedRowsAffected++;
+                }
+
+                await ThrowAggregateUpdateConcurrencyExceptionAsync(
+                    reader, commandIndex, expectedRowsAffected, rowsAffected, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                var resultSetMapping = ResultSetMappings[commandIndex];
+
+                var command = ModificationCommands[
+                    resultSetMapping.HasFlag(ResultSetMapping.IsPositionalResultMappingEnabled)
+                        ? startCommandIndex + reader.DbDataReader.GetInt32(reader.DbDataReader.FieldCount - 1)
+                        : commandIndex];
+
+                Check.DebugAssert(
+                    !resultSetMapping.HasFlag(ResultSetMapping.ResultSetWithRowsAffectedOnly),
+                    "!resultSetMapping.HasFlag(ResultSetMapping.ResultSetWithRowsAffectedOnly)");
+
+                //////
+                // Addition to base method:
+                ConsumeRowsAffectedFromResultSet(command, reader, commandIndex);
+                //
+                //////
+
+                command.PropagateResults(reader);
+            }
+
+            rowsAffected++;
+        }
+        while (++commandIndex < ResultSetMappings.Count
+               && ResultSetMappings[commandIndex - 1].HasFlag(ResultSetMapping.NotLastInResultSet));
+
+        return commandIndex - 1;
+    }
+
+    protected virtual void ConsumeRowsAffectedFromResultSet(
+        IReadOnlyModificationCommand command,
+        RelationalDataReader reader,
+        int commandIndex)
+    {
+        if (command.StoreStoredProcedure is not null &&
+            command.RowsAffectedColumn is { } rowsAffectedColumn)
+        {
+            var rowsAffectedParameter = (IStoreStoredProcedureParameter)rowsAffectedColumn;
+
+            Debug.Assert(rowsAffectedParameter.Direction == ParameterDirection.Output);
+
+            var readerIndex = -1;
+
+            for (var i = 0; i < command.ColumnModifications.Count; i++)
+            {
+                var columnModification = command.ColumnModifications[i];
+                if (columnModification.Column is IStoreStoredProcedureParameter
+                    {
+                        Direction: ParameterDirection.Output or ParameterDirection.InputOutput
+                    })
+                {
+                    readerIndex++;
+                }
+
+                if (columnModification.Column == rowsAffectedColumn)
+                {
+                    break;
+                }
+            }
+
+            if (reader.DbDataReader.GetInt32(readerIndex) != 1)
+            {
+                ThrowAggregateUpdateConcurrencyException(reader, commandIndex + 1, 1, 0);
+            }
+        }
+    }
+
+    protected override void AddParameter(IColumnModification columnModification)
+    {
+        var direction = columnModification.Column switch
+        {
+            IStoreStoredProcedureParameter storedProcedureParameter => storedProcedureParameter.Direction,
+            IStoreStoredProcedureReturnValue => ParameterDirection.Output,
+            _ => ParameterDirection.Input
+        };
+
+        //////
+        // Start of injected code.
+
+        // MySQL stored procedures cannot return a regular result set, and output parameter values are simply sent back as the
+        // result set; this is very different from SQL Server, where output parameter values can be sent back in addition to result
+        // sets. So we avoid adding MySqlParameters for output parameters - we'll just retrieve and propagate the values below when
+        // consuming the result set.
+        // Because MySqlConnector throws if we use an INOUT or OUT parameter for CommandType.Text commands, we skip
+        // ParameterDirection.Output parameters entirely and change ParameterDirection.InputOutput to ParameterDirection.Input.
+        if (columnModification.Column is IStoreStoredProcedureParameter parameter)
+        {
+            if (parameter.Direction.HasFlag(ParameterDirection.Output))
+            {
+                if (!parameter.Direction.HasFlag(ParameterDirection.Input))
+                {
+                    return;
+                }
+
+                direction = ParameterDirection.Input;
+
+                var value = columnModification.UseCurrentValueParameter
+                    ? columnModification.Value
+                    : columnModification.UseOriginalValueParameter
+                        ? columnModification.OriginalValue
+                        : null;
+
+                if (value is null)
+                {
+                    return;
+                }
+            }
+        }
+
+        // End of injected code.
+        //////
+
+        // For the case where the same modification has both current and original value parameters, and corresponds to an in/out parameter,
+        // we only want to add a single parameter. This will happen below.
+        if (columnModification.UseCurrentValueParameter
+            && !(columnModification.UseOriginalValueParameter && direction == ParameterDirection.InputOutput))
+        {
+            AddParameterCore(
+                columnModification.ParameterName, columnModification.UseCurrentValue
+                    ? columnModification.Value
+                    : direction == ParameterDirection.InputOutput
+                        ? DBNull.Value
+                        : null);
+        }
+
+        if (columnModification.UseOriginalValueParameter)
+        {
+            Check.DebugAssert(direction.HasFlag(ParameterDirection.Input), "direction.HasFlag(ParameterDirection.Input)");
+
+            AddParameterCore(columnModification.OriginalParameterName, columnModification.OriginalValue);
+        }
+
+        void AddParameterCore(string name, object value)
+        {
+            RelationalCommandBuilder.AddParameter(
+                name,
+                Dependencies.SqlGenerationHelper.GenerateParameterName(name),
+                columnModification.TypeMapping!,
+                columnModification.IsNullable,
+                direction);
+
+            ParameterValues.Add(name, value);
+
+            _pendingParameters++;
+        }
+    }
+
+    /// <summary>
+    /// We override this method only to support our _pendingParameters field.
+    /// </summary>
+    public override bool TryAddCommand(IReadOnlyModificationCommand modificationCommand)
+    {
+        if (StoreCommand is not null)
+        {
+            throw new InvalidOperationException(RelationalStrings.ModificationCommandBatchAlreadyComplete);
+        }
+
+        if (ModificationCommands.Count >= MaxBatchSize)
+        {
+            return false;
+        }
+
+        _pendingParameters = 0;
+
+        return base.TryAddCommand(modificationCommand);
+    }
+
+    /// <summary>
+    /// We use _pendingParameters only to support our AddParameter implementation.
+    /// </summary>
+    private int _pendingParameters;
 }

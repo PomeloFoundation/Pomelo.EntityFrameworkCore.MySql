@@ -2,6 +2,7 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System.Collections.Generic;
+using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -156,6 +157,168 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
             => commandStringBuilder
                 .Append("ROW_COUNT() = ")
                 .Append(expectedRowsAffected.ToString(CultureInfo.InvariantCulture));
+
+        public override ResultSetMapping AppendStoredProcedureCall(
+            StringBuilder commandStringBuilder,
+            IReadOnlyModificationCommand command,
+            int commandPosition,
+            out bool requiresTransaction)
+        {
+            Check.DebugAssert(command.StoreStoredProcedure is not null, "command.StoreStoredProcedure is not null");
+
+            var storedProcedure = command.StoreStoredProcedure;
+
+            Check.DebugAssert(storedProcedure.Parameters.Any(), "Stored procedure call without parameters");
+
+            var resultSetMapping = ResultSetMapping.NoResults;
+
+            // IN parameters will get injected directly into the argument list of the CALL statement.
+            // FOR INOUT or OUT parameters, we will declare variables.
+            // For OUT parameters, we initialize those variables to NUll.
+            // For IN parameters, we initialize those variables with their corresponding parameter of the command that executes the CALL
+            // statement.
+            for (var i = 0; i < command.ColumnModifications.Count; i++)
+            {
+                var columnModification = command.ColumnModifications[i];
+                var parameter = (IStoreStoredProcedureParameter)columnModification.Column!;
+
+                // MySQL stored procedures cannot return a regular result set, and output parameter values are simply sent back to us as the
+                // result set, if we append a SELECT query for them. This is very different from SQL Server, where output parameter values
+                // can be sent back in addition to result sets.
+                if (!parameter.Direction.HasFlag(ParameterDirection.Output))
+                {
+                    continue;
+                }
+
+                // The distinction between having only a rows affected output parameter and having other non-rows affected parameters
+                // is important later on (i.e. whether we need to propagate or not).
+                resultSetMapping = parameter == command.RowsAffectedColumn &&
+                                   resultSetMapping == ResultSetMapping.NoResults
+                    ? ResultSetMapping.ResultSetWithRowsAffectedOnly | ResultSetMapping.LastInResultSet
+                    : ResultSetMapping.LastInResultSet;
+
+                commandStringBuilder.Append("SET ");
+
+                var commandParameterName = columnModification.UseOriginalValueParameter
+                    ? columnModification.OriginalParameterName!
+                    : columnModification.ParameterName!;
+
+                var procedureCallParameterName = GetProcedureCallOutParameterVariableName(commandParameterName);
+
+                SqlGenerationHelper.GenerateParameterNamePlaceholder(commandStringBuilder, procedureCallParameterName);
+
+                commandStringBuilder.Append(" = ");
+
+                if (parameter.Direction.HasFlag(ParameterDirection.Input))
+                {
+                    SqlGenerationHelper.GenerateParameterNamePlaceholder(commandStringBuilder, commandParameterName);
+                }
+                else
+                {
+                    commandStringBuilder.Append("NULL");
+                }
+
+                commandStringBuilder.AppendLine(SqlGenerationHelper.StatementTerminator);
+            }
+
+            commandStringBuilder.Append("CALL ");
+
+            // MySQL supports neither a return value nor a result set that gets returned from inside of a stored procedures. It only
+            // supports output parameters to propagate values back to the caller.
+            Check.DebugAssert(storedProcedure.ReturnValue is null, "storedProcedure.Return is null");
+            Check.DebugAssert(!storedProcedure.ResultColumns.Any(), "!storedProcedure.ResultColumns.Any()");
+
+            SqlGenerationHelper.DelimitIdentifier(commandStringBuilder, storedProcedure.Name, storedProcedure.Schema);
+
+            commandStringBuilder.Append('(');
+
+            // Only positional parameter style supported for now, see https://github.com/dotnet/efcore/issues/28439
+
+            // Note: the column modifications are already ordered according to the sproc parameter ordering
+            // (see ModificationCommand.GenerateColumnModifications)
+            for (var i = 0; i < command.ColumnModifications.Count; i++)
+            {
+                var columnModification = command.ColumnModifications[i];
+                var parameter = (IStoreStoredProcedureParameter)columnModification.Column!;
+
+                if (i > 0)
+                {
+                    commandStringBuilder.Append(", ");
+                }
+
+                Check.DebugAssert(columnModification.UseParameter, "Column modification matched a parameter, but UseParameter is false");
+
+                var commandParameterName = columnModification.UseOriginalValueParameter
+                    ? columnModification.OriginalParameterName!
+                    : columnModification.ParameterName!;
+
+                var procedureCallParameterName = GetProcedureCallOutParameterVariableName(commandParameterName);
+
+                SqlGenerationHelper.GenerateParameterNamePlaceholder(
+                    commandStringBuilder,
+                    parameter.Direction.HasFlag(ParameterDirection.Output)
+                        ? procedureCallParameterName
+                        : commandParameterName);
+            }
+
+            commandStringBuilder.Append(')');
+            commandStringBuilder.AppendLine(SqlGenerationHelper.StatementTerminator);
+
+            // The CALL has propagated any INOUT and OUT values back into our previously declared variables.
+            // To get those values back to the caller, we need to run a SELECT statement against those variables.
+            // We start by checking, whether there exist any INOUT or OUT parameters.
+            if (resultSetMapping != ResultSetMapping.NoResults)
+            {
+                commandStringBuilder.Append("SELECT ");
+
+                var first = true;
+
+                for (var i = 0; i < command.ColumnModifications.Count; i++)
+                {
+                    var columnModification = command.ColumnModifications[i];
+                    var parameter = (IStoreStoredProcedureParameter)columnModification.Column!;
+
+                    if (!parameter.Direction.HasFlag(ParameterDirection.Output))
+                    {
+                        continue;
+                    }
+
+                    if (first)
+                    {
+                        first = false;
+                    }
+                    else
+                    {
+                        commandStringBuilder.Append(", ");
+                    }
+
+                    var commandParameterName = columnModification.UseOriginalValueParameter
+                        ? columnModification.OriginalParameterName!
+                        : columnModification.ParameterName!;
+
+                    var procedureCallParameterName = GetProcedureCallOutParameterVariableName(commandParameterName);
+
+                    SqlGenerationHelper.GenerateParameterNamePlaceholder(
+                        commandStringBuilder,
+                        procedureCallParameterName);
+                }
+
+                commandStringBuilder.AppendLine(SqlGenerationHelper.StatementTerminator);
+            }
+
+            requiresTransaction = true;
+
+            return resultSetMapping;
+        }
+
+        /// <summary>
+        /// Returns the name (without the @ prefix) used for any temporary user variables, that need to be declared to get values out of a
+        /// stored procedure.
+        /// </summary>
+        /// <param name="commandParameterName">The name of the parameter of the command that executes the CALL statement.</param>
+        /// <returns>The variable name (without the @ prefix).</returns>
+        protected virtual string GetProcedureCallOutParameterVariableName(string commandParameterName)
+            => "_out_" + commandParameterName;
 
         protected override bool IsIdentityOperation(IColumnModification modification)
         {

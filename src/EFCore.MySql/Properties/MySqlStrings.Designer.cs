@@ -153,6 +153,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                 GetString("QueryUnableToTranslateMethodWithStringComparison", nameof(declaringTypeName), nameof(methodName), nameof(optionName)),
                 declaringTypeName, methodName, optionName);
 
+        /// <summary>
+        ///     The entity type '{entityType}' is mapped to the stored procedure '{sproc}', which is configured with result columns. MySQL stored procedures do not support result columns; use output parameters instead.
+        /// </summary>
+        public static string StoredProcedureResultColumnsNotSupported(object entityType, object sproc)
+            => string.Format(
+                GetString("StoredProcedureResultColumnsNotSupported", nameof(entityType), nameof(sproc)),
+                entityType, sproc);
+
+        /// <summary>
+        ///     The entity type '{entityType}' is mapped to the stored procedure '{sproc}', which is configured with a return value. MySQL stored procedures do not support return values; use an output parameter instead.
+        /// </summary>
+        public static string StoredProcedureReturnValueNotSupported(object entityType, object sproc)
+            => string.Format(
+                GetString("StoredProcedureReturnValueNotSupported", nameof(entityType), nameof(sproc)),
+                entityType, sproc);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

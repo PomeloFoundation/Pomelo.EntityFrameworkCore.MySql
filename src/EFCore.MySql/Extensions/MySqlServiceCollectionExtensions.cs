@@ -27,6 +27,7 @@ using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Migrations;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection
@@ -107,6 +108,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<IProviderConventionSetBuilder, MySqlConventionSetBuilder>()
                 //.TryAdd<IRelationalValueBufferFactoryFactory, TypedRelationalValueBufferFactoryFactory>() // What is that?
                 .TryAdd<IUpdateSqlGenerator, MySqlUpdateSqlGenerator>()
+                .TryAdd<IModificationCommandFactory, MySqlModificationCommandFactory>()
                 .TryAdd<IModificationCommandBatchFactory, MySqlModificationCommandBatchFactory>()
                 .TryAdd<IValueGeneratorSelector, MySqlValueGeneratorSelector>()
                 .TryAdd<IRelationalConnection>(p => p.GetService<IMySqlRelationalConnection>())
