@@ -11,6 +11,7 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
@@ -168,6 +169,15 @@ WHERE
                 databaseModel.Tables.Add(table);
             }
 
+            if (_options.ServerVersion.Supports.Sequences)
+            {
+                foreach (var sequence in GetSequences(connection))
+                {
+                    sequence.Database = databaseModel;
+                    databaseModel.Sequences.Add(sequence);
+                }
+            }
+
             return databaseModel;
         }
 
@@ -178,6 +188,16 @@ WHERE
             IReadOnlyList<string> tables,
             IReadOnlyList<string> schemas)
             => tables.Count > 0 ? (s, t) => tables.Contains(t) : (Func<string, string, bool>)null;
+
+        private static Func<string, string> GenerateSchemaFilter(IReadOnlyList<string> schemas)
+            => schemas.Any()
+                ? s => $"{s} IN ({string.Join(", ", schemas.Select(EscapeLiteral))})"
+                : null;
+
+        /// <summary>
+        /// Wraps a string literal in single quotes.
+        /// </summary>
+        private static string EscapeLiteral(string s) => $"'{s}'";
 
         private const string GetTablesQuery = @"SELECT
     `t`.`TABLE_NAME`,
@@ -251,7 +271,66 @@ AND
             }
         }
 
-        private const string GetColumnsQuery = @"SELECT
+        /// <summary>
+        /// Queries the database for defined sequences and registers them with the model.
+        /// </summary>
+        private static IEnumerable<DatabaseSequence> GetSequences(DbConnection connection)
+        {
+            var commandText = @"SELECT
+    `t`.`TABLE_NAME`
+FROM
+    `INFORMATION_SCHEMA`.`TABLES` as `t`
+WHERE
+    `TABLE_SCHEMA` = SCHEMA()
+AND
+    `TABLE_TYPE` = 'SEQUENCE'";
+
+            var sequences = new List<DatabaseSequence>();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = commandText;
+
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    var name = reader.GetValueOrDefault<string>("TABLE_NAME");
+
+                    var sequence = new DatabaseSequence
+                    {
+                        Schema = null,
+                        Name = name,
+                    };
+
+                    sequences.Add(sequence);
+                }
+            }
+
+            foreach (var sequence in sequences)
+            {
+                command.CommandText = $"SELECT `START_VALUE`, `MINIMUM_VALUE`, `MAXIMUM_VALUE`, `INCREMENT`, `CYCLE_OPTION` FROM `{sequence.Name}`";
+
+                using var reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    var startValue = reader.GetValueOrDefault<long>("START_VALUE");
+                    var minimumValue = reader.GetValueOrDefault<long>("MINIMUM_VALUE");
+                    var maximumValue = reader.GetValueOrDefault<long>("MAXIMUM_VALUE");
+                    var increment = reader.GetValueOrDefault<int>("INCREMENT");
+                    var cycle = reader.GetValueOrDefault<bool>("CYCLE_OPTION");
+
+                    sequence.StartValue = startValue;
+                    sequence.MinValue = minimumValue;
+                    sequence.MaxValue = maximumValue;
+                    sequence.IncrementBy = increment;
+                    sequence.IsCyclic = cycle;
+                }
+            }
+
+            return sequences;
+        }
+
+            private const string GetColumnsQuery = @"SELECT
 	`COLUMN_NAME`,
     `ORDINAL_POSITION`,
     `COLUMN_DEFAULT`,
