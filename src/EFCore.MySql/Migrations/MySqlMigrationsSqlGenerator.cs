@@ -507,6 +507,7 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
         {
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
+
             if (!_options.ServerVersion.Supports.Sequences)
             {
                 throw new InvalidOperationException(
@@ -521,12 +522,61 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
             // https://github.com/aspnet/EntityFrameworkCore/blob/master/src/EFCore.Relational/Migrations/MigrationsSqlGenerator.cs#L535-L543
             var oldValue = operation.ClrType;
             operation.ClrType = typeof(long);
-            if (operation.StartValue <= 0 )
+            if (operation.StartValue <= 0)
             {
                 operation.MinValue = operation.StartValue;
             }
             base.Generate(operation, model, builder);
             operation.ClrType = oldValue;
+        }
+
+        protected override void Generate(AlterSequenceOperation operation, IModel model, MigrationCommandListBuilder builder)
+        {
+            Check.NotNull(operation, nameof(operation));
+            Check.NotNull(builder, nameof(builder));
+
+            if (!_options.ServerVersion.Supports.Sequences)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot alter sequence '{operation.Name}' because sequences are not supported in server version {_options.ServerVersion}.");
+            }
+
+            base.Generate(operation, model, builder);
+        }
+
+        protected override void Generate(DropSequenceOperation operation, IModel model, MigrationCommandListBuilder builder)
+        {
+            Check.NotNull(operation, nameof(operation));
+            Check.NotNull(builder, nameof(builder));
+
+            if (!_options.ServerVersion.Supports.Sequences)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot alter sequence '{operation.Name}' because sequences are not supported in server version {_options.ServerVersion}.");
+            }
+
+            base.Generate(operation, model, builder);
+        }
+
+        protected override void Generate(RenameSequenceOperation operation, IModel model, MigrationCommandListBuilder builder)
+        {
+            Check.NotNull(operation, nameof(operation));
+            Check.NotNull(builder, nameof(builder));
+
+            if (!_options.ServerVersion.Supports.Sequences)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot alter sequence '{operation.Name}' because sequences are not supported in server version {_options.ServerVersion}.");
+            }
+
+            builder
+                .Append("ALTER TABLE ")
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name, operation.Schema))
+                .Append(" RENAME ")
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.NewName, operation.NewSchema))
+                .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
+
+            EndStatement(builder);
         }
 
         /// <summary>

@@ -324,9 +324,38 @@ SELECT ROW_COUNT();",
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
-        public override Task Alter_sequence_all_settings()
+        public override async Task Alter_sequence_all_settings()
         {
-            return base.Alter_sequence_all_settings();
+            await Test(
+                builder => builder.HasSequence<int>("foo"),
+                builder => { },
+                builder => builder.HasSequence<int>("foo")
+                    .StartsAt(-3)
+                    .IncrementsBy(2)
+                    .HasMin(-5)
+                    .HasMax(10)
+                    .IsCyclic(),
+                model =>
+                {
+                    var sequence = Assert.Single(model.Sequences);
+
+                    // Assert.Equal(-3, sequence.StartValue);
+                    Assert.Equal(1, sequence.StartValue); // Restarting doesn't change the scaffolded start value
+
+                    Assert.Equal(2, sequence.IncrementBy);
+                    Assert.Equal(-5, sequence.MinValue);
+                    Assert.Equal(10, sequence.MaxValue);
+                    Assert.True(sequence.IsCyclic);
+                });
+
+            AssertSql(
+                """
+ALTER SEQUENCE `foo` INCREMENT BY 2 MINVALUE -5 MAXVALUE 10 CYCLE;
+""",
+                //
+                """
+ALTER SEQUENCE `foo` RESTART WITH -3;
+""");
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
@@ -374,9 +403,35 @@ SELECT ROW_COUNT();",
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
-        public override Task Create_sequence_all_settings()
+        public override async Task Create_sequence_all_settings()
         {
-            return base.Create_sequence_all_settings();
+            await Test(
+                builder => { },
+                builder => builder.HasSequence<long>("TestSequence", "dbo2")
+                    .StartsAt(3)
+                    .IncrementsBy(2)
+                    .HasMin(2)
+                    .HasMax(916)
+                    .IsCyclic(),
+                model =>
+                {
+                    var sequence = Assert.Single(model.Sequences);
+
+                    // Assert.Equal("TestSequence", sequence.Name);
+                    // Assert.Equal("dbo2", sequence.Schema);
+                    Assert.Equal("dbo2_TestSequence", sequence.Name);
+
+                    Assert.Equal(3, sequence.StartValue);
+                    Assert.Equal(2, sequence.IncrementBy);
+                    Assert.Equal(2, sequence.MinValue);
+                    Assert.Equal(916, sequence.MaxValue);
+                    Assert.True(sequence.IsCyclic);
+                });
+
+            AssertSql(
+"""
+CREATE SEQUENCE `dbo2_TestSequence` START WITH 3 INCREMENT BY 2 MINVALUE 2 MAXVALUE 916 CYCLE;
+""");
         }
 
         [ConditionalTheory(Skip = "TODO")]
@@ -469,9 +524,23 @@ be found in the docs.';");
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
-        public override Task Move_sequence()
+        public override async Task Move_sequence()
         {
-            return base.Move_sequence();
+            await Test(
+                builder => builder.HasSequence<int>("TestSequence"),
+                builder => builder.HasSequence<int>("TestSequence", "TestSequenceSchema"),
+                model =>
+                {
+                    var sequence = Assert.Single(model.Sequences);
+                    // Assert.Equal("TestSequenceSchema", sequence.Schema);
+                    // Assert.Equal("TestSequence", sequence.Name);
+                    Assert.Equal("TestSequenceSchema_TestSequence", sequence.Name);
+                });
+
+            AssertSql(
+"""
+ALTER TABLE `TestSequence` RENAME `TestSequenceSchema_TestSequence`;
+""");
         }
 
         [ConditionalTheory(Skip = "TODO")]
@@ -481,9 +550,14 @@ be found in the docs.';");
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
-        public override Task Rename_sequence()
+        public override async Task Rename_sequence()
         {
-            return base.Rename_sequence();
+            await base.Rename_sequence();
+
+            AssertSql(
+"""
+ALTER TABLE `TestSequence` RENAME `testsequence`;
+""");
         }
 
         [ConditionalTheory(Skip = "TODO")]
