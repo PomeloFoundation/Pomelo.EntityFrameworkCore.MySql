@@ -192,8 +192,8 @@ GROUP BY `a`.`FirstName`
         await base.GroupBy_is_optimized_when_filerting_and_projecting_anonymous_type_with_group_key_and_function_aggregate(async);
 
         AssertSql(
-"""
-SELECT `a`.`FirstName`, AVG(CAST(`a`.`Id` AS double)) AS `AverageId`
+$"""
+SELECT `a`.`FirstName`, AVG({MySqlTestHelpers.CastAsDouble("`a`.`Id`")}) AS `AverageId`
 FROM `ArubaOwner` AS `a`
 WHERE `a`.`Id` > 5
 GROUP BY `a`.`FirstName`

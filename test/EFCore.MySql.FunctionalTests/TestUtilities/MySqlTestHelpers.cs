@@ -106,5 +106,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 (long)(Math.Truncate(value.UtcTicks / decimalPlacesFactor) * decimalPlacesFactor),
                 TimeSpan.Zero);
         }
+
+        public static string CastAsDouble(string innerSql)
+            => AppConfig.ServerVersion.Supports.DoubleCast
+                ? $@"CAST({innerSql} AS double)"
+                : $@"(CAST({innerSql} AS decimal(65,30)) + 0e0)";
     }
 }

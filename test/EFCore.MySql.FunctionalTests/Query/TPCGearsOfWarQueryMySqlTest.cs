@@ -8288,8 +8288,8 @@ FROM `Missions` AS `m`
         await base.GroupBy_Property_Include_Select_Average(async);
 
         AssertSql(
-"""
-SELECT AVG(CAST(`t`.`SquadId` AS double))
+$"""
+SELECT AVG({MySqlTestHelpers.CastAsDouble(@"`t`.`SquadId`")})
 FROM (
     SELECT `g`.`SquadId`, `g`.`Rank`
     FROM `Gears` AS `g`

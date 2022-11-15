@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -40,13 +41,13 @@ WHERE `p`.`ProductID` < 40");
                 asserter: (a, b) => Assert.Equal(a, b, 12)); // added flouting point precision tolerance
 
             AssertSql(
-                @"@__p_0='3'
+                $@"@__p_0='3'
 
 SELECT AVG(CAST((
-    SELECT AVG(CAST(5 + (
+    SELECT AVG({MySqlTestHelpers.CastAsDouble(@"5 + (
         SELECT MAX(`o0`.`ProductID`)
         FROM `Order Details` AS `o0`
-        WHERE `o`.`OrderID` = `o0`.`OrderID`) AS double))
+        WHERE `o`.`OrderID` = `o0`.`OrderID`)")})
     FROM `Orders` AS `o`
     WHERE `t`.`CustomerID` = `o`.`CustomerID`) AS decimal(65,30)))
 FROM (
@@ -66,11 +67,11 @@ FROM (
                 asserter: (a, b) => Assert.Equal(a, b, 12)); // added flouting point precision tolerance
 
             AssertSql(
-                @"@__p_0='3'
+                $@"@__p_0='3'
 
 SELECT AVG(CAST((
     SELECT AVG(5.0 + (
-        SELECT AVG(CAST(`o0`.`ProductID` AS double))
+        SELECT AVG({MySqlTestHelpers.CastAsDouble(@"`o0`.`ProductID`")})
         FROM `Order Details` AS `o0`
         WHERE `o`.`OrderID` = `o0`.`OrderID`))
     FROM `Orders` AS `o`

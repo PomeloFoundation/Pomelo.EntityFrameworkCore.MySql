@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -161,8 +162,8 @@ ORDER BY (
         await base.Skip_navigation_select_many_average(async);
 
         AssertSql(
-"""
-SELECT AVG(CAST(`t`.`Key1` AS double))
+$"""
+SELECT AVG({MySqlTestHelpers.CastAsDouble(@"`t`.`Key1`")})
 FROM `EntityTwos` AS `e`
 INNER JOIN (
     SELECT `e1`.`Key1`, `e0`.`TwoSkipSharedId`
@@ -249,9 +250,9 @@ INNER JOIN (
         await base.Skip_navigation_select_subquery_average(async);
 
         AssertSql(
-"""
+$"""
 SELECT (
-    SELECT AVG(CAST(`e`.`Key1` AS double))
+    SELECT AVG({MySqlTestHelpers.CastAsDouble(@"`e`.`Key1`")})
     FROM `JoinCompositeKeyToLeaf` AS `j`
     INNER JOIN `EntityCompositeKeys` AS `e` ON ((`j`.`CompositeId1` = `e`.`Key1`) AND (`j`.`CompositeId2` = `e`.`Key2`)) AND (`j`.`CompositeId3` = `e`.`Key3`)
     WHERE `l`.`Id` = `j`.`LeafId`)
@@ -2223,9 +2224,9 @@ ORDER BY (
         await base.Skip_navigation_select_subquery_average_unidirectional(async);
 
         AssertSql(
-"""
+$"""
 SELECT (
-    SELECT AVG(CAST(`u1`.`Key1` AS double))
+    SELECT AVG({MySqlTestHelpers.CastAsDouble(@"`u1`.`Key1`")})
     FROM `UnidirectionalJoinCompositeKeyToLeaf` AS `u0`
     INNER JOIN `UnidirectionalEntityCompositeKeys` AS `u1` ON ((`u0`.`CompositeId1` = `u1`.`Key1`) AND (`u0`.`CompositeId2` = `u1`.`Key2`)) AND (`u0`.`CompositeId3` = `u1`.`Key3`)
     WHERE `u`.`Id` = `u0`.`LeafId`)
