@@ -57,6 +57,25 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 ss => ss.Set<Mission>().Where(m => m.Timeline == dateTimeOffset));
         }
 
+        [ConditionalTheory(Skip = "TODO: Does not work as expected, probably due to some test definition issues.")]
+        public override async Task DateTimeOffsetNow_minus_timespan(bool async)
+        {
+            var timeSpan = new TimeSpan(10000); // <-- changed from 1000 to 10000 ticks
+
+            await AssertQuery(
+                async,
+                ss => ss.Set<Mission>().Where(e => e.Timeline > DateTimeOffset.Now - timeSpan));
+
+            AssertSql(
+"""
+@__timeSpan_0='00:00:00.0010000' (DbType = DateTimeOffset)
+
+SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
+FROM `Missions` AS `m`
+WHERE `m`.`Timeline` > (UTC_TIMESTAMP() - @__timeSpan_0)
+""");
+        }
+
         // TODO: Implement strategy as discussed with @roji (including emails) for EF Core 5.
         [ConditionalTheory(Skip = "#996")]
         public override Task Client_member_and_unsupported_string_Equals_in_the_same_query(bool async)
@@ -219,6 +238,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         public override Task Correlated_collection_with_groupby_with_complex_grouping_key_not_projecting_identifier_column_with_group_aggregate_in_final_projection(bool async)
         {
             return base.Correlated_collection_with_groupby_with_complex_grouping_key_not_projecting_identifier_column_with_group_aggregate_in_final_projection(async);
+        }
+
+        private string AssertSql(string expected)
+        {
+            Fixture.TestSqlLoggerFactory.AssertBaseline(new[] {expected});
+            return expected;
         }
     }
 }
