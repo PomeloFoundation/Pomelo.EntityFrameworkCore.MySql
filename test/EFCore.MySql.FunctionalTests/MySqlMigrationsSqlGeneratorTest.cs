@@ -170,8 +170,31 @@ VALUES ('John'),
         {
             base.DeleteDataOperation_all_args();
 
-            AssertSql(
-                @"DELETE FROM `People`
+            if (AppConfig.ServerVersion.Supports.Returning)
+            {
+                AssertSql(
+"""
+DELETE FROM `People`
+WHERE `First Name` = 'Hodor'
+RETURNING 1;
+DELETE FROM `People`
+WHERE `First Name` = 'Daenerys'
+RETURNING 1;
+DELETE FROM `People`
+WHERE `First Name` = 'John'
+RETURNING 1;
+DELETE FROM `People`
+WHERE `First Name` = 'Arya'
+RETURNING 1;
+DELETE FROM `People`
+WHERE `First Name` = 'Harry'
+RETURNING 1;
+""");
+            }
+            else
+            {
+                AssertSql(
+                    @"DELETE FROM `People`
 WHERE `First Name` = 'Hodor';
 SELECT ROW_COUNT();
 
@@ -190,14 +213,38 @@ SELECT ROW_COUNT();
 DELETE FROM `People`
 WHERE `First Name` = 'Harry';
 SELECT ROW_COUNT();");
+            }
         }
 
         public override void DeleteDataOperation_all_args_composite()
         {
             base.DeleteDataOperation_all_args_composite();
 
-            AssertSql(
-                @"DELETE FROM `People`
+            if (AppConfig.ServerVersion.Supports.Returning)
+            {
+                AssertSql(
+"""
+DELETE FROM `People`
+WHERE `First Name` = 'Hodor' AND `Last Name` IS NULL
+RETURNING 1;
+DELETE FROM `People`
+WHERE `First Name` = 'Daenerys' AND `Last Name` = 'Targaryen'
+RETURNING 1;
+DELETE FROM `People`
+WHERE `First Name` = 'John' AND `Last Name` = 'Snow'
+RETURNING 1;
+DELETE FROM `People`
+WHERE `First Name` = 'Arya' AND `Last Name` = 'Stark'
+RETURNING 1;
+DELETE FROM `People`
+WHERE `First Name` = 'Harry' AND `Last Name` = 'Strickland'
+RETURNING 1;
+""");
+            }
+            else
+            {
+                AssertSql(
+                    @"DELETE FROM `People`
 WHERE `First Name` = 'Hodor' AND `Last Name` IS NULL;
 SELECT ROW_COUNT();
 
@@ -216,26 +263,52 @@ SELECT ROW_COUNT();
 DELETE FROM `People`
 WHERE `First Name` = 'Harry' AND `Last Name` = 'Strickland';
 SELECT ROW_COUNT();");
+            }
         }
 
         public override void DeleteDataOperation_required_args()
         {
             base.DeleteDataOperation_required_args();
 
-            AssertSql(
-                @"DELETE FROM `People`
+            if (AppConfig.ServerVersion.Supports.Returning)
+            {
+                AssertSql(
+"""
+DELETE FROM `People`
+WHERE `Last Name` = 'Snow'
+RETURNING 1;
+""");
+            }
+            else
+            {
+                AssertSql(
+                    @"DELETE FROM `People`
 WHERE `Last Name` = 'Snow';
 SELECT ROW_COUNT();");
+            }
         }
 
         public override void DeleteDataOperation_required_args_composite()
         {
             base.DeleteDataOperation_required_args_composite();
 
-            AssertSql(
-                @"DELETE FROM `People`
+            if (AppConfig.ServerVersion.Supports.Returning)
+            {
+                AssertSql(
+"""
+DELETE FROM `People`
+WHERE `First Name` = 'John' AND `Last Name` = 'Snow'
+RETURNING 1;
+""");
+            }
+            else
+            {
+                AssertSql(
+                    @"DELETE FROM `People`
 WHERE `First Name` = 'John' AND `Last Name` = 'Snow';
 SELECT ROW_COUNT();");
+            }
+
         }
 
         public override void UpdateDataOperation_all_args()

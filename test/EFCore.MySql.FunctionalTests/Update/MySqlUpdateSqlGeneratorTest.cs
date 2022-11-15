@@ -292,23 +292,51 @@ VALUES (),
         }
 
         protected override void AppendDeleteOperation_creates_full_delete_command_text_verification(StringBuilder stringBuilder)
-            => AssertBaseline(
-                @"DELETE FROM `Ducks`
+        {
+            if (AppConfig.ServerVersion.Supports.Returning)
+            {
+                AssertBaseline(
+                    @"DELETE FROM `Ducks`
+WHERE `Id` = @p0
+RETURNING 1;
+",
+                    stringBuilder.ToString());
+            }
+            else
+            {
+                AssertBaseline(
+                    @"DELETE FROM `Ducks`
 WHERE `Id` = @p0;
 SELECT ROW_COUNT();
 
 ",
-                stringBuilder.ToString());
+                    stringBuilder.ToString());
+            }
+        }
 
         protected override void AppendDeleteOperation_creates_full_delete_command_text_with_concurrency_check_verification(
             StringBuilder stringBuilder)
-            => AssertBaseline(
-                @"DELETE FROM `Ducks`
+        {
+            if (AppConfig.ServerVersion.Supports.Returning)
+            {
+                AssertBaseline(
+                    @"DELETE FROM `Ducks`
+WHERE `Id` = @p0 AND `ConcurrencyToken` IS NULL
+RETURNING 1;
+",
+                    stringBuilder.ToString());
+            }
+            else
+            {
+                AssertBaseline(
+                    @"DELETE FROM `Ducks`
 WHERE `Id` = @p0 AND `ConcurrencyToken` IS NULL;
 SELECT ROW_COUNT();
 
 ",
-                stringBuilder.ToString());
+                    stringBuilder.ToString());
+            }
+        }
 
         protected override void AppendInsertOperation_insert_if_store_generated_columns_exist_verification(StringBuilder stringBuilder)
         {
@@ -513,6 +541,8 @@ WHERE ROW_COUNT() = 1 AND `Id` = @p3;
 
 ",
                 stringBuilder.ToString());
+
+
 
         protected override string RowsAffected
             => "ROW_COUNT()";

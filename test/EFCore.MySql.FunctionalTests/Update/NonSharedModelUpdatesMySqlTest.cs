@@ -15,7 +15,7 @@ public class NonSharedModelUpdatesMySqlTest : NonSharedModelUpdatesTestBase
         if (AppConfig.ServerVersion.Supports.Returning)
         {
             AssertSql(
-                """
+"""
 @p0='AC South' (Size = 4000)
 
 INSERT INTO `AuthorsClub` (`Name`)
@@ -75,8 +75,8 @@ WHERE `Id` = @p4;
 SELECT ROW_COUNT();
 
 DELETE FROM `Author`
-WHERE `Id` = @p5;
-SELECT ROW_COUNT();
+WHERE `Id` = @p5
+RETURNING 1;
 """);
         }
         else

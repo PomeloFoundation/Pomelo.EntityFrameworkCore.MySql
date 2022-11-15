@@ -159,7 +159,20 @@ SELECT ROW_COUNT();
     {
         await base.Delete(async);
 
-        AssertSql(
+        if (AppConfig.ServerVersion.Supports.Returning)
+        {
+            AssertSql(
+"""
+@p0='1'
+
+DELETE FROM `WithSomeDatabaseGenerated`
+WHERE `Id` = @p0
+RETURNING 1;
+""");
+        }
+        else
+        {
+            AssertSql(
 """
 @p0='1'
 
@@ -167,6 +180,7 @@ DELETE FROM `WithSomeDatabaseGenerated`
 WHERE `Id` = @p0;
 SELECT ROW_COUNT();
 """);
+        }
     }
 
     #endregion Single operation
@@ -320,7 +334,24 @@ SELECT ROW_COUNT();
     {
         await base.Delete_Delete_with_same_entity_type(async);
 
-        AssertSql(
+        if (AppConfig.ServerVersion.Supports.Returning)
+        {
+            AssertSql(
+                """
+@p0='1'
+@p1='2'
+
+DELETE FROM `WithSomeDatabaseGenerated`
+WHERE `Id` = @p0
+RETURNING 1;
+DELETE FROM `WithSomeDatabaseGenerated`
+WHERE `Id` = @p1
+RETURNING 1;
+""");
+        }
+        else
+        {
+            AssertSql(
 """
 @p0='1'
 @p1='2'
@@ -333,6 +364,7 @@ DELETE FROM `WithSomeDatabaseGenerated`
 WHERE `Id` = @p1;
 SELECT ROW_COUNT();
 """);
+        }
     }
 
     #endregion Two operations with same entity type
@@ -487,8 +519,25 @@ SELECT ROW_COUNT();
     {
         await base.Delete_Delete_with_different_entity_types(async);
 
-        AssertSql(
+        if (AppConfig.ServerVersion.Supports.Returning)
+        {
+            AssertSql(
 """
+@p0='1'
+@p1='2'
+
+DELETE FROM `WithSomeDatabaseGenerated`
+WHERE `Id` = @p0
+RETURNING 1;
+DELETE FROM `WithSomeDatabaseGenerated2`
+WHERE `Id` = @p1
+RETURNING 1;
+""");
+        }
+        else
+        {
+            AssertSql(
+                """
 @p0='1'
 @p1='2'
 
@@ -500,6 +549,7 @@ DELETE FROM `WithSomeDatabaseGenerated2`
 WHERE `Id` = @p1;
 SELECT ROW_COUNT();
 """);
+        }
     }
 
     #endregion Two operations with different entity types
@@ -513,14 +563,13 @@ SELECT ROW_COUNT();
         if (AppConfig.ServerVersion.Supports.Returning)
         {
             AssertSql(
-                """
+"""
 @p0='1'
 @p1='1001'
 
 DELETE FROM `WithSomeDatabaseGenerated`
-WHERE `Id` = @p0;
-SELECT ROW_COUNT();
-
+WHERE `Id` = @p0
+RETURNING 1;
 INSERT INTO `WithSomeDatabaseGenerated` (`Data2`)
 VALUES (@p1)
 RETURNING `Id`, `Data1`;

@@ -136,6 +136,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
             }
         }
 
+        public override ResultSetMapping AppendDeleteOperation(StringBuilder commandStringBuilder,
+            IReadOnlyModificationCommand command,
+            int commandPosition,
+            out bool requiresTransaction)
+            => _options.ServerVersion.Supports.Returning
+                ? AppendDeleteReturningOperation(commandStringBuilder, command, commandPosition, out requiresTransaction)
+                : base.AppendDeleteOperation(commandStringBuilder, command, commandPosition, out requiresTransaction);
+
         protected override ResultSetMapping AppendSelectAffectedCountCommand(StringBuilder commandStringBuilder, string name, string schema, int commandPosition)
         {
             commandStringBuilder
