@@ -89,7 +89,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
                     FutureMinute = m.TypeDateTime.AddMinutes(1),
                     FutureSecond = m.TypeDateTime.AddSeconds(1),
                     FutureMillisecond = m.TypeDateTime.AddMilliseconds(1),
-                    FutureMillisecondRoundUp = m.TypeDateTime.AddMilliseconds(1.8),
+                    FutureMillisecondRound = m.TypeDateTime.AddMilliseconds(1.8),
                     PastYear = m.TypeDateTime.AddYears(-1),
                     PastMonth = m.TypeDateTime.AddMonths(-1),
                     PastDay = m.TypeDateTime.AddDays(-1),
@@ -97,7 +97,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
                     PastMinute = m.TypeDateTime.AddMinutes(-1),
                     PastSecond = m.TypeDateTime.AddSeconds(-1),
                     PostMillisecond = m.TypeDateTime.AddMilliseconds(-1),
-                    PostMillisecondRoundUp = m.TypeDateTime.AddMilliseconds(-1.8),
+                    PostMillisecondRound = m.TypeDateTime.AddMilliseconds(-1.8),
                 }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
 
             Assert.Equal(_simple.TypeDateTime.AddYears(1), result.FutureYear);
@@ -107,7 +107,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
             Assert.Equal(_simple.TypeDateTime.AddMinutes(1), result.FutureMinute);
             Assert.Equal(_simple.TypeDateTime.AddSeconds(1), result.FutureSecond);
             Assert.Equal(_simple.TypeDateTime.AddMilliseconds(1), result.FutureMillisecond);
-            Assert.Equal(_simple.TypeDateTime.AddMilliseconds(1.8), result.FutureMillisecondRoundUp);
+            Assert.Equal(_simple.TypeDateTime.AddMilliseconds(Math.Round(1.8, MidpointRounding.AwayFromZero)), result.FutureMillisecondRound);
             Assert.Equal(_simple.TypeDateTime.AddYears(-1), result.PastYear);
             Assert.Equal(_simple.TypeDateTime.AddMonths(-1), result.PastMonth);
             Assert.Equal(_simple.TypeDateTime.AddDays(-1), result.PastDay);
@@ -115,7 +115,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
             Assert.Equal(_simple.TypeDateTime.AddMinutes(-1), result.PastMinute);
             Assert.Equal(_simple.TypeDateTime.AddSeconds(-1), result.PastSecond);
             Assert.Equal(_simple.TypeDateTime.AddMilliseconds(-1), result.PostMillisecond);
-            Assert.Equal(_simple.TypeDateTime.AddMilliseconds(-1.8), result.PostMillisecondRoundUp);
+            Assert.Equal(_simple.TypeDateTime.AddMilliseconds(Math.Round(-1.8, MidpointRounding.AwayFromZero)), result.PostMillisecondRound);
         }
 
         [Fact]

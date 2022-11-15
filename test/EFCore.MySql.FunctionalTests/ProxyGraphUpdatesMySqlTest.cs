@@ -17,11 +17,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             {
             }
 
-            // Needs lazy-loading
-            public override void Attempting_to_save_two_entity_cycle_with_lazy_loading_throws()
-            {
-            }
-
             protected override void UseTransaction(DatabaseFacade facade, IDbContextTransaction transaction)
                 => facade.UseTransaction(transaction.GetDbTransaction());
 
@@ -64,6 +59,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
             public ChangeTracking(ProxyGraphUpdatesWithChangeTrackingMySqlFixture fixture)
                 : base(fixture)
+            {
+            }
+
+            // Needs lazy loading
+            public override void Save_two_entity_cycle_with_lazy_loading()
             {
             }
 

@@ -91,27 +91,27 @@ namespace Microsoft.EntityFrameworkCore
         /// <returns> The options builder so that further configuration can be chained. </returns>
         public static DbContextOptionsBuilder UseMySql(
             [NotNull] this DbContextOptionsBuilder optionsBuilder,
-            [NotNull] string connectionString,
+            [CanBeNull] string connectionString,
             [NotNull] ServerVersion serverVersion,
             [CanBeNull] Action<MySqlDbContextOptionsBuilder> mySqlOptionsAction = null)
         {
             Check.NotNull(optionsBuilder, nameof(optionsBuilder));
-            Check.NotEmpty(connectionString, nameof(connectionString));
+            Check.NullButNotEmpty(connectionString, nameof(connectionString));
 
-            var resolvedConnectionString = new NamedConnectionStringResolver(optionsBuilder.Options)
-                .ResolveConnectionString(connectionString);
-
-            var csb = new MySqlConnectionStringBuilder(resolvedConnectionString)
+            if (connectionString is not null)
             {
-                AllowUserVariables = true,
-                UseAffectedRows = false
-            };
+                var resolvedConnectionString = new NamedConnectionStringResolver(optionsBuilder.Options)
+                    .ResolveConnectionString(connectionString);
 
-            resolvedConnectionString = csb.ConnectionString;
+                // TODO: Move to MySqlRelationalConnection.
+                var csb = new MySqlConnectionStringBuilder(resolvedConnectionString) { AllowUserVariables = true, UseAffectedRows = false };
+
+                connectionString = csb.ConnectionString;
+            }
 
             var extension = (MySqlOptionsExtension)GetOrCreateExtension(optionsBuilder)
                 .WithServerVersion(serverVersion)
-                .WithConnectionString(resolvedConnectionString);
+                .WithConnectionString(connectionString);
 
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
             ConfigureWarnings(optionsBuilder);
@@ -160,6 +160,7 @@ namespace Microsoft.EntityFrameworkCore
                     .ResolveConnectionString(connection.ConnectionString)
                 : null;
 
+            // TODO: Move to MySqlRelationalConnection.
             var csb = new MySqlConnectionStringBuilder(resolvedConnectionString);
 
             if (!csb.AllowUserVariables ||

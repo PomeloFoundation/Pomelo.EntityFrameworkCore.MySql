@@ -40,6 +40,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return sqlExpression;
         }
 
+        protected override Expression VisitAtTimeZone(AtTimeZoneExpression atTimeZoneExpression)
+        {
+            var parentOptimize = _optimize;
+            _optimize = false;
+            var operand = (SqlExpression)Visit(atTimeZoneExpression.Operand);
+            var timeZone = (SqlExpression)Visit(atTimeZoneExpression.TimeZone);
+            _optimize = parentOptimize;
+
+            return atTimeZoneExpression.Update(operand, timeZone);
+        }
+
         protected override Expression VisitCase(CaseExpression caseExpression)
         {
             Check.NotNull(caseExpression, nameof(caseExpression));
@@ -85,6 +96,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
             return ApplyConversion(columnExpression, condition: false);
         }
+
+        protected override Expression VisitDelete(DeleteExpression deleteExpression)
+            => deleteExpression.Update((SelectExpression)Visit(deleteExpression.SelectExpression));
 
         protected override Expression VisitDistinct(DistinctExpression distinctExpression)
         {
@@ -579,5 +593,38 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
             return unionExpression.Update(source1, source2);
         }
+
+        protected override Expression VisitUpdate(UpdateExpression updateExpression)
+        {
+            var selectExpression = (SelectExpression)Visit(updateExpression.SelectExpression);
+            var parentOptimize = _optimize;
+            _optimize = false;
+            List<ColumnValueSetter> columnValueSetters = null;
+            for (var (i, n) = (0, updateExpression.ColumnValueSetters.Count); i < n; i++)
+            {
+                var columnValueSetter = updateExpression.ColumnValueSetters[i];
+                var newValue = (SqlExpression)Visit(columnValueSetter.Value);
+                if (columnValueSetters != null)
+                {
+                    columnValueSetters.Add(new ColumnValueSetter(columnValueSetter.Column, newValue));
+                }
+                else if (!ReferenceEquals(newValue, columnValueSetter.Value))
+                {
+                    columnValueSetters = new List<ColumnValueSetter>();
+                    for (var j = 0; j < i; j++)
+                    {
+                        columnValueSetters.Add(updateExpression.ColumnValueSetters[j]);
+                    }
+
+                    columnValueSetters.Add(new ColumnValueSetter(columnValueSetter.Column, newValue));
+                }
+            }
+
+            _optimize = parentOptimize;
+            return updateExpression.Update(selectExpression, columnValueSetters ?? updateExpression.ColumnValueSetters);
+        }
+
+        protected override Expression VisitJsonScalar(JsonScalarExpression jsonScalarExpression)
+            => jsonScalarExpression;
     }
 }

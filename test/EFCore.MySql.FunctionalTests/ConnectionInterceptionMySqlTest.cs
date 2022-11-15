@@ -30,6 +30,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 => base.InjectInterceptors(serviceCollection.AddEntityFrameworkMySql(), injectedInterceptors);
         }
 
+        protected override DbContextOptionsBuilder ConfigureProvider(DbContextOptionsBuilder optionsBuilder)
+            => optionsBuilder.UseMySql(AppConfig.ServerVersion);
+
         protected override BadUniverseContext CreateBadUniverse(DbContextOptionsBuilder optionsBuilder)
             => new BadUniverseContext(optionsBuilder.UseMySql(new FakeDbConnection(), AppConfig.ServerVersion).Options);
 

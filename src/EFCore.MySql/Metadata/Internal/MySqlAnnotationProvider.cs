@@ -165,7 +165,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             var properties = column.PropertyMappings.Select(m => m.Property).ToArray();
 
             if (column.PropertyMappings.Where(
-                    m => m.TableMapping.IsSharedTablePrincipal &&
+                    m => (m.TableMapping.IsSharedTablePrincipal ?? true) &&
                          m.TableMapping.EntityType == m.Property.DeclaringEntityType)
                 .Select(m => m.Property)
                 .FirstOrDefault(p => p.GetValueGenerationStrategy(table) == MySqlValueGenerationStrategy.IdentityColumn) is IProperty identityProperty)

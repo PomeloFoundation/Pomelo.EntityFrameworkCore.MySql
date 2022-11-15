@@ -19,8 +19,18 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="model"> The model. </param>
         /// <returns> The default <see cref="MySqlValueGenerationStrategy" />. </returns>
-        public static MySqlValueGenerationStrategy? GetValueGenerationStrategy([NotNull] this IModel model)
-            => (MySqlValueGenerationStrategy?)model[MySqlAnnotationNames.ValueGenerationStrategy];
+        public static MySqlValueGenerationStrategy? GetValueGenerationStrategy([NotNull] this IReadOnlyModel model)
+        {
+            // Allow users to use the underlying type value instead of the enum itself.
+            // Workaround for: https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1205
+            if (model[MySqlAnnotationNames.ValueGenerationStrategy] is { } annotation &&
+                ObjectToEnumConverter.GetEnumValue<MySqlValueGenerationStrategy>(annotation) is { } enumValue)
+            {
+                return enumValue;
+            }
+
+            return null;
+        }
 
         /// <summary>
         ///     Attempts to set the <see cref="MySqlValueGenerationStrategy" /> to use for properties
@@ -63,7 +73,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="model"> The model. </param>
         /// <returns> The default character set. </returns>
-        public static string GetCharSet([NotNull] this IModel model)
+        public static string GetCharSet([NotNull] this IReadOnlyModel model)
             => model[MySqlAnnotationNames.CharSet] as string;
 
         /// <summary>
@@ -104,7 +114,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="model"> The model. </param>
         /// <returns> The character set delegation modes. </returns>
-        public static DelegationModes? GetCharSetDelegation([NotNull] this IModel model)
+        public static DelegationModes? GetCharSetDelegation([NotNull] this IReadOnlyModel model)
             => ObjectToEnumConverter.GetEnumValue<DelegationModes>(model[MySqlAnnotationNames.CharSetDelegation]) ??
                (model[MySqlAnnotationNames.CharSetDelegation] is bool explicitlyDelegateToChildren
                    ? explicitlyDelegateToChildren
@@ -153,7 +163,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="model"> The model. </param>
         /// <returns> The actual character set delegation modes. </returns>
-        public static DelegationModes GetActualCharSetDelegation([NotNull] this IModel model)
+        public static DelegationModes GetActualCharSetDelegation([NotNull] this IReadOnlyModel model)
         {
             var delegationModes = model.GetCharSetDelegation() ?? DelegationModes.Default;
             return delegationModes == DelegationModes.Default
@@ -170,7 +180,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="model"> The model. </param>
         /// <returns> The collation delegation modes. </returns>
-        public static DelegationModes? GetCollationDelegation([NotNull] this IModel model)
+        public static DelegationModes? GetCollationDelegation([NotNull] this IReadOnlyModel model)
             => ObjectToEnumConverter.GetEnumValue<DelegationModes>(model[MySqlAnnotationNames.CollationDelegation]) ??
                (model[MySqlAnnotationNames.CollationDelegation] is bool explicitlyDelegateToChildren
                    ? explicitlyDelegateToChildren
@@ -219,7 +229,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="model"> The model. </param>
         /// <returns> The actual collation delegation modes. </returns>
-        public static DelegationModes GetActualCollationDelegation([NotNull] this IModel model)
+        public static DelegationModes GetActualCollationDelegation([NotNull] this IReadOnlyModel model)
         {
             var delegationModes = model.GetCollationDelegation() ?? DelegationModes.Default;
             return delegationModes == DelegationModes.Default
@@ -240,7 +250,7 @@ namespace Microsoft.EntityFrameworkCore
         ///     An empty string means that no explicit collation will be applied, while <see langword="null"/> means that the default
         ///     collation `ascii_general_ci` will be applied.
         /// </returns>
-        public static string GetGuidCollation([NotNull] this IModel model)
+        public static string GetGuidCollation([NotNull] this IReadOnlyModel model)
             => model[MySqlAnnotationNames.GuidCollation] as string;
 
         /// <summary>
@@ -288,7 +298,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <returns>
         ///     <see langword="null"/> if no collation should be set, otherwise the concrete collation to apply.
         /// </returns>
-        public static string GetActualGuidCollation([NotNull] this IModel model, [CanBeNull] string defaultCollation)
+        public static string GetActualGuidCollation([NotNull] this IReadOnlyModel model, [CanBeNull] string defaultCollation)
             => model.GetGuidCollation() switch
             {
                 null => defaultCollation,

@@ -4,7 +4,7 @@
       Use the following values for the different release types:
           - "alpha"     - EF Core release independent, code quality unstable,         major changes
           - "beta"      - EF Core release independent, code quality stable,           can introduce breaking changes
-          - "silver"    - EF Core release independent, code quality stable,           can introduce breaking changes
+          - "silver"    - EF Core release independent, code quality stable,           only minor changes are expected
 
           - "preview"   - EF Core release targeted,    code quality stable,           can introduce breaking changes
           - "rc"        - EF Core release targeted,    code quality production ready, only minor changes are expected
@@ -12,8 +12,8 @@
           - "rtm"       - EF Core release independent, code quality production ready, major release
           - "servicing" - EF Core release independent, code quality production ready, mainly bugfixes
     -->
-    <VersionPrefix>6.0.2</VersionPrefix>
-    <PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>
+    <VersionPrefix>7.0.0</VersionPrefix>
+    <PreReleaseVersionLabel>alpha</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
 
     <!--

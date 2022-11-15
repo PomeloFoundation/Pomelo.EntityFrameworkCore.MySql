@@ -42,10 +42,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             AssertSql(
                 @"SELECT `t`.`Year`, `t`.`Count`
 FROM (
-    SELECT EXTRACT(year FROM `o`.`OrderDate`) AS `Year`, COUNT(*) AS `Count`, `o`.`CustomerID`, EXTRACT(year FROM `o`.`OrderDate`) = 1995 AS `c`
-    FROM `Orders` AS `o`
-    WHERE (`o`.`CustomerID` = 'ALFKI') AND `o`.`OrderDate` IS NOT NULL
-    GROUP BY `o`.`CustomerID`, EXTRACT(year FROM `o`.`OrderDate`), `c`
+    SELECT `t`.`Year`, COUNT(*) AS `Count`, `t`.`CustomerID`, `t`.`Year` = 1995 AS `c`
+    FROM (
+        SELECT `o`.`CustomerID`, EXTRACT(year FROM `o`.`OrderDate`) AS `Year`
+        FROM `Orders` AS `o`
+        WHERE (`o`.`CustomerID` = 'ALFKI') AND `o`.`OrderDate` IS NOT NULL
+    ) AS `t`
+    GROUP BY `t`.`CustomerID`, `t`.`Year`, `c`
     HAVING `c`
 ) AS `t`
 ORDER BY `t`.`Year`");
@@ -73,19 +76,25 @@ ORDER BY `t`.`Year`");
                 assertOrder: true);
 
             AssertSql(
-                @"SELECT `t`.`c`
+                @"SELECT `t`.`Year`
 FROM (
-    SELECT EXTRACT(year FROM `o`.`OrderDate`) AS `c`, `o`.`CustomerID`, EXTRACT(year FROM `o`.`OrderDate`) = 1995 AS `c0`
-    FROM `Orders` AS `o`
-    WHERE (`o`.`CustomerID` = 'ALFKI') AND `o`.`OrderDate` IS NOT NULL
-    GROUP BY `o`.`CustomerID`, EXTRACT(year FROM `o`.`OrderDate`), `c0`
-    HAVING `c0`
+    SELECT `t`.`Year`, `t`.`CustomerID`, `t`.`Year` = 1995 AS `c`
+    FROM (
+        SELECT `o`.`CustomerID`, EXTRACT(year FROM `o`.`OrderDate`) AS `Year`
+        FROM `Orders` AS `o`
+        WHERE (`o`.`CustomerID` = 'ALFKI') AND `o`.`OrderDate` IS NOT NULL
+    ) AS `t`
+    GROUP BY `t`.`CustomerID`, `t`.`Year`, `c`
+    HAVING `c`
 ) AS `t`
 UNION ALL
-SELECT EXTRACT(year FROM `o0`.`OrderDate`) AS `c`
-FROM `Orders` AS `o0`
-WHERE `o0`.`OrderDate` IS NOT NULL
-GROUP BY EXTRACT(year FROM `o0`.`OrderDate`)
+SELECT `t1`.`Key` AS `Year`
+FROM (
+    SELECT EXTRACT(year FROM `o0`.`OrderDate`) AS `Key`
+    FROM `Orders` AS `o0`
+    WHERE `o0`.`OrderDate` IS NOT NULL
+) AS `t1`
+GROUP BY `t1`.`Key`
 HAVING COUNT(*) > 0");
         }
     }

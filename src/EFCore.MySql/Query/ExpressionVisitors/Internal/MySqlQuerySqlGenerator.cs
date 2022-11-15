@@ -7,6 +7,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -45,6 +46,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         private const ulong LimitUpperBound = 18446744073709551610;
 
         private readonly IMySqlOptions _options;
+        private string _removeTableAliasOld;
+        private string _removeTableAliasNew;
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -151,6 +154,44 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             }
 
             return expression;
+        }
+
+        protected override Expression VisitColumn(ColumnExpression columnExpression)
+        {
+            if (_removeTableAliasOld is not null &&
+                columnExpression.TableAlias == _removeTableAliasOld)
+            {
+                if (_removeTableAliasNew is not null)
+                {
+                    Sql.Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(_removeTableAliasNew))
+                        .Append(".");
+                }
+
+                Sql.Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(columnExpression.Name));
+
+                return columnExpression;
+            }
+
+            return base.VisitColumn(columnExpression);
+        }
+
+        protected override Expression VisitTable(TableExpression tableExpression)
+        {
+            if (_removeTableAliasOld is not null &&
+                tableExpression.Alias == _removeTableAliasOld)
+            {
+                if (_removeTableAliasNew is not null)
+                {
+                    Sql.Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(_removeTableAliasNew))
+                        .Append(AliasSeparator);
+                }
+
+                Sql.Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(tableExpression.Name));
+
+                return tableExpression;
+            }
+
+            return base.VisitTable(tableExpression);
         }
 
         /// <summary>
@@ -279,6 +320,120 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             }
 
             return sqlBinaryExpression;
+        }
+
+        protected override Expression VisitDelete(DeleteExpression deleteExpression)
+        {
+            var selectExpression = deleteExpression.SelectExpression;
+
+            if (selectExpression.Offset == null
+                && selectExpression.Having == null
+                && selectExpression.GroupBy.Count == 0
+                && selectExpression.Projection.Count == 0
+                && (selectExpression.Tables.Count == 1 || selectExpression.Orderings.Count == 0 && selectExpression.Limit is null))
+            {
+                var removeSingleTableAlias = selectExpression.Tables.Count == 1 &&
+                                             selectExpression.Orderings.Count > 0 || selectExpression.Limit is not null;
+
+                Sql.Append($"DELETE");
+
+                if (!removeSingleTableAlias)
+                {
+                    Sql.Append($" {Dependencies.SqlGenerationHelper.DelimitIdentifier(deleteExpression.Table.Alias)}");
+                }
+
+                Sql.AppendLine().Append("FROM ");
+
+                if (removeSingleTableAlias)
+                {
+                    _removeTableAliasOld = selectExpression.Tables[0].Alias;
+                    _removeTableAliasNew = null;
+                }
+
+                GenerateList(selectExpression.Tables, e => Visit(e), sql => sql.AppendLine());
+
+                if (selectExpression.Predicate != null)
+                {
+                    Sql.AppendLine().Append("WHERE ");
+
+                    Visit(selectExpression.Predicate);
+                }
+
+                GenerateOrderings(selectExpression);
+                GenerateLimitOffset(selectExpression);
+
+                if (removeSingleTableAlias)
+                {
+                    _removeTableAliasOld = null;
+                }
+
+                return deleteExpression;
+            }
+
+            throw new InvalidOperationException(
+                RelationalStrings.ExecuteOperationWithUnsupportedOperatorInSqlGeneration(nameof(RelationalQueryableExtensions.ExecuteDelete)));
+        }
+
+        protected override Expression VisitUpdate(UpdateExpression updateExpression)
+        {
+            var selectExpression = updateExpression.SelectExpression;
+
+            if (selectExpression.Offset == null
+                && selectExpression.Having == null
+                && selectExpression.Orderings.Count == 0
+                && selectExpression.GroupBy.Count == 0
+                && selectExpression.Projection.Count == 0)
+            {
+                Sql.Append("UPDATE ");
+                GenerateList(selectExpression.Tables, e => Visit(e), sql => sql.AppendLine());
+
+                Sql.AppendLine().Append("SET ");
+                Visit(updateExpression.ColumnValueSetters[0].Column);
+                Sql.Append(" = ");
+                Visit(updateExpression.ColumnValueSetters[0].Value);
+
+                using (Sql.Indent())
+                {
+                    foreach (var columnValueSetter in updateExpression.ColumnValueSetters.Skip(1))
+                    {
+                        Sql.AppendLine(",");
+                        Visit(columnValueSetter.Column);
+                        Sql.Append(" = ");
+                        Visit(columnValueSetter.Value);
+                    }
+                }
+
+                if (selectExpression.Predicate != null)
+                {
+                    Sql.AppendLine().Append("WHERE ");
+                    Visit(selectExpression.Predicate);
+                }
+
+                GenerateLimitOffset(selectExpression);
+
+                return updateExpression;
+            }
+
+            throw new InvalidOperationException(
+                RelationalStrings.ExecuteOperationWithUnsupportedOperatorInSqlGeneration(nameof(RelationalQueryableExtensions.ExecuteUpdate)));
+        }
+
+        protected virtual void GenerateList<T>(
+            IReadOnlyList<T> items,
+            Action<T> generationAction,
+            Action<IRelationalCommandBuilder> joinAction = null)
+        {
+            joinAction ??= (isb => isb.Append(", "));
+
+            for (var i = 0; i < items.Count; i++)
+            {
+                if (i > 0)
+                {
+                    joinAction(Sql);
+                }
+
+                generationAction(items[i]);
+            }
         }
 
         private static bool RequiresBrackets(SqlExpression expression)

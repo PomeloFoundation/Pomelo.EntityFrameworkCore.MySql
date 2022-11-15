@@ -27,7 +27,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
         public override Task Include_duplicate_collection_result_operator2(bool async)
         {
-            // The order of `Orders` can be different, becaues it is not explicitly sorted.
+            // The order of `Orders` can be different, because it is not explicitly sorted.
             // The order of the end result can be different as well.
             // This is the case on MariaDB.
             return AssertQuery(
@@ -59,7 +59,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
         public override Task Include_duplicate_collection_result_operator(bool async)
         {
-            // The order of `Orders` can be different, becaues it is not explicitly sorted.
+            // The order of `Orders` can be different, because it is not explicitly sorted.
             // The order of the end result can be different as well.
             // This is the case on MariaDB.
             return AssertQuery(

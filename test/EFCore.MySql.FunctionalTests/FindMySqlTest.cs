@@ -1,26 +1,52 @@
-using System.Threading.Tasks;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
+namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests;
+
+public abstract class FindMySqlTest : FindTestBase<FindMySqlTest.FindMySqlFixture>
 {
-    public class FindMySqlTest : FindTestBase<FindMySqlTest.FindMySqlFixture>
+    protected FindMySqlTest(FindMySqlFixture fixture)
+        : base(fixture)
     {
-        public FindMySqlTest(FindMySqlFixture fixture)
+        fixture.TestSqlLoggerFactory.Clear();
+    }
+
+    public class FindMySqlTestSet : FindMySqlTest
+    {
+        public FindMySqlTestSet(FindMySqlFixture fixture)
             : base(fixture)
         {
         }
 
-        protected override TEntity Find<TEntity>(DbContext context, params object[] keyValues)
-            => context.Set<TEntity>().Find(keyValues);
+        protected override TestFinder Finder { get; } = new FindViaSetFinder();
+    }
 
-        protected override ValueTask<TEntity> FindAsync<TEntity>(DbContext context, params object[] keyValues)
-            => context.Set<TEntity>().FindAsync(keyValues);
-
-        public class FindMySqlFixture : FindFixtureBase
+    public class FindMySqlTestContext : FindMySqlTest
+    {
+        public FindMySqlTestContext(FindMySqlFixture fixture)
+            : base(fixture)
         {
-            protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
         }
+
+        protected override TestFinder Finder { get; } = new FindViaContextFinder();
+    }
+
+    public class FindMySqlTestNonGeneric : FindMySqlTest
+    {
+        public FindMySqlTestNonGeneric(FindMySqlFixture fixture)
+            : base(fixture)
+        {
+        }
+
+        protected override TestFinder Finder { get; } = new FindViaNonGenericContextFinder();
+    }
+
+    public class FindMySqlFixture : FindFixtureBase
+    {
+        public TestSqlLoggerFactory TestSqlLoggerFactory => (TestSqlLoggerFactory)ServiceProvider.GetRequiredService<ILoggerFactory>();
+        protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
     }
 }

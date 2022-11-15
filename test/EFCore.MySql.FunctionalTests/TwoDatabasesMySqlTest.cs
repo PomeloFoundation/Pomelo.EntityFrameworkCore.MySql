@@ -16,9 +16,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             => (MySqlFixture)base.Fixture;
 
         protected override DbContextOptionsBuilder CreateTestOptions(
-            DbContextOptionsBuilder optionsBuilder, bool withConnectionString = false)
+            DbContextOptionsBuilder optionsBuilder,
+            bool withConnectionString = false,
+            bool withNullConnectionString = false)
             => withConnectionString
-                ? optionsBuilder.UseMySql(DummyConnectionString, AppConfig.ServerVersion)
+                ? withNullConnectionString
+                    ? optionsBuilder.UseMySql((string)null, AppConfig.ServerVersion)
+                    : optionsBuilder.UseMySql(DummyConnectionString, AppConfig.ServerVersion)
                 : optionsBuilder.UseMySql(AppConfig.ServerVersion);
 
         protected override TwoDatabasesWithDataContext CreateBackingContext(string databaseName)
