@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup Label="Common Versions">
-    <EFCoreVersion>7.0.0</EFCoreVersion>
+    <EFCoreVersion>7.*</EFCoreVersion>
     <AspNetCoreVersion>7.0.0</AspNetCoreVersion>
   </PropertyGroup>
 
