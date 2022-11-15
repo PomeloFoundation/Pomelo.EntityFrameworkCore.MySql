@@ -21,7 +21,7 @@ public class NonSharedModelBulkUpdatesMySqlTest : NonSharedModelBulkUpdatesTestB
 
         AssertSql(
 """
-DELETE
+DELETE `o`
 FROM `Owner` AS `o`
 """);
     }
@@ -32,7 +32,7 @@ FROM `Owner` AS `o`
 
         AssertSql(
 """
-DELETE
+DELETE `o`
 FROM `Owner` AS `o`
 """);
     }

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.EntityFrameworkCore.Update;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Update;
@@ -26,9 +27,20 @@ public class StoreValueGenerationMySqlTest : StoreValueGenerationTestBase<
         EntityState? secondOperationType,
         GeneratedValues generatedValues,
         bool withSameEntityType)
-        => generatedValues != GeneratedValues.None && firstOperationType != EntityState.Deleted ||
-           secondOperationType is not null && !(firstOperationType == secondOperationType &&
-                                                (firstOperationType == EntityState.Added && withSameEntityType));
+    {
+        if (AppConfig.ServerVersion.Supports.Returning)
+        {
+            return generatedValues != GeneratedValues.None && firstOperationType == EntityState.Modified ||
+                   secondOperationType is not null && !(firstOperationType == secondOperationType &&
+                                                        (firstOperationType == EntityState.Added && withSameEntityType && generatedValues == GeneratedValues.None));
+        }
+        else
+        {
+            return generatedValues != GeneratedValues.None && firstOperationType != EntityState.Deleted ||
+                   secondOperationType is not null && !(firstOperationType == secondOperationType &&
+                                                        (firstOperationType == EntityState.Added && withSameEntityType));
+        }
+    }
 
     protected override int ShouldExecuteInNumberOfCommands(
         EntityState firstOperationType,
@@ -43,8 +55,21 @@ public class StoreValueGenerationMySqlTest : StoreValueGenerationTestBase<
     {
         await base.Add_with_generated_values(async);
 
-        AssertSql(
-"""
+        if (AppConfig.ServerVersion.Supports.Returning)
+        {
+            AssertSql(
+                """
+@p0='1000'
+
+INSERT INTO `WithSomeDatabaseGenerated` (`Data2`)
+VALUES (@p0)
+RETURNING `Id`, `Data1`;
+""");
+        }
+        else
+        {
+            AssertSql(
+                """
 @p0='1000'
 
 INSERT INTO `WithSomeDatabaseGenerated` (`Data2`)
@@ -53,6 +78,7 @@ SELECT `Id`, `Data1`
 FROM `WithSomeDatabaseGenerated`
 WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();
 """);
+        }
     }
 
     public override async Task Add_with_no_generated_values(bool async)
@@ -74,14 +100,26 @@ VALUES (@p0, @p1, @p2);
     {
         await base.Add_with_all_generated_values(async);
 
-        AssertSql(
-"""
+        if (AppConfig.ServerVersion.Supports.Returning)
+        {
+            AssertSql(
+                """
+INSERT INTO `WithAllDatabaseGenerated` ()
+VALUES ()
+RETURNING `Id`, `Data1`, `Data2`;
+""");
+        }
+        else
+        {
+            AssertSql(
+                """
 INSERT INTO `WithAllDatabaseGenerated` ()
 VALUES ();
 SELECT `Id`, `Data1`, `Data2`
 FROM `WithAllDatabaseGenerated`
 WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();
 """);
+        }
     }
 
     public override async Task Modify_with_generated_values(bool async)
@@ -139,8 +177,25 @@ SELECT ROW_COUNT();
     {
         await base.Add_Add_with_same_entity_type_and_generated_values(async);
 
-        AssertSql(
-"""
+        if (AppConfig.ServerVersion.Supports.Returning)
+        {
+            AssertSql(
+                """
+@p0='1000'
+@p1='1001'
+
+INSERT INTO `WithSomeDatabaseGenerated` (`Data2`)
+VALUES (@p0)
+RETURNING `Id`, `Data1`;
+INSERT INTO `WithSomeDatabaseGenerated` (`Data2`)
+VALUES (@p1)
+RETURNING `Id`, `Data1`;
+""");
+        }
+        else
+        {
+            AssertSql(
+                """
 @p0='1000'
 @p1='1001'
 
@@ -156,6 +211,7 @@ SELECT `Id`, `Data1`
 FROM `WithSomeDatabaseGenerated`
 WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();
 """);
+        }
     }
 
     public override async Task Add_Add_with_same_entity_type_and_no_generated_values(bool async)
@@ -181,8 +237,22 @@ VALUES (@p0, @p1, @p2),
     {
         await base.Add_Add_with_same_entity_type_and_all_generated_values(async);
 
-        AssertSql(
-"""
+        if (AppConfig.ServerVersion.Supports.Returning)
+        {
+            AssertSql(
+                """
+INSERT INTO `WithAllDatabaseGenerated` ()
+VALUES ()
+RETURNING `Id`, `Data1`, `Data2`;
+INSERT INTO `WithAllDatabaseGenerated` ()
+VALUES ()
+RETURNING `Id`, `Data1`, `Data2`;
+""");
+        }
+        else
+        {
+            AssertSql(
+                """
 INSERT INTO `WithAllDatabaseGenerated` ()
 VALUES ();
 SELECT `Id`, `Data1`, `Data2`
@@ -195,6 +265,7 @@ SELECT `Id`, `Data1`, `Data2`
 FROM `WithAllDatabaseGenerated`
 WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();
 """);
+        }
     }
 
     public override async Task Modify_Modify_with_same_entity_type_and_generated_values(bool async)
@@ -272,8 +343,25 @@ SELECT ROW_COUNT();
     {
         await base.Add_Add_with_different_entity_types_and_generated_values(async);
 
-        AssertSql(
-"""
+        if (AppConfig.ServerVersion.Supports.Returning)
+        {
+            AssertSql(
+                """
+@p0='1000'
+@p1='1001'
+
+INSERT INTO `WithSomeDatabaseGenerated` (`Data2`)
+VALUES (@p0)
+RETURNING `Id`, `Data1`;
+INSERT INTO `WithSomeDatabaseGenerated2` (`Data2`)
+VALUES (@p1)
+RETURNING `Id`, `Data1`;
+""");
+        }
+        else
+        {
+            AssertSql(
+                """
 @p0='1000'
 @p1='1001'
 
@@ -289,6 +377,7 @@ SELECT `Id`, `Data1`
 FROM `WithSomeDatabaseGenerated2`
 WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();
 """);
+        }
     }
 
     public override async Task Add_Add_with_different_entity_types_and_no_generated_values(bool async)
@@ -315,8 +404,22 @@ VALUES (@p3, @p4, @p5);
     {
         await base.Add_Add_with_different_entity_types_and_all_generated_values(async);
 
-        AssertSql(
-"""
+        if (AppConfig.ServerVersion.Supports.Returning)
+        {
+            AssertSql(
+                """
+INSERT INTO `WithAllDatabaseGenerated` ()
+VALUES ()
+RETURNING `Id`, `Data1`, `Data2`;
+INSERT INTO `WithAllDatabaseGenerated2` ()
+VALUES ()
+RETURNING `Id`, `Data1`, `Data2`;
+""");
+        }
+        else
+        {
+            AssertSql(
+                """
 INSERT INTO `WithAllDatabaseGenerated` ()
 VALUES ();
 SELECT `Id`, `Data1`, `Data2`
@@ -329,6 +432,7 @@ SELECT `Id`, `Data1`, `Data2`
 FROM `WithAllDatabaseGenerated2`
 WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();
 """);
+        }
     }
 
     public override async Task Modify_Modify_with_different_entity_types_and_generated_values(bool async)
@@ -406,8 +510,26 @@ SELECT ROW_COUNT();
     {
         await Test(EntityState.Deleted, EntityState.Added, GeneratedValues.Some, async, withSameEntityType: true);
 
-        AssertSql(
-"""
+        if (AppConfig.ServerVersion.Supports.Returning)
+        {
+            AssertSql(
+                """
+@p0='1'
+@p1='1001'
+
+DELETE FROM `WithSomeDatabaseGenerated`
+WHERE `Id` = @p0;
+SELECT ROW_COUNT();
+
+INSERT INTO `WithSomeDatabaseGenerated` (`Data2`)
+VALUES (@p1)
+RETURNING `Id`, `Data1`;
+""");
+        }
+        else
+        {
+            AssertSql(
+                """
 @p0='1'
 @p1='1001'
 
@@ -421,6 +543,7 @@ SELECT `Id`, `Data1`
 FROM `WithSomeDatabaseGenerated`
 WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();
 """);
+        }
     }
 
     #endregion Different two operations

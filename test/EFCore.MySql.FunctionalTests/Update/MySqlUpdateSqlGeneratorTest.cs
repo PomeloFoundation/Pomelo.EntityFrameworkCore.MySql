@@ -178,8 +178,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Update
             var sqlGenerator = (IMySqlUpdateSqlGenerator)CreateSqlGenerator();
             var grouping = sqlGenerator.AppendBulkInsertOperation(stringBuilder, new[] { command, command }, 0, out _);
 
-            AssertBaseline(
-                @"INSERT INTO `Ducks` (`Name`, `Quacks`, `ConcurrencyToken`)
+            if (AppConfig.ServerVersion.Supports.Returning)
+            {
+                AssertBaseline(
+                    @"INSERT INTO `Ducks` (`Name`, `Quacks`, `ConcurrencyToken`)
+VALUES (@p0, @p1, @p2)
+RETURNING `Id`, `Computed`;
+INSERT INTO `Ducks` (`Name`, `Quacks`, `ConcurrencyToken`)
+VALUES (@p0, @p1, @p2)
+RETURNING `Id`, `Computed`;
+",
+                    stringBuilder.ToString());
+            }
+            else
+            {
+                AssertBaseline(
+                    @"INSERT INTO `Ducks` (`Name`, `Quacks`, `ConcurrencyToken`)
 VALUES (@p0, @p1, @p2);
 SELECT `Id`, `Computed`
 FROM `Ducks`
@@ -192,7 +206,9 @@ FROM `Ducks`
 WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();
 
 ",
-                stringBuilder.ToString());
+                    stringBuilder.ToString());
+            }
+
             Assert.Equal(ResultSetMapping.LastInResultSet, grouping);
         }
 
@@ -223,8 +239,22 @@ VALUES (@p0, @p1, @p2, @p3),
             var sqlGenerator = (IMySqlUpdateSqlGenerator)CreateSqlGenerator();
             var grouping = sqlGenerator.AppendBulkInsertOperation(stringBuilder, new[] { command, command }, 0, out _);
 
-            AssertBaseline(
-                @"INSERT INTO `Ducks` ()
+            if (AppConfig.ServerVersion.Supports.Returning)
+            {
+                AssertBaseline(
+                    @"INSERT INTO `Ducks` ()
+VALUES ()
+RETURNING `Id`, `Computed`;
+INSERT INTO `Ducks` ()
+VALUES ()
+RETURNING `Id`, `Computed`;
+",
+                    stringBuilder.ToString());
+            }
+            else
+            {
+                AssertBaseline(
+                    @"INSERT INTO `Ducks` ()
 VALUES ();
 SELECT `Id`, `Computed`
 FROM `Ducks`
@@ -237,7 +267,8 @@ FROM `Ducks`
 WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();
 
 ",
-                stringBuilder.ToString());
+                    stringBuilder.ToString());
+            }
             Assert.Equal(ResultSetMapping.LastInResultSet, grouping);
         }
 
@@ -280,38 +311,80 @@ SELECT ROW_COUNT();
                 stringBuilder.ToString());
 
         protected override void AppendInsertOperation_insert_if_store_generated_columns_exist_verification(StringBuilder stringBuilder)
-            => AssertBaseline(
-                @"INSERT INTO `Ducks` (`Name`, `Quacks`, `ConcurrencyToken`)
+        {
+            if (AppConfig.ServerVersion.Supports.Returning)
+            {
+                AssertBaseline(
+                    @"INSERT INTO `Ducks` (`Name`, `Quacks`, `ConcurrencyToken`)
+VALUES (@p0, @p1, @p2)
+RETURNING `Id`, `Computed`;
+",
+                    stringBuilder.ToString());
+            }
+            else
+            {
+                AssertBaseline(
+                    @"INSERT INTO `Ducks` (`Name`, `Quacks`, `ConcurrencyToken`)
 VALUES (@p0, @p1, @p2);
 SELECT `Id`, `Computed`
 FROM `Ducks`
 WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();
 
 ",
-                stringBuilder.ToString());
+                    stringBuilder.ToString());
+            }
+        }
 
         protected override void AppendInsertOperation_for_store_generated_columns_but_no_identity_verification(
             StringBuilder stringBuilder)
-            => AssertBaseline(
-                @"INSERT INTO `Ducks` (`Id`, `Name`, `Quacks`, `ConcurrencyToken`)
+        {
+            if (AppConfig.ServerVersion.Supports.Returning)
+            {
+                AssertBaseline(
+                    @"INSERT INTO `Ducks` (`Id`, `Name`, `Quacks`, `ConcurrencyToken`)
+VALUES (@p0, @p1, @p2, @p3)
+RETURNING `Computed`;
+",
+                    stringBuilder.ToString());
+            }
+            else
+            {
+                AssertBaseline(
+                    @"INSERT INTO `Ducks` (`Id`, `Name`, `Quacks`, `ConcurrencyToken`)
 VALUES (@p0, @p1, @p2, @p3);
 SELECT `Computed`
 FROM `Ducks`
 WHERE ROW_COUNT() = 1 AND `Id` = @p0;
 
 ",
-                stringBuilder.ToString());
+                    stringBuilder.ToString());
+
+            }
+        }
 
         protected override void AppendInsertOperation_for_only_identity_verification(StringBuilder stringBuilder)
-            => AssertBaseline(
-                @"INSERT INTO `Ducks` (`Name`, `Quacks`, `ConcurrencyToken`)
+        {
+            if (AppConfig.ServerVersion.Supports.Returning)
+            {
+                AssertBaseline(
+                    @"INSERT INTO `Ducks` (`Name`, `Quacks`, `ConcurrencyToken`)
+VALUES (@p0, @p1, @p2)
+RETURNING `Id`;",
+                    stringBuilder.ToString());
+            }
+            else
+            {
+                AssertBaseline(
+                    @"INSERT INTO `Ducks` (`Name`, `Quacks`, `ConcurrencyToken`)
 VALUES (@p0, @p1, @p2);
 SELECT `Id`
 FROM `Ducks`
 WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();
 
 ",
-                stringBuilder.ToString());
+                    stringBuilder.ToString());
+            }
+        }
 
         protected override void AppendInsertOperation_for_all_store_generated_columns_verification(
             StringBuilder stringBuilder)
@@ -324,33 +397,37 @@ WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();
                 + CloseDelimiter
                 + NoColumns      // added
                 + Environment.NewLine
-                + DefaultValues  // changed from
-                + ";"            // "DEFAULT VALUES;"
-                + Environment.NewLine
-                + "SELECT "
-                + OpenDelimiter
-                + "Id"
-                + CloseDelimiter
-                + ", "
-                + OpenDelimiter
-                + "Computed"
-                + CloseDelimiter
-                + ""
-                + Environment.NewLine
-                + "FROM "
-                + SchemaPrefix
-                + OpenDelimiter
-                + "Ducks"
-                + CloseDelimiter
-                + ""
-                + Environment.NewLine
-                + "WHERE "
-                + RowsAffected
-                + " = 1 AND "
-                + GetIdentityWhereCondition("Id")
-                + ";"
-                + Environment.NewLine
-                + Environment.NewLine,
+                + DefaultValues  // changed from "DEFAULT VALUES;"
+                + (AppConfig.ServerVersion.Supports.Returning
+                    ? Environment.NewLine
+                      + "RETURNING `Id`, `Computed`;"
+                      + Environment.NewLine
+                    :  ";"
+                      + Environment.NewLine
+                      + "SELECT "
+                      + OpenDelimiter
+                      + "Id"
+                      + CloseDelimiter
+                      + ", "
+                      + OpenDelimiter
+                      + "Computed"
+                      + CloseDelimiter
+                      + ""
+                      + Environment.NewLine
+                      + "FROM "
+                      + SchemaPrefix
+                      + OpenDelimiter
+                      + "Ducks"
+                      + CloseDelimiter
+                      + ""
+                      + Environment.NewLine
+                      + "WHERE "
+                      + RowsAffected
+                      + " = 1 AND "
+                      + GetIdentityWhereCondition("Id")
+                      + ";"
+                      + Environment.NewLine
+                      + Environment.NewLine),
                 stringBuilder.ToString());
         }
 
@@ -365,29 +442,33 @@ WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();
                 + CloseDelimiter
                 + NoColumns      // added
                 + Environment.NewLine
-                + DefaultValues  // changed from
-                + ";"            // "DEFAULT VALUES;"
-                + Environment.NewLine
-                + "SELECT "
-                + OpenDelimiter
-                + "Id"
-                + CloseDelimiter
-                + ""
-                + Environment.NewLine
-                + "FROM "
-                + SchemaPrefix
-                + OpenDelimiter
-                + "Ducks"
-                + CloseDelimiter
-                + ""
-                + Environment.NewLine
-                + "WHERE "
-                + RowsAffected
-                + " = 1 AND "
-                + GetIdentityWhereCondition("Id")
-                + ";"
-                + Environment.NewLine
-                + Environment.NewLine,
+                + DefaultValues  // changed from "DEFAULT VALUES;"
+                + (AppConfig.ServerVersion.Supports.Returning
+                    ?   Environment.NewLine
+                      + "RETURNING `Id`;"
+                      + Environment.NewLine
+                    :   ";"
+                      + Environment.NewLine
+                      + "SELECT "
+                      + OpenDelimiter
+                      + "Id"
+                      + CloseDelimiter
+                      + ""
+                      + Environment.NewLine
+                      + "FROM "
+                      + SchemaPrefix
+                      + OpenDelimiter
+                      + "Ducks"
+                      + CloseDelimiter
+                      + ""
+                      + Environment.NewLine
+                      + "WHERE "
+                      + RowsAffected
+                      + " = 1 AND "
+                      + GetIdentityWhereCondition("Id")
+                      + ";"
+                      + Environment.NewLine
+                      + Environment.NewLine),
                 stringBuilder.ToString());
         }
 

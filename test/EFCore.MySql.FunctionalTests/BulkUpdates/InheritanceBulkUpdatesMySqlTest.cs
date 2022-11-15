@@ -24,7 +24,7 @@ public class InheritanceBulkUpdatesMySqlTest : InheritanceBulkUpdatesTestBase<In
 
         AssertSql(
 """
-DELETE
+DELETE `a`
 FROM `Animals` AS `a`
 WHERE `a`.`Name` = 'Great spotted kiwi'
 """);
@@ -36,7 +36,7 @@ WHERE `a`.`Name` = 'Great spotted kiwi'
 
         AssertSql(
 """
-DELETE
+DELETE `a`
 FROM `Animals` AS `a`
 WHERE (`a`.`Discriminator` = 'Kiwi') AND (`a`.`Name` = 'Great spotted kiwi')
 """);
@@ -48,7 +48,7 @@ WHERE (`a`.`Discriminator` = 'Kiwi') AND (`a`.`Name` = 'Great spotted kiwi')
 
         AssertSql(
 """
-DELETE
+DELETE `c`
 FROM `Countries` AS `c`
 WHERE (
     SELECT COUNT(*)
@@ -63,7 +63,7 @@ WHERE (
 
         AssertSql(
 """
-DELETE
+DELETE `c`
 FROM `Countries` AS `c`
 WHERE (
     SELECT COUNT(*)
@@ -95,7 +95,7 @@ WHERE (
 
         AssertSql(
 """
-DELETE
+DELETE `a`
 FROM `Animals` AS `a`
 WHERE EXISTS (
     SELECT 1
@@ -125,7 +125,7 @@ WHERE EXISTS (
 @__p_1='3'
 @__p_0='0'
 
-DELETE
+DELETE `a`
 FROM `Animals` AS `a`
 WHERE EXISTS (
     SELECT 1

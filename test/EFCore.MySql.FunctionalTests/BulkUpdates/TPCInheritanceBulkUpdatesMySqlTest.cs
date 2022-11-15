@@ -30,7 +30,7 @@ public class TPCInheritanceBulkUpdatesMySqlTest : TPCInheritanceBulkUpdatesTestB
 
         AssertSql(
 """
-DELETE
+DELETE `k`
 FROM `Kiwi` AS `k`
 WHERE `k`.`Name` = 'Great spotted kiwi'
 """);
@@ -42,7 +42,7 @@ WHERE `k`.`Name` = 'Great spotted kiwi'
 
         AssertSql(
 """
-DELETE
+DELETE `c`
 FROM `Countries` AS `c`
 WHERE (
     SELECT COUNT(*)
@@ -63,7 +63,7 @@ WHERE (
 
         AssertSql(
 """
-DELETE
+DELETE `c`
 FROM `Countries` AS `c`
 WHERE (
     SELECT COUNT(*)

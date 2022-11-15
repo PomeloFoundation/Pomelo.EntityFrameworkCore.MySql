@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.ComplexNavigationsModel;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
@@ -73,6 +74,7 @@ LIMIT @__p_0");
             AssertSql();
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
         public override async Task Nested_SelectMany_correlated_with_join_table_correctly_translated_to_apply(bool async)
         {
             // DefaultIfEmpty on child collection. Issue #19095.

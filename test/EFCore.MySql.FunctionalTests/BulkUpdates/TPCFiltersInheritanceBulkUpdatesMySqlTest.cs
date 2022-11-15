@@ -31,7 +31,7 @@ public class TPCFiltersInheritanceBulkUpdatesMySqlTest : TPCFiltersInheritanceBu
 
         AssertSql(
 """
-DELETE
+DELETE `k`
 FROM `Kiwi` AS `k`
 WHERE (`k`.`CountryId` = 1) AND (`k`.`Name` = 'Great spotted kiwi')
 """);
@@ -43,7 +43,7 @@ WHERE (`k`.`CountryId` = 1) AND (`k`.`Name` = 'Great spotted kiwi')
 
         AssertSql(
 """
-DELETE
+DELETE `c`
 FROM `Countries` AS `c`
 WHERE (
     SELECT COUNT(*)
@@ -64,7 +64,7 @@ WHERE (
 
         AssertSql(
 """
-DELETE
+DELETE `c`
 FROM `Countries` AS `c`
 WHERE (
     SELECT COUNT(*)

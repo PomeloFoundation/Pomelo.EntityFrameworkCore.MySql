@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -32,7 +34,7 @@ public class NorthwindBulkUpdatesMySqlTest : NorthwindBulkUpdatesTestBase<Northw
 """
 -- MyDelete
 
-DELETE
+DELETE `o`
 FROM `Order Details` AS `o`
 WHERE `o`.`OrderID` < 10300
 """);
@@ -44,7 +46,7 @@ WHERE `o`.`OrderID` < 10300
 
         AssertSql(
 """
-DELETE
+DELETE `o`
 FROM `Order Details` AS `o`
 WHERE `o`.`OrderID` < 10300
 """);
@@ -58,13 +60,13 @@ WHERE `o`.`OrderID` < 10300
 """
 @__quantity_0='1' (Nullable = true) (DbType = Int16)
 
-DELETE
+DELETE `o`
 FROM `Order Details` AS `o`
 WHERE `o`.`Quantity` = @__quantity_0
 """,
                 //
                 """
-DELETE
+DELETE `o`
 FROM `Order Details` AS `o`
 WHERE FALSE
 """);
@@ -77,9 +79,9 @@ WHERE FALSE
         AssertSql(
 """
 DELETE
-FROM `Order Details` AS `o`
-WHERE `o`.`OrderID` < 10300
-ORDER BY `o`.`OrderID`
+FROM `Order Details`
+WHERE `OrderID` < 10300
+ORDER BY `OrderID`
 """);
     }
 
@@ -91,7 +93,7 @@ ORDER BY `o`.`OrderID`
 """
 @__p_0='100'
 
-DELETE
+DELETE `o`
 FROM `Order Details` AS `o`
 WHERE EXISTS (
     SELECT 1
@@ -115,9 +117,9 @@ WHERE EXISTS (
 @__p_0='100'
 
 DELETE
-FROM `Order Details` AS `o`
-WHERE `o`.`OrderID` < 10300
-ORDER BY `o`.`OrderID`
+FROM `Order Details`
+WHERE `OrderID` < 10300
+ORDER BY `OrderID`
 LIMIT @__p_0
 """);
     }
@@ -130,7 +132,7 @@ LIMIT @__p_0
 """
 @__p_0='100'
 
-DELETE
+DELETE `o`
 FROM `Order Details` AS `o`
 WHERE EXISTS (
     SELECT 1
@@ -153,7 +155,7 @@ WHERE EXISTS (
 """
 @__p_0='100'
 
-DELETE
+DELETE `o`
 FROM `Order Details` AS `o`
 WHERE EXISTS (
     SELECT 1
@@ -176,8 +178,8 @@ WHERE EXISTS (
 @__p_0='100'
 
 DELETE
-FROM `Order Details` AS `o`
-WHERE `o`.`OrderID` < 10300
+FROM `Order Details`
+WHERE `OrderID` < 10300
 LIMIT @__p_0
 """);
     }
@@ -190,7 +192,7 @@ LIMIT @__p_0
 """
 @__p_0='100'
 
-DELETE
+DELETE `o`
 FROM `Order Details` AS `o`
 WHERE EXISTS (
     SELECT 1
@@ -210,7 +212,7 @@ WHERE EXISTS (
 
         AssertSql(
 """
-DELETE
+DELETE `o`
 FROM `Order Details` AS `o`
 WHERE `o`.`OrderID` < (
     SELECT (
@@ -270,7 +272,7 @@ WHERE EXISTS (
 @__p_2='5'
 @__p_1='20'
 
-DELETE
+DELETE `o`
 FROM `Order Details` AS `o`
 WHERE EXISTS (
     SELECT 1
@@ -294,7 +296,7 @@ WHERE EXISTS (
 
         AssertSql(
 """
-DELETE
+DELETE `o`
 FROM `Order Details` AS `o`
 WHERE `o`.`OrderID` < 10300
 """);
@@ -319,7 +321,7 @@ WHERE `o`.`OrderID` < 10250
 
         AssertSql(
 """
-DELETE
+DELETE `o`
 FROM `Order Details` AS `o`
 WHERE EXISTS (
     SELECT 1
@@ -366,7 +368,7 @@ WHERE `c`.`CustomerID` IS NOT NULL AND (`c`.`CustomerID` LIKE 'F%')
 
         AssertSql(
 """
-DELETE
+DELETE `o`
 FROM `Order Details` AS `o`
 WHERE EXISTS (
     SELECT 1
@@ -389,7 +391,7 @@ WHERE EXISTS (
 
         AssertSql(
 """
-DELETE
+DELETE `o`
 FROM `Order Details` AS `o`
 WHERE EXISTS (
     SELECT 1
@@ -412,20 +414,20 @@ WHERE EXISTS (
 
         AssertSql(
 """
-DELETE FROM [o]
-FROM [Order Details] AS [o]
+DELETE `o`
+FROM `Order Details` AS `o`
 WHERE EXISTS (
     SELECT 1
     FROM (
-        SELECT [o0].[OrderID], [o0].[ProductID], [o0].[Discount], [o0].[Quantity], [o0].[UnitPrice]
-        FROM [Order Details] AS [o0]
-        WHERE [o0].[OrderID] < 10250
+        SELECT `o0`.`OrderID`, `o0`.`ProductID`, `o0`.`Discount`, `o0`.`Quantity`, `o0`.`UnitPrice`
+        FROM `Order Details` AS `o0`
+        WHERE `o0`.`OrderID` < 10250
         INTERSECT
-        SELECT [o1].[OrderID], [o1].[ProductID], [o1].[Discount], [o1].[Quantity], [o1].[UnitPrice]
-        FROM [Order Details] AS [o1]
-        WHERE [o1].[OrderID] > 11250
-    ) AS [t]
-    WHERE [t].[OrderID] = [o].[OrderID] AND [t].[ProductID] = [o].[ProductID])
+        SELECT `o1`.`OrderID`, `o1`.`ProductID`, `o1`.`Discount`, `o1`.`Quantity`, `o1`.`UnitPrice`
+        FROM `Order Details` AS `o1`
+        WHERE `o1`.`OrderID` > 11250
+    ) AS `t`
+    WHERE (`t`.`OrderID` = `o`.`OrderID`) AND (`t`.`ProductID` = `o`.`ProductID`))
 """);
     }
 
@@ -435,20 +437,20 @@ WHERE EXISTS (
 
         AssertSql(
 """
-DELETE FROM [o]
-FROM [Order Details] AS [o]
+DELETE `o`
+FROM `Order Details` AS `o`
 WHERE EXISTS (
     SELECT 1
     FROM (
-        SELECT [o0].[OrderID], [o0].[ProductID], [o0].[Discount], [o0].[Quantity], [o0].[UnitPrice]
-        FROM [Order Details] AS [o0]
-        WHERE [o0].[OrderID] < 10250
+        SELECT `o0`.`OrderID`, `o0`.`ProductID`, `o0`.`Discount`, `o0`.`Quantity`, `o0`.`UnitPrice`
+        FROM `Order Details` AS `o0`
+        WHERE `o0`.`OrderID` < 10250
         EXCEPT
-        SELECT [o1].[OrderID], [o1].[ProductID], [o1].[Discount], [o1].[Quantity], [o1].[UnitPrice]
-        FROM [Order Details] AS [o1]
-        WHERE [o1].[OrderID] > 11250
-    ) AS [t]
-    WHERE [t].[OrderID] = [o].[OrderID] AND [t].[ProductID] = [o].[ProductID])
+        SELECT `o1`.`OrderID`, `o1`.`ProductID`, `o1`.`Discount`, `o1`.`Quantity`, `o1`.`UnitPrice`
+        FROM `Order Details` AS `o1`
+        WHERE `o1`.`OrderID` > 11250
+    ) AS `t`
+    WHERE (`t`.`OrderID` = `o`.`OrderID`) AND (`t`.`ProductID` = `o`.`ProductID`))
 """);
     }
 
@@ -479,7 +481,7 @@ WHERE EXISTS (
 
         AssertSql(
 """
-DELETE
+DELETE `o`
 FROM `Order Details` AS `o`
 WHERE EXISTS (
     SELECT 1
@@ -930,10 +932,18 @@ WHERE `c`.`CustomerID` = (
 
     public override async Task Update_Where_GroupBy_First_set_constant_3(bool async)
     {
-        // Not supported by MySQL:
-        //     Error Code: 1093. You can't specify target table 'c' for update in FROM clause
-        await Assert.ThrowsAsync<MySqlException>(
-            () => base.Update_Where_GroupBy_First_set_constant_3(async));
+        if (AppConfig.ServerVersion.Type == ServerType.MySql)
+        {
+            // Not supported by MySQL:
+            //     Error Code: 1093. You can't specify target table 'c' for update in FROM clause
+            await Assert.ThrowsAsync<MySqlException>(
+                () => base.Update_Where_GroupBy_First_set_constant_3(async));
+        }
+        else
+        {
+            // Works as expected in MariaDB.
+            await base.Update_Where_GroupBy_First_set_constant_3(async);
+        }
 
         AssertExecuteUpdateSql(
 """
@@ -1162,18 +1172,17 @@ SET `c`.`ContactName` = 'Updated'
 
         AssertExecuteUpdateSql(
 """
-UPDATE [c]
-SET [c].[ContactName] = N'Updated'
-FROM [Customers] AS [c]
+UPDATE `Customers` AS `c`
 INNER JOIN (
-    SELECT [c0].[CustomerID], [c0].[Address], [c0].[City], [c0].[CompanyName], [c0].[ContactName], [c0].[ContactTitle], [c0].[Country], [c0].[Fax], [c0].[Phone], [c0].[PostalCode], [c0].[Region]
-    FROM [Customers] AS [c0]
-    WHERE [c0].[CustomerID] LIKE N'F%'
+    SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+    FROM `Customers` AS `c0`
+    WHERE `c0`.`CustomerID` LIKE 'F%'
     EXCEPT
-    SELECT [c1].[CustomerID], [c1].[Address], [c1].[City], [c1].[CompanyName], [c1].[ContactName], [c1].[ContactTitle], [c1].[Country], [c1].[Fax], [c1].[Phone], [c1].[PostalCode], [c1].[Region]
-    FROM [Customers] AS [c1]
-    WHERE [c1].[CustomerID] LIKE N'A%'
-) AS [t] ON [c].[CustomerID] = [t].[CustomerID]
+    SELECT `c1`.`CustomerID`, `c1`.`Address`, `c1`.`City`, `c1`.`CompanyName`, `c1`.`ContactName`, `c1`.`ContactTitle`, `c1`.`Country`, `c1`.`Fax`, `c1`.`Phone`, `c1`.`PostalCode`, `c1`.`Region`
+    FROM `Customers` AS `c1`
+    WHERE `c1`.`CustomerID` LIKE 'A%'
+) AS `t` ON `c`.`CustomerID` = `t`.`CustomerID`
+SET `c`.`ContactName` = 'Updated'
 """);
     }
 
@@ -1183,18 +1192,17 @@ INNER JOIN (
 
         AssertExecuteUpdateSql(
 """
-UPDATE [c]
-SET [c].[ContactName] = N'Updated'
-FROM [Customers] AS [c]
+UPDATE `Customers` AS `c`
 INNER JOIN (
-    SELECT [c0].[CustomerID], [c0].[Address], [c0].[City], [c0].[CompanyName], [c0].[ContactName], [c0].[ContactTitle], [c0].[Country], [c0].[Fax], [c0].[Phone], [c0].[PostalCode], [c0].[Region]
-    FROM [Customers] AS [c0]
-    WHERE [c0].[CustomerID] LIKE N'F%'
+    SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+    FROM `Customers` AS `c0`
+    WHERE `c0`.`CustomerID` LIKE 'F%'
     INTERSECT
-    SELECT [c1].[CustomerID], [c1].[Address], [c1].[City], [c1].[CompanyName], [c1].[ContactName], [c1].[ContactTitle], [c1].[Country], [c1].[Fax], [c1].[Phone], [c1].[PostalCode], [c1].[Region]
-    FROM [Customers] AS [c1]
-    WHERE [c1].[CustomerID] LIKE N'A%'
-) AS [t] ON [c].[CustomerID] = [t].[CustomerID]
+    SELECT `c1`.`CustomerID`, `c1`.`Address`, `c1`.`City`, `c1`.`CompanyName`, `c1`.`ContactName`, `c1`.`ContactTitle`, `c1`.`Country`, `c1`.`Fax`, `c1`.`Phone`, `c1`.`PostalCode`, `c1`.`Region`
+    FROM `Customers` AS `c1`
+    WHERE `c1`.`CustomerID` LIKE 'A%'
+) AS `t` ON `c`.`CustomerID` = `t`.`CustomerID`
+SET `c`.`ContactName` = 'Updated'
 """);
     }
 

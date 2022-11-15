@@ -527,19 +527,19 @@ be found in the docs.';");
         public override async Task Move_sequence()
         {
             await Test(
-                builder => builder.HasSequence<int>("TestSequence"),
-                builder => builder.HasSequence<int>("TestSequence", "TestSequenceSchema"),
+                builder => builder.HasSequence<int>("TestSequenceMove"),
+                builder => builder.HasSequence<int>("TestSequenceMove", "TestSequenceSchema"),
                 model =>
                 {
                     var sequence = Assert.Single(model.Sequences);
                     // Assert.Equal("TestSequenceSchema", sequence.Schema);
                     // Assert.Equal("TestSequence", sequence.Name);
-                    Assert.Equal("TestSequenceSchema_TestSequence", sequence.Name);
+                    Assert.Equal("TestSequenceSchema_TestSequenceMove", sequence.Name);
                 });
 
             AssertSql(
 """
-ALTER TABLE `TestSequence` RENAME `TestSequenceSchema_TestSequence`;
+ALTER TABLE `TestSequenceMove` RENAME `TestSequenceSchema_TestSequenceMove`;
 """);
         }
 

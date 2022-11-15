@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.GearsOfWarModel;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -2144,6 +2146,7 @@ WHERE (
 """);
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
     public override async Task Where_subquery_distinct_firstordefault_boolean(bool async)
     {
         await base.Where_subquery_distinct_firstordefault_boolean(async);
@@ -2170,6 +2173,7 @@ WHERE (`t`.`HasSoulPatch` = TRUE) AND COALESCE((
 """);
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
     public override async Task Where_subquery_distinct_firstordefault_boolean_with_pushdown(bool async)
     {
         await base.Where_subquery_distinct_firstordefault_boolean_with_pushdown(async);
@@ -2196,6 +2200,7 @@ WHERE (`t`.`HasSoulPatch` = TRUE) AND (
 """);
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
     public override async Task Where_subquery_distinct_first_boolean(bool async)
     {
         await base.Where_subquery_distinct_first_boolean(async);
@@ -2223,6 +2228,7 @@ ORDER BY `t`.`Nickname`
 """);
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
     public override async Task Where_subquery_distinct_singleordefault_boolean1(bool async)
     {
         await base.Where_subquery_distinct_singleordefault_boolean1(async);
@@ -2272,6 +2278,7 @@ ORDER BY `t`.`Nickname`
 """);
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
     public override async Task Where_subquery_distinct_singleordefault_boolean_with_pushdown(bool async)
     {
         await base.Where_subquery_distinct_singleordefault_boolean_with_pushdown(async);
@@ -2298,6 +2305,7 @@ ORDER BY `t`.`Nickname`
 """);
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
     public override async Task Where_subquery_distinct_lastordefault_boolean(bool async)
     {
         await base.Where_subquery_distinct_lastordefault_boolean(async);
@@ -2325,6 +2333,7 @@ ORDER BY `t`.`Nickname`
 """);
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
     public override async Task Where_subquery_distinct_last_boolean(bool async)
     {
         await base.Where_subquery_distinct_last_boolean(async);
@@ -2352,6 +2361,7 @@ ORDER BY `t`.`Nickname`
 """);
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
     public override async Task Where_subquery_distinct_orderby_firstordefault_boolean(bool async)
     {
         await base.Where_subquery_distinct_orderby_firstordefault_boolean(async);
@@ -2378,6 +2388,7 @@ WHERE (`t`.`HasSoulPatch` = TRUE) AND COALESCE((
 """);
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
     public override async Task Where_subquery_distinct_orderby_firstordefault_boolean_with_pushdown(bool async)
     {
         await base.Where_subquery_distinct_orderby_firstordefault_boolean_with_pushdown(async);
@@ -2404,6 +2415,7 @@ WHERE (`t`.`HasSoulPatch` = TRUE) AND (
 """);
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
     public override async Task Where_subquery_union_firstordefault_boolean(bool async)
     {
         await base.Where_subquery_union_firstordefault_boolean(async);
@@ -2434,6 +2446,7 @@ WHERE (`t`.`HasSoulPatch` = TRUE) AND (
 """);
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
     public override async Task Where_subquery_join_firstordefault_boolean(bool async)
     {
         await base.Where_subquery_join_firstordefault_boolean(async);
@@ -2462,6 +2475,7 @@ WHERE (`t`.`HasSoulPatch` = TRUE) AND (
 """);
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
     public override async Task Where_subquery_left_join_firstordefault_boolean(bool async)
     {
         await base.Where_subquery_left_join_firstordefault_boolean(async);
@@ -2490,6 +2504,7 @@ WHERE (`t`.`HasSoulPatch` = TRUE) AND (
 """);
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
     public override async Task Where_subquery_concat_firstordefault_boolean(bool async)
     {
         await base.Where_subquery_concat_firstordefault_boolean(async);
@@ -2615,6 +2630,7 @@ FROM `Officers` AS `o0`
 """);
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
     public override async Task Select_navigation_with_concat_and_count(bool async)
     {
         await base.Select_navigation_with_concat_and_count(async);
@@ -2643,6 +2659,7 @@ WHERE `t`.`HasSoulPatch` = FALSE
 """);
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
     public override async Task Concat_with_collection_navigations(bool async)
     {
         await base.Concat_with_collection_navigations(async);
@@ -2671,6 +2688,7 @@ WHERE `t`.`HasSoulPatch` = TRUE
 """);
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
     public override async Task Union_with_collection_navigations(bool async)
     {
         await base.Union_with_collection_navigations(async);
@@ -2707,6 +2725,7 @@ FROM (
 """);
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
     public override async Task Select_subquery_distinct_firstordefault(bool async)
     {
         await base.Select_subquery_distinct_firstordefault(async);
@@ -4466,6 +4485,7 @@ ORDER BY `t0`.`Rank`
 """);
     }
 
+    [ConditionalTheory(Skip = "MySQL does not support LIMIT with a parameterized argument, unless the statement was prepared. The argument needs to be a numeric constant.")]
     public override async Task Take_without_orderby_followed_by_orderBy_is_pushed_down2(bool async)
     {
         await base.Take_without_orderby_followed_by_orderBy_is_pushed_down2(async);
@@ -7911,6 +7931,7 @@ FROM (
 """);
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
     public override async Task Select_subquery_distinct_singleordefault_boolean1(bool async)
     {
         await base.Select_subquery_distinct_singleordefault_boolean1(async);
@@ -7958,6 +7979,7 @@ WHERE `t`.`HasSoulPatch` = TRUE
 """);
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
     public override async Task Select_subquery_distinct_singleordefault_boolean_with_pushdown(bool async)
     {
         await base.Select_subquery_distinct_singleordefault_boolean_with_pushdown(async);
@@ -7983,6 +8005,7 @@ WHERE `t`.`HasSoulPatch` = TRUE
 """);
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
     public override async Task Select_subquery_distinct_singleordefault_boolean_empty1(bool async)
     {
         await base.Select_subquery_distinct_singleordefault_boolean_empty1(async);
@@ -8030,6 +8053,7 @@ WHERE `t`.`HasSoulPatch` = TRUE
 """);
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
     public override async Task Select_subquery_distinct_singleordefault_boolean_empty_with_pushdown(bool async)
     {
         await base.Select_subquery_distinct_singleordefault_boolean_empty_with_pushdown(async);

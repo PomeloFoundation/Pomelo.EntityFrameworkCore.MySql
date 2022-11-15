@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
@@ -13,6 +14,7 @@ using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -421,6 +423,51 @@ ORDER BY `t`.`OrderID`, `o0`.`ProductID`");
 FROM `Customers` AS `c`");
         }
 
+        public override async Task
+            Select_DTO_constructor_distinct_with_collection_projection_translated_to_server_with_binding_after_client_eval(bool async)
+        {
+            using var context = CreateContext();
+            var actualQuery = context.Set<Order>()
+                .Where(o => o.OrderID < 10300)
+                .Select(o => new { A = new OrderCountDTO(o.CustomerID), o.CustomerID })
+                .Distinct()
+                .Select(e => new { e.A, Orders = context.Set<Order>().Where(o => o.CustomerID == e.CustomerID)
+                    .OrderBy(o => o.OrderID) // <-- added
+                    .ToList() });
+
+            var actual = async
+                ? (await actualQuery.ToListAsync()).OrderBy(e => e.A.Id).ToList()
+                : actualQuery.ToList().OrderBy(e => e.A.Id).ToList();
+
+            var expected = Fixture.GetExpectedData().Set<Order>()
+                .Where(o => o.OrderID < 10300)
+                .Select(o => new { A = new OrderCountDTO(o.CustomerID), o.CustomerID })
+                .Distinct()
+                .Select(e => new { e.A, Orders = Fixture.GetExpectedData().Set<Order>().Where(o => o.CustomerID == e.CustomerID)
+                    .OrderBy(o => o.OrderID) // <-- added
+                    .ToList() })
+                .ToList().OrderBy(e => e.A.Id).ToList();
+
+            Assert.Equal(expected.Count, actual.Count);
+            for (var i = 0; i < expected.Count; i++)
+            {
+                Assert.Equal(expected[i].A.Id, actual[i].A.Id);
+                Assert.True(expected[i].Orders?.SequenceEqual(actual[i].Orders) ?? true);
+            }
+
+            AssertSql(
+"""
+SELECT `t`.`CustomerID`, `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
+FROM (
+    SELECT DISTINCT `o`.`CustomerID`
+    FROM `Orders` AS `o`
+    WHERE `o`.`OrderID` < 10300
+) AS `t`
+LEFT JOIN `Orders` AS `o0` ON `t`.`CustomerID` = `o0`.`CustomerID`
+ORDER BY `t`.`CustomerID`, `o0`.`OrderID`
+""");
+        }
+
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
         public override Task DefaultIfEmpty_Sum_over_collection_navigation(bool async)
         {
@@ -432,5 +479,37 @@ FROM `Customers` AS `c`");
 
         protected override void ClearLog()
             => Fixture.TestSqlLoggerFactory.Clear();
+
+        private class OrderCountDTO
+        {
+            public string Id { get; set; }
+            public int Count { get; set; }
+
+            public OrderCountDTO()
+            {
+            }
+
+            public OrderCountDTO(string id)
+            {
+                Id = id;
+                Count = 0;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (obj is null)
+                {
+                    return false;
+                }
+
+                return ReferenceEquals(this, obj) ? true : obj.GetType() == GetType() && Equals((OrderCountDTO)obj);
+            }
+
+            private bool Equals(OrderCountDTO other)
+                => string.Equals(Id, other.Id) && Count == other.Count;
+
+            public override int GetHashCode()
+                => HashCode.Combine(Id, Count);
+        }
     }
 }

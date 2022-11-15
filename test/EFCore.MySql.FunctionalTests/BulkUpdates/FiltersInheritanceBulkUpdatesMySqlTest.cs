@@ -25,7 +25,7 @@ public class FiltersInheritanceBulkUpdatesMySqlTest : FiltersInheritanceBulkUpda
 
         AssertSql(
 """
-DELETE
+DELETE `a`
 FROM `Animals` AS `a`
 WHERE (`a`.`CountryId` = 1) AND (`a`.`Name` = 'Great spotted kiwi')
 """);
@@ -37,7 +37,7 @@ WHERE (`a`.`CountryId` = 1) AND (`a`.`Name` = 'Great spotted kiwi')
 
         AssertSql(
 """
-DELETE
+DELETE `a`
 FROM `Animals` AS `a`
 WHERE ((`a`.`Discriminator` = 'Kiwi') AND (`a`.`CountryId` = 1)) AND (`a`.`Name` = 'Great spotted kiwi')
 """);
@@ -49,7 +49,7 @@ WHERE ((`a`.`Discriminator` = 'Kiwi') AND (`a`.`CountryId` = 1)) AND (`a`.`Name`
 
         AssertSql(
 """
-DELETE
+DELETE `c`
 FROM `Countries` AS `c`
 WHERE (
     SELECT COUNT(*)
@@ -64,7 +64,7 @@ WHERE (
 
         AssertSql(
 """
-DELETE
+DELETE `c`
 FROM `Countries` AS `c`
 WHERE (
     SELECT COUNT(*)
@@ -96,7 +96,7 @@ WHERE (
 
         AssertSql(
 """
-DELETE
+DELETE `a`
 FROM `Animals` AS `a`
 WHERE (`a`.`CountryId` = 1) AND EXISTS (
     SELECT 1
@@ -128,7 +128,7 @@ WHERE (`a`.`CountryId` = 1) AND EXISTS (
 @__p_1='3'
 @__p_0='0'
 
-DELETE
+DELETE `a`
 FROM `Animals` AS `a`
 WHERE EXISTS (
     SELECT 1
