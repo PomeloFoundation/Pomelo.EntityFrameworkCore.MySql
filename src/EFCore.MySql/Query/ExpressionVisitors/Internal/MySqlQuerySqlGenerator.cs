@@ -46,6 +46,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         private const ulong LimitUpperBound = 18446744073709551610;
 
         private readonly IMySqlOptions _options;
+        private string _removeTableAliasOld;
+        private string _removeTableAliasNew;
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -152,6 +154,44 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             }
 
             return expression;
+        }
+
+        protected override Expression VisitColumn(ColumnExpression columnExpression)
+        {
+            if (_removeTableAliasOld is not null &&
+                columnExpression.TableAlias == _removeTableAliasOld)
+            {
+                if (_removeTableAliasNew is not null)
+                {
+                    Sql.Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(_removeTableAliasNew))
+                        .Append(".");
+                }
+
+                Sql.Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(columnExpression.Name));
+
+                return columnExpression;
+            }
+
+            return base.VisitColumn(columnExpression);
+        }
+
+        protected override Expression VisitTable(TableExpression tableExpression)
+        {
+            if (_removeTableAliasOld is not null &&
+                tableExpression.Alias == _removeTableAliasOld)
+            {
+                if (_removeTableAliasNew is not null)
+                {
+                    Sql.Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(_removeTableAliasNew))
+                        .Append(AliasSeparator);
+                }
+
+                Sql.Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(tableExpression.Name));
+
+                return tableExpression;
+            }
+
+            return base.VisitTable(tableExpression);
         }
 
         /// <summary>
@@ -290,16 +330,26 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 && selectExpression.Having == null
                 && selectExpression.GroupBy.Count == 0
                 && selectExpression.Projection.Count == 0
-                && (selectExpression.Tables.Count == 1 || selectExpression.Orderings.Count == 0))
+                && (selectExpression.Tables.Count == 1 || selectExpression.Orderings.Count == 0 && selectExpression.Limit is null))
             {
+                var removeSingleTableAlias = selectExpression.Tables.Count == 1 &&
+                                             selectExpression.Orderings.Count > 0 || selectExpression.Limit is not null;
+
                 Sql.Append($"DELETE");
 
-                if (selectExpression.Tables.Count > 1)
+                if (!removeSingleTableAlias)
                 {
                     Sql.Append($" {Dependencies.SqlGenerationHelper.DelimitIdentifier(deleteExpression.Table.Alias)}");
                 }
 
                 Sql.AppendLine().Append("FROM ");
+
+                if (removeSingleTableAlias)
+                {
+                    _removeTableAliasOld = selectExpression.Tables[0].Alias;
+                    _removeTableAliasNew = null;
+                }
+
                 GenerateList(selectExpression.Tables, e => Visit(e), sql => sql.AppendLine());
 
                 if (selectExpression.Predicate != null)
@@ -311,6 +361,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
                 GenerateOrderings(selectExpression);
                 GenerateLimitOffset(selectExpression);
+
+                if (removeSingleTableAlias)
+                {
+                    _removeTableAliasOld = null;
+                }
 
                 return deleteExpression;
             }
