@@ -853,7 +853,7 @@ ORDER BY `r`.`Id`, `t`.`Id`
         await base.Nested_include_with_inheritance_collection_collection(async);
 
         AssertSql(
-"""
+$"""
 SELECT `t`.`Id`, `t`.`Name`, `t`.`BaseId`, `t`.`Discriminator`, `o`.`BaseInheritanceRelationshipEntityId`, `d`.`Id`, `o0`.`BaseInheritanceRelationshipEntityId`, `o0`.`Id`, `o0`.`Name`, `o`.`Id`, `o`.`Name`, `d0`.`DerivedInheritanceRelationshipEntityId`, `d0`.`Id`, `d0`.`Name`, `d`.`OwnedReferenceOnDerived_Id`, `d`.`OwnedReferenceOnDerived_Name`, `t1`.`Id`, `t1`.`BaseParentId`, `t1`.`Name`, `t1`.`DerivedProperty`, `t1`.`Discriminator`, `t1`.`Id0`, `t1`.`Name0`, `t1`.`ParentCollectionId`, `t1`.`ParentReferenceId`, `t1`.`Discriminator0`
 FROM (
     SELECT `b`.`Id`, `b`.`Name`, NULL AS `BaseId`, 'BaseInheritanceRelationshipEntity' AS `Discriminator`
@@ -869,17 +869,17 @@ LEFT JOIN `DerivedEntities_OwnedCollectionOnDerived` AS `d0` ON `t`.`Id` = `d0`.
 LEFT JOIN (
     SELECT `t0`.`Id`, `t0`.`BaseParentId`, `t0`.`Name`, `t0`.`DerivedProperty`, `t0`.`Discriminator`, `t2`.`Id` AS `Id0`, `t2`.`Name` AS `Name0`, `t2`.`ParentCollectionId`, `t2`.`ParentReferenceId`, `t2`.`Discriminator` AS `Discriminator0`
     FROM (
-        SELECT `b0`.`Id`, `b0`.`BaseParentId`, `b0`.`Name`, NULL AS `DerivedProperty`, 'BaseCollectionOnBase' AS `Discriminator`
+        SELECT `b0`.`Id`, `b0`.`BaseParentId`, `b0`.`Name`, {MySqlTestHelpers.MySqlBug96947Workaround(@"NULL", "signed")} AS `DerivedProperty`, {MySqlTestHelpers.MySqlBug96947Workaround(@"'BaseCollectionOnBase'")} AS `Discriminator`
         FROM `BaseCollectionsOnBase` AS `b0`
         UNION ALL
-        SELECT `d2`.`Id`, `d2`.`BaseParentId`, `d2`.`Name`, `d2`.`DerivedProperty`, 'DerivedCollectionOnBase' AS `Discriminator`
+        SELECT `d2`.`Id`, `d2`.`BaseParentId`, `d2`.`Name`, `d2`.`DerivedProperty`, {MySqlTestHelpers.MySqlBug96947Workaround(@"'DerivedCollectionOnBase'")} AS `Discriminator`
         FROM `DerivedCollectionsOnBase` AS `d2`
     ) AS `t0`
     LEFT JOIN (
-        SELECT `n`.`Id`, `n`.`Name`, `n`.`ParentCollectionId`, `n`.`ParentReferenceId`, 'NestedCollectionBase' AS `Discriminator`
+        SELECT `n`.`Id`, `n`.`Name`, `n`.`ParentCollectionId`, `n`.`ParentReferenceId`, {MySqlTestHelpers.MySqlBug96947Workaround(@"'NestedCollectionBase'")} AS `Discriminator`
         FROM `NestedCollections` AS `n`
         UNION ALL
-        SELECT `n0`.`Id`, `n0`.`Name`, `n0`.`ParentCollectionId`, `n0`.`ParentReferenceId`, 'NestedCollectionDerived' AS `Discriminator`
+        SELECT `n0`.`Id`, `n0`.`Name`, `n0`.`ParentCollectionId`, `n0`.`ParentReferenceId`, {MySqlTestHelpers.MySqlBug96947Workaround(@"'NestedCollectionDerived'")} AS `Discriminator`
         FROM `NestedCollectionsDerived` AS `n0`
     ) AS `t2` ON `t0`.`Id` = `t2`.`ParentCollectionId`
 ) AS `t1` ON `t`.`Id` = `t1`.`BaseParentId`
@@ -892,7 +892,7 @@ ORDER BY `t`.`Id`, `o`.`BaseInheritanceRelationshipEntityId`, `d`.`Id`, `o0`.`Ba
         await base.Nested_include_with_inheritance_collection_collection_reverse(async);
 
         AssertSql(
-"""
+$"""
 SELECT `t`.`Id`, `t`.`Name`, `t`.`ParentCollectionId`, `t`.`ParentReferenceId`, `t`.`Discriminator`, `t0`.`Id`, `t0`.`BaseParentId`, `t0`.`Name`, `t0`.`DerivedProperty`, `t0`.`Discriminator`, `t1`.`Id`, `t1`.`Name`, `t1`.`BaseId`, `t1`.`Discriminator`, `o`.`BaseInheritanceRelationshipEntityId`, `d`.`Id`, `o0`.`BaseInheritanceRelationshipEntityId`, `o0`.`Id`, `o0`.`Name`, `o`.`Id`, `o`.`Name`, `d0`.`DerivedInheritanceRelationshipEntityId`, `d0`.`Id`, `d0`.`Name`, `d`.`OwnedReferenceOnDerived_Id`, `d`.`OwnedReferenceOnDerived_Name`
 FROM (
     SELECT `n`.`Id`, `n`.`Name`, `n`.`ParentCollectionId`, `n`.`ParentReferenceId`, 'NestedCollectionBase' AS `Discriminator`
@@ -928,7 +928,7 @@ ORDER BY `t`.`Id`, `t0`.`Id`, `t1`.`Id`, `o`.`BaseInheritanceRelationshipEntityI
         await base.Nested_include_with_inheritance_collection_reference(async);
 
         AssertSql(
-"""
+$"""
 SELECT `t`.`Id`, `t`.`Name`, `t`.`BaseId`, `t`.`Discriminator`, `o`.`BaseInheritanceRelationshipEntityId`, `d`.`Id`, `o0`.`BaseInheritanceRelationshipEntityId`, `o0`.`Id`, `o0`.`Name`, `o`.`Id`, `o`.`Name`, `d0`.`DerivedInheritanceRelationshipEntityId`, `d0`.`Id`, `d0`.`Name`, `d`.`OwnedReferenceOnDerived_Id`, `d`.`OwnedReferenceOnDerived_Name`, `t1`.`Id`, `t1`.`BaseParentId`, `t1`.`Name`, `t1`.`DerivedProperty`, `t1`.`Discriminator`, `t1`.`Id0`, `t1`.`Name0`, `t1`.`ParentCollectionId`, `t1`.`ParentReferenceId`, `t1`.`Discriminator0`
 FROM (
     SELECT `b`.`Id`, `b`.`Name`, NULL AS `BaseId`, 'BaseInheritanceRelationshipEntity' AS `Discriminator`
@@ -944,17 +944,17 @@ LEFT JOIN `DerivedEntities_OwnedCollectionOnDerived` AS `d0` ON `t`.`Id` = `d0`.
 LEFT JOIN (
     SELECT `t0`.`Id`, `t0`.`BaseParentId`, `t0`.`Name`, `t0`.`DerivedProperty`, `t0`.`Discriminator`, `t2`.`Id` AS `Id0`, `t2`.`Name` AS `Name0`, `t2`.`ParentCollectionId`, `t2`.`ParentReferenceId`, `t2`.`Discriminator` AS `Discriminator0`
     FROM (
-        SELECT `b0`.`Id`, `b0`.`BaseParentId`, `b0`.`Name`, NULL AS `DerivedProperty`, 'BaseCollectionOnBase' AS `Discriminator`
+        SELECT `b0`.`Id`, `b0`.`BaseParentId`, `b0`.`Name`, {MySqlTestHelpers.MySqlBug96947Workaround(@"NULL", "signed")} AS `DerivedProperty`, {MySqlTestHelpers.MySqlBug96947Workaround(@"'BaseCollectionOnBase'")} AS `Discriminator`
         FROM `BaseCollectionsOnBase` AS `b0`
         UNION ALL
-        SELECT `d2`.`Id`, `d2`.`BaseParentId`, `d2`.`Name`, `d2`.`DerivedProperty`, 'DerivedCollectionOnBase' AS `Discriminator`
+        SELECT `d2`.`Id`, `d2`.`BaseParentId`, `d2`.`Name`, `d2`.`DerivedProperty`, {MySqlTestHelpers.MySqlBug96947Workaround(@"'DerivedCollectionOnBase'")} AS `Discriminator`
         FROM `DerivedCollectionsOnBase` AS `d2`
     ) AS `t0`
     LEFT JOIN (
-        SELECT `n`.`Id`, `n`.`Name`, `n`.`ParentCollectionId`, `n`.`ParentReferenceId`, 'NestedReferenceBase' AS `Discriminator`
+        SELECT `n`.`Id`, `n`.`Name`, `n`.`ParentCollectionId`, `n`.`ParentReferenceId`, {MySqlTestHelpers.MySqlBug96947Workaround(@"'NestedReferenceBase'")} AS `Discriminator`
         FROM `NestedReferences` AS `n`
         UNION ALL
-        SELECT `n0`.`Id`, `n0`.`Name`, `n0`.`ParentCollectionId`, `n0`.`ParentReferenceId`, 'NestedReferenceDerived' AS `Discriminator`
+        SELECT `n0`.`Id`, `n0`.`Name`, `n0`.`ParentCollectionId`, `n0`.`ParentReferenceId`, {MySqlTestHelpers.MySqlBug96947Workaround(@"'NestedReferenceDerived'")} AS `Discriminator`
         FROM `NestedReferencesDerived` AS `n0`
     ) AS `t2` ON `t0`.`Id` = `t2`.`ParentCollectionId`
 ) AS `t1` ON `t`.`Id` = `t1`.`BaseParentId`

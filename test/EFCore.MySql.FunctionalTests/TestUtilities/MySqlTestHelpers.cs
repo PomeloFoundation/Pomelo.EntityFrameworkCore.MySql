@@ -111,5 +111,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             => AppConfig.ServerVersion.Supports.DoubleCast
                 ? $@"CAST({innerSql} AS double)"
                 : $@"(CAST({innerSql} AS decimal(65,30)) + 0e0)";
+
+        public static string MySqlBug96947Workaround(string innerSql, string type = "char")
+            => AppConfig.ServerVersion.Supports.MySqlBug96947Workaround
+                ? $@"CAST({innerSql} AS {type})"
+                : innerSql;
     }
 }
