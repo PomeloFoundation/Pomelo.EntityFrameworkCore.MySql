@@ -1300,9 +1300,9 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;",
         protected virtual string DefaultCollation => ((MySqlTestStore)Fixture.TestStore).DatabaseCollation;
 
         protected override string NonDefaultCollation
-            => DefaultCollation == ((MySqlTestStore)Fixture.TestStore).GetCaseSensitiveUtf8Mb4Collation()
-                ? ((MySqlTestStore)Fixture.TestStore).GetCaseInsensitiveUtf8Mb4Collation()
-                : ((MySqlTestStore)Fixture.TestStore).GetCaseSensitiveUtf8Mb4Collation();
+            => DefaultCollation == ((MySqlTestStore)Fixture.TestStore).ServerVersion.Value.DefaultUtf8CsCollation
+                ? ((MySqlTestStore)Fixture.TestStore).ServerVersion.Value.DefaultUtf8CiCollation
+                : ((MySqlTestStore)Fixture.TestStore).ServerVersion.Value.DefaultUtf8CsCollation;
 
         protected virtual string NonDefaultCollation2
             => "utf8mb4_german2_ci";
