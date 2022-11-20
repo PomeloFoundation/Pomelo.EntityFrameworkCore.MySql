@@ -12,7 +12,7 @@ using Pomelo.EntityFrameworkCore.MySql.Tests;
 //ReSharper disable once CheckNamespace
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {
-    public class MySqlTestHelpers : TestHelpers
+    public class MySqlTestHelpers : RelationalTestHelpers
     {
         protected MySqlTestHelpers()
         {
@@ -23,7 +23,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         public override IServiceCollection AddProviderServices(IServiceCollection services)
             => services.AddEntityFrameworkMySql();
 
-        public override void UseProviderOptions(DbContextOptionsBuilder optionsBuilder)
+        public override DbContextOptionsBuilder UseProviderOptions(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder.UseMySql("Database=DummyDatabase", AppConfig.ServerVersion);
 
         public IServiceProvider CreateContextServices(ServerVersion serverVersion)
@@ -94,5 +94,27 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 
         public int GetIndexedStringPropertyDefaultLength
             => Math.Min(AppConfig.ServerVersion.MaxKeyLength / (CharSet.Utf8Mb4.MaxBytesPerChar * 2), 255);
+
+        public static DateTimeOffset GetExpectedValue(DateTimeOffset value)
+        {
+            const int mySqlMaxMillisecondDecimalPlaces = 6;
+            var decimalPlacesFactor = (decimal)Math.Pow(10, 7 - mySqlMaxMillisecondDecimalPlaces);
+
+            // Change DateTimeOffset values, because MySQL does not preserve offsets and has a maximum of 6 decimal places, in contrast to
+            // .NET which has 7.
+            return new DateTimeOffset(
+                (long)(Math.Truncate(value.UtcTicks / decimalPlacesFactor) * decimalPlacesFactor),
+                TimeSpan.Zero);
+        }
+
+        public static string CastAsDouble(string innerSql)
+            => AppConfig.ServerVersion.Supports.DoubleCast
+                ? $@"CAST({innerSql} AS double)"
+                : $@"(CAST({innerSql} AS decimal(65,30)) + 0e0)";
+
+        public static string MySqlBug96947Workaround(string innerSql, string type = "char")
+            => AppConfig.ServerVersion.Supports.MySqlBug96947Workaround
+                ? $@"CAST({innerSql} AS {type})"
+                : innerSql;
     }
 }

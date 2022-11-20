@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
@@ -12,6 +14,7 @@ using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -248,7 +251,7 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
             AssertSql(
                 @"@__p_0='5'
 
-SELECT `t`.`OrderID`, `t0`.`ProductID`, `t0`.`OrderID`
+SELECT `t`.`OrderID`, `o0`.`ProductID`, `o0`.`OrderID`
 FROM (
     SELECT `o`.`OrderID`
     FROM `Orders` AS `o`
@@ -256,11 +259,8 @@ FROM (
     ORDER BY `o`.`OrderID`
     LIMIT 18446744073709551610 OFFSET @__p_0
 ) AS `t`
-LEFT JOIN (
-    SELECT `o0`.`ProductID`, `o0`.`OrderID`
-    FROM `Order Details` AS `o0`
-) AS `t0` ON `t`.`OrderID` = `t0`.`OrderID`
-ORDER BY `t`.`OrderID`, `t0`.`ProductID`");
+LEFT JOIN `Order Details` AS `o0` ON `t`.`OrderID` = `o0`.`OrderID`
+ORDER BY `t`.`OrderID`, `o0`.`ProductID`");
         }
 
         /// <summary>
@@ -289,7 +289,7 @@ ORDER BY `t`.`OrderID`, `t0`.`ProductID`");
                 @"@__p_1='10'
 @__p_0='5'
 
-SELECT `t`.`OrderID`, `t0`.`ProductID`, `t0`.`OrderID`
+SELECT `t`.`OrderID`, `o0`.`ProductID`, `o0`.`OrderID`
 FROM (
     SELECT `o`.`OrderID`
     FROM `Orders` AS `o`
@@ -297,11 +297,8 @@ FROM (
     ORDER BY `o`.`OrderID`
     LIMIT @__p_1 OFFSET @__p_0
 ) AS `t`
-LEFT JOIN (
-    SELECT `o0`.`ProductID`, `o0`.`OrderID`
-    FROM `Order Details` AS `o0`
-) AS `t0` ON `t`.`OrderID` = `t0`.`OrderID`
-ORDER BY `t`.`OrderID`, `t0`.`ProductID`");
+LEFT JOIN `Order Details` AS `o0` ON `t`.`OrderID` = `o0`.`OrderID`
+ORDER BY `t`.`OrderID`, `o0`.`ProductID`");
         }
 
         /// <summary>
@@ -328,7 +325,7 @@ ORDER BY `t`.`OrderID`, `t0`.`ProductID`");
             AssertSql(
                 @"@__p_0='10'
 
-SELECT `t`.`OrderID`, `t0`.`ProductID`, `t0`.`OrderID`
+SELECT `t`.`OrderID`, `o0`.`ProductID`, `o0`.`OrderID`
 FROM (
     SELECT `o`.`OrderID`
     FROM `Orders` AS `o`
@@ -336,11 +333,8 @@ FROM (
     ORDER BY `o`.`OrderID`
     LIMIT @__p_0
 ) AS `t`
-LEFT JOIN (
-    SELECT `o0`.`ProductID`, `o0`.`OrderID`
-    FROM `Order Details` AS `o0`
-) AS `t0` ON `t`.`OrderID` = `t0`.`OrderID`
-ORDER BY `t`.`OrderID`, `t0`.`ProductID`");
+LEFT JOIN `Order Details` AS `o0` ON `t`.`OrderID` = `o0`.`OrderID`
+ORDER BY `t`.`OrderID`, `o0`.`ProductID`");
         }
 
         public override Task Complex_nested_query_doesnt_try_binding_to_grandparent_when_parent_returns_complex_result(bool async)
@@ -359,6 +353,121 @@ ORDER BY `t`.`OrderID`, `t0`.`ProductID`");
             }
         }
 
+        public override async Task Client_code_using_instance_method_throws(bool async)
+        {
+            Assert.Equal(
+                CoreStrings.ClientProjectionCapturingConstantInMethodInstance(
+                    "Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query.NorthwindMiscellaneousQueryMySqlTest",
+                    "InstanceMethod"),
+                (await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => base.Client_code_using_instance_method_throws(async))).Message);
+
+            AssertSql();
+        }
+
+        public override async Task Client_code_using_instance_in_static_method(bool async)
+        {
+            Assert.Equal(
+                CoreStrings.ClientProjectionCapturingConstantInMethodArgument(
+                    "Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query.NorthwindMiscellaneousQueryMySqlTest",
+                    "StaticMethod"),
+                (await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => base.Client_code_using_instance_in_static_method(async))).Message);
+
+            AssertSql();
+        }
+
+        public override async Task Client_code_using_instance_in_anonymous_type(bool async)
+        {
+            Assert.Equal(
+                CoreStrings.ClientProjectionCapturingConstantInTree(
+                    "Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query.NorthwindMiscellaneousQueryMySqlTest"),
+                (await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => base.Client_code_using_instance_in_anonymous_type(async))).Message);
+
+            AssertSql();
+        }
+
+        public override async Task Client_code_unknown_method(bool async)
+        {
+            await AssertTranslationFailedWithDetails(
+                () => base.Client_code_unknown_method(async),
+                CoreStrings.QueryUnableToTranslateMethod(
+                    "Microsoft.EntityFrameworkCore.Query.NorthwindMiscellaneousQueryTestBase<Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query.NorthwindQueryMySqlFixture<Microsoft.EntityFrameworkCore.TestUtilities.NoopModelCustomizer>>",
+                    nameof(UnknownMethod)));
+
+            AssertSql();
+        }
+
+        public override async Task Entity_equality_through_subquery_composite_key(bool async)
+        {
+            var message = (await Assert.ThrowsAsync<InvalidOperationException>(
+                () => base.Entity_equality_through_subquery_composite_key(async))).Message;
+
+            Assert.Equal(
+                CoreStrings.EntityEqualityOnCompositeKeyEntitySubqueryNotSupported("==", nameof(OrderDetail)),
+                message);
+
+            AssertSql();
+        }
+
+        public override async Task Max_on_empty_sequence_throws(bool async)
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(() => base.Max_on_empty_sequence_throws(async));
+
+            AssertSql(
+                @"SELECT (
+    SELECT MAX(`o`.`OrderID`)
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`) AS `Max`
+FROM `Customers` AS `c`");
+        }
+
+        public override async Task
+            Select_DTO_constructor_distinct_with_collection_projection_translated_to_server_with_binding_after_client_eval(bool async)
+        {
+            using var context = CreateContext();
+            var actualQuery = context.Set<Order>()
+                .Where(o => o.OrderID < 10300)
+                .Select(o => new { A = new OrderCountDTO(o.CustomerID), o.CustomerID })
+                .Distinct()
+                .Select(e => new { e.A, Orders = context.Set<Order>().Where(o => o.CustomerID == e.CustomerID)
+                    .OrderBy(o => o.OrderID) // <-- added
+                    .ToList() });
+
+            var actual = async
+                ? (await actualQuery.ToListAsync()).OrderBy(e => e.A.Id).ToList()
+                : actualQuery.ToList().OrderBy(e => e.A.Id).ToList();
+
+            var expected = Fixture.GetExpectedData().Set<Order>()
+                .Where(o => o.OrderID < 10300)
+                .Select(o => new { A = new OrderCountDTO(o.CustomerID), o.CustomerID })
+                .Distinct()
+                .Select(e => new { e.A, Orders = Fixture.GetExpectedData().Set<Order>().Where(o => o.CustomerID == e.CustomerID)
+                    .OrderBy(o => o.OrderID) // <-- added
+                    .ToList() })
+                .ToList().OrderBy(e => e.A.Id).ToList();
+
+            Assert.Equal(expected.Count, actual.Count);
+            for (var i = 0; i < expected.Count; i++)
+            {
+                Assert.Equal(expected[i].A.Id, actual[i].A.Id);
+                Assert.True(expected[i].Orders?.SequenceEqual(actual[i].Orders) ?? true);
+            }
+
+            AssertSql(
+"""
+SELECT `t`.`CustomerID`, `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
+FROM (
+    SELECT DISTINCT `o`.`CustomerID`
+    FROM `Orders` AS `o`
+    WHERE `o`.`OrderID` < 10300
+) AS `t`
+LEFT JOIN `Orders` AS `o0` ON `t`.`CustomerID` = `o0`.`CustomerID`
+ORDER BY `t`.`CustomerID`, `o0`.`OrderID`
+""");
+        }
+
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
         public override Task DefaultIfEmpty_Sum_over_collection_navigation(bool async)
         {
@@ -370,5 +479,37 @@ ORDER BY `t`.`OrderID`, `t0`.`ProductID`");
 
         protected override void ClearLog()
             => Fixture.TestSqlLoggerFactory.Clear();
+
+        private class OrderCountDTO
+        {
+            public string Id { get; set; }
+            public int Count { get; set; }
+
+            public OrderCountDTO()
+            {
+            }
+
+            public OrderCountDTO(string id)
+            {
+                Id = id;
+                Count = 0;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (obj is null)
+                {
+                    return false;
+                }
+
+                return ReferenceEquals(this, obj) ? true : obj.GetType() == GetType() && Equals((OrderCountDTO)obj);
+            }
+
+            private bool Equals(OrderCountDTO other)
+                => string.Equals(Id, other.Id) && Count == other.Count;
+
+            public override int GetHashCode()
+                => HashCode.Combine(Id, Count);
+        }
     }
 }

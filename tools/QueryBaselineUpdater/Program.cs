@@ -9,7 +9,7 @@ namespace QueryBaselineUpdater
     {
         private static void Main(string[] args)
         {
-            const string assertSqlPattern = @"\s*AssertSql\(\s*@"".*?""\);\r?\n";
+            const string assertSqlPattern = @"\s*Assert(?:ExecuteUpdate)?Sql\(\s*(?:(?:@?(""""""|"")).*?\1)?\);\r?\n";
 
             var queryBaselineFilePath = args[0];
             var testFilePath = args[1];

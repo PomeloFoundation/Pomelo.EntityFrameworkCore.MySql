@@ -2,10 +2,12 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
@@ -28,45 +30,168 @@ namespace Microsoft.EntityFrameworkCore
         ///     </para>
         /// </summary>
         /// <returns> The strategy, or <see cref="MySqlValueGenerationStrategy.None"/> if none was set. </returns>
-        public static MySqlValueGenerationStrategy? GetValueGenerationStrategy([NotNull] this IReadOnlyProperty property, StoreObjectIdentifier storeObject = default)
+        public static MySqlValueGenerationStrategy GetValueGenerationStrategy([NotNull] this IReadOnlyProperty property)
         {
-            var annotation = property[MySqlAnnotationNames.ValueGenerationStrategy];
-            if (annotation != null)
+            // Allow users to use the underlying type value instead of the enum itself.
+            // Workaround for: https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1205
+            if (property[MySqlAnnotationNames.ValueGenerationStrategy] is { } annotationValue &&
+                ObjectToEnumConverter.GetEnumValue<MySqlValueGenerationStrategy>(annotationValue) is { } enumValue)
             {
-                // Allow users to use the underlying type value instead of the enum itself.
-                // Workaround for: https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1205
-                //return ObjectToEnumConverter.GetEnumValue<MySqlValueGenerationStrategy>(annotation);
-                return ObjectToEnumConverter.GetEnumValue<MySqlValueGenerationStrategy>(annotation);
+                return enumValue;
             }
 
-            if (property.GetContainingForeignKeys().Any(fk => !fk.IsBaseLinking()) ||
-                property.TryGetDefaultValue(storeObject, out _) ||
-                property.GetDefaultValueSql() != null ||
-                property.GetComputedColumnSql() != null)
+            if (property.ValueGenerated == ValueGenerated.OnAdd)
             {
-                return null;
+                if (property.IsForeignKey()
+                    || property.TryGetDefaultValue(out _)
+                    || property.GetDefaultValueSql() != null
+                    || property.GetComputedColumnSql() != null)
+                {
+                    return MySqlValueGenerationStrategy.None;
+                }
+
+                if (IsCompatibleIdentityColumn(property))
+                {
+                    return MySqlValueGenerationStrategy.IdentityColumn;
+                }
+
+                return GetDefaultValueGenerationStrategy(property);
             }
 
-            if (storeObject != default &&
-                property.ValueGenerated == ValueGenerated.Never)
+            if (property.ValueGenerated == ValueGenerated.OnAddOrUpdate)
             {
-                return property.FindSharedStoreObjectRootProperty(storeObject)
-                    ?.GetValueGenerationStrategy(storeObject);
+                if (IsCompatibleComputedColumn(property))
+                {
+                    return MySqlValueGenerationStrategy.ComputedColumn;
+                }
             }
 
-            if (property.ValueGenerated == ValueGenerated.OnAdd &&
-                IsCompatibleIdentityColumn(property))
+            return MySqlValueGenerationStrategy.None;
+        }
+
+        public static MySqlValueGenerationStrategy GetValueGenerationStrategy(
+            this IReadOnlyProperty property,
+            in StoreObjectIdentifier storeObject)
+            => GetValueGenerationStrategy(property, storeObject, null);
+
+        internal static MySqlValueGenerationStrategy GetValueGenerationStrategy(
+            this IReadOnlyProperty property,
+            in StoreObjectIdentifier storeObject,
+            [CanBeNull] ITypeMappingSource typeMappingSource)
+        {
+            if (property.FindOverrides(storeObject)?.FindAnnotation(MySqlAnnotationNames.ValueGenerationStrategy) is { } @override)
+            {
+                return ObjectToEnumConverter.GetEnumValue<MySqlValueGenerationStrategy>(@override.Value) ?? MySqlValueGenerationStrategy.None;
+            }
+
+            var annotation = property.FindAnnotation(MySqlAnnotationNames.ValueGenerationStrategy);
+            if (annotation?.Value is { } annotationValue
+                && ObjectToEnumConverter.GetEnumValue<MySqlValueGenerationStrategy>(annotationValue) is { } enumValue
+                && StoreObjectIdentifier.Create(property.DeclaringEntityType, storeObject.StoreObjectType) == storeObject)
+            {
+                return enumValue;
+            }
+
+            var table = storeObject;
+            var sharedTableRootProperty = property.FindSharedStoreObjectRootProperty(storeObject);
+            if (sharedTableRootProperty != null)
+            {
+                return sharedTableRootProperty.GetValueGenerationStrategy(storeObject, typeMappingSource)
+                    == MySqlValueGenerationStrategy.IdentityColumn
+                    && table.StoreObjectType == StoreObjectType.Table
+                    && !property.GetContainingForeignKeys().Any(
+                        fk =>
+                            !fk.IsBaseLinking()
+                            || (StoreObjectIdentifier.Create(fk.PrincipalEntityType, StoreObjectType.Table)
+                                    is StoreObjectIdentifier principal
+                                && fk.GetConstraintName(table, principal) != null))
+                        ? MySqlValueGenerationStrategy.IdentityColumn
+                        : MySqlValueGenerationStrategy.None;
+            }
+
+            if (property.ValueGenerated == ValueGenerated.OnAdd)
+            {
+                if (table.StoreObjectType != StoreObjectType.Table
+                    || property.TryGetDefaultValue(storeObject, out _)
+                    || property.GetDefaultValueSql(storeObject) != null
+                    || property.GetComputedColumnSql(storeObject) != null
+                    || property.GetContainingForeignKeys()
+                        .Any(
+                            fk =>
+                                !fk.IsBaseLinking()
+                                || (StoreObjectIdentifier.Create(fk.PrincipalEntityType, StoreObjectType.Table)
+                                        is StoreObjectIdentifier principal
+                                    && fk.GetConstraintName(table, principal) != null)))
+                {
+                    return MySqlValueGenerationStrategy.None;
+                }
+
+                if (IsCompatibleIdentityColumn(property))
+                {
+                    return MySqlValueGenerationStrategy.IdentityColumn;
+                }
+
+                var defaultStrategy = GetDefaultValueGenerationStrategy(property, storeObject, typeMappingSource);
+                if (defaultStrategy != MySqlValueGenerationStrategy.None)
+                {
+                    if (annotation != null)
+                    {
+                        return (MySqlValueGenerationStrategy?)annotation.Value ?? MySqlValueGenerationStrategy.None;
+                    }
+                }
+
+                return defaultStrategy;
+            }
+
+            if (property.ValueGenerated == ValueGenerated.OnAddOrUpdate)
+            {
+                if (IsCompatibleComputedColumn(property))
+                {
+                    return MySqlValueGenerationStrategy.ComputedColumn;
+                }
+            }
+
+            return MySqlValueGenerationStrategy.None;
+        }
+
+        /// <summary>
+        ///     Returns the <see cref="MySqlValueGenerationStrategy" /> to use for the property.
+        /// </summary>
+        /// <remarks>
+        ///     If no strategy is set for the property, then the strategy to use will be taken from the <see cref="IModel" />.
+        /// </remarks>
+        /// <param name="overrides">The property overrides.</param>
+        /// <returns>The strategy, or <see cref="MySqlValueGenerationStrategy.None" /> if none was set.</returns>
+        public static MySqlValueGenerationStrategy? GetValueGenerationStrategy(this IReadOnlyRelationalPropertyOverrides overrides)
+            => overrides.FindAnnotation(MySqlAnnotationNames.ValueGenerationStrategy) is { } @override
+                ? ObjectToEnumConverter.GetEnumValue<MySqlValueGenerationStrategy>(@override.Value) ??
+                  MySqlValueGenerationStrategy.None
+                : null;
+
+        private static MySqlValueGenerationStrategy GetDefaultValueGenerationStrategy(IReadOnlyProperty property)
+        {
+            var modelStrategy = property.DeclaringEntityType.Model.GetValueGenerationStrategy();
+
+            if (modelStrategy == MySqlValueGenerationStrategy.IdentityColumn &&
+                IsCompatibleAutoIncrementColumn(property))
             {
                 return MySqlValueGenerationStrategy.IdentityColumn;
             }
 
-            if (property.ValueGenerated == ValueGenerated.OnAddOrUpdate &&
-                IsCompatibleComputedColumn(property))
-            {
-                return MySqlValueGenerationStrategy.ComputedColumn;
-            }
+            return MySqlValueGenerationStrategy.None;
+        }
 
-            return null;
+        private static MySqlValueGenerationStrategy GetDefaultValueGenerationStrategy(
+            IReadOnlyProperty property,
+            in StoreObjectIdentifier storeObject,
+            [CanBeNull] ITypeMappingSource typeMappingSource)
+        {
+            var modelStrategy = property.DeclaringEntityType.Model.GetValueGenerationStrategy();
+
+            return modelStrategy == MySqlValueGenerationStrategy.IdentityColumn
+                   && IsCompatibleAutoIncrementColumn(property, storeObject, typeMappingSource)
+                ? MySqlValueGenerationStrategy.IdentityColumn
+                : MySqlValueGenerationStrategy.None;
         }
 
         /// <summary>
@@ -75,12 +200,11 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="property"> The property. </param>
         /// <param name="value"> The strategy to use. </param>
         public static void SetValueGenerationStrategy(
-            [NotNull] this IMutableProperty property, MySqlValueGenerationStrategy? value)
-        {
-            CheckValueGenerationStrategy(property, value);
-
-            property.SetOrRemoveAnnotation(MySqlAnnotationNames.ValueGenerationStrategy, value);
-        }
+            [NotNull] this IMutableProperty property,
+            MySqlValueGenerationStrategy? value)
+            => property.SetOrRemoveAnnotation(
+                MySqlAnnotationNames.ValueGenerationStrategy,
+                CheckValueGenerationStrategy(property, value));
 
         /// <summary>
         ///     Sets the <see cref="MySqlValueGenerationStrategy" /> to use for the property.
@@ -88,45 +212,128 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="property"> The property. </param>
         /// <param name="value"> The strategy to use. </param>
         /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
-        public static MySqlValueGenerationStrategy? SetValueGenerationStrategy([NotNull] this IConventionProperty property, MySqlValueGenerationStrategy? value, bool fromDataAnnotation = false)
-        {
-            CheckValueGenerationStrategy(property, value);
-
-            property.SetOrRemoveAnnotation(MySqlAnnotationNames.ValueGenerationStrategy, value, fromDataAnnotation);
-
-            return value;
-        }
+        public static MySqlValueGenerationStrategy? SetValueGenerationStrategy(
+            [NotNull] this IConventionProperty property,
+            MySqlValueGenerationStrategy? value,
+            bool fromDataAnnotation = false)
+            => (MySqlValueGenerationStrategy?)property.SetOrRemoveAnnotation(
+                    MySqlAnnotationNames.ValueGenerationStrategy,
+                    CheckValueGenerationStrategy(property, value),
+                    fromDataAnnotation)
+                ?.Value;
 
         /// <summary>
-        /// Returns the <see cref="ConfigurationSource" /> for the <see cref="MySqlValueGenerationStrategy" />.
+        ///     Sets the <see cref="MySqlValueGenerationStrategy" /> to use for the property for a particular table.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="value">The strategy to use.</param>
+        /// <param name="storeObject">The identifier of the table containing the column.</param>
+        public static void SetValueGenerationStrategy(
+            this IMutableProperty property,
+            MySqlValueGenerationStrategy? value,
+            in StoreObjectIdentifier storeObject)
+            => property.GetOrCreateOverrides(storeObject)
+                .SetValueGenerationStrategy(value);
+
+        /// <summary>
+        ///     Sets the <see cref="MySqlValueGenerationStrategy" /> to use for the property for a particular table.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="value">The strategy to use.</param>
+        /// <param name="storeObject">The identifier of the table containing the column.</param>
+        /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
+        /// <returns>The configured value.</returns>
+        public static MySqlValueGenerationStrategy? SetValueGenerationStrategy(
+            this IConventionProperty property,
+            MySqlValueGenerationStrategy? value,
+            in StoreObjectIdentifier storeObject,
+            bool fromDataAnnotation = false)
+            => property.GetOrCreateOverrides(storeObject, fromDataAnnotation)
+                .SetValueGenerationStrategy(value, fromDataAnnotation);
+
+        /// <summary>
+        ///     Sets the <see cref="MySqlValueGenerationStrategy" /> to use for the property for a particular table.
+        /// </summary>
+        /// <param name="overrides">The property overrides.</param>
+        /// <param name="value">The strategy to use.</param>
+        public static void SetValueGenerationStrategy(
+            this IMutableRelationalPropertyOverrides overrides,
+            MySqlValueGenerationStrategy? value)
+            => overrides.SetOrRemoveAnnotation(
+                MySqlAnnotationNames.ValueGenerationStrategy,
+                CheckValueGenerationStrategy(overrides.Property, value));
+
+        /// <summary>
+        ///     Sets the <see cref="MySqlValueGenerationStrategy" /> to use for the property for a particular table.
+        /// </summary>
+        /// <param name="overrides">The property overrides.</param>
+        /// <param name="value">The strategy to use.</param>
+        /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
+        /// <returns>The configured value.</returns>
+        public static MySqlValueGenerationStrategy? SetValueGenerationStrategy(
+            this IConventionRelationalPropertyOverrides overrides,
+            MySqlValueGenerationStrategy? value,
+            bool fromDataAnnotation = false)
+            => (MySqlValueGenerationStrategy?)overrides.SetOrRemoveAnnotation(
+                MySqlAnnotationNames.ValueGenerationStrategy,
+                CheckValueGenerationStrategy(overrides.Property, value),
+                fromDataAnnotation)?.Value;
+
+        /// <summary>
+        ///     Returns the <see cref="ConfigurationSource" /> for the <see cref="MySqlValueGenerationStrategy" />.
         /// </summary>
         /// <param name="property">The property.</param>
         /// <returns>The <see cref="ConfigurationSource" /> for the <see cref="MySqlValueGenerationStrategy" />.</returns>
-        public static ConfigurationSource? GetValueGenerationStrategyConfigurationSource(this IConventionProperty property)
+        public static ConfigurationSource? GetValueGenerationStrategyConfigurationSource(
+            this IConventionProperty property)
             => property.FindAnnotation(MySqlAnnotationNames.ValueGenerationStrategy)?.GetConfigurationSource();
 
-        private static void CheckValueGenerationStrategy(IReadOnlyProperty property, MySqlValueGenerationStrategy? value)
+        /// <summary>
+        ///     Returns the <see cref="ConfigurationSource" /> for the <see cref="MySqlValueGenerationStrategy" /> for a particular table.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="storeObject">The identifier of the table containing the column.</param>
+        /// <returns>The <see cref="ConfigurationSource" /> for the <see cref="MySqlValueGenerationStrategy" />.</returns>
+        public static ConfigurationSource? GetValueGenerationStrategyConfigurationSource(
+            this IConventionProperty property,
+            in StoreObjectIdentifier storeObject)
+            => property.FindOverrides(storeObject)?.GetValueGenerationStrategyConfigurationSource();
+
+        /// <summary>
+        ///     Returns the <see cref="ConfigurationSource" /> for the <see cref="MySqlValueGenerationStrategy" /> for a particular table.
+        /// </summary>
+        /// <param name="overrides">The property overrides.</param>
+        /// <returns>The <see cref="ConfigurationSource" /> for the <see cref="MySqlValueGenerationStrategy" />.</returns>
+        public static ConfigurationSource? GetValueGenerationStrategyConfigurationSource(
+            this IConventionRelationalPropertyOverrides overrides)
+            => overrides.FindAnnotation(MySqlAnnotationNames.ValueGenerationStrategy)?.GetConfigurationSource();
+
+        private static MySqlValueGenerationStrategy? CheckValueGenerationStrategy(IReadOnlyProperty property, MySqlValueGenerationStrategy? value)
         {
-            if (value != null)
+            if (value == null)
             {
-                var propertyType = property.ClrType;
-
-                if (value == MySqlValueGenerationStrategy.IdentityColumn
-                    && !IsCompatibleIdentityColumn(property))
-                {
-                    throw new ArgumentException(
-                            MySqlStrings.IdentityBadType(
-                                property.Name, property.DeclaringEntityType.DisplayName(), propertyType.ShortDisplayName()));
-                }
-
-                if (value == MySqlValueGenerationStrategy.ComputedColumn
-                    && !IsCompatibleComputedColumn(property))
-                {
-                    throw new ArgumentException(
-                            MySqlStrings.ComputedBadType(
-                                property.Name, property.DeclaringEntityType.DisplayName(), propertyType.ShortDisplayName()));
-                }
+                return null;
             }
+
+            var propertyType = property.ClrType;
+
+            if (value == MySqlValueGenerationStrategy.IdentityColumn
+                && !IsCompatibleIdentityColumn(property))
+            {
+                throw new ArgumentException(
+                    MySqlStrings.IdentityBadType(
+                        property.Name, property.DeclaringEntityType.DisplayName(), propertyType.ShortDisplayName()));
+            }
+
+            if (value == MySqlValueGenerationStrategy.ComputedColumn
+                && !IsCompatibleComputedColumn(property))
+            {
+                throw new ArgumentException(
+                    MySqlStrings.ComputedBadType(
+                        property.Name, property.DeclaringEntityType.DisplayName(), propertyType.ShortDisplayName()));
+            }
+
+            return value;
         }
 
         /// <summary>
@@ -137,6 +344,13 @@ namespace Microsoft.EntityFrameworkCore
         public static bool IsCompatibleIdentityColumn(IReadOnlyProperty property)
             => IsCompatibleAutoIncrementColumn(property) ||
                IsCompatibleCurrentTimestampColumn(property);
+
+        private static bool IsCompatibleIdentityColumn(
+            IReadOnlyProperty property,
+            in StoreObjectIdentifier storeObject,
+            [CanBeNull] ITypeMappingSource typeMappingSource)
+            => IsCompatibleAutoIncrementColumn(property, storeObject, typeMappingSource) ||
+               IsCompatibleCurrentTimestampColumn(property, storeObject, typeMappingSource);
 
         /// <summary>
         ///     Returns a value indicating whether the property is compatible with an `AUTO_INCREMENT` column.
@@ -151,6 +365,23 @@ namespace Microsoft.EntityFrameworkCore
                    type == typeof(decimal);
         }
 
+        private static bool IsCompatibleAutoIncrementColumn(
+            IReadOnlyProperty property,
+            in StoreObjectIdentifier storeObject,
+            [CanBeNull] ITypeMappingSource typeMappingSource)
+        {
+            if (storeObject.StoreObjectType != StoreObjectType.Table)
+            {
+                return false;
+            }
+
+            var valueConverter = GetConverter(property, storeObject, typeMappingSource);
+            var type = (valueConverter?.ProviderClrType ?? property.ClrType).UnwrapNullableType();
+
+            return (type.IsInteger()
+                    || type == typeof(decimal));
+        }
+
         /// <summary>
         ///     Returns a value indicating whether the property is compatible with a `CURRENT_TIMESTAMP` column default.
         /// </summary>
@@ -160,6 +391,23 @@ namespace Microsoft.EntityFrameworkCore
         {
             var valueConverter = GetConverter(property);
             var type = (valueConverter?.ProviderClrType ?? property.ClrType).UnwrapNullableType();
+            return type == typeof(DateTime) ||
+                   type == typeof(DateTimeOffset);
+        }
+
+        private static bool IsCompatibleCurrentTimestampColumn(
+            IReadOnlyProperty property,
+            in StoreObjectIdentifier storeObject,
+            [CanBeNull] ITypeMappingSource typeMappingSource)
+        {
+            if (storeObject.StoreObjectType != StoreObjectType.Table)
+            {
+                return false;
+            }
+
+            var valueConverter = GetConverter(property, storeObject, typeMappingSource);
+            var type = (valueConverter?.ProviderClrType ?? property.ClrType).UnwrapNullableType();
+
             return type == typeof(DateTime) ||
                    type == typeof(DateTimeOffset);
         }
@@ -188,7 +436,16 @@ namespace Microsoft.EntityFrameworkCore
         }
 
         private static ValueConverter GetConverter(IReadOnlyProperty property)
-            => property.FindTypeMapping()?.Converter ?? property.GetValueConverter();
+            => property.GetValueConverter() ??
+               property.FindTypeMapping()?.Converter;
+
+        private static ValueConverter GetConverter(
+            IReadOnlyProperty property,
+            StoreObjectIdentifier storeObject,
+            [CanBeNull] ITypeMappingSource typeMappingSource)
+            => property.GetValueConverter()
+               ?? (property.FindRelationalTypeMapping(storeObject)
+                   ?? typeMappingSource?.FindMapping((IProperty)property))?.Converter;
 
         /// <summary>
         /// Returns the name of the charset used by the column of the property.

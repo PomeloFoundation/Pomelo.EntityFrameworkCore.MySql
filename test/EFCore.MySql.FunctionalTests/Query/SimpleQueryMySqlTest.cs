@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 
 // ReSharper disable InconsistentNaming
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
@@ -40,6 +42,18 @@ LIMIT 2");
             var contextFactory = await InitializeAsync<Context23981>();
             using var context = contextFactory.CreateContext();
             var bad = context.Set<NameSpace1.TestQuery>().FromSqlRaw(@"SELECT cast(null as signed) AS MyValue").ToList(); // <-- MySQL uses `signed` instead of `int` in CAST() expressions
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
+        public override Task Group_by_multiple_aggregate_joining_different_tables(bool async)
+        {
+            return base.Group_by_multiple_aggregate_joining_different_tables(async);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
+        public override Task Group_by_multiple_aggregate_joining_different_tables_with_query_filter(bool async)
+        {
+            return base.Group_by_multiple_aggregate_joining_different_tables_with_query_filter(async);
         }
     }
 }

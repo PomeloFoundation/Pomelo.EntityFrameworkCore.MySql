@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -19,18 +20,34 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             base.Input_query_escapes_parameter();
 
-            AssertSql(
-                @"@p0='Back\slash's Garden Party' (Nullable = false) (Size = 4000)
+            if (AppConfig.ServerVersion.Supports.Returning)
+            {
+                AssertSql(
+                    @"@p0='Back\slash's Garden Party' (Nullable = false) (Size = 4000)
+
+INSERT INTO `Artists` (`Name`)
+VALUES (@p0)
+RETURNING `ArtistId`;",
+                    //
+                    @"SELECT `a`.`ArtistId`, `a`.`Name`
+FROM `Artists` AS `a`
+WHERE `a`.`Name` LIKE '% Garden Party'");
+            }
+            else
+            {
+                AssertSql(
+                    @"@p0='Back\slash's Garden Party' (Nullable = false) (Size = 4000)
 
 INSERT INTO `Artists` (`Name`)
 VALUES (@p0);
 SELECT `ArtistId`
 FROM `Artists`
 WHERE ROW_COUNT() = 1 AND `ArtistId` = LAST_INSERT_ID();",
-                //
-                @"SELECT `a`.`ArtistId`, `a`.`Name`
+                    //
+                    @"SELECT `a`.`ArtistId`, `a`.`Name`
 FROM `Artists` AS `a`
 WHERE `a`.`Name` LIKE '% Garden Party'");
+            }
         }
 
         [ConditionalTheory]

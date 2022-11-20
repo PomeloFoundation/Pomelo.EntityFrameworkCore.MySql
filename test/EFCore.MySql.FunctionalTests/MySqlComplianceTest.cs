@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Update;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
@@ -18,7 +19,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
             // TODO: Reenable LoggingMySqlTest once its issue has been fixed in EF Core upstream.
             typeof(LoggingTestBase),
-            typeof(LoggingRelationalTestBase<,>)
+            typeof(LoggingRelationalTestBase<,>),
+
+            // We have our own JSON support for now
+            typeof(JsonUpdateTestBase<>),
+            typeof(JsonQueryTestBase<>),
+            typeof(JsonQueryAdHocTestBase),
         };
 
         protected override Assembly TargetAssembly { get; } = typeof(MySqlComplianceTest).Assembly;
