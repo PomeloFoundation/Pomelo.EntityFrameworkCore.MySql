@@ -37,7 +37,7 @@ jobs:
       fail-fast: false
       matrix:
         db: [mysql,mariadb]
-        version: ["5.7.36", "8.0.27", "10.3.35", "10.4.25", "10.5.16","10.6.8", "10.7.4", "10.8.3"]
+        version: ["5.7.36", "8.0.27", "10.3.35", "10.4.25", "10.5.16","10.6.8", "10.7.4", "10.8.3", "10.9.1", "10.11.1"]
         os: [ubuntu-latest, windows-latest]
         exclude:
           - db: mysql
@@ -52,6 +52,10 @@ jobs:
             version: "10.7.4"
           - db: mysql
             version: "10.8.3"
+          - db: mysql
+            version: "10.9.1"
+          - db: mysql
+            version: "10.11.1"
           - db: mariadb
             version: "5.7.36"
           - db: mariadb
