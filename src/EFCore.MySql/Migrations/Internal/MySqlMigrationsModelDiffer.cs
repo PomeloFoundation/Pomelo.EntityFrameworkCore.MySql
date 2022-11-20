@@ -7,15 +7,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Internal;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.EntityFrameworkCore.Update.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
@@ -33,16 +30,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         }
 
         public MySqlMigrationsModelDiffer(
-            [NotNull] IRelationalTypeMappingSource typeMappingSource,
-            [NotNull] IMigrationsAnnotationProvider migrationsAnnotations,
-            [NotNull] IChangeDetector changeDetector,
-            [NotNull] IUpdateAdapterFactory updateAdapterFactory,
-            [NotNull] CommandBatchPreparerDependencies commandBatchPreparerDependencies)
+            IRelationalTypeMappingSource typeMappingSource,
+            IMigrationsAnnotationProvider migrationsAnnotationProvider,
+            IRowIdentityMapFactory rowIdentityMapFactory,
+            CommandBatchPreparerDependencies commandBatchPreparerDependencies)
             : base(
                 typeMappingSource,
-                migrationsAnnotations,
-                changeDetector,
-                updateAdapterFactory,
+                migrationsAnnotationProvider,
+                rowIdentityMapFactory,
                 commandBatchPreparerDependencies)
         {
             AssertAllMigrationOperationProperties();

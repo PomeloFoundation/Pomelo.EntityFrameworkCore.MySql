@@ -22,7 +22,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DefaultNetCoreTargetFramework>net6.0</DefaultNetCoreTargetFramework>
+    <PomeloTargetFrameworks>net6.0;net7.0</PomeloTargetFrameworks>
+    <PomeloTestTargetFramework>net7.0</PomeloTestTargetFramework>
+    <EfCoreTargetFramework>net6.0</EfCoreTargetFramework>
+    <EfCoreTestTargetFramework>net7.0</EfCoreTestTargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>

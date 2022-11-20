@@ -165,14 +165,14 @@ DROP PROCEDURE {MigrationsScript};
             => _migrationIdColumnName ??= EnsureModel()
                 .FindEntityType(typeof(HistoryRow))!
                 .FindProperty(nameof(HistoryRow.MigrationId))!
-                .GetColumnBaseName();
+                .GetColumnName();
 
         // Original implementation.
         protected override string ProductVersionColumnName
             => _productVersionColumnName ??= EnsureModel()
                 .FindEntityType(typeof(HistoryRow))!
                 .FindProperty(nameof(HistoryRow.ProductVersion))!
-                .GetColumnBaseName();
+                .GetColumnName();
 
         #endregion Necessary implementation because we cannot directly override EnsureModel
     }

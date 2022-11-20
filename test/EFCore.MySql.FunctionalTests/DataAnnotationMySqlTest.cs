@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -23,6 +24,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
         protected override void UseTransaction(DatabaseFacade facade, IDbContextTransaction transaction)
             => facade.UseTransaction(transaction.GetDbTransaction());
+
+        protected override TestHelpers TestHelpers
+            => MySqlTestHelpers.Instance;
 
         public override IModel Non_public_annotations_are_enabled()
         {
@@ -143,8 +147,27 @@ SELECT ROW_COUNT();");
         {
             base.DatabaseGeneratedAttribute_autogenerates_values_when_set_to_identity();
 
-            AssertSql(
-                @"@p0=NULL (Size = 10)
+            if (AppConfig.ServerVersion.Supports.Returning)
+            {
+                AssertSql(
+"""
+@p0=NULL (Size = 10)
+@p1='Third' (Nullable = false) (Size = 4000)
+@p2='00000000-0000-0000-0000-000000000003'
+@p3='Third Additional Name' (Size = 4000)
+@p4='0' (Nullable = true)
+@p5='Third Name' (Size = 4000)
+@p6='0' (Nullable = true)
+
+INSERT INTO `Sample` (`MaxLengthProperty`, `Name`, `RowVersion`, `AdditionalDetails_Name`, `AdditionalDetails_Value`, `Details_Name`, `Details_Value`)
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6)
+RETURNING `Unique_No`;
+""");
+            }
+            else
+            {
+                AssertSql(
+                    @"@p0=NULL (Size = 10)
 @p1='Third' (Nullable = false) (Size = 4000)
 @p2='00000000-0000-0000-0000-000000000003'
 @p3='Third Additional Name' (Size = 4000)
@@ -157,6 +180,7 @@ VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6);
 SELECT `Unique_No`
 FROM `Sample`
 WHERE ROW_COUNT() = 1 AND `Unique_No` = LAST_INSERT_ID();");
+            }
         }
 
         [ConditionalFact]

@@ -173,9 +173,9 @@ WHERE `c`.`Region` IS NULL OR (TRIM(`c`.`Region`) = '')");
             await base.Indexof_with_emptystring(async);
 
             AssertSql(
-                $@"SELECT LOCATE('', `c`.`ContactName`) - 1
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` = 'ALFKI'");
+WHERE (LOCATE('', `c`.`ContactName`) - 1) = 0");
         }
 
         [ConditionalTheory]
@@ -184,9 +184,9 @@ WHERE `c`.`CustomerID` = 'ALFKI'");
             await base.Replace_with_emptystring(async);
 
             AssertSql(
-                $@"SELECT REPLACE(`c`.`ContactName`, 'ari', '')
+                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` = 'ALFKI'");
+WHERE REPLACE(`c`.`ContactName`, 'ia', '') = 'Mar Anders'");
         }
 
         [ConditionalTheory]
@@ -342,7 +342,7 @@ WHERE (`o`.`UnitPrice` < 7.0) AND (10 < `o`.`ProductID`)");
             await base.Select_math_round_int(async);
 
             AssertSql(
-                $@"SELECT ROUND({CastAsDouble("`o`.`OrderID`")}) AS `A`
+                $@"SELECT ROUND({MySqlTestHelpers.CastAsDouble("`o`.`OrderID`")}) AS `A`
 FROM `Orders` AS `o`
 WHERE `o`.`OrderID` < 10250");
         }
@@ -543,7 +543,7 @@ WHERE (`o`.`Quantity` < 5) AND (ABS(`o`.`UnitPrice`) > 10.0)");
             AssertSql(
                 $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE (`o`.`UnitPrice` < 7.0) AND (CEILING({CastAsDouble("`o`.`Discount`")}) > 0.0)");
+WHERE (`o`.`UnitPrice` < 7.0) AND (CEILING({MySqlTestHelpers.CastAsDouble("`o`.`Discount`")}) > 0.0)");
         }
 
         public override async Task Where_math_ceiling2(bool async)
@@ -573,7 +573,7 @@ WHERE (`o`.`Quantity` < 5) AND (FLOOR(`o`.`UnitPrice`) > 10.0)");
             AssertSql(
                 $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE POWER({CastAsDouble("`o`.`Discount`")}, 3.0) > 0.004999999888241291");
+WHERE POWER({MySqlTestHelpers.CastAsDouble("`o`.`Discount`")}, 3.0) > 0.004999999888241291");
         }
 
         public override async Task Where_math_round(bool async)
@@ -591,7 +591,7 @@ WHERE (`o`.`Quantity` < 5) AND (ROUND(`o`.`UnitPrice`) > 10.0)");
             await base.Select_math_truncate_int(async);
 
             AssertSql(
-                $@"SELECT TRUNCATE({CastAsDouble("`o`.`OrderID`")}, 0) AS `A`
+                $@"SELECT TRUNCATE({MySqlTestHelpers.CastAsDouble("`o`.`OrderID`")}, 0) AS `A`
 FROM `Orders` AS `o`
 WHERE `o`.`OrderID` < 10250");
         }
@@ -623,7 +623,7 @@ WHERE (`o`.`Quantity` < 5) AND (TRUNCATE(`o`.`UnitPrice`, 0) > 10.0)");
             AssertSql(
                 $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE (`o`.`OrderID` = 11077) AND (EXP({CastAsDouble("`o`.`Discount`")}) > 1.0)");
+WHERE (`o`.`OrderID` = 11077) AND (EXP({MySqlTestHelpers.CastAsDouble("`o`.`Discount`")}) > 1.0)");
         }
 
         public override async Task Where_math_log10(bool async)
@@ -633,7 +633,7 @@ WHERE (`o`.`OrderID` = 11077) AND (EXP({CastAsDouble("`o`.`Discount`")}) > 1.0)"
             AssertSql(
                 $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE ((`o`.`OrderID` = 11077) AND (`o`.`Discount` > 0)) AND (LOG10({CastAsDouble("`o`.`Discount`")}) < 0.0)");
+WHERE ((`o`.`OrderID` = 11077) AND (`o`.`Discount` > 0)) AND (LOG10({MySqlTestHelpers.CastAsDouble("`o`.`Discount`")}) < 0.0)");
         }
 
         public override async Task Where_math_log(bool async)
@@ -643,7 +643,7 @@ WHERE ((`o`.`OrderID` = 11077) AND (`o`.`Discount` > 0)) AND (LOG10({CastAsDoubl
             AssertSql(
                 $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE ((`o`.`OrderID` = 11077) AND (`o`.`Discount` > 0)) AND (LOG({CastAsDouble("`o`.`Discount`")}) < 0.0)");
+WHERE ((`o`.`OrderID` = 11077) AND (`o`.`Discount` > 0)) AND (LOG({MySqlTestHelpers.CastAsDouble("`o`.`Discount`")}) < 0.0)");
         }
 
         public override async Task Where_math_log_new_base(bool async)
@@ -653,7 +653,7 @@ WHERE ((`o`.`OrderID` = 11077) AND (`o`.`Discount` > 0)) AND (LOG({CastAsDouble(
             AssertSql(
                 $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE ((`o`.`OrderID` = 11077) AND (`o`.`Discount` > 0)) AND (LOG({CastAsDouble("`o`.`Discount`")}, 7.0) < 0.0)");
+WHERE ((`o`.`OrderID` = 11077) AND (`o`.`Discount` > 0)) AND (LOG({MySqlTestHelpers.CastAsDouble("`o`.`Discount`")}, 7.0) < 0.0)");
         }
 
         public override async Task Where_math_sqrt(bool async)
@@ -663,7 +663,7 @@ WHERE ((`o`.`OrderID` = 11077) AND (`o`.`Discount` > 0)) AND (LOG({CastAsDouble(
             AssertSql(
                 $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE (`o`.`OrderID` = 11077) AND (SQRT({CastAsDouble("`o`.`Discount`")}) > 0.0)");
+WHERE (`o`.`OrderID` = 11077) AND (SQRT({MySqlTestHelpers.CastAsDouble("`o`.`Discount`")}) > 0.0)");
         }
 
         public override async Task Where_math_acos(bool async)
@@ -673,7 +673,7 @@ WHERE (`o`.`OrderID` = 11077) AND (SQRT({CastAsDouble("`o`.`Discount`")}) > 0.0)
             AssertSql(
                 $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE (`o`.`OrderID` = 11077) AND (ACOS({CastAsDouble("`o`.`Discount`")}) > 1.0)");
+WHERE (`o`.`OrderID` = 11077) AND (ACOS({MySqlTestHelpers.CastAsDouble("`o`.`Discount`")}) > 1.0)");
         }
 
         public override async Task Where_math_asin(bool async)
@@ -683,7 +683,7 @@ WHERE (`o`.`OrderID` = 11077) AND (ACOS({CastAsDouble("`o`.`Discount`")}) > 1.0)
             AssertSql(
                 $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE (`o`.`OrderID` = 11077) AND (ASIN({CastAsDouble("`o`.`Discount`")}) > 0.0)");
+WHERE (`o`.`OrderID` = 11077) AND (ASIN({MySqlTestHelpers.CastAsDouble("`o`.`Discount`")}) > 0.0)");
         }
 
         public override async Task Where_math_atan(bool async)
@@ -693,7 +693,7 @@ WHERE (`o`.`OrderID` = 11077) AND (ASIN({CastAsDouble("`o`.`Discount`")}) > 0.0)
             AssertSql(
                 $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE (`o`.`OrderID` = 11077) AND (ATAN({CastAsDouble("`o`.`Discount`")}) > 0.0)");
+WHERE (`o`.`OrderID` = 11077) AND (ATAN({MySqlTestHelpers.CastAsDouble("`o`.`Discount`")}) > 0.0)");
         }
 
         public override async Task Where_math_atan2(bool async)
@@ -703,7 +703,7 @@ WHERE (`o`.`OrderID` = 11077) AND (ATAN({CastAsDouble("`o`.`Discount`")}) > 0.0)
             AssertSql(
                 $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE (`o`.`OrderID` = 11077) AND (ATAN2({CastAsDouble("`o`.`Discount`")}, 1.0) > 0.0)");
+WHERE (`o`.`OrderID` = 11077) AND (ATAN2({MySqlTestHelpers.CastAsDouble("`o`.`Discount`")}, 1.0) > 0.0)");
         }
 
         public override async Task Where_math_cos(bool async)
@@ -713,7 +713,7 @@ WHERE (`o`.`OrderID` = 11077) AND (ATAN2({CastAsDouble("`o`.`Discount`")}, 1.0) 
             AssertSql(
                 $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE (`o`.`OrderID` = 11077) AND (COS({CastAsDouble("`o`.`Discount`")}) > 0.0)");
+WHERE (`o`.`OrderID` = 11077) AND (COS({MySqlTestHelpers.CastAsDouble("`o`.`Discount`")}) > 0.0)");
         }
 
         public override async Task Where_math_sin(bool async)
@@ -723,7 +723,7 @@ WHERE (`o`.`OrderID` = 11077) AND (COS({CastAsDouble("`o`.`Discount`")}) > 0.0)"
             AssertSql(
                 $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE (`o`.`OrderID` = 11077) AND (SIN({CastAsDouble("`o`.`Discount`")}) > 0.0)");
+WHERE (`o`.`OrderID` = 11077) AND (SIN({MySqlTestHelpers.CastAsDouble("`o`.`Discount`")}) > 0.0)");
         }
 
         public override async Task Where_math_tan(bool async)
@@ -733,7 +733,7 @@ WHERE (`o`.`OrderID` = 11077) AND (SIN({CastAsDouble("`o`.`Discount`")}) > 0.0)"
             AssertSql(
                 $@"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE (`o`.`OrderID` = 11077) AND (TAN({CastAsDouble("`o`.`Discount`")}) > 0.0)");
+WHERE (`o`.`OrderID` = 11077) AND (TAN({MySqlTestHelpers.CastAsDouble("`o`.`Discount`")}) > 0.0)");
         }
 
         public override async Task Where_math_sign(bool async)
@@ -763,7 +763,7 @@ WHERE UUID() <> '00000000-0000-0000-0000-000000000000'");
             AssertSql(
                 $@"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE POWER({CastAsDouble("CHAR_LENGTH(`c`.`CustomerID`)")}, 2.0) = 25.0");
+WHERE POWER({MySqlTestHelpers.CastAsDouble("CHAR_LENGTH(`c`.`CustomerID`)")}, 2.0) = 25.0");
         }
 
         public override async Task IsNullOrEmpty_in_predicate(bool async)
@@ -854,10 +854,10 @@ WHERE FALSE");
             await base.Projecting_Math_Truncate_and_ordering_by_it_twice(async);
 
             AssertSql(
-                $@"SELECT TRUNCATE({CastAsDouble("`o`.`OrderID`")}, 0) AS `A`
+                $@"SELECT TRUNCATE({MySqlTestHelpers.CastAsDouble("`o`.`OrderID`")}, 0) AS `A`
 FROM `Orders` AS `o`
 WHERE `o`.`OrderID` < 10250
-ORDER BY TRUNCATE({CastAsDouble("`o`.`OrderID`")}, 0)");
+ORDER BY TRUNCATE({MySqlTestHelpers.CastAsDouble("`o`.`OrderID`")}, 0)");
         }
 
         public override async Task Projecting_Math_Truncate_and_ordering_by_it_twice2(bool async)
@@ -865,10 +865,10 @@ ORDER BY TRUNCATE({CastAsDouble("`o`.`OrderID`")}, 0)");
             await base.Projecting_Math_Truncate_and_ordering_by_it_twice2(async);
 
             AssertSql(
-                $@"SELECT TRUNCATE({CastAsDouble("`o`.`OrderID`")}, 0) AS `A`
+                $@"SELECT TRUNCATE({MySqlTestHelpers.CastAsDouble("`o`.`OrderID`")}, 0) AS `A`
 FROM `Orders` AS `o`
 WHERE `o`.`OrderID` < 10250
-ORDER BY TRUNCATE({CastAsDouble("`o`.`OrderID`")}, 0) DESC");
+ORDER BY TRUNCATE({MySqlTestHelpers.CastAsDouble("`o`.`OrderID`")}, 0) DESC");
         }
 
         public override async Task Projecting_Math_Truncate_and_ordering_by_it_twice3(bool async)
@@ -876,10 +876,10 @@ ORDER BY TRUNCATE({CastAsDouble("`o`.`OrderID`")}, 0) DESC");
             await base.Projecting_Math_Truncate_and_ordering_by_it_twice3(async);
 
             AssertSql(
-                $@"SELECT TRUNCATE({CastAsDouble("`o`.`OrderID`")}, 0) AS `A`
+                $@"SELECT TRUNCATE({MySqlTestHelpers.CastAsDouble("`o`.`OrderID`")}, 0) AS `A`
 FROM `Orders` AS `o`
 WHERE `o`.`OrderID` < 10250
-ORDER BY TRUNCATE({CastAsDouble("`o`.`OrderID`")}, 0) DESC");
+ORDER BY TRUNCATE({MySqlTestHelpers.CastAsDouble("`o`.`OrderID`")}, 0) DESC");
         }
 
         public override async Task String_Compare_simple_zero(bool async)
@@ -1379,11 +1379,11 @@ WHERE (`o`.`CustomerID` = 'ALFKI') AND CAST(CAST(`o`.`OrderID` % 3 AS decimal(65
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND CAST({CastAsDouble("`o`.`OrderID` % 3")} AS signed)",
+WHERE (`o`.`CustomerID` = 'ALFKI') AND CAST({MySqlTestHelpers.CastAsDouble("`o`.`OrderID` % 3")} AS signed)",
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND CAST({CastAsDouble("`o`.`OrderID` % 3")} AS signed)",
+WHERE (`o`.`CustomerID` = 'ALFKI') AND CAST({MySqlTestHelpers.CastAsDouble("`o`.`OrderID` % 3")} AS signed)",
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
@@ -1417,11 +1417,11 @@ WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST(CAST(`o`.`OrderID` % 1 AS decimal(6
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({CastAsDouble("`o`.`OrderID` % 1")} AS unsigned) >= 0)",
+WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({MySqlTestHelpers.CastAsDouble("`o`.`OrderID` % 1")} AS unsigned) >= 0)",
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({CastAsDouble("`o`.`OrderID` % 1")} AS unsigned) >= 0)",
+WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({MySqlTestHelpers.CastAsDouble("`o`.`OrderID` % 1")} AS unsigned) >= 0)",
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
@@ -1459,11 +1459,11 @@ WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST(`o`.`OrderID` % 1 AS decimal(65,30)
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({CastAsDouble("`o`.`OrderID` % 1")} AS decimal(65,30)) >= 0.0)",
+WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({MySqlTestHelpers.CastAsDouble("`o`.`OrderID` % 1")} AS decimal(65,30)) >= 0.0)",
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({CastAsDouble("`o`.`OrderID` % 1")} AS decimal(65,30)) >= 0.0)",
+WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({MySqlTestHelpers.CastAsDouble("`o`.`OrderID` % 1")} AS decimal(65,30)) >= 0.0)",
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
@@ -1489,39 +1489,39 @@ WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST(CAST(`o`.`OrderID` % 1 AS char) AS 
             AssertSql(
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND ({CastAsDouble("CAST(`o`.`OrderID` % 1 AS signed)")} >= 0.0)",
+WHERE (`o`.`CustomerID` = 'ALFKI') AND ({MySqlTestHelpers.CastAsDouble("CAST(`o`.`OrderID` % 1 AS signed)")} >= 0.0)",
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND ({CastAsDouble("CAST(`o`.`OrderID` % 1 AS unsigned)")} >= 0.0)",
+WHERE (`o`.`CustomerID` = 'ALFKI') AND ({MySqlTestHelpers.CastAsDouble("CAST(`o`.`OrderID` % 1 AS unsigned)")} >= 0.0)",
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND ({CastAsDouble("CAST(`o`.`OrderID` % 1 AS decimal(65,30))")} >= 0.0)",
+WHERE (`o`.`CustomerID` = 'ALFKI') AND ({MySqlTestHelpers.CastAsDouble("CAST(`o`.`OrderID` % 1 AS decimal(65,30))")} >= 0.0)",
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND ({CastAsDouble("`o`.`OrderID` % 1")} >= 0.0)",
+WHERE (`o`.`CustomerID` = 'ALFKI') AND ({MySqlTestHelpers.CastAsDouble("`o`.`OrderID` % 1")} >= 0.0)",
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND ({CastAsDouble("`o`.`OrderID` % 1")} >= 0.0)",
+WHERE (`o`.`CustomerID` = 'ALFKI') AND ({MySqlTestHelpers.CastAsDouble("`o`.`OrderID` % 1")} >= 0.0)",
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND ({CastAsDouble("CAST(`o`.`OrderID` % 1 AS signed)")} >= 0.0)",
+WHERE (`o`.`CustomerID` = 'ALFKI') AND ({MySqlTestHelpers.CastAsDouble("CAST(`o`.`OrderID` % 1 AS signed)")} >= 0.0)",
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND ({CastAsDouble("CAST(`o`.`OrderID` % 1 AS signed)")} >= 0.0)",
+WHERE (`o`.`CustomerID` = 'ALFKI') AND ({MySqlTestHelpers.CastAsDouble("CAST(`o`.`OrderID` % 1 AS signed)")} >= 0.0)",
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND ({CastAsDouble("CAST(`o`.`OrderID` % 1 AS signed)")} >= 0.0)",
+WHERE (`o`.`CustomerID` = 'ALFKI') AND ({MySqlTestHelpers.CastAsDouble("CAST(`o`.`OrderID` % 1 AS signed)")} >= 0.0)",
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND ({CastAsDouble("CAST(`o`.`OrderID` % 1 AS char)")} >= 0.0)");
+WHERE (`o`.`CustomerID` = 'ALFKI') AND ({MySqlTestHelpers.CastAsDouble("CAST(`o`.`OrderID` % 1 AS char)")} >= 0.0)");
         }
 
         public override async Task Convert_ToInt16(bool async)
@@ -1543,11 +1543,11 @@ WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST(CAST(`o`.`OrderID` % 1 AS decimal(6
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({CastAsDouble("`o`.`OrderID` % 1")} AS signed) >= 0)",
+WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({MySqlTestHelpers.CastAsDouble("`o`.`OrderID` % 1")} AS signed) >= 0)",
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({CastAsDouble("`o`.`OrderID` % 1")} AS signed) >= 0)",
+WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({MySqlTestHelpers.CastAsDouble("`o`.`OrderID` % 1")} AS signed) >= 0)",
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
@@ -1585,11 +1585,11 @@ WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST(CAST(`o`.`OrderID` % 1 AS decimal(6
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({CastAsDouble("`o`.`OrderID` % 1")} AS signed) >= 0)",
+WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({MySqlTestHelpers.CastAsDouble("`o`.`OrderID` % 1")} AS signed) >= 0)",
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({CastAsDouble("`o`.`OrderID` % 1")} AS signed) >= 0)",
+WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({MySqlTestHelpers.CastAsDouble("`o`.`OrderID` % 1")} AS signed) >= 0)",
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
@@ -1627,11 +1627,11 @@ WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST(CAST(`o`.`OrderID` % 1 AS decimal(6
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({CastAsDouble("`o`.`OrderID` % 1")} AS signed) >= 0)",
+WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({MySqlTestHelpers.CastAsDouble("`o`.`OrderID` % 1")} AS signed) >= 0)",
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({CastAsDouble("`o`.`OrderID` % 1")} AS signed) >= 0)",
+WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({MySqlTestHelpers.CastAsDouble("`o`.`OrderID` % 1")} AS signed) >= 0)",
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
@@ -1669,11 +1669,11 @@ WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST(CAST(`o`.`OrderID` % 1 AS decimal(6
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({CastAsDouble("`o`.`OrderID` % 1")} AS char) <> '10')",
+WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({MySqlTestHelpers.CastAsDouble("`o`.`OrderID` % 1")} AS char) <> '10')",
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({CastAsDouble("`o`.`OrderID` % 1")} AS char) <> '10')",
+WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST({MySqlTestHelpers.CastAsDouble("`o`.`OrderID` % 1")} AS char) <> '10')",
                 //
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
@@ -1698,11 +1698,6 @@ WHERE (`o`.`CustomerID` = 'ALFKI') AND ((CAST(`o`.`OrderDate` AS char) LIKE '%19
 
         public override Task Datetime_subtraction_TotalDays(bool async)
             => AssertTranslationFailed(() => base.Datetime_subtraction_TotalDays(async));
-
-        private string CastAsDouble(string innerSql)
-            => AppConfig.ServerVersion.Supports.DoubleCast
-                ? $@"CAST({innerSql} AS double)"
-                : $@"(CAST({innerSql} AS decimal(65,30)) + 0e0)";
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);

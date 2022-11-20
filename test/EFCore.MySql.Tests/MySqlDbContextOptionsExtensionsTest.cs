@@ -1,5 +1,8 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.TestModels.ConferencePlanner;
+using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
@@ -366,6 +369,51 @@ namespace Pomelo.EntityFrameworkCore.MySql
             mySqlOptions.Initialize(builder.Options);
 
             Assert.Equal(MySqlBooleanType.Bit1, mySqlOptions.DefaultDataTypeMappings.ClrBoolean);
+        }
+
+        [ConditionalTheory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Service_collection_extension_method_can_configure_provider_options(bool nullConnectionString)
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddMySql<ApplicationDbContext>(
+                nullConnectionString
+                    ? null
+                    : AppConfig.ConnectionString,
+                AppConfig.ServerVersion,
+                mySqlOption =>
+                {
+                    mySqlOption.MaxBatchSize(123);
+                    mySqlOption.CommandTimeout(30);
+                },
+                dbContextOption =>
+                {
+                    dbContextOption.EnableDetailedErrors();
+                });
+
+            var services = serviceCollection.BuildServiceProvider();
+
+            using (var serviceScope = services
+                       .GetRequiredService<IServiceScopeFactory>()
+                       .CreateScope())
+            {
+                var coreOptions = serviceScope.ServiceProvider.GetRequiredService<DbContextOptions<ApplicationDbContext>>().GetExtension<CoreOptionsExtension>();
+                Assert.True(coreOptions.DetailedErrorsEnabled);
+
+                var mySqlOptions = serviceScope.ServiceProvider.GetRequiredService<DbContextOptions<ApplicationDbContext>>().GetExtension<MySqlOptionsExtension>();
+                Assert.Equal(123, mySqlOptions.MaxBatchSize);
+                Assert.Equal(30, mySqlOptions.CommandTimeout);
+
+                if (nullConnectionString)
+                {
+                    Assert.Equal(null, mySqlOptions.ConnectionString);
+                }
+                else
+                {
+                    Assert.StartsWith(AppConfig.ConnectionString, mySqlOptions.ConnectionString);
+                }
+            }
         }
     }
 }

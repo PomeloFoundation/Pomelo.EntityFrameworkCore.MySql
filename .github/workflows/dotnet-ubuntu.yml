@@ -1,4 +1,4 @@
-name: .NET Ubuntu
+name: .NET Buil
 
 on:
   push:
@@ -174,11 +174,18 @@ jobs:
         $mySqlCommand
         Invoke-Expression $mySqlCommand
     - name: Setup Database MySQL
-      if: ${{ matrix.version == '8.0.27' }}
+      if: ${{ matrix.version == '8.0.27' && matrix.os == 'ubuntu-latest'}}
       shell: pwsh
       run: |
         $mySqlCommand = "mysql --protocol=tcp -h localhost -P 3306 -u root -pPassword12! -e ""SET GLOBAL sql_mode = '${{ env.mysqlCurrentSqlMode }}'; SET GLOBAL max_connections = ${{ env.maxConnections}};"""
         $mySqlCommand = 'docker exec mysql ' + $mySqlCommand
+        $mySqlCommand
+        Invoke-Expression $mySqlCommand
+    - name: Setup Database MySQL Windows
+      if: ${{ matrix.version == '8.0.27' && matrix.os == 'windows-latest'}}
+      shell: pwsh
+      run: |
+        $mySqlCommand = "mysql --protocol=tcp -h localhost -P 3306 -u root -pPassword12! -e ""SET GLOBAL sql_mode = '${{ env.mysqlCurrentSqlMode }}'; SET GLOBAL max_connections = ${{ env.maxConnections}};"""
         $mySqlCommand
         Invoke-Expression $mySqlCommand
     - name: Setup Database MySQL Legacy
@@ -218,6 +225,7 @@ jobs:
         dotnet build -c Debug
         dotnet build -c Release
     - name: Functional Tests
+      if: ${{ matrix.os == 'ubuntu-latest' }}
       run: dotnet test test/EFCore.MySql.FunctionalTests -c Debug --no-build --logger trx --verbosity detailed
     - name: Tests
       if: ${{ matrix.os == 'ubuntu-latest' }}

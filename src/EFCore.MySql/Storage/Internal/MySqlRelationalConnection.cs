@@ -72,7 +72,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             set => base.DbConnection = value;
         }
 
-        private MySqlConnectionStringBuilder AddConnectionStringOptions(MySqlConnectionStringBuilder builder)
+        protected virtual MySqlConnectionStringBuilder AddConnectionStringOptions(MySqlConnectionStringBuilder builder)
         {
             if (CommandTimeout != null)
             {

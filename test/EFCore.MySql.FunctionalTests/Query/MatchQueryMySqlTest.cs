@@ -320,13 +320,11 @@ WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First' WITH QUERY EXPANSION)");
             public ISetSource GetExpectedData()
                 => new MatchQueryData();
 
-            public IReadOnlyDictionary<Type, object> GetEntitySorters()
-                => new Dictionary<Type, Func<object, object>>
-                {
-                    { typeof(Herb), e => ((Herb)e)?.Id },
-                }.ToDictionary(e => e.Key, e => (object)e.Value);
+            public IReadOnlyDictionary<Type, object> EntitySorters
+                => new Dictionary<Type, Func<object, object>> { { typeof(Herb), e => ((Herb)e)?.Id }, }.ToDictionary(e => e.Key,
+                    e => (object)e.Value);
 
-            public IReadOnlyDictionary<Type, object> GetEntityAsserters()
+            public IReadOnlyDictionary<Type, object> EntityAsserters
                 => new Dictionary<Type, Action<object, object>>
                 {
                     {

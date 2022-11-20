@@ -1,12 +1,14 @@
 // Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
+using System.Linq;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions
@@ -62,13 +64,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions
         /// <returns> The store value generation strategy to set for the given property. </returns>
         protected override ValueGenerated? GetValueGenerated(IConventionProperty property)
         {
-            var tableName = property.DeclaringEntityType.GetTableName();
-            if (tableName == null)
+            var declaringTable = property.GetMappedStoreObjects(StoreObjectType.Table).FirstOrDefault();
+            if (declaringTable.Name == null)
             {
                 return null;
             }
 
-            return GetValueGenerated(property, StoreObjectIdentifier.Table(tableName, property.DeclaringEntityType.GetSchema()));
+            // If the first mapping can be value generated then we'll consider all mappings to be value generated
+            // as this is a client-side configuration and can't be specified per-table.
+            return GetValueGenerated(property, declaringTable, Dependencies.TypeMappingSource);
         }
 
         /// <summary>
@@ -77,7 +81,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions
         /// <param name="property"> The property. </param>
         /// <param name="storeObject"> The identifier of the store object. </param>
         /// <returns> The store value generation strategy to set for the given property. </returns>
-        public static new ValueGenerated? GetValueGenerated([NotNull] IReadOnlyProperty property, in StoreObjectIdentifier storeObject)
+        public static new ValueGenerated? GetValueGenerated(
+            [NotNull] IReadOnlyProperty property,
+            in StoreObjectIdentifier storeObject)
         {
             var valueGenerated = RelationalValueGenerationConvention.GetValueGenerated(property, storeObject);
             if (valueGenerated != null)
@@ -85,19 +91,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions
                 return valueGenerated;
             }
 
-            var valueGenerationStrategy = property.GetValueGenerationStrategy(storeObject);
-            if (valueGenerationStrategy.HasValue)
+            return property.GetValueGenerationStrategy(storeObject) switch
             {
-                switch (valueGenerationStrategy.Value)
-                {
-                    case MySqlValueGenerationStrategy.IdentityColumn:
-                        return ValueGenerated.OnAdd;
-                    case MySqlValueGenerationStrategy.ComputedColumn:
-                        return ValueGenerated.OnAddOrUpdate;
-                }
+                MySqlValueGenerationStrategy.IdentityColumn => ValueGenerated.OnAdd,
+                MySqlValueGenerationStrategy.ComputedColumn => ValueGenerated.OnAddOrUpdate,
+                _ => null
+            };
+        }
+
+        private ValueGenerated? GetValueGenerated(
+            IReadOnlyProperty property,
+            in StoreObjectIdentifier storeObject,
+            ITypeMappingSource typeMappingSource)
+        {
+            var valueGenerated = RelationalValueGenerationConvention.GetValueGenerated(property, storeObject);
+            if (valueGenerated != null)
+            {
+                return valueGenerated;
             }
 
-            return null;
+            return property.GetValueGenerationStrategy(storeObject, typeMappingSource) switch
+            {
+                MySqlValueGenerationStrategy.IdentityColumn => ValueGenerated.OnAdd,
+                MySqlValueGenerationStrategy.ComputedColumn => ValueGenerated.OnAddOrUpdate,
+                _ => null
+            };
         }
     }
 }

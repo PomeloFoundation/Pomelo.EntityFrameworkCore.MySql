@@ -30,43 +30,61 @@ jobs:
         MySQL 8.0 (Windows):
           vmImageName: 'windows-latest'
           databaseServerType: 'mysql'
-          databaseServerVersion: '8.0.27'
+          databaseServerVersion: '8.0.31'
           sqlMode: $(mysqlCurrentSqlMode)
           skipTests: $(skipWindowsTests)
         MySQL 8.0 (Linux):
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mysql'
-          databaseServerVersion: '8.0.27'
+          databaseServerVersion: '8.0.31'
           sqlMode: $(mysqlCurrentSqlMode)
           skipTests: false
         MySQL 5.7 (Linux):
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mysql'
-          databaseServerVersion: '5.7.36'
+          databaseServerVersion: '5.7.40'
           sqlMode: $(mysqlLegacySqlMode)
+          skipTests: false
+        MariaDB 10.9 (Linux):
+          vmImageName: 'ubuntu-latest'
+          databaseServerType: 'mariadb'
+          databaseServerVersion: '10.9.4'
+          sqlMode: $(mariadbSqlMode)
+          skipTests: false
+        MariaDB 10.8 (Linux):
+          vmImageName: 'ubuntu-latest'
+          databaseServerType: 'mariadb'
+          databaseServerVersion: '10.8.6'
+          sqlMode: $(mariadbSqlMode)
+          skipTests: false
+        MariaDB 10.7 (Linux):
+          vmImageName: 'ubuntu-latest'
+          databaseServerType: 'mariadb'
+          databaseServerVersion: '10.7.7'
+          sqlMode: $(mariadbSqlMode)
           skipTests: false
         MariaDB 10.6 (Linux):
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
-          databaseServerVersion: '10.6.5'
+          databaseServerVersion: '10.6.11'
           sqlMode: $(mariadbSqlMode)
           skipTests: false
         MariaDB 10.5 (Linux):
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
-          databaseServerVersion: '10.5.13'
+          databaseServerVersion: '10.5.18'
           sqlMode: $(mariadbSqlMode)
           skipTests: false
         MariaDB 10.4 (Linux):
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
-          databaseServerVersion: '10.4.22'
+          databaseServerVersion: '10.4.27'
           sqlMode: $(mariadbSqlMode)
           skipTests: false
         MariaDB 10.3 (Linux):
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
-          databaseServerVersion: '10.3.32'
+          databaseServerVersion: '10.3.37'
           sqlMode: $(mariadbSqlMode)
           skipTests: false
     pool:

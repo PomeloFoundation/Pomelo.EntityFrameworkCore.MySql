@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.GearsOfWarModel;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
@@ -25,7 +26,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
         public override Task DateTimeOffset_Contains_Less_than_Greater_than(bool async)
         {
-            var dto = GearsOfWarQueryMySqlFixture.GetExpectedValue(new DateTimeOffset(599898024001234567, new TimeSpan(1, 30, 0)));
+            var dto = MySqlTestHelpers.GetExpectedValue(new DateTimeOffset(599898024001234567, new TimeSpan(1, 30, 0)));
             var start = dto.AddDays(-1);
             var end = dto.AddDays(1);
             var dates = new[] { dto };
@@ -38,7 +39,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
         public override Task Where_datetimeoffset_milliseconds_parameter_and_constant(bool async)
         {
-            var dateTimeOffset = GearsOfWarQueryMySqlFixture.GetExpectedValue(new DateTimeOffset(599898024001234567, new TimeSpan(1, 30, 0)));
+            var dateTimeOffset = MySqlTestHelpers.GetExpectedValue(new DateTimeOffset(599898024001234567, new TimeSpan(1, 30, 0)));
 
             // Literal where clause
             var p = Expression.Parameter(typeof(Mission), "i");
@@ -52,6 +53,25 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 async,
                 ss => ss.Set<Mission>().Where(dynamicWhere),
                 ss => ss.Set<Mission>().Where(m => m.Timeline == dateTimeOffset));
+        }
+
+        [ConditionalTheory(Skip = "TODO: Does not work as expected, probably due to some test definition issues.")]
+        public override async Task DateTimeOffsetNow_minus_timespan(bool async)
+        {
+            var timeSpan = new TimeSpan(10000); // <-- changed from 1000 to 10000 ticks
+
+            await AssertQuery(
+                async,
+                ss => ss.Set<Mission>().Where(e => e.Timeline > DateTimeOffset.Now - timeSpan));
+
+            AssertSql(
+"""
+@__timeSpan_0='00:00:00.0010000' (DbType = DateTimeOffset)
+
+SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
+FROM `Missions` AS `m`
+WHERE `m`.`Timeline` > (UTC_TIMESTAMP() - @__timeSpan_0)
+""");
         }
 
         // TODO: Implement strategy as discussed with @roji (including emails) for EF Core 5.
@@ -209,6 +229,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         public override Task Subquery_projecting_non_nullable_scalar_contains_non_nullable_value_doesnt_need_null_expansion(bool async)
         {
             return base.Subquery_projecting_non_nullable_scalar_contains_non_nullable_value_doesnt_need_null_expansion(async);
+        }
+
+        [ConditionalTheory(Skip = "Another LATERAL JOIN bug in MySQL. Grouping leads to unexpected result set.")]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Correlated_collection_with_groupby_with_complex_grouping_key_not_projecting_identifier_column_with_group_aggregate_in_final_projection(bool async)
+        {
+            return base.Correlated_collection_with_groupby_with_complex_grouping_key_not_projecting_identifier_column_with_group_aggregate_in_final_projection(async);
         }
     }
 }

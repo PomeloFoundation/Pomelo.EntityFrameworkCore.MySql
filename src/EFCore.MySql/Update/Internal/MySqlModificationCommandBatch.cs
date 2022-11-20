@@ -1,202 +1,396 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using JetBrains.Annotations;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.EntityFrameworkCore.Internal;
-using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Update;
+using Microsoft.EntityFrameworkCore.Utilities;
+using Microsoft.EntityFrameworkCore.Storage;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
+namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal;
+
+/// <summary>
+///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+///     the same compatibility standards as public APIs. It may be changed or removed without notice in
+///     any release. You should only use it directly in your code with extreme caution and knowing that
+///     doing so can result in application failures when updating to a new Entity Framework Core release.
+/// </summary>
+public class MySqlModificationCommandBatch : AffectedCountModificationCommandBatch
 {
-    /// <summary>
-    ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-    ///     directly from your code. This API may change or be removed in future releases.
-    /// </summary>
-    public class MySqlModificationCommandBatch : AffectedCountModificationCommandBatch
+    private readonly List<IReadOnlyModificationCommand> _pendingBulkInsertCommands = new();
+
+    public MySqlModificationCommandBatch(
+        ModificationCommandBatchFactoryDependencies dependencies,
+        int maxBatchSize)
+        : base(dependencies, maxBatchSize)
     {
-        private const int DefaultNetworkPacketSizeBytes = 4096;
-        private const int MaxScriptLength = 65536 * DefaultNetworkPacketSizeBytes / 2;
-        private const int MaxParameterCount = 2100;
-        private const int MaxRowCount = 1000;
-        private int _parameterCount = 1; // Implicit parameter for the command text
-        private readonly int _maxBatchSize;
-        private readonly List<IReadOnlyModificationCommand> _bulkInsertCommands = new List<IReadOnlyModificationCommand>();
-        private int _commandsLeftToLengthCheck = 50;
+    }
 
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public MySqlModificationCommandBatch(
-            [NotNull] ModificationCommandBatchFactoryDependencies dependencies,
-            int? maxBatchSize)
-            : base(dependencies)
+    protected new virtual IMySqlUpdateSqlGenerator UpdateSqlGenerator
+        => (IMySqlUpdateSqlGenerator)base.UpdateSqlGenerator;
+
+    protected override void RollbackLastCommand(IReadOnlyModificationCommand modificationCommand)
+    {
+        if (_pendingBulkInsertCommands.Count > 0)
         {
-            if (maxBatchSize is <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(maxBatchSize), RelationalStrings.InvalidMaxBatchSize(maxBatchSize.Value));
-            }
-
-            _maxBatchSize = Math.Min(maxBatchSize ?? int.MaxValue, MaxRowCount);
+            _pendingBulkInsertCommands.RemoveAt(_pendingBulkInsertCommands.Count - 1);
         }
 
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        protected new virtual IMySqlUpdateSqlGenerator UpdateSqlGenerator => (IMySqlUpdateSqlGenerator)base.UpdateSqlGenerator;
+        //////
+        // Pulled up from the base implementation to support our _pendingParameters field:
 
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-
-        protected override bool CanAddCommand(IReadOnlyModificationCommand modificationCommand)
+        for (var i = 0; i < _pendingParameters; i++)
         {
-            if (ModificationCommands.Count >= _maxBatchSize)
-            {
-                return false;
-            }
+            var parameterIndex = RelationalCommandBuilder.Parameters.Count - 1;
+            var parameter = RelationalCommandBuilder.Parameters[parameterIndex];
 
-            var additionalParameterCount = CountParameters(modificationCommand);
-
-            if (_parameterCount + additionalParameterCount >= MaxParameterCount)
-            {
-                return false;
-            }
-
-            _parameterCount += additionalParameterCount;
-            return true;
+            RelationalCommandBuilder.RemoveParameterAt(parameterIndex);
+            ParameterValues.Remove(parameter.InvariantName);
         }
 
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        protected override bool IsCommandTextValid()
+        //
+        //////
+
+        base.RollbackLastCommand(modificationCommand);
+    }
+
+    private void ApplyPendingBulkInsertCommands()
+    {
+        if (_pendingBulkInsertCommands.Count == 0)
         {
-            if (--_commandsLeftToLengthCheck < 0)
+            return;
+        }
+
+        var commandPosition = ResultSetMappings.Count;
+
+        var wasCachedCommandTextEmpty = IsCommandTextEmpty;
+
+        var resultSetMapping = UpdateSqlGenerator.AppendBulkInsertOperation(
+            SqlBuilder, _pendingBulkInsertCommands, commandPosition, out var requiresTransaction);
+
+        SetRequiresTransaction(!wasCachedCommandTextEmpty || requiresTransaction);
+
+        for (var i = 0; i < _pendingBulkInsertCommands.Count; i++)
+        {
+            ResultSetMappings.Add(resultSetMapping);
+        }
+
+        if (resultSetMapping != ResultSetMapping.NoResults)
+        {
+            ResultSetMappings[^1] = ResultSetMapping.LastInResultSet;
+        }
+    }
+
+    protected override void AddCommand(IReadOnlyModificationCommand modificationCommand)
+    {
+        if (modificationCommand.EntityState == EntityState.Added && modificationCommand.StoreStoredProcedure is null)
+        {
+            if (_pendingBulkInsertCommands.Count > 0
+                && !CanBeInsertedInSameStatement(_pendingBulkInsertCommands[0], modificationCommand))
             {
-                var commandTextLength = GetCommandText().Length;
-                if (commandTextLength >= MaxScriptLength)
+                // The new Add command cannot be added to the pending bulk insert commands (e.g. different table).
+                // Write out the pending commands before starting a new pending chain.
+                ApplyPendingBulkInsertCommands();
+                _pendingBulkInsertCommands.Clear();
+            }
+
+            _pendingBulkInsertCommands.Add(modificationCommand);
+            AddParameters(modificationCommand);
+        }
+        else
+        {
+            // If we have any pending bulk insert commands, write them out before the next non-Add command
+            if (_pendingBulkInsertCommands.Count > 0)
+            {
+                // Note that we don't care about the transactionality of the bulk insert SQL, since there's the additional non-Add
+                // command coming right afterwards, and so a transaction is required in any case.
+                ApplyPendingBulkInsertCommands();
+                _pendingBulkInsertCommands.Clear();
+            }
+
+            base.AddCommand(modificationCommand);
+        }
+    }
+
+    private static bool CanBeInsertedInSameStatement(
+        IReadOnlyModificationCommand firstCommand,
+        IReadOnlyModificationCommand secondCommand)
+        => firstCommand.TableName == secondCommand.TableName
+            && firstCommand.Schema == secondCommand.Schema
+            && firstCommand.ColumnModifications.Where(o => o.IsWrite).Select(o => o.ColumnName).SequenceEqual(
+                secondCommand.ColumnModifications.Where(o => o.IsWrite).Select(o => o.ColumnName))
+            && firstCommand.ColumnModifications.Where(o => o.IsRead).Select(o => o.ColumnName).SequenceEqual(
+                secondCommand.ColumnModifications.Where(o => o.IsRead).Select(o => o.ColumnName));
+
+    public override void Complete(bool moreBatchesExpected)
+    {
+        ApplyPendingBulkInsertCommands();
+
+        base.Complete(moreBatchesExpected);
+    }
+
+    /// <summary>
+    ///     Consumes the data reader created by <see cref="ReaderModificationCommandBatch.Execute" />,
+    ///     propagating values back into the <see cref="ModificationCommand" />.
+    /// </summary>
+    /// <param name="startCommandIndex">The ordinal of the first command being consumed.</param>
+    /// <param name="reader">The data reader.</param>
+    /// <returns>The ordinal of the next result set that must be consumed.</returns>
+    protected override int ConsumeResultSet(int startCommandIndex, RelationalDataReader reader)
+    {
+        var commandIndex = startCommandIndex;
+        var rowsAffected = 0;
+        do
+        {
+            if (!reader.Read())
+            {
+                var expectedRowsAffected = rowsAffected + 1;
+                while (++commandIndex < ResultSetMappings.Count
+                       && ResultSetMappings[commandIndex - 1].HasFlag(ResultSetMapping.NotLastInResultSet))
                 {
-                    return false;
+                    expectedRowsAffected++;
                 }
 
-                var avarageCommandLength = commandTextLength / ModificationCommands.Count;
-                var expectedAdditionalCommandCapacity = (MaxScriptLength - commandTextLength) / avarageCommandLength;
-                _commandsLeftToLengthCheck = Math.Max(1, expectedAdditionalCommandCapacity / 4);
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        protected override int GetParameterCount()
-            => _parameterCount;
-
-        private static int CountParameters(IReadOnlyModificationCommand modificationCommand)
-        {
-            var parameterCount = 0;
-            foreach (var columnModification in modificationCommand.ColumnModifications)
-            {
-                if (columnModification.UseCurrentValueParameter)
-                {
-                    parameterCount++;
-                }
-
-                if (columnModification.UseOriginalValueParameter)
-                {
-                    parameterCount++;
-                }
-            }
-
-            return parameterCount;
-        }
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        protected override void ResetCommandText()
-        {
-            base.ResetCommandText();
-            _bulkInsertCommands.Clear();
-        }
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        protected override string GetCommandText()
-            => base.GetCommandText() + GetBulkInsertCommandText(ModificationCommands.Count);
-
-        private string GetBulkInsertCommandText(int lastIndex)
-        {
-            if (_bulkInsertCommands.Count == 0)
-            {
-                return string.Empty;
-            }
-
-            var stringBuilder = new StringBuilder();
-            var resultSetMapping = UpdateSqlGenerator.AppendBulkInsertOperation(stringBuilder, _bulkInsertCommands, lastIndex - _bulkInsertCommands.Count);
-            for (var i = lastIndex - _bulkInsertCommands.Count; i < lastIndex; i++)
-            {
-                CommandResultSet[i] = resultSetMapping;
-            }
-
-            if (resultSetMapping != ResultSetMapping.NoResultSet)
-            {
-                CommandResultSet[lastIndex - 1] = ResultSetMapping.LastInResultSet;
-            }
-
-            return stringBuilder.ToString();
-        }
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        protected override void UpdateCachedCommandText(int commandPosition)
-        {
-            var newModificationCommand = ModificationCommands[commandPosition];
-
-            if (newModificationCommand.EntityState == EntityState.Added)
-            {
-                if (_bulkInsertCommands.Count > 0
-                    && !CanBeInsertedInSameStatement(_bulkInsertCommands[0], newModificationCommand))
-                {
-                    CachedCommandText.Append(GetBulkInsertCommandText(commandPosition));
-                    _bulkInsertCommands.Clear();
-                }
-                _bulkInsertCommands.Add(newModificationCommand);
-
-                LastCachedCommandIndex = commandPosition;
+                ThrowAggregateUpdateConcurrencyException(reader, commandIndex, expectedRowsAffected, rowsAffected);
             }
             else
             {
-                CachedCommandText.Append(GetBulkInsertCommandText(commandPosition));
-                _bulkInsertCommands.Clear();
+                var resultSetMapping = ResultSetMappings[commandIndex];
 
-                base.UpdateCachedCommandText(commandPosition);
+                var command = ModificationCommands[
+                    resultSetMapping.HasFlag(ResultSetMapping.IsPositionalResultMappingEnabled)
+                        ? startCommandIndex + reader.DbDataReader.GetInt32(reader.DbDataReader.FieldCount - 1)
+                        : commandIndex];
+
+                Check.DebugAssert(
+                    !resultSetMapping.HasFlag(ResultSetMapping.ResultSetWithRowsAffectedOnly),
+                    "!resultSetMapping.HasFlag(ResultSetMapping.ResultSetWithRowsAffectedOnly)");
+
+                //////
+                // Addition to base method:
+                ConsumeRowsAffectedFromResultSet(command, reader, commandIndex);
+                //
+                //////
+
+                command.PropagateResults(reader);
+            }
+
+            rowsAffected++;
+        }
+        while (++commandIndex < ResultSetMappings.Count
+               && ResultSetMappings[commandIndex - 1].HasFlag(ResultSetMapping.NotLastInResultSet));
+
+        return commandIndex - 1;
+    }
+
+    /// <summary>
+    ///     Consumes the data reader created by <see cref="ReaderModificationCommandBatch.ExecuteAsync" />,
+    ///     propagating values back into the <see cref="ModificationCommand" />.
+    /// </summary>
+    /// <param name="startCommandIndex">The ordinal of the first result set being consumed.</param>
+    /// <param name="reader">The data reader.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
+    /// <returns>
+    ///     A task that represents the asynchronous operation.
+    ///     The task contains the ordinal of the next command that must be consumed.
+    /// </returns>
+    /// <exception cref="OperationCanceledException">If the <see cref="CancellationToken" /> is canceled.</exception>
+    protected override async Task<int> ConsumeResultSetAsync(int startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
+    {
+        var commandIndex = startCommandIndex;
+        var rowsAffected = 0;
+        do
+        {
+            if (!await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                var expectedRowsAffected = rowsAffected + 1;
+                while (++commandIndex < ResultSetMappings.Count
+                       && ResultSetMappings[commandIndex - 1].HasFlag(ResultSetMapping.NotLastInResultSet))
+                {
+                    expectedRowsAffected++;
+                }
+
+                await ThrowAggregateUpdateConcurrencyExceptionAsync(
+                    reader, commandIndex, expectedRowsAffected, rowsAffected, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                var resultSetMapping = ResultSetMappings[commandIndex];
+
+                var command = ModificationCommands[
+                    resultSetMapping.HasFlag(ResultSetMapping.IsPositionalResultMappingEnabled)
+                        ? startCommandIndex + reader.DbDataReader.GetInt32(reader.DbDataReader.FieldCount - 1)
+                        : commandIndex];
+
+                Check.DebugAssert(
+                    !resultSetMapping.HasFlag(ResultSetMapping.ResultSetWithRowsAffectedOnly),
+                    "!resultSetMapping.HasFlag(ResultSetMapping.ResultSetWithRowsAffectedOnly)");
+
+                //////
+                // Addition to base method:
+                ConsumeRowsAffectedFromResultSet(command, reader, commandIndex);
+                //
+                //////
+
+                command.PropagateResults(reader);
+            }
+
+            rowsAffected++;
+        }
+        while (++commandIndex < ResultSetMappings.Count
+               && ResultSetMappings[commandIndex - 1].HasFlag(ResultSetMapping.NotLastInResultSet));
+
+        return commandIndex - 1;
+    }
+
+    protected virtual void ConsumeRowsAffectedFromResultSet(
+        IReadOnlyModificationCommand command,
+        RelationalDataReader reader,
+        int commandIndex)
+    {
+        if (command.StoreStoredProcedure is not null &&
+            command.RowsAffectedColumn is { } rowsAffectedColumn)
+        {
+            var rowsAffectedParameter = (IStoreStoredProcedureParameter)rowsAffectedColumn;
+
+            Debug.Assert(rowsAffectedParameter.Direction == ParameterDirection.Output);
+
+            var readerIndex = -1;
+
+            for (var i = 0; i < command.ColumnModifications.Count; i++)
+            {
+                var columnModification = command.ColumnModifications[i];
+                if (columnModification.Column is IStoreStoredProcedureParameter
+                    {
+                        Direction: ParameterDirection.Output or ParameterDirection.InputOutput
+                    })
+                {
+                    readerIndex++;
+                }
+
+                if (columnModification.Column == rowsAffectedColumn)
+                {
+                    break;
+                }
+            }
+
+            if (reader.DbDataReader.GetInt32(readerIndex) != 1)
+            {
+                ThrowAggregateUpdateConcurrencyException(reader, commandIndex + 1, 1, 0);
+            }
+        }
+    }
+
+    protected override void AddParameter(IColumnModification columnModification)
+    {
+        var direction = columnModification.Column switch
+        {
+            IStoreStoredProcedureParameter storedProcedureParameter => storedProcedureParameter.Direction,
+            IStoreStoredProcedureReturnValue => ParameterDirection.Output,
+            _ => ParameterDirection.Input
+        };
+
+        //////
+        // Start of injected code.
+
+        // MySQL stored procedures cannot return a regular result set, and output parameter values are simply sent back as the
+        // result set; this is very different from SQL Server, where output parameter values can be sent back in addition to result
+        // sets. So we avoid adding MySqlParameters for output parameters - we'll just retrieve and propagate the values below when
+        // consuming the result set.
+        // Because MySqlConnector throws if we use an INOUT or OUT parameter for CommandType.Text commands, we skip
+        // ParameterDirection.Output parameters entirely and change ParameterDirection.InputOutput to ParameterDirection.Input.
+        if (columnModification.Column is IStoreStoredProcedureParameter parameter)
+        {
+            if (parameter.Direction.HasFlag(ParameterDirection.Output))
+            {
+                if (!parameter.Direction.HasFlag(ParameterDirection.Input))
+                {
+                    return;
+                }
+
+                direction = ParameterDirection.Input;
+
+                var value = columnModification.UseCurrentValueParameter
+                    ? columnModification.Value
+                    : columnModification.UseOriginalValueParameter
+                        ? columnModification.OriginalValue
+                        : null;
+
+                if (value is null)
+                {
+                    return;
+                }
             }
         }
 
-        private static bool CanBeInsertedInSameStatement(IReadOnlyModificationCommand firstCommand, IReadOnlyModificationCommand secondCommand)
-            => string.Equals(firstCommand.TableName, secondCommand.TableName, StringComparison.Ordinal)
-               && string.Equals(firstCommand.Schema, secondCommand.Schema, StringComparison.Ordinal)
-               && firstCommand.ColumnModifications.Where(o => o.IsWrite).Select(o => o.ColumnName).SequenceEqual(
-                   secondCommand.ColumnModifications.Where(o => o.IsWrite).Select(o => o.ColumnName))
-               && firstCommand.ColumnModifications.Where(o => o.IsRead).Select(o => o.ColumnName).SequenceEqual(
-                   secondCommand.ColumnModifications.Where(o => o.IsRead).Select(o => o.ColumnName));
+        // End of injected code.
+        //////
+
+        // For the case where the same modification has both current and original value parameters, and corresponds to an in/out parameter,
+        // we only want to add a single parameter. This will happen below.
+        if (columnModification.UseCurrentValueParameter
+            && !(columnModification.UseOriginalValueParameter && direction == ParameterDirection.InputOutput))
+        {
+            AddParameterCore(
+                columnModification.ParameterName, columnModification.UseCurrentValue
+                    ? columnModification.Value
+                    : direction == ParameterDirection.InputOutput
+                        ? DBNull.Value
+                        : null);
+        }
+
+        if (columnModification.UseOriginalValueParameter)
+        {
+            Check.DebugAssert(direction.HasFlag(ParameterDirection.Input), "direction.HasFlag(ParameterDirection.Input)");
+
+            AddParameterCore(columnModification.OriginalParameterName, columnModification.OriginalValue);
+        }
+
+        void AddParameterCore(string name, object value)
+        {
+            RelationalCommandBuilder.AddParameter(
+                name,
+                Dependencies.SqlGenerationHelper.GenerateParameterName(name),
+                columnModification.TypeMapping!,
+                columnModification.IsNullable,
+                direction);
+
+            ParameterValues.Add(name, value);
+
+            _pendingParameters++;
+        }
     }
+
+    /// <summary>
+    /// We override this method only to support our _pendingParameters field.
+    /// </summary>
+    public override bool TryAddCommand(IReadOnlyModificationCommand modificationCommand)
+    {
+        if (StoreCommand is not null)
+        {
+            throw new InvalidOperationException(RelationalStrings.ModificationCommandBatchAlreadyComplete);
+        }
+
+        if (ModificationCommands.Count >= MaxBatchSize)
+        {
+            return false;
+        }
+
+        _pendingParameters = 0;
+
+        return base.TryAddCommand(modificationCommand);
+    }
+
+    /// <summary>
+    /// We use _pendingParameters only to support our AddParameter implementation.
+    /// </summary>
+    private int _pendingParameters;
 }
