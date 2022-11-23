@@ -173,10 +173,10 @@ namespace Microsoft.EntityFrameworkCore
 
                     connection.ConnectionString = csb.ConnectionString;
                 }
-                catch (MySqlException e)
+                catch (Exception e)
                 {
                     throw new InvalidOperationException(
-                        @"The connection string used with Pomelo.EntityFrameworkCore.MySql must contain ""AllowUserVariables=true;UseAffectedRows=false"".",
+                        @"The connection string of a connection used by Pomelo.EntityFrameworkCore.MySql must contain ""AllowUserVariables=true;UseAffectedRows=false"".",
                         e);
                 }
             }
