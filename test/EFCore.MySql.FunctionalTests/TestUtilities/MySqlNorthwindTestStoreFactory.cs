@@ -4,6 +4,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {
     public class MySqlNorthwindTestStoreFactory : MySqlTestStoreFactory
     {
+        public const string DefaultName = "Northwind";
+
         public static new MySqlNorthwindTestStoreFactory Instance => InstanceCi;
         public static MySqlNorthwindTestStoreFactory InstanceCi { get; } = new MySqlNorthwindTestStoreFactory(databaseCollation: MySqlTestStore.ModernCiCollation);
         public static MySqlNorthwindTestStoreFactory InstanceCs { get; } = new MySqlNorthwindTestStoreFactory(databaseCollation: MySqlTestStore.ModernCsCollation);
@@ -15,6 +17,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         }
 
         public override TestStore GetOrCreate(string storeName)
-            => MySqlTestStore.GetOrCreate(storeName, "Northwind.sql", noBackslashEscapes: NoBackslashEscapes, databaseCollation: DatabaseCollation);
+            => MySqlTestStore.GetOrCreate(storeName ?? DefaultName, "Northwind.sql", noBackslashEscapes: NoBackslashEscapes, databaseCollation: DatabaseCollation);
     }
 }
