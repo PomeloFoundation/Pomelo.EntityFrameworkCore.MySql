@@ -10,7 +10,7 @@
     <PackageReference Update="Microsoft.EntityFrameworkCore.Relational" Version="$(EFCoreVersion)" />
     <PackageReference Update="Microsoft.EntityFrameworkCore" Version="$(EFCoreVersion)" />
 
-    <PackageReference Update="MySqlConnector" Version="2.2.0" />
+    <PackageReference Update="MySqlConnector" Version="2.2.2" />
 
     <PackageReference Update="NetTopologySuite" Version="2.5.0" />
     <PackageReference Update="System.Text.Json" Version="7.0.0" />
