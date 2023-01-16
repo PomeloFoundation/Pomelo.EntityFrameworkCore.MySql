@@ -518,6 +518,7 @@ SELECT @_out_p0;
 @p2='1'
 @p3='8'
 
+SET AUTOCOMMIT = 1;
 INSERT INTO `Child1` (`Id`, `Child1Property`)
 VALUES (@p2, @p3);
 """);
