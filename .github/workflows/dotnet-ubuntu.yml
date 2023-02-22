@@ -210,10 +210,10 @@ jobs:
         $mySqlCommand = 'docker exec mysql ' + $mySqlCommand
         $mySqlCommand
         Invoke-Expression $mySqlCommand
-    - name: Setup .NET 7.0
+    - name: Setup .NET 7.0.100
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 7.0.x
+        dotnet-version: 7.0.100
     - name: Restore dependencies
       run: dotnet restore
     - name: Install EF Core Tools

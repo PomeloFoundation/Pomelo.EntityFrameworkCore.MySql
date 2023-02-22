@@ -79,13 +79,11 @@
 
   <ItemGroup>
     <AppConfig Include="appsettings.json" />
+    <AppConfig Include="config.json" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="TestResults\**" />
-    <None Include="config.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
   <Target Name="CheckConfigFile" BeforeTargets="Build">
