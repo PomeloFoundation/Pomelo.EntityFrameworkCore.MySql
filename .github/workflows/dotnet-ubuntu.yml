@@ -37,49 +37,56 @@ jobs:
       fail-fast: false
       matrix:
         db: [mysql,mariadb]
-        version: ["5.7.36", "8.0.27", "10.3.35", "10.4.25", "10.5.16","10.6.8", "10.7.4", "10.8.3", "10.9", "10.11", "latest"]
+        version: ["5.7.40", "8.0.31", "10.3.37", "10.4.27", "10.5.18", "10.6.11", "10.7.7", "10.8.6", "10.9.4", "latest"]
         os: [ubuntu-latest, windows-latest]
         exclude:
           - db: mysql
-            version: "10.3.35"
+            version: "10.3.37"
           - db: mysql
-            version: "10.4.25"
+            version: "10.4.27"
           - db: mysql
-            version: "10.5.16"
+            version: "10.5.18"
           - db: mysql
-            version: "10.6.8"
+            version: "10.6.11"
           - db: mysql
-            version: "10.7.4"
+            version: "10.7.7"
           - db: mysql
-            version: "10.8.3"
+            version: "10.8.6"
           - db: mysql
-            version: "10.9"
-          - db: mysql
-            version: "10.11"
+            version: "10.9.4"
           - db: mariadb
-            version: "5.7.36"
+            version: "5.7.40"
           - db: mariadb
-            version: "8.0.27"
+            version: "8.0.31"
           - db: mariadb
-            version: "10.3.35"
+            version: "10.3.37"
             os: windows-latest
           - db: mariadb
-            version: "10.4.25"
+            version: "10.4.27"
             os: windows-latest
           - db: mariadb
-            version: "10.5.16"
+            version: "10.5.18"
             os: windows-latest
           - db: mariadb
-            version: "10.6.8"
+            version: "10.6.11"
             os: windows-latest
           - db: mariadb
-            version: "10.7.4"
+            version: "10.7.7"
             os: windows-latest
           - db: mariadb
-            version: "10.8.3"
+            version: "10.8.6"
+            os: windows-latest
+          - db: mariadb
+            version: "10.9.4"
+            os: windows-latest
+          - db: mariadb
+            version: "latest"
             os: windows-latest
           - db: mysql
-            version: "5.7.36"
+            version: "5.7.40"
+            os: windows-latest
+          - db: mysql
+            version: "latest"
             os: windows-latest
     runs-on: ${{ matrix.os }}
     steps:
@@ -130,20 +137,23 @@ jobs:
       shell: pwsh
       run: |
         sudo systemctl stop mysql
-            docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -p 3306:3306 -d '${{ matrix.db }}:${{ matrix.version }}'
-            $waitMinutes = 5
-            $pollingIntervalSeconds = 3
-            $startTime = Get-Date
-            $started = $false
-            while (!($started = docker exec mysql mysqladmin --protocol=tcp -h localhost -P 3306 -u root -pPassword12! status) -and ((Get-Date) - $startTime).TotalMinutes -lt $waitMinutes)
-            {
-              Start-Sleep -Seconds $pollingIntervalSeconds
-            }
-            if (!$started)
-            {
-              throw "$(databaseServerType):$(databaseServerVersion) docker container failed to start in $(waitMinutes) minutes"
-              exit 1
-            }
+        docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -p 3306:3306 '${{ matrix.db }}:${{ matrix.version }}' > docker_run_log 2>&1 &
+        $waitMinutes = 5
+        $pollingIntervalSeconds = 3
+        $startTime = Get-Date
+        $started = $false
+        while (!($started = docker exec mysql mysqladmin --protocol=tcp -h localhost -P 3306 -u root -pPassword12! status) -and ((Get-Date) - $startTime).TotalMinutes -lt $waitMinutes)
+        {
+          Start-Sleep -Seconds $pollingIntervalSeconds
+        }
+        if (!$started)
+        {
+          throw "$(databaseServerType):$(databaseServerVersion) docker container failed to start in $(waitMinutes) minutes"
+          exit 1
+        }
+    - name: Get standard output
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: cat docker_run_log
     - name: Install Database Server
       if: ${{ matrix.os == 'windows-latest' }}
       shell: pwsh
@@ -178,7 +188,7 @@ jobs:
         $mySqlCommand
         Invoke-Expression $mySqlCommand
     - name: Setup Database MySQL
-      if: ${{ matrix.version == '8.0.27' && matrix.os == 'ubuntu-latest'}}
+      if: ${{ matrix.version == '8.0.31' && matrix.os == 'ubuntu-latest'}}
       shell: pwsh
       run: |
         $mySqlCommand = "mysql --protocol=tcp -h localhost -P 3306 -u root -pPassword12! -e ""SET GLOBAL sql_mode = '${{ env.mysqlCurrentSqlMode }}'; SET GLOBAL max_connections = ${{ env.maxConnections}};"""
@@ -186,14 +196,14 @@ jobs:
         $mySqlCommand
         Invoke-Expression $mySqlCommand
     - name: Setup Database MySQL Windows
-      if: ${{ matrix.version == '8.0.27' && matrix.os == 'windows-latest'}}
+      if: ${{ matrix.version == '8.0.31' && matrix.os == 'windows-latest'}}
       shell: pwsh
       run: |
         $mySqlCommand = "mysql --protocol=tcp -h localhost -P 3306 -u root -pPassword12! -e ""SET GLOBAL sql_mode = '${{ env.mysqlCurrentSqlMode }}'; SET GLOBAL max_connections = ${{ env.maxConnections}};"""
         $mySqlCommand
         Invoke-Expression $mySqlCommand
     - name: Setup Database MySQL Legacy
-      if: ${{ matrix.version == '5.7.36' }}
+      if: ${{ matrix.version == '5.7.40' }}
       shell: pwsh
       run: |
         $mySqlCommand = "mysql --protocol=tcp -h localhost -P 3306 -u root -pPassword12! -e ""SET GLOBAL sql_mode = '${{ env.mysqlLegacySqlMode }}'; SET GLOBAL max_connections = ${{ env.maxConnections}};"""
