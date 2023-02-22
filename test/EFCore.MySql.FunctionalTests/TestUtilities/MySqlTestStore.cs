@@ -66,22 +66,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             MySqlGuidFormat guidFormat = MySqlGuidFormat.Default)
             : base(name, shared)
         {
-            DatabaseCharSet = databaseCharSet ?? "utf8mb4";
-            DatabaseCollation = databaseCollation ?? ModernCsCollation;
             _useConnectionString = useConnectionString;
             _noBackslashEscapes = noBackslashEscapes;
+            ConnectionString = CreateConnectionString(name, _noBackslashEscapes, guidFormat);
+            Connection = new MySqlConnection(ConnectionString);
+            ServerVersion = new Lazy<ServerVersion>(() => Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect((MySqlConnection)Connection));
+            DatabaseCharSet = databaseCharSet ?? "utf8mb4";
+            DatabaseCollation = databaseCollation ?? ServerVersion.Value.DefaultUtf8CsCollation;
 
             if (scriptPath != null)
             {
                 _scriptPath = Path.Combine(
-                    Path.GetDirectoryName(
-                        typeof(MySqlTestStore).GetTypeInfo()
-                            .Assembly.Location), scriptPath);
+                    Path.GetDirectoryName(typeof(MySqlTestStore).GetTypeInfo().Assembly.Location) ?? string.Empty,
+                    scriptPath);
             }
-
-            ConnectionString = CreateConnectionString(name, _noBackslashEscapes, guidFormat);
-            Connection = new MySqlConnection(ConnectionString);
-            ServerVersion = new Lazy<ServerVersion>(() => Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect((MySqlConnection)Connection));
         }
 
         public static string CreateConnectionString(string name, bool noBackslashEscapes = false, MySqlGuidFormat guidFormat = MySqlGuidFormat.Default)
@@ -151,8 +149,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             using var master = new MySqlConnection(CreateAdminConnectionString());
             master.Open();
 
-            SetupCurrentDatabaseCollation(master);
-
             string databaseSetupSql;
             if (DatabaseExists(Name))
             {
@@ -217,7 +213,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 {
                     foreach (var batch in
                         new Regex(@"^/\*\s*GO\s*\*/", RegexOptions.IgnoreCase | RegexOptions.Multiline, TimeSpan.FromMilliseconds(1000.0))
-                            .Split(EnsureBackwardsCompatibleCollations(Connection, script))
+                            .Split(script)
                             .Where(b => !string.IsNullOrEmpty(b)))
                     {
                         command.CommandText = batch;
@@ -338,48 +334,5 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 
             return command.ExecuteNonQueryAsync();
         }
-
-        public const string ModernCsCollation = "utf8mb4_0900_as_cs";
-        public const string LegacyCsCollation = "utf8mb4_bin";
-        public const string ModernCiCollation = "utf8mb4_0900_ai_ci";
-        public const string LegacyCiCollation = "utf8mb4_general_ci";
-
-        private string EnsureBackwardsCompatibleCollations(DbConnection connection, string script)
-        {
-            if (GetCaseSensitiveUtf8Mb4Collation((MySqlConnection)connection) != ModernCsCollation)
-            {
-                script = script.Replace(ModernCsCollation, LegacyCsCollation, StringComparison.OrdinalIgnoreCase);
-            }
-
-            if (GetCaseInsensitiveUtf8Mb4Collation((MySqlConnection)connection) != ModernCiCollation)
-            {
-                script = script.Replace(ModernCiCollation, LegacyCiCollation, StringComparison.OrdinalIgnoreCase);
-            }
-
-            return script;
-        }
-
-        private void SetupCurrentDatabaseCollation(DbConnection connection)
-            => DatabaseCollation = EnsureBackwardsCompatibleCollations(connection, DatabaseCollation);
-
-        public string GetCaseSensitiveUtf8Mb4Collation()
-            => ServerVersion.Value.Supports.DefaultCharSetUtf8Mb4
-                ? ModernCsCollation
-                : LegacyCsCollation;
-
-        public string GetCaseInsensitiveUtf8Mb4Collation()
-            => ServerVersion.Value.Supports.DefaultCharSetUtf8Mb4
-                ? ModernCiCollation
-                : LegacyCiCollation;
-
-        private string GetCaseSensitiveUtf8Mb4Collation(MySqlConnection connection)
-            => Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect(connection).Supports.DefaultCharSetUtf8Mb4
-                ? ModernCsCollation
-                : LegacyCsCollation;
-
-        private string GetCaseInsensitiveUtf8Mb4Collation(MySqlConnection connection)
-            => Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect(connection).Supports.DefaultCharSetUtf8Mb4
-                ? ModernCiCollation
-                : LegacyCiCollation;
     }
 }

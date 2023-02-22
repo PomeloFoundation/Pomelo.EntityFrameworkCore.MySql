@@ -8,6 +8,7 @@
     <RootNamespace>Pomelo.EntityFrameworkCore.MySql.Json.Microsoft</RootNamespace>
     <IsPackable>true</IsPackable>
     <PackageTags>$(PackageTags);json;system.text.json;microsoft</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -77,6 +78,10 @@
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="Microsoft.Bcl.HashCode" />
     <PackageReference Include="System.Collections.Immutable" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="docs\README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
 </Project>

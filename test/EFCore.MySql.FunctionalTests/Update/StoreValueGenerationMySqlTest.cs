@@ -61,6 +61,7 @@ public class StoreValueGenerationMySqlTest : StoreValueGenerationTestBase<
                 """
 @p0='1000'
 
+SET AUTOCOMMIT = 1;
 INSERT INTO `WithSomeDatabaseGenerated` (`Data2`)
 VALUES (@p0)
 RETURNING `Id`, `Data1`;
@@ -91,6 +92,7 @@ WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();
 @p1='1000'
 @p2='1000'
 
+SET AUTOCOMMIT = 1;
 INSERT INTO `WithNoDatabaseGenerated` (`Id`, `Data1`, `Data2`)
 VALUES (@p0, @p1, @p2);
 """);
@@ -104,6 +106,7 @@ VALUES (@p0, @p1, @p2);
         {
             AssertSql(
                 """
+SET AUTOCOMMIT = 1;
 INSERT INTO `WithAllDatabaseGenerated` ()
 VALUES ()
 RETURNING `Id`, `Data1`, `Data2`;
@@ -149,6 +152,7 @@ WHERE ROW_COUNT() = 1 AND `Id` = @p1;
 @p0='1000'
 @p1='1000'
 
+SET AUTOCOMMIT = 1;
 UPDATE `WithNoDatabaseGenerated` SET `Data1` = @p0, `Data2` = @p1
 WHERE `Id` = @p2;
 SELECT ROW_COUNT();
@@ -165,6 +169,7 @@ SELECT ROW_COUNT();
 """
 @p0='1'
 
+SET AUTOCOMMIT = 1;
 DELETE FROM `WithSomeDatabaseGenerated`
 WHERE `Id` = @p0
 RETURNING 1;
@@ -176,6 +181,7 @@ RETURNING 1;
 """
 @p0='1'
 
+SET AUTOCOMMIT = 1;
 DELETE FROM `WithSomeDatabaseGenerated`
 WHERE `Id` = @p0;
 SELECT ROW_COUNT();
@@ -241,6 +247,7 @@ WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();
 @p4='1001'
 @p5='1001'
 
+SET AUTOCOMMIT = 1;
 INSERT INTO `WithNoDatabaseGenerated` (`Id`, `Data1`, `Data2`)
 VALUES (@p0, @p1, @p2),
 (@p3, @p4, @p5);

@@ -25,6 +25,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 AssertSql(
                     @"@p0='Back\slash's Garden Party' (Nullable = false) (Size = 4000)
 
+SET AUTOCOMMIT = 1;
 INSERT INTO `Artists` (`Name`)
 VALUES (@p0)
 RETURNING `ArtistId`;",

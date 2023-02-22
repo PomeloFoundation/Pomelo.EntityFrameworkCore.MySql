@@ -1,6 +1,7 @@
 // Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
@@ -343,6 +344,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal
 
             return isIdentityOperation;
         }
+
+        public override void PrependEnsureAutocommit(StringBuilder commandStringBuilder)
+            => commandStringBuilder.Insert(0, $"SET AUTOCOMMIT = 1{SqlGenerationHelper.StatementTerminator}{Environment.NewLine}");
 
         private static (string tableName, string schema) GetTableNameAndSchema(IColumnModification modification, IProperty property)
         {

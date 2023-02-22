@@ -15,9 +15,10 @@ public class NonSharedModelUpdatesMySqlTest : NonSharedModelUpdatesTestBase
         if (AppConfig.ServerVersion.Supports.Returning)
         {
             AssertSql(
-"""
+                """
 @p0='AC South' (Size = 4000)
 
+SET AUTOCOMMIT = 1;
 INSERT INTO `AuthorsClub` (`Name`)
 VALUES (@p0)
 RETURNING `Id`;
@@ -27,6 +28,7 @@ RETURNING `Id`;
 @p1='1'
 @p2='Alice' (Size = 4000)
 
+SET AUTOCOMMIT = 1;
 INSERT INTO `Author` (`AuthorsClubId`, `Name`)
 VALUES (@p1, @p2)
 RETURNING `Id`;
@@ -36,6 +38,7 @@ RETURNING `Id`;
 @p3='1'
 @p4=NULL (Size = 4000)
 
+SET AUTOCOMMIT = 1;
 INSERT INTO `Book` (`AuthorId`, `Title`)
 VALUES (@p3, @p4)
 RETURNING `Id`;
@@ -51,6 +54,7 @@ LIMIT 2
                 """
 @p0='AC North' (Size = 4000)
 
+SET AUTOCOMMIT = 1;
 INSERT INTO `AuthorsClub` (`Name`)
 VALUES (@p0)
 RETURNING `Id`;
@@ -60,6 +64,7 @@ RETURNING `Id`;
 @p1='2'
 @p2='Author of the year 2023' (Size = 4000)
 
+SET AUTOCOMMIT = 1;
 INSERT INTO `Author` (`AuthorsClubId`, `Name`)
 VALUES (@p1, @p2)
 RETURNING `Id`;
