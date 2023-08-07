@@ -383,7 +383,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
                     // If a string column size is bigger than it can/might be, we automatically adjust it to a variable one with an
                     // unlimited size.
-                    if (size > 65_553 / _options.DefaultCharSet.MaxBytesPerChar)
+                    if (size > 65_535 / _options.DefaultCharSet.MaxBytesPerChar)
                     {
                         size = null;
                         isFixedLength = false;
