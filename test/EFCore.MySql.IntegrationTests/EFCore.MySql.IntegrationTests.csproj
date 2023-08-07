@@ -79,11 +79,18 @@
 
   <ItemGroup>
     <AppConfig Include="appsettings.json" />
-    <AppConfig Include="config.json" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="TestResults\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="config.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="config.json" />
   </ItemGroup>
 
   <Target Name="CheckConfigFile" BeforeTargets="Build">
