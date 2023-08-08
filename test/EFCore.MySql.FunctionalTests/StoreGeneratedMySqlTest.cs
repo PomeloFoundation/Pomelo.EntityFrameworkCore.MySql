@@ -22,6 +22,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
 
+            protected override string StoreName => "StoreGeneratedTest";
+
             public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
                 => builder
                     .EnableSensitiveDataLogging()

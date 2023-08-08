@@ -90,7 +90,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
             var model = base.Timestamp_takes_precedence_over_MaxLength();
 
-            var property = GetProperty<TimestampAndMaxlen>(model, "MaxTimestamp");
+            var property = GetProperty<TimestampAndMaxlength>(model, "MaxTimestamp");
 
             var storeTypeNameBase = property.GetRelationalTypeMapping().StoreTypeNameBase;
 

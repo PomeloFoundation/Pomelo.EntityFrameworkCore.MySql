@@ -30,54 +30,6 @@ public class TPCGearsOfWarQueryMySqlTest : TPCGearsOfWarQueryRelationalTestBase<
     public virtual void Check_all_tests_overridden()
         => TestHelpers.AssertAllMethodsOverridden(GetType());
 
-    public override async Task Negate_on_binary_expression(bool async)
-    {
-        await base.Negate_on_binary_expression(async);
-
-        AssertSql(
-"""
-SELECT `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`
-FROM `Squads` AS `s`
-WHERE `s`.`Id` = -(`s`.`Id` + `s`.`Id`)
-""");
-    }
-
-    public override async Task Negate_on_column(bool async)
-    {
-        await base.Negate_on_column(async);
-
-        AssertSql(
-"""
-SELECT `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`
-FROM `Squads` AS `s`
-WHERE `s`.`Id` = -`s`.`Id`
-""");
-    }
-
-    public override async Task Double_negate_on_column(bool async)
-    {
-        await base.Double_negate_on_column(async);
-
-        AssertSql(
-"""
-SELECT `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`
-FROM `Squads` AS `s`
-WHERE -(-`s`.`Id`) = `s`.`Id`
-""");
-    }
-
-    public override async Task Negate_on_like_expression(bool async)
-    {
-        await base.Negate_on_like_expression(async);
-
-        AssertSql(
-"""
-SELECT `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`
-FROM `Squads` AS `s`
-WHERE `s`.`Name` IS NOT NULL AND NOT (`s`.`Name` LIKE 'us%')
-""");
-    }
-
     public override async Task Entity_equality_empty(bool async)
     {
         await base.Entity_equality_empty(async);
