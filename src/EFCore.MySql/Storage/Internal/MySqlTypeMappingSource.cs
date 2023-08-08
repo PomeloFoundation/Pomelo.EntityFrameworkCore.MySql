@@ -4,12 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
@@ -428,9 +428,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             return null;
         }
 
-        protected override string ParseStoreTypeName(string storeTypeName, out bool? unicode, out int? size, out int? precision, out int? scale)
+        protected override string ParseStoreTypeName(string storeTypeName, ref bool? unicode, ref int? size, ref int? precision, ref int? scale)
         {
-            var storeTypeBaseName = base.ParseStoreTypeName(storeTypeName, out unicode, out size, out precision, out scale);
+            var storeTypeBaseName = base.ParseStoreTypeName(storeTypeName, ref unicode, ref size, ref precision, ref scale);
 
             if (storeTypeBaseName is not null)
             {

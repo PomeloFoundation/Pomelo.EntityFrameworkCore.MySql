@@ -626,5 +626,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         protected override Expression VisitJsonScalar(JsonScalarExpression jsonScalarExpression)
             => jsonScalarExpression;
+
+        protected override Expression VisitRowValue(RowValueExpression rowValueExpression)
+            => rowValueExpression;
+
+        protected override Expression VisitValues(ValuesExpression valuesExpression)
+            => valuesExpression;
     }
 }
