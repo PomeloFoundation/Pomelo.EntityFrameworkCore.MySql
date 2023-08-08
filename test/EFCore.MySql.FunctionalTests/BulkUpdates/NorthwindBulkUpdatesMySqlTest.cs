@@ -35,7 +35,7 @@ public class NorthwindBulkUpdatesMySqlTest : NorthwindBulkUpdatesTestBase<Northw
 -- MyDelete
 
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 WHERE `o`.`OrderID` < 10300
 """);
     }
@@ -47,7 +47,7 @@ WHERE `o`.`OrderID` < 10300
         AssertSql(
 """
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 WHERE `o`.`OrderID` < 10300
 """);
     }
@@ -61,13 +61,13 @@ WHERE `o`.`OrderID` < 10300
 @__quantity_0='1' (Nullable = true) (DbType = Int16)
 
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 WHERE `o`.`Quantity` = @__quantity_0
 """,
                 //
                 """
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 WHERE FALSE
 """);
     }
@@ -79,7 +79,7 @@ WHERE FALSE
         AssertSql(
 """
 DELETE
-FROM `Order Details`
+FROM `OrderDetails`
 WHERE `OrderID` < 10300
 ORDER BY `OrderID`
 """);
@@ -94,12 +94,12 @@ ORDER BY `OrderID`
 @__p_0='100'
 
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 WHERE EXISTS (
     SELECT 1
     FROM (
         SELECT `o0`.`OrderID`, `o0`.`ProductID`, `o0`.`Discount`, `o0`.`Quantity`, `o0`.`UnitPrice`
-        FROM `Order Details` AS `o0`
+        FROM `OrderDetails` AS `o0`
         WHERE `o0`.`OrderID` < 10300
         ORDER BY `o0`.`OrderID`
         LIMIT 18446744073709551610 OFFSET @__p_0
@@ -117,7 +117,7 @@ WHERE EXISTS (
 @__p_0='100'
 
 DELETE
-FROM `Order Details`
+FROM `OrderDetails`
 WHERE `OrderID` < 10300
 ORDER BY `OrderID`
 LIMIT @__p_0
@@ -133,12 +133,12 @@ LIMIT @__p_0
 @__p_0='100'
 
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 WHERE EXISTS (
     SELECT 1
     FROM (
         SELECT `o0`.`OrderID`, `o0`.`ProductID`, `o0`.`Discount`, `o0`.`Quantity`, `o0`.`UnitPrice`
-        FROM `Order Details` AS `o0`
+        FROM `OrderDetails` AS `o0`
         WHERE `o0`.`OrderID` < 10300
         ORDER BY `o0`.`OrderID`
         LIMIT @__p_0 OFFSET @__p_0
@@ -156,12 +156,12 @@ WHERE EXISTS (
 @__p_0='100'
 
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 WHERE EXISTS (
     SELECT 1
     FROM (
         SELECT `o0`.`OrderID`, `o0`.`ProductID`, `o0`.`Discount`, `o0`.`Quantity`, `o0`.`UnitPrice`
-        FROM `Order Details` AS `o0`
+        FROM `OrderDetails` AS `o0`
         WHERE `o0`.`OrderID` < 10300
         LIMIT 18446744073709551610 OFFSET @__p_0
     ) AS `t`
@@ -178,7 +178,7 @@ WHERE EXISTS (
 @__p_0='100'
 
 DELETE
-FROM `Order Details`
+FROM `OrderDetails`
 WHERE `OrderID` < 10300
 LIMIT @__p_0
 """);
@@ -193,12 +193,12 @@ LIMIT @__p_0
 @__p_0='100'
 
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 WHERE EXISTS (
     SELECT 1
     FROM (
         SELECT `o0`.`OrderID`, `o0`.`ProductID`, `o0`.`Discount`, `o0`.`Quantity`, `o0`.`UnitPrice`
-        FROM `Order Details` AS `o0`
+        FROM `OrderDetails` AS `o0`
         WHERE `o0`.`OrderID` < 10300
         LIMIT @__p_0 OFFSET @__p_0
     ) AS `t`
@@ -213,7 +213,7 @@ WHERE EXISTS (
         AssertSql(
 """
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 WHERE `o`.`OrderID` < (
     SELECT (
         SELECT `o1`.`OrderID`
@@ -234,7 +234,7 @@ WHERE `o`.`OrderID` < (
         AssertSql(
 """
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 INNER JOIN `Orders` AS `o0` ON `o`.`OrderID` = `o0`.`OrderID`
 WHERE EXISTS (
     SELECT 1
@@ -273,14 +273,14 @@ WHERE EXISTS (
 @__p_1='20'
 
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 WHERE EXISTS (
     SELECT 1
     FROM (
         SELECT `t`.`OrderID`, `t`.`ProductID`, `t`.`Discount`, `t`.`Quantity`, `t`.`UnitPrice`
         FROM (
             SELECT `o0`.`OrderID`, `o0`.`ProductID`, `o0`.`Discount`, `o0`.`Quantity`, `o0`.`UnitPrice`
-            FROM `Order Details` AS `o0`
+            FROM `OrderDetails` AS `o0`
             WHERE `o0`.`OrderID` < 10300
             LIMIT @__p_0 OFFSET @__p_0
         ) AS `t`
@@ -297,7 +297,7 @@ WHERE EXISTS (
         AssertSql(
 """
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 WHERE `o`.`OrderID` < 10300
 """);
     }
@@ -310,7 +310,7 @@ WHERE `o`.`OrderID` < 10300
 """
 DELETE `o0`
 FROM `Orders` AS `o`
-INNER JOIN `Order Details` AS `o0` ON `o`.`OrderID` = `o0`.`OrderID`
+INNER JOIN `OrderDetails` AS `o0` ON `o`.`OrderID` = `o0`.`OrderID`
 WHERE `o`.`OrderID` < 10250
 """);
     }
@@ -322,13 +322,13 @@ WHERE `o`.`OrderID` < 10250
         AssertSql(
 """
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 WHERE EXISTS (
     SELECT 1
     FROM `Orders` AS `o0`
     INNER JOIN (
         SELECT `o1`.`OrderID`, `o1`.`ProductID`, `o1`.`Discount`, `o1`.`Quantity`, `o1`.`UnitPrice`
-        FROM `Order Details` AS `o1`
+        FROM `OrderDetails` AS `o1`
         WHERE `o1`.`ProductID` > 0
     ) AS `t` ON `o0`.`OrderID` = `t`.`OrderID`
     WHERE (`o0`.`OrderID` < 10250) AND ((`t`.`OrderID` = `o`.`OrderID`) AND (`t`.`ProductID` = `o`.`ProductID`)))
@@ -342,7 +342,7 @@ WHERE EXISTS (
         AssertSql(
 """
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 INNER JOIN `Orders` AS `o0` ON `o`.`OrderID` = `o0`.`OrderID`
 WHERE EXTRACT(year FROM `o0`.`OrderDate`) = 2000
 """);
@@ -355,7 +355,7 @@ WHERE EXTRACT(year FROM `o0`.`OrderDate`) = 2000
         AssertSql(
 """
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 INNER JOIN `Orders` AS `o0` ON `o`.`OrderID` = `o0`.`OrderID`
 LEFT JOIN `Customers` AS `c` ON `o0`.`CustomerID` = `c`.`CustomerID`
 WHERE `c`.`CustomerID` IS NOT NULL AND (`c`.`CustomerID` LIKE 'F%')
@@ -369,16 +369,16 @@ WHERE `c`.`CustomerID` IS NOT NULL AND (`c`.`CustomerID` LIKE 'F%')
         AssertSql(
 """
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 WHERE EXISTS (
     SELECT 1
     FROM (
         SELECT `o0`.`OrderID`, `o0`.`ProductID`, `o0`.`Discount`, `o0`.`Quantity`, `o0`.`UnitPrice`
-        FROM `Order Details` AS `o0`
+        FROM `OrderDetails` AS `o0`
         WHERE `o0`.`OrderID` < 10250
         UNION
         SELECT `o1`.`OrderID`, `o1`.`ProductID`, `o1`.`Discount`, `o1`.`Quantity`, `o1`.`UnitPrice`
-        FROM `Order Details` AS `o1`
+        FROM `OrderDetails` AS `o1`
         WHERE `o1`.`OrderID` > 11250
     ) AS `t`
     WHERE (`t`.`OrderID` = `o`.`OrderID`) AND (`t`.`ProductID` = `o`.`ProductID`))
@@ -392,16 +392,16 @@ WHERE EXISTS (
         AssertSql(
 """
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 WHERE EXISTS (
     SELECT 1
     FROM (
         SELECT `o0`.`OrderID`, `o0`.`ProductID`, `o0`.`Discount`, `o0`.`Quantity`, `o0`.`UnitPrice`
-        FROM `Order Details` AS `o0`
+        FROM `OrderDetails` AS `o0`
         WHERE `o0`.`OrderID` < 10250
         UNION ALL
         SELECT `o1`.`OrderID`, `o1`.`ProductID`, `o1`.`Discount`, `o1`.`Quantity`, `o1`.`UnitPrice`
-        FROM `Order Details` AS `o1`
+        FROM `OrderDetails` AS `o1`
         WHERE `o1`.`OrderID` > 11250
     ) AS `t`
     WHERE (`t`.`OrderID` = `o`.`OrderID`) AND (`t`.`ProductID` = `o`.`ProductID`))
@@ -415,16 +415,16 @@ WHERE EXISTS (
         AssertSql(
 """
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 WHERE EXISTS (
     SELECT 1
     FROM (
         SELECT `o0`.`OrderID`, `o0`.`ProductID`, `o0`.`Discount`, `o0`.`Quantity`, `o0`.`UnitPrice`
-        FROM `Order Details` AS `o0`
+        FROM `OrderDetails` AS `o0`
         WHERE `o0`.`OrderID` < 10250
         INTERSECT
         SELECT `o1`.`OrderID`, `o1`.`ProductID`, `o1`.`Discount`, `o1`.`Quantity`, `o1`.`UnitPrice`
-        FROM `Order Details` AS `o1`
+        FROM `OrderDetails` AS `o1`
         WHERE `o1`.`OrderID` > 11250
     ) AS `t`
     WHERE (`t`.`OrderID` = `o`.`OrderID`) AND (`t`.`ProductID` = `o`.`ProductID`))
@@ -438,16 +438,16 @@ WHERE EXISTS (
         AssertSql(
 """
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 WHERE EXISTS (
     SELECT 1
     FROM (
         SELECT `o0`.`OrderID`, `o0`.`ProductID`, `o0`.`Discount`, `o0`.`Quantity`, `o0`.`UnitPrice`
-        FROM `Order Details` AS `o0`
+        FROM `OrderDetails` AS `o0`
         WHERE `o0`.`OrderID` < 10250
         EXCEPT
         SELECT `o1`.`OrderID`, `o1`.`ProductID`, `o1`.`Discount`, `o1`.`Quantity`, `o1`.`UnitPrice`
-        FROM `Order Details` AS `o1`
+        FROM `OrderDetails` AS `o1`
         WHERE `o1`.`OrderID` > 11250
     ) AS `t`
     WHERE (`t`.`OrderID` = `o`.`OrderID`) AND (`t`.`ProductID` = `o`.`ProductID`))
@@ -482,12 +482,12 @@ WHERE EXISTS (
         AssertSql(
 """
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 WHERE EXISTS (
     SELECT 1
     FROM (
         SELECT `OrderID`, `ProductID`, `UnitPrice`, `Quantity`, `Discount`
-        FROM `Order Details`
+        FROM `OrderDetails`
         WHERE `OrderID` < 10300
     ) AS `m`
     WHERE (`m`.`OrderID` = `o`.`OrderID`) AND (`m`.`ProductID` = `o`.`ProductID`))
@@ -501,7 +501,7 @@ WHERE EXISTS (
         AssertSql(
 """
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 INNER JOIN `Orders` AS `o0` ON `o`.`OrderID` = `o0`.`OrderID`
 LEFT JOIN `Customers` AS `c` ON `o0`.`CustomerID` = `c`.`CustomerID`
 WHERE `c`.`City` IS NOT NULL AND (`c`.`City` LIKE 'Se%')
@@ -518,7 +518,7 @@ WHERE `c`.`City` IS NOT NULL AND (`c`.`City` LIKE 'Se%')
 @__p_0='0'
 
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 INNER JOIN (
     SELECT `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
     FROM `Orders` AS `o0`
@@ -539,7 +539,7 @@ INNER JOIN (
 @__p_0='0'
 
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 LEFT JOIN (
     SELECT `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
     FROM `Orders` AS `o0`
@@ -558,7 +558,7 @@ WHERE `o`.`OrderID` < 10276
         AssertSql(
 """
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 CROSS JOIN (
     SELECT `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
     FROM `Orders` AS `o0`
@@ -577,7 +577,7 @@ WHERE `o`.`OrderID` < 10276
         AssertSql(
 """
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 JOIN LATERAL (
     SELECT `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
     FROM `Orders` AS `o0`
@@ -596,7 +596,7 @@ WHERE `o`.`OrderID` < 10276
         AssertSql(
 """
 DELETE `o`
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 LEFT JOIN LATERAL (
     SELECT `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
     FROM `Orders` AS `o0`
@@ -993,7 +993,7 @@ WHERE `c`.`City` = 'Seattle'
 
         AssertExecuteUpdateSql(
 """
-UPDATE `Order Details` AS `o`
+UPDATE `OrderDetails` AS `o`
 INNER JOIN `Orders` AS `o0` ON `o`.`OrderID` = `o0`.`OrderID`
 LEFT JOIN `Customers` AS `c` ON `o0`.`CustomerID` = `c`.`CustomerID`
 SET `o`.`Quantity` = CAST(1 AS signed)

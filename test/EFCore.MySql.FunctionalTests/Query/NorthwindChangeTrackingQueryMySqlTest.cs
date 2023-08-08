@@ -17,7 +17,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         protected override NorthwindContext CreateNoTrackingContext()
-              => new NorthwindSqliteContext(
+              => new NorthwindMySqlContext(
                   new DbContextOptionsBuilder(Fixture.CreateOptions())
                       .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).Options);
     }

@@ -46,7 +46,7 @@ WHERE `p`.`ProductID` < 40");
 SELECT AVG(CAST((
     SELECT AVG({MySqlTestHelpers.CastAsDouble(@"5 + (
         SELECT MAX(`o0`.`ProductID`)
-        FROM `Order Details` AS `o0`
+        FROM `OrderDetails` AS `o0`
         WHERE `o`.`OrderID` = `o0`.`OrderID`)")})
     FROM `Orders` AS `o`
     WHERE `t`.`CustomerID` = `o`.`CustomerID`) AS decimal(65,30)))
@@ -72,7 +72,7 @@ FROM (
 SELECT AVG(CAST((
     SELECT AVG(5.0 + (
         SELECT AVG({MySqlTestHelpers.CastAsDouble(@"`o0`.`ProductID`")})
-        FROM `Order Details` AS `o0`
+        FROM `OrderDetails` AS `o0`
         WHERE `o`.`OrderID` = `o0`.`OrderID`))
     FROM `Orders` AS `o`
     WHERE `t`.`CustomerID` = `o`.`CustomerID`) AS decimal(65,30)))

@@ -185,7 +185,7 @@ WHERE `o`.`EmployeeID` LIKE '%M%'");
 
                 AssertSql(
                     @"SELECT COUNT(*)
-FROM `Order Details` AS `o`
+FROM `OrderDetails` AS `o`
 WHERE `o`.`Quantity` LIKE '%M%'");
             }
         }

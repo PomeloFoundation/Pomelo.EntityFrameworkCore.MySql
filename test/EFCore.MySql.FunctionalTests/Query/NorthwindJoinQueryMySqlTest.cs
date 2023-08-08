@@ -50,7 +50,7 @@ LEFT JOIN (
     FROM `Orders` AS `o`
     INNER JOIN (
         SELECT `o0`.`OrderID`, `o0`.`ProductID`
-        FROM `Order Details` AS `o0`
+        FROM `OrderDetails` AS `o0`
         WHERE `o0`.`OrderID` < 11000
     ) AS `t` ON `o`.`OrderID` = `t`.`OrderID`
 ) AS `t0` ON `c`.`CustomerID` = `t0`.`CustomerID`
