@@ -4,7 +4,6 @@
 using System;
 using System.Data.Common;
 using System.Reflection;
-using System.Text;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -13,6 +12,7 @@ using NetTopologySuite;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Json;
 using Pomelo.EntityFrameworkCore.MySql.Storage.ValueConversion.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
@@ -42,6 +42,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public MySqlGeometryTypeMapping(NtsGeometryServices geometryServices, string storeType, IMySqlOptions options)
             : base(
                 new GeometryValueConverter<TGeometry>(geometryServices),
+                MySqlJsonGeometryWktReaderWriter.Instance,
                 storeType)
         {
             _options = options;

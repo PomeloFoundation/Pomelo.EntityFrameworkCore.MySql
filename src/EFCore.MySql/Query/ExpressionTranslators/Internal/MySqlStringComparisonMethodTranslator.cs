@@ -181,7 +181,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 new[]
                 {
                     new CaseWhenClause(
-                        _sqlExpressionFactory.In(stringComparison, _caseSensitiveComparisons, false),
+                        _sqlExpressionFactory.In(stringComparison, _sqlExpressionFactory.Select(_caseSensitiveComparisons)),
                         // Case sensitive, accent sensitive
                         _sqlExpressionFactory.Equal(
                             leftValue,
@@ -235,8 +235,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     new CaseWhenClause(
                         _sqlExpressionFactory.In(
                             stringComparison,
-                            _caseSensitiveComparisons,
-                            false),
+                            _sqlExpressionFactory.Select(_caseSensitiveComparisons)),
                         // Case sensitive, accent sensitive
                         MakeStartsWithEndsWithExpressionImpl(
                             target,
@@ -293,8 +292,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     new CaseWhenClause(
                         _sqlExpressionFactory.In(
                             stringComparison,
-                            _caseSensitiveComparisons,
-                            false),
+                            _sqlExpressionFactory.Select(_caseSensitiveComparisons)),
                         // Case sensitive, accent sensitive
                         MakeStartsWithEndsWithExpressionImpl(
                             target,
@@ -353,7 +351,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 new[]
                 {
                     new CaseWhenClause(
-                        _sqlExpressionFactory.In(stringComparison, _caseSensitiveComparisons, false),
+                        _sqlExpressionFactory.In(stringComparison, _sqlExpressionFactory.Select(_caseSensitiveComparisons)),
                         // Case sensitive, accent sensitive
                         MakeContainsExpressionImpl(
                             target,
@@ -533,8 +531,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     new CaseWhenClause(
                         _sqlExpressionFactory.In(
                             stringComparison,
-                            _caseSensitiveComparisons,
-                            false),
+                            _sqlExpressionFactory.Select(_caseSensitiveComparisons)),
                         // Case sensitive, accent sensitive
                         MakeIndexOfExpressionImpl(
                             target,

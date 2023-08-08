@@ -389,7 +389,7 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
                 .Append("ALTER SEQUENCE ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name, operation.Schema))
                 .Append(" RESTART WITH ")
-                .Append(IntegerConstant(operation.StartValue))
+                .Append(IntegerConstant(operation.StartValue ?? 0))
                 .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
 
             EndStatement(builder);

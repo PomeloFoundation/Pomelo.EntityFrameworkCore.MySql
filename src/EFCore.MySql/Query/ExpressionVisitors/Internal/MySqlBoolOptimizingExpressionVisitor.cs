@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
@@ -140,10 +141,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             _optimize = false;
             var item = (SqlExpression)Visit(inExpression.Item);
             var subquery = (SelectExpression)Visit(inExpression.Subquery);
-            var values = (SqlExpression)Visit(inExpression.Values);
+            var nodes = inExpression.Values.Select(x => x as Expression).ToList().AsReadOnly();
+            var values = Visit(nodes).Select(x => x as SqlExpression).ToList().AsReadOnly();
+            var parameters = (SqlParameterExpression)Visit(inExpression.ValuesParameter);
             _optimize = parentOptimize;
 
-            return ApplyConversion(inExpression.Update(item, values, subquery), condition: true);
+            return ApplyConversion(inExpression.Update(item, subquery, values, parameters), condition: true);
         }
 
         protected override Expression VisitLike(LikeExpression likeExpression)
