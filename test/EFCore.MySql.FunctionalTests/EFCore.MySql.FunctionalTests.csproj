@@ -12,6 +12,14 @@
     <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);$(NoWarn)</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>$(NoWarn);EF1001;MSB3277;CS1998;xUnit1000</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>$(NoWarn);EF1001;MSB3277;CS1998;xUnit1000</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="..\Shared\**\*.cs" />
   </ItemGroup>

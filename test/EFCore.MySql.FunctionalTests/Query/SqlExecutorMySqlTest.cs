@@ -21,13 +21,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         protected virtual int DefaultSqlResult
             => -1;
 
-        public override void Executes_stored_procedure()
+        public override async Task Executes_stored_procedure(bool async)
         {
             using var context = CreateContext();
             Assert.Equal(DefaultStoredProcedureResult, context.Database.ExecuteSqlRaw(TenMostExpensiveProductsSproc));
         }
 
-        public override void Executes_stored_procedure_with_parameter()
+        public override async Task Executes_stored_procedure_with_parameter(bool async)
         {
             using var context = CreateContext();
             var parameter = CreateDbParameter("@CustomerID", "ALFKI");
@@ -35,13 +35,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             Assert.Equal(DefaultStoredProcedureResult, context.Database.ExecuteSqlRaw(CustomerOrderHistorySproc, parameter));
         }
 
-        public override void Executes_stored_procedure_with_generated_parameter()
+        public override async Task Executes_stored_procedure_with_generated_parameter(bool async)
         {
             using var context = CreateContext();
             Assert.Equal(DefaultStoredProcedureResult, context.Database.ExecuteSqlRaw(CustomerOrderHistoryWithGeneratedParameterSproc, "ALFKI"));
         }
 
-        public override void Query_with_parameters_interpolated_2()
+        public override async Task Query_with_parameters_interpolated_2(bool async)
         {
             var city = "London";
             var contactTitle = "Sales Representative";
@@ -54,7 +54,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             Assert.Equal(DefaultSqlResult, actual);
         }
 
-        public override void Query_with_DbParameters_interpolated_2()
+        public override async Task Query_with_DbParameters_interpolated_2(bool async)
         {
             var city = CreateDbParameter("city", "London");
             var contactTitle = CreateDbParameter("contactTitle", "Sales Representative");
@@ -67,13 +67,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             Assert.Equal(DefaultSqlResult, actual);
         }
 
-        public override async Task Executes_stored_procedure_async()
-        {
-            using var context = CreateContext();
-            Assert.Equal(DefaultStoredProcedureResult, await context.Database.ExecuteSqlRawAsync(TenMostExpensiveProductsSproc));
-        }
-
-        public override async Task Executes_stored_procedure_with_parameter_async()
+        public async Task Executes_stored_procedure_with_parameter_async()
         {
             using var context = CreateContext();
             var parameter = CreateDbParameter("@CustomerID", "ALFKI");
@@ -81,13 +75,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             Assert.Equal(DefaultStoredProcedureResult, await context.Database.ExecuteSqlRawAsync(CustomerOrderHistorySproc, parameter));
         }
 
-        public override async Task Executes_stored_procedure_with_generated_parameter_async()
+        public async Task Executes_stored_procedure_with_generated_parameter_async()
         {
             using var context = CreateContext();
             Assert.Equal(DefaultStoredProcedureResult, await context.Database.ExecuteSqlRawAsync(CustomerOrderHistoryWithGeneratedParameterSproc, "ALFKI"));
         }
 
-        public override async Task Query_with_parameters_interpolated_async_2()
+        public async Task Query_with_parameters_interpolated_async_2()
         {
             var city = "London";
             var contactTitle = "Sales Representative";
@@ -100,7 +94,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             Assert.Equal(DefaultSqlResult, actual);
         }
 
-        public override void Query_with_parameters()
+        public override async Task Query_with_parameters(bool async)
         {
             var city = "London";
             var contactTitle = "Sales Representative";
@@ -115,7 +109,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             }
         }
 
-        public override void Query_with_dbParameter_with_name()
+        public override async Task Query_with_dbParameter_with_name(bool async)
         {
             var city = CreateDbParameter("@city", "London");
 
@@ -129,7 +123,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             }
         }
 
-        public override void Query_with_positional_dbParameter_with_name()
+        public override async Task Query_with_positional_dbParameter_with_name(bool async)
         {
             var city = CreateDbParameter("@city", "London");
 
@@ -143,7 +137,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             }
         }
 
-        public override void Query_with_positional_dbParameter_without_name()
+        public override async Task Query_with_positional_dbParameter_without_name(bool async)
         {
             var city = CreateDbParameter(name: null, value: "London");
 
@@ -157,7 +151,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             }
         }
 
-        public override void Query_with_dbParameters_mixed()
+        public override async Task Query_with_dbParameters_mixed(bool async)
         {
             var city = "London";
             var contactTitle = "Sales Representative";
@@ -181,7 +175,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             }
         }
 
-        public override void Query_with_parameters_interpolated()
+        public override async Task Query_with_parameters_interpolated(bool async)
         {
             var city = "London";
             var contactTitle = "Sales Representative";
@@ -196,7 +190,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             }
         }
 
-        public override async Task Query_with_parameters_async()
+        public async Task Query_with_parameters_async()
         {
             var city = "London";
             var contactTitle = "Sales Representative";
@@ -211,7 +205,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             }
         }
 
-        public override async Task Query_with_parameters_interpolated_async()
+        public async Task Query_with_parameters_interpolated_async()
         {
             var city = "London";
             var contactTitle = "Sales Representative";
@@ -226,7 +220,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             }
         }
 
-        public override void Query_with_DbParameters_interpolated()
+        public override async Task Query_with_DbParameters_interpolated(bool async)
         {
             var city = CreateDbParameter("city", "London");
             var contactTitle = CreateDbParameter("contactTitle", "Sales Representative");
