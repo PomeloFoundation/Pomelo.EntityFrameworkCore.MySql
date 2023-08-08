@@ -1096,7 +1096,7 @@ WHERE `c`.`CustomerID` LIKE 'F%'
 
         AssertExecuteUpdateSql(
 """
-@__value_0='Abc' (Size = 4000)
+@__value_0='Abc' (Size = 30)
 
 UPDATE `Customers` AS `c`
 SET `c`.`City` = 'Seattle',
