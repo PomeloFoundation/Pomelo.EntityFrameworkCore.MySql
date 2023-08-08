@@ -19,7 +19,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
             SqlExpression against,
             MySqlMatchSearchMode searchMode,
             RelationalTypeMapping typeMapping)
-            : base(typeof(bool), typeMapping)
+            : base(typeof(double), typeMapping)
         {
             Check.NotNull(match, nameof(match));
             Check.NotNull(against, nameof(against));

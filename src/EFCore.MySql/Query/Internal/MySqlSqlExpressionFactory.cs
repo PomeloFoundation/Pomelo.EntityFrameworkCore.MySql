@@ -20,12 +20,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
     {
         private readonly IRelationalTypeMappingSource _typeMappingSource;
         private readonly RelationalTypeMapping _boolTypeMapping;
+        private readonly RelationalTypeMapping _doubleTypeMapping;
 
         public MySqlSqlExpressionFactory(SqlExpressionFactoryDependencies dependencies)
             : base(dependencies)
         {
             _typeMappingSource = dependencies.TypeMappingSource;
             _boolTypeMapping = _typeMappingSource.FindMapping(typeof(bool));
+            _doubleTypeMapping = _typeMappingSource.FindMapping(typeof(double));
         }
 
         public virtual RelationalTypeMapping FindMapping(
@@ -385,7 +387,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 ApplyTypeMapping(matchExpression.Match, inferredTypeMapping),
                 ApplyTypeMapping(matchExpression.Against, inferredTypeMapping),
                 matchExpression.SearchMode,
-                _boolTypeMapping);
+                _doubleTypeMapping);
         }
 
         private SqlExpression ApplyTypeMappingOnRegexp(MySqlRegexpExpression regexpExpression)
