@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
@@ -141,8 +142,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             _optimize = false;
             var item = (SqlExpression)Visit(inExpression.Item);
             var subquery = (SelectExpression)Visit(inExpression.Subquery);
-            var nodes = inExpression.Values.Select(x => x as Expression).ToList().AsReadOnly();
-            var values = Visit(nodes).Select(x => x as SqlExpression).ToList().AsReadOnly();
+            ReadOnlyCollection<SqlExpression> values = null;
+            if (inExpression.Values != null)
+            {
+                var nodes = inExpression.Values.Select(x => x as Expression).ToList().AsReadOnly();
+                values = Visit(nodes).Select(x => x as SqlExpression).ToList().AsReadOnly();
+            }
             var parameters = (SqlParameterExpression)Visit(inExpression.ValuesParameter);
             _optimize = parentOptimize;
 
