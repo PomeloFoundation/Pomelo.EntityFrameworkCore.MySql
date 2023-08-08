@@ -21,11 +21,16 @@ using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
+    public class MySqlBuiltInDataTypesFixture : BuiltInDataTypesMySqlTest.BuiltInDataTypesMySqlFixture
+    {
+        public override int LongStringLength => 4000; // MySql has 65535 bytes per row limitation
+    }
+
     [SupportedServerVersionCondition(nameof(ServerVersionSupport.Json))]
     public class BuiltInDataTypesMySqlTest :
-        BuiltInDataTypesTestBase<BuiltInDataTypesMySqlTest.BuiltInDataTypesMySqlFixture>
+        BuiltInDataTypesTestBase<MySqlBuiltInDataTypesFixture>
     {
-        public BuiltInDataTypesMySqlTest(BuiltInDataTypesMySqlFixture fixture, ITestOutputHelper testOutputHelper)
+        public BuiltInDataTypesMySqlTest(MySqlBuiltInDataTypesFixture fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
         {
             Fixture.TestSqlLoggerFactory.Clear();
@@ -1277,10 +1282,11 @@ MappedNullableDataTypes.UShortAsInt ---> [nullable int] [Precision = 10 Scale = 
 MappedNullableDataTypes.UShortAsSmallint ---> [nullable smallint] [Precision = 5 Scale = 0]
 MappedNullableDataTypes.UShortAsYear ---> [nullable year]
 MaxLengthDataTypes.ByteArray5 ---> [nullable varbinary] [MaxLength = 5]
-MaxLengthDataTypes.ByteArray9000 ---> [nullable longblob] [MaxLength = -1]
+MaxLengthDataTypes.ByteArray9000 ---> [nullable longblob] [MaxLength = 900]
 MaxLengthDataTypes.Id ---> [int] [Precision = 10 Scale = 0]
 MaxLengthDataTypes.String3 ---> [nullable varchar] [MaxLength = 3]
-MaxLengthDataTypes.String9000 ---> [nullable varchar] [MaxLength = 9000]
+MaxLengthDataTypes.String9000 ---> [nullable varchar] [MaxLength = 1000]
+MaxLengthDataTypes.StringUnbounded ---> [nullable varchar] [MaxLength = 1000]
 NonNullableBackedDataTypes.Boolean ---> [nullable tinyint] [Precision = 3 Scale = 0]
 NonNullableBackedDataTypes.Byte ---> [nullable tinyint] [Precision = 3 Scale = 0]
 NonNullableBackedDataTypes.Character ---> [nullable varchar] [MaxLength = 1]
