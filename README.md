@@ -34,15 +34,11 @@ Release | Branch                                                                
 
 Officially supported versions are:
 
+- MySQL 8.1
 - MySQL 8.0
 - MySQL 5.7
-- MariaDB 10.9
-- MariaDB 10.8
-- MariaDB 10.7
-- MariaDB 10.6
-- MariaDB 10.5
-- MariaDB 10.4
-- MariaDB 10.3
+- MariaDB 11
+- MariaDB 10.3+
 
 ## Schedule and Roadmap
 
