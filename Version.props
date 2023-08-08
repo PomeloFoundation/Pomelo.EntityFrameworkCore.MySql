@@ -12,7 +12,7 @@
           - "rtm"       - EF Core release independent, code quality production ready, major release
           - "servicing" - EF Core release independent, code quality production ready, mainly bugfixes
     -->
-    <VersionPrefix>7.0.1</VersionPrefix>
+    <VersionPrefix>8.0.0-preview</VersionPrefix>
     <PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
 
