@@ -4083,7 +4083,7 @@ LIMIT 1
 """
 SELECT `s`.`Name`
 FROM `Squads` AS `s`
-WHERE NOT (EXISTS (
+WHERE NOT EXISTS (
     SELECT 1
     FROM (
         SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
@@ -4093,7 +4093,7 @@ WHERE NOT (EXISTS (
         FROM `Officers` AS `o`
     ) AS `t`
     LEFT JOIN `Tags` AS `t0` ON (`t`.`Nickname` = `t0`.`GearNickName`) AND (`t`.`SquadId` = `t0`.`GearSquadId`)
-    WHERE (`s`.`Id` = `t`.`SquadId`) AND (`t0`.`Note` = 'Dom''s Tag')))
+    WHERE (`s`.`Id` = `t`.`SquadId`) AND (`t0`.`Note` = 'Dom''s Tag'))
 """);
     }
 
@@ -4787,7 +4787,7 @@ FROM (
     FROM `Officers` AS `o`
 ) AS `t`
 LEFT JOIN `Cities` AS `c` ON `t`.`AssignedCityName` = `c`.`Name`
-WHERE (`t`.`SquadId` < 2) AND ((`c`.`Name` = 'Ephyra') OR `c`.`Name` IS NULL)
+WHERE (`t`.`SquadId` < 2) AND (`c`.`Name` IS NULL OR (`c`.`Name` = 'Ephyra'))
 """);
     }
 
@@ -10499,10 +10499,10 @@ FROM (
 WHERE EXISTS (
     SELECT 1
     FROM (
-        SELECT `l1`.`Name`, `l1`.`LocustHordeId`, `l1`.`ThreatLevel`, `l1`.`ThreatLevelByte`, `l1`.`ThreatLevelNullableByte`, NULL AS `DefeatedByNickname`, NULL AS `DefeatedBySquadId`, NULL AS `HighCommandId`, 'LocustLeader' AS `Discriminator`
+        SELECT `l1`.`ThreatLevelNullableByte`
         FROM `LocustLeaders` AS `l1`
         UNION ALL
-        SELECT `l2`.`Name`, `l2`.`LocustHordeId`, `l2`.`ThreatLevel`, `l2`.`ThreatLevelByte`, `l2`.`ThreatLevelNullableByte`, `l2`.`DefeatedByNickname`, `l2`.`DefeatedBySquadId`, `l2`.`HighCommandId`, 'LocustCommander' AS `Discriminator`
+        SELECT `l2`.`ThreatLevelNullableByte`
         FROM `LocustCommanders` AS `l2`
     ) AS `t0`
     WHERE (`t0`.`ThreatLevelNullableByte` = `t`.`ThreatLevelNullableByte`) OR (`t0`.`ThreatLevelNullableByte` IS NULL AND (`t`.`ThreatLevelNullableByte` IS NULL)))
@@ -10526,10 +10526,10 @@ FROM (
 WHERE EXISTS (
     SELECT 1
     FROM (
-        SELECT `l1`.`Name`, `l1`.`LocustHordeId`, `l1`.`ThreatLevel`, `l1`.`ThreatLevelByte`, `l1`.`ThreatLevelNullableByte`, NULL AS `DefeatedByNickname`, NULL AS `DefeatedBySquadId`, NULL AS `HighCommandId`, 'LocustLeader' AS `Discriminator`
+        SELECT `l1`.`ThreatLevelNullableByte`
         FROM `LocustLeaders` AS `l1`
         UNION ALL
-        SELECT `l2`.`Name`, `l2`.`LocustHordeId`, `l2`.`ThreatLevel`, `l2`.`ThreatLevelByte`, `l2`.`ThreatLevelNullableByte`, `l2`.`DefeatedByNickname`, `l2`.`DefeatedBySquadId`, `l2`.`HighCommandId`, 'LocustCommander' AS `Discriminator`
+        SELECT `l2`.`ThreatLevelNullableByte`
         FROM `LocustCommanders` AS `l2`
     ) AS `t0`
     WHERE `t0`.`ThreatLevelNullableByte` IS NULL)
@@ -10553,10 +10553,10 @@ FROM (
 WHERE EXISTS (
     SELECT 1
     FROM (
-        SELECT `l1`.`Name`, `l1`.`LocustHordeId`, `l1`.`ThreatLevel`, `l1`.`ThreatLevelByte`, `l1`.`ThreatLevelNullableByte`, NULL AS `DefeatedByNickname`, NULL AS `DefeatedBySquadId`, NULL AS `HighCommandId`, 'LocustLeader' AS `Discriminator`
+        SELECT `l1`.`ThreatLevelNullableByte`
         FROM `LocustLeaders` AS `l1`
         UNION ALL
-        SELECT `l2`.`Name`, `l2`.`LocustHordeId`, `l2`.`ThreatLevel`, `l2`.`ThreatLevelByte`, `l2`.`ThreatLevelNullableByte`, `l2`.`DefeatedByNickname`, `l2`.`DefeatedBySquadId`, `l2`.`HighCommandId`, 'LocustCommander' AS `Discriminator`
+        SELECT `l2`.`ThreatLevelNullableByte`
         FROM `LocustCommanders` AS `l2`
     ) AS `t0`
     WHERE `t0`.`ThreatLevelNullableByte` IS NULL)
@@ -10816,7 +10816,7 @@ LIMIT @__p_0
 SELECT `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`
 FROM `Weapons` AS `w`
 LEFT JOIN `Weapons` AS `w0` ON `w`.`SynergyWithId` = `w0`.`Id`
-WHERE `w0`.`Id` IS NOT NULL AND ((`w0`.`AmmunitionType` = 1) OR `w0`.`AmmunitionType` IS NULL)
+WHERE `w0`.`Id` IS NOT NULL AND (`w0`.`AmmunitionType` IS NULL OR (`w0`.`AmmunitionType` = 1))
 """);
     }
 
@@ -11177,7 +11177,7 @@ WHERE ASCII(`s`.`Banner`) = 2
 """
 SELECT `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`
 FROM `Squads` AS `s`
-WHERE ASCII(SUBSTRING(`s`.`Banner5`, 2 + 1, 1)) = 6
+WHERE ASCII(SUBSTRING(`s`.`Banner5`, 3, 1)) = 6
 """);
     }
 
