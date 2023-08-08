@@ -29,6 +29,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
             .Single(mi => mi.Name == nameof(Enumerable.First) && mi.GetParameters().Length == 1);
 
+        private static readonly MethodInfo _elementAtWithIntIndex = typeof(Enumerable)
+            .GetTypeInfo()
+            .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+            .Single(mi => mi.Name == nameof(Enumerable.ElementAt) && mi.GetParameters().Length == 2 && mi.GetParameters()[1].ParameterType == typeof(int));
+
         public MySqlByteArrayMethodTranslator([NotNull] MySqlSqlExpressionFactory sqlExpressionFactory)
         {
             _sqlExpressionFactory = sqlExpressionFactory;
@@ -69,6 +74,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     return _sqlExpressionFactory.NullableFunction(
                         "ASCII",
                         new[] {arguments[0]},
+                        typeof(byte));
+                }
+
+                if (method.GetGenericMethodDefinition().Equals(_elementAtWithIntIndex))
+                {
+                    var source = arguments[0];
+                    var sourceTypeMapping = source.TypeMapping;
+                    var startIndex = arguments[1] is SqlConstantExpression constantValue
+                        ? (SqlExpression)_sqlExpressionFactory.Constant((int)constantValue.Value + 1)
+                        : _sqlExpressionFactory.Add(_sqlExpressionFactory.Convert(arguments[1], typeof(int)), _sqlExpressionFactory.Constant(1));
+
+                    return _sqlExpressionFactory.NullableFunction(
+                        "ASCII",
+                        new[]
+                        {
+                            _sqlExpressionFactory.NullableFunction(
+                                "SUBSTRING",
+                                new[]
+                                {
+                                    arguments[0],
+                                    startIndex,
+                                    _sqlExpressionFactory.Constant(1)
+                                },
+                                typeof(byte))
+                        },
                         typeof(byte));
                 }
             }
