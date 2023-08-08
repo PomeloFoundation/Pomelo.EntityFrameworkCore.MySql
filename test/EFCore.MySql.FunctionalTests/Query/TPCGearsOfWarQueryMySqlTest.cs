@@ -10466,16 +10466,13 @@ FROM (
     SELECT `l0`.`Name`, `l0`.`LocustHordeId`, `l0`.`ThreatLevel`, `l0`.`ThreatLevelByte`, `l0`.`ThreatLevelNullableByte`, `l0`.`DefeatedByNickname`, `l0`.`DefeatedBySquadId`, `l0`.`HighCommandId`, 'LocustCommander' AS `Discriminator`
     FROM `LocustCommanders` AS `l0`
 ) AS `t`
-WHERE EXISTS (
-    SELECT 1
-    FROM (
-        SELECT `l1`.`Name`, `l1`.`LocustHordeId`, `l1`.`ThreatLevel`, `l1`.`ThreatLevelByte`, `l1`.`ThreatLevelNullableByte`, NULL AS `DefeatedByNickname`, NULL AS `DefeatedBySquadId`, NULL AS `HighCommandId`, 'LocustLeader' AS `Discriminator`
-        FROM `LocustLeaders` AS `l1`
-        UNION ALL
-        SELECT `l2`.`Name`, `l2`.`LocustHordeId`, `l2`.`ThreatLevel`, `l2`.`ThreatLevelByte`, `l2`.`ThreatLevelNullableByte`, `l2`.`DefeatedByNickname`, `l2`.`DefeatedBySquadId`, `l2`.`HighCommandId`, 'LocustCommander' AS `Discriminator`
-        FROM `LocustCommanders` AS `l2`
-    ) AS `t0`
-    WHERE `t0`.`ThreatLevelByte` = `t`.`ThreatLevelByte`)
+WHERE `t`.`ThreatLevelByte` IN (
+    SELECT `l1`.`ThreatLevelByte`
+    FROM `LocustLeaders` AS `l1`
+    UNION ALL
+    SELECT `l2`.`ThreatLevelByte`
+    FROM `LocustCommanders` AS `l2`
+)
 """);
     }
 
@@ -10603,16 +10600,13 @@ JOIN LATERAL (
         SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
         FROM `Officers` AS `o`
     ) AS `t0`
-    WHERE EXISTS (
-        SELECT 1
-        FROM (
-            SELECT `l1`.`Name`, `l1`.`LocustHordeId`, `l1`.`ThreatLevel`, `l1`.`ThreatLevelByte`, `l1`.`ThreatLevelNullableByte`, NULL AS `DefeatedByNickname`, NULL AS `DefeatedBySquadId`, NULL AS `HighCommandId`, 'LocustLeader' AS `Discriminator`
-            FROM `LocustLeaders` AS `l1`
-            UNION ALL
-            SELECT `l2`.`Name`, `l2`.`LocustHordeId`, `l2`.`ThreatLevel`, `l2`.`ThreatLevelByte`, `l2`.`ThreatLevelNullableByte`, `l2`.`DefeatedByNickname`, `l2`.`DefeatedBySquadId`, `l2`.`HighCommandId`, 'LocustCommander' AS `Discriminator`
-            FROM `LocustCommanders` AS `l2`
-        ) AS `t2`
-        WHERE `t2`.`ThreatLevelByte` = `t`.`ThreatLevelByte`)
+    WHERE `t`.`ThreatLevelByte` IN (
+        SELECT `l1`.`ThreatLevelByte`
+        FROM `LocustLeaders` AS `l1`
+        UNION ALL
+        SELECT `l2`.`ThreatLevelByte`
+        FROM `LocustCommanders` AS `l2`
+    )
 ) AS `t1` ON TRUE
 """);
     }
@@ -10641,16 +10635,13 @@ JOIN LATERAL (
         SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
         FROM `Officers` AS `o`
     ) AS `t0`
-    WHERE NOT (EXISTS (
-        SELECT 1
-        FROM (
-            SELECT `l1`.`Name`, `l1`.`LocustHordeId`, `l1`.`ThreatLevel`, `l1`.`ThreatLevelByte`, `l1`.`ThreatLevelNullableByte`, NULL AS `DefeatedByNickname`, NULL AS `DefeatedBySquadId`, NULL AS `HighCommandId`, 'LocustLeader' AS `Discriminator`
-            FROM `LocustLeaders` AS `l1`
-            UNION ALL
-            SELECT `l2`.`Name`, `l2`.`LocustHordeId`, `l2`.`ThreatLevel`, `l2`.`ThreatLevelByte`, `l2`.`ThreatLevelNullableByte`, `l2`.`DefeatedByNickname`, `l2`.`DefeatedBySquadId`, `l2`.`HighCommandId`, 'LocustCommander' AS `Discriminator`
-            FROM `LocustCommanders` AS `l2`
-        ) AS `t2`
-        WHERE `t2`.`ThreatLevelByte` = `t`.`ThreatLevelByte`))
+    WHERE `t`.`ThreatLevelByte` NOT IN (
+        SELECT `l1`.`ThreatLevelByte`
+        FROM `LocustLeaders` AS `l1`
+        UNION ALL
+        SELECT `l2`.`ThreatLevelByte`
+        FROM `LocustCommanders` AS `l2`
+    )
 ) AS `t1` ON TRUE
 """);
     }
@@ -10681,10 +10672,10 @@ JOIN LATERAL (
     WHERE EXISTS (
         SELECT 1
         FROM (
-            SELECT `l1`.`Name`, `l1`.`LocustHordeId`, `l1`.`ThreatLevel`, `l1`.`ThreatLevelByte`, `l1`.`ThreatLevelNullableByte`, NULL AS `DefeatedByNickname`, NULL AS `DefeatedBySquadId`, NULL AS `HighCommandId`, 'LocustLeader' AS `Discriminator`
+            SELECT `l1`.`ThreatLevelNullableByte`
             FROM `LocustLeaders` AS `l1`
             UNION ALL
-            SELECT `l2`.`Name`, `l2`.`LocustHordeId`, `l2`.`ThreatLevel`, `l2`.`ThreatLevelByte`, `l2`.`ThreatLevelNullableByte`, `l2`.`DefeatedByNickname`, `l2`.`DefeatedBySquadId`, `l2`.`HighCommandId`, 'LocustCommander' AS `Discriminator`
+            SELECT `l2`.`ThreatLevelNullableByte`
             FROM `LocustCommanders` AS `l2`
         ) AS `t2`
         WHERE (`t2`.`ThreatLevelNullableByte` = `t`.`ThreatLevelNullableByte`) OR (`t2`.`ThreatLevelNullableByte` IS NULL AND (`t`.`ThreatLevelNullableByte` IS NULL)))
@@ -10715,16 +10706,16 @@ JOIN LATERAL (
         SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
         FROM `Officers` AS `o`
     ) AS `t0`
-    WHERE NOT (EXISTS (
+    WHERE NOT EXISTS (
         SELECT 1
         FROM (
-            SELECT `l1`.`Name`, `l1`.`LocustHordeId`, `l1`.`ThreatLevel`, `l1`.`ThreatLevelByte`, `l1`.`ThreatLevelNullableByte`, NULL AS `DefeatedByNickname`, NULL AS `DefeatedBySquadId`, NULL AS `HighCommandId`, 'LocustLeader' AS `Discriminator`
+            SELECT `l1`.`ThreatLevelNullableByte`
             FROM `LocustLeaders` AS `l1`
             UNION ALL
-            SELECT `l2`.`Name`, `l2`.`LocustHordeId`, `l2`.`ThreatLevel`, `l2`.`ThreatLevelByte`, `l2`.`ThreatLevelNullableByte`, `l2`.`DefeatedByNickname`, `l2`.`DefeatedBySquadId`, `l2`.`HighCommandId`, 'LocustCommander' AS `Discriminator`
+            SELECT `l2`.`ThreatLevelNullableByte`
             FROM `LocustCommanders` AS `l2`
         ) AS `t2`
-        WHERE (`t2`.`ThreatLevelNullableByte` = `t`.`ThreatLevelNullableByte`) OR (`t2`.`ThreatLevelNullableByte` IS NULL AND (`t`.`ThreatLevelNullableByte` IS NULL))))
+        WHERE (`t2`.`ThreatLevelNullableByte` = `t`.`ThreatLevelNullableByte`) OR (`t2`.`ThreatLevelNullableByte` IS NULL AND (`t`.`ThreatLevelNullableByte` IS NULL)))
 ) AS `t1` ON TRUE
 """);
     }
@@ -11922,7 +11913,7 @@ WHERE (`t`.`HasSoulPatch` = TRUE) AND `t`.`HasSoulPatch` IN (FALSE, TRUE)
 
 SELECT `c`.`Name`, `c`.`Location`, `c`.`Nation`
 FROM `Cities` AS `c`
-WHERE (`c`.`Nation` = @__place_0) OR (`c`.`Location` = @__place_0)
+WHERE ((`c`.`Nation` = @__place_0) OR (`c`.`Location` = @__place_0)) OR (`c`.`Location` = @__place_0)
 """);
     }
 
