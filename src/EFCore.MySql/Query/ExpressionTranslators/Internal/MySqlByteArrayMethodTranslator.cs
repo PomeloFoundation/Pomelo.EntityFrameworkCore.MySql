@@ -80,7 +80,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 if (method.GetGenericMethodDefinition().Equals(_elementAtWithIntIndex))
                 {
                     var source = arguments[0];
-                    var sourceTypeMapping = source.TypeMapping;
                     var startIndex = arguments[1] is SqlConstantExpression constantValue
                         ? (SqlExpression)_sqlExpressionFactory.Constant((int)constantValue.Value + 1)
                         : _sqlExpressionFactory.Add(_sqlExpressionFactory.Convert(arguments[1], typeof(int)), _sqlExpressionFactory.Constant(1));
