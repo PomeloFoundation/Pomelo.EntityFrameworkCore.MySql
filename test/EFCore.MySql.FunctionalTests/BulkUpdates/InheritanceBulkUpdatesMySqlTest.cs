@@ -208,6 +208,30 @@ WHERE (
         AssertExecuteUpdateSql();
     }
 
+    public override async Task Update_with_interface_in_property_expression(bool async)
+    {
+        await base.Update_with_interface_in_property_expression(async);
+
+        AssertExecuteUpdateSql(
+"""
+UPDATE `Drinks` AS `d`
+SET `d`.`SugarGrams` = 0
+WHERE `d`.`Discriminator` = 'Coke'
+""");
+    }
+
+    public override async Task Update_with_interface_in_EF_Property_in_property_expression(bool async)
+    {
+        await base.Update_with_interface_in_EF_Property_in_property_expression(async);
+
+        AssertExecuteUpdateSql(
+"""
+UPDATE `Drinks` AS `d`
+SET `d`.`SugarGrams` = 0
+WHERE `d`.`Discriminator` = 'Coke'
+""");
+    }
+
     protected override void ClearLog()
         => Fixture.TestSqlLoggerFactory.Clear();
 
