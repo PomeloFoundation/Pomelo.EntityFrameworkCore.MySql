@@ -47,6 +47,7 @@ Officially supported versions are:
 
 Milestone | Status | Release Date
 ----------|--------|-------------
+[8.0.0-preview](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/8.0-wip) | Working in progress | -
 7.0.0 | Released | 2023-01-16
 6.0.2 | Released | 2022-07-24
 5.0.4 | Released | 2022-01-22
