@@ -364,6 +364,12 @@ ALTER SEQUENCE `foo` RESTART WITH -3;
             return base.Alter_sequence_increment_by();
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
+        public override Task Alter_sequence_restart_with()
+        {
+            return base.Alter_sequence_restart_with();
+        }
+
         public override async Task Alter_table_add_comment_non_default_schema()
         {
             await base.Alter_table_add_comment_non_default_schema();
@@ -1299,7 +1305,7 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;",
 
 
         [ConditionalFact]
-        [SupportedServerVersionLessThanCondition(nameof(ServerVersionSupport.DefaultExpression), nameof(ServerVersionSupport.AlternativeDefaultExpression))]
+        [SupportedServerVersionLessThanCondition(nameof(ServerVersionSupport.DefaultExpression), nameof(ServerVersionSupport.UnboundedLength))]
         public override async Task Add_column_with_unbounded_max_length()
         {
             await base.Add_column_with_unbounded_max_length();
