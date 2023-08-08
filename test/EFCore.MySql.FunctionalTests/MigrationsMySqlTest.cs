@@ -1297,6 +1297,14 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;",
                 },
                 withConventions: false);
 
+
+        [ConditionalFact]
+        [SupportedServerVersionLessThanCondition(nameof(ServerVersionSupport.DefaultExpression), nameof(ServerVersionSupport.AlternativeDefaultExpression))]
+        public override async Task Add_column_with_unbounded_max_length()
+        {
+            await base.Add_column_with_unbounded_max_length();
+        }
+
         protected virtual string DefaultCollation => ((MySqlTestStore)Fixture.TestStore).DatabaseCollation;
 
         protected override string NonDefaultCollation
