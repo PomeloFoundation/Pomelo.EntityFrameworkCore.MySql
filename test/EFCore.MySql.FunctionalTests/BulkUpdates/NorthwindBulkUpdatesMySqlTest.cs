@@ -1,6 +1,9 @@
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.BulkUpdates;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
@@ -477,7 +480,30 @@ WHERE EXISTS (
 
     public override async Task Delete_FromSql_converted_to_subquery(bool async)
     {
-        await base.Delete_FromSql_converted_to_subquery(async);
+        if (async)
+        {
+            await TestHelpers.ExecuteWithStrategyInTransactionAsync(
+                () => Fixture.CreateContext(),
+                (DatabaseFacade facade, IDbContextTransaction transaction) => Fixture.UseTransaction(facade, transaction),
+                async context => await context.Set<OrderDetail>().FromSqlRaw(
+                        NormalizeDelimitersInRawString(
+                            @"SELECT `OrderID`, `ProductID`, `UnitPrice`, `Quantity`, `Discount`
+FROM `OrderDetails`
+WHERE `OrderID` < 10300"))
+                    .ExecuteDeleteAsync());
+        }
+        else
+        {
+            TestHelpers.ExecuteWithStrategyInTransaction(
+                () => Fixture.CreateContext(),
+                (DatabaseFacade facade, IDbContextTransaction transaction) => Fixture.UseTransaction(facade, transaction),
+                context => context.Set<OrderDetail>().FromSqlRaw(
+                        NormalizeDelimitersInRawString(
+                            @"SELECT `OrderID`, `ProductID`, `UnitPrice`, `Quantity`, `Discount`
+FROM `OrderDetails`
+WHERE `OrderID` < 10300"))
+                    .ExecuteDelete());
+        }
 
         AssertSql(
 """
