@@ -640,7 +640,7 @@ WHERE `c`.`CustomerID` LIKE 'F%'
 
         AssertExecuteUpdateSql(
             """
-@__customer_0='ALFKI' (Size = 255)
+@__customer_0='ALFKI' (Size = 5)
 
 UPDATE `Customers` AS `c`
 SET `c`.`ContactName` = 'Updated'
@@ -648,7 +648,7 @@ WHERE `c`.`CustomerID` = @__customer_0
 """,
             //
             """
-@__customer_0='ALFKI' (Size = 255)
+@__customer_0='ALFKI' (Size = 5)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
@@ -674,7 +674,7 @@ WHERE FALSE
 
         AssertExecuteUpdateSql(
 """
-@__value_0='Abc' (Size = 4000)
+@__value_0='Abc' (Size = 30)
 
 UPDATE `Customers` AS `c`
 SET `c`.`ContactName` = @__value_0
@@ -688,7 +688,7 @@ WHERE `c`.`CustomerID` LIKE 'F%'
 
         AssertExecuteUpdateSql(
 """
-@__p_0='Abc' (Size = 4000)
+@__p_0='Abc' (Size = 30)
 
 UPDATE `Customers` AS `c`
 SET `c`.`ContactName` = @__p_0
@@ -714,7 +714,7 @@ WHERE `c`.`CustomerID` LIKE 'F%'
 
         AssertExecuteUpdateSql(
 """
-@__container_Containee_Property_0='Abc' (Size = 4000)
+@__container_Containee_Property_0='Abc' (Size = 30)
 
 UPDATE `Customers` AS `c`
 SET `c`.`ContactName` = @__container_Containee_Property_0
@@ -1032,7 +1032,7 @@ WHERE `c`.`CustomerID` LIKE 'F%'
 
         AssertExecuteUpdateSql(
 """
-@__value_0='Abc' (Size = 4000)
+@__value_0='Abc' (Size = 30)
 
 UPDATE `Customers` AS `c`
 SET `c`.`ContactName` = CONCAT(COALESCE(`c`.`ContactName`, ''), @__value_0)
