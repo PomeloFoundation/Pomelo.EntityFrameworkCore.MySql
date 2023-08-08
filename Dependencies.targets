@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup Label="Common Versions">
-    <EFCoreVersion>8.0.0-*</EFCoreVersion>
+    <EFCoreVersion>8.0.0-preview.6.*</EFCoreVersion>
   </PropertyGroup>
 
   <ItemGroup Label="Dependencies">
@@ -13,7 +13,7 @@
 
     <PackageReference Update="NetTopologySuite" Version="2.5.0" />
     <PackageReference Update="System.Text.Json" Version="8.0.0-*" />
-    <PackageReference Update="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Update="Newtonsoft.Json" Version="13.0.3" />
 
     <PackageReference Update="Castle.Core" Version="5.1.1" />
     <PackageReference Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.2" />
@@ -43,6 +43,6 @@
     <!-- Keep at the same level that the EF Core projects use. -->
     <PackageReference Update="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" />
     <PackageReference Update="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
-    <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="4.2.0" />
+    <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="4.5.0" />
   </ItemGroup>
 </Project>
