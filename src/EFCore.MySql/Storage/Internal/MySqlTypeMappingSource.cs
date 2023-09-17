@@ -388,6 +388,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                         size = null;
                         isFixedLength = false;
                     }
+                    else if (size < 0) // specifying HasMaxLength(-1) is valid and should lead to an unbounded string/text.
+                    {
+                        size = null;
+                    }
 
                     mapping = isFixedLength
                         ? _charUnicode
@@ -413,6 +417,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                                (mappingInfo.IsKeyOrIndex
                                    ? _options.ServerVersion.MaxKeyLength
                                    : (int?)null);
+
+                    // Specifying HasMaxLength(-1) is valid and should lead to an unbounded byte array/blob.
+                    if (size < 0)
+                    {
+                        size = null;
+                    }
 
                     return new MySqlByteArrayTypeMapping(
                         size: size,

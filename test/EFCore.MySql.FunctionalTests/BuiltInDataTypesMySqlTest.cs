@@ -1931,6 +1931,15 @@ UnicodeDataTypes.StringUnicode ---> [nullable longtext] [MaxLength = -1]
                         });
 
                 MakeRequired<MappedDataTypes>(modelBuilder);
+
+                // MySQL supports a max. row size of 65535 bytes.
+                modelBuilder.Entity<MaxLengthDataTypes>(
+                    b =>
+                    {
+                        // Reset the max. length of `StringUnbounded` back to -1.
+                        // Probably a bug in the Fluent API of the class, that it is first set to -1 and immediately afterwards to 9000.
+                        b.Property(e => e.StringUnbounded).HasMaxLength(-1);
+                    });
             }
         }
 
