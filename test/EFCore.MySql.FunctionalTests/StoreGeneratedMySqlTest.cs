@@ -20,6 +20,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
         public class StoreGeneratedMySqlFixture : StoreGeneratedFixtureBase
         {
+            protected override string StoreName
+                => "StoreGeneratedTest";
+
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
 
             public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)

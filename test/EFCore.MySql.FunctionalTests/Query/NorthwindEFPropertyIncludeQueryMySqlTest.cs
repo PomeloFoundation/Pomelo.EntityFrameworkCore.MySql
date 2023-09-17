@@ -1317,21 +1317,6 @@ ORDER BY `o`.`OrderID`, `o`.`ProductID`, `o0`.`OrderID`, `c`.`CustomerID`, `p`.`
 """);
     }
 
-    public override async Task Outer_idenfier_correctly_determined_when_doing_include_on_right_side_of_left_join(bool async)
-    {
-        await base.Outer_idenfier_correctly_determined_when_doing_include_on_right_side_of_left_join(async);
-
-        AssertSql(
-"""
-SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, `o0`.`OrderID`, `o0`.`ProductID`, `o0`.`Discount`, `o0`.`Quantity`, `o0`.`UnitPrice`
-FROM `Customers` AS `c`
-LEFT JOIN `Orders` AS `o` ON `c`.`CustomerID` = `o`.`CustomerID`
-LEFT JOIN `Order Details` AS `o0` ON `o`.`OrderID` = `o0`.`OrderID`
-WHERE `c`.`City` = 'Seattle'
-ORDER BY `c`.`CustomerID`, `o`.`OrderID`, `o0`.`OrderID`
-""");
-    }
-
     public override async Task SelectMany_Include_reference_GroupBy_Select(bool async)
     {
         await base.SelectMany_Include_reference_GroupBy_Select(async);

@@ -45,9 +45,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         }
 
         [ConditionalTheory(Skip = "TODO")]
-        public override Task Add_column_computed_with_collation()
+        public override Task Add_column_computed_with_collation(bool stored)
         {
-            return base.Add_column_computed_with_collation();
+            return base.Add_column_computed_with_collation(stored);
         }
 
         [ConditionalTheory(Skip = "TODO")]

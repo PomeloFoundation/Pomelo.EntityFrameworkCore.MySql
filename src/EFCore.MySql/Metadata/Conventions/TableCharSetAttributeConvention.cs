@@ -11,7 +11,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions
     /// <summary>
     ///     A convention that configures the character set for an entity based on the applied <see cref="MySqlCharSetAttribute" />.
     /// </summary>
-    public class TableCharSetAttributeConvention : EntityTypeAttributeConventionBase<MySqlCharSetAttribute>
+    public class TableCharSetAttributeConvention : TypeAttributeConventionBase<MySqlCharSetAttribute>
     {
         /// <summary>
         ///     Creates a new instance of <see cref="TableCharSetAttributeConvention" />.

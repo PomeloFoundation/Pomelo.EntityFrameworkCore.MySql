@@ -20,11 +20,10 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
 
     protected override bool IsValidSelectExpressionForExecuteDelete(
         SelectExpression selectExpression,
-        EntityShaperExpression entityShaperExpression,
+        StructuralTypeShaperExpression shaper,
         [NotNullWhen(true)] out TableExpression tableExpression)
     {
         if (selectExpression.Offset == null
-            && (!selectExpression.IsDistinct || entityShaperExpression.EntityType.FindPrimaryKey() != null)
             && selectExpression.GroupBy.Count == 0
             && selectExpression.Having == null
             && (selectExpression.Tables.Count == 1 || selectExpression.Orderings.Count == 0))
@@ -36,9 +35,9 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
             }
             else
             {
-                var projectionBindingExpression = (ProjectionBindingExpression)entityShaperExpression.ValueBufferExpression;
-                var entityProjectionExpression = (EntityProjectionExpression)selectExpression.GetProjection(projectionBindingExpression);
-                var column = entityProjectionExpression.BindProperty(entityShaperExpression.EntityType.GetProperties().First());
+                var projectionBindingExpression = (ProjectionBindingExpression)shaper.ValueBufferExpression;
+                var entityProjectionExpression = (StructuralTypeProjectionExpression)selectExpression.GetProjection(projectionBindingExpression);
+                var column = entityProjectionExpression.BindProperty(shaper.StructuralType.GetProperties().First());
                 table = column.Table;
                 if (table is JoinExpressionBase joinExpressionBase)
                 {
@@ -59,15 +58,17 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
 
     protected override bool IsValidSelectExpressionForExecuteUpdate(
         SelectExpression selectExpression,
-        EntityShaperExpression entityShaperExpression,
+        TableExpressionBase targetTable,
         [NotNullWhen(true)] out TableExpression tableExpression)
     {
-        if (selectExpression.Offset == null
-            // If entity type has primary key then Distinct is no-op
-            && (!selectExpression.IsDistinct || entityShaperExpression.EntityType.FindPrimaryKey() != null)
-            && selectExpression.GroupBy.Count == 0
-            && selectExpression.Having == null
-            && selectExpression.Orderings.Count == 0)
+        if (selectExpression is
+            {
+                Offset: null,
+                IsDistinct: false,
+                GroupBy: [],
+                Having: null,
+                Orderings: []
+            })
         {
             TableExpressionBase table;
             if (selectExpression.Tables.Count == 1)
@@ -76,11 +77,10 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
             }
             else
             {
-                var projectionBindingExpression = (ProjectionBindingExpression)entityShaperExpression.ValueBufferExpression;
-                var entityProjectionExpression = (EntityProjectionExpression)selectExpression.GetProjection(projectionBindingExpression);
-                var column = entityProjectionExpression.BindProperty(entityShaperExpression.EntityType.GetProperties().First());
-                table = column.Table;
-                if (table is JoinExpressionBase joinExpressionBase)
+                table = targetTable;
+
+                if (selectExpression.Tables.Count > 1 &&
+                    table is JoinExpressionBase joinExpressionBase)
                 {
                     table = joinExpressionBase.Table;
                 }

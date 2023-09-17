@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using JetBrains.Annotations;
@@ -56,7 +57,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             _staticEqualsMethodInfo,
         };
 
-        private readonly SqlExpression _caseSensitiveComparisons;
+        private readonly IReadOnlyList<SqlExpression> _caseSensitiveComparisons;
 
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
         private readonly IMySqlOptions _options;
@@ -65,8 +66,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         {
             _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
             _options = options;
-            _caseSensitiveComparisons = _sqlExpressionFactory.Constant(
-                new[] {StringComparison.Ordinal, StringComparison.CurrentCulture, StringComparison.InvariantCulture});
+            _caseSensitiveComparisons = new[]
+            {
+                _sqlExpressionFactory.Constant(StringComparison.Ordinal),
+                _sqlExpressionFactory.Constant(StringComparison.CurrentCulture),
+                _sqlExpressionFactory.Constant(StringComparison.InvariantCulture)
+            }.ToList().AsReadOnly();
         }
 
         public virtual SqlExpression Translate(
@@ -181,7 +186,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 new[]
                 {
                     new CaseWhenClause(
-                        _sqlExpressionFactory.In(stringComparison, _caseSensitiveComparisons, false),
+                        _sqlExpressionFactory.In(stringComparison, _caseSensitiveComparisons),
                         // Case sensitive, accent sensitive
                         _sqlExpressionFactory.Equal(
                             leftValue,
@@ -235,8 +240,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     new CaseWhenClause(
                         _sqlExpressionFactory.In(
                             stringComparison,
-                            _caseSensitiveComparisons,
-                            false),
+                            _caseSensitiveComparisons),
                         // Case sensitive, accent sensitive
                         MakeStartsWithEndsWithExpressionImpl(
                             target,
@@ -293,8 +297,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     new CaseWhenClause(
                         _sqlExpressionFactory.In(
                             stringComparison,
-                            _caseSensitiveComparisons,
-                            false),
+                            _caseSensitiveComparisons),
                         // Case sensitive, accent sensitive
                         MakeStartsWithEndsWithExpressionImpl(
                             target,
@@ -353,7 +356,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 new[]
                 {
                     new CaseWhenClause(
-                        _sqlExpressionFactory.In(stringComparison, _caseSensitiveComparisons, false),
+                        _sqlExpressionFactory.In(stringComparison, _caseSensitiveComparisons),
                         // Case sensitive, accent sensitive
                         MakeContainsExpressionImpl(
                             target,
@@ -533,8 +536,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     new CaseWhenClause(
                         _sqlExpressionFactory.In(
                             stringComparison,
-                            _caseSensitiveComparisons,
-                            false),
+                            _caseSensitiveComparisons),
                         // Case sensitive, accent sensitive
                         MakeIndexOfExpressionImpl(
                             target,

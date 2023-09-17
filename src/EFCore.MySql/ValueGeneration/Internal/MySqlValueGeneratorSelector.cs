@@ -30,17 +30,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.ValueGeneration.Internal
         ///     any release. You should only use it directly in your code with extreme caution and knowing that
         ///     doing so can result in application failures when updating to a new Entity Framework Core release.
         /// </summary>
-        public override ValueGenerator Create(IProperty property, IEntityType entityType)
+        protected override ValueGenerator FindForType(IProperty property, ITypeBase typeBase, Type clrType)
         {
-            Check.NotNull(property, nameof(property));
-            Check.NotNull(entityType, nameof(entityType));
-
-            var ret = property.ClrType.UnwrapNullableType() == typeof(Guid)
+            var ret = clrType == typeof(Guid)
                 ? property.ValueGenerated == ValueGenerated.Never
                   || property.GetDefaultValueSql() != null
-                    ? (ValueGenerator)new TemporaryGuidValueGenerator()
+                    ? new TemporaryGuidValueGenerator()
                     : new MySqlSequentialGuidValueGenerator(_options)
-                : base.Create(property, entityType);
+                : base.FindForType(property, typeBase, clrType);
             return ret;
         }
     }

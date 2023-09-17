@@ -2,6 +2,7 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore.Design.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.Json;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Storage.Internal;
@@ -100,6 +101,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Storage
         private static readonly MySqlTypeMappingSource Mapper = new MySqlTypeMappingSource(
             new TypeMappingSourceDependencies(
                 new ValueConverterSelector(new ValueConverterSelectorDependencies()),
+                new JsonValueReaderWriterSource(new JsonValueReaderWriterSourceDependencies()),
                 Array.Empty<ITypeMappingSourcePlugin>()),
             new RelationalTypeMappingSourceDependencies(
                 new [] {new MySqlJsonMicrosoftTypeMappingSourcePlugin(new MySqlOptions())}),

@@ -6,10 +6,10 @@ using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
-public class FiltersInheritanceBulkUpdatesMySqlTest : FiltersInheritanceBulkUpdatesTestBase<
-    FiltersInheritanceBulkUpdatesMySqlFixture>
+public class TPHFiltersInheritanceBulkUpdatesMySqlTest : FiltersInheritanceBulkUpdatesTestBase<
+    TPHFiltersInheritanceBulkUpdatesMySqlFixture>
 {
-    public FiltersInheritanceBulkUpdatesMySqlTest(FiltersInheritanceBulkUpdatesMySqlFixture fixture)
+    public TPHFiltersInheritanceBulkUpdatesMySqlTest(TPHFiltersInheritanceBulkUpdatesMySqlFixture fixture)
         : base(fixture)
     {
         ClearLog();
@@ -143,35 +143,11 @@ WHERE EXISTS (
 """);
     }
 
-    public override async Task Update_where_hierarchy(bool async)
-    {
-        await base.Update_where_hierarchy(async);
-
-        AssertExecuteUpdateSql(
-"""
-UPDATE `Animals` AS `a`
-SET `a`.`Name` = 'Animal'
-WHERE (`a`.`CountryId` = 1) AND (`a`.`Name` = 'Great spotted kiwi')
-""");
-    }
-
     public override async Task Update_where_hierarchy_subquery(bool async)
     {
         await base.Update_where_hierarchy_subquery(async);
 
         AssertExecuteUpdateSql();
-    }
-
-    public override async Task Update_where_hierarchy_derived(bool async)
-    {
-        await base.Update_where_hierarchy_derived(async);
-
-        AssertExecuteUpdateSql(
-"""
-UPDATE `Animals` AS `a`
-SET `a`.`Name` = 'Kiwi'
-WHERE ((`a`.`Discriminator` = 'Kiwi') AND (`a`.`CountryId` = 1)) AND (`a`.`Name` = 'Great spotted kiwi')
-""");
     }
 
     public override async Task Update_where_using_hierarchy(bool async)

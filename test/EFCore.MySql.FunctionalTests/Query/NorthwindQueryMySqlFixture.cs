@@ -1,9 +1,11 @@
+using System;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestModels.Northwind;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -11,6 +13,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         where TModelCustomizer : IModelCustomizer, new()
     {
         protected override ITestStoreFactory TestStoreFactory => MySqlNorthwindTestStoreFactory.Instance;
+        protected override Type ContextType => typeof(NorthwindMySqlContext);
 
         protected override bool ShouldLogCategory(string logCategory)
             => logCategory == DbLoggerCategory.Query.Name || logCategory == DbLoggerCategory.Database.Command.Name;

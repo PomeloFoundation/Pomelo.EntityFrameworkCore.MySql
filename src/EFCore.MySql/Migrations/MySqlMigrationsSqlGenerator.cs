@@ -388,8 +388,16 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
             builder
                 .Append("ALTER SEQUENCE ")
                 .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name, operation.Schema))
-                .Append(" RESTART WITH ")
-                .Append(IntegerConstant(operation.StartValue))
+                .Append(" RESTART");
+
+            if (operation.StartValue.HasValue)
+            {
+                builder
+                    .Append(" WITH ")
+                    .Append(IntegerConstant(operation.StartValue));
+            }
+
+            builder
                 .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
 
             EndStatement(builder);
@@ -1618,7 +1626,7 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
         protected virtual string ColumnList([NotNull] string[] columns, Func<string, int, string> columnPostfix)
             => string.Join(", ", columns.Select((c, i) => Dependencies.SqlGenerationHelper.DelimitIdentifier(c) + columnPostfix?.Invoke(c, i)));
 
-        private string IntegerConstant(long value)
+        private string IntegerConstant(long? value)
             => string.Format(CultureInfo.InvariantCulture, "{0}", value);
 
         private static string Truncate(string source, int maxLength)

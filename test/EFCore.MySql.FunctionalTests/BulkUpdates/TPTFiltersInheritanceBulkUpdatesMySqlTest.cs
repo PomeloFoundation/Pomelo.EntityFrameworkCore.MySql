@@ -2,14 +2,17 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
 public class TPTFiltersInheritanceBulkUpdatesMySqlTest : TPTFiltersInheritanceBulkUpdatesTestBase<
     TPTFiltersInheritanceBulkUpdatesMySqlFixture>
 {
-    public TPTFiltersInheritanceBulkUpdatesMySqlTest(TPTFiltersInheritanceBulkUpdatesMySqlFixture fixture)
-        : base(fixture)
+    public TPTFiltersInheritanceBulkUpdatesMySqlTest(
+        TPTFiltersInheritanceBulkUpdatesMySqlFixture fixture,
+        ITestOutputHelper testOutputHelper)
+        : base(fixture, testOutputHelper)
     {
         ClearLog();
     }
@@ -103,23 +106,9 @@ WHERE (
         AssertSql();
     }
 
-    public override async Task Update_where_hierarchy(bool async)
-    {
-        await base.Update_where_hierarchy(async);
-
-        AssertExecuteUpdateSql();
-    }
-
     public override async Task Update_where_hierarchy_subquery(bool async)
     {
         await base.Update_where_hierarchy_subquery(async);
-
-        AssertExecuteUpdateSql();
-    }
-
-    public override async Task Update_where_hierarchy_derived(bool async)
-    {
-        await base.Update_where_hierarchy_derived(async);
 
         AssertExecuteUpdateSql();
     }

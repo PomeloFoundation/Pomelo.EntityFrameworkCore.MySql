@@ -16,7 +16,7 @@ public class NorthwindBulkUpdatesMySqlTest : NorthwindBulkUpdatesTestBase<Northw
     public NorthwindBulkUpdatesMySqlTest(
         NorthwindBulkUpdatesMySqlFixture<NoopModelCustomizer> fixture,
         ITestOutputHelper testOutputHelper)
-        : base(fixture)
+        : base(fixture, testOutputHelper)
     {
         ClearLog();
         // Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
@@ -1108,13 +1108,6 @@ WHERE `c`.`CustomerID` LIKE 'F%'
     public override async Task Update_with_invalid_lambda_in_set_property_throws(bool async)
     {
         await base.Update_with_invalid_lambda_in_set_property_throws(async);
-
-        AssertExecuteUpdateSql();
-    }
-
-    public override async Task Update_multiple_entity_throws(bool async)
-    {
-        await base.Update_multiple_entity_throws(async);
 
         AssertExecuteUpdateSql();
     }

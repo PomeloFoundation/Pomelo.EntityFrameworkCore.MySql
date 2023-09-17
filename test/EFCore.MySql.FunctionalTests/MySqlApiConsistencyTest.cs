@@ -38,46 +38,54 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             };
 
             public override
-                List<(Type Type,
-                    Type ReadonlyExtensions,
+                Dictionary<Type,
+                    (Type ReadonlyExtensions,
                     Type MutableExtensions,
                     Type ConventionExtensions,
                     Type ConventionBuilderExtensions,
                     Type RuntimeExtensions)> MetadataExtensionTypes { get; }
                 = new()
                 {
-                    (
+                    {
                         typeof(IReadOnlyModel),
-                        typeof(MySqlModelExtensions),
-                        typeof(MySqlModelExtensions),
-                        typeof(MySqlModelExtensions),
-                        typeof(MySqlModelBuilderExtensions),
-                        null
-                    ),
-                    (
+                        (
+                            typeof(MySqlModelExtensions),
+                            typeof(MySqlModelExtensions),
+                            typeof(MySqlModelExtensions),
+                            typeof(MySqlModelBuilderExtensions),
+                            null
+                        )
+                    },
+                    {
                         typeof(IReadOnlyEntityType),
-                        typeof(MySqlEntityTypeExtensions),
-                        typeof(MySqlEntityTypeExtensions),
-                        typeof(MySqlEntityTypeExtensions),
-                        typeof(MySqlEntityTypeBuilderExtensions),
-                        null
-                    ),
-                    (
+                        (
+                            typeof(MySqlEntityTypeExtensions),
+                            typeof(MySqlEntityTypeExtensions),
+                            typeof(MySqlEntityTypeExtensions),
+                            typeof(MySqlEntityTypeBuilderExtensions),
+                            null
+                        )
+                    },
+                    {
                         typeof(IReadOnlyProperty),
-                        typeof(MySqlPropertyExtensions),
-                        typeof(MySqlPropertyExtensions),
-                        typeof(MySqlPropertyExtensions),
-                        typeof(MySqlPropertyBuilderExtensions),
-                        null
-                    ),
-                    (
+                        (
+                            typeof(MySqlPropertyExtensions),
+                            typeof(MySqlPropertyExtensions),
+                            typeof(MySqlPropertyExtensions),
+                            typeof(MySqlPropertyBuilderExtensions),
+                            null
+                        )
+                    },
+                    {
                         typeof(IReadOnlyIndex),
-                        typeof(MySqlIndexExtensions),
-                        typeof(MySqlIndexExtensions),
-                        typeof(MySqlIndexExtensions),
-                        typeof(MySqlIndexBuilderExtensions),
-                        null
-                    )
+                        (
+                            typeof(MySqlIndexExtensions),
+                            typeof(MySqlIndexExtensions),
+                            typeof(MySqlIndexExtensions),
+                            typeof(MySqlIndexBuilderExtensions),
+                            null
+                        )
+                    },
                 };
 
             public override HashSet<MethodInfo> UnmatchedMetadataMethods { get; } = new()

@@ -77,14 +77,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             }
         }
 
-        public override void MakeBinary_does_not_throw_for_unsupported_operator()
-        {
-            Assert.Equal(
-                CoreStrings.TranslationFailed("DbSet<Customer>()    .Where(c => c.CustomerID == (string)(__parameters[0]))"),
-                Assert.Throws<InvalidOperationException>(
-                    () => base.MakeBinary_does_not_throw_for_unsupported_operator()).Message.Replace("\r", "").Replace("\n", ""));
-        }
-
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
     }

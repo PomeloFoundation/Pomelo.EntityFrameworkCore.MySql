@@ -87,7 +87,7 @@ namespace Microsoft.EntityFrameworkCore
             var annotation = property.FindAnnotation(MySqlAnnotationNames.ValueGenerationStrategy);
             if (annotation?.Value is { } annotationValue
                 && ObjectToEnumConverter.GetEnumValue<MySqlValueGenerationStrategy>(annotationValue) is { } enumValue
-                && StoreObjectIdentifier.Create(property.DeclaringEntityType, storeObject.StoreObjectType) == storeObject)
+                && StoreObjectIdentifier.Create(property.DeclaringType, storeObject.StoreObjectType) == storeObject)
             {
                 return enumValue;
             }
@@ -170,7 +170,7 @@ namespace Microsoft.EntityFrameworkCore
 
         private static MySqlValueGenerationStrategy GetDefaultValueGenerationStrategy(IReadOnlyProperty property)
         {
-            var modelStrategy = property.DeclaringEntityType.Model.GetValueGenerationStrategy();
+            var modelStrategy = property.DeclaringType.Model.GetValueGenerationStrategy();
 
             if (modelStrategy == MySqlValueGenerationStrategy.IdentityColumn &&
                 IsCompatibleAutoIncrementColumn(property))
@@ -186,7 +186,7 @@ namespace Microsoft.EntityFrameworkCore
             in StoreObjectIdentifier storeObject,
             [CanBeNull] ITypeMappingSource typeMappingSource)
         {
-            var modelStrategy = property.DeclaringEntityType.Model.GetValueGenerationStrategy();
+            var modelStrategy = property.DeclaringType.Model.GetValueGenerationStrategy();
 
             return modelStrategy == MySqlValueGenerationStrategy.IdentityColumn
                    && IsCompatibleAutoIncrementColumn(property, storeObject, typeMappingSource)
@@ -322,7 +322,7 @@ namespace Microsoft.EntityFrameworkCore
             {
                 throw new ArgumentException(
                     MySqlStrings.IdentityBadType(
-                        property.Name, property.DeclaringEntityType.DisplayName(), propertyType.ShortDisplayName()));
+                        property.Name, property.DeclaringType.DisplayName(), propertyType.ShortDisplayName()));
             }
 
             if (value == MySqlValueGenerationStrategy.ComputedColumn
@@ -330,7 +330,7 @@ namespace Microsoft.EntityFrameworkCore
             {
                 throw new ArgumentException(
                     MySqlStrings.ComputedBadType(
-                        property.Name, property.DeclaringEntityType.DisplayName(), propertyType.ShortDisplayName()));
+                        property.Name, property.DeclaringType.DisplayName(), propertyType.ShortDisplayName()));
             }
 
             return value;

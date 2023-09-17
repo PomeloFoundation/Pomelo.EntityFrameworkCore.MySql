@@ -4,7 +4,7 @@ using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
-public class InheritanceBulkUpdatesMySqlFixture : InheritanceBulkUpdatesRelationalFixture
+public class TPHInheritanceBulkUpdatesMySqlFixture : TPHInheritanceBulkUpdatesFixture
 {
     protected override ITestStoreFactory TestStoreFactory
         => MySqlTestStoreFactory.Instance;
