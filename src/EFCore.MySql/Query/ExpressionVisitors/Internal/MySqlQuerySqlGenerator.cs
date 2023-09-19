@@ -385,7 +385,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 && selectExpression.Projection.Count == 0)
             {
                 Sql.Append("UPDATE ");
-                GenerateList(selectExpression.Tables, e => Visit(e), sql => sql.AppendLine());
+
+                if (selectExpression.Tables.Count > 1)
+                {
+                    var tables = selectExpression.Tables;
+
+                    if (selectExpression.Tables.All(t => !updateExpression.Table.Equals(t is JoinExpressionBase join ? join.Table : t)))
+                    {
+                        Visit(updateExpression.Table);
+                        Sql.AppendLine(",");
+
+                        if (tables[0] is not JoinExpressionBase)
+                        {
+                            tables = tables
+                                .Skip(1)
+                                .Prepend(new CrossJoinExpression(tables[0]))
+                                .ToArray();
+                        }
+                    }
+
+                    GenerateList(tables, e => Visit(e), sql => sql.AppendLine());
+                }
+                else
+                {
+                    Visit(updateExpression.Table);
+                }
 
                 Sql.AppendLine().Append("SET ");
                 Visit(updateExpression.ColumnValueSetters[0].Column);
