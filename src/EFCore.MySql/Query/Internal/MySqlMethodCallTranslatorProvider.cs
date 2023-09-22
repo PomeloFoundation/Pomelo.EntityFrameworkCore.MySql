@@ -38,8 +38,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 new MySqlNewGuidTranslator(sqlExpressionFactory),
                 new MySqlObjectToStringTranslator(sqlExpressionFactory),
                 new MySqlRegexIsMatchTranslator(sqlExpressionFactory),
-                new MySqlStringComparisonMethodTranslator(sqlExpressionFactory, options),
-                new MySqlStringMethodTranslator(sqlExpressionFactory, relationalTypeMappingSource, options),
+                new MySqlStringComparisonMethodTranslator(sqlExpressionFactory, () => QueryCompilationContext, options),
+                new MySqlStringMethodTranslator(sqlExpressionFactory, relationalTypeMappingSource, () => QueryCompilationContext, options),
             });
         }
 

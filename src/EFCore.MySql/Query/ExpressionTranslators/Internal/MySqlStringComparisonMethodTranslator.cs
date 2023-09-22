@@ -3,21 +3,22 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
-    public class MySqlStringComparisonMethodTranslator : IMethodCallTranslator
+    public class MySqlStringComparisonMethodTranslator : MySqlQueryCompilationContextMethodTranslator
     {
         private static readonly MethodInfo _equalsMethodInfo
             = typeof(string).GetRuntimeMethod(nameof(string.Equals), new[] {typeof(string), typeof(StringComparison)});
@@ -62,7 +63,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
         private readonly IMySqlOptions _options;
 
-        public MySqlStringComparisonMethodTranslator(ISqlExpressionFactory sqlExpressionFactory, IMySqlOptions options)
+        private static readonly MethodInfo _escapeLikePatternParameterMethod =
+            typeof(MySqlStringComparisonMethodTranslator).GetTypeInfo().GetDeclaredMethod(nameof(ConstructLikePatternParameter))!;
+
+        public MySqlStringComparisonMethodTranslator(
+            ISqlExpressionFactory sqlExpressionFactory,
+            Func<QueryCompilationContext> queryCompilationContextResolver,
+            IMySqlOptions options)
+        : base(queryCompilationContextResolver)
         {
             _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
             _options = options;
@@ -74,11 +82,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             }.ToList().AsReadOnly();
         }
 
-        public virtual SqlExpression Translate(
+        public override SqlExpression Translate(
             SqlExpression instance,
             MethodInfo method,
             IReadOnlyList<SqlExpression> arguments,
-            IDiagnosticsLogger<DbLoggerCategory.Query> logger)
+            QueryCompilationContext queryCompilationContext)
         {
             if(_options.StringComparisonTranslations)
             {
@@ -95,29 +103,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 
                     if (Equals(method, _startsWithMethodInfo))
                     {
-                        return MakeStartsWithExpression(
-                            instance,
-                            arguments[0],
-                            arguments[1]
-                        );
+                        return MakeStartsWithExpression(queryCompilationContext, instance, arguments[0], arguments[1]);
                     }
 
                     if (Equals(method, _endsWithMethodInfo))
                     {
-                        return MakeEndsWithExpression(
-                            instance,
-                            arguments[0],
-                            arguments[1]
-                        );
+                        return MakeEndsWithExpression(queryCompilationContext, instance, arguments[0], arguments[1]);
                     }
 
                     if (Equals(method, _containsMethodInfo))
                     {
-                        return MakeContainsExpression(
-                            instance,
-                            arguments[0],
-                            arguments[1]
-                        );
+                        return MakeContainsExpression(queryCompilationContext, instance, arguments[0], arguments[1]);
                     }
 
                     if (Equals(method, _indexOfMethodInfo))
@@ -202,6 +198,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         }
 
         public virtual SqlExpression MakeStartsWithExpression(
+            QueryCompilationContext queryCompilationContext,
             [NotNull] SqlExpression target,
             [NotNull] SqlExpression prefix,
             [CanBeNull] SqlExpression stringComparison = null)
@@ -209,6 +206,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             if (stringComparison == null)
             {
                 return MakeStartsWithEndsWithExpressionImpl(
+                    queryCompilationContext,
                     target,
                     e => e,
                     prefix,
@@ -221,12 +219,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 return CreateExpressionForCaseSensitivity(
                     cmp,
                     () => MakeStartsWithEndsWithExpressionImpl(
+                        queryCompilationContext,
                         target,
                         e => e,
                         prefix,
                         e => Utf8Bin(e),
                         true),
                     () => MakeStartsWithEndsWithExpressionImpl(
+                        queryCompilationContext,
                         LCase(target),
                         e => LCase(e),
                         prefix,
@@ -243,6 +243,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                             _caseSensitiveComparisons),
                         // Case sensitive, accent sensitive
                         MakeStartsWithEndsWithExpressionImpl(
+                            queryCompilationContext,
                             target,
                             e => e,
                             prefix,
@@ -251,6 +252,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 },
                 // Case insensitive, accent sensitive
                 MakeStartsWithEndsWithExpressionImpl(
+                    queryCompilationContext,
                     target,
                     e => LCase(e),
                     prefix,
@@ -259,6 +261,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         }
 
         public virtual SqlExpression MakeEndsWithExpression(
+            QueryCompilationContext queryCompilationContext,
             [NotNull] SqlExpression target,
             [NotNull] SqlExpression suffix,
             [CanBeNull] SqlExpression stringComparison = null)
@@ -266,6 +269,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             if (stringComparison == null)
             {
                 return MakeStartsWithEndsWithExpressionImpl(
+                    queryCompilationContext,
                     target,
                     e => e,
                     suffix,
@@ -278,12 +282,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 return CreateExpressionForCaseSensitivity(
                     cmp,
                     () => MakeStartsWithEndsWithExpressionImpl(
+                        queryCompilationContext,
                         target,
                         e => e,
                         suffix,
                         e => Utf8Bin(e),
                         false),
                     () => MakeStartsWithEndsWithExpressionImpl(
+                        queryCompilationContext,
                         target,
                         e => LCase(e),
                         suffix,
@@ -300,6 +306,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                             _caseSensitiveComparisons),
                         // Case sensitive, accent sensitive
                         MakeStartsWithEndsWithExpressionImpl(
+                            queryCompilationContext,
                             target,
                             e => e,
                             suffix,
@@ -308,6 +315,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 },
                 // Case insensitive, accent sensitive
                 MakeStartsWithEndsWithExpressionImpl(
+                    queryCompilationContext,
                     target,
                     e => LCase(e),
                     suffix,
@@ -316,6 +324,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         }
 
         public virtual SqlExpression MakeContainsExpression(
+            QueryCompilationContext queryCompilationContext,
             [NotNull] SqlExpression target,
             [NotNull] SqlExpression search,
             [CanBeNull] SqlExpression stringComparison = null)
@@ -325,6 +334,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             if (stringComparison == null)
             {
                 return MakeContainsExpressionImpl(
+                    queryCompilationContext,
                     target,
                     e => e,
                     search,
@@ -337,6 +347,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     cmp,
                     () =>
                         MakeContainsExpressionImpl(
+                            queryCompilationContext,
                             target,
                             e => e,
                             search,
@@ -344,6 +355,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                         ),
                     () =>
                         MakeContainsExpressionImpl(
+                            queryCompilationContext,
                             target,
                             e => LCase(e),
                             search,
@@ -359,6 +371,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                         _sqlExpressionFactory.In(stringComparison, _caseSensitiveComparisons),
                         // Case sensitive, accent sensitive
                         MakeContainsExpressionImpl(
+                            queryCompilationContext,
                             target,
                             e => e,
                             search,
@@ -368,6 +381,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 },
                 // Case insensitive, accent sensitive
                 MakeContainsExpressionImpl(
+                    queryCompilationContext,
                     target,
                     e => LCase(e),
                     search,
@@ -377,6 +391,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         }
 
         private SqlExpression MakeStartsWithEndsWithExpressionImpl(
+            QueryCompilationContext queryCompilationContext,
             SqlExpression target,
             [NotNull] Func<SqlExpression, SqlExpression> targetTransform,
             SqlExpression prefixSuffix,
@@ -423,6 +438,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 return _sqlExpressionFactory.Like(target, _sqlExpressionFactory.Constant(null, stringTypeMapping));
             }
 
+            if (GetLikeExpressionUsingParameter(
+                    queryCompilationContext,
+                    target,
+                    targetTransform,
+                    prefixSuffix,
+                    stringTypeMapping,
+                    startsWith
+                        ? StartsEndsWithContains.StartsWith
+                        : StartsEndsWithContains.EndsWith) is { } likeExpressionUsingParameter)
+            {
+                return likeExpressionUsingParameter;
+            }
+
             // TODO: Generally, LEFT & compare is faster than escaping potential pattern characters with REPLACE().
             // However, this might not be the case, if the pattern is constant after all (e.g. `LCASE('fo%o')`), in
             // which case, `something LIKE CONCAT(REPLACE(REPLACE(LCASE('fo%o'), '%', '\\%'), '_', '\\_'), '%')` should
@@ -442,6 +470,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         }
 
         private SqlExpression MakeContainsExpressionImpl(
+            QueryCompilationContext queryCompilationContext,
             SqlExpression target,
             [NotNull] Func<SqlExpression, SqlExpression> targetTransform,
             SqlExpression pattern,
@@ -478,6 +507,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 return _sqlExpressionFactory.Like(target, _sqlExpressionFactory.Constant(null, stringTypeMapping));
             }
 
+            if (GetLikeExpressionUsingParameter(
+                    queryCompilationContext,
+                    target,
+                    targetTransform,
+                    pattern,
+                    stringTypeMapping,
+                    StartsEndsWithContains.Contains) is { } likeExpressionUsingParameter)
+            {
+                return likeExpressionUsingParameter;
+            }
+
             // 'foo' LIKE '' OR LOCATE('foo', 'barfoobar') > 0
             // This cannot be "'   ' = '' OR ..", because '   ' would be trimmed to '' when using equals, but not when using LIKE.
             // Using an empty pattern `LOCATE('', 'barfoobar')` returns 1.
@@ -488,6 +528,37 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 _sqlExpressionFactory.GreaterThan(
                     Locate(patternTransform(pattern), targetTransform(target)),
                     _sqlExpressionFactory.Constant(0)));
+        }
+
+        protected virtual SqlExpression GetLikeExpressionUsingParameter(QueryCompilationContext queryCompilationContext,
+            SqlExpression target,
+            Func<SqlExpression, SqlExpression> targetTransform,
+            SqlExpression pattern,
+            RelationalTypeMapping stringTypeMapping,
+            StartsEndsWithContains methodType)
+        {
+            if (pattern is SqlParameterExpression patternParameter &&
+                patternParameter.Name.StartsWith(QueryCompilationContext.QueryParameterPrefix, StringComparison.Ordinal))
+            {
+                // The pattern is a parameter, register a runtime parameter that will contain the rewritten LIKE pattern, where
+                // all special characters have been escaped.
+                var lambda = Expression.Lambda(
+                    Expression.Call(
+                        _escapeLikePatternParameterMethod,
+                        QueryCompilationContext.QueryContextParameter,
+                        Expression.Constant(patternParameter.Name),
+                        Expression.Constant(methodType)),
+                    QueryCompilationContext.QueryContextParameter);
+
+                var escapedPatternParameter =
+                    queryCompilationContext.RegisterRuntimeParameter(patternParameter.Name + "_rewritten", lambda);
+
+                return _sqlExpressionFactory.Like(
+                    targetTransform(target),
+                    new SqlParameterExpression(escapedPatternParameter.Name!, escapedPatternParameter.Type, stringTypeMapping));
+            }
+
+            return null;
         }
 
         public virtual SqlExpression MakeIndexOfExpression(
@@ -652,6 +723,47 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             }
 
             return builder.ToString();
+        }
+
+        private static string ConstructLikePatternParameter(
+            QueryContext queryContext,
+            string baseParameterName,
+            StartsEndsWithContains methodType)
+            => queryContext.ParameterValues[baseParameterName] switch
+            {
+                null => null,
+
+                // In .NET, all strings start/end with the empty string, but SQL LIKE return false for empty patterns.
+                // Return % which always matches instead.
+                "" => "%",
+
+                string s => methodType switch
+                {
+                    StartsEndsWithContains.StartsWith => EscapeLikePattern(s) + '%',
+                    StartsEndsWithContains.EndsWith => '%' + EscapeLikePattern(s),
+                    StartsEndsWithContains.Contains => $"%{EscapeLikePattern(s)}%",
+                    _ => throw new ArgumentOutOfRangeException(nameof(methodType), methodType, null)
+                },
+
+                _ => throw new UnreachableException()
+            };
+
+        protected enum StartsEndsWithContains
+        {
+            /// <summary>
+            /// StartsWith => LIKE 'foo%'
+            /// </summary>
+            StartsWith,
+
+            /// <summary>
+            /// EndsWith => LIKE '%foo'
+            /// </summary>
+            EndsWith,
+
+            /// <summary>
+            /// Contains => LIKE '%foo%'
+            /// </summary>
+            Contains
         }
     }
 }
