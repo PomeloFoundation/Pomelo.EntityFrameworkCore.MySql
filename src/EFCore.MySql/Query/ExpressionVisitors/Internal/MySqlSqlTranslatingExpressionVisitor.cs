@@ -24,6 +24,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
     public class MySqlSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExpressionVisitor
     {
+        private readonly QueryCompilationContext _queryCompilationContext;
         private readonly IMySqlJsonPocoTranslator _jsonPocoTranslator;
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
@@ -50,6 +51,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             [CanBeNull] IMySqlJsonPocoTranslator jsonPocoTranslator)
             : base(dependencies, queryCompilationContext, queryableMethodTranslatingExpressionVisitor)
         {
+            _queryCompilationContext = queryCompilationContext;
             _jsonPocoTranslator = jsonPocoTranslator;
             _sqlExpressionFactory = (MySqlSqlExpressionFactory)Dependencies.SqlExpressionFactory;
         }
@@ -339,7 +341,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 methodCallExpression = methodCallExpression.Update(methodCallExpression.Object, arguments);
             }
 
-            var result = base.VisitMethodCall(methodCallExpression);
+            var result = CallBaseVisitMethodCall(methodCallExpression);
+
             if (result == QueryCompilationContext.NotTranslatedExpression &&
                 MySqlStringComparisonMethodTranslator.StringComparisonMethodInfos.Any(m => m == methodCallExpression.Method))
             {
@@ -363,6 +366,36 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// EF Core does forward the current QueryCompilationContext to IMethodCallTranslator implementations.
+        /// Our MySqlMethodCallTranslatorProvider and MySqlQueryCompilationContextMethodTranslator implementations take care of that.
+        /// </summary>
+        private Expression CallBaseVisitMethodCall(MethodCallExpression methodCallExpression)
+        {
+            var mySqlMethodCallTranslatorProvider = (MySqlMethodCallTranslatorProvider)Dependencies.MethodCallTranslatorProvider;
+
+            if (mySqlMethodCallTranslatorProvider.QueryCompilationContext is null)
+            {
+                mySqlMethodCallTranslatorProvider.QueryCompilationContext = _queryCompilationContext;
+
+                try
+                {
+                    return base.VisitMethodCall(methodCallExpression);
+                }
+                finally
+                {
+                    mySqlMethodCallTranslatorProvider.QueryCompilationContext = null;
+                }
+            }
+
+            if (mySqlMethodCallTranslatorProvider.QueryCompilationContext == _queryCompilationContext)
+            {
+                return base.VisitMethodCall(methodCallExpression);
+            }
+
+            throw new UnreachableException();
         }
 
         protected virtual void ResetTranslationErrorDetails()
