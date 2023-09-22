@@ -130,6 +130,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 //.TryAdd<IValueConverterSelector, MySqlValueConverterSelector>()
                 .TryAdd<IQueryCompilationContextFactory, MySqlQueryCompilationContextFactory>()
                 .TryAdd<IQueryTranslationPostprocessorFactory, MySqlQueryTranslationPostprocessorFactory>()
+                .TryAdd<IQueryTranslationPreprocessorFactory, MySqlQueryTranslationPreprocessorFactory>()
                 .TryAdd<IMigrationsModelDiffer, MySqlMigrationsModelDiffer>()
                 .TryAdd<IMigrator, MySqlMigrator>()
                 .TryAddProviderSpecificServices(m => m
