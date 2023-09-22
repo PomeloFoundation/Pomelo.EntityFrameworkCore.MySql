@@ -2,6 +2,7 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
@@ -31,6 +32,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             .Concat(typeof(string).GetRuntimeMethods().Where(m => m.Name == nameof(string.Concat)))
             .Where(m => m.GetParameters().Any(p => p.ParameterType.IsArray))
             .ToArray();
+
+        protected static readonly MethodInfo ElementAtMethodInfo = typeof(Enumerable)
+            .GetRuntimeMethods()
+            .Single(m => m.Name == nameof(Enumerable.ElementAt) &&
+                         m.GetParameters()
+                             .Select(
+                                 p => p.ParameterType.IsGenericType
+                                     ? p.ParameterType.GetGenericTypeDefinition()
+                                     : p.ParameterType)
+                             .SequenceEqual(new[] { typeof(IEnumerable<>), typeof(int) }));
 
         public MySqlSqlTranslatingExpressionVisitor(
             RelationalSqlTranslatingExpressionVisitorDependencies dependencies,
@@ -115,26 +126,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
                 if (binaryExpression.Left.Type == typeof(byte[]))
                 {
-                    if (Visit(binaryExpression.Left) is SqlExpression leftSql &&
-                        Visit(binaryExpression.Right) is SqlExpression rightSql)
-                    {
-                        return _sqlExpressionFactory.NullableFunction(
-                            "ASCII",
-                            new[]
-                            {
-                                _sqlExpressionFactory.NullableFunction(
-                                    "SUBSTRING",
-                                    new[]
-                                    {
-                                        leftSql, Dependencies.SqlExpressionFactory.Add(
-                                            Dependencies.SqlExpressionFactory.ApplyDefaultTypeMapping(rightSql),
-                                            Dependencies.SqlExpressionFactory.Constant(1)),
-                                        Dependencies.SqlExpressionFactory.Constant(1)
-                                    },
-                                    typeof(byte[]))
-                            },
-                            typeof(byte));
-                    }
+                    return TranslateByteArrayElementAccess(sqlLeft, sqlRight);
                 }
 
                 // Try translating ArrayIndex inside json column
@@ -263,6 +255,27 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return base.VisitBinary(binaryExpression);
         }
 
+        private Expression TranslateByteArrayElementAccess(Expression array, Expression index)
+            => Visit(array) is SqlExpression leftSql &&
+               Visit(index) is SqlExpression rightSql
+                ? _sqlExpressionFactory.NullableFunction(
+                    "ASCII",
+                    new[]
+                    {
+                        _sqlExpressionFactory.NullableFunction(
+                            "SUBSTRING",
+                            new[]
+                            {
+                                leftSql, Dependencies.SqlExpressionFactory.Add(
+                                    Dependencies.SqlExpressionFactory.ApplyDefaultTypeMapping(rightSql),
+                                    Dependencies.SqlExpressionFactory.Constant(1)),
+                                Dependencies.SqlExpressionFactory.Constant(1)
+                            },
+                            typeof(byte[]))
+                    },
+                    typeof(byte))
+                : QueryCompilationContext.NotTranslatedExpression;
+
         protected virtual Expression VisitMethodCallNewArray(NewArrayExpression newArrayExpression)
         {
             // Needed for MySqlDbFunctionsExtensions.Match() and String.Concat() translation.
@@ -292,6 +305,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         protected override Expression VisitMethodCall(MethodCallExpression methodCallExpression)
         {
+            if (methodCallExpression.Method.IsGenericMethod
+                && methodCallExpression.Method.GetGenericMethodDefinition() == ElementAtMethodInfo
+                && methodCallExpression.Arguments[0].Type == typeof(byte[]))
+            {
+                return TranslateByteArrayElementAccess(
+                    methodCallExpression.Arguments[0],
+                    methodCallExpression.Arguments[1]);
+            }
+
             if (NewArrayExpressionSupportMethodInfos.Contains(methodCallExpression.Method))
             {
                 var arguments = new Expression[methodCallExpression.Arguments.Count];
