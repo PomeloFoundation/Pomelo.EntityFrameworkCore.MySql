@@ -5,7 +5,6 @@ using System.Data;
 using System.Data.Common;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
@@ -17,6 +16,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     /// </summary>
     public class MySqlDoubleTypeMapping : DoubleTypeMapping
     {
+        public static new MySqlDoubleTypeMapping Default { get; } = new("double");
+
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
         ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
@@ -25,7 +26,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// </summary>
         public MySqlDoubleTypeMapping(
             [NotNull] string storeType,
-            DbType? dbType = null)
+            DbType? dbType = System.Data.DbType.Double)
             : base(storeType, dbType)
         {
         }

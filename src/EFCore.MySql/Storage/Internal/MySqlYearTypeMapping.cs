@@ -3,6 +3,7 @@
 
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.Json;
 using MySqlConnector;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
@@ -14,7 +15,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 storeType,
                 typeof(short),
                 MySqlDbType.Year,
-                System.Data.DbType.Int16)
+                System.Data.DbType.Int16,
+                jsonValueReaderWriter: JsonInt16ReaderWriter.Instance)
         {
         }
 

@@ -4,6 +4,7 @@
 using System;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.Json;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
@@ -29,7 +30,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public MySqlDateTypeMapping([NotNull] string storeType, Type clrType, bool isDefaultValueCompatible = false)
             : this(
                 new RelationalTypeMappingParameters(
-                    new CoreTypeMappingParameters(clrType),
+                    new CoreTypeMappingParameters(
+                        clrType,
+                        jsonValueReaderWriter: JsonDateOnlyReaderWriter.Instance),
                     storeType,
                     dbType: System.Data.DbType.Date),
                 isDefaultValueCompatible)

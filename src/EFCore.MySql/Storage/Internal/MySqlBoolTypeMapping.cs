@@ -4,6 +4,7 @@
 using System.Data;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.Json;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
@@ -17,14 +18,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     {
         public MySqlBoolTypeMapping(
             [NotNull] string storeType,
-            DbType? dbType = null,
+            DbType? dbType = System.Data.DbType.Boolean,
             int? size = null)
-            : this(new RelationalTypeMappingParameters(
-                new CoreTypeMappingParameters(typeof(bool)),
-                storeType,
-                size == null ? StoreTypePostfix.None : StoreTypePostfix.Size,
-                dbType,
-                size: size))
+            : this(
+                new RelationalTypeMappingParameters(
+                    new CoreTypeMappingParameters(
+                        typeof(bool),
+                        jsonValueReaderWriter: JsonBoolReaderWriter.Instance),
+                    storeType,
+                    size == null ? StoreTypePostfix.None : StoreTypePostfix.Size,
+                    dbType,
+                    size: size))
         {
         }
 

@@ -5,6 +5,7 @@ using System;
 using System.Data.Common;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.Json;
 using Microsoft.EntityFrameworkCore.Utilities;
 using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
@@ -40,7 +41,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             bool forceToString = false)
             : this(
                 new RelationalTypeMappingParameters(
-                    new CoreTypeMappingParameters(typeof(string)),
+                    new CoreTypeMappingParameters(
+                        typeof(string),
+                        jsonValueReaderWriter: JsonStringReaderWriter.Instance),
                     storeType,
                     storeTypePostfix,
                     unicode

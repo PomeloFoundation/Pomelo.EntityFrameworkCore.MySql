@@ -5,6 +5,7 @@ using System;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.Json;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
@@ -34,7 +35,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             bool isDefaultValueCompatible = false)
             : this(
                 new RelationalTypeMappingParameters(
-                    new CoreTypeMappingParameters(clrType ?? typeof(DateTime), converter, comparer),
+                    new CoreTypeMappingParameters(
+                        clrType ?? typeof(DateTime),
+                        converter,
+                        comparer,
+                        jsonValueReaderWriter: JsonDateTimeReaderWriter.Instance),
                     storeType,
                     StoreTypePostfix.Precision,
                     System.Data.DbType.DateTime,

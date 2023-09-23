@@ -5,24 +5,29 @@ using System.Data;
 using System.Data.Common;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.EntityFrameworkCore.Storage.Json;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     public class MySqlDecimalTypeMapping : DecimalTypeMapping
     {
+        public static new MySqlDecimalTypeMapping Default { get; } = new("decimal", precision: 65, scale: 30);
+
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public MySqlDecimalTypeMapping([NotNull] string storeType,
+        public MySqlDecimalTypeMapping(
+            [NotNull] string storeType,
             DbType? dbType = null,
             int? precision = null,
             int? scale = null,
             StoreTypePostfix storeTypePostfix = StoreTypePostfix.PrecisionAndScale)
-            : this(
+            : base(
                 new RelationalTypeMappingParameters(
-                    new CoreTypeMappingParameters(typeof(decimal)),
+                    new CoreTypeMappingParameters(
+                        typeof(decimal),
+                        jsonValueReaderWriter: JsonDecimalReaderWriter.Instance),
                     storeType,
                     storeTypePostfix,
                     dbType)

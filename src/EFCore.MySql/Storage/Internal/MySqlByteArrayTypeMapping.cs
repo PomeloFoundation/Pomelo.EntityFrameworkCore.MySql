@@ -5,7 +5,8 @@ using System;
 using System.Data;
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore.Storage;
-using Pomelo.EntityFrameworkCore.MySql.Utilities;
+using Microsoft.EntityFrameworkCore.Storage.Json;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal.Json;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
@@ -45,7 +46,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             bool fixedLength)
             : this(
                 new RelationalTypeMappingParameters(
-                    new CoreTypeMappingParameters(typeof(byte[])),
+                    new CoreTypeMappingParameters(
+                        typeof(byte[]),
+                        jsonValueReaderWriter: JsonByteArrayReaderWriter.Instance /* MySqlJsonByteArrayAsHexStringReaderWriter.Instance */),
                     storeType ?? GetBaseType(size, fixedLength),
                     GetStoreTypePostfix(size),
                     type,
@@ -109,6 +112,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// <returns>
         ///     The generated string.
         /// </returns>
-        protected override string GenerateNonNullSqlLiteral(object value) => ByteArrayFormatter.ToHex((byte[])value);
+        protected override string GenerateNonNullSqlLiteral(object value)
+            => value is byte[] { Length: > 0 } byteArray
+                ? "0x" + Convert.ToHexString(byteArray)
+                : "X''";
     }
 }
