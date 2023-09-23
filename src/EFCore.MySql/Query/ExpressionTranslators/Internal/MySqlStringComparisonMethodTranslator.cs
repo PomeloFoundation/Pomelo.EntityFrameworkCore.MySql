@@ -406,36 +406,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             {
                 // The prefix is constant. Aside from null or empty, we escape all special characters (%, _, \)
                 // in C# and send a simple LIKE.
-                if (constantPrefixSuffixExpression.Value is string constantPrefixSuffixString)
+                return constantPrefixSuffixExpression.Value switch
                 {
-                    // TRUE (pattern == "")
-                    // something LIKE 'foo%' (pattern != "", StartsWith())
-                    // something LIKE '%foo' (pattern != "", EndsWith())
-                    return constantPrefixSuffixString == string.Empty
-                        ? (SqlExpression)_sqlExpressionFactory.Constant(true)
-                        : _sqlExpressionFactory.Like(
-                            targetTransform(target),
-                            prefixSuffixTransform(
-                                _sqlExpressionFactory.Constant(
-                                    (startsWith
-                                        ? string.Empty
-                                        : "%") +
-                                    EscapeLikePattern(constantPrefixSuffixString) +
-                                    (startsWith
-                                        ? "%"
-                                        : string.Empty))));
-                }
-
-                // TODO: EF Core 5
-                // https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/996#issuecomment-607876040
-                // Can return NULL in .NET 5 after https://github.com/dotnet/efcore/issues/20498 has been fixed.
-                // `something LIKE NULL` always returns `NULL`. We will return `false`, to indicate, that no match
-                // could be found, because returning a constant of `NULL` will throw later in EF Core when used as
-                // a predicate.
-                // return _sqlExpressionFactory.Constant(null, RelationalTypeMapping.NullMapping);
-                // This results in NULL anyway, but works around EF Core's inability to handle predicates that are
-                // constant null values.
-                return _sqlExpressionFactory.Like(target, _sqlExpressionFactory.Constant(null, stringTypeMapping));
+                    null => _sqlExpressionFactory.Like(targetTransform(target), _sqlExpressionFactory.Constant(null, stringTypeMapping)),
+                    "" => _sqlExpressionFactory.Like(targetTransform(target), _sqlExpressionFactory.Constant("%")),
+                    string s => _sqlExpressionFactory.Like(
+                        targetTransform(target),
+                        prefixSuffixTransform(
+                            _sqlExpressionFactory.Constant(
+                                $"{(startsWith ? string.Empty : "%")}{(s.Any(IsLikeWildChar) ? EscapeLikePattern(s) : s)}{(startsWith ? "%" : string.Empty)}"))),
+                    _ => throw new UnreachableException(),
+                };
             }
 
             if (GetLikeExpressionUsingParameter(
@@ -457,16 +438,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             // be faster than `LEFT(something, CHAR_LENGTH('fo%o')) = LCASE('fo%o')`.
             // See https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/996#issuecomment-607733553
 
-            // The prefix is non-constant, we use LEFT to extract the substring and compare.
-            return _sqlExpressionFactory.Equal(
-                _sqlExpressionFactory.NullableFunction(
-                    startsWith
-                        ? "LEFT"
-                        : "RIGHT",
-                    new[] {targetTransform(target), CharLength(prefixSuffix)},
-                    typeof(string),
-                    stringTypeMapping),
-                prefixSuffixTransform(prefixSuffix));
+            // The prefix is non-constant, we use LEFT/RIGHT to extract the substring and compare.
+            return _sqlExpressionFactory.AndAlso(
+                _sqlExpressionFactory.IsNotNull(targetTransform(target)),
+                _sqlExpressionFactory.AndAlso(
+                    _sqlExpressionFactory.IsNotNull(prefixSuffix),
+                    _sqlExpressionFactory.Equal(
+                        _sqlExpressionFactory.NullableFunction(
+                            startsWith ? "LEFT" : "RIGHT",
+                            new[] { targetTransform(target), CharLength(prefixSuffix), },
+                            typeof(string),
+                            stringTypeMapping),
+                        prefixSuffixTransform(prefixSuffix))));
         }
 
         private SqlExpression MakeContainsExpressionImpl(
@@ -484,27 +467,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             {
                 // The prefix is constant. Aside from null or empty, we escape all special characters (%, _, \)
                 // in C# and send a simple LIKE.
-                if (constantPatternExpression.Value is string constantPatternString)
+                // The prefix is constant. Aside from null or empty, we escape all special characters (%, _, \)
+                // in C# and send a simple LIKE.
+                return constantPatternExpression.Value switch
                 {
-                    // TRUE (pattern == "")
-                    // something LIKE '%foo%' (pattern != "")
-                    return constantPatternString == string.Empty
-                        ? (SqlExpression)_sqlExpressionFactory.Constant(true)
-                        : _sqlExpressionFactory.Like(
-                            targetTransform(target),
-                            patternTransform(_sqlExpressionFactory.Constant('%' + EscapeLikePattern(constantPatternString) + '%')));
-                }
-
-                // TODO: EF Core 5
-                // https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/996#issuecomment-607876040
-                // Can return NULL in .NET 5 after https://github.com/dotnet/efcore/issues/20498 has been fixed.
-                // `something LIKE NULL` always returns `NULL`. We will return `false`, to indicate, that no match
-                // could be found, because returning a constant of `NULL` will throw later in EF Core when used as
-                // a predicate.
-                // return _sqlExpressionFactory.Constant(null, RelationalTypeMapping.NullMapping);
-                // This results in NULL anyway, but works around EF Core's inability to handle predicates that are
-                // constant null values.
-                return _sqlExpressionFactory.Like(target, _sqlExpressionFactory.Constant(null, stringTypeMapping));
+                    null => _sqlExpressionFactory.Like(targetTransform(target), _sqlExpressionFactory.Constant(null, stringTypeMapping)),
+                    "" => _sqlExpressionFactory.Like(targetTransform(target), _sqlExpressionFactory.Constant("%")),
+                    string s => _sqlExpressionFactory.Like(
+                        targetTransform(target),
+                        patternTransform(_sqlExpressionFactory.Constant($"%{(s.Any(IsLikeWildChar) ? EscapeLikePattern(s) : s)}%"))),
+                    _ => throw new UnreachableException(),
+                };
             }
 
             if (GetLikeExpressionUsingParameter(
@@ -521,13 +494,27 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             // 'foo' LIKE '' OR LOCATE('foo', 'barfoobar') > 0
             // This cannot be "'   ' = '' OR ..", because '   ' would be trimmed to '' when using equals, but not when using LIKE.
             // Using an empty pattern `LOCATE('', 'barfoobar')` returns 1.
-            return _sqlExpressionFactory.OrElse(
-                _sqlExpressionFactory.Like(
-                    pattern,
-                    _sqlExpressionFactory.Constant(string.Empty, stringTypeMapping)),
-                _sqlExpressionFactory.GreaterThan(
-                    Locate(patternTransform(pattern), targetTransform(target)),
-                    _sqlExpressionFactory.Constant(0)));
+            // return _sqlExpressionFactory.OrElse(
+            //     _sqlExpressionFactory.Like(
+            //         pattern,
+            //         _sqlExpressionFactory.Constant(string.Empty, stringTypeMapping)),
+            //     _sqlExpressionFactory.GreaterThan(
+            //         Locate(patternTransform(pattern), targetTransform(target)),
+            //         _sqlExpressionFactory.Constant(0)));
+
+            // For Contains, just use CHARINDEX and check if the result is greater than 0.
+            // Add a check to return null when the pattern is an empty string (and the string isn't null)
+            return _sqlExpressionFactory.AndAlso(
+                _sqlExpressionFactory.IsNotNull(target),
+                _sqlExpressionFactory.AndAlso(
+                    _sqlExpressionFactory.IsNotNull(pattern),
+                    _sqlExpressionFactory.OrElse(
+                        _sqlExpressionFactory.GreaterThan(
+                            Locate(patternTransform(pattern), targetTransform(target)),
+                            _sqlExpressionFactory.Constant(0)),
+                        _sqlExpressionFactory.Like(
+                            pattern,
+                            _sqlExpressionFactory.Constant(string.Empty, stringTypeMapping)))));
         }
 
         protected virtual SqlExpression GetLikeExpressionUsingParameter(QueryCompilationContext queryCompilationContext,
