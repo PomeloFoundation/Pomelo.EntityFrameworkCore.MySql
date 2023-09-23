@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
@@ -60,6 +61,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         private const ulong LimitUpperBound = 18446744073709551610;
 
+        private readonly IRelationalTypeMappingSource _typeMappingSource;
         private readonly IMySqlOptions _options;
         private string _removeTableAliasOld;
         private string _removeTableAliasNew;
@@ -68,11 +70,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public MySqlQuerySqlGenerator(
-            [NotNull] QuerySqlGeneratorDependencies dependencies,
+        public MySqlQuerySqlGenerator([NotNull] QuerySqlGeneratorDependencies dependencies,
+            IRelationalTypeMappingSource typeMappingSource,
             [CanBeNull] IMySqlOptions options)
             : base(dependencies)
         {
+            _typeMappingSource = typeMappingSource;
             _options = options;
         }
 
@@ -81,6 +84,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             {
                 MySqlJsonTraversalExpression jsonTraversalExpression => VisitJsonPathTraversal(jsonTraversalExpression),
                 MySqlColumnAliasReferenceExpression columnAliasReferenceExpression => VisitColumnAliasReference(columnAliasReferenceExpression),
+                MySqlJsonTableExpression jsonTableExpression => VisitJsonTableExpression(jsonTableExpression),
                 _ => base.VisitExtension(extensionExpression)
             };
 
@@ -268,7 +272,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         {
             Sql.Append("LEFT JOIN ");
 
-            if (outerApplyExpression.Table is not TableExpression)
+            if (outerApplyExpression.Table is not TableExpression &&
+                outerApplyExpression.Table is not MySqlJsonTableExpression)
             {
                 Sql.Append("LATERAL ");
             }
@@ -455,6 +460,150 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
             throw new InvalidOperationException(
                 RelationalStrings.ExecuteOperationWithUnsupportedOperatorInSqlGeneration(nameof(RelationalQueryableExtensions.ExecuteUpdate)));
+        }
+
+        protected override Expression VisitJsonScalar(JsonScalarExpression jsonScalarExpression)
+        {
+            // TODO: Stop producing empty JsonScalarExpressions, #30768
+            var path = jsonScalarExpression.Path;
+            if (path.Count == 0)
+            {
+                return jsonScalarExpression;
+            }
+
+            var jsonPathNeedsConcat = JsonPathNeedsConcat(jsonScalarExpression.Path);
+
+            var jsonFunctionName = jsonPathNeedsConcat ? "JSON_UNQUOTE(JSON_EXTRACT" : "JSON_VALUE";
+            string castStoreType = null;
+
+            // if (/*jsonScalarExpression.TypeMapping is SqlServerJsonTypeMapping
+            //     ||*/ jsonScalarExpression.TypeMapping?.ElementTypeMapping is not null)
+            // {
+            //     jsonFunctionName = "JSON_UNQUOTE(JSON_EXTRACT";
+            // }
+            // else
+            // {
+            //     // JSON_VALUE returns varchar(512) by default (https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-value),
+            //     // so we let it cast the result to the expected type using the RETURNING clause.
+            //     // CHECK: - except if it's a string (since the cast interferes with indexes over the JSON property).
+            //     // if (jsonScalarExpression.TypeMapping is not StringTypeMapping)
+            //     // {
+            //         castStoreType = GetCastStoreType(jsonScalarExpression.TypeMapping);
+            //     // }
+            //
+            //     jsonFunctionName = "JSON_VALUE";
+            // }
+
+            // if (jsonScalarExpression.TypeMapping?.ElementTypeMapping is null &&
+            //     jsonScalarExpression.TypeMapping is not StringTypeMapping &&
+            //     jsonPathNeedsConcat)
+            // {
+                castStoreType = GetCastStoreType(jsonScalarExpression.TypeMapping);
+            // }
+
+            if (castStoreType is not null)
+            {
+                Sql.Append("CAST(");
+            }
+
+            Sql.Append(jsonFunctionName);
+            Sql.Append("(");
+
+            Visit(jsonScalarExpression.Json);
+
+            Sql.Append(", ");
+            GenerateJsonPath(jsonScalarExpression.Path);
+            Sql.Append(jsonPathNeedsConcat ? "))" : ")");
+
+            if (castStoreType is not null)
+            {
+                Sql.Append(" AS ");
+                Sql.Append(castStoreType);
+                Sql.Append(")");
+            }
+
+            return jsonScalarExpression;
+        }
+
+        protected override void GenerateValues(ValuesExpression valuesExpression)
+        {
+            if (_options.ServerVersion.Supports.Values ||
+                _options.ServerVersion.Supports.ValuesWithRows)
+            {
+                base.GenerateValues(valuesExpression);
+                return;
+            }
+
+            var rowValues = valuesExpression.RowValues;
+
+            //
+            // Use backwards compatible SELECT statements:
+            //
+
+            Sql.Append("SELECT ");
+
+            Check.DebugAssert(rowValues.Count > 0, "rowValues.Count > 0");
+            var firstRowValues = rowValues[0].Values;
+            for (var i = 0; i < firstRowValues.Count; i++)
+            {
+                if (i > 0)
+                {
+                    Sql.Append(", ");
+                }
+
+                Visit(firstRowValues[i]);
+
+                Sql
+                    .Append(AliasSeparator)
+                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(valuesExpression.ColumnNames[i]));
+            }
+
+            if (rowValues.Count > 1)
+            {
+                Sql.Append(" UNION ALL SELECT ");
+
+                for (var i = 1; i < rowValues.Count; i++)
+                {
+                    if (i > 1)
+                    {
+                        Sql.Append(", ");
+                    }
+
+                    Visit(valuesExpression.RowValues[i]);
+                }
+            }
+        }
+
+        protected override Expression VisitRowValue(RowValueExpression rowValueExpression)
+        {
+            if (_options.ServerVersion.Supports.Values)
+            {
+                return base.VisitRowValue(rowValueExpression);
+            }
+
+            if (_options.ServerVersion.Supports.ValuesWithRows)
+            {
+                Sql.Append("ROW");
+                return base.VisitRowValue(rowValueExpression);
+            }
+
+            //
+            // Columns for backwards compatible SELECT statement:
+            //
+
+            var values = rowValueExpression.Values;
+            var count = values.Count;
+            for (var i = 0; i < count; i++)
+            {
+                if (i > 0)
+                {
+                    Sql.Append(", ");
+                }
+
+                Visit(values[i]);
+            }
+
+            return rowValueExpression;
         }
 
         protected virtual void GenerateList<T>(
@@ -712,6 +861,152 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             }
 
             return mySqlBinaryExpression;
+        }
+
+        protected virtual Expression VisitJsonTableExpression(MySqlJsonTableExpression jsonTableExpression)
+        {
+            // if (jsonTableExpression.ColumnInfos is not { Count: > 0 })
+            // {
+            //     var hasStringElement = jsonTableExpression.JsonExpression.TypeMapping?.ElementTypeMapping?.ClrType == typeof(string);
+            //
+            //     if (hasStringElement)
+            //     {
+            //         Sql.Append("JSON_UNQUOTE(");
+            //     }
+            //
+            //     Sql.Append("JSON_EXTRACT(");
+            //     Visit(jsonTableExpression.JsonExpression);
+            //     Sql.Append(", ");
+            //     GenerateJsonPath(jsonTableExpression.Path);
+            //     Sql.Append(")");
+            //
+            //     if (hasStringElement)
+            //     {
+            //         Sql.Append(")");
+            //     }
+            //
+            //     return jsonTableExpression;
+            // }
+
+            Sql.Append("JSON_TABLE(");
+
+            Visit(jsonTableExpression.JsonExpression);
+
+            Sql.Append(", ");
+            GenerateJsonPath(jsonTableExpression.Path);
+
+            if (jsonTableExpression.ColumnInfos is not { Count: > 0 })
+            {
+                throw new InvalidOperationException("JSON_TABLE expression does not contain any columns.");
+            }
+
+            Sql.AppendLine(" COLUMNS (");
+
+            using (var _ = Sql.Indent())
+            {
+                Sql.Append(Dependencies.SqlGenerationHelper.DelimitIdentifier("key"));
+                Sql.AppendLine(" FOR ORDINALITY,");
+
+                for (var i = 0; i < jsonTableExpression.ColumnInfos.Count; i++)
+                {
+                    var columnInfo = jsonTableExpression.ColumnInfos[i];
+
+                    if (i > 0)
+                    {
+                        Sql.AppendLine(",");
+                    }
+
+                    GenerateColumnInfo(columnInfo);
+                }
+
+                Sql.AppendLine();
+            }
+
+            Sql.Append(")");
+
+            void GenerateColumnInfo(MySqlJsonTableExpression.ColumnInfo columnInfo)
+            {
+                Sql
+                    .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(columnInfo.Name))
+                    .Append(" ")
+                    .Append(columnInfo.TypeMapping.StoreType);
+
+                if (columnInfo.Path is not null)
+                {
+                    Sql.Append(" PATH ");
+                    GenerateJsonPath(columnInfo.Path);
+                }
+
+                // if (columnInfo.AsJson)
+                // {
+                //     Sql.Append(" AS ").Append("JSON");
+                // }
+            }
+
+            Sql.Append(")");
+            Sql.Append(AliasSeparator).Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(jsonTableExpression.Alias));
+
+            return jsonTableExpression;
+        }
+
+        protected virtual bool JsonPathNeedsConcat(IReadOnlyList<PathSegment> path)
+            => path.Any(s => s.ArrayIndex is not null && s.ArrayIndex is not SqlConstantExpression);
+
+        protected virtual void GenerateJsonPath(IReadOnlyList<PathSegment> path, bool? needsConcat = null)
+        {
+            path ??= Array.Empty<PathSegment>();
+            needsConcat ??= JsonPathNeedsConcat(path);
+
+            if (needsConcat.Value)
+            {
+                Sql.Append("CONCAT(");
+            }
+
+            Sql.Append("'$");
+
+            foreach (var pathSegment in path)
+            {
+                switch (pathSegment)
+                {
+                    case { PropertyName: string propertyName }:
+                        Sql.Append(".").Append(propertyName);
+                        break;
+
+                    case { ArrayIndex: SqlExpression arrayIndex }:
+                        Sql.Append("[");
+
+                        if (arrayIndex is SqlConstantExpression)
+                        {
+                            Visit(arrayIndex);
+                        }
+                        else
+                        {
+                            Sql.Append("', ");
+
+                            Visit(
+                                new SqlUnaryExpression(
+                                    ExpressionType.Convert,
+                                    arrayIndex,
+                                    typeof(string),
+                                    _typeMappingSource.GetMapping(typeof(string))));
+
+                            Sql.Append(", '");
+                        }
+
+                        Sql.Append("]");
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            Sql.Append("'");
+
+            if (needsConcat.Value)
+            {
+                Sql.Append(")");
+            }
         }
 
         /// <inheritdoc />
