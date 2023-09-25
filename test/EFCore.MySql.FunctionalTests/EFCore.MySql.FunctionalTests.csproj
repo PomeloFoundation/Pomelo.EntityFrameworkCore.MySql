@@ -10,6 +10,7 @@
 
   <PropertyGroup>
     <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);$(NoWarn)</MSBuildWarningsAsMessages>
+    <DefineConstants Condition="'$(FixedTestOrder)' == 'true'">$(DefineConstants);FIXED_TEST_ORDER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
