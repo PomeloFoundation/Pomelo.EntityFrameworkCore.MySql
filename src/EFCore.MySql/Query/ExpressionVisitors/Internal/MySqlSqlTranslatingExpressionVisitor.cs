@@ -56,6 +56,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             _sqlExpressionFactory = (MySqlSqlExpressionFactory)Dependencies.SqlExpressionFactory;
         }
 
+        protected override Expression VisitExtension(Expression extensionExpression)
+            => extensionExpression switch
+            {
+                MySqlBipolarExpression bipolarExpression => VisitMySqlBipolarExpression(bipolarExpression),
+                _ => base.VisitExtension(extensionExpression)
+            };
+
+        private Expression VisitMySqlBipolarExpression(MySqlBipolarExpression bipolarExpression)
+        {
+            var defaultExpression = Visit(bipolarExpression.DefaultExpression) ?? QueryCompilationContext.NotTranslatedExpression;
+            var alternativeExpression = Visit(bipolarExpression.AlternativeExpression) ?? QueryCompilationContext.NotTranslatedExpression;
+
+            return defaultExpression != QueryCompilationContext.NotTranslatedExpression
+                // ? alternativeExpression != QueryCompilationContext.NotTranslatedExpression
+                //     // ? new MySqlBipolarSqlExpression(
+                //     //     (SqlExpression)defaultExpression,
+                //     //     (SqlExpression)alternativeExpression)
+                //     ? QueryCompilationContext.NotTranslatedExpression
+                //     : (SqlExpression)defaultExpression
+                ? (SqlExpression)defaultExpression
+                : alternativeExpression != QueryCompilationContext.NotTranslatedExpression
+                    ? (SqlExpression)alternativeExpression
+                    : QueryCompilationContext.NotTranslatedExpression;
+        }
+
         /// <inheritdoc />
         protected override Expression VisitUnary(UnaryExpression unaryExpression)
         {

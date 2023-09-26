@@ -2,9 +2,11 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal;
 
@@ -30,7 +32,12 @@ public class MySqlQueryableMethodNormalizingExpressionVisitor : QueryableMethodN
                 Right: var index
             })
         {
-            return binaryExpression;
+            return new MySqlBipolarExpression(
+                base.VisitBinary(binaryExpression),
+                binaryExpression.Update(
+                    Visit(binaryExpression.Left),
+                    VisitAndConvert(binaryExpression.Conversion, nameof(VisitBinary)),
+                    Visit(binaryExpression.Right)));
 
             // Original (base) implementation:
             //
@@ -58,7 +65,19 @@ public class MySqlQueryableMethodNormalizingExpressionVisitor : QueryableMethodN
             }
             && declaringType.GetInterface("IReadOnlyList`1") is not null)
         {
-            return methodCallExpression;
+            return new MySqlBipolarExpression(
+                base.VisitMethodCall(methodCallExpression),
+                methodCallExpression.Update(
+                    Visit(methodCallExpression.Object),
+                    VisitArguments(methodCallExpression.Arguments)));
+
+            IEnumerable<Expression> VisitArguments(IEnumerable<Expression> arguments)
+            {
+                foreach (var expression in arguments)
+                {
+                    yield return VisitExtension(expression);
+                }
+            }
 
             // Original (base) implementation:
             //
