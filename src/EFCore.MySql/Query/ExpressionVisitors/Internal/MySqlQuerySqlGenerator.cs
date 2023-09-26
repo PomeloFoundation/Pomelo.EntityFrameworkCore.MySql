@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using JetBrains.Annotations;
@@ -85,6 +86,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 MySqlJsonTraversalExpression jsonTraversalExpression => VisitJsonPathTraversal(jsonTraversalExpression),
                 MySqlColumnAliasReferenceExpression columnAliasReferenceExpression => VisitColumnAliasReference(columnAliasReferenceExpression),
                 MySqlJsonTableExpression jsonTableExpression => VisitJsonTableExpression(jsonTableExpression),
+                MySqlInlinedParameterExpression inlinedParameterExpression => VisitInlinedParameterExpression(inlinedParameterExpression),
                 _ => base.VisitExtension(extensionExpression)
             };
 
@@ -93,6 +95,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             Sql.Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(columnAliasReferenceExpression.Alias));
 
             return columnAliasReferenceExpression;
+        }
+
+        private Expression VisitInlinedParameterExpression(MySqlInlinedParameterExpression inlinedParameterExpression)
+        {
+            Visit(inlinedParameterExpression.ValueExpression);
+
+            return inlinedParameterExpression;
         }
 
         protected virtual Expression VisitJsonPathTraversal(MySqlJsonTraversalExpression expression)

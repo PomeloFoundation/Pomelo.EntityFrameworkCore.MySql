@@ -21,11 +21,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
 public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQueryableMethodTranslatingExpressionVisitor
 {
-    private static readonly bool _mySql8EngineCrashWhenUsingJsonTableWithPrimitiveCollectionInParametersWorkaround
-        = AppContext.TryGetSwitch("Pomelo.EntityFrameworkCore.MySql.Issue1790", out var enabled1790) && enabled1790; // TODO
+    private const string Issue1790SkipFlagName = "Pomelo.EntityFrameworkCore.MySql.Issue1790.Skip";
+    private const string Issue1790SkipWithParameterFlagName = "Pomelo.EntityFrameworkCore.MySql.Issue1790.SkipWithParameter";
 
-    private static readonly bool _mySql8EngineCrashWhenUsingJsonTableWithPrimitiveCollectionInParametersThrows
-        = AppContext.TryGetSwitch("Pomelo.EntityFrameworkCore.MySql.Issue1790Throws", out var enabled1790) && enabled1790; // TODO
+    private static readonly bool _mySql8EngineCrashWhenUsingJsonTableSkip
+        = AppContext.TryGetSwitch(Issue1790SkipFlagName, out var enabled) && enabled;
+
+    private static readonly bool _mySql8EngineCrashWhenUsingJsonTableWithPrimitiveCollectionInParametersSkip
+        = AppContext.TryGetSwitch(Issue1790SkipWithParameterFlagName, out var enabled) && enabled;
 
     private readonly IMySqlOptions _options;
     private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
@@ -260,6 +263,17 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
             return null;
         }
 
+        // Using primitive collections in parameters that are used as the JSON source argument for JSON_TABLE(source, ...) can crash
+        // MySQL 8 somewhere later down the line. We mitigate this by inlining those parameters.
+        // There are however other scenarios that can still crash MySQL 8 (e.g. `NorthwindSelectQueryMySqlTest.Correlated_collection_after_distinct_not_containing_original_identifier`).
+        // For those cases, we implement a flag to skip skip the JSON_TABLE generation.
+        if (!_options.ServerVersion.Supports.JsonTableImplementationUsingParameterAsSourceWithoutEngineCrash &&
+            _mySql8EngineCrashWhenUsingJsonTableSkip)
+        {
+            AddTranslationErrorDetails($"JSON_TABLE() has been disabled by the '{Issue1790SkipFlagName}' AppContext switch, because it can crash MySQL 8.");
+            return null;
+        }
+
         // Generate the JSON_TABLE() function expression, and wrap it in a SelectExpression.
 
         // Note that where the elementTypeMapping is known (i.e. collection columns), we immediately generate JSON_TABLE() with a COLUMNS clause
@@ -286,21 +300,15 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
 
 
         // Using primitive collections in parameters that are used as the JSON source argument for JSON_TABLE(source, ...) can crash
-        // MySQL 8.0.x somewhere later down the line.
+        // MySQL 8 somewhere later down the line. We mitigate this by inlining those parameters.
+        // There are however other scenarios that can still crash MySQL 8 (e.g. `NorthwindSelectQueryMySqlTest.Correlated_collection_after_distinct_not_containing_original_identifier`).
+        // For those cases, we implement a flag to skip skip the JSON_TABLE generation.
         if (elementTypeMapping is null &&
-            !_options.ServerVersion.Supports.JsonTableImplementationUsingParameterAsSourceWithoutEngineCrash)
+            !_options.ServerVersion.Supports.JsonTableImplementationUsingParameterAsSourceWithoutEngineCrash &&
+            _mySql8EngineCrashWhenUsingJsonTableWithPrimitiveCollectionInParametersSkip)
         {
-            if (_mySql8EngineCrashWhenUsingJsonTableWithPrimitiveCollectionInParametersWorkaround)
-            {
-                return null;
-            }
-
-            if (_mySql8EngineCrashWhenUsingJsonTableWithPrimitiveCollectionInParametersThrows)
-            {
-                throw new InvalidOperationException(CoreStrings.TranslationFailed("Using JSON_TABLE can crash MySQL 8."));
-            }
-
-            // TODO: Output warning?
+            AddTranslationErrorDetails($"JSON_TABLE() has been disabled by the '{Issue1790SkipWithParameterFlagName}' AppContext switch, because it can crash MySQL 8.");
+            return null;
         }
 
         var elementClrType = sqlExpression.Type.GetSequenceType();
