@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
@@ -21,8 +21,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
 public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQueryableMethodTranslatingExpressionVisitor
 {
-    private static readonly bool WorkaroundMySql8EngineCrashWhenUsingJsonTableWithPrimitiveCollectionInParameters
-        = AppContext.TryGetSwitch("Microsoft.EntityFrameworkCore.Issue1790", out var enabled1790) && enabled1790; // TODO
+    private static readonly bool _mySql8EngineCrashWhenUsingJsonTableWithPrimitiveCollectionInParametersWorkaround
+        = AppContext.TryGetSwitch("Pomelo.EntityFrameworkCore.MySql.Issue1790", out var enabled1790) && enabled1790; // TODO
+
+    private static readonly bool _mySql8EngineCrashWhenUsingJsonTableWithPrimitiveCollectionInParametersThrows
+        = AppContext.TryGetSwitch("Pomelo.EntityFrameworkCore.MySql.Issue1790Throws", out var enabled1790) && enabled1790; // TODO
 
     private readonly IMySqlOptions _options;
     private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
@@ -285,10 +288,19 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
         // Using primitive collections in parameters that are used as the JSON source argument for JSON_TABLE(source, ...) can crash
         // MySQL 8.0.x somewhere later down the line.
         if (elementTypeMapping is null &&
-            _options.ServerVersion.Supports.JsonTableImplementationUsingParameterAsSourceWithoutEngineCrash &&
-            WorkaroundMySql8EngineCrashWhenUsingJsonTableWithPrimitiveCollectionInParameters)
+            !_options.ServerVersion.Supports.JsonTableImplementationUsingParameterAsSourceWithoutEngineCrash)
         {
-            return null;
+            if (_mySql8EngineCrashWhenUsingJsonTableWithPrimitiveCollectionInParametersWorkaround)
+            {
+                return null;
+            }
+
+            if (_mySql8EngineCrashWhenUsingJsonTableWithPrimitiveCollectionInParametersThrows)
+            {
+                throw new InvalidOperationException(CoreStrings.TranslationFailed("Using JSON_TABLE can crash MySQL 8."));
+            }
+
+            // TODO: Output warning?
         }
 
         var elementClrType = sqlExpression.Type.GetSequenceType();

@@ -4,12 +4,20 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Tests
 {
     public static class AppConfig
     {
+        static AppConfig()
+        {
+            // Disable tests that can crash the MySQL 8 database engine, if necessary.
+            if (!ServerVersion.Supports.JsonTableImplementationUsingParameterAsSourceWithoutEngineCrash)
+            {
+                AppContext.SetSwitch("Pomelo.EntityFrameworkCore.MySql.Issue1790Throws", true);
+            }
+        }
+
         public static readonly int EfBatchSize =
             !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("EF_BATCH_SIZE"))
                 ? Convert.ToInt32(Environment.GetEnvironmentVariable("EF_BATCH_SIZE"))
