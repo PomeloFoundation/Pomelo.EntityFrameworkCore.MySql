@@ -143,7 +143,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
                 skip &= !supports.OuterApply && innerException.Message.Contains("OUTER APPLY") ||
                         !supports.CrossApply && innerException.Message.Contains("CROSS APPLY") ||
                         !supports.WindowFunctions && innerException.Message.Contains("ROW_NUMBER() OVER") ||
-                        !supports.ExceptIntercept && (innerException.Message.Contains("EXCEPT") || innerException.Message.Contains("INTERSECT"));
+                        !supports.ExceptIntercept && (innerException.Message.Contains("EXCEPT") || innerException.Message.Contains("INTERSECT")) ||
+                        !supports.JsonTable && (innerException.Message.Contains("JSON_TABLE") || innerException.Message.Contains("JsonTable"));
             }
 
             return skip;

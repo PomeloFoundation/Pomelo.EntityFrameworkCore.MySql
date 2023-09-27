@@ -8,11 +8,17 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
     public class MySqlCompatibilityExpressionVisitor : ExpressionVisitor
     {
+        private const string Issue1790SkipFlagName = "Pomelo.EntityFrameworkCore.MySql.Issue1790.Skip";
+
+        private static readonly bool _mySql8EngineCrashWhenUsingJsonTableSkip
+            = AppContext.TryGetSwitch(Issue1790SkipFlagName, out var enabled) && enabled;
+
         private readonly IMySqlOptions _options;
 
         public MySqlCompatibilityExpressionVisitor(IMySqlOptions options)
@@ -28,6 +34,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 OuterApplyExpression outerApplyExpression => VisitOuterApply(outerApplyExpression),
                 ExceptExpression exceptExpression => VisitExcept(exceptExpression),
                 IntersectExpression intersectExpression => VisitIntercept(intersectExpression),
+                JsonScalarExpression jsonScalarExpression => VisitJsonScalar(jsonScalarExpression),
+                MySqlJsonTableExpression jsonTableExpression => VisitJsonTable(jsonTableExpression),
+
                 ShapedQueryExpression shapedQueryExpression => shapedQueryExpression.Update(Visit(shapedQueryExpression.QueryExpression), Visit(shapedQueryExpression.ShaperExpression)),
                 _ => base.VisitExtension(extensionExpression)
             };
@@ -46,6 +55,29 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         protected virtual Expression VisitIntercept(IntersectExpression intersectExpression)
             => CheckSupport(intersectExpression, _options.ServerVersion.Supports.ExceptIntercept);
+
+        protected virtual Expression VisitJsonScalar(JsonScalarExpression jsonScalarExpression)
+            => CheckSupport(jsonScalarExpression, _options.ServerVersion.Supports.Json);
+
+        protected virtual Expression VisitJsonTable(MySqlJsonTableExpression jsonTableExpression)
+        {
+            if (!_options.ServerVersion.Supports.JsonTable)
+            {
+                return CheckSupport(jsonTableExpression, false);
+            }
+
+            // Using primitive collections in parameters that are used as the JSON source argument for JSON_TABLE(source, ...) can crash
+            // MySQL 8 somewhere later down the line. We mitigate this by inlining those parameters.
+            // There are however other scenarios that can still crash MySQL 8 (e.g. `NorthwindSelectQueryMySqlTest.Correlated_collection_after_distinct_not_containing_original_identifier`).
+            // For those cases, we implement a flag to skip skip the JSON_TABLE generation.
+            if (!_options.ServerVersion.Supports.JsonTableImplementationUsingParameterAsSourceWithoutEngineCrash &&
+                _mySql8EngineCrashWhenUsingJsonTableSkip)
+            {
+                throw new InvalidOperationException($"JSON_TABLE() has been disabled by the '{Issue1790SkipFlagName}' AppContext switch, because it can crash MySQL 8.");
+            }
+
+            return jsonTableExpression;
+        }
 
         protected virtual Expression CheckSupport(Expression expression, bool isSupported)
             => CheckTranslated(

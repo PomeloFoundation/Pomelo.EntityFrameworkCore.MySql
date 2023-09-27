@@ -21,11 +21,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
 public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQueryableMethodTranslatingExpressionVisitor
 {
-    private const string Issue1790SkipFlagName = "Pomelo.EntityFrameworkCore.MySql.Issue1790.Skip";
     private const string Issue1790SkipWithParameterFlagName = "Pomelo.EntityFrameworkCore.MySql.Issue1790.SkipWithParameter";
-
-    private static readonly bool _mySql8EngineCrashWhenUsingJsonTableSkip
-        = AppContext.TryGetSwitch(Issue1790SkipFlagName, out var enabled) && enabled;
 
     private static readonly bool _mySql8EngineCrashWhenUsingJsonTableWithPrimitiveCollectionInParametersSkip
         = AppContext.TryGetSwitch(Issue1790SkipWithParameterFlagName, out var enabled) && enabled;
@@ -257,23 +253,6 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
 
     protected override ShapedQueryExpression TranslatePrimitiveCollection(SqlExpression sqlExpression, IProperty property, string tableAlias)
     {
-        if (!_options.ServerVersion.Supports.JsonTable)
-        {
-            AddTranslationErrorDetails($"Querying of JSON arrays is not supported in server version {_options.ServerVersion}.");
-            return null;
-        }
-
-        // Using primitive collections in parameters that are used as the JSON source argument for JSON_TABLE(source, ...) can crash
-        // MySQL 8 somewhere later down the line. We mitigate this by inlining those parameters.
-        // There are however other scenarios that can still crash MySQL 8 (e.g. `NorthwindSelectQueryMySqlTest.Correlated_collection_after_distinct_not_containing_original_identifier`).
-        // For those cases, we implement a flag to skip skip the JSON_TABLE generation.
-        if (!_options.ServerVersion.Supports.JsonTableImplementationUsingParameterAsSourceWithoutEngineCrash &&
-            _mySql8EngineCrashWhenUsingJsonTableSkip)
-        {
-            AddTranslationErrorDetails($"JSON_TABLE() has been disabled by the '{Issue1790SkipFlagName}' AppContext switch, because it can crash MySQL 8.");
-            return null;
-        }
-
         // Generate the JSON_TABLE() function expression, and wrap it in a SelectExpression.
 
         // Note that where the elementTypeMapping is known (i.e. collection columns), we immediately generate JSON_TABLE() with a COLUMNS clause
