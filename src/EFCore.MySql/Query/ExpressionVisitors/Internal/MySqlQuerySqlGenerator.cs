@@ -569,16 +569,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
             if (rowValues.Count > 1)
             {
-                Sql.Append(" UNION ALL SELECT ");
-
-                for (var i = 1; i < rowValues.Count; i++)
+                for (var r = 1; r < rowValues.Count; r++)
                 {
-                    if (i > 1)
-                    {
-                        Sql.Append(", ");
-                    }
-
-                    Visit(valuesExpression.RowValues[i]);
+                    Sql.Append(" UNION ALL SELECT ");
+                    Visit(rowValues[r]);
                 }
             }
         }
