@@ -481,8 +481,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             }
 
             var jsonPathNeedsConcat = JsonPathNeedsConcat(jsonScalarExpression.Path);
-
-            var jsonFunctionName = jsonPathNeedsConcat ? "JSON_UNQUOTE(JSON_EXTRACT" : "JSON_VALUE";
+            var useJsonValue = !jsonPathNeedsConcat && _options.ServerVersion.Supports.JsonValue;
+            var jsonFunctionName = useJsonValue ? "JSON_VALUE" : "JSON_UNQUOTE(JSON_EXTRACT";
             string castStoreType = null;
 
             // if (/*jsonScalarExpression.TypeMapping is SqlServerJsonTypeMapping
@@ -522,7 +522,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
             Sql.Append(", ");
             GenerateJsonPath(jsonScalarExpression.Path);
-            Sql.Append(jsonPathNeedsConcat ? "))" : ")");
+            Sql.Append(useJsonValue ? ")" : "))");
 
             if (castStoreType is not null)
             {
