@@ -1840,10 +1840,10 @@ ORDER BY `t`.`City`
             await base.Where_math_square(async);
 
             AssertSql(
-"""
+$"""
 SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE POWER(CAST(`o`.`Discount` AS double), 2.0) > 0.05000000074505806
+WHERE POWER({MySqlTestHelpers.CastAsDouble("`o`.`Discount`")}, 2.0) > 0.05000000074505806
 """);
         }
 
@@ -1912,10 +1912,10 @@ WHERE `o`.`OrderID` < 10300
             await base.Where_math_degrees(async);
 
             AssertSql(
-"""
+$"""
 SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE (`o`.`OrderID` = 11077) AND (DEGREES(CAST(`o`.`Discount` AS double)) > 0.0)
+WHERE (`o`.`OrderID` = 11077) AND (DEGREES({MySqlTestHelpers.CastAsDouble("`o`.`Discount`")}) > 0.0)
 """);
         }
 
@@ -1924,10 +1924,10 @@ WHERE (`o`.`OrderID` = 11077) AND (DEGREES(CAST(`o`.`Discount` AS double)) > 0.0
             await base.Where_math_radians(async);
 
             AssertSql(
-"""
+$"""
 SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE (`o`.`OrderID` = 11077) AND (RADIANS(CAST(`o`.`Discount` AS double)) > 0.0)
+WHERE (`o`.`OrderID` = 11077) AND (RADIANS({MySqlTestHelpers.CastAsDouble("`o`.`Discount`")}) > 0.0)
 """);
         }
 
@@ -1936,10 +1936,10 @@ WHERE (`o`.`OrderID` = 11077) AND (RADIANS(CAST(`o`.`Discount` AS double)) > 0.0
             await base.Where_mathf_abs1(async);
 
             AssertSql(
-"""
+$"""
 SELECT `p`.`ProductID`, `p`.`Discontinued`, `p`.`ProductName`, `p`.`SupplierID`, `p`.`UnitPrice`, `p`.`UnitsInStock`
 FROM `Products` AS `p`
-WHERE ABS(CAST(`p`.`ProductID` AS double)) > 10
+WHERE ABS({MySqlTestHelpers.CastAsDouble("`p`.`ProductID`")}) > 10
 """);
         }
 
@@ -1960,10 +1960,10 @@ WHERE (`o`.`UnitPrice` < 7.0) AND (CEILING(`o`.`Discount`) > 0)
             await base.Where_mathf_floor(async);
 
             AssertSql(
-"""
+$"""
 SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE (`o`.`Quantity` < 5) AND (FLOOR(CAST(`o`.`UnitPrice` AS double)) > 10)
+WHERE (`o`.`Quantity` < 5) AND (FLOOR({MySqlTestHelpers.CastAsDouble("`o`.`UnitPrice`")}) > 10)
 """);
         }
 
@@ -1996,10 +1996,10 @@ WHERE POWER(`o`.`Discount`, 2) > 0.05
             await base.Where_mathf_round2(async);
 
             AssertSql(
-"""
+$"""
 SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE ROUND(CAST(`o`.`UnitPrice` AS double), 2) > 100
+WHERE ROUND({MySqlTestHelpers.CastAsDouble("`o`.`UnitPrice`")}, 2) > 100
 """);
         }
 
@@ -2008,8 +2008,8 @@ WHERE ROUND(CAST(`o`.`UnitPrice` AS double), 2) > 100
             await base.Select_mathf_round(async);
 
             AssertSql(
-"""
-SELECT ROUND(CAST(`o`.`OrderID` AS double))
+$"""
+SELECT ROUND({MySqlTestHelpers.CastAsDouble("`o`.`OrderID`")})
 FROM `Orders` AS `o`
 WHERE `o`.`OrderID` < 10250
 """);
@@ -2020,8 +2020,8 @@ WHERE `o`.`OrderID` < 10250
             await base.Select_mathf_round2(async);
 
             AssertSql(
-"""
-SELECT ROUND(CAST(`o`.`UnitPrice` AS double), 2)
+$"""
+SELECT ROUND({MySqlTestHelpers.CastAsDouble("`o`.`UnitPrice`")}, 2)
 FROM `Order Details` AS `o`
 WHERE `o`.`Quantity` < 5
 """);
@@ -2032,10 +2032,10 @@ WHERE `o`.`Quantity` < 5
             await base.Where_mathf_truncate(async);
 
             AssertSql(
-"""
+$"""
 SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE (`o`.`Quantity` < 5) AND (TRUNCATE(CAST(`o`.`UnitPrice` AS double), 0) > 10)
+WHERE (`o`.`Quantity` < 5) AND (TRUNCATE({MySqlTestHelpers.CastAsDouble("`o`.`UnitPrice`")}, 0) > 10)
 """);
         }
 
@@ -2044,8 +2044,8 @@ WHERE (`o`.`Quantity` < 5) AND (TRUNCATE(CAST(`o`.`UnitPrice` AS double), 0) > 1
             await base.Select_mathf_truncate(async);
 
             AssertSql(
-"""
-SELECT TRUNCATE(CAST(`o`.`UnitPrice` AS double), 0)
+$"""
+SELECT TRUNCATE({MySqlTestHelpers.CastAsDouble("`o`.`UnitPrice`")}, 0)
 FROM `Order Details` AS `o`
 WHERE `o`.`Quantity` < 5
 """);

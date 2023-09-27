@@ -80,7 +80,9 @@ WHERE `a`.`Name` = @__artistName_0");
         {
             await base.Where_contains_query_escapes(async);
 
-        AssertSql(
+            if (AppConfig.ServerVersion.Supports.JsonTable)
+            {
+                AssertSql(
 """
 SELECT `a`.`ArtistId`, `a`.`Name`
 FROM `Artists` AS `a`
@@ -92,6 +94,16 @@ WHERE `a`.`Name` IN (
     )) AS `a0`
 )
 """);
+            }
+            else
+            {
+                AssertSql(
+"""
+SELECT `a`.`ArtistId`, `a`.`Name`
+FROM `Artists` AS `a`
+WHERE `a`.`Name` IN ('Back\slasher''s', 'John''s Chill Box')
+""");
+            }
         }
 
         public class EscapesMySqlNoBackslashesFixture : EscapesMySqlFixtureBase

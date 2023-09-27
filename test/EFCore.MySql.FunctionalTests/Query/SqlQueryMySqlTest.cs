@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
@@ -677,6 +679,7 @@ FROM (
 """);
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.CommonTableExpressions))]
     public override async Task SqlQueryRaw_composed_with_common_table_expression(bool async)
     {
         await base.SqlQueryRaw_composed_with_common_table_expression(async);

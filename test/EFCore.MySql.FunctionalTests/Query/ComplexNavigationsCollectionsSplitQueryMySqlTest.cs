@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -2303,7 +2304,9 @@ ORDER BY `l`.`Id`, `l0`.`Id`, `l1`.`Id`");
         {
             await base.LeftJoin_with_Any_on_outer_source_and_projecting_collection_from_inner(async);
 
-        AssertSql(
+            if (AppConfig.ServerVersion.Supports.JsonTable)
+            {
+                AssertSql(
 """
 SELECT CASE
     WHEN `l0`.`Id` IS NULL THEN 0
@@ -2335,6 +2338,30 @@ WHERE EXISTS (
     WHERE (`v`.`value` = `l`.`Name`) OR (`v`.`value` IS NULL AND (`l`.`Name` IS NULL)))
 ORDER BY `l`.`Id`, `l0`.`Id`
 """);
+            }
+            else
+            {
+                AssertSql(
+"""
+SELECT CASE
+    WHEN `l0`.`Id` IS NULL THEN 0
+    ELSE `l0`.`Id`
+END, `l`.`Id`, `l0`.`Id`
+FROM `LevelOne` AS `l`
+LEFT JOIN `LevelTwo` AS `l0` ON `l`.`Id` = `l0`.`Level1_Required_Id`
+WHERE `l`.`Name` IN ('L1 01', 'L1 02')
+ORDER BY `l`.`Id`, `l0`.`Id`
+""",
+                //
+                """
+SELECT `l1`.`Id`, `l1`.`Level2_Optional_Id`, `l1`.`Level2_Required_Id`, `l1`.`Name`, `l1`.`OneToMany_Optional_Inverse3Id`, `l1`.`OneToMany_Optional_Self_Inverse3Id`, `l1`.`OneToMany_Required_Inverse3Id`, `l1`.`OneToMany_Required_Self_Inverse3Id`, `l1`.`OneToOne_Optional_PK_Inverse3Id`, `l1`.`OneToOne_Optional_Self3Id`, `l`.`Id`, `l0`.`Id`
+FROM `LevelOne` AS `l`
+LEFT JOIN `LevelTwo` AS `l0` ON `l`.`Id` = `l0`.`Level1_Required_Id`
+INNER JOIN `LevelThree` AS `l1` ON `l0`.`Id` = `l1`.`OneToMany_Required_Inverse3Id`
+WHERE `l`.`Name` IN ('L1 01', 'L1 02')
+ORDER BY `l`.`Id`, `l0`.`Id`
+""");
+            }
         }
 
         public override async Task Filtered_include_different_filter_set_on_same_navigation_twice(bool async)

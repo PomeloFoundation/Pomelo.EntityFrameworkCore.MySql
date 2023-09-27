@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.TestModels.GearsOfWarModel;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
@@ -305,7 +306,9 @@ ORDER BY `t`.`Id`, `t0`.`Nickname`, `t0`.`SquadId`
     {
         await base.Include_where_list_contains_navigation(async);
 
-        AssertSql(
+        if (AppConfig.ServerVersion.Supports.JsonTable)
+        {
+            AssertSql(
 """
 SELECT `t`.`Id`
 FROM `Tags` AS `t`
@@ -329,13 +332,37 @@ WHERE `t0`.`Id` IS NOT NULL AND EXISTS (
     )) AS `t1`
     WHERE (`t1`.`value` = `t0`.`Id`) OR (`t1`.`value` IS NULL AND (`t0`.`Id` IS NULL)))
 """);
+        }
+        else
+        {
+            AssertSql(
+"""
+SELECT `t`.`Id`
+FROM `Tags` AS `t`
+""",
+                //
+                """
+SELECT `t`.`Nickname`, `t`.`SquadId`, `t`.`AssignedCityName`, `t`.`CityOfBirthName`, `t`.`FullName`, `t`.`HasSoulPatch`, `t`.`LeaderNickname`, `t`.`LeaderSquadId`, `t`.`Rank`, `t`.`Discriminator`, `t0`.`Id`, `t0`.`GearNickName`, `t0`.`GearSquadId`, `t0`.`IssueDate`, `t0`.`Note`
+FROM (
+    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
+    FROM `Gears` AS `g`
+    UNION ALL
+    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
+    FROM `Officers` AS `o`
+) AS `t`
+LEFT JOIN `Tags` AS `t0` ON (`t`.`Nickname` = `t0`.`GearNickName`) AND (`t`.`SquadId` = `t0`.`GearSquadId`)
+WHERE `t0`.`Id` IS NOT NULL AND `t0`.`Id` IN ('b39a6fba-9026-4d69-828e-fd7068673e57', '70534e05-782c-4052-8720-c2c54481ce5f', 'a8ad98f9-e023-4e2a-9a70-c2728455bd34', 'df36f493-463f-4123-83f9-6b135deeb7ba', '34c8d86e-a4ac-4be5-827f-584dda348a07', 'a7be028a-0cf2-448f-ab55-ce8bc5d8cf69')
+""");
+        }
     }
 
     public override async Task Include_where_list_contains_navigation2(bool async)
     {
         await base.Include_where_list_contains_navigation2(async);
 
-        AssertSql(
+        if (AppConfig.ServerVersion.Supports.JsonTable)
+        {
+            AssertSql(
 """
 SELECT `t`.`Id`
 FROM `Tags` AS `t`
@@ -360,13 +387,38 @@ WHERE `c`.`Location` IS NOT NULL AND EXISTS (
     )) AS `t1`
     WHERE (`t1`.`value` = `t0`.`Id`) OR (`t1`.`value` IS NULL AND (`t0`.`Id` IS NULL)))
 """);
+        }
+        else
+        {
+            AssertSql(
+"""
+SELECT `t`.`Id`
+FROM `Tags` AS `t`
+""",
+                //
+                """
+SELECT `t`.`Nickname`, `t`.`SquadId`, `t`.`AssignedCityName`, `t`.`CityOfBirthName`, `t`.`FullName`, `t`.`HasSoulPatch`, `t`.`LeaderNickname`, `t`.`LeaderSquadId`, `t`.`Rank`, `t`.`Discriminator`, `t0`.`Id`, `t0`.`GearNickName`, `t0`.`GearSquadId`, `t0`.`IssueDate`, `t0`.`Note`
+FROM (
+    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
+    FROM `Gears` AS `g`
+    UNION ALL
+    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
+    FROM `Officers` AS `o`
+) AS `t`
+INNER JOIN `Cities` AS `c` ON `t`.`CityOfBirthName` = `c`.`Name`
+LEFT JOIN `Tags` AS `t0` ON (`t`.`Nickname` = `t0`.`GearNickName`) AND (`t`.`SquadId` = `t0`.`GearSquadId`)
+WHERE `c`.`Location` IS NOT NULL AND `t0`.`Id` IN ('b39a6fba-9026-4d69-828e-fd7068673e57', '70534e05-782c-4052-8720-c2c54481ce5f', 'a8ad98f9-e023-4e2a-9a70-c2728455bd34', 'df36f493-463f-4123-83f9-6b135deeb7ba', '34c8d86e-a4ac-4be5-827f-584dda348a07', 'a7be028a-0cf2-448f-ab55-ce8bc5d8cf69')
+""");
+        }
     }
 
     public override async Task Navigation_accessed_twice_outside_and_inside_subquery(bool async)
     {
         await base.Navigation_accessed_twice_outside_and_inside_subquery(async);
 
-        AssertSql(
+        if (AppConfig.ServerVersion.Supports.JsonTable)
+        {
+            AssertSql(
 """
 SELECT `t`.`Id`
 FROM `Tags` AS `t`
@@ -390,6 +442,28 @@ WHERE `t0`.`Id` IS NOT NULL AND EXISTS (
     )) AS `t1`
     WHERE (`t1`.`value` = `t0`.`Id`) OR (`t1`.`value` IS NULL AND (`t0`.`Id` IS NULL)))
 """);
+        }
+        else
+        {
+            AssertSql(
+"""
+SELECT `t`.`Id`
+FROM `Tags` AS `t`
+""",
+                //
+                """
+SELECT `t`.`Nickname`, `t`.`SquadId`, `t`.`AssignedCityName`, `t`.`CityOfBirthName`, `t`.`FullName`, `t`.`HasSoulPatch`, `t`.`LeaderNickname`, `t`.`LeaderSquadId`, `t`.`Rank`, `t`.`Discriminator`
+FROM (
+    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
+    FROM `Gears` AS `g`
+    UNION ALL
+    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
+    FROM `Officers` AS `o`
+) AS `t`
+LEFT JOIN `Tags` AS `t0` ON (`t`.`Nickname` = `t0`.`GearNickName`) AND (`t`.`SquadId` = `t0`.`GearSquadId`)
+WHERE `t0`.`Id` IS NOT NULL AND `t0`.`Id` IN ('b39a6fba-9026-4d69-828e-fd7068673e57', '70534e05-782c-4052-8720-c2c54481ce5f', 'a8ad98f9-e023-4e2a-9a70-c2728455bd34', 'df36f493-463f-4123-83f9-6b135deeb7ba', '34c8d86e-a4ac-4be5-827f-584dda348a07', 'a7be028a-0cf2-448f-ab55-ce8bc5d8cf69')
+""");
+        }
     }
 
     public override async Task Include_with_join_multi_level(bool async)
@@ -2925,7 +2999,9 @@ WHERE `c`.`Location` = @__value_0
     {
         await base.Non_unicode_string_literals_in_contains_is_used_for_non_unicode_column(async);
 
-        AssertSql(
+        if (AppConfig.ServerVersion.Supports.JsonTable)
+        {
+            AssertSql(
 """
 SELECT `c`.`Name`, `c`.`Location`, `c`.`Nation`
 FROM `Cities` AS `c`
@@ -2937,6 +3013,16 @@ WHERE EXISTS (
     )) AS `c0`
     WHERE (`c0`.`value` = `c`.`Location`) OR (`c0`.`value` IS NULL AND (`c`.`Location` IS NULL)))
 """);
+        }
+        else
+        {
+            AssertSql(
+"""
+SELECT `c`.`Name`, `c`.`Location`, `c`.`Nation`
+FROM `Cities` AS `c`
+WHERE `c`.`Location` IN ('Unknown', 'Jacinto''s location', 'Ephyra''s location')
+""");
+        }
     }
 
     public override async Task Non_unicode_string_literals_is_used_for_non_unicode_column_with_subquery(bool async)
@@ -4141,7 +4227,9 @@ SELECT NOT EXISTS (
     {
         await base.Contains_with_local_nullable_guid_list_closure(async);
 
-        AssertSql(
+        if (AppConfig.ServerVersion.Supports.JsonTable)
+        {
+            AssertSql(
 """
 SELECT `t`.`Id`, `t`.`GearNickName`, `t`.`GearSquadId`, `t`.`IssueDate`, `t`.`Note`
 FROM `Tags` AS `t`
@@ -4153,6 +4241,16 @@ WHERE `t`.`Id` IN (
     )) AS `i`
 )
 """);
+        }
+        else
+        {
+            AssertSql(
+"""
+SELECT `t`.`Id`, `t`.`GearNickName`, `t`.`GearSquadId`, `t`.`IssueDate`, `t`.`Note`
+FROM `Tags` AS `t`
+WHERE `t`.`Id` IN ('d2c26679-562b-44d1-ab96-23d1775e0926', '23cbcf9b-ce14-45cf-aafa-2c2667ebfdd3', 'ab1b82d7-88db-42bd-a132-7eef9aa68af4')
+""");
+        }
     }
 
     public override async Task Unnecessary_include_doesnt_get_added_complex_when_projecting_EF_Property(bool async)
@@ -4802,7 +4900,9 @@ ORDER BY `t`.`Nickname`, `t0`.`Nickname`
     {
         await base.Contains_on_nullable_array_produces_correct_sql(async);
 
-        AssertSql(
+        if (AppConfig.ServerVersion.Supports.JsonTable)
+        {
+            AssertSql(
 """
 SELECT `t`.`Nickname`, `t`.`SquadId`, `t`.`AssignedCityName`, `t`.`CityOfBirthName`, `t`.`FullName`, `t`.`HasSoulPatch`, `t`.`LeaderNickname`, `t`.`LeaderSquadId`, `t`.`Rank`, `t`.`Discriminator`
 FROM (
@@ -4821,6 +4921,23 @@ WHERE (`t`.`SquadId` < 2) AND EXISTS (
     )) AS `c0`
     WHERE (`c0`.`value` = `c`.`Name`) OR (`c0`.`value` IS NULL AND (`c`.`Name` IS NULL)))
 """);
+        }
+        else
+        {
+            AssertSql(
+"""
+SELECT `t`.`Nickname`, `t`.`SquadId`, `t`.`AssignedCityName`, `t`.`CityOfBirthName`, `t`.`FullName`, `t`.`HasSoulPatch`, `t`.`LeaderNickname`, `t`.`LeaderSquadId`, `t`.`Rank`, `t`.`Discriminator`
+FROM (
+    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
+    FROM `Gears` AS `g`
+    UNION ALL
+    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
+    FROM `Officers` AS `o`
+) AS `t`
+LEFT JOIN `Cities` AS `c` ON `t`.`AssignedCityName` = `c`.`Name`
+WHERE (`t`.`SquadId` < 2) AND (`c`.`Name` IS NULL OR (`c`.`Name` = 'Ephyra'))
+""");
+        }
     }
 
     public override async Task Optional_navigation_with_collection_composite_key(bool async)
@@ -8109,7 +8226,9 @@ ORDER BY `c`.`Name`, `t`.`Nickname` DESC
     {
         await base.Correlated_collection_with_complex_order_by_funcletized_to_constant_bool(async);
 
-        AssertSql(
+        if (AppConfig.ServerVersion.Supports.JsonTable)
+        {
+            AssertSql(
 """
 SELECT `t`.`Nickname`, `t`.`SquadId`, `w`.`Name`, `w`.`Id`
 FROM (
@@ -8128,6 +8247,23 @@ ORDER BY COALESCE(`t`.`Nickname` IN (
     )) AS `n`
 ), FALSE) DESC, `t`.`Nickname`, `t`.`SquadId`
 """);
+        }
+        else
+        {
+            AssertSql(
+"""
+SELECT `t`.`Nickname`, `t`.`SquadId`, `w`.`Name`, `w`.`Id`
+FROM (
+    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`FullName`
+    FROM `Gears` AS `g`
+    UNION ALL
+    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`FullName`
+    FROM `Officers` AS `o`
+) AS `t`
+LEFT JOIN `Weapons` AS `w` ON `t`.`FullName` = `w`.`OwnerFullName`
+ORDER BY `t`.`Nickname`, `t`.`SquadId`
+""");
+        }
     }
 
     public override async Task Double_order_by_on_nullable_bool_coming_from_optional_navigation(bool async)
@@ -9864,7 +10000,9 @@ ORDER BY `t`.`Nickname`
     {
         await base.OrderBy_Contains_empty_list(async);
 
-        AssertSql(
+        if (AppConfig.ServerVersion.Supports.JsonTable)
+        {
+            AssertSql(
 """
 SELECT `t`.`Nickname`, `t`.`SquadId`, `t`.`AssignedCityName`, `t`.`CityOfBirthName`, `t`.`FullName`, `t`.`HasSoulPatch`, `t`.`LeaderNickname`, `t`.`LeaderSquadId`, `t`.`Rank`, `t`.`Discriminator`
 FROM (
@@ -9882,6 +10020,21 @@ ORDER BY `t`.`SquadId` IN (
     )) AS `i`
 )
 """);
+        }
+        else
+        {
+            AssertSql(
+"""
+SELECT `t`.`Nickname`, `t`.`SquadId`, `t`.`AssignedCityName`, `t`.`CityOfBirthName`, `t`.`FullName`, `t`.`HasSoulPatch`, `t`.`LeaderNickname`, `t`.`LeaderSquadId`, `t`.`Rank`, `t`.`Discriminator`
+FROM (
+    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
+    FROM `Gears` AS `g`
+    UNION ALL
+    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
+    FROM `Officers` AS `o`
+) AS `t`
+""");
+        }
     }
 
     public override async Task Where_with_enum_flags_parameter(bool async)
@@ -10867,7 +11020,9 @@ LIMIT @__p_0
     {
         await base.Enum_array_contains(async);
 
-        AssertSql(
+        if (AppConfig.ServerVersion.Supports.JsonTable)
+        {
+            AssertSql(
 """
 SELECT `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`
 FROM `Weapons` AS `w`
@@ -10880,6 +11035,17 @@ WHERE `w0`.`Id` IS NOT NULL AND EXISTS (
     )) AS `t`
     WHERE (`t`.`value` = `w0`.`AmmunitionType`) OR (`t`.`value` IS NULL AND (`w0`.`AmmunitionType` IS NULL)))
 """);
+        }
+        else
+        {
+            AssertSql(
+"""
+SELECT `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`
+FROM `Weapons` AS `w`
+LEFT JOIN `Weapons` AS `w0` ON `w`.`SynergyWithId` = `w0`.`Id`
+WHERE `w0`.`Id` IS NOT NULL AND (`w0`.`AmmunitionType` IS NULL OR (`w0`.`AmmunitionType` = 1))
+""");
+        }
     }
 
     public override async Task CompareTo_used_with_non_unicode_string_column_and_constant(bool async)
@@ -11945,7 +12111,9 @@ ORDER BY `t2`.`Nickname`, `t2`.`SquadId`, `t2`.`HasSoulPatch0`
     {
         await base.Where_bool_column_and_Contains(async);
 
-        AssertSql(
+        if (AppConfig.ServerVersion.Supports.JsonTable)
+        {
+            AssertSql(
 """
 SELECT `t`.`Nickname`, `t`.`SquadId`, `t`.`AssignedCityName`, `t`.`CityOfBirthName`, `t`.`FullName`, `t`.`HasSoulPatch`, `t`.`LeaderNickname`, `t`.`LeaderSquadId`, `t`.`Rank`, `t`.`Discriminator`
 FROM (
@@ -11963,13 +12131,31 @@ WHERE (`t`.`HasSoulPatch` = TRUE) AND `t`.`HasSoulPatch` IN (
     )) AS `v`
 )
 """);
+        }
+        else
+        {
+            AssertSql(
+"""
+SELECT `t`.`Nickname`, `t`.`SquadId`, `t`.`AssignedCityName`, `t`.`CityOfBirthName`, `t`.`FullName`, `t`.`HasSoulPatch`, `t`.`LeaderNickname`, `t`.`LeaderSquadId`, `t`.`Rank`, `t`.`Discriminator`
+FROM (
+    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
+    FROM `Gears` AS `g`
+    UNION ALL
+    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
+    FROM `Officers` AS `o`
+) AS `t`
+WHERE (`t`.`HasSoulPatch` = TRUE) AND `t`.`HasSoulPatch` IN (FALSE, TRUE)
+""");
+        }
     }
 
     public override async Task Where_bool_column_or_Contains(bool async)
     {
         await base.Where_bool_column_or_Contains(async);
 
-        AssertSql(
+        if (AppConfig.ServerVersion.Supports.JsonTable)
+        {
+            AssertSql(
 """
 SELECT `t`.`Nickname`, `t`.`SquadId`, `t`.`AssignedCityName`, `t`.`CityOfBirthName`, `t`.`FullName`, `t`.`HasSoulPatch`, `t`.`LeaderNickname`, `t`.`LeaderSquadId`, `t`.`Rank`, `t`.`Discriminator`
 FROM (
@@ -11987,6 +12173,22 @@ WHERE (`t`.`HasSoulPatch` = TRUE) AND `t`.`HasSoulPatch` IN (
     )) AS `v`
 )
 """);
+        }
+        else
+        {
+            AssertSql(
+"""
+SELECT `t`.`Nickname`, `t`.`SquadId`, `t`.`AssignedCityName`, `t`.`CityOfBirthName`, `t`.`FullName`, `t`.`HasSoulPatch`, `t`.`LeaderNickname`, `t`.`LeaderSquadId`, `t`.`Rank`, `t`.`Discriminator`
+FROM (
+    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
+    FROM `Gears` AS `g`
+    UNION ALL
+    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
+    FROM `Officers` AS `o`
+) AS `t`
+WHERE (`t`.`HasSoulPatch` = TRUE) AND `t`.`HasSoulPatch` IN (FALSE, TRUE)
+""");
+        }
     }
 
     public override async Task Parameter_used_multiple_times_take_appropriate_inferred_type_mapping(bool async)

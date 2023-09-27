@@ -4,6 +4,7 @@ using System.Linq;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -24,7 +25,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             base.DbContext_list_is_parameterized();
 
-        AssertSql(
+            if (AppConfig.ServerVersion.Supports.JsonTable)
+            {
+                AssertSql(
 """
 SELECT `l`.`Id`, `l`.`Tenant`
 FROM `ListFilter` AS `l`
@@ -72,6 +75,34 @@ WHERE `l`.`Tenant` IN (
     )) AS `e`
 )
 """);
+            }
+            else
+            {
+                AssertSql(
+"""
+SELECT `l`.`Id`, `l`.`Tenant`
+FROM `ListFilter` AS `l`
+WHERE FALSE
+""",
+                //
+                """
+SELECT `l`.`Id`, `l`.`Tenant`
+FROM `ListFilter` AS `l`
+WHERE FALSE
+""",
+                //
+                """
+SELECT `l`.`Id`, `l`.`Tenant`
+FROM `ListFilter` AS `l`
+WHERE `l`.`Tenant` = 1
+""",
+                //
+                """
+SELECT `l`.`Id`, `l`.`Tenant`
+FROM `ListFilter` AS `l`
+WHERE `l`.`Tenant` IN (2, 3)
+""");
+            }
         }
 
         private void AssertSql(params string[] expected)

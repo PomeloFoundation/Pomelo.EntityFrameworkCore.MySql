@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
@@ -404,7 +405,9 @@ LIMIT 2
     {
         await base.Constant_with_inferred_value_converter();
 
-        AssertSql(
+        if (AppConfig.ServerVersion.Supports.ValuesWithRows)
+        {
+            AssertSql(
 """
 SELECT `t`.`Id`, `t`.`Ints`, `t`.`PropertyWithValueConverter`
 FROM `TestEntity` AS `t`
@@ -414,13 +417,33 @@ WHERE (
     WHERE `v`.`Value` = `t`.`PropertyWithValueConverter`) = 1
 LIMIT 2
 """);
+        }
+        else if (AppConfig.ServerVersion.Supports.Values)
+        {
+
+        }
+        else
+        {
+            AssertSql(
+                """
+                SELECT `t`.`Id`, `t`.`Ints`, `t`.`PropertyWithValueConverter`
+                FROM `TestEntity` AS `t`
+                WHERE (
+                    SELECT COUNT(*)
+                    FROM (SELECT CAST(1 AS signed) AS `Value` UNION ALL SELECT 8) AS `v`
+                    WHERE `v`.`Value` = `t`.`PropertyWithValueConverter`) = 1
+                LIMIT 2
+                """);
+        }
     }
 
     public override async Task Inline_collection_in_query_filter()
     {
         await base.Inline_collection_in_query_filter();
 
-        AssertSql(
+        if (AppConfig.ServerVersion.Supports.ValuesWithRows)
+        {
+            AssertSql(
 """
 SELECT `t`.`Id`, `t`.`Ints`
 FROM `TestEntity` AS `t`
@@ -430,6 +453,23 @@ WHERE (
     WHERE `v`.`Value` > `t`.`Id`) = 1
 LIMIT 2
 """);
+        }
+        else if (AppConfig.ServerVersion.Supports.Values)
+        {
+        }
+        else
+        {
+            AssertSql(
+"""
+SELECT `t`.`Id`, `t`.`Ints`
+FROM `TestEntity` AS `t`
+WHERE (
+    SELECT COUNT(*)
+    FROM (SELECT CAST(1 AS signed) AS `Value` UNION ALL SELECT 2 UNION ALL SELECT 3) AS `v`
+    WHERE `v`.`Value` > `t`.`Id`) = 1
+LIMIT 2
+""");
+        }
     }
 
     public override async Task Column_collection_inside_json_owned_entity()
