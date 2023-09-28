@@ -326,27 +326,7 @@ SELECT ROW_COUNT();",
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
         public override async Task Alter_sequence_all_settings()
         {
-            await Test(
-                builder => builder.HasSequence<int>("foo"),
-                builder => { },
-                builder => builder.HasSequence<int>("foo")
-                    .StartsAt(-3)
-                    .IncrementsBy(2)
-                    .HasMin(-5)
-                    .HasMax(10)
-                    .IsCyclic(),
-                model =>
-                {
-                    var sequence = Assert.Single(model.Sequences);
-
-                    // Assert.Equal(-3, sequence.StartValue);
-                    Assert.Equal(1, sequence.StartValue); // Restarting doesn't change the scaffolded start value
-
-                    Assert.Equal(2, sequence.IncrementBy);
-                    Assert.Equal(-5, sequence.MinValue);
-                    Assert.Equal(10, sequence.MaxValue);
-                    Assert.True(sequence.IsCyclic);
-                });
+            await base.Alter_sequence_all_settings();
 
             AssertSql(
                 """
@@ -354,7 +334,7 @@ ALTER SEQUENCE `foo` INCREMENT BY 2 MINVALUE -5 MAXVALUE 10 CYCLE;
 """,
                 //
                 """
-ALTER SEQUENCE `foo` RESTART WITH -3;
+ALTER SEQUENCE `foo` START WITH -3 RESTART;
 """);
         }
 
@@ -365,9 +345,12 @@ ALTER SEQUENCE `foo` RESTART WITH -3;
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
-        public override Task Alter_sequence_restart_with()
+        public override async Task Alter_sequence_restart_with()
         {
-            return base.Alter_sequence_restart_with();
+            await base.Alter_sequence_restart_with();
+
+            AssertSql(
+                @"ALTER SEQUENCE `foo` START WITH 3 RESTART;");
         }
 
         public override async Task Alter_table_add_comment_non_default_schema()

@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 using Xunit.Abstractions;
@@ -2304,7 +2305,7 @@ ORDER BY `l`.`Id`, `l0`.`Id`, `l1`.`Id`");
         {
             await base.LeftJoin_with_Any_on_outer_source_and_projecting_collection_from_inner(async);
 
-            if (AppConfig.ServerVersion.Supports.JsonTable)
+            if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
             {
                 AssertSql(
 """

@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 using Xunit.Abstractions;
@@ -80,7 +81,7 @@ WHERE `a`.`Name` = @__artistName_0");
         {
             await base.Where_contains_query_escapes(async);
 
-            if (AppConfig.ServerVersion.Supports.JsonTable)
+            if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
             {
                 AssertSql(
 """

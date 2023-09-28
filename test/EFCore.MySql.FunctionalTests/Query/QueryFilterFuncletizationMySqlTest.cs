@@ -25,7 +25,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             base.DbContext_list_is_parameterized();
 
-            if (AppConfig.ServerVersion.Supports.JsonTable)
+            if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
             {
                 AssertSql(
 """

@@ -306,7 +306,7 @@ ORDER BY `t`.`Id`, `t0`.`Nickname`, `t0`.`SquadId`
     {
         await base.Include_where_list_contains_navigation(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -360,7 +360,7 @@ WHERE `t0`.`Id` IS NOT NULL AND `t0`.`Id` IN ('b39a6fba-9026-4d69-828e-fd7068673
     {
         await base.Include_where_list_contains_navigation2(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -416,7 +416,7 @@ WHERE `c`.`Location` IS NOT NULL AND `t0`.`Id` IN ('b39a6fba-9026-4d69-828e-fd70
     {
         await base.Navigation_accessed_twice_outside_and_inside_subquery(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -2999,7 +2999,7 @@ WHERE `c`.`Location` = @__value_0
     {
         await base.Non_unicode_string_literals_in_contains_is_used_for_non_unicode_column(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -4227,7 +4227,7 @@ SELECT NOT EXISTS (
     {
         await base.Contains_with_local_nullable_guid_list_closure(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -4900,7 +4900,7 @@ ORDER BY `t`.`Nickname`, `t0`.`Nickname`
     {
         await base.Contains_on_nullable_array_produces_correct_sql(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -8226,7 +8226,7 @@ ORDER BY `c`.`Name`, `t`.`Nickname` DESC
     {
         await base.Correlated_collection_with_complex_order_by_funcletized_to_constant_bool(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -9106,29 +9106,19 @@ WHERE (
 
     public override async Task DateTimeOffset_Contains_Less_than_Greater_than(bool async)
     {
-//         var dto = MySqlTestHelpers.GetExpectedValue(new DateTimeOffset(599898024001234567, new TimeSpan(1, 30, 0)));
-//         var start = dto.AddDays(-1);
-//         var end = dto.AddDays(1);
-//         var dates = new[] { dto };
-//
-//         await AssertQuery(
-//             async,
-//             ss => ss.Set<Mission>().Where(
-//                 m => start <= m.Timeline.Date && m.Timeline < end && dates.Contains(m.Timeline)));
-//
-//         AssertSql(
-// """
-// @__start_0='1902-01-01T08:30:00.1234560+00:00'
-// @__end_1='1902-01-03T08:30:00.1234560+00:00'
-//
-// SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-// FROM `Missions` AS `m`
-// WHERE ((@__start_0 <= CONVERT(`m`.`Timeline`, date)) AND (`m`.`Timeline` < @__end_1)) AND (`m`.`Timeline` = TIMESTAMP '1902-01-02 08:30:00.123456')
-// """);
+        var dto = MySqlTestHelpers.GetExpectedValue(new DateTimeOffset(599898024001234567, new TimeSpan(1, 30, 0)));
+        var start = dto.AddDays(-1);
+        var end = dto.AddDays(1);
+        var dates = new[] { dto };
 
-        await base.DateTimeOffset_Contains_Less_than_Greater_than(async);
+        await AssertQuery(
+            async,
+            ss => ss.Set<Mission>().Where(
+                m => start <= m.Timeline.Date && m.Timeline < end && dates.Contains(m.Timeline)));
 
-        AssertSql(
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
+        {
+            AssertSql(
 """
 @__start_0='1902-01-01T10:00:00.1234567+01:30'
 @__end_1='1902-01-03T10:00:00.1234567+01:30'
@@ -9143,6 +9133,19 @@ WHERE ((@__start_0 <= CONVERT(`m`.`Timeline`, date)) AND (`m`.`Timeline` < @__en
     )) AS `d`
 )
 """);
+        }
+        else
+        {
+            AssertSql(
+"""
+@__start_0='1902-01-01T08:30:00.1234560+00:00'
+@__end_1='1902-01-03T08:30:00.1234560+00:00'
+
+SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
+FROM `Missions` AS `m`
+WHERE ((@__start_0 <= CONVERT(`m`.`Timeline`, date)) AND (`m`.`Timeline` < @__end_1)) AND (`m`.`Timeline` = TIMESTAMP '1902-01-02 08:30:00.123456')
+""");
+        }
     }
 
     [ConditionalTheory(Skip = "TODO: Does not work as expected, probably due to some test definition issues.")]
@@ -10000,7 +10003,7 @@ ORDER BY `t`.`Nickname`
     {
         await base.OrderBy_Contains_empty_list(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -11020,7 +11023,7 @@ LIMIT @__p_0
     {
         await base.Enum_array_contains(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -12111,7 +12114,7 @@ ORDER BY `t2`.`Nickname`, `t2`.`SquadId`, `t2`.`HasSoulPatch0`
     {
         await base.Where_bool_column_and_Contains(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -12153,7 +12156,7 @@ WHERE (`t`.`HasSoulPatch` = TRUE) AND `t`.`HasSoulPatch` IN (FALSE, TRUE)
     {
         await base.Where_bool_column_or_Contains(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """

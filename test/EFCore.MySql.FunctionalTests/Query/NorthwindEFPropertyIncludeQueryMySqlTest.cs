@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
@@ -659,7 +660,7 @@ ORDER BY `c`.`CustomerID`, `o`.`OrderID`
     {
         await base.Include_collection_OrderBy_list_does_not_contains(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -1036,7 +1037,7 @@ ORDER BY `t0`.`CustomerID`, `t1`.`OrderID`, `t1`.`OrderID0`
     {
         await base.Include_collection_OrderBy_empty_list_contains(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -1444,7 +1445,7 @@ ORDER BY `t`.`OrderID`, `t0`.`OrderID`, `t0`.`OrderID0`, `t0`.`ProductID`, `o3`.
     {
         await base.Include_collection_OrderBy_list_contains(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -1965,7 +1966,7 @@ ORDER BY `t`.`CompanyName` DESC, `t`.`CustomerID`
     {
         await base.Include_collection_OrderBy_empty_list_does_not_contains(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """

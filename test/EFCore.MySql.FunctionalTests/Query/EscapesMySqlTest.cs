@@ -80,7 +80,7 @@ WHERE `a`.`Name` = @__artistName_0");
         {
             await base.Where_contains_query_escapes(async);
 
-            if (AppConfig.ServerVersion.Supports.JsonTable)
+            if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
             {
                 AssertSql(
 """

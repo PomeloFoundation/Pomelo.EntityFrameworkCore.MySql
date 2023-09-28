@@ -938,9 +938,24 @@ WHERE `c`.`CustomerID` = (
         {
             // Works as expected in MariaDB.
             await base.Update_Where_GroupBy_First_set_constant_3(async);
+
+            AssertExecuteUpdateSql(
+"""
+UPDATE `Customers` AS `c`
+SET `c`.`ContactName` = 'Updated'
+WHERE `c`.`CustomerID` IN (
+    SELECT (
+        SELECT `c0`.`CustomerID`
+        FROM `Orders` AS `o0`
+        LEFT JOIN `Customers` AS `c0` ON `o0`.`CustomerID` = `c0`.`CustomerID`
+        WHERE (`o`.`CustomerID` = `o0`.`CustomerID`) OR (`o`.`CustomerID` IS NULL AND (`o0`.`CustomerID` IS NULL))
+        LIMIT 1)
+    FROM `Orders` AS `o`
+    GROUP BY `o`.`CustomerID`
+    HAVING COUNT(*) > 11
+)
+""");
         }
-        AssertExecuteUpdateSql(
-);
     }
 
     public override async Task Update_Where_Distinct_set_constant(bool async)

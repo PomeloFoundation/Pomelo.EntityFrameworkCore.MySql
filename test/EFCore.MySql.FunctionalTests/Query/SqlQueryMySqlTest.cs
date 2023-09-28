@@ -667,15 +667,15 @@ WHERE `m`.`CustomerID` IN (
 """
 city='Seattle' (Nullable = false)
 
-SELECT m."Address", m."City", m."CompanyName", m."ContactName", m."ContactTitle", m."Country", m."CustomerID", m."Fax", m."Phone", m."Region", m."PostalCode"
+SELECT `m`.`Address`, `m`.`City`, `m`.`CompanyName`, `m`.`ContactName`, `m`.`ContactTitle`, `m`.`Country`, `m`.`CustomerID`, `m`.`Fax`, `m`.`Phone`, `m`.`Region`, `m`.`PostalCode`
 FROM (
-    SELECT * FROM "Customers" WHERE "City" = @city
-) AS m
+    SELECT * FROM `Customers` WHERE `City` = @city
+) AS `m`
 INTERSECT
-SELECT m0."Address", m0."City", m0."CompanyName", m0."ContactName", m0."ContactTitle", m0."Country", m0."CustomerID", m0."Fax", m0."Phone", m0."Region", m0."PostalCode"
+SELECT `m0`.`Address`, `m0`.`City`, `m0`.`CompanyName`, `m0`.`ContactName`, `m0`.`ContactTitle`, `m0`.`Country`, `m0`.`CustomerID`, `m0`.`Fax`, `m0`.`Phone`, `m0`.`Region`, `m0`.`PostalCode`
 FROM (
-    SELECT * FROM "Customers" WHERE "City" = @city
-) AS m0
+    SELECT * FROM `Customers` WHERE `City` = @city
+) AS `m0`
 """);
     }
 

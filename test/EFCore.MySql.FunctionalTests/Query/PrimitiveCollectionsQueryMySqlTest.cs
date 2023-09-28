@@ -265,7 +265,7 @@ WHERE (
     {
         await base.Parameter_collection_of_ints_Contains(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -295,7 +295,7 @@ WHERE `p`.`Int` IN (10, 999)
     {
         await base.Parameter_collection_of_nullable_ints_Contains_int(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -325,7 +325,7 @@ WHERE `p`.`Int` IN (10, 999)
     {
         await base.Parameter_collection_of_nullable_ints_Contains_nullable_int(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -355,7 +355,7 @@ WHERE `p`.`NullableInt` IS NULL OR (`p`.`NullableInt` = 999)
     {
         await base.Parameter_collection_of_strings_Contains_nullable_string(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -385,7 +385,7 @@ WHERE `p`.`NullableString` IS NULL OR (`p`.`NullableString` = '999')
     {
         await base.Parameter_collection_of_strings_Contains_non_nullable_string(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -415,7 +415,7 @@ WHERE `p`.`String` IN ('10', '999')
     {
         await base.Parameter_collection_of_DateTimes_Contains(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -445,7 +445,7 @@ WHERE `p`.`DateTime` IN (TIMESTAMP '2020-01-10 12:30:00', TIMESTAMP '9999-01-01 
     {
         await base.Parameter_collection_of_bools_Contains(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -475,7 +475,7 @@ WHERE `p`.`Bool`
     {
         await base.Parameter_collection_of_enums_Contains(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -505,7 +505,7 @@ WHERE `p`.`Enum` IN (0, 3)
     {
         await base.Parameter_collection_null_Contains(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -531,33 +531,45 @@ WHERE FALSE
         }
     }
 
-    [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonTableImplementationWithoutBugs))]
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonTableImplementationWithoutMySqlBugs))]
     public override async Task Column_collection_of_ints_Contains(bool async)
     {
         await base.Column_collection_of_ints_Contains(async);
 
         AssertSql(
 """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Ints" @> ARRAY[10]::integer[]
+SELECT `p`.`Id`, `p`.`Bool`, `p`.`Bools`, `p`.`DateTime`, `p`.`DateTimes`, `p`.`Enum`, `p`.`Enums`, `p`.`Int`, `p`.`Ints`, `p`.`NullableInt`, `p`.`NullableInts`, `p`.`NullableString`, `p`.`NullableStrings`, `p`.`String`, `p`.`Strings`
+FROM `PrimitiveCollectionsEntity` AS `p`
+WHERE 10 IN (
+    SELECT `i`.`value`
+    FROM JSON_TABLE(`p`.`Ints`, '$[*]' COLUMNS (
+        `key` FOR ORDINALITY,
+        `value` int PATH '$[0]'
+    )) AS `i`
+)
 """);
     }
 
-    [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonTableImplementationWithoutBugs))]
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonTableImplementationWithoutMySqlBugs))]
     public override async Task Column_collection_of_nullable_ints_Contains(bool async)
     {
         await base.Column_collection_of_nullable_ints_Contains(async);
 
         AssertSql(
 """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."NullableInts" @> ARRAY[10]::integer[]
+SELECT `p`.`Id`, `p`.`Bool`, `p`.`Bools`, `p`.`DateTime`, `p`.`DateTimes`, `p`.`Enum`, `p`.`Enums`, `p`.`Int`, `p`.`Ints`, `p`.`NullableInt`, `p`.`NullableInts`, `p`.`NullableString`, `p`.`NullableStrings`, `p`.`String`, `p`.`Strings`
+FROM `PrimitiveCollectionsEntity` AS `p`
+WHERE 10 IN (
+    SELECT `n`.`value`
+    FROM JSON_TABLE(`p`.`NullableInts`, '$[*]' COLUMNS (
+        `key` FOR ORDINALITY,
+        `value` int PATH '$[0]'
+    )) AS `n`
+)
 """);
     }
 
-    [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonTableImplementationWithoutBugs))]
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonTableImplementationWithoutMySqlBugs))]
     public override async Task Column_collection_of_nullable_ints_Contains_null(bool async)
     {
         await base.Column_collection_of_nullable_ints_Contains_null(async);
@@ -582,7 +594,7 @@ WHERE FALSE
 """);
     }
 
-    [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonTableImplementationWithoutBugs))]
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonTableImplementationWithoutMySqlBugs))]
     public override async Task Column_collection_of_nullable_strings_contains_null(bool async)
     {
         await base.Column_collection_of_nullable_strings_contains_null(async);
@@ -595,16 +607,22 @@ WHERE array_position(p."NullableStrings", NULL) IS NOT NULL
 """);
     }
 
-    [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonTableImplementationWithoutBugs))]
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonTableImplementationWithoutMySqlBugs))]
     public override async Task Column_collection_of_bools_Contains(bool async)
     {
         await base.Column_collection_of_bools_Contains(async);
 
         AssertSql(
 """
-SELECT p."Id", p."Bool", p."Bools", p."DateTime", p."DateTimes", p."Enum", p."Enums", p."Int", p."Ints", p."NullableInt", p."NullableInts", p."NullableString", p."NullableStrings", p."String", p."Strings"
-FROM "PrimitiveCollectionsEntity" AS p
-WHERE p."Bools" @> ARRAY[TRUE]::boolean[]
+SELECT `p`.`Id`, `p`.`Bool`, `p`.`Bools`, `p`.`DateTime`, `p`.`DateTimes`, `p`.`Enum`, `p`.`Enums`, `p`.`Int`, `p`.`Ints`, `p`.`NullableInt`, `p`.`NullableInts`, `p`.`NullableString`, `p`.`NullableStrings`, `p`.`String`, `p`.`Strings`
+FROM `PrimitiveCollectionsEntity` AS `p`
+WHERE TRUE IN (
+    SELECT `b`.`value`
+    FROM JSON_TABLE(`p`.`Bools`, '$[*]' COLUMNS (
+        `key` FOR ORDINALITY,
+        `value` tinyint(1) PATH '$[0]'
+    )) AS `b`
+)
 """);
     }
 
@@ -1224,9 +1242,30 @@ WHERE (
 
     public override void Parameter_collection_in_subquery_and_Convert_as_compiled_query()
     {
-        base.Parameter_collection_in_subquery_and_Convert_as_compiled_query();
+        // base.Parameter_collection_in_subquery_and_Convert_as_compiled_query();
+        //
+        // AssertSql();
 
-        AssertSql();
+        // The array indexing is translated as a subquery over e.g. OPENJSON with LIMIT/OFFSET.
+        // Since there's a CAST over that, the type mapping inference from the other side (p.String) doesn't propagate inside to the
+        // subquery. In this case, the CAST operand gets the default CLR type mapping, but that's object in this case.
+        // We should apply the default type mapping to the parameter, but need to figure out the exact rules when to do this.
+        var query = EF.CompileQuery(
+            (PrimitiveCollectionsContext context, object[] parameters)
+                => context.Set<PrimitiveCollectionsEntity>().Where(p => p.String == (string)parameters[0]));
+
+        using var context = Fixture.CreateContext();
+
+        var exception = Assert.Throws<InvalidOperationException>(() => query(context, new[] { "foo" }).ToList());
+
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
+        {
+            Assert.Contains("in the SQL tree does not have a type mapping assigned", exception.Message);
+        }
+        else
+        {
+            Assert.Contains("Primitive collections support has not been enabled.", exception.Message);
+        }
     }
 
     public override async Task Parameter_collection_in_subquery_Union_another_parameter_collection_as_compiled_query(bool async)
@@ -1234,7 +1273,7 @@ WHERE (
         var message = (await Assert.ThrowsAsync<InvalidOperationException>(
             () => base.Parameter_collection_in_subquery_Union_another_parameter_collection_as_compiled_query(async))).Message;
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             Assert.Equal(RelationalStrings.SetOperationsRequireAtLeastOneSideWithValidTypeMapping("Union"), message);
         }
@@ -1306,7 +1345,7 @@ ORDER BY `p`.`Id`
 """);
     }
 
-    [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonTable))]
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonTableImplementationStable))]
     public override async Task Project_collection_of_ints_ordered(bool async)
     {
         await base.Project_collection_of_ints_ordered(async);
@@ -1323,6 +1362,8 @@ ORDER BY `p`.`Id`, `i`.`value` DESC
 """);
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonTable))]
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
     public override async Task Project_collection_of_datetimes_filtered(bool async)
     {
         if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
@@ -1355,7 +1396,7 @@ ORDER BY `p`.`Id`, `t`.`key`
     {
         await base.Project_collection_of_ints_with_paging(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -1384,6 +1425,8 @@ ORDER BY `p`.`Id`
         }
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonTable))]
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
     public override async Task Project_collection_of_ints_with_paging2(bool async)
     {
         if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
@@ -1417,7 +1460,7 @@ ORDER BY `p`.`Id`, `t`.`value`
     {
         await base.Project_collection_of_ints_with_paging3(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -1450,7 +1493,7 @@ ORDER BY `p`.`Id`
     {
         await base.Project_collection_of_ints_with_distinct(async);
 
-        if (AppConfig.ServerVersion.Supports.JsonTable)
+        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
             AssertSql(
 """
@@ -1484,6 +1527,8 @@ ORDER BY `p`.`Id`
         AssertSql();
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonTable))]
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
     public override async Task Project_empty_collection_of_nullables_and_collection_only_containing_nulls(bool async)
     {
         if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
@@ -1520,7 +1565,7 @@ ORDER BY `p`.`Id`, `t`.`key`, `t0`.`key`
         }
     }
 
-    [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonTable))]
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonTableImplementationStable))]
     public override async Task Project_multiple_collections(bool async)
     {
         // Base implementation currently uses an Unspecified DateTime in the query, but we require a Utc one.

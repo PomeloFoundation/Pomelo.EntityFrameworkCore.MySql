@@ -1624,7 +1624,7 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
             base.Sequence_restart_operation(startsAt);
 
             Assert.Equal(
-                @"TODO" + EOL,
+                $@"ALTER SEQUENCE `TestRestartSequenceOperation` {(startsAt > 0 ? $"START WITH {startsAt} RESTART" : "RESTART")};" + EOL,
                 Sql,
                 ignoreLineEndingDifferences: true);
         }

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 
@@ -91,12 +92,18 @@ WHERE (
 
     public override async Task Delete_GroupBy_Where_Select_First_3(bool async)
     {
-        // Not supported by MySQL:
-        //     Error Code: 1093. You can't specify target table 'c' for update in FROM clause
-        await Assert.ThrowsAsync<MySqlException>(
-            () => base.Delete_GroupBy_Where_Select_First_3(async));
+        if (AppConfig.ServerVersion.Type == ServerType.MySql)
+        {
+            // Not supported by MySQL:
+            //     Error Code: 1093. You can't specify target table 'c' for update in FROM clause
+            await Assert.ThrowsAsync<MySqlException>(
+                () => base.Delete_GroupBy_Where_Select_First_3(async));
+        }
+        else
+        {
+            await base.Delete_GroupBy_Where_Select_First_3(async);
 
-        AssertSql(
+            AssertSql(
 """
 DELETE `a`
 FROM `Animals` AS `a`
@@ -112,6 +119,7 @@ WHERE (`a`.`CountryId` = 1) AND `a`.`Id` IN (
     HAVING COUNT(*) < 3
 )
 """);
+        }
     }
 
     public override async Task Update_where_hierarchy_subquery(bool async)
