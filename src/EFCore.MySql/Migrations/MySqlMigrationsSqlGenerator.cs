@@ -380,24 +380,26 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
         {
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
+
             if (!_options.ServerVersion.Supports.Sequences)
             {
                 throw new InvalidOperationException(
                     $"Cannot restart sequence '{operation.Name}' because sequences are not supported in server version {_options.ServerVersion}.");
             }
+
             builder
                 .Append("ALTER SEQUENCE ")
-                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name, operation.Schema))
-                .Append(" RESTART");
+                .Append(Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name, operation.Schema));
 
             if (operation.StartValue.HasValue)
             {
                 builder
-                    .Append(" WITH ")
+                    .Append(" START WITH ")
                     .Append(IntegerConstant(operation.StartValue));
             }
 
             builder
+                .Append(" RESTART")
                 .AppendLine(Dependencies.SqlGenerationHelper.StatementTerminator);
 
             EndStatement(builder);
