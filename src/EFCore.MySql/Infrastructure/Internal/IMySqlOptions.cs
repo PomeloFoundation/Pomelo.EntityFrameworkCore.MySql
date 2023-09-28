@@ -22,5 +22,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         MySqlJsonChangeTrackingOptions JsonChangeTrackingOptions { get; }
         bool LimitKeyedOrIndexedStringColumnLength { get; }
         bool StringComparisonTranslations { get; }
+        bool PrimitiveCollectionsSupport { get; }
     }
 }

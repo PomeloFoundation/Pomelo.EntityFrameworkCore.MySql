@@ -253,6 +253,19 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
 
     protected override ShapedQueryExpression TranslatePrimitiveCollection(SqlExpression sqlExpression, IProperty property, string tableAlias)
     {
+        if (!_options.PrimitiveCollectionsSupport)
+        {
+            AddTranslationErrorDetails("Primitive collections support has not been enabled.");
+            return null;
+        }
+
+        // if (!_options.ServerVersion.Supports.JsonTableImplementationUsesImplicitLateralJoin &&
+        //     sqlExpression is ColumnExpression)
+        // {
+        //     // MariaDB will just return wrong results if the column of an outer table is being referenced.
+        //     return null;
+        // }
+
         // Generate the JSON_TABLE() function expression, and wrap it in a SelectExpression.
 
         // Note that where the elementTypeMapping is known (i.e. collection columns), we immediately generate JSON_TABLE() with a COLUMNS clause

@@ -80,6 +80,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
         public virtual bool IndexOptimizedBooleanColumns { get; private set; }
         public virtual bool LimitKeyedOrIndexedStringColumnLength { get; private set; }
         public virtual bool StringComparisonTranslations { get; private set; }
+        public virtual bool PrimitiveCollectionsSupport { get; private set; }
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -168,6 +169,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
             return clone;
         }
 
+        public virtual MySqlOptionsExtension WithPrimitiveCollectionsSupport(bool enable)
+        {
+            var clone = (MySqlOptionsExtension)Clone();
+            clone.PrimitiveCollectionsSupport = enable;
+            return clone;
+        }
+
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
         ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
@@ -232,6 +240,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                     hashCode.Add(Extension.IndexOptimizedBooleanColumns);
                     hashCode.Add(Extension.LimitKeyedOrIndexedStringColumnLength);
                     hashCode.Add(Extension.StringComparisonTranslations);
+                    hashCode.Add(Extension.PrimitiveCollectionsSupport);
 
                     _serviceProviderHash = hashCode.ToHashCode();
                 }
@@ -251,7 +260,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                    Extension.SchemaNameTranslator == otherInfo.Extension.SchemaNameTranslator &&
                    Extension.IndexOptimizedBooleanColumns == otherInfo.Extension.IndexOptimizedBooleanColumns &&
                    Extension.LimitKeyedOrIndexedStringColumnLength == otherInfo.Extension.LimitKeyedOrIndexedStringColumnLength &&
-                   Extension.StringComparisonTranslations == otherInfo.Extension.StringComparisonTranslations;
+                   Extension.StringComparisonTranslations == otherInfo.Extension.StringComparisonTranslations &&
+                   Extension.PrimitiveCollectionsSupport == otherInfo.Extension.PrimitiveCollectionsSupport;
 
             public override void PopulateDebugInfo(IDictionary<string, string> debugInfo)
             {
@@ -265,6 +275,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
                 debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.EnableIndexOptimizedBooleanColumns)] = HashCode.Combine(Extension.IndexOptimizedBooleanColumns).ToString(CultureInfo.InvariantCulture);
                 debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.LimitKeyedOrIndexedStringColumnLength)] = HashCode.Combine(Extension.LimitKeyedOrIndexedStringColumnLength).ToString(CultureInfo.InvariantCulture);
                 debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.EnableStringComparisonTranslations)] = HashCode.Combine(Extension.StringComparisonTranslations).ToString(CultureInfo.InvariantCulture);
+                debugInfo["Pomelo.EntityFrameworkCore.MySql:" + nameof(MySqlDbContextOptionsBuilder.EnablePrimitiveCollectionsSupport)] = HashCode.Combine(Extension.PrimitiveCollectionsSupport).ToString(CultureInfo.InvariantCulture);
             }
         }
     }
