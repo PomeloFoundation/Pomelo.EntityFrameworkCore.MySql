@@ -1,4 +1,6 @@
+using System;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
@@ -92,14 +94,8 @@ WHERE (
 
     public override async Task Delete_GroupBy_Where_Select_First_3(bool async)
     {
-        if (AppConfig.ServerVersion.Type == ServerType.MySql)
-        {
-            // Not supported by MySQL:
-            //     Error Code: 1093. You can't specify target table 'c' for update in FROM clause
-            await Assert.ThrowsAsync<MySqlException>(
-                () => base.Delete_GroupBy_Where_Select_First_3(async));
-        }
-        else
+        if (AppConfig.ServerVersion.Type == ServerType.MariaDb &&
+            AppConfig.ServerVersion.Version >= new Version(11, 1))
         {
             await base.Delete_GroupBy_Where_Select_First_3(async);
 
@@ -119,6 +115,13 @@ WHERE (`a`.`CountryId` = 1) AND `a`.`Id` IN (
     HAVING COUNT(*) < 3
 )
 """);
+        }
+        else
+        {
+            // Not supported by MySQL:
+            //     Error Code: 1093. You can't specify target table 'c' for update in FROM clause
+            await Assert.ThrowsAsync<MySqlException>(
+                () => base.Delete_GroupBy_Where_Select_First_3(async));
         }
     }
 
