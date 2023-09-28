@@ -95,8 +95,9 @@ namespace Microsoft.EntityFrameworkCore
             public override bool ValuesWithRows => ServerVersion.Version >= new Version(8, 0, 19);
             public override bool OffsetReferencesOuterQuery => false;
 
-            public override bool JsonTableImplementationWithoutBugs => false;
-            public override bool JsonTableImplementationUsingParameterAsSourceWithoutEngineCrash => false;
+            public override bool JsonTableImplementationStable => false;
+            public override bool JsonTableImplementationWithoutMySqlBugs => false; // Other non-fatal bugs regarding JSON_TABLE.
+            public override bool JsonTableImplementationUsingParameterAsSourceWithoutEngineCrash => false; // MySQL non-deterministically crashes when using a parameter with JSON as the source of a JSON_TABLE call.
         }
     }
 }

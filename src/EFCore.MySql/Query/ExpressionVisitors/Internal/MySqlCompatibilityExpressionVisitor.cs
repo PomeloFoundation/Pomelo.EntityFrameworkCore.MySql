@@ -2,6 +2,8 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -21,6 +23,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         private readonly IMySqlOptions _options;
 
+        private SelectExpression _currentSelectExpression;
+        private SelectExpression _parentSelectExpression;
+
+        private readonly MySqlContainsAggregateFunctionExpressionVisitor _mySqlContainsAggregateFunctionExpressionVisitor = new MySqlContainsAggregateFunctionExpressionVisitor();
+
         public MySqlCompatibilityExpressionVisitor(IMySqlOptions options)
         {
             _options = options;
@@ -36,6 +43,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 IntersectExpression intersectExpression => VisitIntercept(intersectExpression),
                 JsonScalarExpression jsonScalarExpression => VisitJsonScalar(jsonScalarExpression),
                 MySqlJsonTableExpression jsonTableExpression => VisitJsonTable(jsonTableExpression),
+
+                SelectExpression selectExpression => VisitSelect(selectExpression),
 
                 ShapedQueryExpression shapedQueryExpression => shapedQueryExpression.Update(Visit(shapedQueryExpression.QueryExpression), Visit(shapedQueryExpression.ShaperExpression)),
                 _ => base.VisitExtension(extensionExpression)
@@ -76,7 +85,60 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 throw new InvalidOperationException($"JSON_TABLE() has been disabled by the '{Issue1790SkipFlagName}' AppContext switch, because it can crash MySQL 8.");
             }
 
+            if (!_options.ServerVersion.Supports.JsonTableImplementationWithAggregate &&
+                _mySqlContainsAggregateFunctionExpressionVisitor.ProcessSelect(_currentSelectExpression))
+            {
+                throw new InvalidOperationException($"JSON_TABLE() does not support aggregates on {_options.ServerVersion} and would return unexpected results if used.");
+            }
+
+            if (!_options.ServerVersion.Supports.OuterApply &&
+                jsonTableExpression.JsonExpression is ColumnExpression columnExpression &&
+                _parentSelectExpression is not null &&
+                _parentSelectExpression.Tables.All(t => t.Alias != columnExpression.TableAlias))
+            {
+                throw new InvalidOperationException($"JSON_TABLE() does not support references to an outer query that is not the immediate parent on {_options.ServerVersion}.");
+            }
+
             return jsonTableExpression;
+        }
+
+        protected virtual Expression VisitSelect(SelectExpression selectExpression)
+        {
+            var grandParentSelectExpression = _parentSelectExpression;
+            _parentSelectExpression = _currentSelectExpression;
+            _currentSelectExpression = selectExpression;
+
+            foreach (var item in selectExpression.Projection)
+            {
+                Visit(item);
+            }
+
+            foreach (var table in selectExpression.Tables)
+            {
+                Visit(table);
+            }
+
+            Visit(selectExpression.Predicate);
+
+            foreach (var groupingKey in selectExpression.GroupBy)
+            {
+                Visit(groupingKey);
+            }
+
+            Visit(selectExpression.Having);
+
+            foreach (var ordering in selectExpression.Orderings)
+            {
+                Visit(ordering.Expression);
+            }
+
+            Visit(selectExpression.Offset);
+            Visit(selectExpression.Limit);
+
+            _currentSelectExpression = _parentSelectExpression;
+            _parentSelectExpression = grandParentSelectExpression;
+
+            return selectExpression;
         }
 
         protected virtual Expression CheckSupport(Expression expression, bool isSupported)

@@ -77,8 +77,11 @@ public class MySqlParameterInliningExpressionVisitor : ExpressionVisitor
 
     protected virtual Expression VisitSqlParameter(SqlParameterExpression sqlParameterExpression)
     {
-        if (_inJsonTableSourceParameterCall &&
-            !_options.ServerVersion.Supports.JsonTableImplementationUsingParameterAsSourceWithoutEngineCrash)
+        // For test simplicity, we currently inline parameters even for non MySQL database engines (even though it should not be necessary
+        // for e.g. MariaDB).
+        // TODO: Use inlined parameters only if JsonTableImplementationUsingParameterAsSourceWithoutEngineCrash is true.
+        if (_inJsonTableSourceParameterCall /*&&
+            !_options.ServerVersion.Supports.JsonTableImplementationUsingParameterAsSourceWithoutEngineCrash*/)
         {
             _canCache = false;
 
