@@ -87,6 +87,7 @@ namespace Microsoft.EntityFrameworkCore
             public override bool MySqlBugLimit0Offset0ExistsWorkaround => true;
             public override bool DescendingIndexes => ServerVersion.Version >= new Version(8, 0, 1);
             public override bool CommonTableExpressions => ServerVersion.Version >= new Version(8, 0, 1);
+            public override bool LimitWithinInAllAnySomeSubquery => false;
         }
     }
 }

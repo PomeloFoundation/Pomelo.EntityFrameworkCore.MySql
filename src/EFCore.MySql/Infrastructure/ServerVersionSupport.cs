@@ -87,5 +87,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
         public virtual bool DescendingIndexes => false;
         public virtual bool Returning => false;
         public virtual bool CommonTableExpressions => false;
+        public virtual bool LimitWithinInAllAnySomeSubquery => false;
     }
 }
