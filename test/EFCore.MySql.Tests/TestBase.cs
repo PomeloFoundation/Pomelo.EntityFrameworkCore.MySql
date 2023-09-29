@@ -22,7 +22,7 @@ namespace Pomelo.EntityFrameworkCore.MySql
         public virtual string Sql => string.Join("\n\n", SqlCommands);
 
         public virtual TContext CreateContext(
-            Action<MySqlDbContextOptionsBuilder> jetOptions = null,
+            Action<MySqlDbContextOptionsBuilder> mySqlOptions = null,
             Action<IServiceProvider, DbContextOptionsBuilder> options = null,
             Action<ModelBuilder> model = null)
         {
@@ -33,7 +33,7 @@ namespace Pomelo.EntityFrameworkCore.MySql
                 command => SqlCommands.Add(command.CommandText),
                 model: model,
                 options: options,
-                mySqlOptions: jetOptions);
+                mySqlOptions: mySqlOptions);
 
             TestStore.Clean(context);
 
