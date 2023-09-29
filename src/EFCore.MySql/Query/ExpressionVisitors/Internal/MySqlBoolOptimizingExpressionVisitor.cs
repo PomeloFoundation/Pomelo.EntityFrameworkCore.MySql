@@ -133,17 +133,41 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         protected override Expression VisitIn(InExpression inExpression)
         {
-            Check.NotNull(inExpression, nameof(inExpression));
-
             var parentOptimize = _optimize;
 
             _optimize = false;
             var item = (SqlExpression)Visit(inExpression.Item);
             var subquery = (SelectExpression)Visit(inExpression.Subquery);
-            var values = (SqlExpression)Visit(inExpression.Values);
+
+            var values = inExpression.Values;
+            SqlExpression[] newValues = null;
+            if (values is not null)
+            {
+                for (var i = 0; i < values.Count; i++)
+                {
+                    var value = values[i];
+                    var newValue = (SqlExpression)Visit(value);
+
+                    if (newValue != value && newValues is null)
+                    {
+                        newValues = new SqlExpression[values.Count];
+                        for (var j = 0; j < i; j++)
+                        {
+                            newValues[j] = values[j];
+                        }
+                    }
+
+                    if (newValues is not null)
+                    {
+                        newValues[i] = newValue;
+                    }
+                }
+            }
+
+            var valuesParameter = (SqlParameterExpression)Visit(inExpression.ValuesParameter);
             _optimize = parentOptimize;
 
-            return ApplyConversion(inExpression.Update(item, values, subquery), condition: true);
+            return ApplyConversion(inExpression.Update(item, subquery, newValues ?? values, valuesParameter), condition: true);
         }
 
         protected override Expression VisitLike(LikeExpression likeExpression)
@@ -516,6 +540,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return leftJoinExpression.Update(table, joinPredicate);
         }
 
+        protected override Expression VisitRowValue(RowValueExpression rowValueExpression)
+        {
+            var parentOptimize = _optimize;
+            _optimize = false;
+
+            var values = new SqlExpression[rowValueExpression.Values.Count];
+            for (var i = 0; i < values.Length; i++)
+            {
+                values[i] = (SqlExpression)Visit(rowValueExpression.Values[i]);
+            }
+
+            _optimize = parentOptimize;
+            return rowValueExpression.Update(values);
+        }
+
         protected override Expression VisitScalarSubquery(ScalarSubqueryExpression scalarSubqueryExpression)
         {
             Check.NotNull(scalarSubqueryExpression, nameof(scalarSubqueryExpression));
@@ -625,6 +664,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         }
 
         protected override Expression VisitJsonScalar(JsonScalarExpression jsonScalarExpression)
-            => jsonScalarExpression;
+            => ApplyConversion(jsonScalarExpression, condition: false);
+
+        protected override Expression VisitValues(ValuesExpression valuesExpression)
+        {
+            var parentOptimize = _optimize;
+            _optimize = false;
+
+            var rowValues = new RowValueExpression[valuesExpression.RowValues.Count];
+            for (var i = 0; i < rowValues.Length; i++)
+            {
+                rowValues[i] = (RowValueExpression)Visit(valuesExpression.RowValues[i]);
+            }
+
+            _optimize = parentOptimize;
+            return valuesExpression.Update(rowValues);
+        }
     }
 }

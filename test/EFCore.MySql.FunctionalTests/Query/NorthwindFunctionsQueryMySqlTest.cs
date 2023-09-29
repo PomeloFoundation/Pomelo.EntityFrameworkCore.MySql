@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -30,9 +29,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             await base.String_StartsWith_Literal(async);
 
             AssertSql(
-                $@"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+"""
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE 'M%')");
+WHERE `c`.`ContactName` LIKE 'M%'
+""");
         }
 
         [ConditionalTheory]
@@ -41,9 +42,11 @@ WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE 'M%')");
             await base.String_StartsWith_Identity(async);
 
             AssertSql(
-                $@"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+"""
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`))");
+WHERE `c`.`ContactName` IS NOT NULL AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`)
+""");
         }
 
         [ConditionalTheory]
@@ -52,9 +55,11 @@ WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (LEFT(`c`.`
             await base.String_StartsWith_Column(async);
 
             AssertSql(
-                $@"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+"""
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`))");
+WHERE `c`.`ContactName` IS NOT NULL AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`)
+""");
         }
 
         [ConditionalTheory]
@@ -63,9 +68,11 @@ WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (LEFT(`c`.`
             await base.String_StartsWith_MethodCall(async);
 
             AssertSql(
-                $@"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+"""
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE 'M%')");
+WHERE `c`.`ContactName` LIKE 'M%'
+""");
         }
 
         [ConditionalTheory]
@@ -74,9 +81,11 @@ WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE 'M%')");
             await base.String_EndsWith_Literal(async);
 
             AssertSql(
-                $@"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+"""
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE '%b')");
+WHERE `c`.`ContactName` LIKE '%b'
+""");
         }
 
         [ConditionalTheory]
@@ -85,9 +94,11 @@ WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE '%b')");
             await base.String_EndsWith_Identity(async);
 
             AssertSql(
-                $@"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+"""
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`))");
+WHERE `c`.`ContactName` IS NOT NULL AND (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`)
+""");
         }
 
         [ConditionalTheory]
@@ -96,9 +107,11 @@ WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (RIGHT(`c`.
             await base.String_EndsWith_Column(async);
 
             AssertSql(
-                $@"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+"""
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`))");
+WHERE `c`.`ContactName` IS NOT NULL AND (RIGHT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) = `c`.`ContactName`)
+""");
         }
 
         [ConditionalTheory]
@@ -107,9 +120,11 @@ WHERE (`c`.`ContactName` = '') OR (`c`.`ContactName` IS NOT NULL AND (RIGHT(`c`.
             await base.String_EndsWith_MethodCall(async);
 
             AssertSql(
-                $@"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+"""
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` IS NOT NULL AND (`c`.`ContactName` LIKE '%m')");
+WHERE `c`.`ContactName` LIKE '%m'
+""");
         }
 
         [ConditionalTheory]
@@ -129,9 +144,11 @@ WHERE `c`.`ContactName` LIKE '%M%'");
             await base.String_Contains_Identity(async);
 
             AssertSql(
-                $@"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+"""
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` LIKE '') OR (LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0)");
+WHERE `c`.`ContactName` IS NOT NULL AND ((LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0) OR (`c`.`ContactName` LIKE ''))
+""");
         }
 
         [ConditionalTheory]
@@ -140,9 +157,11 @@ WHERE (`c`.`ContactName` LIKE '') OR (LOCATE(`c`.`ContactName`, `c`.`ContactName
             await base.String_Contains_Column(async);
 
             AssertSql(
-                $@"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+"""
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (`c`.`ContactName` LIKE '') OR (LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0)");
+WHERE `c`.`ContactName` IS NOT NULL AND ((LOCATE(`c`.`ContactName`, `c`.`ContactName`) > 0) OR (`c`.`ContactName` LIKE ''))
+""");
         }
 
         [ConditionalTheory]
@@ -329,11 +348,12 @@ WHERE (`o`.`UnitPrice` < 7.0) AND (ABS(`o`.`Quantity`) > 10)");
         public override async Task Where_math_abs_uncorrelated(bool async)
         {
             await base.Where_math_abs_uncorrelated(async);
-
             AssertSql(
-                @"SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
 FROM `Order Details` AS `o`
-WHERE (`o`.`UnitPrice` < 7.0) AND (10 < `o`.`ProductID`)");
+WHERE (`o`.`UnitPrice` < 7.0) AND (10 < `o`.`ProductID`)
+""");
         }
 
         [ConditionalTheory]
@@ -509,11 +529,13 @@ WHERE `c`.`ContactName` LIKE '%     %'");
             await base.String_Contains_parameter_with_whitespace(async);
 
             AssertSql(
-                $@"@__pattern_0='     ' (Size = 4000)
+"""
+@__pattern_0_rewritten='%     %' (Size = 30)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (@__pattern_0 LIKE '') OR (LOCATE(@__pattern_0, `c`.`ContactName`) > 0)");
+WHERE `c`.`ContactName` LIKE @__pattern_0_rewritten
+""");
         }
 
         public override async Task String_LastOrDefault_MethodCall(bool async)
@@ -947,37 +969,37 @@ WHERE `c`.`CustomerID` >= 'ALFKI'");
             await base.String_compare_with_parameter(async);
 
             AssertSql(
-                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
+                $@"@__customer_CustomerID_0='ALFKI' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` > @__customer_CustomerID_0",
                 //
-                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
+                $@"@__customer_CustomerID_0='ALFKI' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` < @__customer_CustomerID_0",
                 //
-                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
+                $@"@__customer_CustomerID_0='ALFKI' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` <= @__customer_CustomerID_0",
                 //
-                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
+                $@"@__customer_CustomerID_0='ALFKI' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` <= @__customer_CustomerID_0",
                 //
-                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
+                $@"@__customer_CustomerID_0='ALFKI' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` >= @__customer_CustomerID_0",
                 //
-                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
+                $@"@__customer_CustomerID_0='ALFKI' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
@@ -1123,37 +1145,37 @@ WHERE `c`.`CustomerID` >= 'ALFKI'");
             await base.String_compare_to_with_parameter(async);
 
             AssertSql(
-                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
+                $@"@__customer_CustomerID_0='ALFKI' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` > @__customer_CustomerID_0",
                 //
-                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
+                $@"@__customer_CustomerID_0='ALFKI' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` < @__customer_CustomerID_0",
                 //
-                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
+                $@"@__customer_CustomerID_0='ALFKI' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` <= @__customer_CustomerID_0",
                 //
-                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
+                $@"@__customer_CustomerID_0='ALFKI' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` <= @__customer_CustomerID_0",
                 //
-                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
+                $@"@__customer_CustomerID_0='ALFKI' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` >= @__customer_CustomerID_0",
                 //
-                $@"@__customer_CustomerID_0='ALFKI' (Size = {MySqlTestHelpers.Instance.GetIndexedStringPropertyDefaultLength})
+                $@"@__customer_CustomerID_0='ALFKI' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
@@ -1694,6 +1716,607 @@ WHERE (`o`.`CustomerID` = 'ALFKI') AND (CAST(`o`.`OrderID` % 1 AS char) <> '10')
                 $@"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
 WHERE (`o`.`CustomerID` = 'ALFKI') AND ((CAST(`o`.`OrderDate` AS char) LIKE '%1997%') OR (CAST(`o`.`OrderDate` AS char) LIKE '%1998%'))");
+        }
+
+        public override async Task String_StartsWith_Parameter(bool async)
+        {
+            await base.String_StartsWith_Parameter(async);
+
+            AssertSql(
+"""
+@__pattern_0_rewritten='M%' (Size = 30)
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE `c`.`ContactName` LIKE @__pattern_0_rewritten
+""");
+        }
+
+        public override async Task String_EndsWith_Parameter(bool async)
+        {
+            await base.String_EndsWith_Parameter(async);
+
+            AssertSql(
+"""
+@__pattern_0_rewritten='%b' (Size = 30)
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE `c`.`ContactName` LIKE @__pattern_0_rewritten
+""");
+        }
+
+        public override async Task String_Join_over_non_nullable_column(bool async)
+        {
+            await base.String_Join_over_non_nullable_column(async);
+
+            AssertSql(
+"""
+SELECT `t`.`City`, `c0`.`CustomerID`
+FROM (
+    SELECT `c`.`City`
+    FROM `Customers` AS `c`
+    GROUP BY `c`.`City`
+) AS `t`
+LEFT JOIN `Customers` AS `c0` ON `t`.`City` = `c0`.`City`
+ORDER BY `t`.`City`
+""");
+        }
+
+        public override async Task String_Join_with_predicate(bool async)
+        {
+            await base.String_Join_with_predicate(async);
+
+            AssertSql(
+"""
+SELECT `t`.`City`, `t0`.`CustomerID`
+FROM (
+    SELECT `c`.`City`
+    FROM `Customers` AS `c`
+    GROUP BY `c`.`City`
+) AS `t`
+LEFT JOIN (
+    SELECT `c0`.`CustomerID`, `c0`.`City`
+    FROM `Customers` AS `c0`
+    WHERE CHAR_LENGTH(`c0`.`ContactName`) > 10
+) AS `t0` ON `t`.`City` = `t0`.`City`
+ORDER BY `t`.`City`
+""");
+        }
+
+        public override async Task String_Join_with_ordering(bool async)
+        {
+            await base.String_Join_with_ordering(async);
+
+            AssertSql(
+"""
+SELECT `t`.`City`, `c0`.`CustomerID`
+FROM (
+    SELECT `c`.`City`
+    FROM `Customers` AS `c`
+    GROUP BY `c`.`City`
+) AS `t`
+LEFT JOIN `Customers` AS `c0` ON `t`.`City` = `c0`.`City`
+ORDER BY `t`.`City`, `c0`.`CustomerID` DESC
+""");
+        }
+
+        public override async Task String_Join_over_nullable_column(bool async)
+        {
+            await base.String_Join_over_nullable_column(async);
+
+            AssertSql(
+"""
+SELECT `t`.`City`, `c0`.`Region`, `c0`.`CustomerID`
+FROM (
+    SELECT `c`.`City`
+    FROM `Customers` AS `c`
+    GROUP BY `c`.`City`
+) AS `t`
+LEFT JOIN `Customers` AS `c0` ON `t`.`City` = `c0`.`City`
+ORDER BY `t`.`City`
+""");
+        }
+
+        public override async Task String_Concat(bool async)
+        {
+            await base.String_Concat(async);
+
+            AssertSql(
+"""
+SELECT `t`.`City`, `c0`.`CustomerID`
+FROM (
+    SELECT `c`.`City`
+    FROM `Customers` AS `c`
+    GROUP BY `c`.`City`
+) AS `t`
+LEFT JOIN `Customers` AS `c0` ON `t`.`City` = `c0`.`City`
+ORDER BY `t`.`City`
+""");
+        }
+
+        public override async Task Where_math_square(bool async)
+        {
+            await base.Where_math_square(async);
+
+            AssertSql(
+$"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE POWER({MySqlTestHelpers.CastAsDouble("`o`.`Discount`")}, 2.0) > 0.05000000074505806
+""");
+        }
+
+        public override async Task Sum_over_round_works_correctly_in_projection(bool async)
+        {
+            await base.Sum_over_round_works_correctly_in_projection(async);
+
+            AssertSql(
+"""
+SELECT `o`.`OrderID`, (
+    SELECT COALESCE(SUM(ROUND(`o0`.`UnitPrice`, 2)), 0.0)
+    FROM `Order Details` AS `o0`
+    WHERE `o`.`OrderID` = `o0`.`OrderID`) AS `Sum`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderID` < 10300
+""");
+        }
+
+        public override async Task Sum_over_round_works_correctly_in_projection_2(bool async)
+        {
+            await base.Sum_over_round_works_correctly_in_projection_2(async);
+
+            AssertSql(
+"""
+SELECT `o`.`OrderID`, (
+    SELECT COALESCE(SUM(ROUND(`o0`.`UnitPrice` * `o0`.`UnitPrice`, 2)), 0.0)
+    FROM `Order Details` AS `o0`
+    WHERE `o`.`OrderID` = `o0`.`OrderID`) AS `Sum`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderID` < 10300
+""");
+        }
+
+        public override async Task Sum_over_truncate_works_correctly_in_projection(bool async)
+        {
+            await base.Sum_over_truncate_works_correctly_in_projection(async);
+
+            AssertSql(
+"""
+SELECT `o`.`OrderID`, (
+    SELECT COALESCE(SUM(TRUNCATE(`o0`.`UnitPrice`, 0)), 0.0)
+    FROM `Order Details` AS `o0`
+    WHERE `o`.`OrderID` = `o0`.`OrderID`) AS `Sum`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderID` < 10300
+""");
+        }
+
+        public override async Task Sum_over_truncate_works_correctly_in_projection_2(bool async)
+        {
+            await base.Sum_over_truncate_works_correctly_in_projection_2(async);
+
+            AssertSql(
+"""
+SELECT `o`.`OrderID`, (
+    SELECT COALESCE(SUM(TRUNCATE(`o0`.`UnitPrice` * `o0`.`UnitPrice`, 0)), 0.0)
+    FROM `Order Details` AS `o0`
+    WHERE `o`.`OrderID` = `o0`.`OrderID`) AS `Sum`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderID` < 10300
+""");
+        }
+
+        public override async Task Where_math_degrees(bool async)
+        {
+            await base.Where_math_degrees(async);
+
+            AssertSql(
+$"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`OrderID` = 11077) AND (DEGREES({MySqlTestHelpers.CastAsDouble("`o`.`Discount`")}) > 0.0)
+""");
+        }
+
+        public override async Task Where_math_radians(bool async)
+        {
+            await base.Where_math_radians(async);
+
+            AssertSql(
+$"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`OrderID` = 11077) AND (RADIANS({MySqlTestHelpers.CastAsDouble("`o`.`Discount`")}) > 0.0)
+""");
+        }
+
+        public override async Task Where_mathf_abs1(bool async)
+        {
+            await base.Where_mathf_abs1(async);
+
+            AssertSql(
+$"""
+SELECT `p`.`ProductID`, `p`.`Discontinued`, `p`.`ProductName`, `p`.`SupplierID`, `p`.`UnitPrice`, `p`.`UnitsInStock`
+FROM `Products` AS `p`
+WHERE ABS({MySqlTestHelpers.CastAsDouble("`p`.`ProductID`")}) > 10
+""");
+        }
+
+        public override async Task Where_mathf_ceiling1(bool async)
+        {
+            await base.Where_mathf_ceiling1(async);
+
+            AssertSql(
+"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`UnitPrice` < 7.0) AND (CEILING(`o`.`Discount`) > 0)
+""");
+        }
+
+        public override async Task Where_mathf_floor(bool async)
+        {
+            await base.Where_mathf_floor(async);
+
+            AssertSql(
+$"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`Quantity` < 5) AND (FLOOR({MySqlTestHelpers.CastAsDouble("`o`.`UnitPrice`")}) > 10)
+""");
+        }
+
+        public override async Task Where_mathf_power(bool async)
+        {
+            await base.Where_mathf_power(async);
+
+            AssertSql(
+"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE POWER(`o`.`Discount`, 3) > 0.005
+""");
+        }
+
+        public override async Task Where_mathf_square(bool async)
+        {
+            await base.Where_mathf_square(async);
+
+            AssertSql(
+"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE POWER(`o`.`Discount`, 2) > 0.05
+""");
+        }
+
+        public override async Task Where_mathf_round2(bool async)
+        {
+            await base.Where_mathf_round2(async);
+
+            AssertSql(
+$"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE ROUND({MySqlTestHelpers.CastAsDouble("`o`.`UnitPrice`")}, 2) > 100
+""");
+        }
+
+        public override async Task Select_mathf_round(bool async)
+        {
+            await base.Select_mathf_round(async);
+
+            AssertSql(
+$"""
+SELECT ROUND({MySqlTestHelpers.CastAsDouble("`o`.`OrderID`")})
+FROM `Orders` AS `o`
+WHERE `o`.`OrderID` < 10250
+""");
+        }
+
+        public override async Task Select_mathf_round2(bool async)
+        {
+            await base.Select_mathf_round2(async);
+
+            AssertSql(
+$"""
+SELECT ROUND({MySqlTestHelpers.CastAsDouble("`o`.`UnitPrice`")}, 2)
+FROM `Order Details` AS `o`
+WHERE `o`.`Quantity` < 5
+""");
+        }
+
+        public override async Task Where_mathf_truncate(bool async)
+        {
+            await base.Where_mathf_truncate(async);
+
+            AssertSql(
+$"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`Quantity` < 5) AND (TRUNCATE({MySqlTestHelpers.CastAsDouble("`o`.`UnitPrice`")}, 0) > 10)
+""");
+        }
+
+        public override async Task Select_mathf_truncate(bool async)
+        {
+            await base.Select_mathf_truncate(async);
+
+            AssertSql(
+$"""
+SELECT TRUNCATE({MySqlTestHelpers.CastAsDouble("`o`.`UnitPrice`")}, 0)
+FROM `Order Details` AS `o`
+WHERE `o`.`Quantity` < 5
+""");
+        }
+
+        public override async Task Where_mathf_exp(bool async)
+        {
+            await base.Where_mathf_exp(async);
+
+            AssertSql(
+"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`OrderID` = 11077) AND (EXP(`o`.`Discount`) > 1)
+""");
+        }
+
+        public override async Task Where_mathf_log10(bool async)
+        {
+            await base.Where_mathf_log10(async);
+
+            AssertSql(
+"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE ((`o`.`OrderID` = 11077) AND (`o`.`Discount` > 0)) AND (LOG10(`o`.`Discount`) < 0)
+""");
+        }
+
+        public override async Task Where_mathf_log(bool async)
+        {
+            await base.Where_mathf_log(async);
+
+            AssertSql(
+"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE ((`o`.`OrderID` = 11077) AND (`o`.`Discount` > 0)) AND (LOG(`o`.`Discount`) < 0)
+""");
+        }
+
+        public override async Task Where_mathf_log_new_base(bool async)
+        {
+            await base.Where_mathf_log_new_base(async);
+
+            AssertSql(
+"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE ((`o`.`OrderID` = 11077) AND (`o`.`Discount` > 0)) AND (LOG(`o`.`Discount`, 7) < 0)
+""");
+        }
+
+        public override async Task Where_mathf_sqrt(bool async)
+        {
+            await base.Where_mathf_sqrt(async);
+
+            AssertSql(
+"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`OrderID` = 11077) AND (SQRT(`o`.`Discount`) > 0)
+""");
+        }
+
+        public override async Task Where_mathf_acos(bool async)
+        {
+            await base.Where_mathf_acos(async);
+
+            AssertSql(
+"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`OrderID` = 11077) AND (ACOS(`o`.`Discount`) > 1)
+""");
+        }
+
+        public override async Task Where_mathf_asin(bool async)
+        {
+            await base.Where_mathf_asin(async);
+
+            AssertSql(
+"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`OrderID` = 11077) AND (ASIN(`o`.`Discount`) > 0)
+""");
+        }
+
+        public override async Task Where_mathf_atan(bool async)
+        {
+            await base.Where_mathf_atan(async);
+
+            AssertSql(
+"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`OrderID` = 11077) AND (ATAN(`o`.`Discount`) > 0)
+""");
+        }
+
+        public override async Task Where_mathf_atan2(bool async)
+        {
+            await base.Where_mathf_atan2(async);
+
+            AssertSql(
+"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`OrderID` = 11077) AND (ATAN2(`o`.`Discount`, 1) > 0)
+""");
+        }
+
+        public override async Task Where_mathf_cos(bool async)
+        {
+            await base.Where_mathf_cos(async);
+
+            AssertSql(
+"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`OrderID` = 11077) AND (COS(`o`.`Discount`) > 0)
+""");
+        }
+
+        public override async Task Where_mathf_sin(bool async)
+        {
+            await base.Where_mathf_sin(async);
+
+            AssertSql(
+"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`OrderID` = 11077) AND (SIN(`o`.`Discount`) > 0)
+""");
+        }
+
+        public override async Task Where_mathf_tan(bool async)
+        {
+            await base.Where_mathf_tan(async);
+
+            AssertSql(
+"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`OrderID` = 11077) AND (TAN(`o`.`Discount`) > 0)
+""");
+        }
+
+        public override async Task Where_mathf_sign(bool async)
+        {
+            await base.Where_mathf_sign(async);
+
+            AssertSql(
+"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`OrderID` = 11077) AND (SIGN(`o`.`Discount`) > 0)
+""");
+        }
+
+        public override async Task Where_mathf_degrees(bool async)
+        {
+            await base.Where_mathf_degrees(async);
+
+            AssertSql(
+"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`OrderID` = 11077) AND (DEGREES(`o`.`Discount`) > 0)
+""");
+        }
+
+        public override async Task Where_mathf_radians(bool async)
+        {
+            await base.Where_mathf_radians(async);
+
+            AssertSql(
+"""
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`OrderID` = 11077) AND (RADIANS(`o`.`Discount`) > 0)
+""");
+        }
+
+        public override async Task Indexof_with_one_constant_arg(bool async)
+        {
+            await base.Indexof_with_one_constant_arg(async);
+
+            AssertSql(
+"""
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE (LOCATE('a', `c`.`ContactName`) - 1) = 1
+""");
+        }
+
+        public override async Task Indexof_with_one_parameter_arg(bool async)
+        {
+            await base.Indexof_with_one_parameter_arg(async);
+
+            AssertSql(
+"""
+@__pattern_0='a' (Size = 4000)
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE (LOCATE(@__pattern_0, `c`.`ContactName`) - 1) = 1
+""");
+        }
+
+        public override async Task Indexof_with_constant_starting_position(bool async)
+        {
+            await base.Indexof_with_constant_starting_position(async);
+
+            AssertSql(
+"""
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE (LOCATE('a', `c`.`ContactName`, 3) - 1) = 4
+""");
+        }
+
+        public override async Task Indexof_with_parameter_starting_position(bool async)
+        {
+            await base.Indexof_with_parameter_starting_position(async);
+
+            AssertSql(
+"""
+@__start_0='2'
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE (LOCATE('a', `c`.`ContactName`, @__start_0 + 1) - 1) = 4
+""");
+        }
+
+        public override async Task Replace_using_property_arguments(bool async)
+        {
+            await base.Replace_using_property_arguments(async);
+
+            AssertSql(
+"""
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE REPLACE(`c`.`ContactName`, `c`.`ContactName`, `c`.`CustomerID`) = `c`.`CustomerID`
+""");
+        }
+
+        public override async Task IsNullOrEmpty_negated_in_predicate(bool async)
+        {
+            await base.IsNullOrEmpty_negated_in_predicate(async);
+
+            AssertSql(
+"""
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE `c`.`Region` IS NOT NULL AND (`c`.`Region` <> '')
+""");
+        }
+
+        public override async Task Where_DateOnly_FromDateTime(bool async)
+        {
+            await base.Where_DateOnly_FromDateTime(async);
+
+            AssertSql(
+"""
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderDate` IS NOT NULL AND (DATE(`o`.`OrderDate`) = DATE '1996-09-16')
+""");
         }
 
         public override Task Datetime_subtraction_TotalDays(bool async)

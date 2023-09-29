@@ -2,11 +2,14 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using Microsoft.EntityFrameworkCore.Query;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
 public class MySqlQueryableMethodTranslatingExpressionVisitorFactory : IQueryableMethodTranslatingExpressionVisitorFactory
 {
+    private readonly IMySqlOptions _options;
+
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
     ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
@@ -15,10 +18,12 @@ public class MySqlQueryableMethodTranslatingExpressionVisitorFactory : IQueryabl
     /// </summary>
     public MySqlQueryableMethodTranslatingExpressionVisitorFactory(
         QueryableMethodTranslatingExpressionVisitorDependencies dependencies,
-        RelationalQueryableMethodTranslatingExpressionVisitorDependencies relationalDependencies)
+        RelationalQueryableMethodTranslatingExpressionVisitorDependencies relationalDependencies,
+        IMySqlOptions options)
     {
         Dependencies = dependencies;
         RelationalDependencies = relationalDependencies;
+        _options = options;
     }
 
     /// <summary>
@@ -38,5 +43,5 @@ public class MySqlQueryableMethodTranslatingExpressionVisitorFactory : IQueryabl
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public virtual QueryableMethodTranslatingExpressionVisitor Create(QueryCompilationContext queryCompilationContext)
-        => new MySqlQueryableMethodTranslatingExpressionVisitor(Dependencies, RelationalDependencies, queryCompilationContext);
+        => new MySqlQueryableMethodTranslatingExpressionVisitor(Dependencies, RelationalDependencies, queryCompilationContext, _options);
 }

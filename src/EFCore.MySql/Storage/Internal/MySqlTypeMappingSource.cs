@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
@@ -22,22 +21,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private readonly MySqlBoolTypeMapping _tinyint1 = new MySqlBoolTypeMapping("tinyint", size: 1);
 
         // bit
-        private readonly ULongTypeMapping _bit = new ULongTypeMapping("bit", DbType.UInt64);
+        private readonly MySqlULongTypeMapping _bit = new MySqlULongTypeMapping("bit");
 
         // integers
-        private readonly SByteTypeMapping _tinyint = new SByteTypeMapping("tinyint", DbType.SByte);
-        private readonly ByteTypeMapping _utinyint = new ByteTypeMapping("tinyint unsigned", DbType.Byte);
-        private readonly ShortTypeMapping _smallint = new ShortTypeMapping("smallint", DbType.Int16);
-        private readonly UShortTypeMapping _usmallint = new UShortTypeMapping("smallint unsigned", DbType.UInt16);
-        private readonly IntTypeMapping _int = new IntTypeMapping("int", DbType.Int32);
-        private readonly UIntTypeMapping _uint = new UIntTypeMapping("int unsigned", DbType.UInt32);
-        private readonly LongTypeMapping _bigint = new LongTypeMapping("bigint", DbType.Int64);
-        private readonly ULongTypeMapping _ubigint = new ULongTypeMapping("bigint unsigned", DbType.UInt64);
+        private readonly MySqlSByteTypeMapping _tinyint = MySqlSByteTypeMapping.Default;
+        private readonly MySqlByteTypeMapping _utinyint = MySqlByteTypeMapping.Default;
+        private readonly MySqlShortTypeMapping _smallint = MySqlShortTypeMapping.Default;
+        private readonly MySqlUShortTypeMapping _usmallint = MySqlUShortTypeMapping.Default;
+        private readonly MySqlIntTypeMapping _int = MySqlIntTypeMapping.Default;
+        private readonly MySqlUIntTypeMapping _uint = MySqlUIntTypeMapping.Default;
+        private readonly MySqlLongTypeMapping _bigint = MySqlLongTypeMapping.Default;
+        private readonly MySqlULongTypeMapping _ubigint = MySqlULongTypeMapping.Default;
 
         // decimals
-        private readonly MySqlDecimalTypeMapping _decimal = new MySqlDecimalTypeMapping("decimal", precision: 65, scale: 30);
-        private readonly MySqlDoubleTypeMapping _double = new MySqlDoubleTypeMapping("double", DbType.Double);
-        private readonly MySqlFloatTypeMapping _float = new MySqlFloatTypeMapping("float", DbType.Single);
+        private readonly MySqlDecimalTypeMapping _decimal = MySqlDecimalTypeMapping.Default;
+        private readonly MySqlDoubleTypeMapping _double = MySqlDoubleTypeMapping.Default;
+        private readonly MySqlFloatTypeMapping _float = MySqlFloatTypeMapping.Default;
 
         // binary
         private readonly RelationalTypeMapping _binary = new MySqlByteArrayTypeMapping(fixedLength: true);
@@ -388,6 +387,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                         size = null;
                         isFixedLength = false;
                     }
+                    else if (size < 0) // specifying HasMaxLength(-1) is valid and should lead to an unbounded string/text.
+                    {
+                        size = null;
+                    }
 
                     mapping = isFixedLength
                         ? _charUnicode
@@ -414,6 +417,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                                    ? _options.ServerVersion.MaxKeyLength
                                    : (int?)null);
 
+                    // Specifying HasMaxLength(-1) is valid and should lead to an unbounded byte array/blob.
+                    if (size < 0)
+                    {
+                        size = null;
+                    }
+
                     return new MySqlByteArrayTypeMapping(
                         size: size,
                         fixedLength: mappingInfo.IsFixedLength == true);
@@ -428,9 +437,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             return null;
         }
 
-        protected override string ParseStoreTypeName(string storeTypeName, out bool? unicode, out int? size, out int? precision, out int? scale)
+        protected override string ParseStoreTypeName(
+            string storeTypeName,
+            ref bool? unicode,
+            ref int? size,
+            ref int? precision,
+            ref int? scale)
         {
-            var storeTypeBaseName = base.ParseStoreTypeName(storeTypeName, out unicode, out size, out precision, out scale);
+            var storeTypeBaseName = base.ParseStoreTypeName(storeTypeName, ref unicode, ref size, ref precision, ref scale);
 
             if (storeTypeBaseName is not null)
             {

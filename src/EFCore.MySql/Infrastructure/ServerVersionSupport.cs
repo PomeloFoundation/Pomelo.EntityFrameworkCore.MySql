@@ -87,5 +87,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
         public virtual bool DescendingIndexes => false;
         public virtual bool Returning => false;
         public virtual bool CommonTableExpressions => false;
+        public virtual bool LimitWithinInAllAnySomeSubquery => false;
+        public virtual bool LimitWithNonConstantValue => false;
+        public virtual bool JsonTable => false;
+        public virtual bool JsonValue => false;
+        public virtual bool Values => false;
+        public virtual bool ValuesWithRows => false;
+        public virtual bool OffsetReferencesOuterQuery => false;
+
+        public virtual bool JsonTableImplementationStable => JsonTable;
+        public virtual bool JsonTableImplementationWithoutMySqlBugs => JsonTable;
+        public virtual bool JsonTableImplementationWithoutMariaDbBugs => JsonTable;
+        public virtual bool JsonTableImplementationUsingParameterAsSourceWithoutEngineCrash => JsonTable;
+        public virtual bool JsonTableImplementationWithAggregate => JsonTable;
     }
 }

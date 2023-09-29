@@ -240,4 +240,7 @@
   <data name="StoredProcedureReturnValueNotSupported" xml:space="preserve">
     <value>The entity type '{entityType}' is mapped to the stored procedure '{sproc}', which is configured with a return value. MySQL stored procedures do not support return values; use an output parameter instead.</value>
   </data>
+  <data name="Ef7CoreJsonMappingNotSupported" xml:space="preserve">
+    <value>The EF Core 7.0 JSON support isn't currently implemented. Instead, there is support for a more extensive implementation. See https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql for more information on how to map JSON.</value>
+  </data>
 </root>

@@ -169,6 +169,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                 GetString("StoredProcedureReturnValueNotSupported", nameof(entityType), nameof(sproc)),
                 entityType, sproc);
 
+        /// <summary>
+        ///     The EF Core 7.0 JSON support isn't currently implemented. Instead, there is support for a more extensive implementation. See https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql for more information on how to map JSON.
+        /// </summary>
+        public static string Ef7CoreJsonMappingNotSupported
+            => GetString("Ef7CoreJsonMappingNotSupported");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

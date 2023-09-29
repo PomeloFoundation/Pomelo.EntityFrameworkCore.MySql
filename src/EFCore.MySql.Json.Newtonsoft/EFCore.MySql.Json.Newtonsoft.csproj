@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>JSON support using Newtonsoft.Json (JSON.NET) for Pomelo's MySQL provider for Entity Framework Core.</Description>
-    <TargetFrameworks>$(PomeloTargetFrameworks)</TargetFrameworks>
+    <TargetFramework>$(PomeloTargetFramework)</TargetFramework>
     <MinClientVersion>3.6</MinClientVersion>
     <AssemblyName>Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft</AssemblyName>
     <RootNamespace>Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft</RootNamespace>
@@ -50,7 +50,7 @@
   <!-- TODO: Can be removed because it is already contained in EFCore.MySql. -->
   <ItemGroup Condition="'$(LocalMySqlConnectorRepository)' != ''">
     <Reference Include="MySqlConnector">
-      <HintPath>$(LocalMySqlConnectorRepository)\src\MySqlConnector\bin\Debug\$(TargetFramework)\MySqlConnector.dll</HintPath>
+      <HintPath>$(LocalMySqlConnectorRepository)\src\MySqlConnector\bin\Debug\$(MySqlConnectorTargetFramework)\MySqlConnector.dll</HintPath>
     </Reference>
   </ItemGroup>
 

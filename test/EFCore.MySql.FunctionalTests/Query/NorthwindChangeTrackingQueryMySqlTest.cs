@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestModels.Northwind;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -16,7 +17,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         protected override NorthwindContext CreateNoTrackingContext()
-            => new NorthwindRelationalContext(
+            => new NorthwindMySqlContext(
                 new DbContextOptionsBuilder(Fixture.CreateOptions())
                     .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).Options);
     }

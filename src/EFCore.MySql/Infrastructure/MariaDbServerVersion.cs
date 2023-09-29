@@ -80,10 +80,21 @@ namespace Microsoft.EntityFrameworkCore
             public override bool ImplicitBoolCheckUsesIndex => ServerVersion.Version >= new Version(10, 0, 0); // Exact version has not been verified yet
             public override bool Sequences => ServerVersion.Version >= new Version(10, 3, 0);
             public override bool InformationSchemaCheckConstraintsTable => ServerVersion.Version >= new Version(10, 3, 10) ||
-                                                                           ServerVersion.Version.Major == 10 && ServerVersion.Version.Minor == 2 && ServerVersion.Version.Build >= 22;  // MySQL is missing the explicit TABLE_NAME column that MariaDB supports, so always join the TABLE_CONSTRAINTS table when accessing CHECK_CONSTRAINTS for any database server that supports CHECK_CONSTRAINTS.
+                                                                           ServerVersion.Version.Major == 10 && ServerVersion.Version.Minor == 2 && ServerVersion.Version.Build >= 22; // MySQL is missing the explicit TABLE_NAME column that MariaDB supports, so always join the TABLE_CONSTRAINTS table when accessing CHECK_CONSTRAINTS for any database server that supports CHECK_CONSTRAINTS.
             public override bool IdentifyJsonColumsByCheckConstraints => true;
             public override bool Returning => ServerVersion.Version >= new Version(10, 5, 0);
             public override bool CommonTableExpressions => ServerVersion.Version >= new Version(10, 2, 1);
+            public override bool LimitWithinInAllAnySomeSubquery => false;
+            public override bool LimitWithNonConstantValue => false;
+            public override bool JsonTable => ServerVersion.Version >= new Version(10, 6, 0); // Since there seems to be no implicit LATERAL support for JSON_TABLE, this is pretty useless except for cases where the JSON is provided by a parameter instead of a column of an outer table.
+            public override bool JsonValue => true;
+            public override bool Values => ServerVersion.Version >= new Version(10, 3, 3);
+            public override bool ValuesWithRows => false;
+            public override bool OffsetReferencesOuterQuery => false;
+
+            public override bool JsonTableImplementationStable => false;
+            public override bool JsonTableImplementationWithoutMariaDbBugs => false;
+            public override bool JsonTableImplementationWithAggregate => false; // All kinds of wrong results because of the missing LATERAL support, but without any error thrown by MariaDb. It usually just uses the first values of the first row of the outer table.
         }
     }
 }

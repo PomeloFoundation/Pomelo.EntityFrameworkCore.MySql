@@ -22,10 +22,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PomeloTargetFrameworks>net6.0;net7.0</PomeloTargetFrameworks>
-    <PomeloTestTargetFramework>net7.0</PomeloTestTargetFramework>
-    <EfCoreTargetFramework>net6.0</EfCoreTargetFramework>
-    <EfCoreTestTargetFramework>net7.0</EfCoreTestTargetFramework>
+    <PomeloTargetFramework>net8.0</PomeloTargetFramework>
+    <PomeloTestTargetFramework>net8.0</PomeloTestTargetFramework>
+    <EfCoreTargetFramework>net8.0</EfCoreTargetFramework>
+    <EfCoreTestTargetFramework>net8.0</EfCoreTestTargetFramework>
+    <MySqlConnectorTargetFramework>net7.0</MySqlConnectorTargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>

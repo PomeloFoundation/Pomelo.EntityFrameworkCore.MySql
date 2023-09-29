@@ -130,6 +130,12 @@ namespace Microsoft.Extensions.DependencyInjection
                 //.TryAdd<IValueConverterSelector, MySqlValueConverterSelector>()
                 .TryAdd<IQueryCompilationContextFactory, MySqlQueryCompilationContextFactory>()
                 .TryAdd<IQueryTranslationPostprocessorFactory, MySqlQueryTranslationPostprocessorFactory>()
+
+                // TODO: Injecting this service will make our original JSON implementations work, but interferes with EF Core 8's new
+                //       primitive collections support.
+                //       We will need to limit the preprocessor logic to only the relevant cases.
+                .TryAdd<IQueryTranslationPreprocessorFactory, MySqlQueryTranslationPreprocessorFactory>()
+
                 .TryAdd<IMigrationsModelDiffer, MySqlMigrationsModelDiffer>()
                 .TryAdd<IMigrator, MySqlMigrator>()
                 .TryAddProviderSpecificServices(m => m

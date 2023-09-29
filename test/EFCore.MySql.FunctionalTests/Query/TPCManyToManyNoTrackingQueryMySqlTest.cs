@@ -35,7 +35,7 @@ WHERE NOT EXISTS (
     SELECT 1
     FROM `JoinOneToTwo` AS `j`
     INNER JOIN `EntityTwos` AS `e0` ON `j`.`TwoId` = `e0`.`Id`
-    WHERE (`e`.`Id` = `j`.`OneId`) AND NOT (`e0`.`Name` LIKE '%B%'))
+    WHERE (`e`.`Id` = `j`.`OneId`) AND (`e0`.`Name` NOT LIKE '%B%' OR (`e0`.`Name` IS NULL)))
 """);
     }
 
@@ -121,7 +121,7 @@ ORDER BY (
         SELECT `l`.`Id`, `l`.`Name`, `l`.`Number`, `l`.`IsGreen`, 'EntityLeaf' AS `Discriminator`
         FROM `Leaves` AS `l`
     ) AS `t` ON `j`.`EntityBranchId` = `t`.`Id`
-    WHERE (`e`.`Id` = `j`.`EntityOneId`) AND (`t`.`Name` IS NOT NULL AND (`t`.`Name` LIKE 'L%'))), `e`.`Id`
+    WHERE (`e`.`Id` = `j`.`EntityOneId`) AND (`t`.`Name` LIKE 'L%')), `e`.`Id`
 """);
     }
 
@@ -153,7 +153,7 @@ ORDER BY (
     SELECT COUNT(*)
     FROM `EntityTwoEntityTwo` AS `e0`
     INNER JOIN `EntityTwos` AS `e1` ON `e0`.`SelfSkipSharedLeftId` = `e1`.`Id`
-    WHERE (`e`.`Id` = `e0`.`SelfSkipSharedRightId`) AND (`e1`.`Name` IS NOT NULL AND (`e1`.`Name` LIKE 'L%'))) DESC, `e`.`Id`
+    WHERE (`e`.`Id` = `e0`.`SelfSkipSharedRightId`) AND (`e1`.`Name` LIKE 'L%')) DESC, `e`.`Id`
 """);
     }
 
@@ -2144,7 +2144,7 @@ WHERE NOT EXISTS (
     SELECT 1
     FROM `UnidirectionalJoinOneToTwo` AS `u0`
     INNER JOIN `UnidirectionalEntityTwos` AS `u1` ON `u0`.`TwoId` = `u1`.`Id`
-    WHERE (`u`.`Id` = `u0`.`OneId`) AND NOT (`u1`.`Name` LIKE '%B%'))
+    WHERE (`u`.`Id` = `u0`.`OneId`) AND (`u1`.`Name` NOT LIKE '%B%' OR (`u1`.`Name` IS NULL)))
 """);
     }
 
@@ -2214,7 +2214,7 @@ ORDER BY (
         SELECT `u2`.`Id`, `u2`.`Name`, `u2`.`Number`, `u2`.`IsGreen`, 'UnidirectionalEntityLeaf' AS `Discriminator`
         FROM `UnidirectionalLeaves` AS `u2`
     ) AS `t` ON `u0`.`UnidirectionalEntityBranchId` = `t`.`Id`
-    WHERE (`u`.`Id` = `u0`.`UnidirectionalEntityOneId`) AND (`t`.`Name` IS NOT NULL AND (`t`.`Name` LIKE 'L%'))), `u`.`Id`
+    WHERE (`u`.`Id` = `u0`.`UnidirectionalEntityOneId`) AND (`t`.`Name` LIKE 'L%')), `u`.`Id`
 """);
     }
 

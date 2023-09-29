@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -435,14 +436,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 base.OnModelCreating(modelBuilder, context);
 
                 var ciCollation = ((MySqlTestStore)TestStore).ServerVersion.Value.DefaultUtf8CiCollation;
+                var caseInsensitiveValueComparer = new CaseInsensitiveValueComparer();
 
                 // Needed to make Can_insert_and_read_back_with_case_insensitive_string_key() work.
-                modelBuilder.Entity<StringForeignKeyDataType>()
-                    .Property(e => e.StringKeyDataTypeId)
-                    .UseCollation(ciCollation);
-                modelBuilder.Entity<StringKeyDataType>()
-                    .Property(e => e.Id)
-                    .UseCollation(ciCollation);
+                modelBuilder.Entity<StringForeignKeyDataType>(b =>
+                {
+                    var p = b.Property(e => e.StringKeyDataTypeId);
+                    p.UseCollation(ciCollation);
+                    p.Metadata.SetValueComparer(caseInsensitiveValueComparer);
+                });
+                modelBuilder.Entity<StringKeyDataType>(b =>
+                {
+                    var p = b.Property(e => e.Id);
+                    p.UseCollation(ciCollation);
+                    p.Metadata.SetValueComparer(caseInsensitiveValueComparer);
+                });
             }
         }
     }

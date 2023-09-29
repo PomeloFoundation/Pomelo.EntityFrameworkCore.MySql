@@ -2,7 +2,7 @@
 {
     public class TPTFiltersInheritanceQueryMySqlFixture : TPTInheritanceQueryMySqlFixture
     {
-        protected override bool EnableFilters
+        public override bool EnableFilters
             => true;
     }
 }

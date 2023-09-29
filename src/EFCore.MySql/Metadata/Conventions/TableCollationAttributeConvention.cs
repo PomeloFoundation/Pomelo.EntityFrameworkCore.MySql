@@ -11,7 +11,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions
     /// <summary>
     ///     A convention that configures the collation for an entity based on the applied <see cref="MySqlCollationAttribute" />.
     /// </summary>
-    public class TableCollationAttributeConvention : EntityTypeAttributeConventionBase<MySqlCollationAttribute>
+    public class TableCollationAttributeConvention : TypeAttributeConventionBase<MySqlCollationAttribute>
     {
         /// <summary>
         ///     Creates a new instance of <see cref="TableCollationAttributeConvention" />.

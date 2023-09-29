@@ -105,14 +105,72 @@ FROM `Orders` AS `o`");
 FROM `Orders` AS `o`");
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonTableImplementationUsingParameterAsSourceWithoutEngineCrash), Skip = "This test/query crashes MySQL 8 even with inlined parameters every single time. Could be related to LATERAL.")]
+        public override async Task Correlated_collection_after_distinct_not_containing_original_identifier(bool async)
+        {
+            await base.Correlated_collection_after_distinct_not_containing_original_identifier(async);
+
+            AssertSql(
+"""
+SELECT `t`.`OrderDate`, `t`.`CustomerID`, `t0`.`Outer1`, `t0`.`Outer2`, `t0`.`Inner`, `t0`.`OrderDate`
+FROM (
+    SELECT DISTINCT `o`.`OrderDate`, `o`.`CustomerID`
+    FROM `Orders` AS `o`
+) AS `t`
+LEFT JOIN LATERAL (
+    SELECT `t`.`OrderDate` AS `Outer1`, `t`.`CustomerID` AS `Outer2`, `o0`.`OrderID` AS `Inner`, `o0`.`OrderDate`
+    FROM `Orders` AS `o0`
+    WHERE ((`o0`.`CustomerID` = `t`.`CustomerID`) OR (`o0`.`CustomerID` IS NULL AND (`t`.`CustomerID` IS NULL))) AND `o0`.`OrderID` IN (
+        SELECT `f`.`value`
+        FROM JSON_TABLE('[10248,10249,10250]', '$[*]' COLUMNS (
+            `key` FOR ORDINALITY,
+            `value` int PATH '$[0]'
+        )) AS `f`
+    )
+) AS `t0` ON TRUE
+ORDER BY `t`.`OrderDate`, `t`.`CustomerID`
+""");
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonTableImplementationUsingParameterAsSourceWithoutEngineCrash), Skip = "This test/query crashes MySQL 8 even with inlined parameters every single time. Could be related to LATERAL.")]
+        public override async Task Correlated_collection_after_groupby_with_complex_projection_not_containing_original_identifier(bool async)
+        {
+            await base.Correlated_collection_after_groupby_with_complex_projection_not_containing_original_identifier(async);
+
+            AssertSql(
+"""
+                SELECT `t0`.`CustomerID`, `t0`.`Complex`, `t1`.`Outer`, `t1`.`Inner`, `t1`.`OrderDate`
+                FROM (
+                    SELECT `t`.`CustomerID`, `t`.`Complex`
+                    FROM (
+                        SELECT `o`.`CustomerID`, EXTRACT(month FROM `o`.`OrderDate`) AS `Complex`
+                        FROM `Orders` AS `o`
+                    ) AS `t`
+                    GROUP BY `t`.`CustomerID`, `t`.`Complex`
+                ) AS `t0`
+                LEFT JOIN LATERAL (
+                    SELECT `t0`.`CustomerID` AS `Outer`, `o0`.`OrderID` AS `Inner`, `o0`.`OrderDate`
+                    FROM `Orders` AS `o0`
+                    WHERE ((`o0`.`CustomerID` = `t0`.`CustomerID`) OR (`o0`.`CustomerID` IS NULL AND (`t0`.`CustomerID` IS NULL))) AND `o0`.`OrderID` IN (
+                        SELECT `f`.`value`
+                        FROM JSON_TABLE('[10248,10249,10250]', '$[*]' COLUMNS (
+                            `key` FOR ORDINALITY,
+                            `value` int PATH '$[0]'
+                        )) AS `f`
+                    )
+                ) AS `t1` ON TRUE
+                ORDER BY `t0`.`CustomerID`, `t0`.`Complex`
+""");
+        }
+
         public override async Task Correlated_collection_after_distinct_with_complex_projection_not_containing_original_identifier(bool async)
         {
             // Identifier set for Distinct. Issue #24440.
-            Assert.Equal(
-                RelationalStrings.InsufficientInformationToIdentifyElementOfCollectionJoin,
-                (await Assert.ThrowsAsync<InvalidOperationException>(
+            var message = (await Assert.ThrowsAsync<InvalidOperationException>(
                     () => base.Correlated_collection_after_distinct_with_complex_projection_not_containing_original_identifier(async)))
-                .Message);
+                .Message;
+
+            Assert.Equal(RelationalStrings.InsufficientInformationToIdentifyElementOfCollectionJoin, message);
 
             AssertSql();
         }

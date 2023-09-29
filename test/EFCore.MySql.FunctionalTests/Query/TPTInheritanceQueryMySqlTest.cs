@@ -5,8 +5,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class TPTInheritanceQueryMySqlTest : TPTInheritanceQueryTestBase<TPTInheritanceQueryMySqlFixture>
     {
-        public TPTInheritanceQueryMySqlTest(TPTInheritanceQueryMySqlFixture fixture, ITestOutputHelper testOutputHelper)
-            : base(fixture)
+        public TPTInheritanceQueryMySqlTest(
+            TPTInheritanceQueryMySqlFixture fixture,
+            ITestOutputHelper testOutputHelper)
+            : base(fixture, testOutputHelper)
         {
             Fixture.TestSqlLoggerFactory.Clear();
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);

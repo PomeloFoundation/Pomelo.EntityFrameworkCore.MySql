@@ -21,19 +21,25 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             { typeof(DateTime).GetRuntimeMethod(nameof(DateTime.AddHours), new[] { typeof(double) }), "hour" },
             { typeof(DateTime).GetRuntimeMethod(nameof(DateTime.AddMinutes), new[] { typeof(double) }), "minute" },
             { typeof(DateTime).GetRuntimeMethod(nameof(DateTime.AddSeconds), new[] { typeof(double) }), "second" },
-            { typeof(DateTime).GetRuntimeMethod(nameof(DateTime.AddMilliseconds), new[] { typeof(double) }), "microsecond" },
+            { typeof(DateTime).GetRuntimeMethod(nameof(DateTime.AddMilliseconds), new[] { typeof(double) }), "millisecond" },
             { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddYears), new[] { typeof(int) }), "year" },
             { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddMonths), new[] { typeof(int) }), "month" },
             { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddDays), new[] { typeof(double) }), "day" },
             { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddHours), new[] { typeof(double) }), "hour" },
             { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddMinutes), new[] { typeof(double) }), "minute" },
             { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddSeconds), new[] { typeof(double) }), "second" },
-            { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddMilliseconds), new[] { typeof(double) }), "microsecond" },
+            { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.AddMilliseconds), new[] { typeof(double) }), "millisecond" },
             { typeof(DateOnly).GetRuntimeMethod(nameof(DateOnly.AddYears), new[] { typeof(int) }), "year" },
             { typeof(DateOnly).GetRuntimeMethod(nameof(DateOnly.AddMonths), new[] { typeof(int) }), "month" },
             { typeof(DateOnly).GetRuntimeMethod(nameof(DateOnly.AddDays), new[] { typeof(int) }), "day" },
             { typeof(TimeOnly).GetRuntimeMethod(nameof(TimeOnly.AddHours), new[] { typeof(double) }), "hour" },
             { typeof(TimeOnly).GetRuntimeMethod(nameof(TimeOnly.AddMinutes), new[] { typeof(double) }), "minute" },
+        };
+
+        private static readonly Dictionary<MethodInfo, string> _methodInfoDateDiffMapping = new()
+        {
+            { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.ToUnixTimeSeconds), Type.EmptyTypes)!, "second" },
+            { typeof(DateTimeOffset).GetRuntimeMethod(nameof(DateTimeOffset.ToUnixTimeMilliseconds), Type.EmptyTypes)!, "millisecond" }
         };
 
         private static readonly MethodInfo _timeOnlyAddTimeSpanMethod = typeof(TimeOnly).GetRuntimeMethod(nameof(TimeOnly.Add), new[] { typeof(TimeSpan) })!;
@@ -70,12 +76,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                                 new SqlExpression[]
                                 {
                                     _sqlExpressionFactory.Fragment("INTERVAL"),
-                                    datePart.Equals("microsecond")
+                                    datePart.Equals("millisecond")
                                         ? _sqlExpressionFactory.Multiply(
                                             _sqlExpressionFactory.Constant(1000),
                                             _sqlExpressionFactory.Convert(arguments[0], typeof(int)))
                                         : _sqlExpressionFactory.Convert(arguments[0], typeof(int)),
-                                    _sqlExpressionFactory.Fragment(datePart)
+                                    _sqlExpressionFactory.Fragment(
+                                        datePart == "millisecond"
+                                            ? "microsecond"
+                                            : datePart)
                                 },
                                 " ",
                                 typeof(string))
@@ -84,6 +93,35 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         instance.TypeMapping,
                         true,
                         new[] {true, false});
+            }
+
+            if (method.DeclaringType == typeof(DateTimeOffset) &&
+                instance is not null)
+            {
+                if (_methodInfoDateDiffMapping.TryGetValue(method, out var timePart))
+                {
+                    SqlExpression expression = _sqlExpressionFactory.NullableFunction(
+                        "TIMESTAMPDIFF",
+                        new[]
+                        {
+                            _sqlExpressionFactory.Fragment(timePart == "millisecond" ? "microsecond" : timePart),
+                            _sqlExpressionFactory.Constant(DateTimeOffset.UnixEpoch, instance!.TypeMapping),
+                            instance
+                        },
+                        typeof(long),
+                        typeMapping: null,
+                        onlyNullWhenAnyNullPropagatingArgumentIsNull: true,
+                        argumentsPropagateNullability: new[] { false, true, true });
+
+                    if (timePart == "millisecond")
+                    {
+                        expression = _sqlExpressionFactory.MySqlIntegerDivide(
+                            expression,
+                            _sqlExpressionFactory.Constant(1_000));
+                    }
+
+                    return expression;
+                }
             }
 
             if (method.DeclaringType == typeof(TimeOnly))

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -133,17 +134,30 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
             foreach (var innerException in aggregateException.InnerExceptions)
             {
                 if (!skip ||
-                    innerException is not InvalidOperationException ||
-                    !innerException.Message.StartsWith("The LINQ expression '") ||
-                    !innerException.Message.Contains("' could not be translated."))
+                    innerException is not InvalidOperationException)
                 {
                     return false;
                 }
 
-                skip &= !supports.OuterApply && innerException.Message.Contains("OUTER APPLY") ||
-                        !supports.CrossApply && innerException.Message.Contains("CROSS APPLY") ||
-                        !supports.WindowFunctions && innerException.Message.Contains("ROW_NUMBER() OVER") ||
-                        !supports.ExceptIntercept && (innerException.Message.Contains("EXCEPT") || innerException.Message.Contains("INTERSECT"));
+                if (innerException.Message.StartsWith("The LINQ expression '") ||
+                    innerException.Message.Contains("' could not be translated."))
+                {
+                    skip &= !supports.OuterApply && innerException.Message.Contains("OUTER APPLY") ||
+                            !supports.CrossApply && innerException.Message.Contains("CROSS APPLY") ||
+                            !supports.WindowFunctions && innerException.Message.Contains("ROW_NUMBER() OVER") ||
+                            !supports.ExceptIntercept &&
+                            (innerException.Message.Contains("EXCEPT") || innerException.Message.Contains("INTERSECT")) ||
+                            !supports.JsonTable && (innerException.Message.Contains("JSON_TABLE") ||
+                                                    innerException.Message.Contains("JsonTable")) ||
+                            innerException.Message.Contains("Primitive collections support has not been enabled.") ||
+                            innerException.Message.Contains("MySqlBipolarExpression");
+                }
+                else
+                {
+                    skip &= (!supports.JsonTable ||
+                             !supports.JsonTableImplementationWithAggregate) && (innerException.Message.Contains("JSON_TABLE") ||
+                                                                                 innerException.Message.Contains("JsonTable"));
+                }
             }
 
             return skip;

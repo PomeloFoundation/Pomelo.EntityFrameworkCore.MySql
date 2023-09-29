@@ -6,12 +6,13 @@ using System.Data.Common;
 using System.Globalization;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     public class MySqlFloatTypeMapping : FloatTypeMapping
     {
+        public static new MySqlFloatTypeMapping Default { get; } = new("float");
+
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
         ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
@@ -20,7 +21,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// </summary>
         public MySqlFloatTypeMapping(
             [NotNull] string storeType,
-            DbType? dbType = null)
+            DbType? dbType = System.Data.DbType.Single)
             : base(storeType, dbType)
         {
         }

@@ -87,6 +87,17 @@ namespace Microsoft.EntityFrameworkCore
             public override bool MySqlBugLimit0Offset0ExistsWorkaround => true;
             public override bool DescendingIndexes => ServerVersion.Version >= new Version(8, 0, 1);
             public override bool CommonTableExpressions => ServerVersion.Version >= new Version(8, 0, 1);
+            public override bool LimitWithinInAllAnySomeSubquery => false;
+            public override bool LimitWithNonConstantValue => false;
+            public override bool JsonTable => ServerVersion.Version >= new Version(8, 0, 4);
+            public override bool JsonValue => ServerVersion.Version >= new Version(8, 0, 21);
+            public override bool Values => false;
+            public override bool ValuesWithRows => ServerVersion.Version >= new Version(8, 0, 19);
+            public override bool OffsetReferencesOuterQuery => false;
+
+            public override bool JsonTableImplementationStable => false;
+            public override bool JsonTableImplementationWithoutMySqlBugs => false; // Other non-fatal bugs regarding JSON_TABLE.
+            public override bool JsonTableImplementationUsingParameterAsSourceWithoutEngineCrash => false; // MySQL non-deterministically crashes when using a parameter with JSON as the source of a JSON_TABLE call.
         }
     }
 }

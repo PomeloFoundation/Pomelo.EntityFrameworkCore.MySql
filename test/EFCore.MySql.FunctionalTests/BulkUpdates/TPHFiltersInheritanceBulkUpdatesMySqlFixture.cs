@@ -1,10 +1,10 @@
 ﻿namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
-public class FiltersInheritanceBulkUpdatesMySqlFixture : InheritanceBulkUpdatesMySqlFixture
+public class TPHFiltersInheritanceBulkUpdatesMySqlFixture : TPHInheritanceBulkUpdatesMySqlFixture
 {
     protected override string StoreName
         => "FiltersInheritanceBulkUpdatesTest";
 
-    protected override bool EnableFilters
+    public override bool EnableFilters
         => true;
 }

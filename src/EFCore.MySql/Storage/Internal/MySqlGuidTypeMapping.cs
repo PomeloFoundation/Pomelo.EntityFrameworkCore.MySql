@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.Json;
 using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Utilities;
 
@@ -14,7 +15,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         public MySqlGuidTypeMapping(MySqlGuidFormat guidFormat)
             : this(new RelationalTypeMappingParameters(
-                    new CoreTypeMappingParameters(typeof(Guid)),
+                    new CoreTypeMappingParameters(
+                        typeof(Guid),
+                        jsonValueReaderWriter: JsonGuidReaderWriter.Instance),
                     GetStoreType(guidFormat),
                     StoreTypePostfix.Size,
                     System.Data.DbType.Guid,
@@ -50,7 +53,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 case MySqlGuidFormat.Binary16:
                 case MySqlGuidFormat.TimeSwapBinary16:
                 case MySqlGuidFormat.LittleEndianBinary16:
-                    return ByteArrayFormatter.ToHex(GetBytesFromGuid(_guidFormat, (Guid)value));
+                    return "0x" + Convert.ToHexString(GetBytesFromGuid(_guidFormat, (Guid)value));
 
                 case MySqlGuidFormat.None:
                 case MySqlGuidFormat.Default:

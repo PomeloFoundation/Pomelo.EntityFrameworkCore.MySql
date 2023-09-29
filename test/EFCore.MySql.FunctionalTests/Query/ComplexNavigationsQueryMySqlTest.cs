@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.ComplexNavigationsModel;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
@@ -96,6 +95,19 @@ LEFT JOIN LATERAL (
     ) AS `t` ON TRUE
     WHERE `l`.`Id` = `l0`.`OneToMany_Optional_Inverse2Id`
 ) AS `t0` ON TRUE");
+        }
+
+        public override async Task Method_call_on_optional_navigation_translates_to_null_conditional_properly_for_arguments(bool async)
+        {
+            await base.Method_call_on_optional_navigation_translates_to_null_conditional_properly_for_arguments(async);
+
+            AssertSql(
+"""
+SELECT `l`.`Id`, `l`.`Date`, `l`.`Name`, `l`.`OneToMany_Optional_Self_Inverse1Id`, `l`.`OneToMany_Required_Self_Inverse1Id`, `l`.`OneToOne_Optional_Self1Id`
+FROM `LevelOne` AS `l`
+LEFT JOIN `LevelTwo` AS `l0` ON `l`.`Id` = `l0`.`Level1_Optional_Id`
+WHERE `l0`.`Name` IS NOT NULL AND (LEFT(`l0`.`Name`, CHAR_LENGTH(`l0`.`Name`)) = `l0`.`Name`)
+""");
         }
 
         private void AssertSql(params string[] expected)
