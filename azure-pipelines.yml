@@ -17,8 +17,8 @@ variables:
   runIntegrationTests: true
 
   # Dotnet + Tools versioning:
-  majorDotnetVersion: # empty uses global.json (for rtm/servicing releases), otherwise the major version, e.g. 6
-  includeDotnetPrereleases: false
+  majorDotnetVersion: 8 # empty uses global.json (for rtm/servicing releases), otherwise the major version, e.g. 6
+  includeDotnetPrereleases: true
 
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
@@ -27,66 +27,90 @@ jobs:
     displayName: Build and Test
     strategy:
       matrix:
-        MySQL 8.0 (Windows):
+        MySQL 8.0 (Windows): # Apr 2026
           vmImageName: 'windows-latest'
           databaseServerType: 'mysql'
           databaseServerVersion: '8.0.31'
           sqlMode: $(mysqlCurrentSqlMode)
           skipTests: $(skipWindowsTests)
-        MySQL 8.0 (Linux):
+        MySQL 8.0 (Linux): # Apr 2026
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mysql'
-          databaseServerVersion: '8.0.31'
+          databaseServerVersion: '8.0.34'
           sqlMode: $(mysqlCurrentSqlMode)
           skipTests: false
-        MySQL 5.7 (Linux):
+        MySQL 5.7 (Linux): # Oct 2023
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mysql'
-          databaseServerVersion: '5.7.40'
+          databaseServerVersion: '5.7.43'
           sqlMode: $(mysqlLegacySqlMode)
           skipTests: false
-        MariaDB 10.9 (Linux):
+        MariaDB 11.1 (Linux): # Aug 2024
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
-          databaseServerVersion: '10.9.4'
+          databaseServerVersion: '11.1.2'
           sqlMode: $(mariadbSqlMode)
           skipTests: false
-        MariaDB 10.8 (Linux):
+        MariaDB 11.0 (Linux): # Jun 2024
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
-          databaseServerVersion: '10.8.6'
+          databaseServerVersion: '11.0.3'
           sqlMode: $(mariadbSqlMode)
           skipTests: false
-        MariaDB 10.7 (Linux):
+        MariaDB 10.11 (Linux): # Feb 2028
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
-          databaseServerVersion: '10.7.7'
+          databaseServerVersion: '10.11.5'
           sqlMode: $(mariadbSqlMode)
           skipTests: false
-        MariaDB 10.6 (Linux):
+        MariaDB 10.10 (Linux): # Nov 2023
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
-          databaseServerVersion: '10.6.11'
+          databaseServerVersion: '10.10.6'
           sqlMode: $(mariadbSqlMode)
           skipTests: false
-        MariaDB 10.5 (Linux):
+#        MariaDB 10.9 (Linux): # EoL
+#          vmImageName: 'ubuntu-latest'
+#          databaseServerType: 'mariadb'
+#          databaseServerVersion: '10.9.8'
+#          sqlMode: $(mariadbSqlMode)
+#          skipTests: false
+#        MariaDB 10.8 (Linux): # EoL
+#          vmImageName: 'ubuntu-latest'
+#          databaseServerType: 'mariadb'
+#          databaseServerVersion: '10.8.8'
+#          sqlMode: $(mariadbSqlMode)
+#          skipTests: false
+#        MariaDB 10.7 (Linux): # EoL
+#          vmImageName: 'ubuntu-latest'
+#          databaseServerType: 'mariadb'
+#          databaseServerVersion: '10.7.8'
+#          sqlMode: $(mariadbSqlMode)
+#          skipTests: false
+        MariaDB 10.6 (Linux): # Jul 2026
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
-          databaseServerVersion: '10.5.18'
+          databaseServerVersion: '10.6.15'
           sqlMode: $(mariadbSqlMode)
           skipTests: false
-        MariaDB 10.4 (Linux):
+        MariaDB 10.5 (Linux): # Jun 2025
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
-          databaseServerVersion: '10.4.27'
+          databaseServerVersion: '10.5.22'
           sqlMode: $(mariadbSqlMode)
           skipTests: false
-        MariaDB 10.3 (Linux):
+        MariaDB 10.4 (Linux): # Jun 2024
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
-          databaseServerVersion: '10.3.37'
+          databaseServerVersion: '10.4.31'
           sqlMode: $(mariadbSqlMode)
           skipTests: false
+#        MariaDB 10.3 (Linux): # EoL
+#          vmImageName: 'ubuntu-latest'
+#          databaseServerType: 'mariadb'
+#          databaseServerVersion: '10.3.39'
+#          sqlMode: $(mariadbSqlMode)
+#          skipTests: false
     pool:
       vmImage: $(vmImageName)
     steps:
@@ -170,16 +194,29 @@ jobs:
           else
           {
             sudo systemctl stop mysql
-            docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -p 3306:3306 -d '$(databaseServerType):$(databaseServerVersion)'
 
             $waitMinutes = 5
             $pollingIntervalSeconds = 3
-            $startTime = Get-Date
             $started = $false
 
-            while (!($started = docker exec mysql mysqladmin --protocol=tcp -h localhost -P 3306 -u root -pPassword12! status) -and ((Get-Date) - $startTime).TotalMinutes -lt $waitMinutes)
+            # MariaDB 11+ docker images do not ship with mysqladmin, but contain an official health check script.
+            if ('$(databaseServerType)' -eq 'mariadb' -and '$(databaseServerVersion)'.Split('.')[0] -ge 11)
             {
-              Start-Sleep -Seconds $pollingIntervalSeconds
+              $timeoutSeconds = 3
+
+              docker run --name mysql -d -e MYSQL_ROOT_PASSWORD=Password12! -p 127.0.0.1:3306:3306 --health-cmd="healthcheck.sh --connect --innodb_initialized" "--health-interval=${pollingIntervalSeconds}s" "--health-timeout=${timeoutSeconds}s" "--health-retries=$($waitMinutes * 60 / ($pollingIntervalSeconds + $timeoutSeconds))" '$(databaseServerType):$(databaseServerVersion)'
+
+              $started = Test-Connection 127.0.0.1 -TcpPort 3306
+            }
+            else
+            {
+              docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -p 127.0.0.1:3306:3306 -d '$(databaseServerType):$(databaseServerVersion)'
+              $startTime = Get-Date
+
+              while (!($started = docker exec mysql mysqladmin --protocol=tcp -h localhost -P 3306 -u root -pPassword12! status) -and ((Get-Date) - $startTime).TotalMinutes -lt $waitMinutes)
+              {
+                Start-Sleep -Seconds $pollingIntervalSeconds
+              }
             }
 
             if (!$started)
