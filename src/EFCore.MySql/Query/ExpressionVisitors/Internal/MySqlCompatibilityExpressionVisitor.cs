@@ -16,10 +16,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
     public class MySqlCompatibilityExpressionVisitor : ExpressionVisitor
     {
-        private const string Issue1790SkipFlagName = "Pomelo.EntityFrameworkCore.MySql.Issue1790.Skip";
+        private const string Issue1792SkipFlagName = "Pomelo.EntityFrameworkCore.MySql.Issue1792.Skip";
 
         private static readonly bool _mySql8EngineCrashWhenUsingJsonTableSkip
-            = AppContext.TryGetSwitch(Issue1790SkipFlagName, out var enabled) && enabled;
+            = AppContext.TryGetSwitch(Issue1792SkipFlagName, out var enabled) && enabled;
 
         private readonly IMySqlOptions _options;
 
@@ -82,7 +82,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             if (!_options.ServerVersion.Supports.JsonTableImplementationUsingParameterAsSourceWithoutEngineCrash &&
                 _mySql8EngineCrashWhenUsingJsonTableSkip)
             {
-                throw new InvalidOperationException($"JSON_TABLE() has been disabled by the '{Issue1790SkipFlagName}' AppContext switch, because it can crash MySQL 8.");
+                throw new InvalidOperationException($"JSON_TABLE() has been disabled by the '{Issue1792SkipFlagName}' AppContext switch, because it can crash MySQL 8.");
             }
 
             if (!_options.ServerVersion.Supports.JsonTableImplementationWithAggregate &&

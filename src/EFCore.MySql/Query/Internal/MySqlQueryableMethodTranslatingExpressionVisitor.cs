@@ -21,10 +21,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
 public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQueryableMethodTranslatingExpressionVisitor
 {
-    private const string Issue1790SkipWithParameterFlagName = "Pomelo.EntityFrameworkCore.MySql.Issue1790.SkipWithParameter";
+    private const string Issue1792SkipWithParameterFlagName = "Pomelo.EntityFrameworkCore.MySql.Issue1792.SkipWithParameter";
 
     private static readonly bool _mySql8EngineCrashWhenUsingJsonTableWithPrimitiveCollectionInParametersSkip
-        = AppContext.TryGetSwitch(Issue1790SkipWithParameterFlagName, out var enabled) && enabled;
+        = AppContext.TryGetSwitch(Issue1792SkipWithParameterFlagName, out var enabled) && enabled;
 
     private readonly IMySqlOptions _options;
     private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
@@ -299,7 +299,7 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
             !_options.ServerVersion.Supports.JsonTableImplementationUsingParameterAsSourceWithoutEngineCrash &&
             _mySql8EngineCrashWhenUsingJsonTableWithPrimitiveCollectionInParametersSkip)
         {
-            AddTranslationErrorDetails($"JSON_TABLE() has been disabled by the '{Issue1790SkipWithParameterFlagName}' AppContext switch, because it can crash MySQL 8.");
+            AddTranslationErrorDetails($"JSON_TABLE() has been disabled by the '{Issue1792SkipWithParameterFlagName}' AppContext switch, because it can crash MySQL 8.");
             return null;
         }
 
