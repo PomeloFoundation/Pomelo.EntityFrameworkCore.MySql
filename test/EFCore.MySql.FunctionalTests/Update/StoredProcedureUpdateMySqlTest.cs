@@ -589,6 +589,37 @@ SELECT @_out_p0;
 """);
     }
 
+    public override async Task Non_sproc_followed_by_sproc_commands_in_the_same_batch(bool async)
+    {
+        await base.Non_sproc_followed_by_sproc_commands_in_the_same_batch(
+            async,
+"""
+CREATE PROCEDURE EntityWithAdditionalProperty_Insert(pName varchar(255), OUT pId int, pAdditionalProperty int)
+BEGIN
+    INSERT INTO `EntityWithAdditionalProperty` (`Name`, `AdditionalProperty`) VALUES (pName, pAdditionalProperty);
+    SET pId = LAST_INSERT_ID();
+END
+""");
+
+        AssertSql(
+"""
+@p2='1'
+@p0='2'
+@p3='1'
+@p1='Entity1_Modified' (Size = 4000)
+@p5='Entity2' (Size = 4000)
+@p6='0'
+
+UPDATE `EntityWithAdditionalProperty` SET `AdditionalProperty` = @p0, `Name` = @p1
+WHERE `Id` = @p2 AND `AdditionalProperty` = @p3;
+SELECT ROW_COUNT();
+
+SET @_out_p4 = NULL;
+CALL `EntityWithAdditionalProperty_Insert`(@p5, @_out_p4, @p6);
+SELECT @_out_p4;
+""");
+    }
+
     private async Task SaveChanges(DbContext context, bool async)
     {
         if (async)
