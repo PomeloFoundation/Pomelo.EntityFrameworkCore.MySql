@@ -364,6 +364,12 @@ ALTER SEQUENCE `foo` RESTART WITH -3;
             return base.Alter_sequence_increment_by();
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
+        public override Task Alter_sequence_restart_with()
+        {
+            return base.Alter_sequence_restart_with();
+        }
+
         public override async Task Alter_table_add_comment_non_default_schema()
         {
             await base.Alter_table_add_comment_non_default_schema();

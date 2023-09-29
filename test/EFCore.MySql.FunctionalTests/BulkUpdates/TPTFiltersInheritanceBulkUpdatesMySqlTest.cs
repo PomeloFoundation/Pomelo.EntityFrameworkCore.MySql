@@ -156,6 +156,66 @@ WHERE (
         AssertExecuteUpdateSql();
     }
 
+    public override async Task Update_base_and_derived_types(bool async)
+    {
+        await base.Update_base_and_derived_types(async);
+
+        AssertExecuteUpdateSql();
+    }
+
+    public override async Task Update_base_type(bool async)
+    {
+        await base.Update_base_type(async);
+
+        AssertExecuteUpdateSql(
+"""
+UPDATE `Animals` AS `a`
+SET `a`.`Name` = 'Animal'
+WHERE (`a`.`CountryId` = 1) AND (`a`.`Name` = 'Great spotted kiwi')
+""");
+    }
+
+    public override async Task Update_base_type_with_OfType(bool async)
+    {
+        await base.Update_base_type_with_OfType(async);
+
+        AssertExecuteUpdateSql(
+"""
+UPDATE `Animals` AS `a`
+LEFT JOIN `Kiwi` AS `k` ON `a`.`Id` = `k`.`Id`
+SET `a`.`Name` = 'NewBird'
+WHERE (`a`.`CountryId` = 1) AND `k`.`Id` IS NOT NULL
+""");
+    }
+
+    public override async Task Update_base_property_on_derived_type(bool async)
+    {
+        await base.Update_base_property_on_derived_type(async);
+
+        AssertExecuteUpdateSql(
+"""
+UPDATE `Animals` AS `a`
+INNER JOIN `Birds` AS `b` ON `a`.`Id` = `b`.`Id`
+INNER JOIN `Kiwi` AS `k` ON `a`.`Id` = `k`.`Id`
+SET `a`.`Name` = 'SomeOtherKiwi'
+WHERE `a`.`CountryId` = 1
+""");
+    }
+
+    public override async Task Update_derived_property_on_derived_type(bool async)
+    {
+        await base.Update_derived_property_on_derived_type(async);
+
+        AssertExecuteUpdateSql(
+"""
+UPDATE `Animals` AS `a`
+INNER JOIN `Birds` AS `b` ON `a`.`Id` = `b`.`Id`
+INNER JOIN `Kiwi` AS `k` ON `a`.`Id` = `k`.`Id`
+SET `k`.`FoundOn` = 0
+WHERE `a`.`CountryId` = 1
+""");
+    }
+
     protected override void ClearLog()
         => Fixture.TestSqlLoggerFactory.Clear();
 
@@ -165,3 +225,9 @@ WHERE (
     private void AssertExecuteUpdateSql(params string[] expected)
         => Fixture.TestSqlLoggerFactory.AssertBaseline(expected, forUpdate: true);
 }
+
+
+
+
+
+

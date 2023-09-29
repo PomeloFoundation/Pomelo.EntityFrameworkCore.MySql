@@ -602,18 +602,22 @@ SELECT @_out_p0;
             """);
 
         AssertSql(
-            """
-            @p2='1'
-            @p0='2'
-            @p3='1'
-            @p1='Entity1_Modified'
-            @p4='Entity2'
-            @p5='0'
+"""
+@p2='1'
+@p0='2'
+@p3='1'
+@p1='Entity1_Modified' (Size = 4000)
+@p5='Entity2' (Size = 4000)
+@p6='0'
 
-            UPDATE `EntityWithAdditionalProperty` SET `AdditionalProperty` = @p0, `Name` = @p1
-            WHERE `Id` = @p2 AND `AdditionalProperty` = @p3;
-            CALL `EntityWithAdditionalProperty_Insert`(@p4, NULL, @p5);
-            """);
+UPDATE `EntityWithAdditionalProperty` SET `AdditionalProperty` = @p0, `Name` = @p1
+WHERE `Id` = @p2 AND `AdditionalProperty` = @p3;
+SELECT ROW_COUNT();
+
+SET @_out_p4 = NULL;
+CALL `EntityWithAdditionalProperty_Insert`(@p5, @_out_p4, @p6);
+SELECT @_out_p4;
+""");
     }
 
     private async Task SaveChanges(DbContext context, bool async)

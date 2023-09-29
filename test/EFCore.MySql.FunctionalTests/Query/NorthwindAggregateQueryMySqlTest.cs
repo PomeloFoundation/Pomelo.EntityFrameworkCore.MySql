@@ -84,16 +84,26 @@ FROM (
 ) AS `t`");
         }
 
+        // TODO: Implement TranslatePrimitiveCollection.
         public override async Task Contains_with_local_anonymous_type_array_closure(bool async)
         {
             // Aggregates. Issue #15937.
-            await AssertTranslationFailed(() => base.Contains_with_local_anonymous_type_array_closure(async));
+            // await AssertTranslationFailed(() => base.Contains_with_local_anonymous_type_array_closure(async));
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_with_local_anonymous_type_array_closure(async));
 
             AssertSql();
         }
 
+        // TODO: Implement TranslatePrimitiveCollection.
         public override async Task Contains_with_local_tuple_array_closure(bool async)
-            => await AssertTranslationFailed(() => base.Contains_with_local_tuple_array_closure(async));
+        {
+            // await Assert.ThrowsAsync<NotSupportedException>(() => base.Contains_with_local_tuple_array_closure(async));
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_with_local_tuple_array_closure(async));
+
+            AssertSql();
+        }
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);

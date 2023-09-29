@@ -80,6 +80,23 @@ ORDER BY `t`.`Name`
 LIMIT @__p_0");
         }
 
+        public override async Task Method_call_on_optional_navigation_translates_to_null_conditional_properly_for_arguments(bool async)
+        {
+            await base.Method_call_on_optional_navigation_translates_to_null_conditional_properly_for_arguments(async);
+
+        AssertSql(
+"""
+SELECT `l`.`Id`, `l`.`Date`, `l`.`Name`
+FROM `Level1` AS `l`
+LEFT JOIN (
+    SELECT `l0`.`Level1_Optional_Id`, `l0`.`Level2_Name`
+    FROM `Level1` AS `l0`
+    WHERE (`l0`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`l0`.`Level1_Required_Id` IS NOT NULL)) AND `l0`.`OneToMany_Required_Inverse2Id` IS NOT NULL
+) AS `t` ON `l`.`Id` = `t`.`Level1_Optional_Id`
+WHERE `t`.`Level2_Name` IS NOT NULL AND (LEFT(`t`.`Level2_Name`, CHAR_LENGTH(`t`.`Level2_Name`)) = `t`.`Level2_Name`)
+""");
+        }
+
         [ConditionalTheory(Skip = "https://github.com/dotnet/efcore/issues/26104")]
         public override Task GroupBy_aggregate_where_required_relationship(bool async)
             => base.GroupBy_aggregate_where_required_relationship(async);

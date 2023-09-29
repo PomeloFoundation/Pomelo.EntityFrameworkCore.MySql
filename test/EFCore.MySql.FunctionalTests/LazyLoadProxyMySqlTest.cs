@@ -28,7 +28,8 @@ LIMIT 1
 
 SELECT `s`.`Id`, `s`.`ParentId`
 FROM `Single` AS `s`
-WHERE `s`.`ParentId` = @__p_0",
+WHERE `s`.`ParentId` = @__p_0
+LIMIT 1",
                 Sql,
                 ignoreLineEndingDifferences: true);
         }

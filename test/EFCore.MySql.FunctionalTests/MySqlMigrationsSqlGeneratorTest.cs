@@ -1618,6 +1618,17 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
                 ignoreLineEndingDifferences: true);
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
+        public override void Sequence_restart_operation(long? startsAt)
+        {
+            base.Sequence_restart_operation(startsAt);
+
+            Assert.Equal(
+                @"TODO" + EOL,
+                Sql,
+                ignoreLineEndingDifferences: true);
+        }
+
         [ConditionalFact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
         public virtual void AlterSequenceOperation_with_minValue_and_maxValue()

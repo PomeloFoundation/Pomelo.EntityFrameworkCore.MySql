@@ -5,14 +5,17 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class SqlExecutorMySqlTest : SqlExecutorTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>
     {
-        public SqlExecutorMySqlTest(NorthwindQueryMySqlFixture<NoopModelCustomizer> fixture)
+        public SqlExecutorMySqlTest(NorthwindQueryMySqlFixture<NoopModelCustomizer> fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
         {
+            Fixture.TestSqlLoggerFactory.Clear();
+            // Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
         protected virtual int DefaultStoredProcedureResult
@@ -23,26 +26,52 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
         public override async Task Executes_stored_procedure(bool async)
         {
-            await base.Executes_stored_procedure(async);
+            using var context = CreateContext();
+
+            Assert.Equal(
+                DefaultStoredProcedureResult,
+                async
+                    ? await context.Database.ExecuteSqlRawAsync(TenMostExpensiveProductsSproc)
+                    : context.Database.ExecuteSqlRaw(TenMostExpensiveProductsSproc));
 
             AssertSql(TenMostExpensiveProductsSproc);
         }
 
         public override async Task Executes_stored_procedure_with_parameter(bool async)
         {
-            await base.Executes_stored_procedure_with_parameter(async);
+            using var context = CreateContext();
+            var parameter = CreateDbParameter("@CustomerID", "ALFKI");
 
-            AssertSql(
+            Assert.Equal(
+                DefaultStoredProcedureResult,
+                async
+                    ? await context.Database.ExecuteSqlRawAsync(CustomerOrderHistorySproc, parameter)
+                    : context.Database.ExecuteSqlRaw(CustomerOrderHistorySproc, parameter));
+
+        AssertSql(
 """
+@CustomerID='ALFKI' (Nullable = false)
 
+CALL `CustOrderHist`(@CustomerID)
 """);
         }
 
         public override async Task Executes_stored_procedure_with_generated_parameter(bool async)
         {
-            await base.Executes_stored_procedure_with_generated_parameter(async);
+            using var context = CreateContext();
 
-            AssertSql(CustomerOrderHistoryWithGeneratedParameterSproc);
+            Assert.Equal(
+                DefaultStoredProcedureResult,
+                async
+                    ? await context.Database.ExecuteSqlRawAsync(CustomerOrderHistoryWithGeneratedParameterSproc, "ALFKI")
+                    : context.Database.ExecuteSqlRaw(CustomerOrderHistoryWithGeneratedParameterSproc, "ALFKI"));
+
+        AssertSql(
+"""
+@p0='ALFKI' (Size = 4000)
+
+CALL `CustOrderHist`(@p0)
+""");
         }
 
         public override async Task Query_with_parameters_interpolated_2(bool async)

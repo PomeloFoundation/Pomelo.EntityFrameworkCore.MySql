@@ -26,17 +26,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         protected override bool CanExecuteQueryString
             => true;
 
-        public override Task DateTimeOffset_Contains_Less_than_Greater_than(bool async)
+        public override async Task DateTimeOffset_Contains_Less_than_Greater_than(bool async)
         {
-            var dto = MySqlTestHelpers.GetExpectedValue(new DateTimeOffset(599898024001234567, new TimeSpan(1, 30, 0)));
-            var start = dto.AddDays(-1);
-            var end = dto.AddDays(1);
-            var dates = new[] { dto };
+            // var dto = MySqlTestHelpers.GetExpectedValue(new DateTimeOffset(599898024001234567, new TimeSpan(1, 30, 0)));
+            // var start = dto.AddDays(-1);
+            // var end = dto.AddDays(1);
+            // var dates = new[] { dto };
+            //
+            // return AssertQuery(
+            //     async,
+            //     ss => ss.Set<Mission>().Where(
+            //         m => start <= m.Timeline.Date && m.Timeline < end && dates.Contains(m.Timeline)));
 
-            return AssertQuery(
-                async,
-                ss => ss.Set<Mission>().Where(
-                    m => start <= m.Timeline.Date && m.Timeline < end && dates.Contains(m.Timeline)));
+            await base.DateTimeOffset_Contains_Less_than_Greater_than(async);
         }
 
         public override Task Where_datetimeoffset_milliseconds_parameter_and_constant(bool async)
@@ -238,6 +240,62 @@ WHERE `m`.`Timeline` > (UTC_TIMESTAMP() - @__timeSpan_0)
         public override Task Correlated_collection_with_groupby_with_complex_grouping_key_not_projecting_identifier_column_with_group_aggregate_in_final_projection(bool async)
         {
             return base.Correlated_collection_with_groupby_with_complex_grouping_key_not_projecting_identifier_column_with_group_aggregate_in_final_projection(async);
+        }
+
+        public override async Task DateTimeOffset_to_unix_time_milliseconds(bool async)
+        {
+            await base.DateTimeOffset_to_unix_time_milliseconds(async);
+
+        AssertSql(
+"""
+@__unixEpochMilliseconds_0='0'
+
+SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, CASE
+    WHEN `o`.`Nickname` IS NOT NULL THEN 'Officer'
+END AS `Discriminator`, `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`, `s1`.`SquadId`, `s1`.`MissionId`
+FROM `Gears` AS `g`
+LEFT JOIN `Officers` AS `o` ON (`g`.`Nickname` = `o`.`Nickname`) AND (`g`.`SquadId` = `o`.`SquadId`)
+INNER JOIN `Squads` AS `s` ON `g`.`SquadId` = `s`.`Id`
+LEFT JOIN `SquadMissions` AS `s1` ON `s`.`Id` = `s1`.`SquadId`
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM `SquadMissions` AS `s0`
+    INNER JOIN `Missions` AS `m` ON `s0`.`MissionId` = `m`.`Id`
+    WHERE (`s`.`Id` = `s0`.`SquadId`) AND (@__unixEpochMilliseconds_0 = (TIMESTAMPDIFF(microsecond, TIMESTAMP '1970-01-01 00:00:00', `m`.`Timeline`)) DIV (1000)))
+ORDER BY `g`.`Nickname`, `g`.`SquadId`, `s`.`Id`, `s1`.`SquadId`
+""");
+        }
+
+        public override async Task DateTimeOffset_to_unix_time_seconds(bool async)
+        {
+            await base.DateTimeOffset_to_unix_time_seconds(async);
+
+            AssertSql(
+"""
+@__unixEpochSeconds_0='0'
+
+SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, CASE
+    WHEN `o`.`Nickname` IS NOT NULL THEN 'Officer'
+END AS `Discriminator`, `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`, `s1`.`SquadId`, `s1`.`MissionId`
+FROM `Gears` AS `g`
+LEFT JOIN `Officers` AS `o` ON (`g`.`Nickname` = `o`.`Nickname`) AND (`g`.`SquadId` = `o`.`SquadId`)
+INNER JOIN `Squads` AS `s` ON `g`.`SquadId` = `s`.`Id`
+LEFT JOIN `SquadMissions` AS `s1` ON `s`.`Id` = `s1`.`SquadId`
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM `SquadMissions` AS `s0`
+    INNER JOIN `Missions` AS `m` ON `s0`.`MissionId` = `m`.`Id`
+    WHERE (`s`.`Id` = `s0`.`SquadId`) AND (@__unixEpochSeconds_0 = TIMESTAMPDIFF(second, TIMESTAMP '1970-01-01 00:00:00', `m`.`Timeline`)))
+ORDER BY `g`.`Nickname`, `g`.`SquadId`, `s`.`Id`, `s1`.`SquadId`
+""");
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.LimitWithNonConstantValue))]
+        public override async Task Where_subquery_with_ElementAt_using_column_as_index(bool async)
+        {
+            await base.Where_subquery_with_ElementAt_using_column_as_index(async);
+
+            AssertSql("");
         }
 
         private string AssertSql(string expected)

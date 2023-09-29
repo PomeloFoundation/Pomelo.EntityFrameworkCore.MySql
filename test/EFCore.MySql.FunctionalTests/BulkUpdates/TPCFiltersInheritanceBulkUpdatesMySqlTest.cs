@@ -167,6 +167,112 @@ WHERE (
         AssertExecuteUpdateSql();
     }
 
+    public override async Task Update_base_type(bool async)
+    {
+        await base.Update_base_type(async);
+
+        AssertSql(
+"""
+SELECT `t`.`Id`, `t`.`CountryId`, `t`.`Name`, `t`.`Species`, `t`.`EagleId`, `t`.`IsFlightless`, `t`.`Group`, `t`.`FoundOn`, `t`.`Discriminator`
+FROM (
+    SELECT `e`.`Id`, `e`.`CountryId`, `e`.`Name`, `e`.`Species`, `e`.`EagleId`, `e`.`IsFlightless`, `e`.`Group`, NULL AS `FoundOn`, 'Eagle' AS `Discriminator`
+    FROM `Eagle` AS `e`
+    UNION ALL
+    SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, NULL AS `Group`, `k`.`FoundOn`, 'Kiwi' AS `Discriminator`
+    FROM `Kiwi` AS `k`
+) AS `t`
+WHERE (`t`.`CountryId` = 1) AND (`t`.`Name` = 'Great spotted kiwi')
+""");
+    }
+
+    public override async Task Update_base_type_with_OfType(bool async)
+    {
+        await base.Update_base_type_with_OfType(async);
+
+        AssertSql(
+"""
+SELECT `t`.`Id`, `t`.`CountryId`, `t`.`Name`, `t`.`Species`, `t`.`EagleId`, `t`.`IsFlightless`, `t`.`FoundOn`, `t`.`Discriminator`
+FROM (
+    SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`, 'Kiwi' AS `Discriminator`
+    FROM `Kiwi` AS `k`
+) AS `t`
+WHERE `t`.`CountryId` = 1
+""");
+    }
+
+    public override async Task Update_base_property_on_derived_type(bool async)
+    {
+        await base.Update_base_property_on_derived_type(async);
+
+        AssertSql(
+"""
+SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
+FROM `Kiwi` AS `k`
+WHERE `k`.`CountryId` = 1
+""",
+                //
+                """
+UPDATE `Kiwi` AS `k`
+SET `k`.`Name` = 'SomeOtherKiwi'
+WHERE `k`.`CountryId` = 1
+""",
+                //
+                """
+SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
+FROM `Kiwi` AS `k`
+WHERE `k`.`CountryId` = 1
+""");
+    }
+
+    public override async Task Update_derived_property_on_derived_type(bool async)
+    {
+        await base.Update_derived_property_on_derived_type(async);
+
+        AssertSql(
+"""
+SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
+FROM `Kiwi` AS `k`
+WHERE `k`.`CountryId` = 1
+""",
+                //
+                """
+UPDATE `Kiwi` AS `k`
+SET `k`.`FoundOn` = 0
+WHERE `k`.`CountryId` = 1
+""",
+                //
+                """
+SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
+FROM `Kiwi` AS `k`
+WHERE `k`.`CountryId` = 1
+""");
+    }
+
+    public override async Task Update_base_and_derived_types(bool async)
+    {
+        await base.Update_base_and_derived_types(async);
+
+        AssertSql(
+"""
+SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
+FROM `Kiwi` AS `k`
+WHERE `k`.`CountryId` = 1
+""",
+                //
+                """
+UPDATE `Kiwi` AS `k`
+SET `k`.`FoundOn` = 0,
+    `k`.`Name` = 'Kiwi'
+WHERE `k`.`CountryId` = 1
+""",
+                //
+                """
+SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
+FROM `Kiwi` AS `k`
+WHERE `k`.`CountryId` = 1
+""");
+    }
+
     protected override void ClearLog()
         => Fixture.TestSqlLoggerFactory.Clear();
 

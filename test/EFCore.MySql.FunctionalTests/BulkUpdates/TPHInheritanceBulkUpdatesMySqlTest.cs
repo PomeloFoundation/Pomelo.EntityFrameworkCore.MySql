@@ -2,6 +2,8 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
@@ -97,15 +99,16 @@ WHERE (
 """
 DELETE `a`
 FROM `Animals` AS `a`
-WHERE EXISTS (
-    SELECT 1
-    FROM `Animals` AS `a0`
-    GROUP BY `a0`.`CountryId`
-    HAVING (COUNT(*) < 3) AND ((
+WHERE `a`.`Id` IN (
+    SELECT (
         SELECT `a1`.`Id`
         FROM `Animals` AS `a1`
         WHERE `a0`.`CountryId` = `a1`.`CountryId`
-        LIMIT 1) = `a`.`Id`))
+        LIMIT 1)
+    FROM `Animals` AS `a0`
+    GROUP BY `a0`.`CountryId`
+    HAVING COUNT(*) < 3
+)
 """);
     }
 
@@ -116,6 +119,7 @@ WHERE EXISTS (
         AssertSql();
     }
 
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.LimitWithinInAllAnySomeSubquery))]
     public override async Task Delete_where_hierarchy_subquery(bool async)
     {
         await base.Delete_where_hierarchy_subquery(async);
@@ -182,6 +186,91 @@ WHERE (
         await base.Update_where_keyless_entity_mapped_to_sql_query(async);
 
         AssertExecuteUpdateSql();
+    }
+
+    public override async Task Update_base_type(bool async)
+    {
+        await base.Update_base_type(async);
+
+        AssertExecuteUpdateSql(
+"""
+UPDATE `Animals` AS `a`
+SET `a`.`Name` = 'Animal'
+WHERE `a`.`Name` = 'Great spotted kiwi'
+""");
+    }
+
+    public override async Task Update_base_type_with_OfType(bool async)
+    {
+        await base.Update_base_type_with_OfType(async);
+
+        AssertExecuteUpdateSql(
+"""
+UPDATE `Animals` AS `a`
+SET `a`.`Name` = 'NewBird'
+WHERE `a`.`Discriminator` = 'Kiwi'
+""");
+    }
+
+    public override async Task Update_base_property_on_derived_type(bool async)
+    {
+        await base.Update_base_property_on_derived_type(async);
+
+        AssertExecuteUpdateSql(
+"""
+UPDATE `Animals` AS `a`
+SET `a`.`Name` = 'SomeOtherKiwi'
+WHERE `a`.`Discriminator` = 'Kiwi'
+""");
+    }
+
+    public override async Task Update_derived_property_on_derived_type(bool async)
+    {
+        await base.Update_derived_property_on_derived_type(async);
+
+        AssertExecuteUpdateSql(
+"""
+UPDATE `Animals` AS `a`
+SET `a`.`FoundOn` = 0
+WHERE `a`.`Discriminator` = 'Kiwi'
+""");
+    }
+
+    public override async Task Update_base_and_derived_types(bool async)
+    {
+        await base.Update_base_and_derived_types(async);
+
+        AssertExecuteUpdateSql(
+"""
+UPDATE `Animals` AS `a`
+SET `a`.`FoundOn` = 0,
+    `a`.`Name` = 'Kiwi'
+WHERE `a`.`Discriminator` = 'Kiwi'
+""");
+    }
+
+    public override async Task Update_with_interface_in_property_expression(bool async)
+    {
+        await base.Update_with_interface_in_property_expression(async);
+
+        AssertExecuteUpdateSql(
+"""
+UPDATE `Drinks` AS `d`
+SET `d`.`SugarGrams` = 0
+WHERE `d`.`Discriminator` = 1
+""");
+    }
+
+    public override async Task Update_with_interface_in_EF_Property_in_property_expression(bool async)
+    {
+        await base.Update_with_interface_in_EF_Property_in_property_expression(async);
+
+        AssertExecuteUpdateSql(
+"""
+UPDATE `Drinks` AS `d`
+SET `d`.`SugarGrams` = 0
+WHERE `d`.`Discriminator` = 1
+""");
     }
 
     protected override void ClearLog()

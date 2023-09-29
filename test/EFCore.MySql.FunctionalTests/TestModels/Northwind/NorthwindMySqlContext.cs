@@ -45,7 +45,7 @@ public class NorthwindMySqlContext : NorthwindRelationalContext
             b =>
             {
                 b.Property(p => p.Quantity).HasColumnType("smallint");
-                b.Property(p => p.Discount).HasColumnType("real");
+                b.Property(p => p.Discount).HasColumnType("float");
             });
     }
 }

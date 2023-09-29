@@ -147,7 +147,7 @@ ORDER BY `t`.`c` DESC, `t`.`CustomerID`
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, `o0`.`OrderID`, `o0`.`ProductID`, `o0`.`Discount`, `o0`.`Quantity`, `o0`.`UnitPrice`
 FROM `Orders` AS `o`
 LEFT JOIN `Order Details` AS `o0` ON `o`.`OrderID` = `o0`.`OrderID`
-WHERE `o`.`CustomerID` IS NOT NULL AND (`o`.`CustomerID` LIKE 'F%')
+WHERE `o`.`CustomerID` LIKE 'F%'
 ORDER BY `o`.`OrderID`, `o0`.`OrderID`
 """);
     }
@@ -247,7 +247,7 @@ SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, `c`.`
 FROM `Orders` AS `o`
 LEFT JOIN `Customers` AS `c` ON `o`.`CustomerID` = `c`.`CustomerID`
 LEFT JOIN `Orders` AS `o0` ON `c`.`CustomerID` = `o0`.`CustomerID`
-WHERE `o`.`CustomerID` IS NOT NULL AND (`o`.`CustomerID` LIKE 'F%')
+WHERE `o`.`CustomerID` LIKE 'F%'
 ORDER BY `o`.`OrderID`, `c`.`CustomerID`
 """);
     }
@@ -664,10 +664,22 @@ ORDER BY `c`.`CustomerID`, `o`.`OrderID`
 
 SELECT `t`.`CustomerID`, `t`.`Address`, `t`.`City`, `t`.`CompanyName`, `t`.`ContactName`, `t`.`ContactTitle`, `t`.`Country`, `t`.`Fax`, `t`.`Phone`, `t`.`PostalCode`, `t`.`Region`, `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM (
-    SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `c`.`CustomerID` <> 'ALFKI' AS `c`
+    SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, NOT (COALESCE(`c`.`CustomerID` IN (
+        SELECT `l`.`value`
+        FROM JSON_TABLE('["ALFKI"]', '$[*]' COLUMNS (
+            `key` FOR ORDINALITY,
+            `value` char(5) PATH '$[0]'
+        )) AS `l`
+    ), FALSE)) AS `c`
     FROM `Customers` AS `c`
     WHERE `c`.`CustomerID` LIKE 'A%'
-    ORDER BY `c`.`CustomerID` <> 'ALFKI'
+    ORDER BY NOT (COALESCE(`c`.`CustomerID` IN (
+        SELECT `l`.`value`
+        FROM JSON_TABLE('["ALFKI"]', '$[*]' COLUMNS (
+            `key` FOR ORDINALITY,
+            `value` char(5) PATH '$[0]'
+        )) AS `l`
+    ), FALSE))
     LIMIT 18446744073709551610 OFFSET @__p_1
 ) AS `t`
 LEFT JOIN `Orders` AS `o` ON `t`.`CustomerID` = `o`.`CustomerID`
@@ -1008,10 +1020,22 @@ ORDER BY `t0`.`CustomerID`, `t1`.`OrderID`, `t1`.`OrderID0`
 
 SELECT `t`.`CustomerID`, `t`.`Address`, `t`.`City`, `t`.`CompanyName`, `t`.`ContactName`, `t`.`ContactTitle`, `t`.`Country`, `t`.`Fax`, `t`.`Phone`, `t`.`PostalCode`, `t`.`Region`, `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM (
-    SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, FALSE AS `c`
+    SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, COALESCE(`c`.`CustomerID` IN (
+        SELECT `l`.`value`
+        FROM JSON_TABLE('[]', '$[*]' COLUMNS (
+            `key` FOR ORDINALITY,
+            `value` char(5) PATH '$[0]'
+        )) AS `l`
+    ), FALSE) AS `c`
     FROM `Customers` AS `c`
     WHERE `c`.`CustomerID` LIKE 'A%'
-    ORDER BY (SELECT 1)
+    ORDER BY COALESCE(`c`.`CustomerID` IN (
+        SELECT `l`.`value`
+        FROM JSON_TABLE('[]', '$[*]' COLUMNS (
+            `key` FOR ORDINALITY,
+            `value` char(5) PATH '$[0]'
+        )) AS `l`
+    ), FALSE)
     LIMIT 18446744073709551610 OFFSET @__p_1
 ) AS `t`
 LEFT JOIN `Orders` AS `o` ON `t`.`CustomerID` = `o`.`CustomerID`
@@ -1052,7 +1076,6 @@ ORDER BY `o`.`OrderID`, `o0`.`OrderID`
     public override async Task Include_collection_with_outer_apply_with_filter_non_equality(bool async)
     {
         await base.Include_collection_with_outer_apply_with_filter_non_equality(async);
-
         AssertSql(
 """
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `t`.`OrderID`, `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
@@ -1171,7 +1194,7 @@ ORDER BY `t`.`c`, `t`.`c0`, `t`.`OrderID`, `t`.`CustomerID0`, `o0`.`OrderID`
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Orders` AS `o`
 LEFT JOIN `Customers` AS `c` ON `o`.`CustomerID` = `c`.`CustomerID`
-WHERE `o`.`CustomerID` IS NOT NULL AND (`o`.`CustomerID` LIKE 'F%')
+WHERE `o`.`CustomerID` LIKE 'F%'
 """);
     }
 
@@ -1384,10 +1407,22 @@ ORDER BY `t`.`OrderID`, `t0`.`OrderID`, `t0`.`OrderID0`, `t0`.`ProductID`, `o3`.
 
 SELECT `t`.`CustomerID`, `t`.`Address`, `t`.`City`, `t`.`CompanyName`, `t`.`ContactName`, `t`.`ContactTitle`, `t`.`Country`, `t`.`Fax`, `t`.`Phone`, `t`.`PostalCode`, `t`.`Region`, `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM (
-    SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `c`.`CustomerID` = 'ALFKI' AS `c`
+    SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, COALESCE(`c`.`CustomerID` IN (
+        SELECT `l`.`value`
+        FROM JSON_TABLE('["ALFKI"]', '$[*]' COLUMNS (
+            `key` FOR ORDINALITY,
+            `value` char(5) PATH '$[0]'
+        )) AS `l`
+    ), FALSE) AS `c`
     FROM `Customers` AS `c`
     WHERE `c`.`CustomerID` LIKE 'A%'
-    ORDER BY `c`.`CustomerID` = 'ALFKI'
+    ORDER BY COALESCE(`c`.`CustomerID` IN (
+        SELECT `l`.`value`
+        FROM JSON_TABLE('["ALFKI"]', '$[*]' COLUMNS (
+            `key` FOR ORDINALITY,
+            `value` char(5) PATH '$[0]'
+        )) AS `l`
+    ), FALSE)
     LIMIT 18446744073709551610 OFFSET @__p_1
 ) AS `t`
 LEFT JOIN `Orders` AS `o` ON `t`.`CustomerID` = `o`.`CustomerID`
@@ -1549,7 +1584,7 @@ ORDER BY `t1`.`CustomerID`, `t1`.`CustomerID0`, `o0`.`OrderID`
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Orders` AS `o`
 LEFT JOIN `Customers` AS `c` ON `o`.`CustomerID` = `c`.`CustomerID`
-WHERE `o`.`CustomerID` IS NOT NULL AND (`o`.`CustomerID` LIKE 'F%')
+WHERE `o`.`CustomerID` LIKE 'F%'
 """);
     }
 
@@ -1779,7 +1814,7 @@ SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, `c`.`
 FROM `Orders` AS `o`
 LEFT JOIN `Customers` AS `c` ON `o`.`CustomerID` = `c`.`CustomerID`
 LEFT JOIN `Order Details` AS `o0` ON `o`.`OrderID` = `o0`.`OrderID`
-WHERE `o`.`CustomerID` IS NOT NULL AND (`o`.`CustomerID` LIKE 'F%')
+WHERE `o`.`CustomerID` LIKE 'F%'
 ORDER BY `o`.`OrderID`, `c`.`CustomerID`, `o0`.`OrderID`
 """);
     }
@@ -1872,10 +1907,22 @@ ORDER BY `t`.`CompanyName` DESC, `t`.`CustomerID`
 
 SELECT `t`.`CustomerID`, `t`.`Address`, `t`.`City`, `t`.`CompanyName`, `t`.`ContactName`, `t`.`ContactTitle`, `t`.`Country`, `t`.`Fax`, `t`.`Phone`, `t`.`PostalCode`, `t`.`Region`, `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM (
-    SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, TRUE AS `c`
+    SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, NOT (COALESCE(`c`.`CustomerID` IN (
+        SELECT `l`.`value`
+        FROM JSON_TABLE('[]', '$[*]' COLUMNS (
+            `key` FOR ORDINALITY,
+            `value` char(5) PATH '$[0]'
+        )) AS `l`
+    ), FALSE)) AS `c`
     FROM `Customers` AS `c`
     WHERE `c`.`CustomerID` LIKE 'A%'
-    ORDER BY (SELECT 1)
+    ORDER BY NOT (COALESCE(`c`.`CustomerID` IN (
+        SELECT `l`.`value`
+        FROM JSON_TABLE('[]', '$[*]' COLUMNS (
+            `key` FOR ORDINALITY,
+            `value` char(5) PATH '$[0]'
+        )) AS `l`
+    ), FALSE))
     LIMIT 18446744073709551610 OFFSET @__p_1
 ) AS `t`
 LEFT JOIN `Orders` AS `o` ON `t`.`CustomerID` = `o`.`CustomerID`
@@ -1908,7 +1955,7 @@ SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, `c`.`
 FROM `Orders` AS `o`
 LEFT JOIN `Customers` AS `c` ON `o`.`CustomerID` = `c`.`CustomerID`
 LEFT JOIN `Order Details` AS `o0` ON `o`.`OrderID` = `o0`.`OrderID`
-WHERE `o`.`CustomerID` IS NOT NULL AND (`o`.`CustomerID` LIKE 'F%')
+WHERE `o`.`CustomerID` LIKE 'F%'
 ORDER BY `o`.`OrderID`, `c`.`CustomerID`, `o0`.`OrderID`
 """);
     }
@@ -1979,7 +2026,7 @@ SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, `c`.`
 FROM `Orders` AS `o`
 LEFT JOIN `Customers` AS `c` ON `o`.`CustomerID` = `c`.`CustomerID`
 LEFT JOIN `Orders` AS `o0` ON `c`.`CustomerID` = `o0`.`CustomerID`
-WHERE `o`.`CustomerID` IS NOT NULL AND (`o`.`CustomerID` LIKE 'F%')
+WHERE `o`.`CustomerID` LIKE 'F%'
 ORDER BY `o`.`OrderID`, `c`.`CustomerID`
 """);
     }
@@ -2277,6 +2324,29 @@ ORDER BY `c`.`CustomerID`, `t`.`OrderDate` DESC
         AssertSql();
     }
 
+    public override async Task Outer_identifier_correctly_determined_when_doing_include_on_right_side_of_left_join(bool async)
+    {
+        await base.Outer_identifier_correctly_determined_when_doing_include_on_right_side_of_left_join(async);
+
+        AssertSql(
+"""
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, `o0`.`OrderID`, `o0`.`ProductID`, `o0`.`Discount`, `o0`.`Quantity`, `o0`.`UnitPrice`
+FROM `Customers` AS `c`
+LEFT JOIN `Orders` AS `o` ON `c`.`CustomerID` = `o`.`CustomerID`
+LEFT JOIN `Order Details` AS `o0` ON `o`.`OrderID` = `o0`.`OrderID`
+WHERE `c`.`City` = 'Seattle'
+ORDER BY `c`.`CustomerID`, `o`.`OrderID`, `o0`.`OrderID`
+""");
+    }
+
     private void AssertSql(params string[] expected)
         => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 }
+
+
+
+
+
+
+
+

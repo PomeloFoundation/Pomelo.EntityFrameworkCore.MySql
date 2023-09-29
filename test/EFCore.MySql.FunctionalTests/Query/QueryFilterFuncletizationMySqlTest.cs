@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
@@ -22,34 +22,56 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
         public override void DbContext_list_is_parameterized()
         {
-            using var context = CreateContext();
-            // Default value of TenantIds is null InExpression over null values throws
-            Assert.Throws<NullReferenceException>(() => context.Set<ListFilter>().ToList());
+            base.DbContext_list_is_parameterized();
 
-            context.TenantIds = new List<int>();
-            var query = context.Set<ListFilter>().ToList();
-            Assert.Empty(query);
-
-            context.TenantIds = new List<int> { 1 };
-            query = context.Set<ListFilter>().ToList();
-            Assert.Single(query);
-
-            context.TenantIds = new List<int> { 2, 3 };
-            query = context.Set<ListFilter>().ToList();
-            Assert.Equal(2, query.Count);
-
-            AssertSql(
-                @"SELECT `l`.`Id`, `l`.`Tenant`
+        AssertSql(
+"""
+SELECT `l`.`Id`, `l`.`Tenant`
 FROM `ListFilter` AS `l`
-WHERE FALSE",
+WHERE `l`.`Tenant` IN (
+    SELECT `e`.`value`
+    FROM JSON_TABLE(NULL, '$[*]' COLUMNS (
+        `key` FOR ORDINALITY,
+        `value` int PATH '$[0]'
+    )) AS `e`
+)
+""",
                 //
-                @"SELECT `l`.`Id`, `l`.`Tenant`
+                """
+SELECT `l`.`Id`, `l`.`Tenant`
 FROM `ListFilter` AS `l`
-WHERE `l`.`Tenant` = 1",
+WHERE `l`.`Tenant` IN (
+    SELECT `e`.`value`
+    FROM JSON_TABLE('[]', '$[*]' COLUMNS (
+        `key` FOR ORDINALITY,
+        `value` int PATH '$[0]'
+    )) AS `e`
+)
+""",
                 //
-                @"SELECT `l`.`Id`, `l`.`Tenant`
+                """
+SELECT `l`.`Id`, `l`.`Tenant`
 FROM `ListFilter` AS `l`
-WHERE `l`.`Tenant` IN (2, 3)");
+WHERE `l`.`Tenant` IN (
+    SELECT `e`.`value`
+    FROM JSON_TABLE('[1]', '$[*]' COLUMNS (
+        `key` FOR ORDINALITY,
+        `value` int PATH '$[0]'
+    )) AS `e`
+)
+""",
+                //
+                """
+SELECT `l`.`Id`, `l`.`Tenant`
+FROM `ListFilter` AS `l`
+WHERE `l`.`Tenant` IN (
+    SELECT `e`.`value`
+    FROM JSON_TABLE('[2,3]', '$[*]' COLUMNS (
+        `key` FOR ORDINALITY,
+        `value` int PATH '$[0]'
+    )) AS `e`
+)
+""");
         }
 
         private void AssertSql(params string[] expected)
@@ -61,3 +83,7 @@ WHERE `l`.`Tenant` IN (2, 3)");
         }
     }
 }
+
+
+
+

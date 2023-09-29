@@ -53,7 +53,91 @@ FROM `Owner` AS `o`
 DELETE `p`
 FROM `Posts` AS `p`
 LEFT JOIN `Blogs` AS `b` ON `p`.`BlogId` = `b`.`Id`
-WHERE `b`.`Title` IS NOT NULL AND (`b`.`Title` LIKE 'Arthur%')
+WHERE `b`.`Title` LIKE 'Arthur%'
+""");
+    }
+
+    public override async Task Update_non_owned_property_on_entity_with_owned(bool async)
+    {
+        await base.Update_non_owned_property_on_entity_with_owned(async);
+
+        AssertSql(
+"""
+UPDATE `Owner` AS `o`
+SET `o`.`Title` = 'SomeValue'
+""");
+    }
+
+    public override async Task Update_non_owned_property_on_entity_with_owned2(bool async)
+    {
+        await base.Update_non_owned_property_on_entity_with_owned2(async);
+
+        AssertSql(
+"""
+UPDATE `Owner` AS `o`
+SET `o`.`Title` = CONCAT(COALESCE(`o`.`Title`, ''), '_Suffix')
+""");
+    }
+
+    public override async Task Update_owned_and_non_owned_properties_with_table_sharing(bool async)
+    {
+        await base.Update_owned_and_non_owned_properties_with_table_sharing(async);
+
+        AssertSql(
+"""
+UPDATE `Owner` AS `o`
+SET `o`.`OwnedReference_Number` = CHAR_LENGTH(`o`.`Title`),
+    `o`.`Title` = CAST(`o`.`OwnedReference_Number` AS char)
+""");
+    }
+
+    public override async Task Update_main_table_in_entity_with_entity_splitting(bool async)
+    {
+        await base.Update_main_table_in_entity_with_entity_splitting(async);
+
+        AssertSql(
+"""
+UPDATE `Blogs` AS `b`
+SET `b`.`CreationTimestamp` = TIMESTAMP '2020-01-01 00:00:00'
+""");
+    }
+
+    public override async Task Update_non_main_table_in_entity_with_entity_splitting(bool async)
+    {
+        await base.Update_non_main_table_in_entity_with_entity_splitting(async);
+
+        AssertSql(
+"""
+UPDATE `BlogsPart1` AS `b0`
+SET `b0`.`Rating` = CHAR_LENGTH(`b0`.`Title`),
+    `b0`.`Title` = CAST(`b0`.`Rating` AS char)
+""");
+    }
+
+    public override async Task Delete_entity_with_auto_include(bool async)
+    {
+        await base.Delete_entity_with_auto_include(async);
+
+        AssertSql(
+"""
+DELETE `c`
+FROM `Context30572_Principal` AS `c`
+LEFT JOIN `Context30572_Dependent` AS `c0` ON `c`.`DependentId` = `c0`.`Id`
+""");
+    }
+
+    public override async Task Update_with_alias_uniquification_in_setter_subquery(bool async)
+    {
+        await base.Update_with_alias_uniquification_in_setter_subquery(async);
+
+        AssertSql(
+"""
+UPDATE `Orders` AS `o`
+SET `o`.`Total` = (
+    SELECT COALESCE(SUM(`o0`.`Amount`), 0)
+    FROM `OrderProduct` AS `o0`
+    WHERE `o`.`Id` = `o0`.`OrderId`)
+WHERE `o`.`Id` = 1
 """);
     }
 

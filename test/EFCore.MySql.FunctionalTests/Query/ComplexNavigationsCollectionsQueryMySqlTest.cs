@@ -131,13 +131,15 @@ ORDER BY `l`.`Id`, `t`.`Id`");
             await base.Include_collection_with_conditional_order_by(async);
 
             AssertSql(
-                @"SELECT `l`.`Id`, `l`.`Date`, `l`.`Name`, `l`.`OneToMany_Optional_Self_Inverse1Id`, `l`.`OneToMany_Required_Self_Inverse1Id`, `l`.`OneToOne_Optional_Self1Id`, `l0`.`Id`, `l0`.`Date`, `l0`.`Level1_Optional_Id`, `l0`.`Level1_Required_Id`, `l0`.`Name`, `l0`.`OneToMany_Optional_Inverse2Id`, `l0`.`OneToMany_Optional_Self_Inverse2Id`, `l0`.`OneToMany_Required_Inverse2Id`, `l0`.`OneToMany_Required_Self_Inverse2Id`, `l0`.`OneToOne_Optional_PK_Inverse2Id`, `l0`.`OneToOne_Optional_Self2Id`
+"""
+SELECT `l`.`Id`, `l`.`Date`, `l`.`Name`, `l`.`OneToMany_Optional_Self_Inverse1Id`, `l`.`OneToMany_Required_Self_Inverse1Id`, `l`.`OneToOne_Optional_Self1Id`, `l0`.`Id`, `l0`.`Date`, `l0`.`Level1_Optional_Id`, `l0`.`Level1_Required_Id`, `l0`.`Name`, `l0`.`OneToMany_Optional_Inverse2Id`, `l0`.`OneToMany_Optional_Self_Inverse2Id`, `l0`.`OneToMany_Required_Inverse2Id`, `l0`.`OneToMany_Required_Self_Inverse2Id`, `l0`.`OneToOne_Optional_PK_Inverse2Id`, `l0`.`OneToOne_Optional_Self2Id`
 FROM `LevelOne` AS `l`
 LEFT JOIN `LevelTwo` AS `l0` ON `l`.`Id` = `l0`.`OneToMany_Optional_Inverse2Id`
 ORDER BY CASE
-    WHEN `l`.`Name` IS NOT NULL AND (`l`.`Name` LIKE '%03') THEN 1
+    WHEN `l`.`Name` LIKE '%03' THEN 1
     ELSE 2
-END, `l`.`Id`");
+END, `l`.`Id`
+""");
         }
 
         public override async Task Multiple_complex_include_select(bool async)
@@ -818,16 +820,24 @@ ORDER BY `l`.`Id`, `l0`.`Id`, `l1`.`Id`");
         {
             await base.LeftJoin_with_Any_on_outer_source_and_projecting_collection_from_inner(async);
 
-            AssertSql(
-                @"SELECT CASE
+        AssertSql(
+"""
+SELECT CASE
     WHEN `l0`.`Id` IS NULL THEN 0
     ELSE `l0`.`Id`
 END, `l`.`Id`, `l0`.`Id`, `l1`.`Id`, `l1`.`Level2_Optional_Id`, `l1`.`Level2_Required_Id`, `l1`.`Name`, `l1`.`OneToMany_Optional_Inverse3Id`, `l1`.`OneToMany_Optional_Self_Inverse3Id`, `l1`.`OneToMany_Required_Inverse3Id`, `l1`.`OneToMany_Required_Self_Inverse3Id`, `l1`.`OneToOne_Optional_PK_Inverse3Id`, `l1`.`OneToOne_Optional_Self3Id`
 FROM `LevelOne` AS `l`
 LEFT JOIN `LevelTwo` AS `l0` ON `l`.`Id` = `l0`.`Level1_Required_Id`
 LEFT JOIN `LevelThree` AS `l1` ON `l0`.`Id` = `l1`.`OneToMany_Required_Inverse3Id`
-WHERE `l`.`Name` IN ('L1 01', 'L1 02')
-ORDER BY `l`.`Id`, `l0`.`Id`");
+WHERE EXISTS (
+    SELECT 1
+    FROM JSON_TABLE('["L1 01","L1 02"]', '$[*]' COLUMNS (
+        `key` FOR ORDINALITY,
+        `value` longtext PATH '$[0]'
+    )) AS `v`
+    WHERE (`v`.`value` = `l`.`Name`) OR (`v`.`value` IS NULL AND (`l`.`Name` IS NULL)))
+ORDER BY `l`.`Id`, `l0`.`Id`
+""");
         }
 
         public override async Task Select_subquery_single_nested_subquery(bool async)

@@ -43,14 +43,14 @@ public class OperatorsQueryMySqlTest : OperatorsQueryTestBase
 
         AssertSql(
 """
-SELECT o."Id" AS "Id1", o0."Id" AS "Id2", o1."Id" AS "Id3", o2."Id" AS "Id4", o3."Id" AS "Id5"
-FROM "OperatorEntityString" AS o
-CROSS JOIN "OperatorEntityString" AS o0
-CROSS JOIN "OperatorEntityString" AS o1
-CROSS JOIN "OperatorEntityString" AS o2
-CROSS JOIN "OperatorEntityInt" AS o3
-WHERE ((o."Value" = 'A' AND o."Value" IS NOT NULL AND o0."Value" = 'A' AND o0."Value" IS NOT NULL) OR (o1."Value" = 'B' AND o1."Value" IS NOT NULL AND o2."Value" = 'B' AND o2."Value" IS NOT NULL)) AND o3."Value" = 2
-ORDER BY o."Id" NULLS FIRST, o0."Id" NULLS FIRST, o1."Id" NULLS FIRST, o2."Id" NULLS FIRST, o3."Id" NULLS FIRST
+SELECT `o`.`Id` AS `Id1`, `o0`.`Id` AS `Id2`, `o1`.`Id` AS `Id3`, `o2`.`Id` AS `Id4`, `o3`.`Id` AS `Id5`
+FROM `OperatorEntityString` AS `o`
+CROSS JOIN `OperatorEntityString` AS `o0`
+CROSS JOIN `OperatorEntityString` AS `o1`
+CROSS JOIN `OperatorEntityString` AS `o2`
+CROSS JOIN `OperatorEntityInt` AS `o3`
+WHERE ((((`o`.`Value` = 'A') AND `o`.`Value` IS NOT NULL) AND ((`o0`.`Value` = 'A') AND `o0`.`Value` IS NOT NULL)) | (((`o1`.`Value` = 'B') AND `o1`.`Value` IS NOT NULL) AND ((`o2`.`Value` = 'B') AND `o2`.`Value` IS NOT NULL))) AND (`o3`.`Value` = 2)
+ORDER BY `o`.`Id`, `o0`.`Id`, `o1`.`Id`, `o2`.`Id`, `o3`.`Id`
 """);
     }
 
@@ -60,11 +60,11 @@ ORDER BY o."Id" NULLS FIRST, o0."Id" NULLS FIRST, o1."Id" NULLS FIRST, o2."Id" N
 
         AssertSql(
 """
-SELECT (~(-(-(o1."Value" + o."Value" + 2)))) % (-(o0."Value" + o0."Value") - o."Value")
-FROM "OperatorEntityLong" AS o
-CROSS JOIN "OperatorEntityLong" AS o0
-CROSS JOIN "OperatorEntityLong" AS o1
-ORDER BY o."Id" NULLS FIRST, o0."Id" NULLS FIRST, o1."Id" NULLS FIRST
+SELECT CAST(~-(-((`o1`.`Value` + `o`.`Value`) + 2)) AS signed) % (-(`o0`.`Value` + `o0`.`Value`) - `o`.`Value`)
+FROM `OperatorEntityLong` AS `o`
+CROSS JOIN `OperatorEntityLong` AS `o0`
+CROSS JOIN `OperatorEntityLong` AS `o1`
+ORDER BY `o`.`Id`, `o0`.`Id`, `o1`.`Id`
 """);
     }
 
@@ -74,9 +74,9 @@ ORDER BY o."Id" NULLS FIRST, o0."Id" NULLS FIRST, o1."Id" NULLS FIRST
 
         AssertSql(
 """
-SELECT `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`
-FROM `Squads` AS `s`
-WHERE `s`.`Id` = -`s`.`Id`
+SELECT `o`.`Id`
+FROM `OperatorEntityInt` AS `o`
+WHERE `o`.`Id` = -`o`.`Value`
 """);
     }
 
@@ -86,9 +86,9 @@ WHERE `s`.`Id` = -`s`.`Id`
 
         AssertSql(
 """
-SELECT `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`
-FROM `Squads` AS `s`
-WHERE -(-`s`.`Id`) = `s`.`Id`
+SELECT `o`.`Id`
+FROM `OperatorEntityInt` AS `o`
+WHERE -(-`o`.`Value`) = `o`.`Value`
 """);
     }
 
@@ -98,9 +98,10 @@ WHERE -(-`s`.`Id`) = `s`.`Id`
 
         AssertSql(
 """
-SELECT `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`
-FROM `Squads` AS `s`
-WHERE `s`.`Id` = -(`s`.`Id` + `s`.`Id`)
+SELECT `o`.`Id` AS `Id1`, `o0`.`Id` AS `Id2`
+FROM `OperatorEntityInt` AS `o`
+CROSS JOIN `OperatorEntityInt` AS `o0`
+WHERE -`o`.`Value` = -(`o`.`Id` + `o0`.`Value`)
 """);
     }
 
@@ -110,9 +111,9 @@ WHERE `s`.`Id` = -(`s`.`Id` + `s`.`Id`)
 
         AssertSql(
 """
-SELECT `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`
-FROM `Squads` AS `s`
-WHERE `s`.`Name` IS NOT NULL AND NOT (`s`.`Name` LIKE 'us%')
+SELECT `o`.`Id`
+FROM `OperatorEntityString` AS `o`
+WHERE `o`.`Value` NOT LIKE 'A%' OR (`o`.`Value` IS NULL)
 """);
     }
 

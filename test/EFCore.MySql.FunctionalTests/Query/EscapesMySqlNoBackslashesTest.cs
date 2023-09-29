@@ -80,10 +80,18 @@ WHERE `a`.`Name` = @__artistName_0");
         {
             await base.Where_contains_query_escapes(async);
 
-            AssertSql(
-                @"SELECT `a`.`ArtistId`, `a`.`Name`
+        AssertSql(
+"""
+SELECT `a`.`ArtistId`, `a`.`Name`
 FROM `Artists` AS `a`
-WHERE `a`.`Name` IN ('Back\slasher''s', 'John''s Chill Box')");
+WHERE `a`.`Name` IN (
+    SELECT `a0`.`value`
+    FROM JSON_TABLE('["Back\\slasher\u0027s","John\u0027s Chill Box"]', '$[*]' COLUMNS (
+        `key` FOR ORDINALITY,
+        `value` longtext PATH '$[0]'
+    )) AS `a0`
+)
+""");
         }
 
         public class EscapesMySqlNoBackslashesFixture : EscapesMySqlFixtureBase

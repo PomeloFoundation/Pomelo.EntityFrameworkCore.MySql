@@ -133,6 +133,88 @@ WHERE (
         AssertExecuteUpdateSql();
     }
 
+    public override async Task Update_base_and_derived_types(bool async)
+    {
+        await base.Update_base_and_derived_types(async);
+
+        AssertExecuteUpdateSql();
+    }
+
+    public override async Task Update_base_type(bool async)
+    {
+        await base.Update_base_type(async);
+
+        AssertExecuteUpdateSql(
+"""
+UPDATE `Animals` AS `a`
+SET `a`.`Name` = 'Animal'
+WHERE `a`.`Name` = 'Great spotted kiwi'
+""");
+    }
+
+    public override async Task Update_base_type_with_OfType(bool async)
+    {
+        await base.Update_base_type_with_OfType(async);
+
+        AssertExecuteUpdateSql(
+"""
+UPDATE `Animals` AS `a`
+LEFT JOIN `Kiwi` AS `k` ON `a`.`Id` = `k`.`Id`
+SET `a`.`Name` = 'NewBird'
+WHERE `k`.`Id` IS NOT NULL
+""");
+    }
+
+    public override async Task Update_base_property_on_derived_type(bool async)
+    {
+        await base.Update_base_property_on_derived_type(async);
+
+        AssertExecuteUpdateSql(
+"""
+UPDATE `Animals` AS `a`
+INNER JOIN `Birds` AS `b` ON `a`.`Id` = `b`.`Id`
+INNER JOIN `Kiwi` AS `k` ON `a`.`Id` = `k`.`Id`
+SET `a`.`Name` = 'SomeOtherKiwi'
+""");
+    }
+
+    public override async Task Update_derived_property_on_derived_type(bool async)
+    {
+        await base.Update_derived_property_on_derived_type(async);
+
+        AssertExecuteUpdateSql(
+"""
+UPDATE `Animals` AS `a`
+INNER JOIN `Birds` AS `b` ON `a`.`Id` = `b`.`Id`
+INNER JOIN `Kiwi` AS `k` ON `a`.`Id` = `k`.`Id`
+SET `k`.`FoundOn` = 0
+""");
+    }
+
+    public override async Task Update_with_interface_in_property_expression(bool async)
+    {
+        await base.Update_with_interface_in_property_expression(async);
+
+        AssertExecuteUpdateSql(
+"""
+UPDATE `Drinks` AS `d`
+INNER JOIN `Coke` AS `c` ON `d`.`Id` = `c`.`Id`
+SET `c`.`SugarGrams` = 0
+""");
+    }
+
+    public override async Task Update_with_interface_in_EF_Property_in_property_expression(bool async)
+    {
+        await base.Update_with_interface_in_EF_Property_in_property_expression(async);
+
+        AssertExecuteUpdateSql(
+"""
+UPDATE `Drinks` AS `d`
+INNER JOIN `Coke` AS `c` ON `d`.`Id` = `c`.`Id`
+SET `c`.`SugarGrams` = 0
+""");
+    }
+
     protected override void ClearLog()
         => Fixture.TestSqlLoggerFactory.Clear();
 
