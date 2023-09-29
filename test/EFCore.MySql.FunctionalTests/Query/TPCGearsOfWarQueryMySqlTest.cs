@@ -11973,7 +11973,7 @@ WHERE (`t`.`HasSoulPatch` = TRUE) AND `t`.`HasSoulPatch` IN (FALSE, TRUE)
 
 SELECT `c`.`Name`, `c`.`Location`, `c`.`Nation`
 FROM `Cities` AS `c`
-WHERE (`c`.`Nation` = @__place_0) OR (`c`.`Location` = @__place_0)
+WHERE ((`c`.`Nation` = @__place_0) OR (`c`.`Location` = @__place_0)) OR (`c`.`Location` = @__place_0)
 """);
     }
 

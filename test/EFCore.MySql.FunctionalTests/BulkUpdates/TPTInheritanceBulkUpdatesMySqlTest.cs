@@ -144,6 +144,30 @@ WHERE (
         AssertExecuteUpdateSql();
     }
 
+    public override async Task Update_with_interface_in_property_expression(bool async)
+    {
+        await base.Update_with_interface_in_property_expression(async);
+
+        AssertSql(
+"""
+SELECT `d`.`Id`, `d`.`SortIndex`, `c`.`CaffeineGrams`, `c`.`CokeCO2`, `c`.`SugarGrams`
+FROM `Drinks` AS `d`
+INNER JOIN `Coke` AS `c` ON `d`.`Id` = `c`.`Id`
+""");
+    }
+
+    public override async Task Update_with_interface_in_EF_Property_in_property_expression(bool async)
+    {
+        await base.Update_with_interface_in_EF_Property_in_property_expression(async);
+
+        AssertSql(
+"""
+SELECT `d`.`Id`, `d`.`SortIndex`, `c`.`CaffeineGrams`, `c`.`CokeCO2`, `c`.`SugarGrams`
+FROM `Drinks` AS `d`
+INNER JOIN `Coke` AS `c` ON `d`.`Id` = `c`.`Id`
+""");
+    }
+
     protected override void ClearLog()
         => Fixture.TestSqlLoggerFactory.Clear();
 
