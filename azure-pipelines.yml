@@ -424,20 +424,23 @@ jobs:
 
             foreach ($projectFile in $projectFiles)
             {
-              echo "Pack command: dotnet " + (($arguments + $projectFile) -join ' ')
+              echo "Pack command: dotnet $(($arguments + $projectFile) -join ' ')"
               & dotnet ($arguments + $projectFile)
             }
 
             $pushToAzureArtifacts = $pack
             $publishSymbolsForAzureArtifacts = $pushToAzureArtifacts
+            $pushToMygetOrg = $pack
             $pushToNugetOrg = $officialBuild
 
             echo "pushToAzureArtifacts: $pushToAzureArtifacts"
             echo "publishSymbolsForAzureArtifacts: $publishSymbolsForAzureArtifacts"
+            echo "pushToMygetOrg: $pushToMygetOrg"
             echo "pushToNugetOrg: $pushToNugetOrg"
 
             echo "##vso[task.setvariable variable=Pack.PushToAzureArtifacts]$pushToAzureArtifacts"
             echo "##vso[task.setvariable variable=Pack.PublishSymbolsForAzureArtifacts]$publishSymbolsForAzureArtifacts"
+            echo "##vso[task.setvariable variable=Pack.PushToMygetOrg]$pushToMygetOrg"
             echo "##vso[task.setvariable variable=Pack.PushToNugetOrg]$pushToNugetOrg"
           }
         displayName: "NuGet Pack"
@@ -456,10 +459,18 @@ jobs:
           indexSources: false
         condition: and(succeededOrFailed(), eq(variables['Pack.PublishSymbolsForAzureArtifacts'],'true'))
       - task: NuGetCommand@2
+        displayName: "NuGet Push - myget.org"
+        inputs:
+          command: push
+          nuGetFeedType: external
+          publishFeedCredentials: MygetOrg-Pomelo-AllPackages-PushNew
+          packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
+        condition: and(succeededOrFailed(), eq(variables['Pack.PushToMygetOrg'],'true'))
+      - task: NuGetCommand@2
         displayName: "NuGet Push - nuget.org"
         inputs:
           command: push
           nuGetFeedType: external
           publishFeedCredentials: NugetOrg-PomeloFoundation-AllPackages-PushNew
-          packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+          packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
         condition: and(succeededOrFailed(), eq(variables['Pack.PushToNugetOrg'],'true'))
