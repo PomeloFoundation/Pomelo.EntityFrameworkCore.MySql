@@ -110,6 +110,39 @@ WHERE `l0`.`Name` IS NOT NULL AND (LEFT(`l0`.`Name`, CHAR_LENGTH(`l0`.`Name`)) =
 """);
         }
 
+        // CHECK: Flaky only on MySQL 5.7.
+        [SupportedServerVersionCondition("8.0.0-mysql", "0.0.0-mariadb")]
+        public override async Task Member_pushdown_with_multiple_collections(bool async)
+        {
+            await base.Member_pushdown_with_multiple_collections(async);
+
+        AssertSql(
+"""
+SELECT (
+    SELECT `l0`.`Name`
+    FROM `LevelThree` AS `l0`
+    WHERE (
+        SELECT `l1`.`Id`
+        FROM `LevelTwo` AS `l1`
+        WHERE `l`.`Id` = `l1`.`OneToMany_Optional_Inverse2Id`
+        ORDER BY `l1`.`Id`
+        LIMIT 1) IS NOT NULL AND (((
+        SELECT `l2`.`Id`
+        FROM `LevelTwo` AS `l2`
+        WHERE `l`.`Id` = `l2`.`OneToMany_Optional_Inverse2Id`
+        ORDER BY `l2`.`Id`
+        LIMIT 1) = `l0`.`OneToMany_Optional_Inverse3Id`) OR ((
+        SELECT `l2`.`Id`
+        FROM `LevelTwo` AS `l2`
+        WHERE `l`.`Id` = `l2`.`OneToMany_Optional_Inverse2Id`
+        ORDER BY `l2`.`Id`
+        LIMIT 1) IS NULL AND (`l0`.`OneToMany_Optional_Inverse3Id` IS NULL)))
+    ORDER BY `l0`.`Id`
+    LIMIT 1)
+FROM `LevelOne` AS `l`
+""");
+        }
+
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
     }
