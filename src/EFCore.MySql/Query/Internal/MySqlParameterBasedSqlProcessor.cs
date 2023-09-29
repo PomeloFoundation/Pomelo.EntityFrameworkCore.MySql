@@ -55,9 +55,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
             canCache &= canCache3;
 
-            // Run the compatibility checks as late in the query pipeline (before the actual SQL translation happens) as reasonable.
-            queryExpression = new MySqlCompatibilityExpressionVisitor(_options).Visit(queryExpression);
-
             return queryExpression;
         }
 

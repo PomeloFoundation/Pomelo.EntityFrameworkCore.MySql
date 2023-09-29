@@ -36,6 +36,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 query = new MySqlBug96947WorkaroundExpressionVisitor(_sqlExpressionFactory).Visit(query);
             }
 
+            // Run the compatibility checks as late in the query translation pipeline as reasonable.
+            query = new MySqlCompatibilityExpressionVisitor(_options).Visit(query);
+
             return query;
         }
     }
