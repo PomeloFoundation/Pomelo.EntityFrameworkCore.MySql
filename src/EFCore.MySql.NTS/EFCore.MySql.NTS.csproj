@@ -3,7 +3,6 @@
   <PropertyGroup>
     <Description>NetTopologySuite support for Pomelo's MySQL provider for Entity Framework Core.</Description>
     <TargetFramework>$(PomeloTargetFramework)</TargetFramework>
-    <MinClientVersion>3.6</MinClientVersion>
     <AssemblyName>Pomelo.EntityFrameworkCore.MySql.NetTopologySuite</AssemblyName>
     <RootNamespace>Pomelo.EntityFrameworkCore.MySql</RootNamespace>
     <IsPackable>true</IsPackable>

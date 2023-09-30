@@ -3,7 +3,6 @@
   <PropertyGroup>
     <Description>JSON support using System.Text.Json for Pomelo's MySQL provider for Entity Framework Core.</Description>
     <TargetFramework>$(PomeloTargetFramework)</TargetFramework>
-    <MinClientVersion>3.6</MinClientVersion>
     <AssemblyName>Pomelo.EntityFrameworkCore.MySql.Json.Microsoft</AssemblyName>
     <RootNamespace>Pomelo.EntityFrameworkCore.MySql.Json.Microsoft</RootNamespace>
     <IsPackable>true</IsPackable>

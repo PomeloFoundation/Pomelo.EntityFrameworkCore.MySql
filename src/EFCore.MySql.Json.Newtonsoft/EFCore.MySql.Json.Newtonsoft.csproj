@@ -3,7 +3,6 @@
   <PropertyGroup>
     <Description>JSON support using Newtonsoft.Json (JSON.NET) for Pomelo's MySQL provider for Entity Framework Core.</Description>
     <TargetFramework>$(PomeloTargetFramework)</TargetFramework>
-    <MinClientVersion>3.6</MinClientVersion>
     <AssemblyName>Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft</AssemblyName>
     <RootNamespace>Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft</RootNamespace>
     <IsPackable>true</IsPackable>
