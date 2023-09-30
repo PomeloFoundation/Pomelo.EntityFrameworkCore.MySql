@@ -33,10 +33,15 @@
     <UseVersionSuffixOverride Condition="'$(VersionSuffix)' != ''">true</UseVersionSuffixOverride>
   </PropertyGroup>
 
-  <PropertyGroup Label="Version Suffix Handling" Condition="'$(UseVersionOverride)' != 'true' And '$(UseVersionSuffixOverride)' != 'true' And ('$(OfficialVersion)' == '' Or $(OfficialVersion.Contains('-')))">
+  <PropertyGroup Label="Version Suffix Handling" Condition="'$(UseVersionOverride)' != 'true' And '$(UseVersionSuffixOverride)' != 'true' And ('$(OfficialVersion)' == '' Or ($(OfficialVersion.Contains('-')) And '$(OfficialVersion)' != '-debug'))">
     <VersionSuffix>$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</VersionSuffix>
     <VersionSuffix Condition="'$(ContinuousIntegrationTimestamp)' != ''">$(VersionSuffix).ci.$(ContinuousIntegrationTimestamp)</VersionSuffix>
+    <VersionSuffix Condition="'$(Configuration)' == 'Debug'">$(VersionSuffix).debug</VersionSuffix>
     <VersionSuffix Condition="'$(BuildSha)' != ''">$(VersionSuffix)+sha.$(BuildSha)</VersionSuffix>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(VersionSuffix)' == ''">
+    <VersionSuffix Condition="'$(Configuration)' == 'Debug'">debug</VersionSuffix>
   </PropertyGroup>
 
   <Target Name="EnsureVersionParameters" BeforeTargets="CoreBuild" Condition="'$(UseVersionOverride)' != 'true' And '$(UseVersionSuffixOverride)' != 'true'">

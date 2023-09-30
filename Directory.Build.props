@@ -13,12 +13,15 @@
     <PackageIcon>icon.png</PackageIcon>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <LangVersion>latest</LangVersion>
-    <DebugType>portable</DebugType>
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql.git</RepositoryUrl>
+    <RepositoryUrl>https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql</RepositoryUrl>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DebugType Condition="'$(DebugType)' == ''">portable</DebugType>
   </PropertyGroup>
 
   <PropertyGroup>

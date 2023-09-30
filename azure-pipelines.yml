@@ -8,7 +8,8 @@ trigger:
 variables:
   isPullRequest: $[eq(variables['Build.Reason'], 'PullRequest')]
   pullRequestSourceBranch: $[variables['System.PullRequest.SourceBranch']]
-  skipWindowsTests: $[and(eq(variables['isPullRequest'], 'True'), ne(contains(variables['pullRequestSourceBranch'], 'windows'), 'True'))]
+  skipAllTests: true
+  skipWindowsTests: $[or(eq(variables['skipAllTests'], true), and(eq(variables['isPullRequest'], 'True'), ne(contains(variables['pullRequestSourceBranch'], 'windows'), 'True')))]
   mysqlCurrentSqlMode: ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
   mysqlLegacySqlMode: ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
   # Currently no ONLY_FULL_GROUP_BY, see #1167:
@@ -38,79 +39,79 @@ jobs:
           databaseServerType: 'mysql'
           databaseServerVersion: '8.0.34'
           sqlMode: $(mysqlCurrentSqlMode)
-          skipTests: false
+          skipTests: $(skipAllTests)
         MySQL 5.7 (Linux): # Oct 2023
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mysql'
           databaseServerVersion: '5.7.43'
           sqlMode: $(mysqlLegacySqlMode)
-          skipTests: false
+          skipTests: $(skipAllTests)
         MariaDB 11.1 (Linux): # Aug 2024
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
           databaseServerVersion: '11.1.2'
           sqlMode: $(mariadbSqlMode)
-          skipTests: false
+          skipTests: $(skipAllTests)
         MariaDB 11.0 (Linux): # Jun 2024
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
           databaseServerVersion: '11.0.3'
           sqlMode: $(mariadbSqlMode)
-          skipTests: false
+          skipTests: $(skipAllTests)
         MariaDB 10.11 (Linux): # Feb 2028
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
           databaseServerVersion: '10.11.5'
           sqlMode: $(mariadbSqlMode)
-          skipTests: false
+          skipTests: $(skipAllTests)
         MariaDB 10.10 (Linux): # Nov 2023
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
           databaseServerVersion: '10.10.6'
           sqlMode: $(mariadbSqlMode)
-          skipTests: false
+          skipTests: $(skipAllTests)
 #        MariaDB 10.9 (Linux): # EoL
 #          vmImageName: 'ubuntu-latest'
 #          databaseServerType: 'mariadb'
 #          databaseServerVersion: '10.9.8'
 #          sqlMode: $(mariadbSqlMode)
-#          skipTests: false
+#          skipTests: $(skipAllTests)
 #        MariaDB 10.8 (Linux): # EoL
 #          vmImageName: 'ubuntu-latest'
 #          databaseServerType: 'mariadb'
 #          databaseServerVersion: '10.8.8'
 #          sqlMode: $(mariadbSqlMode)
-#          skipTests: false
+#          skipTests: $(skipAllTests)
 #        MariaDB 10.7 (Linux): # EoL
 #          vmImageName: 'ubuntu-latest'
 #          databaseServerType: 'mariadb'
 #          databaseServerVersion: '10.7.8'
 #          sqlMode: $(mariadbSqlMode)
-#          skipTests: false
+#          skipTests: $(skipAllTests)
         MariaDB 10.6 (Linux): # Jul 2026
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
           databaseServerVersion: '10.6.15'
           sqlMode: $(mariadbSqlMode)
-          skipTests: false
+          skipTests: $(skipAllTests)
         MariaDB 10.5 (Linux): # Jun 2025
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
           databaseServerVersion: '10.5.22'
           sqlMode: $(mariadbSqlMode)
-          skipTests: false
+          skipTests: $(skipAllTests)
         MariaDB 10.4 (Linux): # Jun 2024
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
           databaseServerVersion: '10.4.31'
           sqlMode: $(mariadbSqlMode)
-          skipTests: false
+          skipTests: $(skipAllTests)
 #        MariaDB 10.3 (Linux): # EoL
 #          vmImageName: 'ubuntu-latest'
 #          databaseServerType: 'mariadb'
 #          databaseServerVersion: '10.3.39'
 #          sqlMode: $(mariadbSqlMode)
-#          skipTests: false
+#          skipTests: $(skipAllTests)
     pool:
       vmImage: $(vmImageName)
     steps:
@@ -159,6 +160,8 @@ jobs:
           includePreviewVersions: $(includeDotnetPrereleases)
           useGlobalJson: $(useGlobalJson)
       - pwsh: |
+          # TODO: Use caching for Docker images.
+
           if ('$(Agent.OS)' -eq 'Windows_NT')
           {
             $mySqlServiceName = '$(databaseServerType)_$(databaseServerVersion)'
@@ -221,7 +224,7 @@ jobs:
 
             if (!$started)
             {
-              throw "$(databaseServerType):$(databaseServerVersion) docker container failed to start in $(waitMinutes) minutes"
+              throw "$(databaseServerType):$(databaseServerVersion) docker container failed to start in ${waitMinutes} minutes"
               exit 1
             }
           }
@@ -351,7 +354,7 @@ jobs:
       runDespiteIssues: $[endsWith(variables['Build.SourceBranch'], '-wip')]
       buildAndTestSucceeded: $[or(eq(dependencies.BuildAndTest.result, 'Succeeded'), and(eq(dependencies.BuildAndTest.result, 'SucceededWithIssues'), variables['runDespiteIssues']))]
     pool:
-      vmImage: 'windows-latest' # must be Windows for PublishSymbols task
+      vmImage: 'ubuntu-latest'
     steps:
       - pwsh: |
           $dotnetVersion = ''
@@ -397,6 +400,10 @@ jobs:
           $buildSha = '$(Build.SourceVersion)'.SubString(0, 7);
           $pack = '$(buildAndTestSucceeded)' -eq "true" -and ($officialBuild -or $ciBuildOnly -or $wipBuild)
 
+          $pushToAzureArtifacts = $pack
+          $pushToMygetOrg = $pack
+          $pushToNugetOrg = $officialBuild
+
           echo "officialBuild: $officialBuild"
           echo "officialVersion: $officialVersion"
           echo "wipBuild: $wipBuild"
@@ -405,72 +412,96 @@ jobs:
           echo "buildSha: $buildSha"
           echo "pack: $pack"
 
+          echo "pushToAzureArtifacts: $pushToAzureArtifacts"
+          echo "pushToMygetOrg: $pushToMygetOrg"
+          echo "pushToNugetOrg: $pushToNugetOrg"
+
           if ($pack)
           {
-            $arguments = 'pack', '-c', 'Release', '-o', '$(Build.ArtifactStagingDirectory)', '-p:ContinuousIntegrationBuild=true'
-
-            if ($officialBuild)
-            {
-              $arguments += "-p:OfficialVersion=$officialVersion"
-            }
-
-            if ($ciBuildOnly)
-            {
-              $arguments += "-p:ContinuousIntegrationTimestamp=$continuousIntegrationTimestamp"
-              $arguments += "-p:BuildSha=$buildSha"
-            }
-
             $projectFiles = Get-ChildItem src/*/*.csproj -Recurse | % { $_.FullName }
 
-            foreach ($projectFile in $projectFiles)
+            $combinations = @('default', @('Release')), @('withPdbs', @('Release', 'Debug')) #, @('embeddedPdbs', @('Release', 'Debug'))
+            foreach ($combination in $combinations)
             {
-              echo "Pack command: dotnet $(($arguments + $projectFile) -join ' ')"
-              & dotnet ($arguments + $projectFile)
+              $type = $combination[0]
+              $configurations = $combination[1]
+              foreach ($configuration in $configurations)
+              {
+                $arguments = 'pack', '-c', $configuration, '-o', "$(Build.ArtifactStagingDirectory)/$configuration/$type", '-p:ContinuousIntegrationBuild=true'
+
+                if ($officialBuild)
+                {
+                  $finalOfficialVersion = $officialVersion
+
+                  if ($configuration -eq 'Debug')
+                  {
+                    $finalOfficialVersion += '-debug'
+                  }
+
+                  $arguments += "-p:OfficialVersion=$finalOfficialVersion"
+                }
+
+                if ($ciBuildOnly)
+                {
+                  $arguments += "-p:ContinuousIntegrationTimestamp=$continuousIntegrationTimestamp"
+                  $arguments += "-p:BuildSha=$buildSha"
+                }
+
+                switch ($type)
+                {
+                  'withPdbs' { $arguments += '-p:PackPdb=true', '-p:IncludeSymbols=false' }
+                  'embeddedPdbs' { $arguments += '-p:DebugType=embedded', '-p:IncludeSymbols=false' }
+                }
+
+                foreach ($projectFile in $projectFiles)
+                {
+                  echo "Type: $type, Configuration: $configuration, Project: $projectFile"
+                  echo "Pack command: dotnet $(($arguments + $projectFile) -join ' ')"
+                  & dotnet ($arguments + $projectFile)
+                }
+              }
             }
-
-            $pushToAzureArtifacts = $pack
-            $publishSymbolsForAzureArtifacts = $pushToAzureArtifacts
-            $pushToMygetOrg = $pack
-            $pushToNugetOrg = $officialBuild
-
-            echo "pushToAzureArtifacts: $pushToAzureArtifacts"
-            echo "publishSymbolsForAzureArtifacts: $publishSymbolsForAzureArtifacts"
-            echo "pushToMygetOrg: $pushToMygetOrg"
-            echo "pushToNugetOrg: $pushToNugetOrg"
-
-            echo "##vso[task.setvariable variable=Pack.PushToAzureArtifacts]$pushToAzureArtifacts"
-            echo "##vso[task.setvariable variable=Pack.PublishSymbolsForAzureArtifacts]$publishSymbolsForAzureArtifacts"
-            echo "##vso[task.setvariable variable=Pack.PushToMygetOrg]$pushToMygetOrg"
-            echo "##vso[task.setvariable variable=Pack.PushToNugetOrg]$pushToNugetOrg"
           }
+
+          echo "##vso[task.setvariable variable=Pack.PushToAzureArtifacts]$pushToAzureArtifacts"
+          echo "##vso[task.setvariable variable=Pack.PushToMygetOrg]$pushToMygetOrg"
+          echo "##vso[task.setvariable variable=Pack.PushToNugetOrg]$pushToNugetOrg"
         displayName: "NuGet Pack"
       - task: NuGetCommand@2
-        displayName: "NuGet Push - AZDO Feed"
+        displayName: "NuGet Push - AZDO Feed - Debug"
+        inputs:
+          command: push
+          publishVstsFeed: 'Pomelo.EntityFrameworkCore.MySql/pomelo-efcore-debug'
+          packagesToPush: '$(Build.ArtifactStagingDirectory)/Debug/withPdbs/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/Debug/withPdbs/**/*.symbols.nupkg'
+        condition: and(succeededOrFailed(), eq(variables['Pack.PushToAzureArtifacts'],'true'))
+      - task: NuGetCommand@2
+        displayName: "NuGet Push - AZDO Feed - Release"
         inputs:
           command: push
           publishVstsFeed: 'Pomelo.EntityFrameworkCore.MySql/pomelo-efcore-public'
-          packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+          packagesToPush: '$(Build.ArtifactStagingDirectory)/Release/withPdbs/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/Release/withPdbs/**/*.symbols.nupkg'
         condition: and(succeededOrFailed(), eq(variables['Pack.PushToAzureArtifacts'],'true'))
-      - task: PublishSymbols@2 # AZDO still has no snupkg support, so we need to publish the PDB files to a symbol server
-        displayName: "Publish Symbols to Azure Artifacts symbol server"
-        inputs:
-          symbolServerType: 'TeamServices'
-          treatNotIndexedAsWarning: false
-          indexSources: false
-        condition: and(succeededOrFailed(), eq(variables['Pack.PublishSymbolsForAzureArtifacts'],'true'))
       - task: NuGetCommand@2
-        displayName: "NuGet Push - myget.org"
+        displayName: "NuGet Push - myget.org - Debug"
+        inputs:
+          command: push
+          nuGetFeedType: external
+          publishFeedCredentials: MygetOrg-Pomelo-AllPackages-Debug-PushNew
+          packagesToPush: '$(Build.ArtifactStagingDirectory)/Debug/withPdbs/**/*.nupkg'
+        condition: and(succeededOrFailed(), eq(variables['Pack.PushToMygetOrg'],'true'))
+      - task: NuGetCommand@2
+        displayName: "NuGet Push - myget.org - Release"
         inputs:
           command: push
           nuGetFeedType: external
           publishFeedCredentials: MygetOrg-Pomelo-AllPackages-PushNew
-          packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
+          packagesToPush: '$(Build.ArtifactStagingDirectory)/Release/default/**/*.nupkg'
         condition: and(succeededOrFailed(), eq(variables['Pack.PushToMygetOrg'],'true'))
       - task: NuGetCommand@2
-        displayName: "NuGet Push - nuget.org"
+        displayName: "NuGet Push - nuget.org - Release"
         inputs:
           command: push
           nuGetFeedType: external
           publishFeedCredentials: NugetOrg-PomeloFoundation-AllPackages-PushNew
-          packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
+          packagesToPush: '$(Build.ArtifactStagingDirectory)/Release/default/**/*.nupkg'
         condition: and(succeededOrFailed(), eq(variables['Pack.PushToNugetOrg'],'true'))
