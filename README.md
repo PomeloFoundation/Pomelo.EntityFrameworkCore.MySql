@@ -62,11 +62,29 @@ To use nightly builds from our Azure DevOps feed, add a `NuGet.config` file to y
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
     <packageSources>
-        <add key="Pomelo" value="https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-public/nuget/v3/index.json" />
+        <add key="pomelo-nightly" value="https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-public/nuget/v3/index.json" />
         <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
     </packageSources>
 </configuration>
 ```
+
+### Feeds
+
+Feeds that contain optimized (`Release` configuration) builds:
+
+* `https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-public/nuget/v3/index.json`
+* `https://www.myget.org/F/pomelo/api/v3/index.json`
+
+Feeds that contain debugging enabled unoptimized (`Debug` configuration) builds:
+
+* `https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-debug/nuget/v3/index.json`
+* `https://www.myget.org/F/pomelo-debug/api/v3/index.json`
+
+The AZDO `nupkg` packages always contain `.pdb` files.
+
+The MyGet `nupkg` packages only contain `.pdb` files for their debug builds. For optimized builds, the symbols are packed in a `snupkg` file and are available via the `https://www.myget.org/F/pomelo/api/v2/symbolpackage/` symbol server URL.
+
+All `.pdb` files use Source Link.
 
 ## Getting Started
 
