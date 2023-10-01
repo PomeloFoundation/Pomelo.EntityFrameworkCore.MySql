@@ -8,7 +8,7 @@ trigger:
 variables:
   isPullRequest: $[eq(variables['Build.Reason'], 'PullRequest')]
   pullRequestSourceBranch: $[variables['System.PullRequest.SourceBranch']]
-  skipAllTests: true
+  skipAllTests: false
   skipWindowsTests: $[or(eq(variables['skipAllTests'], true), and(eq(variables['isPullRequest'], 'True'), ne(contains(variables['pullRequestSourceBranch'], 'windows'), 'True')))]
   mysqlCurrentSqlMode: ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
   mysqlLegacySqlMode: ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
@@ -32,78 +32,91 @@ jobs:
           vmImageName: 'windows-latest'
           databaseServerType: 'mysql'
           databaseServerVersion: '8.0.31'
+          clientExecutable: 'mysql'
           sqlMode: $(mysqlCurrentSqlMode)
           skipTests: $(skipWindowsTests)
         MySQL 8.0 (Linux): # Apr 2026
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mysql'
           databaseServerVersion: '8.0.34'
+          clientExecutable: 'mysql'
           sqlMode: $(mysqlCurrentSqlMode)
           skipTests: $(skipAllTests)
         MySQL 5.7 (Linux): # Oct 2023
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mysql'
           databaseServerVersion: '5.7.43'
+          clientExecutable: 'mysql'
           sqlMode: $(mysqlLegacySqlMode)
           skipTests: $(skipAllTests)
         MariaDB 11.1 (Linux): # Aug 2024
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
           databaseServerVersion: '11.1.2'
+          clientExecutable: 'mariadb'
           sqlMode: $(mariadbSqlMode)
           skipTests: $(skipAllTests)
         MariaDB 11.0 (Linux): # Jun 2024
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
           databaseServerVersion: '11.0.3'
+          clientExecutable: 'mariadb'
           sqlMode: $(mariadbSqlMode)
           skipTests: $(skipAllTests)
         MariaDB 10.11 (Linux): # Feb 2028
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
           databaseServerVersion: '10.11.5'
+          clientExecutable: 'mysql'
           sqlMode: $(mariadbSqlMode)
           skipTests: $(skipAllTests)
         MariaDB 10.10 (Linux): # Nov 2023
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
           databaseServerVersion: '10.10.6'
+          clientExecutable: 'mysql'
           sqlMode: $(mariadbSqlMode)
           skipTests: $(skipAllTests)
 #        MariaDB 10.9 (Linux): # EoL
 #          vmImageName: 'ubuntu-latest'
 #          databaseServerType: 'mariadb'
 #          databaseServerVersion: '10.9.8'
+#          clientExecutable: 'mysql'
 #          sqlMode: $(mariadbSqlMode)
 #          skipTests: $(skipAllTests)
 #        MariaDB 10.8 (Linux): # EoL
 #          vmImageName: 'ubuntu-latest'
 #          databaseServerType: 'mariadb'
 #          databaseServerVersion: '10.8.8'
+#          clientExecutable: 'mysql'
 #          sqlMode: $(mariadbSqlMode)
 #          skipTests: $(skipAllTests)
 #        MariaDB 10.7 (Linux): # EoL
 #          vmImageName: 'ubuntu-latest'
 #          databaseServerType: 'mariadb'
 #          databaseServerVersion: '10.7.8'
+#          clientExecutable: 'mysql'
 #          sqlMode: $(mariadbSqlMode)
 #          skipTests: $(skipAllTests)
         MariaDB 10.6 (Linux): # Jul 2026
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
           databaseServerVersion: '10.6.15'
+          clientExecutable: 'mysql'
           sqlMode: $(mariadbSqlMode)
           skipTests: $(skipAllTests)
         MariaDB 10.5 (Linux): # Jun 2025
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
           databaseServerVersion: '10.5.22'
+          clientExecutable: 'mysql'
           sqlMode: $(mariadbSqlMode)
           skipTests: $(skipAllTests)
         MariaDB 10.4 (Linux): # Jun 2024
           vmImageName: 'ubuntu-latest'
           databaseServerType: 'mariadb'
           databaseServerVersion: '10.4.31'
+          clientExecutable: 'mysql'
           sqlMode: $(mariadbSqlMode)
           skipTests: $(skipAllTests)
 #        MariaDB 10.3 (Linux): # EoL
@@ -143,6 +156,7 @@ jobs:
           echo "##vso[task.setvariable variable=useGlobalJson]$useGlobalJson"
         displayName: Set additional variables
       - pwsh: |
+          echo "Agent.OS: $(Agent.OS)"
           echo "skipTests: $(skipTests)"
           echo "skipWindowsTests: $(skipWindowsTests)"
           echo "pullRequestSourceBranch: $(pullRequestSourceBranch)"
@@ -159,9 +173,21 @@ jobs:
           version: $(dotnetVersion)
           includePreviewVersions: $(includeDotnetPrereleases)
           useGlobalJson: $(useGlobalJson)
+      - task: Cache@2
+        displayName: Restore Cache - Database Image - Linux
+        condition: and(not(canceled()), not(failed()), ne(variables['Agent.OS'], 'Windows_NT'))
+        inputs:
+          key: 'database | Linux | "$(databaseServerType)" | "$(databaseServerVersion)" | v1'
+          path: $(Pipeline.Workspace)/cache/database
+          cacheHitVar: cacheRestoredDatabaseLinux
+      - task: Cache@2
+        displayName: Restore Cache - Database Image - Windows
+        condition: and(not(canceled()), not(failed()), eq(variables['Agent.OS'], 'Windows_NT'))
+        inputs:
+          key: 'database | Windows_NT | "$(databaseServerType)" | "$(databaseServerVersion)" | v1'
+          path: C:\Users\VssAdministrator\AppData\Local\Temp\mysql
+          cacheHitVar: cacheRestoredDatabaseWindows
       - pwsh: |
-          # TODO: Use caching for Docker images.
-
           if ('$(Agent.OS)' -eq 'Windows_NT')
           {
             $mySqlServiceName = '$(databaseServerType)_$(databaseServerVersion)'
@@ -169,6 +195,10 @@ jobs:
             $mySqlBinPath = 'C:\tools\mysql\current\bin'
             $mySqlIniPath = 'C:\tools\mysql\current\my.ini'
             $mySqlDataPath = 'C:\ProgramData\MySQL\data'
+
+            dir 'C:\Users\VssAdministrator\AppData\Local\Temp\$(databaseServerType)\$(databaseServerVersion)' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
+
+            # choco config set cacheLocation '$(Pipeline.Workspace)/cache/database'
 
             echo "Chocolatey command: choco install '$(databaseServerType)' '--version=$(databaseServerVersion)' --params `"/serviceName:$mySqlServiceName`""
             choco install '$(databaseServerType)' '--version=$(databaseServerVersion)' --params "/serviceName:$mySqlServiceName"
@@ -193,33 +223,42 @@ jobs:
             echo "Setup credentials"
             mysql -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
             mysql -h localhost -u root -pPassword12! -e "SELECT @@version;"
+
+            dir 'C:\Users\VssAdministrator\AppData\Local\Temp\$(databaseServerType)\$(databaseServerVersion)' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
           }
           else
           {
             sudo systemctl stop mysql
 
             $waitMinutes = 5
-            $pollingIntervalSeconds = 3
+            $pollingIntervalSeconds = 1
             $started = $false
 
-            # MariaDB 11+ docker images do not ship with mysqladmin, but contain an official health check script.
-            if ('$(databaseServerType)' -eq 'mariadb' -and '$(databaseServerVersion)'.Split('.')[0] -ge 11)
+            dir '$(Pipeline.Workspace)/cache/database' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
+
+            if (Test-Path -PathType Leaf '$(Pipeline.Workspace)/cache/database/$(databaseServerType)_$(databaseServerVersion).tar')
             {
-              $timeoutSeconds = 3
-
-              docker run --name mysql -d -e MYSQL_ROOT_PASSWORD=Password12! -p 127.0.0.1:3306:3306 --health-cmd="healthcheck.sh --connect --innodb_initialized" "--health-interval=${pollingIntervalSeconds}s" "--health-timeout=${timeoutSeconds}s" "--health-retries=$($waitMinutes * 60 / ($pollingIntervalSeconds + $timeoutSeconds))" '$(databaseServerType):$(databaseServerVersion)'
-
-              $started = Test-Connection 127.0.0.1 -TcpPort 3306
+              docker load --input '$(Pipeline.Workspace)/cache/database/$(databaseServerType)_$(databaseServerVersion).tar'
             }
             else
             {
-              docker run --name mysql -e MYSQL_ROOT_PASSWORD=Password12! -p 127.0.0.1:3306:3306 -d '$(databaseServerType):$(databaseServerVersion)'
-              $startTime = Get-Date
-
-              while (!($started = docker exec mysql mysqladmin --protocol=tcp -h localhost -P 3306 -u root -pPassword12! status) -and ((Get-Date) - $startTime).TotalMinutes -lt $waitMinutes)
+              if (-not (Test-Path -PathType Container '$(Pipeline.Workspace)/cache/database'))
               {
-                Start-Sleep -Seconds $pollingIntervalSeconds
+                New-Item -ItemType Directory '$(Pipeline.Workspace)/cache/database'
               }
+
+              docker pull '$(databaseServerType):$(databaseServerVersion)'
+              docker save -o '$(Pipeline.Workspace)/cache/database/$(databaseServerType)_$(databaseServerVersion).tar' '$(databaseServerType):$(databaseServerVersion)'
+
+              dir '$(Pipeline.Workspace)/cache/database' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
+            }
+
+            docker run --name $(databaseServerType) -e MYSQL_ROOT_PASSWORD=Password12! -p 127.0.0.1:3306:3306 -d '$(databaseServerType):$(databaseServerVersion)'
+            $startTime = Get-Date
+
+            while (!($started = docker exec $(databaseServerType) $(clientExecutable) --protocol=tcp -h localhost -P 3306 -u root -pPassword12! -e 'select 1;') -and ((Get-Date) - $startTime).TotalMinutes -lt $waitMinutes)
+            {
+              Start-Sleep -Seconds $pollingIntervalSeconds
             }
 
             if (!$started)
@@ -230,29 +269,27 @@ jobs:
           }
         displayName: Install Database Server
       - pwsh: |
-          $mySqlCommand = "mysql --protocol=tcp -h localhost -P 3306 -u root -pPassword12! -e ""SET GLOBAL sql_mode = '$(sqlMode)'; SET GLOBAL max_connections = $(maxConnections);"""
+          $mySqlCommand = "$(clientExecutable) -u root -pPassword12! -e ""SET GLOBAL sql_mode = '$(sqlMode)'; SET GLOBAL max_connections = $(maxConnections);"""
 
           if ('$(Agent.OS)' -ne 'Windows_NT')
           {
-            $mySqlCommand = 'docker exec mysql ' + $mySqlCommand
+            $mySqlCommand = 'docker exec $(databaseServerType) ' + $mySqlCommand
           }
 
           $mySqlCommand
-
           Invoke-Expression $mySqlCommand
           echo "Exit code: $?"
         displayName: Setup Database
         ignoreLASTEXITCODE: true
       - pwsh: |
-          $mySqlCommand = 'mysql --protocol=tcp -h localhost -P 3306 -u root -pPassword12! -e "SHOW VARIABLES;"'
+          $mySqlCommand = "$(clientExecutable) -u root -pPassword12! -e 'SHOW VARIABLES;'"
 
           if ('$(Agent.OS)' -ne 'Windows_NT')
           {
-            $mySqlCommand = 'docker exec mysql ' + $mySqlCommand
+            $mySqlCommand = 'docker exec $(databaseServerType) ' + $mySqlCommand
           }
 
           $mySqlCommand
-
           Invoke-Expression $mySqlCommand
           echo "Exit code: $?"
         displayName: Database Information
