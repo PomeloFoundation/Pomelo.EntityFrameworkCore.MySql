@@ -662,7 +662,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="_">The DbFunctions instance.</param>
         /// <param name="property">The property of entity that is to be matched.</param>
         /// <param name="pattern">The pattern against which Full Text search is performed</param>
-        /// <param name="searchMode">The mode to performed the search with.</param>
+        /// <param name="searchMode">The mode to perform the search with.</param>
         /// <returns>true if there is a match.</returns>
         /// <exception cref="InvalidOperationException">Throws when query switched to client-evaluation.</exception>
         public static bool IsMatch(
@@ -684,7 +684,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="_">The DbFunctions instance.</param>
         /// <param name="properties">The propertys of entity that is to be matched.</param>
         /// <param name="pattern">The pattern against which Full Text search is performed</param>
-        /// <param name="searchMode">The mode to performed the search with.</param>
+        /// <param name="searchMode">The mode to perform the search with.</param>
         /// <returns>true if there is a match.</returns>
         /// <exception cref="InvalidOperationException">Throws when query switched to client-evaluation.</exception>
         public static bool IsMatch(
@@ -706,7 +706,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="_">The DbFunctions instance.</param>
         /// <param name="property">The property of entity that is to be matched.</param>
         /// <param name="pattern">The pattern against which Full Text search is performed</param>
-        /// <param name="searchMode">The mode to performed the search with. Needs to be a constant value or throws otherwise.</param>
+        /// <param name="searchMode">The mode to perform the search with. Needs to be a constant value or throws otherwise.</param>
         /// <returns>The relevance value of the match.</returns>
         /// <exception cref="InvalidOperationException">Throws when query switched to client-evaluation.</exception>
         public static double Match(
@@ -728,7 +728,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="_">The DbFunctions instance.</param>
         /// <param name="properties">The propertys of entity that is to be matched.</param>
         /// <param name="pattern">The pattern against which Full Text search is performed</param>
-        /// <param name="searchMode">The mode to performed the search with. Needs to be a constant value or throws otherwise.</param>
+        /// <param name="searchMode">The mode to perform the search with. Needs to be a constant value or throws otherwise.</param>
         /// <returns>The relevance value of the match.</returns>
         /// <exception cref="InvalidOperationException">Throws when query switched to client-evaluation.</exception>
         public static double Match(
