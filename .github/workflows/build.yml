@@ -294,3 +294,123 @@ jobs:
         run: |
           $env:EF_DATABASE = "pomelo_test2"
           dotnet test -c Release --no-build --logger "GitHubActions;report-warnings=false" test/EFCore.MySql.IntegrationTests
+  NuGet:
+    needs: BuildAndTest
+    if: github.event_name == 'push' && startsWith(github.repository, 'PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          global-json-file: global.json
+      - name: .NET Information
+        shell: pwsh
+        run: |
+          dotnet --info
+      - name: NuGet Pack
+        shell: pwsh
+        run: |
+          $officialBuild = '${{ env.pullRequestSourceBranch }}' -match '(?<=^refs/tags/)\d+\.\d+\.\d+.*$'
+          $officialVersion = $Matches.0
+          $wipBuild = '${{ env.pullRequestSourceBranch }}' -match '^refs/heads/.*-wip$'
+          $ciBuildOnly = $wipBuild -or ('${{ env.pullRequestSourceBranch }}' -match '^refs/heads/(?:master|release/.*)$')
+          $continuousIntegrationTimestamp = Get-Date -Format yyyyMMddHHmmss
+          $buildSha = '${{ github.sha }}'.SubString(0, 7);
+          $pack = '$(buildAndTestSucceeded)' -eq "true" -and ($officialBuild -or $ciBuildOnly -or $wipBuild)
+
+          $pushToAzureArtifacts = $pack
+          $pushToMygetOrg = $pack
+          $pushToNugetOrg = $officialBuild
+
+          echo "officialBuild: $officialBuild"
+          echo "officialVersion: $officialVersion"
+          echo "wipBuild: $wipBuild"
+          echo "ciBuildOnly: $ciBuildOnly"
+          echo "continuousIntegrationTimestamp: $continuousIntegrationTimestamp"
+          echo "buildSha: $buildSha"
+          echo "pack: $pack"
+
+          echo "pushToAzureArtifacts: $pushToAzureArtifacts"
+          echo "pushToMygetOrg: $pushToMygetOrg"
+          echo "pushToNugetOrg: $pushToNugetOrg"
+
+          if ($pack)
+          {
+            $projectFiles = Get-ChildItem src/*/*.csproj -Recurse | % { $_.FullName }
+
+            $combinations = @('default', @('Release')), @('withPdbs', @('Release', 'Debug')) #, @('embeddedPdbs', @('Release', 'Debug'))
+            foreach ($combination in $combinations)
+            {
+              $type = $combination[0]
+              $configurations = $combination[1]
+              foreach ($configuration in $configurations)
+              {
+                $arguments = 'pack', '-c', $configuration, '-o', "nupkgs/$configuration/$type", '-p:ContinuousIntegrationBuild=true'
+
+                if ($officialBuild)
+                {
+                  $finalOfficialVersion = $officialVersion
+
+                  if ($configuration -eq 'Debug')
+                  {
+                    $finalOfficialVersion += '-debug'
+                  }
+
+                  $arguments += "-p:OfficialVersion=$finalOfficialVersion"
+                }
+
+                if ($ciBuildOnly)
+                {
+                  $arguments += "-p:ContinuousIntegrationTimestamp=$continuousIntegrationTimestamp"
+                  $arguments += "-p:BuildSha=$buildSha"
+                }
+
+                switch ($type)
+                {
+                  'withPdbs' { $arguments += '-p:PackPdb=true', '-p:IncludeSymbols=false' }
+                  'embeddedPdbs' { $arguments += '-p:DebugType=embedded', '-p:IncludeSymbols=false' }
+                }
+
+                foreach ($projectFile in $projectFiles)
+                {
+                  echo "Type: $type, Configuration: $configuration, Project: $projectFile"
+                  echo "Pack command: dotnet $(($arguments + $projectFile) -join ' ')"
+                  & dotnet ($arguments + $projectFile)
+                }
+              }
+            }
+          }
+
+          echo "pushToAzureArtifacts=$pushToAzureArtifacts" >> $env:GITHUB_ENV
+          echo "pushToMygetOrg=$pushToMygetOrg" >> $env:GITHUB_ENV
+          echo "pushToNugetOrg=$pushToNugetOrg" >> $env:GITHUB_ENV
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: nupkgs
+          path: nupkgs
+      - name: "NuGet Push - AZDO Feed - Debug"
+        if: ${{ env.pushToAzureArtifacts == 'true' }}
+        working-directory: nupkgs
+        shell: pwsh
+        run: dotnet nuget push './Debug/withPdbs/**/*.nupkg' --api-key '${{ secrets.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW }}' --source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-debug/nuget/v3/index.json'
+      - name: "NuGet Push - AZDO Feed - Release"
+        if: ${{ env.pushToAzureArtifacts == 'true' }}
+        working-directory: nupkgs
+        shell: pwsh
+        run: dotnet nuget push './Release/withPdbs/**/*.nupkg' --api-key '${{ secrets.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW }}' --source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-public/nuget/v3/index.json'
+      - name: "NuGet Push - myget.org - Debug"
+        if: ${{ env.pushToMygetOrg == 'true' }}
+        working-directory: nupkgs
+        shell: pwsh
+        run: dotnet nuget push './Debug/withPdbs/**/*.nupkg' --api-key '${{ secrets.MYGETORG_POMELO_ALLPACKAGES_DEBUG_PUSHNEW }}' --source 'https://www.myget.org/F/pomelo-debug/api/v3/index.json'
+      - name: "NuGet Push - myget.org - Release"
+        if: ${{ env.pushToMygetOrg == 'true' }}
+        working-directory: nupkgs
+        shell: pwsh
+        run: dotnet nuget push './Release/default/**/*.nupkg' --api-key '${{ secrets.MYGETORG_POMELO_ALLPACKAGES_PUSHNEW }}' --source 'https://www.myget.org/F/pomelo/api/v3/index.json'
+      - name: "NuGet Push - nuget.org - Release"
+        if: ${{ env.pushToNugetOrg == 'true' }}
+        working-directory: nupkgs
+        shell: pwsh
+        run: dotnet nuget push './Release/default/**/*.nupkg' --api-key '${{ secrets.NUGETORG_POMELO_ALLPACKAGES_PUSHNEW }}' --source 'https://api.nuget.org/v3/index.json'
