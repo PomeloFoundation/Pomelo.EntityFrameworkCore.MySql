@@ -11,13 +11,13 @@ on:
     paths-ignore:
       - '**.md'
 env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
   mysqlCurrentSqlMode: ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
   mysqlLegacySqlMode: ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
   # Currently no ONLY_FULL_GROUP_BY, see #1167:
   mariadbSqlMode: STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
   maxConnections: 512
-  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-  DOTNET_CLI_TELEMETRY_OPTOUT: true
   skipAllTests: false
   skipWindowsTests: false
 jobs:
@@ -40,7 +40,8 @@ jobs:
           - windows-latest
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Set additional variables
         shell: pwsh
         run: |
@@ -88,6 +89,9 @@ jobs:
           echo "clientExecutable: ${{ env.clientExecutable }}"
           echo "clientCommandPrefix: ${{ env.clientCommandPrefix }}"
           echo "windowsUserTempLocation: ${{ env.windowsUserTempLocation }}"
+
+          echo "github.event_name: ${{ github.event_name }}"
+          echo "github.repository: ${{ github.repository }}"
       - name: Cache - Database Image - Linux
         id: cache-databaseImage-linux
         uses: actions/cache@v3
@@ -292,9 +296,11 @@ jobs:
           dotnet test -c Release --no-build --logger "GitHubActions;report-warnings=false" test/EFCore.MySql.IntegrationTests
   NuGet:
     needs: BuildAndTest
-    if: github.event_name == 'push' && startsWith(github.repository, 'PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/')
+    if: github.event_name == 'push' && github.repository == 'PomeloFoundation/Pomelo.EntityFrameworkCore.MySql'
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v3
         with:
@@ -312,7 +318,7 @@ jobs:
           $ciBuildOnly = $wipBuild -or ('${{ github.ref }}' -match '^refs/heads/(?:master|release/.*)$')
           $continuousIntegrationTimestamp = Get-Date -Format yyyyMMddHHmmss
           $buildSha = '${{ github.sha }}'.SubString(0, 7);
-          $pack = '$(buildAndTestSucceeded)' -eq "true" -and ($officialBuild -or $ciBuildOnly -or $wipBuild)
+          $pack = $officialBuild -or $ciBuildOnly
 
           $pushToAzureArtifacts = $pack
           $pushToMygetOrg = $pack
@@ -389,12 +395,36 @@ jobs:
         if: ${{ env.pushToAzureArtifacts == 'true' }}
         working-directory: nupkgs
         shell: pwsh
-        run: dotnet nuget push './Debug/withPdbs/**/*.nupkg' --api-key '${{ secrets.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW }}' --source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-debug/nuget/v3/index.json'
+        run: |
+          # https://learn.microsoft.com/en-us/azure/devops/artifacts/nuget/dotnet-exe?view=azure-devops#publish-packages-from-external-sources
+          dotnet new nugetconfig --output './azdo-nuget' --force
+          try
+          {
+            nuget sources Add -ConfigFile './azdo-nuget/nuget.config' -Name 'azdo-pomelo-efcore-debug' -Source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-debug/nuget/v3/index.json' -UserName '${{ vars.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_USERNAME }}' -Password '${{ secrets.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_PASSWORD }}' -StorePasswordInClearText
+
+            nuget push './Release/withPdbs/**/*.nupkg' -ConfigFile './azdo-nuget/nuget.config' -ApiKey 'foo' -Source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-debug/nuget/v3/index.json'
+          }
+          finally
+          {
+            Remove-Item ./azdo-nuget -Recurse -Force
+          }
       - name: "NuGet Push - AZDO Feed - Release"
         if: ${{ env.pushToAzureArtifacts == 'true' }}
         working-directory: nupkgs
         shell: pwsh
-        run: dotnet nuget push './Release/withPdbs/**/*.nupkg' --api-key '${{ secrets.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW }}' --source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-public/nuget/v3/index.json'
+        run: |
+          # https://learn.microsoft.com/en-us/azure/devops/artifacts/nuget/dotnet-exe?view=azure-devops#publish-packages-from-external-sources
+          dotnet new nugetconfig --output './azdo-nuget' --force
+          try
+          {
+            nuget sources Add -ConfigFile './azdo-nuget/nuget.config' -Name 'azdo-pomelo-efcore-public' -Source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-public/nuget/v3/index.json' -UserName '${{ vars.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_USERNAME }}' -Password '${{ secrets.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_PASSWORD }}' -StorePasswordInClearText
+
+            nuget push './Release/withPdbs/**/*.nupkg' -ConfigFile './azdo-nuget/nuget.config' -ApiKey 'foo' -Source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-public/nuget/v3/index.json'
+          }
+          finally
+          {
+            Remove-Item ./azdo-nuget -Recurse -Force
+          }
       - name: "NuGet Push - myget.org - Debug"
         if: ${{ env.pushToMygetOrg == 'true' }}
         working-directory: nupkgs
