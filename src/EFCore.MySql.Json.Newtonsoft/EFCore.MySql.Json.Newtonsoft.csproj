@@ -49,7 +49,7 @@
   <!-- TODO: Can be removed because it is already contained in EFCore.MySql. -->
   <ItemGroup Condition="'$(LocalMySqlConnectorRepository)' != ''">
     <Reference Include="MySqlConnector">
-      <HintPath>$(LocalMySqlConnectorRepository)\src\MySqlConnector\bin\Debug\$(MySqlConnectorTargetFramework)\MySqlConnector.dll</HintPath>
+      <HintPath>$(LocalMySqlConnectorRepository)\artifacts\bin\MySqlConnector\debug_$(MySqlConnectorTargetFramework)\MySqlConnector.dll</HintPath>
     </Reference>
   </ItemGroup>
 
