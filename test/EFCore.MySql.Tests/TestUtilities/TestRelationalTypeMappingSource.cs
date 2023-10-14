@@ -65,15 +65,16 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
             {
             }
 
-            public override RelationalTypeMapping Clone(string storeType, int? size)
+            public override RelationalTypeMapping WithStoreTypeAndSize(string storeType, int? size)
                 => new IntArrayTypeMapping(Parameters.WithStoreTypeAndSize(storeType, size));
 
-            public override CoreTypeMapping Clone(
+            public override CoreTypeMapping WithComposedConverter(
                 ValueConverter converter,
                 ValueComparer comparer = null,
+                ValueComparer keyComparer = null,
                 CoreTypeMapping elementMapping = null,
                 JsonValueReaderWriter jsonValueReaderWriter = null)
-                => new IntArrayTypeMapping(Parameters.WithComposedConverter(converter, comparer, elementMapping, jsonValueReaderWriter));
+                => new IntArrayTypeMapping(Parameters.WithComposedConverter(converter, comparer, keyComparer, elementMapping, jsonValueReaderWriter));
 
             protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
                 => new IntArrayTypeMapping(parameters);
@@ -203,7 +204,7 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
                 {
                     return storeTypeName != null
                            && !mapping.StoreType.Equals(storeTypeName, StringComparison.Ordinal)
-                        ? mapping.Clone(storeTypeName, mapping.Size)
+                        ? mapping.WithStoreTypeAndSize(storeTypeName, mapping.Size)
                         : mapping;
                 }
             }
