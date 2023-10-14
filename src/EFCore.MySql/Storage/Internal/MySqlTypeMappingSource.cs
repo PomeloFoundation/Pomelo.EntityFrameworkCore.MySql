@@ -225,24 +225,24 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
                     // datetimes
                     { typeof(DateOnly), _dateDateOnly },
-                    { typeof(TimeOnly), _timeTimeOnly.Clone(_options.DefaultDataTypeMappings.ClrTimeOnlyPrecision, null) },
+                    { typeof(TimeOnly), _timeTimeOnly.WithPrecisionAndScale(_options.DefaultDataTypeMappings.ClrTimeOnlyPrecision, null) },
                     { typeof(TimeSpan), _options.DefaultDataTypeMappings.ClrTimeSpan switch
                         {
-                            MySqlTimeSpanType.Time6 => _timeTimeSpan.Clone(6, null),
+                            MySqlTimeSpanType.Time6 => _timeTimeSpan.WithPrecisionAndScale(6, null),
                             MySqlTimeSpanType.Time => _timeTimeSpan,
                             _ => _timeTimeSpan
                         }},
                     { typeof(DateTime), _options.DefaultDataTypeMappings.ClrDateTime switch
                         {
-                            MySqlDateTimeType.DateTime6 =>_dateTime.Clone(6, null),
-                            MySqlDateTimeType.Timestamp6 => _timeStamp.Clone(6, null),
+                            MySqlDateTimeType.DateTime6 =>_dateTime.WithPrecisionAndScale(6, null),
+                            MySqlDateTimeType.Timestamp6 => _timeStamp.WithPrecisionAndScale(6, null),
                             MySqlDateTimeType.Timestamp => _timeStamp,
                             _ => _dateTime,
                         }},
                     { typeof(DateTimeOffset), _options.DefaultDataTypeMappings.ClrDateTimeOffset switch
                         {
-                            MySqlDateTimeType.DateTime6 =>_dateTimeOffset.Clone(6, null),
-                            MySqlDateTimeType.Timestamp6 => _timeStampOffset.Clone(6, null),
+                            MySqlDateTimeType.DateTime6 =>_dateTimeOffset.WithPrecisionAndScale(6, null),
+                            MySqlDateTimeType.Timestamp6 => _timeStampOffset.WithPrecisionAndScale(6, null),
                             MySqlDateTimeType.Timestamp => _timeStampOffset,
                             _ => _dateTimeOffset,
                         }},
@@ -325,9 +325,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 {
                     return clrType == null
                         ? mappings[0]
-                            .Clone(in mappingInfo)
+                            .WithTypeMappingInfo(in mappingInfo)
                         : mappings.FirstOrDefault(m => m.ClrType == clrType)
-                            ?.Clone(in mappingInfo);
+                            ?.WithTypeMappingInfo(in mappingInfo);
                 }
 
                 if (storeTypeName.Equals("json", StringComparison.OrdinalIgnoreCase) &&
@@ -349,14 +349,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     {
                         if (clrType == typeof(decimal))
                         {
-                            return mapping.Clone(mappingInfo.Precision.Value, mappingInfo.Scale);
+                            return mapping.WithPrecisionAndScale(mappingInfo.Precision.Value, mappingInfo.Scale);
                         }
 
                         if (clrType == typeof(DateTime) ||
                             clrType == typeof(DateTimeOffset) ||
                             clrType == typeof(TimeSpan))
                         {
-                            return mapping.Clone(mappingInfo.Precision.Value, null);
+                            return mapping.WithPrecisionAndScale(mappingInfo.Precision.Value, null);
                         }
                     }
 
@@ -400,7 +400,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
                     return size == null
                         ? mapping
-                        : mapping.Clone($"{mapping.StoreTypeNameBase}({size})", size);
+                        : mapping.WithStoreTypeAndSize($"{mapping.StoreTypeNameBase}({size})", size);
                 }
 
                 if (clrType == typeof(byte[]))

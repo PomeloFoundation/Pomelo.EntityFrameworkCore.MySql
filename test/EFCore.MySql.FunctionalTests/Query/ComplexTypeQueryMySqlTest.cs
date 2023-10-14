@@ -378,6 +378,13 @@ FROM `Customer` AS `c0`
         AssertSql();
     }
 
+    public override async Task Complex_type_equals_null(bool async)
+    {
+        await base.Complex_type_equals_null(async);
+
+        AssertSql();
+    }
+
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
         => TestHelpers.AssertAllMethodsOverridden(GetType());
@@ -391,17 +398,3 @@ FROM `Customer` AS `c0`
             => MySqlTestStoreFactory.Instance;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

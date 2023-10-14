@@ -218,7 +218,14 @@ jobs:
       - name: Install EF Core Tools
         shell: pwsh
         run: |
-          dotnet tool restore
+          # dotnet tool restore is broken in .NET 8.0.0-rc.2
+          #     https://github.com/dotnet/sdk/issues/35989
+          #     https://github.com/dotnet/sdk/pull/35884
+          #
+          # dotnet tool restore
+          dotnet tool uninstall dotnet-ef
+          dotnet tool install dotnet-ef --prerelease --verbosity diag
+
           dotnet ef --version
       - name: Restore dependencies
         shell: pwsh

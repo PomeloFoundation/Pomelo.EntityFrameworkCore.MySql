@@ -54,6 +54,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             await Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_with_local_tuple_array_closure(async));
         }
 
+        public override async Task Contains_with_local_enumerable_inline(bool async)
+        {
+            // Issue #31776
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                async () =>
+                    await base.Contains_with_local_enumerable_inline(async));
+
+            AssertSql();
+        }
+
         protected override bool CanExecuteQueryString
             => true;
 

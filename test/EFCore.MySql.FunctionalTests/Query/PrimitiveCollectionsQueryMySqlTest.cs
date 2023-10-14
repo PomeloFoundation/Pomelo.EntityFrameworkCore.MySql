@@ -11,10 +11,11 @@ using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
-public class PrimitiveCollectionsQueryMySqlTest : PrimitiveCollectionsQueryTestBase<
+public class PrimitiveCollectionsQueryMySqlTest : PrimitiveCollectionsQueryRelationalTestBase<
     PrimitiveCollectionsQueryMySqlTest.PrimitiveCollectionsQueryMySqlFixture>
 {
     public PrimitiveCollectionsQueryMySqlTest(PrimitiveCollectionsQueryMySqlFixture fixture, ITestOutputHelper testOutputHelper)
@@ -1104,13 +1105,6 @@ WHERE (
 """);
     }
 
-    public override async Task Column_collection_Concat_parameter_collection_equality_inline_collection_not_supported(bool async)
-    {
-        await base.Column_collection_Concat_parameter_collection_equality_inline_collection_not_supported(async);
-
-        AssertSql();
-    }
-
     public override async Task Column_collection_equality_parameter_collection(bool async)
     {
         await base.Column_collection_equality_parameter_collection(async);
@@ -1270,7 +1264,7 @@ WHERE (
 
     public override async Task Parameter_collection_in_subquery_Union_another_parameter_collection_as_compiled_query(bool async)
     {
-        var message = (await Assert.ThrowsAsync<InvalidOperationException>(
+        var message = (await Assert.ThrowsAsync<EqualException>(
             () => base.Parameter_collection_in_subquery_Union_another_parameter_collection_as_compiled_query(async))).Message;
 
         if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
@@ -1392,9 +1386,9 @@ ORDER BY `p`.`Id`, `t`.`key`
         }
     }
 
-    public override async Task Project_collection_of_ints_with_paging(bool async)
+    public override async Task Project_collection_of_nullable_ints_with_paging(bool async)
     {
-        await base.Project_collection_of_ints_with_paging(async);
+        await base.Project_collection_of_nullable_ints_with_paging(async);
 
         if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
@@ -1427,11 +1421,11 @@ ORDER BY `p`.`Id`
 
     [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonTable))]
     [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterApply))]
-    public override async Task Project_collection_of_ints_with_paging2(bool async)
+    public override async Task Project_collection_of_nullable_ints_with_paging2(bool async)
     {
         if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
-            await base.Project_collection_of_ints_with_paging2(async);
+            await base.Project_collection_of_nullable_ints_with_paging2(async);
 
             AssertSql(
 """
@@ -1452,13 +1446,13 @@ ORDER BY `p`.`Id`, `t`.`value`
         else
         {
             await Assert.ThrowsAsync<InvalidOperationException>(()
-                => base.Project_collection_of_ints_with_paging2(async));
+                => base.Project_collection_of_nullable_ints_with_paging2(async));
         }
     }
 
-    public override async Task Project_collection_of_ints_with_paging3(bool async)
+    public override async Task Project_collection_of_nullable_ints_with_paging3(bool async)
     {
-        await base.Project_collection_of_ints_with_paging3(async);
+        await base.Project_collection_of_nullable_ints_with_paging3(async);
 
         if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {
@@ -1657,6 +1651,13 @@ WHERE `p`.`Id` IN (2, 999)
 """);
     }
 
+    public override async Task Column_collection_Concat_parameter_collection_equality_inline_collection(bool async)
+    {
+        await base.Column_collection_Concat_parameter_collection_equality_inline_collection(async);
+
+        AssertSql();
+    }
+
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
         => TestHelpers.AssertAllMethodsOverridden(GetType());
@@ -1683,14 +1684,3 @@ WHERE `p`.`Id` IN (2, 999)
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
