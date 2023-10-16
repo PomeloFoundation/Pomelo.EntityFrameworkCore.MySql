@@ -52,7 +52,7 @@ namespace Microsoft.EntityFrameworkCore
             public override bool DateTimeCurrentTimestamp => ServerVersion.Version >= new Version(10, 0, 1);
             public override bool DateTime6 => ServerVersion.Version >= new Version(10, 1, 2);
             public override bool LargerKeyLength => ServerVersion.Version >= new Version(10, 2, 2);
-            public override bool RenameIndex => false;
+            public override bool RenameIndex => ServerVersion.Version >= new Version(10, 5, 2);
             public override bool RenameColumn => ServerVersion.Version >= new Version(10, 5, 2);
             public override bool WindowFunctions => ServerVersion.Version >= new Version(10, 2, 0);
             public override bool FloatCast => false; // The implemented support drops some decimal places and rounds.
