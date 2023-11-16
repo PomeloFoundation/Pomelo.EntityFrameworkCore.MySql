@@ -395,7 +395,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         }
 
         /// <summary>
-        /// EF Core does forward the current QueryCompilationContext to IMethodCallTranslator implementations.
+        /// EF Core does not forward the current QueryCompilationContext to IMethodCallTranslator implementations.
         /// Our MySqlMethodCallTranslatorProvider and MySqlQueryCompilationContextMethodTranslator implementations take care of that.
         /// </summary>
         private Expression CallBaseVisitMethodCall(MethodCallExpression methodCallExpression)
