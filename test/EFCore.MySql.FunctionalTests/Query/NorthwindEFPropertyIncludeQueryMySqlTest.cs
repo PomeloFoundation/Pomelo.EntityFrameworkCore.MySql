@@ -413,8 +413,7 @@ ORDER BY `o`.`OrderID`, `o0`.`OrderID`
             {
                 AssertInclude(e.c1, a.c1, new ExpectedInclude<Customer>(c => c.Orders));
                 AssertEqual(e.c2, a.c2);
-            },
-            entryCount: 8);
+            });
 
         AssertSql(
 """
@@ -457,8 +456,7 @@ ORDER BY `t1`.`CustomerID`, `t1`.`CustomerID0`
                 .OrderBy(b => b.Customer.CustomerID != null)
                 .ThenBy(b => b.Customer != null ? b.Customer.CustomerID : string.Empty)
                 .ThenBy(b => b.EmployeeID) // Needs to be explicitly ordered by EmployeeID as well
-                .Take(2),
-            entryCount: 6);
+                .Take(2));
 
         AssertSql(
 """
@@ -1203,8 +1201,7 @@ ORDER BY `c`.`CustomerID`, `t`.`OrderID`, `t`.`OrderID0`
                 .ThenBy(o => o.Customer != null ? o.Customer.City : string.Empty)
                 .ThenBy(o => o.OrderID) // Needs to be explicitly ordered by EmployeeID as well
                 .Take(5),
-            elementAsserter: (e, a) => AssertInclude(e, a, new ExpectedInclude<Order>(o => o.OrderDetails)),
-            entryCount: 14);
+            elementAsserter: (e, a) => AssertInclude(e, a, new ExpectedInclude<Order>(o => o.OrderDetails)));
 
         AssertSql(
 """
@@ -1604,8 +1601,7 @@ FROM `Orders` AS `o`
             {
                 AssertInclude(e.c1, a.c1, new ExpectedInclude<Customer>(c => c.Orders));
                 AssertInclude(e.c2, a.c2, new ExpectedInclude<Customer>(c => c.Orders));
-            },
-            entryCount: 15);
+            });
 
         AssertSql(
 """

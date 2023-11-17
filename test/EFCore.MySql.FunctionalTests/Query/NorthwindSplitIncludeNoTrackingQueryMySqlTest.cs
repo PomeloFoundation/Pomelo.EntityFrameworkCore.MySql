@@ -32,8 +32,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 {
                     AssertInclude(e.c1, a.c1, new ExpectedInclude<Customer>(c => c.Orders));
                     AssertEqual(e.c2, a.c2);
-                },
-                entryCount: 8);
+                });
         }
 
         public override Task Repro9735(bool async)
@@ -45,8 +44,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     .OrderBy(b => b.Customer.CustomerID != null)
                     .ThenBy(b => b.Customer != null ? b.Customer.CustomerID : string.Empty)
                     .ThenBy(b => b.EmployeeID) // Needs to be explicitly ordered by EmployeeID as well
-                    .Take(2),
-                entryCount: 6);
+                    .Take(2));
         }
 
         public override Task Include_collection_with_multiple_conditional_order_by(bool async)
@@ -59,8 +57,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     .ThenBy(o => o.Customer != null ? o.Customer.City : string.Empty)
                     .ThenBy(b => b.EmployeeID) // Needs to be explicitly ordered by EmployeeID as well
                     .Take(5),
-                elementAsserter: (e, a) => AssertInclude(e, a, new ExpectedInclude<Order>(o => o.OrderDetails)),
-                entryCount: 14);
+                elementAsserter: (e, a) => AssertInclude(e, a, new ExpectedInclude<Order>(o => o.OrderDetails)));
         }
 
         [ConditionalTheory(Skip = "https://github.com/dotnet/efcore/issues/21202")]
