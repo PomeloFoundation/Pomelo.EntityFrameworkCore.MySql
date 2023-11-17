@@ -125,9 +125,11 @@ WHERE EXTRACT(day FROM `o`.`OrderDate`) = 4");
             await base.Where_datetime_hour_component(async);
 
             AssertSql(
-                @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+"""
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE EXTRACT(hour FROM `o`.`OrderDate`) = 14");
+WHERE EXTRACT(hour FROM `o`.`OrderDate`) = 0
+""");
         }
 
         [ConditionalTheory]
@@ -136,9 +138,11 @@ WHERE EXTRACT(hour FROM `o`.`OrderDate`) = 14");
             await base.Where_datetime_minute_component(async);
 
             AssertSql(
-                @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+"""
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE EXTRACT(minute FROM `o`.`OrderDate`) = 23");
+WHERE EXTRACT(minute FROM `o`.`OrderDate`) = 0
+""");
         }
 
         [ConditionalTheory]
@@ -147,9 +151,11 @@ WHERE EXTRACT(minute FROM `o`.`OrderDate`) = 23");
             await base.Where_datetime_second_component(async);
 
             AssertSql(
-                @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+"""
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE EXTRACT(second FROM `o`.`OrderDate`) = 44");
+WHERE EXTRACT(second FROM `o`.`OrderDate`) = 0
+""");
         }
 
         [ConditionalTheory]
@@ -158,9 +164,11 @@ WHERE EXTRACT(second FROM `o`.`OrderDate`) = 44");
             await base.Where_datetime_millisecond_component(async);
 
             AssertSql(
-                @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+"""
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (EXTRACT(microsecond FROM `o`.`OrderDate`)) DIV (1000) = 88");
+WHERE (EXTRACT(microsecond FROM `o`.`OrderDate`)) DIV (1000) = 0
+""");
         }
 
         [ConditionalTheory]
@@ -276,12 +284,14 @@ WHERE @__guidParameter_0 = UUID()");
             await base.Where_string_concat_method_comparison_2(async);
 
             AssertSql(
-                @"@__i_0='A' (Size = 4000)
+"""
+@__i_0='A' (Size = 4000)
 @__j_1='B' (Size = 4000)
 
 SELECT `c`.`CustomerID`
 FROM `Customers` AS `c`
-WHERE CONCAT(@__i_0, @__j_1, `c`.`CustomerID`) = `c`.`CompanyName`");
+WHERE CONCAT(@__i_0, @__j_1, `c`.`CustomerID`) = 'ABANATR'
+""");
         }
 
         public override async Task Where_string_concat_method_comparison_3(bool async)
@@ -289,13 +299,15 @@ WHERE CONCAT(@__i_0, @__j_1, `c`.`CustomerID`) = `c`.`CompanyName`");
             await base.Where_string_concat_method_comparison_3(async);
 
             AssertSql(
-                @"@__i_0='A' (Size = 4000)
+"""
+@__i_0='A' (Size = 4000)
 @__j_1='B' (Size = 4000)
 @__k_2='C' (Size = 4000)
 
 SELECT `c`.`CustomerID`
 FROM `Customers` AS `c`
-WHERE CONCAT(@__i_0, @__j_1, @__k_2, `c`.`CustomerID`) = `c`.`CompanyName`");
+WHERE CONCAT(@__i_0, @__j_1, @__k_2, `c`.`CustomerID`) = 'ABCANTON'
+""");
         }
 
         [ConditionalTheory]

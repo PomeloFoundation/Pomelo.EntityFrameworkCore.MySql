@@ -2463,16 +2463,19 @@ ORDER BY `t`.`Id`, `t0`.`Name` DESC");
             await base.Filtered_include_Skip_Take_with_another_Skip_Take_on_top_level(async);
 
             AssertSql(
-                @"@__p_1='5'
-@__p_0='10'
+"""
+@__p_1='5'
+@__p_0='1'
 
 SELECT `l`.`Id`, `l`.`Date`, `l`.`Name`, `l`.`OneToMany_Optional_Self_Inverse1Id`, `l`.`OneToMany_Required_Self_Inverse1Id`, `l`.`OneToOne_Optional_Self1Id`
 FROM `LevelOne` AS `l`
 ORDER BY `l`.`Id` DESC
-LIMIT @__p_1 OFFSET @__p_0",
+LIMIT @__p_1 OFFSET @__p_0
+""",
                 //
-                @"@__p_1='5'
-@__p_0='10'
+"""
+@__p_1='5'
+@__p_0='1'
 
 SELECT `t0`.`Id`, `t0`.`Date`, `t0`.`Level1_Optional_Id`, `t0`.`Level1_Required_Id`, `t0`.`Name`, `t0`.`OneToMany_Optional_Inverse2Id`, `t0`.`OneToMany_Optional_Self_Inverse2Id`, `t0`.`OneToMany_Required_Inverse2Id`, `t0`.`OneToMany_Required_Self_Inverse2Id`, `t0`.`OneToOne_Optional_PK_Inverse2Id`, `t0`.`OneToOne_Optional_Self2Id`, `t0`.`Id0`, `t0`.`Level2_Optional_Id`, `t0`.`Level2_Required_Id`, `t0`.`Name0`, `t0`.`OneToMany_Optional_Inverse3Id`, `t0`.`OneToMany_Optional_Self_Inverse3Id`, `t0`.`OneToMany_Required_Inverse3Id`, `t0`.`OneToMany_Required_Self_Inverse3Id`, `t0`.`OneToOne_Optional_PK_Inverse3Id`, `t0`.`OneToOne_Optional_Self3Id`, `t`.`Id`
 FROM (
@@ -2488,11 +2491,12 @@ JOIN LATERAL (
         FROM `LevelTwo` AS `l1`
         WHERE `t`.`Id` = `l1`.`OneToMany_Optional_Inverse2Id`
         ORDER BY `l1`.`Name` DESC
-        LIMIT 4 OFFSET 2
+        LIMIT 4 OFFSET 1
     ) AS `t1`
     LEFT JOIN `LevelThree` AS `l0` ON `t1`.`Id` = `l0`.`Level2_Optional_Id`
 ) AS `t0` ON TRUE
-ORDER BY `t`.`Id` DESC, `t0`.`Name` DESC");
+ORDER BY `t`.`Id` DESC, `t0`.`Name` DESC
+""");
         }
 
         public override async Task Skip_Take_Distinct_on_grouping_element(bool async)

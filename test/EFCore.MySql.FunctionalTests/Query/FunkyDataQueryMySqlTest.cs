@@ -80,43 +80,43 @@ FROM `FunkyCustomers` AS `f`
 WHERE `f`.`FirstName` LIKE '\\%B%'
 """,
             //
-            """
+"""
 SELECT `f`.`FirstName`
 FROM `FunkyCustomers` AS `f`
-WHERE `f`.`FirstName` LIKE 'a\\_%'
+WHERE `f`.`FirstName` LIKE '\\_B%'
 """,
             //
-            """
+"""
 SELECT `f`.`FirstName`
 FROM `FunkyCustomers` AS `f`
 WHERE FALSE
 """,
             //
-            """
+"""
 SELECT `f`.`FirstName`
 FROM `FunkyCustomers` AS `f`
 WHERE `f`.`FirstName` IS NOT NULL
 """,
             //
-            """
+"""
 SELECT `f`.`FirstName`
 FROM `FunkyCustomers` AS `f`
 WHERE `f`.`FirstName` LIKE '\\_Ba\\_%'
 """,
             //
-            """
+"""
 SELECT `f`.`FirstName`
 FROM `FunkyCustomers` AS `f`
 WHERE `f`.`FirstName` NOT LIKE '\\%B\\%a\\%r%' OR (`f`.`FirstName` IS NULL)
 """,
             //
-            """
+"""
 SELECT `f`.`FirstName`
 FROM `FunkyCustomers` AS `f`
 WHERE `f`.`FirstName` IS NULL
 """,
             //
-            """
+"""
 SELECT `f`.`FirstName`
 FROM `FunkyCustomers` AS `f`
 """);
@@ -130,46 +130,46 @@ FROM `FunkyCustomers` AS `f`
 """
 SELECT `f`.`FirstName`
 FROM `FunkyCustomers` AS `f`
-WHERE `f`.`FirstName` LIKE '%\\%B'
+WHERE `f`.`FirstName` LIKE '%\\%r'
 """,
             //
-            """
+"""
 SELECT `f`.`FirstName`
 FROM `FunkyCustomers` AS `f`
-WHERE `f`.`FirstName` LIKE '%a\\_'
+WHERE `f`.`FirstName` LIKE '%r\\_'
 """,
             //
-            """
+"""
 SELECT `f`.`FirstName`
 FROM `FunkyCustomers` AS `f`
 WHERE FALSE
 """,
             //
-            """
+"""
 SELECT `f`.`FirstName`
 FROM `FunkyCustomers` AS `f`
 WHERE `f`.`FirstName` IS NOT NULL
 """,
             //
-            """
+"""
 SELECT `f`.`FirstName`
 FROM `FunkyCustomers` AS `f`
-WHERE `f`.`FirstName` LIKE '%\\_Ba\\_'
+WHERE `f`.`FirstName` LIKE '%\\_r\\_'
 """,
             //
-            """
+"""
 SELECT `f`.`FirstName`
 FROM `FunkyCustomers` AS `f`
-WHERE `f`.`FirstName` NOT LIKE '%\\%B\\%a\\%r' OR (`f`.`FirstName` IS NULL)
+WHERE `f`.`FirstName` NOT LIKE '%a\\%r\\%' OR (`f`.`FirstName` IS NULL)
 """,
             //
-            """
+"""
 SELECT `f`.`FirstName`
 FROM `FunkyCustomers` AS `f`
 WHERE `f`.`FirstName` IS NULL
 """,
             //
-            """
+"""
 SELECT `f`.`FirstName`
 FROM `FunkyCustomers` AS `f`
 """);
