@@ -3940,13 +3940,17 @@ WHERE EXTRACT(day FROM `m`.`Timeline`) = 2
 
     public override async Task Where_datetimeoffset_hour_component(bool async)
     {
-        await base.Where_datetimeoffset_hour_component(async);
+        await AssertQuery(
+            async,
+            ss => from m in ss.Set<Mission>()
+                where m.Timeline.Hour == /* 10 */ 8
+                select m);
 
         AssertSql(
 """
 SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
 FROM `Missions` AS `m`
-WHERE EXTRACT(hour FROM `m`.`Timeline`) = 10
+WHERE EXTRACT(hour FROM `m`.`Timeline`) = 8
 """);
     }
 
