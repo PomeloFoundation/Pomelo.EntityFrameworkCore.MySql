@@ -299,7 +299,7 @@ jobs:
           dotnet test -c Release --no-build --logger "GitHubActions;report-warnings=false" test/EFCore.MySql.IntegrationTests
   NuGet:
     needs: BuildAndTest
-    if: github.event_name == 'push' && github.repository == 'PomeloFoundation/Pomelo.EntityFrameworkCore.MySql'
+    if: (github.event_name == 'push' || github.event_name == 'release') && github.repository == 'PomeloFoundation/Pomelo.EntityFrameworkCore.MySql'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
