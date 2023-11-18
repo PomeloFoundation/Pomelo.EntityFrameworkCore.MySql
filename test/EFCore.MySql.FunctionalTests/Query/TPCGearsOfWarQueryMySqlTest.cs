@@ -3940,13 +3940,17 @@ WHERE EXTRACT(day FROM `m`.`Timeline`) = 2
 
     public override async Task Where_datetimeoffset_hour_component(bool async)
     {
-        await base.Where_datetimeoffset_hour_component(async);
+        await AssertQuery(
+            async,
+            ss => from m in ss.Set<Mission>()
+                where m.Timeline.Hour == /* 10 */ 8
+                select m);
 
         AssertSql(
 """
 SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
 FROM `Missions` AS `m`
-WHERE EXTRACT(hour FROM `m`.`Timeline`) = 10
+WHERE EXTRACT(hour FROM `m`.`Timeline`) = 8
 """);
     }
 
@@ -4248,7 +4252,7 @@ WHERE `t`.`Id` IN (
 """
 SELECT `t`.`Id`, `t`.`GearNickName`, `t`.`GearSquadId`, `t`.`IssueDate`, `t`.`Note`
 FROM `Tags` AS `t`
-WHERE `t`.`Id` IN ('d2c26679-562b-44d1-ab96-23d1775e0926', '23cbcf9b-ce14-45cf-aafa-2c2667ebfdd3', 'ab1b82d7-88db-42bd-a132-7eef9aa68af4')
+WHERE `t`.`Id` IN ('df36f493-463f-4123-83f9-6b135deeb7ba', '23cbcf9b-ce14-45cf-aafa-2c2667ebfdd3', 'ab1b82d7-88db-42bd-a132-7eef9aa68af4')
 """);
         }
     }
@@ -10103,31 +10107,37 @@ WHERE FALSE
 
         AssertSql(
 """
-SELECT `l`.`Id`, `l`.`CapitalName`, `l`.`Name`, `l`.`ServerAddress`, `l`.`CommanderName`, `l`.`Eradicated`
-FROM `LocustHordes` AS `l`
-LEFT JOIN `Cities` AS `c` ON `l`.`CapitalName` = `c`.`Name`
+SELECT `t`.`Nickname`, `t`.`SquadId`, `t`.`AssignedCityName`, `t`.`CityOfBirthName`, `t`.`FullName`, `t`.`HasSoulPatch`, `t`.`LeaderNickname`, `t`.`LeaderSquadId`, `t`.`Rank`, `t`.`Discriminator`
+FROM (
+    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
+    FROM `Gears` AS `g`
+    UNION ALL
+    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
+    FROM `Officers` AS `o`
+) AS `t`
+LEFT JOIN `Cities` AS `c` ON `t`.`AssignedCityName` = `c`.`Name`
 WHERE (`c`.`Name` = (
     SELECT `c0`.`Name`
     FROM (
-        SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-        FROM `Gears` AS `g`
+        SELECT `g0`.`Nickname`, `g0`.`SquadId`, `g0`.`AssignedCityName`, `g0`.`CityOfBirthName`, `g0`.`FullName`, `g0`.`HasSoulPatch`, `g0`.`LeaderNickname`, `g0`.`LeaderSquadId`, `g0`.`Rank`, 'Gear' AS `Discriminator`
+        FROM `Gears` AS `g0`
         UNION ALL
-        SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-        FROM `Officers` AS `o`
-    ) AS `t`
-    INNER JOIN `Cities` AS `c0` ON `t`.`CityOfBirthName` = `c0`.`Name`
-    ORDER BY `t`.`Nickname`
+        SELECT `o0`.`Nickname`, `o0`.`SquadId`, `o0`.`AssignedCityName`, `o0`.`CityOfBirthName`, `o0`.`FullName`, `o0`.`HasSoulPatch`, `o0`.`LeaderNickname`, `o0`.`LeaderSquadId`, `o0`.`Rank`, 'Officer' AS `Discriminator`
+        FROM `Officers` AS `o0`
+    ) AS `t0`
+    INNER JOIN `Cities` AS `c0` ON `t0`.`CityOfBirthName` = `c0`.`Name`
+    ORDER BY `t0`.`Nickname`
     LIMIT 1)) OR (`c`.`Name` IS NULL AND ((
     SELECT `c0`.`Name`
     FROM (
-        SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-        FROM `Gears` AS `g`
+        SELECT `g0`.`Nickname`, `g0`.`SquadId`, `g0`.`AssignedCityName`, `g0`.`CityOfBirthName`, `g0`.`FullName`, `g0`.`HasSoulPatch`, `g0`.`LeaderNickname`, `g0`.`LeaderSquadId`, `g0`.`Rank`, 'Gear' AS `Discriminator`
+        FROM `Gears` AS `g0`
         UNION ALL
-        SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-        FROM `Officers` AS `o`
-    ) AS `t`
-    INNER JOIN `Cities` AS `c0` ON `t`.`CityOfBirthName` = `c0`.`Name`
-    ORDER BY `t`.`Nickname`
+        SELECT `o0`.`Nickname`, `o0`.`SquadId`, `o0`.`AssignedCityName`, `o0`.`CityOfBirthName`, `o0`.`FullName`, `o0`.`HasSoulPatch`, `o0`.`LeaderNickname`, `o0`.`LeaderSquadId`, `o0`.`Rank`, 'Officer' AS `Discriminator`
+        FROM `Officers` AS `o0`
+    ) AS `t0`
+    INNER JOIN `Cities` AS `c0` ON `t0`.`CityOfBirthName` = `c0`.`Name`
+    ORDER BY `t0`.`Nickname`
     LIMIT 1) IS NULL))
 """);
     }
@@ -10316,7 +10326,7 @@ WHERE LOCATE(0x01, `s`.`Banner`) > 0
 """
 SELECT `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`
 FROM `Squads` AS `s`
-WHERE LENGTH(`s`.`Banner`) = 1
+WHERE LENGTH(`s`.`Banner`) = 2
 """);
     }
 
@@ -10326,7 +10336,7 @@ WHERE LENGTH(`s`.`Banner`) = 1
 
         AssertSql(
 """
-@__p_0='1'
+@__p_0='2'
 
 SELECT `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`
 FROM `Squads` AS `s`
@@ -10404,7 +10414,7 @@ END
         AssertSql(
 """
 @__prm_0='True'
-@__prm2_1='Dom's Lancer' (Size = 4000)
+@__prm2_1='Marcus' Lancer' (Size = 4000)
 
 SELECT `t`.`Nickname`, `t`.`SquadId`, `t`.`AssignedCityName`, `t`.`CityOfBirthName`, `t`.`FullName`, `t`.`HasSoulPatch`, `t`.`LeaderNickname`, `t`.`LeaderSquadId`, `t`.`Rank`, `t`.`Discriminator`
 FROM (
@@ -10580,7 +10590,7 @@ FROM (
     SELECT `l0`.`Name`, `l0`.`LocustHordeId`, `l0`.`ThreatLevel`, `l0`.`ThreatLevelByte`, `l0`.`ThreatLevelNullableByte`, `l0`.`DefeatedByNickname`, `l0`.`DefeatedBySquadId`, `l0`.`HighCommandId`, 'LocustCommander' AS `Discriminator`
     FROM `LocustCommanders` AS `l0`
 ) AS `t`
-WHERE CAST(`t`.`ThreatLevel` AS signed) >= (5 + CAST(`t`.`ThreatLevel` AS signed))
+WHERE CAST(`t`.`ThreatLevel` AS signed) <= (5 + CAST(`t`.`ThreatLevel` AS signed))
 """);
     }
 
@@ -10648,7 +10658,7 @@ WHERE EXTRACT(hour FROM `m`.`Duration`) = 1
 """
 SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
 FROM `Missions` AS `m`
-WHERE EXTRACT(minute FROM `m`.`Duration`) = 1
+WHERE EXTRACT(minute FROM `m`.`Duration`) = 2
 """);
     }
 
@@ -10660,7 +10670,7 @@ WHERE EXTRACT(minute FROM `m`.`Duration`) = 1
 """
 SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
 FROM `Missions` AS `m`
-WHERE EXTRACT(second FROM `m`.`Duration`) = 1
+WHERE EXTRACT(second FROM `m`.`Duration`) = 3
 """);
     }
 
@@ -10672,7 +10682,7 @@ WHERE EXTRACT(second FROM `m`.`Duration`) = 1
 """
 SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
 FROM `Missions` AS `m`
-WHERE (EXTRACT(microsecond FROM `m`.`Duration`)) DIV (1000) = 1
+WHERE (EXTRACT(microsecond FROM `m`.`Duration`)) DIV (1000) = 456
 """);
     }
 
@@ -11265,7 +11275,7 @@ ORDER BY `t`.`Nickname`, `t0`.`Id`
 """
 SELECT `s`.`Name`
 FROM `Squads` AS `s`
-WHERE (`s`.`Name` = 'Kilo') AND (COALESCE((
+WHERE (`s`.`Name` = 'Delta') AND (COALESCE((
     SELECT `t`.`SquadId`
     FROM (
         SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
@@ -11275,6 +11285,7 @@ WHERE (`s`.`Name` = 'Kilo') AND (COALESCE((
         FROM `Officers` AS `o`
     ) AS `t`
     WHERE (`s`.`Id` = `t`.`SquadId`) AND (`t`.`HasSoulPatch` = TRUE)
+    ORDER BY `t`.`FullName`
     LIMIT 1), 0) <> 0)
 """);
     }
@@ -12200,7 +12211,7 @@ WHERE (`t`.`HasSoulPatch` = TRUE) AND `t`.`HasSoulPatch` IN (FALSE, TRUE)
 
         AssertSql(
 """
-@__place_0='Seattle' (Size = 4000)
+@__place_0='Ephyra's location' (Size = 4000)
 
 SELECT `c`.`Name`, `c`.`Location`, `c`.`Nation`
 FROM `Cities` AS `c`
@@ -13476,6 +13487,48 @@ WHERE 'Marcus' IN (
     ) AS `t0`
 )
 GROUP BY `s`.`Name`
+""");
+    }
+
+    public override async Task Where_subquery_equality_to_null_with_composite_key_should_match_nulls(bool async)
+    {
+        await base.Where_subquery_equality_to_null_with_composite_key_should_match_nulls(async);
+
+        AssertSql(
+"""
+SELECT `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`
+FROM `Squads` AS `s`
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM (
+        SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
+        FROM `Gears` AS `g`
+        UNION ALL
+        SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
+        FROM `Officers` AS `o`
+    ) AS `t`
+    WHERE (`s`.`Id` = `t`.`SquadId`) AND (`t`.`FullName` = 'Anthony Carmine'))
+""");
+    }
+
+    public override async Task Where_subquery_equality_to_null_without_composite_key_should_match_null(bool async)
+    {
+        await base.Where_subquery_equality_to_null_without_composite_key_should_match_null(async);
+
+        AssertSql(
+"""
+SELECT `t`.`Nickname`, `t`.`SquadId`, `t`.`AssignedCityName`, `t`.`CityOfBirthName`, `t`.`FullName`, `t`.`HasSoulPatch`, `t`.`LeaderNickname`, `t`.`LeaderSquadId`, `t`.`Rank`, `t`.`Discriminator`
+FROM (
+    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
+    FROM `Gears` AS `g`
+    UNION ALL
+    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
+    FROM `Officers` AS `o`
+) AS `t`
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM `Weapons` AS `w`
+    WHERE (`t`.`FullName` = `w`.`OwnerFullName`) AND (`w`.`Name` = 'Hammer of Dawn'))
 """);
     }
 

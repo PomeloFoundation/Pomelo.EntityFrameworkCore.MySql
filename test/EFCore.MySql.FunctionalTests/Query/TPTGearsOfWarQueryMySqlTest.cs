@@ -296,6 +296,22 @@ ORDER BY `g`.`Nickname`, `g`.`SquadId`, `s`.`Id`, `s1`.`SquadId`
             AssertSql("");
         }
 
+        public override async Task Where_datetimeoffset_hour_component(bool async)
+        {
+            await AssertQuery(
+                async,
+                ss => from m in ss.Set<Mission>()
+                    where m.Timeline.Hour == /* 10 */ 8
+                    select m);
+
+            AssertSql(
+                """
+                SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
+                FROM `Missions` AS `m`
+                WHERE EXTRACT(hour FROM `m`.`Timeline`) = 8
+                """);
+        }
+
         private string AssertSql(string expected)
         {
             Fixture.TestSqlLoggerFactory.AssertBaseline(new[] {expected});

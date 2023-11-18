@@ -40,7 +40,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 CrossApplyExpression crossApplyExpression => VisitCrossApply(crossApplyExpression),
                 OuterApplyExpression outerApplyExpression => VisitOuterApply(outerApplyExpression),
                 ExceptExpression exceptExpression => VisitExcept(exceptExpression),
-                IntersectExpression intersectExpression => VisitIntercept(intersectExpression),
+                IntersectExpression intersectExpression => VisitIntersect(intersectExpression),
                 JsonScalarExpression jsonScalarExpression => VisitJsonScalar(jsonScalarExpression),
                 MySqlJsonTableExpression jsonTableExpression => VisitJsonTable(jsonTableExpression),
 
@@ -62,7 +62,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         protected virtual Expression VisitExcept(ExceptExpression exceptExpression)
             => CheckSupport(exceptExpression, _options.ServerVersion.Supports.ExceptIntercept);
 
-        protected virtual Expression VisitIntercept(IntersectExpression intersectExpression)
+        protected virtual Expression VisitIntersect(IntersectExpression intersectExpression)
             => CheckSupport(intersectExpression, _options.ServerVersion.Supports.ExceptIntercept);
 
         protected virtual Expression VisitJsonScalar(JsonScalarExpression jsonScalarExpression)

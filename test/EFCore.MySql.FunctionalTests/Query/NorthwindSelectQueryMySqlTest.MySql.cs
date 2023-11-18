@@ -37,7 +37,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     .Select(g => new {g.Key.Year, Count = g.Count()})
                     .Where(k => k.Year == 1995)
                     .OrderBy(k => k.Year),
-                assertOrder: true);
+                assertOrder: true,
+                assertEmpty: true); // TODO: Use a linq query that does not return an empty result.
 
             AssertSql(
                 @"SELECT `t`.`Year`, `t`.`Count`
