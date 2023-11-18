@@ -13,13 +13,13 @@
 
 The following versions of MySqlConnector, EF Core, .NET (Core), .NET Standard and .NET Framework are compatible with published releases of `Pomelo.EntityFrameworkCore.MySql`:
 
-Release | Branch                                                                                           | MySqlConnector     |  EF Core   | .NET (Core) | .NET Standard | .NET Framework
---- |--------------------------------------------------------------------------------------------------|--------------------|:----------:|:-----------:| :---: | :---:
-[8.0.0-<br />beta.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/8.0.0-beta.1) | [master](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/master)       | >= 2.3.0-beta.3           | 8.0.0-<br />rc.1 |    8.0+     | - | -
-[7.0.0](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/7.0.0) | [7.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/7.0-maint) | >= 2.2.5           |   7.0.x    |    6.0+     | - | -
-[6.0.2](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/6.0.2) | [6.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/6.0-maint) | >= 2.1.2           |   6.0.x    |    6.0+     | - | -
-[5.0.4](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/5.0.4) | [5.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/5.0-maint) | >= 1.3.13          |   5.0.x    |    3.0+     | 2.1 | -
-[3.2.7](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.2.7) | [3.2-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/3.2-maint) | >= 0.69.10 < 1.0.0 |   3.1.x    |    2.0+     | 2.0 | 4.6.1+
+Release | Branch                                                                                           | MySqlConnector     | EF Core | .NET (Core) | .NET Standard | .NET Framework
+--- |--------------------------------------------------------------------------------------------------|--------------------|:-------:|:-----------:| :---: | :---:
+[8.0.0-<br />beta.2](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/8.0.0-beta.2) | [master](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/master)       | >= 2.3.0           |  8.0.x  |    8.0+     | - | -
+[7.0.0](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/7.0.0) | [7.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/7.0-maint) | >= 2.2.5           |  7.0.x  |    6.0+     | - | -
+[6.0.2](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/6.0.2) | [6.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/6.0-maint) | >= 2.1.2           |  6.0.x  |    6.0+     | - | -
+[5.0.4](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/5.0.4) | [5.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/5.0-maint) | >= 1.3.13          |  5.0.x  |    3.0+     | 2.1 | -
+[3.2.7](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.2.7) | [3.2-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/3.2-maint) | >= 0.69.10 < 1.0.0 |  3.1.x  |    2.0+     | 2.0 | 4.6.1+
 
 ### Packages
 
@@ -48,7 +48,8 @@ Officially supported versions are:
 
 Milestone | Status | Release Date
 ----------|--------|-------------
-8.0.0-beta.1 | Released | 2023-09-29 (see [#1746](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1746))
+8.0.0-beta.2 | Released | 2023-11-18 (see [#1746](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1746))
+8.0.0-beta.1 | Released | 2023-09-29
 7.0.0 | Released | 2023-01-16
 6.0.2 | Released | 2022-07-24
 5.0.4 | Released | 2022-01-22
