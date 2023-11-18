@@ -13479,6 +13479,20 @@ GROUP BY `s`.`Name`
 """);
     }
 
+    public override async Task Where_subquery_equality_to_null_with_composite_key_should_match_nulls(bool async)
+    {
+        await base.Where_subquery_equality_to_null_with_composite_key_should_match_nulls(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Where_subquery_equality_to_null_without_composite_key_should_match_null(bool async)
+    {
+        await base.Where_subquery_equality_to_null_without_composite_key_should_match_null(async);
+
+        AssertSql("");
+    }
+
     private void AssertSql(params string[] expected)
         => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 }

@@ -250,7 +250,7 @@ WHERE ((((`c`.`ShippingAddress_AddressLine1` = @__entity_equality_address_0_Addr
     {
         await base.Subquery_over_complex_type(async);
 
-        AssertSql();
+        AssertSql("");
     }
 
     public override async Task Contains_over_complex_type(bool async)
@@ -368,21 +368,213 @@ FROM `Customer` AS `c0`
     {
         await base.Concat_two_different_complex_type(async);
 
-        AssertSql();
+        AssertSql("");
     }
 
     public override async Task Union_two_different_complex_type(bool async)
     {
         await base.Union_two_different_complex_type(async);
 
-        AssertSql();
+        AssertSql("");
     }
 
     public override async Task Complex_type_equals_null(bool async)
     {
         await base.Complex_type_equals_null(async);
 
-        AssertSql();
+        AssertSql("");
+    }
+
+    public override async Task Subquery_over_struct_complex_type(bool async)
+    {
+        await base.Subquery_over_struct_complex_type(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Concat_two_different_struct_complex_type(bool async)
+    {
+        await base.Concat_two_different_struct_complex_type(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Union_two_different_struct_complex_type(bool async)
+    {
+        await base.Union_two_different_struct_complex_type(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Filter_on_property_inside_struct_complex_type(bool async)
+    {
+        await base.Filter_on_property_inside_struct_complex_type(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Filter_on_property_inside_nested_struct_complex_type(bool async)
+    {
+        await base.Filter_on_property_inside_nested_struct_complex_type(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Filter_on_property_inside_struct_complex_type_after_subquery(bool async)
+    {
+        await base.Filter_on_property_inside_struct_complex_type_after_subquery(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Filter_on_property_inside_nested_struct_complex_type_after_subquery(bool async)
+    {
+        await base.Filter_on_property_inside_nested_struct_complex_type_after_subquery(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Filter_on_required_property_inside_required_struct_complex_type_on_optional_navigation(bool async)
+    {
+        await base.Filter_on_required_property_inside_required_struct_complex_type_on_optional_navigation(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Filter_on_required_property_inside_required_struct_complex_type_on_required_navigation(bool async)
+    {
+        await base.Filter_on_required_property_inside_required_struct_complex_type_on_required_navigation(async);
+
+        AssertSql("");
+    }
+
+    // This test fails because when OptionalCustomer is null, we get all-null results because of the LEFT JOIN, and we materialize this
+    // as an empty ShippingAddress instead of null (see SQL). The proper solution here would be to project the Customer ID just for the
+    // purpose of knowing that it's there.
+    public override async Task Project_struct_complex_type_via_optional_navigation(bool async)
+    {
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => base.Project_struct_complex_type_via_optional_navigation(async));
+
+        Assert.Equal(RelationalStrings.CannotProjectNullableComplexType("ValuedCustomer.ShippingAddress#AddressStruct"), exception.Message);
+    }
+
+    public override async Task Project_struct_complex_type_via_required_navigation(bool async)
+    {
+        await base.Project_struct_complex_type_via_required_navigation(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Load_struct_complex_type_after_subquery_on_entity_type(bool async)
+    {
+        await base.Load_struct_complex_type_after_subquery_on_entity_type(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Select_struct_complex_type(bool async)
+    {
+        await base.Select_struct_complex_type(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Select_nested_struct_complex_type(bool async)
+    {
+        await base.Select_nested_struct_complex_type(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Select_single_property_on_nested_struct_complex_type(bool async)
+    {
+        await base.Select_single_property_on_nested_struct_complex_type(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Select_struct_complex_type_Where(bool async)
+    {
+        await base.Select_struct_complex_type_Where(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Select_struct_complex_type_Distinct(bool async)
+    {
+        await base.Select_struct_complex_type_Distinct(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Struct_complex_type_equals_struct_complex_type(bool async)
+    {
+        await base.Struct_complex_type_equals_struct_complex_type(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Struct_complex_type_equals_constant(bool async)
+    {
+        await base.Struct_complex_type_equals_constant(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Struct_complex_type_equals_parameter(bool async)
+    {
+        await base.Struct_complex_type_equals_parameter(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Contains_over_struct_complex_type(bool async)
+    {
+        await base.Contains_over_struct_complex_type(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Concat_entity_type_containing_struct_complex_property(bool async)
+    {
+        await base.Concat_entity_type_containing_struct_complex_property(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Union_entity_type_containing_struct_complex_property(bool async)
+    {
+        await base.Union_entity_type_containing_struct_complex_property(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Concat_struct_complex_type(bool async)
+    {
+        await base.Concat_struct_complex_type(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Union_struct_complex_type(bool async)
+    {
+        await base.Union_struct_complex_type(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Concat_property_in_struct_complex_type(bool async)
+    {
+        await base.Concat_property_in_struct_complex_type(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Union_property_in_struct_complex_type(bool async)
+    {
+        await base.Union_property_in_struct_complex_type(async);
+
+        AssertSql("");
     }
 
     [ConditionalFact]
