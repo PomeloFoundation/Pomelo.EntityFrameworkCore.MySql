@@ -25,35 +25,38 @@
   </PropertyGroup>
 
   <!--
-    If no version or version suffix or official version has been explicitly set, we generate a version suffix in the following format:
+    If no official version has been explicitly set (or no version or version suffix), we generate a version suffix in the following formats:
       alpha.1.ci.20201004T181121Z+sha.0a1b2c3
+      alpha.1.ci.20201004T181121Z.debug+sha.0a1b2c3
   -->
   <PropertyGroup>
     <UseVersionOverride Condition="'$(Version)' != ''">true</UseVersionOverride>
     <UseVersionSuffixOverride Condition="'$(VersionSuffix)' != ''">true</UseVersionSuffixOverride>
+    <FinalOfficialVersion>$(OfficialVersion)</FinalOfficialVersion>
   </PropertyGroup>
 
-  <PropertyGroup Label="Version Suffix Handling" Condition="'$(UseVersionOverride)' != 'true' And '$(UseVersionSuffixOverride)' != 'true' And ('$(OfficialVersion)' == '' Or ($(OfficialVersion.Contains('-')) And '$(OfficialVersion)' != '-debug'))">
-    <VersionSuffix>$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</VersionSuffix>
-    <VersionSuffix Condition="'$(ContinuousIntegrationTimestamp)' != ''">$(VersionSuffix).ci.$(ContinuousIntegrationTimestamp)</VersionSuffix>
+  <PropertyGroup Label="Version Suffix Handling" Condition="'$(UseVersionOverride)' != 'true' And '$(UseVersionSuffixOverride)' != 'true'">
+    <VersionSuffix Condition="'$(OfficialVersion)' == '' Or $(OfficialVersion.Contains('-'))">$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</VersionSuffix>
+    <VersionSuffix Condition="'$(OfficialVersion)' == '' And '$(ContinuousIntegrationTimestamp)' != ''">$(VersionSuffix).ci.$(ContinuousIntegrationTimestamp)</VersionSuffix>
     <VersionSuffix Condition="'$(Configuration)' == 'Debug'">$(VersionSuffix).debug</VersionSuffix>
     <VersionSuffix Condition="'$(BuildSha)' != ''">$(VersionSuffix)+sha.$(BuildSha)</VersionSuffix>
-  </PropertyGroup>
+    <VersionSuffix>$(VersionSuffix.TrimStart(`.`))</VersionSuffix>
 
-  <PropertyGroup Condition="'$(VersionSuffix)' == ''">
-    <VersionSuffix Condition="'$(Configuration)' == 'Debug'">debug</VersionSuffix>
+    <FinalOfficialVersion Condition="'$(Configuration)' == 'Debug' And $(FinalOfficialVersion.Contains('-'))">$(FinalOfficialVersion).debug</FinalOfficialVersion>
+    <FinalOfficialVersion Condition="'$(Configuration)' == 'Debug' And !$(FinalOfficialVersion.Contains('-'))">$(FinalOfficialVersion)-debug</FinalOfficialVersion>
   </PropertyGroup>
 
   <Target Name="EnsureVersionParameters" BeforeTargets="CoreBuild" Condition="'$(UseVersionOverride)' != 'true' And '$(UseVersionSuffixOverride)' != 'true'">
+    <Message Condition="'$(OfficialVersion)' != ''" Importance="high" Text="OfficialVersion: $(OfficialVersion)" />
+    <Message Condition="'$(OfficialVersion)' != ''" Importance="high" Text="FinalOfficialVersion: $(FinalOfficialVersion)" />
+    <Message Condition="'$(OfficialVersion)' != ''" Importance="high" Text="VersionPrefix: $(VersionPrefix)" />
+    <Message Condition="'$(OfficialVersion)' != ''" Importance="high" Text="VersionSuffix: $(VersionSuffix)" />
+    <Message Condition="'$(OfficialVersion)' != ''" Importance="high" Text="Version: $(Version)" />
+
     <Error Condition="'$(VersionPrefix)' == ''" Text="The 'VersionPrefix' property needs to be set." />
     <Error Condition="'$(PreReleaseVersionLabel)' == ''" Text="The 'PreReleaseVersionLabel' property needs to be set." />
     <Error Condition="'$(PreReleaseVersionIteration)' == ''" Text="The 'PreReleaseVersionIteration' property needs to be set." />
-    <Error Condition="'$(OfficialVersion)' != '' And '$(OfficialVersion)' != '$(VersionPrefix)' And '$(OfficialVersion)' != '$(VersionPrefix)-$(VersionSuffix)'" Text="The 'OfficialVersion' property needs to be identical to the 'VersionPrefix' property or to a combination of the 'VersionPrefix' and the 'VersionSuffix' properties." />
-    <!--
-    <Message Importance="high" Text="VersionPrefix: $(VersionPrefix)" />
-    <Message Importance="high" Text="VersionSuffix: $(VersionSuffix)" />
-    <Message Importance="high" Text="Version: $(Version)" />
-    -->
+    <Error Condition="'$(FinalOfficialVersion)' != '' And '$(FinalOfficialVersion)' != '$(VersionPrefix)' And '$(FinalOfficialVersion)' != '$(VersionPrefix)-$(VersionSuffix)'" Text="The 'OfficialVersion' property needs to be identical to the 'VersionPrefix' property or to a combination of the 'VersionPrefix' and the 'VersionSuffix' properties." />
   </Target>
 
   <!-- TODO: Take a look at this. -->
