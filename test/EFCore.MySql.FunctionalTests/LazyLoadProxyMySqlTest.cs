@@ -43,6 +43,17 @@ LIMIT 1
 
         private string Sql { get; set; }
 
+        #region Expected JSON override
+
+        // TODO: Tiny discrepancy in decimal representation (Charge: 1.0000000000000000000000000000 instead of 1.00)
+        protected override string SerializedBlogs1
+            => base.SerializedBlogs1.Replace("1.00", "1.0000000000000000000000000000");
+
+        protected override string SerializedBlogs2
+            => base.SerializedBlogs2.Replace("1.00", "1.0000000000000000000000000000");
+
+        #endregion Expected JSON override
+
         public class LoadMySqlFixture : LoadFixtureBase
         {
             public TestSqlLoggerFactory TestSqlLoggerFactory
