@@ -7,9 +7,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Logging;
 using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
@@ -20,12 +22,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     {
         private const string NoBackslashEscapes = "NO_BACKSLASH_ESCAPES";
 
+        private readonly ILoggerFactory _loggerFactory;
+
         private readonly MySqlOptionsExtension _mySqlOptionsExtension;
 
         // ReSharper disable once VirtualMemberCallInConstructor
-        public MySqlRelationalConnection(RelationalConnectionDependencies dependencies)
+        public MySqlRelationalConnection(RelationalConnectionDependencies dependencies, ILoggerFactory loggerFactory)
             : base(dependencies)
         {
+            _loggerFactory = loggerFactory;
             _mySqlOptionsExtension = Dependencies.ContextOptions.FindExtension<MySqlOptionsExtension>() ?? new MySqlOptionsExtension();
         }
 
@@ -33,7 +38,25 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private bool IsMasterConnection { get; set; }
 
         protected override DbConnection CreateDbConnection()
-            => new MySqlConnection(AddConnectionStringOptions(new MySqlConnectionStringBuilder(ConnectionString!)).ConnectionString);
+            => MySqlDataSource.CreateConnection();
+
+        [CanBeNull]
+        private MySqlDataSource _mySqlDataSource;
+
+        [JetBrains.Annotations.NotNull]
+        protected MySqlDataSource MySqlDataSource => _mySqlDataSource ??= CreateMySqlDataSourceBuilder(
+            AddConnectionStringOptions(new MySqlConnectionStringBuilder(ConnectionString!)).ConnectionString
+        ).Build();
+
+        [JetBrains.Annotations.NotNull]
+        protected virtual MySqlDataSourceBuilder CreateMySqlDataSourceBuilder(string connectionString)
+        {
+            var mySqlDataSourceBuilder = new MySqlDataSourceBuilder(connectionString);
+
+            mySqlDataSourceBuilder.UseLoggerFactory(_loggerFactory);
+
+            return mySqlDataSourceBuilder;
+        }
 
         public virtual IMySqlRelationalConnection CreateMasterConnection()
         {
@@ -59,7 +82,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
             optionsBuilderInfrastructure.AddOrUpdateExtension(relationalOptions);
 
-            return new MySqlRelationalConnection(Dependencies with { ContextOptions = optionsBuilder.Options })
+            return new MySqlRelationalConnection(Dependencies with { ContextOptions = optionsBuilder.Options }, _loggerFactory)
             {
                 IsMasterConnection = true
             };
