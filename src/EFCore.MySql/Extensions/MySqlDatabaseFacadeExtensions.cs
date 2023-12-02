@@ -2,10 +2,14 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Data.Common;
 using System.Reflection;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 //ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
@@ -32,5 +36,33 @@ namespace Microsoft.EntityFrameworkCore
             => database.ProviderName.Equals(
                 typeof(MySqlOptionsExtension).GetTypeInfo().Assembly.GetName().Name,
                 StringComparison.Ordinal);
+
+        /// <summary>
+        ///     Uses a <see cref="DbDataSource" /> for this <see cref="DbContext" /> as the underlying database provider.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         It may not be possible to change the data source if an existing connection is open.
+        ///     </para>
+        ///     <para>
+        ///         See <see href="https://aka.ms/efcore-docs-connections">Connections and connection strings</see> for more information and examples.
+        ///     </para>
+        /// </remarks>
+        /// <param name="databaseFacade">The <see cref="DatabaseFacade" /> for the context.</param>
+        /// <param name="dataSource">The data source.</param>
+        public static void SetDbDataSource(this DatabaseFacade databaseFacade, DbDataSource dataSource)
+            => ((MySqlRelationalConnection)GetFacadeDependencies(databaseFacade).RelationalConnection).DbDataSource = dataSource;
+
+        private static IRelationalDatabaseFacadeDependencies GetFacadeDependencies(DatabaseFacade databaseFacade)
+        {
+            var dependencies = ((IDatabaseFacadeDependenciesAccessor)databaseFacade).Dependencies;
+
+            if (dependencies is IRelationalDatabaseFacadeDependencies relationalDependencies)
+            {
+                return relationalDependencies;
+            }
+
+            throw new InvalidOperationException(RelationalStrings.RelationalNotInUse);
+        }
     }
 }

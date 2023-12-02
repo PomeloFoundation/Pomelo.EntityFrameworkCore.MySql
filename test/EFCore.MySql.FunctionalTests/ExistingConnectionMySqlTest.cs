@@ -126,7 +126,7 @@ public class ExistingConnectionMySqlTest
                             new DbContextOptionsBuilder<NorthwindContext>()
                                 .UseMySql(connection, AppConfig.ServerVersion);
                         }).Message,
-                    @"The connection string of a connection used by Pomelo.EntityFrameworkCore.MySql must contain ""AllowUserVariables=true;UseAffectedRows=false"".");
+                    @"The connection string of a connection used by Pomelo.EntityFrameworkCore.MySql must contain ""AllowUserVariables=True;UseAffectedRows=False"".");
             }
         }
     }
@@ -182,7 +182,7 @@ public class ExistingConnectionMySqlTest
                             new DbContextOptionsBuilder<NorthwindContext>()
                                 .UseMySql(connection, AppConfig.ServerVersion);
                         }).Message,
-                    @"The connection string of a connection used by Pomelo.EntityFrameworkCore.MySql must contain ""AllowUserVariables=true;UseAffectedRows=false"".");
+                    @"The connection string of a connection used by Pomelo.EntityFrameworkCore.MySql must contain ""AllowUserVariables=True;UseAffectedRows=False"".");
             }
         }
     }

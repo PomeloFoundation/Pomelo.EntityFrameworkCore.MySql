@@ -22,6 +22,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             = new ResourceManager("Pomelo.EntityFrameworkCore.MySql.Properties.MySqlStrings", typeof(MySqlStrings).GetTypeInfo().Assembly);
 
         /// <summary>
+        ///     Using two distinct data sources within a service provider is not supported, and Entity Framework is not building its own internal service provider. Either allow Entity Framework to build the service provider by removing the call to '{useInternalServiceProvider}', or ensure that the same data source is used for all uses of a given service provider passed to '{useInternalServiceProvider}'.
+        /// </summary>
+        public static string TwoDataSourcesInSameServiceProvider(object useInternalServiceProvider)
+            => string.Format(
+                GetString("TwoDataSourcesInSameServiceProvider", nameof(useInternalServiceProvider)),
+                useInternalServiceProvider);
+
+        /// <summary>
         ///     Identity value generation cannot be used for the property '{property}' on entity type '{entityType}' because the property type is '{propertyType}'. Identity value generation can only be used with integer, DateTime, and DateTimeOffset properties.
         /// </summary>
         public static string IdentityBadType([CanBeNull] object property, [CanBeNull] object entityType, [CanBeNull] object propertyType)

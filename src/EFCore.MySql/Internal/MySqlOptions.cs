@@ -2,6 +2,7 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Data.Common;
 using System.Linq;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
@@ -9,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using MySqlConnector;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Internal
@@ -20,6 +22,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         public MySqlOptions()
         {
             ConnectionSettings = new MySqlConnectionSettings();
+            DataSource = null;
             ServerVersion = null;
 
             // We explicitly use `utf8mb4` in all instances, where charset based calculations need to be done, but accessing annotations
@@ -51,10 +54,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
 
         public virtual void Initialize(IDbContextOptions options)
         {
+            var coreOptions = options.FindExtension<CoreOptionsExtension>() ?? new CoreOptionsExtension();
             var mySqlOptions = options.FindExtension<MySqlOptionsExtension>() ?? new MySqlOptionsExtension();
             var mySqlJsonOptions = (MySqlJsonOptionsExtension)options.Extensions.LastOrDefault(e => e is MySqlJsonOptionsExtension);
 
             ConnectionSettings = GetConnectionSettings(mySqlOptions);
+            DataSource = mySqlOptions.DataSource ?? coreOptions.ApplicationServiceProvider?.GetService<MySqlDataSource>();
             ServerVersion = mySqlOptions.ServerVersion ?? throw new InvalidOperationException($"The {nameof(ServerVersion)} has not been set.");
             NoBackslashEscapes = mySqlOptions.NoBackslashEscapes;
             ReplaceLineBreaksWithCharFunction = mySqlOptions.ReplaceLineBreaksWithCharFunction;
@@ -74,6 +79,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             var mySqlOptions = options.FindExtension<MySqlOptionsExtension>() ?? new MySqlOptionsExtension();
             var mySqlJsonOptions = (MySqlJsonOptionsExtension)options.Extensions.LastOrDefault(e => e is MySqlJsonOptionsExtension);
             var connectionSettings = GetConnectionSettings(mySqlOptions);
+
+            if (mySqlOptions.DataSource is not null &&
+                !ReferenceEquals(DataSource, mySqlOptions.DataSource))
+            {
+                throw new InvalidOperationException(
+                    MySqlStrings.TwoDataSourcesInSameServiceProvider(nameof(DbContextOptionsBuilder.UseInternalServiceProvider)));
+            }
 
             if (!Equals(ServerVersion, mySqlOptions.ServerVersion))
             {
@@ -233,6 +245,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         protected virtual bool Equals(MySqlOptions other)
         {
             return Equals(ConnectionSettings, other.ConnectionSettings) &&
+                   ReferenceEquals(DataSource, other.DataSource) &&
                    Equals(ServerVersion, other.ServerVersion) &&
                    Equals(DefaultCharSet, other.DefaultCharSet) &&
                    Equals(NationalCharSet, other.NationalCharSet) &&
@@ -273,6 +286,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             var hashCode = new HashCode();
 
             hashCode.Add(ConnectionSettings);
+            hashCode.Add(DataSource?.ConnectionString);
             hashCode.Add(ServerVersion);
             hashCode.Add(DefaultCharSet);
             hashCode.Add(NationalCharSet);
@@ -291,6 +305,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         }
 
         public virtual MySqlConnectionSettings ConnectionSettings { get; private set; }
+        public virtual DbDataSource DataSource { get; private set; }
         public virtual ServerVersion ServerVersion { get; private set; }
         public virtual CharSet DefaultCharSet { get; private set; }
         public virtual CharSet NationalCharSet { get; }

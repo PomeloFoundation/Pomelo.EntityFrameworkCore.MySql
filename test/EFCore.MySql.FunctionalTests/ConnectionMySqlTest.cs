@@ -1,8 +1,10 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
@@ -49,28 +51,98 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             context.Database.EnsureCreated();
         }
 
+        [Fact]
+        public void Can_create_admin_connection_with_data_source()
+        {
+            using var _ = ((MySqlTestStore)MySqlNorthwindTestStoreFactory.Instance
+                    .GetOrCreate("ConnectionTest"))
+                .Initialize(null, (Func<DbContext>)null);
+
+            using var dataSource = new MySqlDataSourceBuilder(MySqlTestStore.CreateConnectionString("ConnectionTest")).Build();
+
+            var optionsBuilder = new DbContextOptionsBuilder<GeneralOptionsContext>();
+            optionsBuilder.UseMySql(dataSource, AppConfig.ServerVersion, b => b.ApplyConfiguration());
+            using var context = new GeneralOptionsContext(optionsBuilder.Options);
+
+            var relationalConnection = context.GetService<IMySqlRelationalConnection>();
+            using var masterConnection = relationalConnection.CreateMasterConnection();
+
+            Assert.Equal(string.Empty, new MySqlConnectionStringBuilder(masterConnection.ConnectionString).Database);
+
+            masterConnection.Open();
+        }
+
+        [Fact]
+        public void Can_create_admin_connection_with_connection_string()
+        {
+            using var _ = ((MySqlTestStore)MySqlNorthwindTestStoreFactory.Instance
+                    .GetOrCreate("ConnectionTest"))
+                .Initialize(null, (Func<DbContext>)null);
+
+            var optionsBuilder = new DbContextOptionsBuilder<GeneralOptionsContext>();
+            optionsBuilder.UseMySql(MySqlTestStore.CreateConnectionString("ConnectionTest"), AppConfig.ServerVersion, b => b.ApplyConfiguration());
+            using var context = new GeneralOptionsContext(optionsBuilder.Options);
+
+            var relationalConnection = context.GetService<IMySqlRelationalConnection>();
+            using var masterConnection = relationalConnection.CreateMasterConnection();
+
+            Assert.Equal(string.Empty, new MySqlConnectionStringBuilder(masterConnection.ConnectionString).Database);
+
+            masterConnection.Open();
+        }
+
+        [Fact]
+        public void Can_create_admin_connection_with_connection()
+        {
+            using var _ = ((MySqlTestStore)MySqlNorthwindTestStoreFactory.Instance
+                    .GetOrCreate("ConnectionTest"))
+                .Initialize(null, (Func<DbContext>)null);
+
+            using var connection = new MySqlConnection(MySqlTestStore.CreateConnectionString("ConnectionTest"));
+            connection.Open();
+
+            var optionsBuilder = new DbContextOptionsBuilder<GeneralOptionsContext>();
+            optionsBuilder.UseMySql(connection, AppConfig.ServerVersion, b => b.ApplyConfiguration());
+            using var context = new GeneralOptionsContext(optionsBuilder.Options);
+
+            var relationalConnection = context.GetService<IMySqlRelationalConnection>();
+            using var masterConnection = relationalConnection.CreateMasterConnection();
+
+            Assert.Equal(string.Empty, new MySqlConnectionStringBuilder(masterConnection.ConnectionString).Database);
+
+            masterConnection.Open();
+        }
+
         private readonly IServiceProvider _serviceProvider = new ServiceCollection()
             .AddEntityFrameworkMySql()
             .BuildServiceProvider();
 
         protected ConnectionMysqlContext CreateContext(string connectionString)
             => new ConnectionMysqlContext(_serviceProvider, connectionString);
-    }
 
-    public class ConnectionMysqlContext : DbContext
-    {
-        private readonly IServiceProvider _serviceProvider;
-        private readonly string _connectionString;
-
-        public ConnectionMysqlContext(IServiceProvider serviceProvider, string connectionString)
+        public class ConnectionMysqlContext : DbContext
         {
-            _serviceProvider = serviceProvider;
-            _connectionString = connectionString;
+            private readonly IServiceProvider _serviceProvider;
+            private readonly string _connectionString;
+
+            public ConnectionMysqlContext(IServiceProvider serviceProvider, string connectionString)
+            {
+                _serviceProvider = serviceProvider;
+                _connectionString = connectionString;
+            }
+
+            protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+                => optionsBuilder
+                    .UseMySql(_connectionString, AppConfig.ServerVersion)
+                    .UseInternalServiceProvider(_serviceProvider);
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder
-                .UseMySql(_connectionString, AppConfig.ServerVersion)
-                .UseInternalServiceProvider(_serviceProvider);
+        public class GeneralOptionsContext : DbContext
+        {
+            public GeneralOptionsContext(DbContextOptions<GeneralOptionsContext> options)
+                : base(options)
+            {
+            }
+        }
     }
 }
