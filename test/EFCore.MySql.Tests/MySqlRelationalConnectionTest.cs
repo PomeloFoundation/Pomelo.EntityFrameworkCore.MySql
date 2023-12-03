@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Tests;
@@ -137,6 +138,50 @@ public class MySqlRelationalConnectionTest
             Assert.Throws<InvalidOperationException>(
                     () => (MySqlRelationalConnection)context.GetService<IRelationalConnection>()!)
                 .Message);
+    }
+
+    [Fact]
+    public void Uses_correct_DbDataSource_from_ApplicationServiceProvider_with_cached_DbContextOptions_extension()
+    {
+        var serviceCollection1 = new ServiceCollection();
+
+        serviceCollection1
+            .AddMySqlDataSource("Server=FakeHost1;Allow User Variables=True;Use Affected Rows=False")
+            .AddDbContext<FakeDbContext>(o => o.UseMySql(AppConfig.ServerVersion));
+
+        using (var serviceProvider1 = serviceCollection1.BuildServiceProvider())
+        {
+            var dataSource1 = serviceProvider1.GetRequiredService<MySqlDataSource>();
+            Assert.Equal("Server=FakeHost1;Allow User Variables=True;Use Affected Rows=False", dataSource1.ConnectionString);
+
+            var context1 = serviceProvider1.GetRequiredService<FakeDbContext>();
+
+            var mySqlOptions1 = context1.GetService<IMySqlOptions>();
+            Assert.Same(dataSource1, mySqlOptions1.DataSource);
+
+            var relationalConnection1 = (MySqlRelationalConnection)context1.GetService<IRelationalConnection>()!;
+            Assert.Same(dataSource1, relationalConnection1.DbDataSource);
+        }
+
+        var serviceCollection2 = new ServiceCollection();
+
+        serviceCollection2
+            .AddMySqlDataSource("Server=FakeHost2;Allow User Variables=True;Use Affected Rows=False")
+            .AddDbContext<FakeDbContext>(o => o.UseMySql(AppConfig.ServerVersion));
+
+        using (var serviceProvider2 = serviceCollection2.BuildServiceProvider())
+        {
+            var dataSource2 = serviceProvider2.GetRequiredService<MySqlDataSource>();
+            Assert.Equal("Server=FakeHost2;Allow User Variables=True;Use Affected Rows=False", dataSource2.ConnectionString);
+
+            var context2 = serviceProvider2.GetRequiredService<FakeDbContext>();
+
+            var mySqlOptions2 = context2.GetService<IMySqlOptions>();
+            Assert.Same(dataSource2, mySqlOptions2.DataSource);
+
+            var relationalConnection2 = (MySqlRelationalConnection)context2.GetService<IRelationalConnection>()!;
+            Assert.Same(dataSource2, relationalConnection2.DbDataSource);
+        }
     }
 
     [Fact]
