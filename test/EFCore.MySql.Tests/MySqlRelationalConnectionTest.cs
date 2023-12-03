@@ -75,11 +75,12 @@ public class MySqlRelationalConnectionTest
         using var serviceProvider = serviceCollection.BuildServiceProvider();
 
         using var scope = serviceProvider.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<FakeDbContext>();
 
         Assert.Equal(
             "The connection string of a connection used by Pomelo.EntityFrameworkCore.MySql must contain \"AllowUserVariables=True;UseAffectedRows=False\".",
             Assert.Throws<InvalidOperationException>(
-                    () => scope.ServiceProvider.GetRequiredService<FakeDbContext>())
+                    () => (MySqlRelationalConnection)context.GetService<IRelationalConnection>()!)
                 .Message);
     }
 
@@ -124,12 +125,17 @@ public class MySqlRelationalConnectionTest
 
         using var serviceProvider = serviceCollection.BuildServiceProvider();
 
+        var dataSource = serviceProvider.GetRequiredService<MySqlDataSource>();
+
+        Assert.Equal("Server=FakeHost", dataSource.ConnectionString);
+
         using var scope = serviceProvider.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<FakeDbContext>();
 
         Assert.Equal(
             "The connection string of a connection used by Pomelo.EntityFrameworkCore.MySql must contain \"AllowUserVariables=True;UseAffectedRows=False\".",
             Assert.Throws<InvalidOperationException>(
-                    () => scope.ServiceProvider.GetRequiredService<FakeDbContext>())
+                    () => (MySqlRelationalConnection)context.GetService<IRelationalConnection>()!)
                 .Message);
     }
 
@@ -263,6 +269,7 @@ public class MySqlRelationalConnectionTest
                             TestServiceFactory.Instance.Create<RelationalTypeMappingSourceDependencies>(),
                             singletonOptions),
                         new ExceptionDetector()))),
+            new MySqlConnectionStringOptionsValidator(),
             singletonOptions);
     }
 

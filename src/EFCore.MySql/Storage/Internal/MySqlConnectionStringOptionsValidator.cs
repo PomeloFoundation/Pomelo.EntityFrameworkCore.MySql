@@ -3,80 +3,65 @@
 
 using System;
 using System.Data.Common;
-using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
 using MySqlConnector;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 public class MySqlConnectionStringOptionsValidator : IMySqlConnectionStringOptionsValidator
 {
-    public static MySqlConnectionStringOptionsValidator Instance { get; } = new MySqlConnectionStringOptionsValidator();
-
-    public virtual void EnsureMandatoryOptions(ref string connectionString, IDbContextOptions options = null)
+    public virtual bool EnsureMandatoryOptions(ref string connectionString)
     {
-        if (connectionString is null)
+        if (connectionString is not null)
         {
-            return;
-        }
+            var csb = new MySqlConnectionStringBuilder(connectionString);
 
-        if (options is not null)
-        {
-            connectionString = new NamedConnectionStringResolver(options)
-                .ResolveConnectionString(connectionString);
-        }
-
-        var csb = new MySqlConnectionStringBuilder(connectionString);
-
-        if (!ValidateMandatoryOptions(csb))
-        {
-            csb.AllowUserVariables = true;
-            csb.UseAffectedRows = false;
-        }
-
-        connectionString = csb.ConnectionString;
-    }
-
-    public virtual void EnsureMandatoryOptions([NotNull] DbConnection connection, IDbContextOptions options = null)
-    {
-        ArgumentNullException.ThrowIfNull(connection);
-
-        var connectionString = options is not null
-            ? connection.ConnectionString is not null
-                ? new NamedConnectionStringResolver(options)
-                    .ResolveConnectionString(connection.ConnectionString)
-                : null
-            : connection.ConnectionString;
-
-        var csb = new MySqlConnectionStringBuilder(connectionString);
-
-        if (!ValidateMandatoryOptions(csb))
-        {
-            try
+            if (!ValidateMandatoryOptions(csb))
             {
                 csb.AllowUserVariables = true;
                 csb.UseAffectedRows = false;
 
-                connection.ConnectionString = csb.ConnectionString;
-                return;
-            }
-            catch (Exception e)
-            {
-                ThrowException(e);
+                connectionString = csb.ConnectionString;
+
+                return true;
             }
         }
 
-        // The connection string could have changed by the NamedConnectionStringResolver call earlier.
-        if (connectionString != connection.ConnectionString)
-        {
-            connection.ConnectionString = connectionString;
-        }
+        return false;
     }
 
-    public virtual void EnsureMandatoryOptions([NotNull] DbDataSource dataSource)
+    public virtual bool EnsureMandatoryOptions(DbConnection connection)
     {
-        ArgumentNullException.ThrowIfNull(dataSource);
+        if (connection is not null)
+        {
+            var csb = new MySqlConnectionStringBuilder(connection.ConnectionString);
+
+            if (!ValidateMandatoryOptions(csb))
+            {
+                try
+                {
+                    csb.AllowUserVariables = true;
+                    csb.UseAffectedRows = false;
+
+                    connection.ConnectionString = csb.ConnectionString;
+
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    ThrowException(e);
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public virtual bool EnsureMandatoryOptions(DbDataSource dataSource)
+    {
+        if (dataSource is null)
+        {
+            return false;
+        }
 
         var csb = new MySqlConnectionStringBuilder(dataSource.ConnectionString);
 
@@ -87,44 +72,16 @@ public class MySqlConnectionStringOptionsValidator : IMySqlConnectionStringOptio
             // We can only throw.
             ThrowException();
         }
+
+        return true;
     }
 
-    public virtual void ThrowOnInvalidMandatoryOptions(
-        string connectionString,
-        DbConnection connection,
-        DbDataSource dataSource)
-    {
-        bool valid;
-
-        // If we don't have an explicitly-configured data source, try to get one from the application service provider.
-        if (dataSource is not null)
-        {
-            valid = ValidateMandatoryOptions(dataSource.ConnectionString);
-        }
-        else if (connection is not null)
-        {
-            valid = ValidateMandatoryOptions(connection.ConnectionString);
-        }
-        else
-        {
-            valid = ValidateMandatoryOptions(connectionString);
-        }
-
-        if (!valid)
-        {
-            ThrowException();
-        }
-    }
-
-    protected virtual bool ValidateMandatoryOptions(string connectionString)
-        => ValidateMandatoryOptions(new MySqlConnectionStringBuilder(connectionString));
+    public virtual void ThrowException(Exception innerException = null)
+        => throw new InvalidOperationException(
+            @"The connection string of a connection used by Pomelo.EntityFrameworkCore.MySql must contain ""AllowUserVariables=True;UseAffectedRows=False"".",
+            innerException);
 
     protected virtual bool ValidateMandatoryOptions(MySqlConnectionStringBuilder csb)
         => csb.AllowUserVariables &&
            !csb.UseAffectedRows;
-
-    protected virtual void ThrowException(Exception innerException = null)
-        => throw new InvalidOperationException(
-            @"The connection string of a connection used by Pomelo.EntityFrameworkCore.MySql must contain ""AllowUserVariables=True;UseAffectedRows=False"".",
-            innerException);
 }

@@ -8,10 +8,7 @@ using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
-using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
@@ -99,8 +96,6 @@ namespace Microsoft.EntityFrameworkCore
             Check.NotNull(optionsBuilder, nameof(optionsBuilder));
             Check.NullButNotEmpty(connectionString, nameof(connectionString));
 
-            MySqlConnectionStringOptionsValidator.Instance.EnsureMandatoryOptions(ref connectionString, optionsBuilder.Options);
-
             var extension = (MySqlOptionsExtension)GetOrCreateExtension(optionsBuilder)
                 .WithServerVersion(serverVersion)
                 .WithConnectionString(connectionString);
@@ -147,8 +142,6 @@ namespace Microsoft.EntityFrameworkCore
             Check.NotNull(optionsBuilder, nameof(optionsBuilder));
             Check.NotNull(connection, nameof(connection));
 
-            MySqlConnectionStringOptionsValidator.Instance.EnsureMandatoryOptions(connection, optionsBuilder.Options);
-
             var extension = (MySqlOptionsExtension)GetOrCreateExtension(optionsBuilder)
                 .WithServerVersion(serverVersion)
                 .WithConnection(connection);
@@ -191,8 +184,6 @@ namespace Microsoft.EntityFrameworkCore
         {
             Check.NotNull(optionsBuilder, nameof(optionsBuilder));
             Check.NotNull(dataSource, nameof(dataSource));
-
-            MySqlConnectionStringOptionsValidator.Instance.EnsureMandatoryOptions(dataSource);
 
             var extension = (MySqlOptionsExtension)GetOrCreateExtension(optionsBuilder)
                 .WithServerVersion(serverVersion)

@@ -215,17 +215,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
             return clone;
         }
 
-        /// <inheritdoc />
-        public override void Validate(IDbContextOptions options)
-        {
-            base.Validate(options);
-
-            MySqlConnectionStringOptionsValidator.Instance.ThrowOnInvalidMandatoryOptions(
-                ConnectionString,
-                Connection,
-                DataSource ?? options.FindExtension<CoreOptionsExtension>()?.ApplicationServiceProvider?.GetService<MySqlDataSource>());
-        }
-
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
         ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
