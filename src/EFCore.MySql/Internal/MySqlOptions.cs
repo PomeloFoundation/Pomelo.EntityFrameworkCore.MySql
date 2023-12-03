@@ -54,12 +54,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
 
         public virtual void Initialize(IDbContextOptions options)
         {
-            var coreOptions = options.FindExtension<CoreOptionsExtension>() ?? new CoreOptionsExtension();
             var mySqlOptions = options.FindExtension<MySqlOptionsExtension>() ?? new MySqlOptionsExtension();
             var mySqlJsonOptions = (MySqlJsonOptionsExtension)options.Extensions.LastOrDefault(e => e is MySqlJsonOptionsExtension);
 
             ConnectionSettings = GetConnectionSettings(mySqlOptions);
-            DataSource = mySqlOptions.DataSource ?? coreOptions.ApplicationServiceProvider?.GetService<MySqlDataSource>();
+            DataSource = mySqlOptions.DataSource;
             ServerVersion = mySqlOptions.ServerVersion ?? throw new InvalidOperationException($"The {nameof(ServerVersion)} has not been set.");
             NoBackslashEscapes = mySqlOptions.NoBackslashEscapes;
             ReplaceLineBreaksWithCharFunction = mySqlOptions.ReplaceLineBreaksWithCharFunction;
@@ -80,7 +79,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             var mySqlJsonOptions = (MySqlJsonOptionsExtension)options.Extensions.LastOrDefault(e => e is MySqlJsonOptionsExtension);
             var connectionSettings = GetConnectionSettings(mySqlOptions);
 
-            if (mySqlOptions.DataSource is not null &&
+            //
+            // CHECK: To we have to ensure that the ApplicationServiceProvider itself is not replaced, because we rely on it in our
+            //        DbDataSource check, or is that not possible?
+            //
+
+            // Even though we only save a DbDataSource that has been explicitly set using the MySqlOptionsExtensions here in MySqlOptions,
+            // we will later also fall back to a DbDataSource that has been added as a service to the ApplicationServiceProvider, if no
+            // DbDataSource has been explicitly set here. We call that DbDataSource the "effective" DbDataSource and handle it in the same
+            // way we would handle a singleton option.
+            var effectiveDataSource = mySqlOptions.DataSource ??
+                                      options.FindExtension<CoreOptionsExtension>()?.ApplicationServiceProvider?.GetService<MySqlDataSource>();
+            if (effectiveDataSource is not null &&
                 !ReferenceEquals(DataSource, mySqlOptions.DataSource))
             {
                 throw new InvalidOperationException(
@@ -305,7 +315,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         }
 
         public virtual MySqlConnectionSettings ConnectionSettings { get; private set; }
+
+        /// <summary>
+        /// If null, there might still be a `DbDataSource` in the ApplicationServiceProvider.
+        /// </summary>
         public virtual DbDataSource DataSource { get; private set; }
+
         public virtual ServerVersion ServerVersion { get; private set; }
         public virtual CharSet DefaultCharSet { get; private set; }
         public virtual CharSet NationalCharSet { get; }

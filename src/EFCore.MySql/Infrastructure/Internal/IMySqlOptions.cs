@@ -11,7 +11,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal
     public interface IMySqlOptions : ISingletonOptions
     {
         MySqlConnectionSettings ConnectionSettings { get; }
+
+        /// <remarks>
+        /// If null, there might still be a `DbDataSource` in the ApplicationServiceProvider.
+        /// </remarks>>
         DbDataSource DataSource { get; }
+
         ServerVersion ServerVersion { get; }
         CharSet DefaultCharSet { get; }
         CharSet NationalCharSet { get; }

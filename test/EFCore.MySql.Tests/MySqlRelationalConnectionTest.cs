@@ -157,7 +157,7 @@ public class MySqlRelationalConnectionTest
             var context1 = serviceProvider1.GetRequiredService<FakeDbContext>();
 
             var mySqlOptions1 = context1.GetService<IMySqlOptions>();
-            Assert.Same(dataSource1, mySqlOptions1.DataSource);
+            Assert.Null(mySqlOptions1.DataSource);
 
             var relationalConnection1 = (MySqlRelationalConnection)context1.GetService<IRelationalConnection>()!;
             Assert.Same(dataSource1, relationalConnection1.DbDataSource);
@@ -177,7 +177,7 @@ public class MySqlRelationalConnectionTest
             var context2 = serviceProvider2.GetRequiredService<FakeDbContext>();
 
             var mySqlOptions2 = context2.GetService<IMySqlOptions>();
-            Assert.Same(dataSource2, mySqlOptions2.DataSource);
+            Assert.Null(mySqlOptions2.DataSource);
 
             var relationalConnection2 = (MySqlRelationalConnection)context2.GetService<IRelationalConnection>()!;
             Assert.Same(dataSource2, relationalConnection2.DbDataSource);

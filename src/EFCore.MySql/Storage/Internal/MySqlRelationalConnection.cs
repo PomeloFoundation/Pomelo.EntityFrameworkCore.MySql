@@ -10,6 +10,7 @@ using System.Transactions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.DependencyInjection;
 using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
@@ -28,7 +29,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             RelationalConnectionDependencies dependencies,
             IMySqlConnectionStringOptionsValidator mySqlConnectionStringOptionsValidator,
             IMySqlOptions mySqlSingletonOptions)
-            : this(dependencies, mySqlConnectionStringOptionsValidator, mySqlSingletonOptions.DataSource)
+            : this(
+                dependencies,
+                mySqlConnectionStringOptionsValidator,
+                GetEffectiveDataSource(mySqlSingletonOptions, dependencies.ContextOptions))
         {
         }
 
@@ -68,6 +72,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 }
             }
         }
+
+        /// <summary>
+        /// We allow users to either explicitly set a DbDataSource using our `MySqlOptionsExtensions` or by adding it as a service via DI
+        /// (`ApplicationServiceProvider`).
+        /// We don't set a DI injected service to the `MySqlOption.DbDataSource` property, because it might get cached by the service
+        /// collection cache, since no relevant property might have changed in the `MySqlOptionsExtension` instance. If we would create
+        /// a similar DbContext instance with a different service collection later, EF Core would provide us with the *same* `MySqlOptions`
+        /// instance (that was cached before) and we would use the old `DbDataSource` instance that we retrieved from the old
+        /// `ApplicationServiceProvider`.
+        /// Therefore, we check the `IMySqlOptions.DbDataSource` property and the current `ApplicationServiceProvider` at the time we
+        /// actually need the instance.
+        /// </summary>
+        protected static DbDataSource GetEffectiveDataSource(IMySqlOptions mySqlSingletonOptions, IDbContextOptions contextOptions)
+            => mySqlSingletonOptions.DataSource ??
+               contextOptions.FindExtension<CoreOptionsExtension>()?.ApplicationServiceProvider?.GetService<MySqlDataSource>();
 
         // TODO: Remove, because we don't use it anywhere.
         private bool IsMasterConnection { get; set; }
