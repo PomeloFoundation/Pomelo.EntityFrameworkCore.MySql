@@ -8,9 +8,7 @@ using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
-using MySqlConnector;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
@@ -98,17 +96,6 @@ namespace Microsoft.EntityFrameworkCore
             Check.NotNull(optionsBuilder, nameof(optionsBuilder));
             Check.NullButNotEmpty(connectionString, nameof(connectionString));
 
-            if (connectionString is not null)
-            {
-                var resolvedConnectionString = new NamedConnectionStringResolver(optionsBuilder.Options)
-                    .ResolveConnectionString(connectionString);
-
-                // TODO: Move to MySqlRelationalConnection.
-                var csb = new MySqlConnectionStringBuilder(resolvedConnectionString) { AllowUserVariables = true, UseAffectedRows = false };
-
-                connectionString = csb.ConnectionString;
-            }
-
             var extension = (MySqlOptionsExtension)GetOrCreateExtension(optionsBuilder)
                 .WithServerVersion(serverVersion)
                 .WithConnectionString(connectionString);
@@ -155,35 +142,52 @@ namespace Microsoft.EntityFrameworkCore
             Check.NotNull(optionsBuilder, nameof(optionsBuilder));
             Check.NotNull(connection, nameof(connection));
 
-            var resolvedConnectionString = connection.ConnectionString is not null
-                ? new NamedConnectionStringResolver(optionsBuilder.Options)
-                    .ResolveConnectionString(connection.ConnectionString)
-                : null;
-
-            // TODO: Move to MySqlRelationalConnection.
-            var csb = new MySqlConnectionStringBuilder(resolvedConnectionString);
-
-            if (!csb.AllowUserVariables ||
-                csb.UseAffectedRows)
-            {
-                try
-                {
-                    csb.AllowUserVariables = true;
-                    csb.UseAffectedRows = false;
-
-                    connection.ConnectionString = csb.ConnectionString;
-                }
-                catch (Exception e)
-                {
-                    throw new InvalidOperationException(
-                        @"The connection string of a connection used by Pomelo.EntityFrameworkCore.MySql must contain ""AllowUserVariables=true;UseAffectedRows=false"".",
-                        e);
-                }
-            }
-
             var extension = (MySqlOptionsExtension)GetOrCreateExtension(optionsBuilder)
                 .WithServerVersion(serverVersion)
                 .WithConnection(connection);
+
+            ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
+            ConfigureWarnings(optionsBuilder);
+            mySqlOptionsAction?.Invoke(new MySqlDbContextOptionsBuilder(optionsBuilder));
+
+            return optionsBuilder;
+        }
+
+
+        /// <summary>
+        ///     Configures the context to connect to a MySQL compatible database.
+        /// </summary>
+        /// <param name="optionsBuilder"> The builder being used to configure the context. </param>
+        /// <param name="dataSource"> A <see cref="DbDataSource" /> which will be used to get database connections. </param>
+        /// <param name="serverVersion">
+        ///     <para>
+        ///         The version of the database server.
+        ///     </para>
+        ///     <para>
+        ///         Create an object for this parameter by calling the static method
+        ///         <see cref="ServerVersion.Create(System.Version,ServerType)"/>,
+        ///         by calling the static method <see cref="ServerVersion.AutoDetect(string)"/> (which retrieves the server version directly
+        ///         from the database server),
+        ///         by parsing a version string using the static methods
+        ///         <see cref="ServerVersion.Parse(string)"/> or <see cref="ServerVersion.TryParse(string,out ServerVersion)"/>,
+        ///         or by directly instantiating an object from the <see cref="MySqlServerVersion"/> (for MySQL) or
+        ///         <see cref="MariaDbServerVersion"/> (for MariaDB) classes.
+        ///      </para>
+        /// </param>
+        /// <param name="mySqlOptionsAction"> An optional action to allow additional MySQL specific configuration. </param>
+        /// <returns> The options builder so that further configuration can be chained. </returns>
+        public static DbContextOptionsBuilder UseMySql(
+            this DbContextOptionsBuilder optionsBuilder,
+            DbDataSource dataSource,
+            [NotNull] ServerVersion serverVersion,
+            Action<MySqlDbContextOptionsBuilder> mySqlOptionsAction = null)
+        {
+            Check.NotNull(optionsBuilder, nameof(optionsBuilder));
+            Check.NotNull(dataSource, nameof(dataSource));
+
+            var extension = (MySqlOptionsExtension)GetOrCreateExtension(optionsBuilder)
+                .WithServerVersion(serverVersion)
+                .WithDataSource(dataSource);
 
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
             ConfigureWarnings(optionsBuilder);
@@ -297,6 +301,38 @@ namespace Microsoft.EntityFrameworkCore
             where TContext : DbContext
             => (DbContextOptionsBuilder<TContext>)UseMySql(
                 (DbContextOptionsBuilder)optionsBuilder, connection, serverVersion, mySqlOptionsAction);
+
+        /// <summary>
+        ///     Configures the context to connect to a MySQL compatible database.
+        /// </summary>
+        /// <param name="optionsBuilder"> The builder being used to configure the context. </param>
+        /// <param name="dataSource"> A <see cref="DbDataSource" /> which will be used to get database connections. </param>
+        /// <typeparam name="TContext"> The type of context to be configured. </typeparam>
+        /// <param name="serverVersion">
+        ///     <para>
+        ///         The version of the database server.
+        ///     </para>
+        ///     <para>
+        ///         Create an object for this parameter by calling the static method
+        ///         <see cref="ServerVersion.Create(System.Version,ServerType)"/>,
+        ///         by calling the static method <see cref="ServerVersion.AutoDetect(string)"/> (which retrieves the server version directly
+        ///         from the database server),
+        ///         by parsing a version string using the static methods
+        ///         <see cref="ServerVersion.Parse(string)"/> or <see cref="ServerVersion.TryParse(string,out ServerVersion)"/>,
+        ///         or by directly instantiating an object from the <see cref="MySqlServerVersion"/> (for MySQL) or
+        ///         <see cref="MariaDbServerVersion"/> (for MariaDB) classes.
+        ///      </para>
+        /// </param>
+        /// <param name="mySqlOptionsAction"> An optional action to allow additional MySQL specific configuration. </param>
+        /// <returns> The options builder so that further configuration can be chained. </returns>
+        public static DbContextOptionsBuilder<TContext> UseMySql<TContext>(
+            [NotNull] this DbContextOptionsBuilder<TContext> optionsBuilder,
+            [NotNull] DbDataSource dataSource,
+            [NotNull] ServerVersion serverVersion,
+            [CanBeNull] Action<MySqlDbContextOptionsBuilder> mySqlOptionsAction = null)
+            where TContext : DbContext
+            => (DbContextOptionsBuilder<TContext>)UseMySql(
+                (DbContextOptionsBuilder)optionsBuilder, dataSource, serverVersion, mySqlOptionsAction);
 
         private static MySqlOptionsExtension GetOrCreateExtension(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder.Options.FindExtension<MySqlOptionsExtension>()

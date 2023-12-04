@@ -27,7 +27,6 @@ using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Migrations;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection
@@ -111,7 +110,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<IModificationCommandFactory, MySqlModificationCommandFactory>()
                 .TryAdd<IModificationCommandBatchFactory, MySqlModificationCommandBatchFactory>()
                 .TryAdd<IValueGeneratorSelector, MySqlValueGeneratorSelector>()
-                .TryAdd<IRelationalConnection>(p => p.GetService<IMySqlRelationalConnection>())
+                .TryAdd<IRelationalConnection>(p => p.GetRequiredService<IMySqlRelationalConnection>())
                 .TryAdd<IMigrationsSqlGenerator, MySqlMigrationsSqlGenerator>()
                 .TryAdd<IRelationalDatabaseCreator, MySqlDatabaseCreator>()
                 .TryAdd<IHistoryRepository, MySqlHistoryRepository>()
@@ -126,7 +125,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<IRelationalSqlTranslatingExpressionVisitorFactory, MySqlSqlTranslatingExpressionVisitorFactory>()
                 .TryAdd<IRelationalParameterBasedSqlProcessorFactory, MySqlParameterBasedSqlProcessorFactory>()
                 .TryAdd<ISqlExpressionFactory, MySqlSqlExpressionFactory>()
-                .TryAdd<ISingletonOptions, IMySqlOptions>(p => p.GetService<IMySqlOptions>())
+                .TryAdd<ISingletonOptions, IMySqlOptions>(p => p.GetRequiredService<IMySqlOptions>())
                 //.TryAdd<IValueConverterSelector, MySqlValueConverterSelector>()
                 .TryAdd<IQueryCompilationContextFactory, MySqlQueryCompilationContextFactory>()
                 .TryAdd<IQueryTranslationPostprocessorFactory, MySqlQueryTranslationPostprocessorFactory>()
@@ -141,6 +140,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAddProviderSpecificServices(m => m
                     //.TryAddSingleton<IMySqlValueGeneratorCache, MySqlValueGeneratorCache>()
                     .TryAddSingleton<IMySqlOptions, MySqlOptions>()
+                    .TryAddSingleton<IMySqlConnectionStringOptionsValidator, MySqlConnectionStringOptionsValidator>()
                     //.TryAddScoped<IMySqlSequenceValueGeneratorFactory, MySqlSequenceValueGeneratorFactory>()
                     .TryAddScoped<IMySqlUpdateSqlGenerator, MySqlUpdateSqlGenerator>()
                     .TryAddScoped<IMySqlRelationalConnection, MySqlRelationalConnection>());

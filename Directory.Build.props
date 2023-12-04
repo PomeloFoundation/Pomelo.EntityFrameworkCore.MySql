@@ -30,6 +30,7 @@
     <EfCoreTargetFramework>net8.0</EfCoreTargetFramework>
     <EfCoreTestTargetFramework>net8.0</EfCoreTestTargetFramework>
     <MySqlConnectorTargetFramework>net8.0</MySqlConnectorTargetFramework>
+    <MySqlConnectorDependencyInjectionTargetFramework>net7.0</MySqlConnectorDependencyInjectionTargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>

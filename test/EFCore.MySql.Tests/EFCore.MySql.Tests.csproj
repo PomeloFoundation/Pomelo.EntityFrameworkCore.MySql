@@ -41,6 +41,7 @@
 
   <ItemGroup Condition="'$(LocalMySqlConnectorRepository)' == ''">
     <PackageReference Include="MySqlConnector" />
+    <PackageReference Include="MySqlConnector.DependencyInjection" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(LocalEFCoreRepository)' != ''">
@@ -73,6 +74,9 @@
   <ItemGroup Condition="'$(LocalMySqlConnectorRepository)' != ''">
     <Reference Include="MySqlConnector">
       <HintPath>$(LocalMySqlConnectorRepository)\artifacts\bin\MySqlConnector\debug_$(MySqlConnectorTargetFramework)\MySqlConnector.dll</HintPath>
+    </Reference>
+    <Reference Include="MySqlConnector.DependencyInjection">
+      <HintPath>$(LocalMySqlConnectorRepository)\artifacts\bin\MySqlConnector.DependencyInjection\debug_$(MySqlConnectorDependencyInjectionTargetFramework)\MySqlConnector.DependencyInjection.dll</HintPath>
     </Reference>
   </ItemGroup>
 
