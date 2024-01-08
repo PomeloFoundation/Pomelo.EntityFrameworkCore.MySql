@@ -9,17 +9,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Storage.ValueConversio
 {
     public class MySqlJsonMicrosoftPocoValueConverter<T> : ValueConverter<T, string>
     {
-        public MySqlJsonMicrosoftPocoValueConverter()
+        public MySqlJsonMicrosoftPocoValueConverter(JsonSerializerOptions jsonSerializerOptions)
             : base(
-                v => ConvertToProviderCore(v),
-                v => ConvertFromProviderCore(v))
+                v => ConvertToProviderCore(v, jsonSerializerOptions),
+                v => ConvertFromProviderCore(v, jsonSerializerOptions))
         {
         }
 
-        public static string ConvertToProviderCore(T v)
-            => JsonSerializer.Serialize(v);
+        public static string ConvertToProviderCore(T v, JsonSerializerOptions jsonSerializerOptions)
+            => JsonSerializer.Serialize(v, jsonSerializerOptions);
 
-        public static T ConvertFromProviderCore(string v)
-            => JsonSerializer.Deserialize<T>(v);
+        public static T ConvertFromProviderCore(string v, JsonSerializerOptions jsonSerializerOptions)
+            => JsonSerializer.Deserialize<T>(v, jsonSerializerOptions);
     }
 }
