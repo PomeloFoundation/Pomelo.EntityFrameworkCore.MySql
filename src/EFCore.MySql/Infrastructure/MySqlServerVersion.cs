@@ -75,8 +75,8 @@ namespace Microsoft.EntityFrameworkCore
             public override bool SpatialDistanceFunctionImplementsAndoyer => ServerVersion.Version >= new Version(8, 0, 0);
             public override bool SpatialDistanceSphereFunction => ServerVersion.Version >= new Version(8, 0, 0);
             public override bool SpatialGeographic => ServerVersion.Version >= new Version(8, 0, 0);
-            public override bool ExceptIntercept => false;
-            public override bool ExceptInterceptPrecedence => false;
+            public override bool ExceptIntercept => ServerVersion.Version >= new Version(8, 0, 31);
+            public override bool ExceptInterceptPrecedence => ServerVersion.Version >= new Version(8, 0, 31);
             public override bool JsonDataTypeEmulation => false;
             public override bool ImplicitBoolCheckUsesIndex => ServerVersion.Version >= new Version(8, 0, 0); // Exact version has not been verified yet
             public override bool MySqlBug96947Workaround => ServerVersion.Version >= new Version(5, 7, 0) &&
