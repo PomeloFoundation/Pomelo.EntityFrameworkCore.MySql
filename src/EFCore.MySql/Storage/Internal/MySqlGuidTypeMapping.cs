@@ -13,6 +13,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     {
         private readonly MySqlGuidFormat _guidFormat;
 
+        public static new MySqlGuidTypeMapping Default { get; } = new(MySqlGuidFormat.Default);
+
         public MySqlGuidTypeMapping(MySqlGuidFormat guidFormat)
             : this(new RelationalTypeMappingParameters(
                     new CoreTypeMappingParameters(

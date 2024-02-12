@@ -10,6 +10,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     public class MySqlYearTypeMapping : MySqlTypeMapping
     {
+        public static MySqlYearTypeMapping Default { get; } = new("year");
+
         public MySqlYearTypeMapping([NotNull] string storeType)
             : base(
                 storeType,

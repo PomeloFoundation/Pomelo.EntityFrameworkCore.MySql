@@ -18,7 +18,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     {
         // boolean
         private readonly MySqlBoolTypeMapping _bit1 = new MySqlBoolTypeMapping("bit", size: 1);
-        private readonly MySqlBoolTypeMapping _tinyint1 = new MySqlBoolTypeMapping("tinyint", size: 1);
+        private readonly MySqlBoolTypeMapping _tinyint1 = MySqlBoolTypeMapping.Default;
 
         // bit
         private readonly MySqlULongTypeMapping _bit = new MySqlULongTypeMapping("bit");
@@ -40,7 +40,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         // binary
         private readonly RelationalTypeMapping _binary = new MySqlByteArrayTypeMapping(fixedLength: true);
-        private readonly RelationalTypeMapping _varbinary = new MySqlByteArrayTypeMapping();
+        private readonly RelationalTypeMapping _varbinary = MySqlByteArrayTypeMapping.Default;
 
         //
         // String mappings depend on the MySqlOptions.NoBackslashEscapes setting:
@@ -59,14 +59,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private MySqlStringTypeMapping _enum;
 
         // DateTime
-        private readonly MySqlYearTypeMapping _year = new MySqlYearTypeMapping("year");
-        private readonly MySqlDateTypeMapping _dateDateOnly = new MySqlDateTypeMapping("date", typeof(DateOnly));
+        private readonly MySqlYearTypeMapping _year = MySqlYearTypeMapping.Default;
+        private readonly MySqlDateTypeMapping _dateDateOnly = MySqlDateTypeMapping.Default;
         private readonly MySqlDateTypeMapping _dateDateTime = new MySqlDateTypeMapping("date", typeof(DateTime));
-        private readonly MySqlTimeTypeMapping _timeTimeOnly = new MySqlTimeTypeMapping("time", typeof(TimeOnly));
+        private readonly MySqlTimeTypeMapping _timeTimeOnly = MySqlTimeTypeMapping.Default;
         private readonly MySqlTimeTypeMapping _timeTimeSpan = new MySqlTimeTypeMapping("time", typeof(TimeSpan));
-        private readonly MySqlDateTimeTypeMapping _dateTime = new MySqlDateTimeTypeMapping("datetime");
+        private readonly MySqlDateTimeTypeMapping _dateTime = MySqlDateTimeTypeMapping.Default;
         private readonly MySqlDateTimeTypeMapping _timeStamp = new MySqlDateTimeTypeMapping("timestamp");
-        private readonly MySqlDateTimeOffsetTypeMapping _dateTimeOffset = new MySqlDateTimeOffsetTypeMapping("datetime");
+        private readonly MySqlDateTimeOffsetTypeMapping _dateTimeOffset = MySqlDateTimeOffsetTypeMapping.Default;
         private readonly MySqlDateTimeOffsetTypeMapping _timeStampOffset = new MySqlDateTimeOffsetTypeMapping("timestamp");
 
         private readonly RelationalTypeMapping _binaryRowVersion
@@ -91,8 +91,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private MySqlJsonTypeMapping<string> _jsonDefaultString;
 
         // Scaffolding type mappings
-        private readonly MySqlCodeGenerationMemberAccessTypeMapping _codeGenerationMemberAccess = new MySqlCodeGenerationMemberAccessTypeMapping();
-        private readonly MySqlCodeGenerationServerVersionCreationTypeMapping _codeGenerationServerVersionCreation = new MySqlCodeGenerationServerVersionCreationTypeMapping();
+        private readonly MySqlCodeGenerationMemberAccessTypeMapping _codeGenerationMemberAccess = MySqlCodeGenerationMemberAccessTypeMapping.Default;
+        private readonly MySqlCodeGenerationServerVersionCreationTypeMapping _codeGenerationServerVersionCreation = MySqlCodeGenerationServerVersionCreationTypeMapping.Default;
 
         private Dictionary<string, RelationalTypeMapping[]> _storeTypeMappings;
         private Dictionary<Type, RelationalTypeMapping> _clrTypeMappings;
