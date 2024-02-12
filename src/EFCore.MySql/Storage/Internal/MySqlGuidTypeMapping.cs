@@ -2,16 +2,20 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.EntityFrameworkCore.Design.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Json;
 using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.Utilities;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
-    public class MySqlGuidTypeMapping : GuidTypeMapping, IJsonSpecificTypeMapping
+    public class MySqlGuidTypeMapping : GuidTypeMapping, IJsonSpecificTypeMapping, IMySqlCSharpRuntimeAnnotationTypeMappingCodeGenerator
     {
-        private readonly MySqlGuidFormat _guidFormat;
+        public static new MySqlGuidTypeMapping Default { get; } = new(MySqlGuidFormat.Char36);
+
+        public virtual MySqlGuidFormat GuidFormat { get; }
 
         public MySqlGuidTypeMapping(MySqlGuidFormat guidFormat)
             : this(new RelationalTypeMappingParameters(
@@ -31,18 +35,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         protected MySqlGuidTypeMapping(RelationalTypeMappingParameters parameters, MySqlGuidFormat guidFormat)
             : base(parameters)
         {
-            _guidFormat = guidFormat;
+            GuidFormat = guidFormat;
         }
 
         protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
-            => new MySqlGuidTypeMapping(parameters, _guidFormat);
+            => new MySqlGuidTypeMapping(parameters, GuidFormat);
+
+        public virtual RelationalTypeMapping Clone(MySqlGuidFormat guidFormat)
+            => new MySqlGuidTypeMapping(Parameters, guidFormat);
 
         public virtual bool IsCharBasedStoreType
-            => GetStoreType(_guidFormat) == "char";
+            => GetStoreType(GuidFormat) == "char";
 
         protected override string GenerateNonNullSqlLiteral(object value)
         {
-            switch (_guidFormat)
+            switch (GuidFormat)
             {
                 case MySqlGuidFormat.Char36:
                     return $"'{value:D}'";
@@ -53,7 +60,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 case MySqlGuidFormat.Binary16:
                 case MySqlGuidFormat.TimeSwapBinary16:
                 case MySqlGuidFormat.LittleEndianBinary16:
-                    return "0x" + Convert.ToHexString(GetBytesFromGuid(_guidFormat, (Guid)value));
+                    return "0x" + Convert.ToHexString(GetBytesFromGuid(GuidFormat, (Guid)value));
 
                 case MySqlGuidFormat.None:
                 case MySqlGuidFormat.Default:
@@ -130,5 +137,50 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         /// </summary>
         public virtual RelationalTypeMapping CloneAsJsonCompatible()
             => new MySqlGuidTypeMapping(MySqlGuidFormat.Char36);
+
+        void IMySqlCSharpRuntimeAnnotationTypeMappingCodeGenerator.Create(
+            CSharpRuntimeAnnotationCodeGeneratorParameters codeGeneratorParameters,
+            CSharpRuntimeAnnotationCodeGeneratorDependencies codeGeneratorDependencies)
+        {
+            var defaultTypeMapping = Default;
+            if (defaultTypeMapping == this)
+            {
+                return;
+            }
+
+            var code = codeGeneratorDependencies.CSharpHelper;
+
+            var cloneParameters = new List<string>();
+
+            if (GuidFormat != defaultTypeMapping.GuidFormat)
+            {
+                cloneParameters.Add($"guidFormat: {code.Literal(GuidFormat, true)}");
+            }
+
+            if (cloneParameters.Any())
+            {
+                var mainBuilder = codeGeneratorParameters.MainBuilder;
+
+                mainBuilder.AppendLine(";");
+
+                mainBuilder
+                    .AppendLine($"{codeGeneratorParameters.TargetName}.TypeMapping = (({code.Reference(GetType())}){codeGeneratorParameters.TargetName}.TypeMapping).Clone(")
+                    .IncrementIndent();
+
+                for (var i = 0; i < cloneParameters.Count; i++)
+                {
+                    if (i > 0)
+                    {
+                        mainBuilder.AppendLine(",");
+                    }
+
+                    mainBuilder.Append(cloneParameters[i]);
+                }
+
+                mainBuilder
+                    .Append(")")
+                    .DecrementIndent();
+            }
+        }
     }
 }

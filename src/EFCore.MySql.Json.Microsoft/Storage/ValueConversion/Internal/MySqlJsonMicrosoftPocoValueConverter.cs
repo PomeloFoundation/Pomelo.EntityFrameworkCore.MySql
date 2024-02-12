@@ -16,10 +16,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Storage.ValueConversio
         {
         }
 
-        private static string ConvertToProviderCore(T v)
+        public static string ConvertToProviderCore(T v)
             => JsonSerializer.Serialize(v);
 
-        private static T ConvertFromProviderCore(string v)
+        public static T ConvertFromProviderCore(string v)
             => JsonSerializer.Deserialize<T>(v);
     }
 }

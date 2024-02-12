@@ -20,6 +20,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         private readonly int _maxSpecificSize;
 
+        public static new MySqlByteArrayTypeMapping Default { get; } = new();
+
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.

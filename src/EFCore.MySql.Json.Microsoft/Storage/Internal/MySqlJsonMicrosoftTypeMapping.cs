@@ -9,38 +9,53 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Storage.Internal
 {
     public class MySqlJsonMicrosoftTypeMapping<T> : MySqlJsonTypeMapping<T>
     {
+        public static new MySqlJsonMicrosoftTypeMapping<T> Default { get; } = new("json", null, null, false, true);
+
         // Called via reflection.
         // ReSharper disable once UnusedMember.Global
         public MySqlJsonMicrosoftTypeMapping(
             [NotNull] string storeType,
             [CanBeNull] ValueConverter valueConverter,
             [CanBeNull] ValueComparer valueComparer,
-            [NotNull] IMySqlOptions options)
+            bool noBackslashEscapes,
+            bool replaceLineBreaksWithCharFunction)
             : base(
                 storeType,
                 valueConverter,
                 valueComparer,
-                options)
+                noBackslashEscapes,
+                replaceLineBreaksWithCharFunction)
         {
         }
 
         protected MySqlJsonMicrosoftTypeMapping(
             RelationalTypeMappingParameters parameters,
             MySqlDbType mySqlDbType,
-            IMySqlOptions options)
-            : base(parameters, mySqlDbType, options)
+            bool noBackslashEscapes,
+            bool replaceLineBreaksWithCharFunction)
+            : base(
+                parameters,
+                mySqlDbType,
+                noBackslashEscapes,
+                replaceLineBreaksWithCharFunction)
         {
         }
 
         protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
-            => new MySqlJsonMicrosoftTypeMapping<T>(parameters, MySqlDbType, Options);
+            => new MySqlJsonMicrosoftTypeMapping<T>(parameters, MySqlDbType, NoBackslashEscapes, ReplaceLineBreaksWithCharFunction);
+
+        protected override RelationalTypeMapping Clone(bool? noBackslashEscapes = null, bool? replaceLineBreaksWithCharFunction = null)
+            => new MySqlJsonMicrosoftTypeMapping<T>(
+                Parameters,
+                MySqlDbType,
+                noBackslashEscapes ?? NoBackslashEscapes,
+                replaceLineBreaksWithCharFunction ?? ReplaceLineBreaksWithCharFunction);
 
         public override Expression GenerateCodeLiteral(object value)
             => value switch

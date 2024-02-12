@@ -18,7 +18,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     {
         // boolean
         private readonly MySqlBoolTypeMapping _bit1 = new MySqlBoolTypeMapping("bit", size: 1);
-        private readonly MySqlBoolTypeMapping _tinyint1 = new MySqlBoolTypeMapping("tinyint", size: 1);
+        private readonly MySqlBoolTypeMapping _tinyint1 = MySqlBoolTypeMapping.Default;
 
         // bit
         private readonly MySqlULongTypeMapping _bit = new MySqlULongTypeMapping("bit");
@@ -40,7 +40,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         // binary
         private readonly RelationalTypeMapping _binary = new MySqlByteArrayTypeMapping(fixedLength: true);
-        private readonly RelationalTypeMapping _varbinary = new MySqlByteArrayTypeMapping();
+        private readonly RelationalTypeMapping _varbinary = MySqlByteArrayTypeMapping.Default;
 
         //
         // String mappings depend on the MySqlOptions.NoBackslashEscapes setting:
@@ -59,14 +59,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private MySqlStringTypeMapping _enum;
 
         // DateTime
-        private readonly MySqlYearTypeMapping _year = new MySqlYearTypeMapping("year");
-        private readonly MySqlDateTypeMapping _dateDateOnly = new MySqlDateTypeMapping("date", typeof(DateOnly));
+        private readonly MySqlYearTypeMapping _year = MySqlYearTypeMapping.Default;
+        private readonly MySqlDateTypeMapping _dateDateOnly = MySqlDateTypeMapping.Default;
         private readonly MySqlDateTypeMapping _dateDateTime = new MySqlDateTypeMapping("date", typeof(DateTime));
-        private readonly MySqlTimeTypeMapping _timeTimeOnly = new MySqlTimeTypeMapping("time", typeof(TimeOnly));
+        private readonly MySqlTimeTypeMapping _timeTimeOnly = MySqlTimeTypeMapping.Default;
         private readonly MySqlTimeTypeMapping _timeTimeSpan = new MySqlTimeTypeMapping("time", typeof(TimeSpan));
-        private readonly MySqlDateTimeTypeMapping _dateTime = new MySqlDateTimeTypeMapping("datetime");
+        private readonly MySqlDateTimeTypeMapping _dateTime = MySqlDateTimeTypeMapping.Default;
         private readonly MySqlDateTimeTypeMapping _timeStamp = new MySqlDateTimeTypeMapping("timestamp");
-        private readonly MySqlDateTimeOffsetTypeMapping _dateTimeOffset = new MySqlDateTimeOffsetTypeMapping("datetime");
+        private readonly MySqlDateTimeOffsetTypeMapping _dateTimeOffset = MySqlDateTimeOffsetTypeMapping.Default;
         private readonly MySqlDateTimeOffsetTypeMapping _timeStampOffset = new MySqlDateTimeOffsetTypeMapping("timestamp");
 
         private readonly RelationalTypeMapping _binaryRowVersion
@@ -91,8 +91,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private MySqlJsonTypeMapping<string> _jsonDefaultString;
 
         // Scaffolding type mappings
-        private readonly MySqlCodeGenerationMemberAccessTypeMapping _codeGenerationMemberAccess = new MySqlCodeGenerationMemberAccessTypeMapping();
-        private readonly MySqlCodeGenerationServerVersionCreationTypeMapping _codeGenerationServerVersionCreation = new MySqlCodeGenerationServerVersionCreationTypeMapping();
+        private readonly MySqlCodeGenerationMemberAccessTypeMapping _codeGenerationMemberAccess = MySqlCodeGenerationMemberAccessTypeMapping.Default;
+        private readonly MySqlCodeGenerationServerVersionCreationTypeMapping _codeGenerationServerVersionCreation = MySqlCodeGenerationServerVersionCreationTypeMapping.Default;
 
         private Dictionary<string, RelationalTypeMapping[]> _storeTypeMappings;
         private Dictionary<Type, RelationalTypeMapping> _clrTypeMappings;
@@ -118,23 +118,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             // String mappings depend on the MySqlOptions.NoBackslashEscapes setting:
             //
 
-            _charUnicode = new MySqlStringTypeMapping("char", _options, StoreTypePostfix.Size, fixedLength: true);
-            _varcharUnicode = new MySqlStringTypeMapping("varchar", _options, StoreTypePostfix.Size);
-            _tinytextUnicode = new MySqlStringTypeMapping("tinytext", _options, StoreTypePostfix.None);
-            _textUnicode = new MySqlStringTypeMapping("text", _options, StoreTypePostfix.None);
-            _mediumtextUnicode = new MySqlStringTypeMapping("mediumtext", _options, StoreTypePostfix.None);
-            _longtextUnicode = new MySqlStringTypeMapping("longtext", _options, StoreTypePostfix.None);
+            _charUnicode = new MySqlStringTypeMapping("char", StoreTypePostfix.Size, fixedLength: true, noBackslashEscapes: _options.NoBackslashEscapes, replaceLineBreaksWithCharFunction: _options.ReplaceLineBreaksWithCharFunction);
+            _varcharUnicode = new MySqlStringTypeMapping("varchar", StoreTypePostfix.Size, noBackslashEscapes: _options.NoBackslashEscapes, replaceLineBreaksWithCharFunction: _options.ReplaceLineBreaksWithCharFunction);
+            _tinytextUnicode = new MySqlStringTypeMapping("tinytext", StoreTypePostfix.None, noBackslashEscapes: _options.NoBackslashEscapes, replaceLineBreaksWithCharFunction: _options.ReplaceLineBreaksWithCharFunction);
+            _textUnicode = new MySqlStringTypeMapping("text", StoreTypePostfix.None, noBackslashEscapes: _options.NoBackslashEscapes, replaceLineBreaksWithCharFunction: _options.ReplaceLineBreaksWithCharFunction);
+            _mediumtextUnicode = new MySqlStringTypeMapping("mediumtext", StoreTypePostfix.None, noBackslashEscapes: _options.NoBackslashEscapes, replaceLineBreaksWithCharFunction: _options.ReplaceLineBreaksWithCharFunction);
+            _longtextUnicode = new MySqlStringTypeMapping("longtext", StoreTypePostfix.None, noBackslashEscapes: _options.NoBackslashEscapes, replaceLineBreaksWithCharFunction: _options.ReplaceLineBreaksWithCharFunction);
 
-            _nchar = new MySqlStringTypeMapping("nchar", _options, StoreTypePostfix.Size, fixedLength: true);
-            _nvarchar = new MySqlStringTypeMapping("nvarchar", _options, StoreTypePostfix.Size);
+            _nchar = new MySqlStringTypeMapping("nchar", StoreTypePostfix.Size, fixedLength: true, noBackslashEscapes: _options.NoBackslashEscapes, replaceLineBreaksWithCharFunction: _options.ReplaceLineBreaksWithCharFunction);
+            _nvarchar = new MySqlStringTypeMapping("nvarchar", StoreTypePostfix.Size, noBackslashEscapes: _options.NoBackslashEscapes, replaceLineBreaksWithCharFunction: _options.ReplaceLineBreaksWithCharFunction);
 
-            _enum = new MySqlStringTypeMapping("enum", _options, StoreTypePostfix.None);
+            _enum = new MySqlStringTypeMapping("enum", StoreTypePostfix.None, noBackslashEscapes: _options.NoBackslashEscapes, replaceLineBreaksWithCharFunction: _options.ReplaceLineBreaksWithCharFunction);
 
             _guid = MySqlGuidTypeMapping.IsValidGuidFormat(_options.ConnectionSettings.GuidFormat)
                 ? new MySqlGuidTypeMapping(_options.ConnectionSettings.GuidFormat)
                 : null;
 
-            _jsonDefaultString = new MySqlJsonTypeMapping<string>("json", null, null, _options);
+            _jsonDefaultString = new MySqlJsonTypeMapping<string>("json", null, null, _options.NoBackslashEscapes, _options.ReplaceLineBreaksWithCharFunction);
 
             _storeTypeMappings
                 = new Dictionary<string, RelationalTypeMapping[]>(StringComparer.OrdinalIgnoreCase)

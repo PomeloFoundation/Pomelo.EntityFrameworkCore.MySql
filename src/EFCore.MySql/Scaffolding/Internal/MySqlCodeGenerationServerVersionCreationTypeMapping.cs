@@ -13,6 +13,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
     {
         private const string DummyStoreType = "clrOnly";
 
+        public static MySqlCodeGenerationServerVersionCreationTypeMapping Default { get; } = new();
+
         public MySqlCodeGenerationServerVersionCreationTypeMapping()
             : base(new RelationalTypeMappingParameters(new CoreTypeMappingParameters(typeof(MySqlCodeGenerationServerVersionCreation)), DummyStoreType))
         {

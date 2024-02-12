@@ -11,6 +11,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
     {
         private const string DummyStoreType = "clrOnly";
 
+        public static MySqlCodeGenerationMemberAccessTypeMapping Default { get; } = new();
+
         public MySqlCodeGenerationMemberAccessTypeMapping()
             : base(new RelationalTypeMappingParameters(new CoreTypeMappingParameters(typeof(MySqlCodeGenerationMemberAccess)), DummyStoreType))
         {

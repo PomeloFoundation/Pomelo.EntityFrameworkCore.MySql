@@ -16,6 +16,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     /// </summary>
     public class MySqlBoolTypeMapping : BoolTypeMapping
     {
+        public static new MySqlBoolTypeMapping Default { get; } = new("tinyint", size: 1);
+
         public MySqlBoolTypeMapping(
             [NotNull] string storeType,
             DbType? dbType = System.Data.DbType.Boolean,

@@ -1258,7 +1258,7 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
 
                 if (typeMapping is IDefaultValueCompatibilityAware defaultValueCompatibilityAware)
                 {
-                    typeMapping = defaultValueCompatibilityAware.Clone(true);
+                    typeMapping = defaultValueCompatibilityAware.Clone(isDefaultValueCompatible: true);
                 }
 
                 var sqlLiteralDefaultValue = typeMapping.GenerateSqlLiteral(defaultValue);
