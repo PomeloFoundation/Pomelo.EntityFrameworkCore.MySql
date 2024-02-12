@@ -118,23 +118,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             // String mappings depend on the MySqlOptions.NoBackslashEscapes setting:
             //
 
-            _charUnicode = new MySqlStringTypeMapping("char", _options, StoreTypePostfix.Size, fixedLength: true);
-            _varcharUnicode = new MySqlStringTypeMapping("varchar", _options, StoreTypePostfix.Size);
-            _tinytextUnicode = new MySqlStringTypeMapping("tinytext", _options, StoreTypePostfix.None);
-            _textUnicode = new MySqlStringTypeMapping("text", _options, StoreTypePostfix.None);
-            _mediumtextUnicode = new MySqlStringTypeMapping("mediumtext", _options, StoreTypePostfix.None);
-            _longtextUnicode = new MySqlStringTypeMapping("longtext", _options, StoreTypePostfix.None);
+            _charUnicode = new MySqlStringTypeMapping("char", StoreTypePostfix.Size, fixedLength: true, noBackslashEscapes: _options.NoBackslashEscapes, replaceLineBreaksWithCharFunction: _options.ReplaceLineBreaksWithCharFunction);
+            _varcharUnicode = new MySqlStringTypeMapping("varchar", StoreTypePostfix.Size, noBackslashEscapes: _options.NoBackslashEscapes, replaceLineBreaksWithCharFunction: _options.ReplaceLineBreaksWithCharFunction);
+            _tinytextUnicode = new MySqlStringTypeMapping("tinytext", StoreTypePostfix.None, noBackslashEscapes: _options.NoBackslashEscapes, replaceLineBreaksWithCharFunction: _options.ReplaceLineBreaksWithCharFunction);
+            _textUnicode = new MySqlStringTypeMapping("text", StoreTypePostfix.None, noBackslashEscapes: _options.NoBackslashEscapes, replaceLineBreaksWithCharFunction: _options.ReplaceLineBreaksWithCharFunction);
+            _mediumtextUnicode = new MySqlStringTypeMapping("mediumtext", StoreTypePostfix.None, noBackslashEscapes: _options.NoBackslashEscapes, replaceLineBreaksWithCharFunction: _options.ReplaceLineBreaksWithCharFunction);
+            _longtextUnicode = new MySqlStringTypeMapping("longtext", StoreTypePostfix.None, noBackslashEscapes: _options.NoBackslashEscapes, replaceLineBreaksWithCharFunction: _options.ReplaceLineBreaksWithCharFunction);
 
-            _nchar = new MySqlStringTypeMapping("nchar", _options, StoreTypePostfix.Size, fixedLength: true);
-            _nvarchar = new MySqlStringTypeMapping("nvarchar", _options, StoreTypePostfix.Size);
+            _nchar = new MySqlStringTypeMapping("nchar", StoreTypePostfix.Size, fixedLength: true, noBackslashEscapes: _options.NoBackslashEscapes, replaceLineBreaksWithCharFunction: _options.ReplaceLineBreaksWithCharFunction);
+            _nvarchar = new MySqlStringTypeMapping("nvarchar", StoreTypePostfix.Size, noBackslashEscapes: _options.NoBackslashEscapes, replaceLineBreaksWithCharFunction: _options.ReplaceLineBreaksWithCharFunction);
 
-            _enum = new MySqlStringTypeMapping("enum", _options, StoreTypePostfix.None);
+            _enum = new MySqlStringTypeMapping("enum", StoreTypePostfix.None, noBackslashEscapes: _options.NoBackslashEscapes, replaceLineBreaksWithCharFunction: _options.ReplaceLineBreaksWithCharFunction);
 
             _guid = MySqlGuidTypeMapping.IsValidGuidFormat(_options.ConnectionSettings.GuidFormat)
                 ? new MySqlGuidTypeMapping(_options.ConnectionSettings.GuidFormat)
                 : null;
 
-            _jsonDefaultString = new MySqlJsonTypeMapping<string>("json", null, null, _options);
+            _jsonDefaultString = new MySqlJsonTypeMapping<string>("json", null, null, _options.NoBackslashEscapes, _options.ReplaceLineBreaksWithCharFunction);
 
             _storeTypeMappings
                 = new Dictionary<string, RelationalTypeMapping[]>(StringComparer.OrdinalIgnoreCase)

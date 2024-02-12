@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
@@ -19,39 +18,40 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             [NotNull] string storeType,
             [CanBeNull] ValueConverter valueConverter,
             [CanBeNull] ValueComparer valueComparer,
-            [NotNull] IMySqlOptions options)
+            bool noBackslashEscapes,
+            bool replaceLineBreaksWithCharFunction)
             : base(
                 storeType,
                 typeof(T),
                 valueConverter,
                 valueComparer,
-                options)
+                noBackslashEscapes,
+                replaceLineBreaksWithCharFunction)
         {
         }
 
         protected MySqlJsonTypeMapping(
             RelationalTypeMappingParameters parameters,
             MySqlDbType mySqlDbType,
-            IMySqlOptions options)
-            : base(parameters, mySqlDbType, options)
+            bool noBackslashEscapes,
+            bool replaceLineBreaksWithCharFunction)
+            : base(parameters, mySqlDbType, noBackslashEscapes, replaceLineBreaksWithCharFunction)
         {
         }
 
         protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
-            => new MySqlJsonTypeMapping<T>(parameters, MySqlDbType, Options);
+            => new MySqlJsonTypeMapping<T>(parameters, MySqlDbType, NoBackslashEscapes, ReplaceLineBreaksWithCharFunction);
     }
 
     public abstract class MySqlJsonTypeMapping : MySqlStringTypeMapping
     {
-        [NotNull]
-        protected virtual IMySqlOptions Options { get; }
-
         public MySqlJsonTypeMapping(
             [NotNull] string storeType,
             [NotNull] Type clrType,
             [CanBeNull] ValueConverter valueConverter,
             [CanBeNull] ValueComparer valueComparer,
-            [NotNull] IMySqlOptions options)
+            bool noBackslashEscapes,
+            bool replaceLineBreaksWithCharFunction)
             : base(
                 new RelationalTypeMappingParameters(
                     new CoreTypeMappingParameters(
@@ -61,7 +61,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     storeType,
                     unicode: true),
                 MySqlDbType.JSON,
-                options,
+                noBackslashEscapes,
+                replaceLineBreaksWithCharFunction,
                 false,
                 false)
         {
@@ -69,17 +70,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             {
                 throw new ArgumentException($"The store type '{nameof(storeType)}' must be 'json'.", nameof(storeType));
             }
-
-            Options = options;
         }
 
         protected MySqlJsonTypeMapping(
             RelationalTypeMappingParameters parameters,
             MySqlDbType mySqlDbType,
-            IMySqlOptions options)
-            : base(parameters, mySqlDbType, options, false, false)
+            bool noBackslashEscapes,
+            bool replaceLineBreaksWithCharFunction)
+            : base(
+                parameters,
+                mySqlDbType,
+                noBackslashEscapes,
+                replaceLineBreaksWithCharFunction,
+                isUnquoted: false,
+                forceToString: false)
         {
-            Options = options;
         }
 
         protected override void ConfigureParameter(DbParameter parameter)

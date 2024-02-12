@@ -3,7 +3,6 @@
 
 using System;
 using System.Linq.Expressions;
-using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -11,7 +10,6 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MySqlConnector;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Storage.Internal
@@ -24,25 +22,28 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Storage.Internal
             [NotNull] string storeType,
             [CanBeNull] ValueConverter valueConverter,
             [CanBeNull] ValueComparer valueComparer,
-            [NotNull] IMySqlOptions options)
+            bool noBackslashEscapes,
+            bool replaceLineBreaksWithCharFunction)
             : base(
                 storeType,
                 valueConverter,
                 valueComparer,
-                options)
+                noBackslashEscapes,
+                replaceLineBreaksWithCharFunction)
         {
         }
 
         protected MySqlJsonNewtonsoftTypeMapping(
             RelationalTypeMappingParameters parameters,
             MySqlDbType mySqlDbType,
-            IMySqlOptions options)
-            : base(parameters, mySqlDbType, options)
+            bool noBackslashEscapes,
+            bool replaceLineBreaksWithCharFunction)
+            : base(parameters, mySqlDbType, noBackslashEscapes, replaceLineBreaksWithCharFunction)
         {
         }
 
         protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
-            => new MySqlJsonNewtonsoftTypeMapping<T>(parameters, MySqlDbType, Options);
+            => new MySqlJsonNewtonsoftTypeMapping<T>(parameters, MySqlDbType, NoBackslashEscapes, ReplaceLineBreaksWithCharFunction);
 
         public override Expression GenerateCodeLiteral(object value)
             => value switch
