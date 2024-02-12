@@ -13,7 +13,7 @@
           - "servicing" - EF Core release independent, code quality production ready, mainly bugfixes
     -->
     <VersionPrefix>8.0.0</VersionPrefix>
-    <PreReleaseVersionLabel>silver</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel>rtm</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
 
     <!--
