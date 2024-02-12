@@ -3,6 +3,7 @@
 
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.EntityFrameworkCore.Design.Internal;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,6 +15,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
         {
             serviceCollection.AddEntityFrameworkMySql();
             new EntityFrameworkRelationalDesignServicesBuilder(serviceCollection)
+                .TryAdd<ICSharpRuntimeAnnotationCodeGenerator, MySqlCSharpRuntimeAnnotationCodeGenerator>()
                 .TryAdd<IAnnotationCodeGenerator, MySqlAnnotationCodeGenerator>()
                 .TryAdd<IDatabaseModelFactory, MySqlDatabaseModelFactory>()
                 .TryAdd<IProviderConfigurationCodeGenerator, MySqlCodeGenerator>()

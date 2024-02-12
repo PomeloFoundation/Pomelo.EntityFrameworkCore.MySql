@@ -15,6 +15,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Storage.Internal
 {
     public class MySqlJsonMicrosoftTypeMapping<T> : MySqlJsonTypeMapping<T>
     {
+        public static new MySqlJsonMicrosoftTypeMapping<T> Default { get; } = new("json", null, null, false, true);
+
         // Called via reflection.
         // ReSharper disable once UnusedMember.Global
         public MySqlJsonMicrosoftTypeMapping(
@@ -47,6 +49,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Storage.Internal
 
         protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
             => new MySqlJsonMicrosoftTypeMapping<T>(parameters, MySqlDbType, NoBackslashEscapes, ReplaceLineBreaksWithCharFunction);
+
+        protected override RelationalTypeMapping Clone(bool? noBackslashEscapes = null, bool? replaceLineBreaksWithCharFunction = null)
+            => new MySqlJsonMicrosoftTypeMapping<T>(
+                Parameters,
+                MySqlDbType,
+                noBackslashEscapes ?? NoBackslashEscapes,
+                replaceLineBreaksWithCharFunction ?? ReplaceLineBreaksWithCharFunction);
 
         public override Expression GenerateCodeLiteral(object value)
             => value switch

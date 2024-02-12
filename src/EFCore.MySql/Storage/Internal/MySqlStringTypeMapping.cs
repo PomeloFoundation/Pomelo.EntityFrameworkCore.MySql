@@ -2,8 +2,11 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Data.Common;
+using System.Linq;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Design.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Json;
 using Microsoft.EntityFrameworkCore.Utilities;
@@ -15,7 +18,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public class MySqlStringTypeMapping : MySqlTypeMapping
+    public class MySqlStringTypeMapping : MySqlTypeMapping, IMySqlCSharpRuntimeAnnotationTypeMappingCodeGenerator
     {
         public static MySqlStringTypeMapping Default { get; } = new("varchar", StoreTypePostfix.Size);
 
@@ -103,8 +106,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
             => new MySqlStringTypeMapping(parameters, MySqlDbType, NoBackslashEscapes, ReplaceLineBreaksWithCharFunction, IsUnquoted, ForceToString);
 
-        public virtual RelationalTypeMapping Clone(bool? unquoted = null, bool? forceToString = null)
-            => new MySqlStringTypeMapping(Parameters, MySqlDbType, NoBackslashEscapes, ReplaceLineBreaksWithCharFunction, unquoted ?? IsUnquoted, forceToString ?? ForceToString);
+        public virtual RelationalTypeMapping Clone(
+            bool? unquoted = null,
+            bool? forceToString = null,
+            bool? noBackslashEscapes = null,
+            bool? replaceLineBreaksWithCharFunction = null)
+            => new MySqlStringTypeMapping(
+                Parameters,
+                MySqlDbType,
+                noBackslashEscapes ?? NoBackslashEscapes,
+                replaceLineBreaksWithCharFunction ?? ReplaceLineBreaksWithCharFunction,
+                unquoted ?? IsUnquoted,
+                forceToString ?? ForceToString);
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -188,6 +201,66 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             return escapeBackslashes
                 ? literal.Replace(@"\", @"\\")
                 : literal;
+        }
+
+        void IMySqlCSharpRuntimeAnnotationTypeMappingCodeGenerator.Create(
+            CSharpRuntimeAnnotationCodeGeneratorParameters codeGeneratorParameters,
+            CSharpRuntimeAnnotationCodeGeneratorDependencies codeGeneratorDependencies)
+        {
+            var defaultTypeMapping = Default;
+            if (defaultTypeMapping == this)
+            {
+                return;
+            }
+
+            var code = codeGeneratorDependencies.CSharpHelper;
+
+            var cloneParameters = new List<string>();
+
+            if (IsUnquoted != defaultTypeMapping.IsUnquoted)
+            {
+                cloneParameters.Add($"unquoted: {code.Literal(IsUnquoted)}");
+            }
+
+            if (ForceToString != defaultTypeMapping.ForceToString)
+            {
+                cloneParameters.Add($"forceToString: {code.Literal(ForceToString)}");
+            }
+
+            if (NoBackslashEscapes != defaultTypeMapping.NoBackslashEscapes)
+            {
+                cloneParameters.Add($"noBackslashEscapes: {code.Literal(NoBackslashEscapes)}");
+            }
+
+            if (ReplaceLineBreaksWithCharFunction != defaultTypeMapping.ReplaceLineBreaksWithCharFunction)
+            {
+                cloneParameters.Add($"replaceLineBreaksWithCharFunction: {code.Literal(ReplaceLineBreaksWithCharFunction)}");
+            }
+
+            if (cloneParameters.Any())
+            {
+                var mainBuilder = codeGeneratorParameters.MainBuilder;
+
+                mainBuilder.AppendLine(";");
+
+                mainBuilder
+                    .AppendLine($"{codeGeneratorParameters.TargetName}.TypeMapping = (({code.Reference(GetType())}){codeGeneratorParameters.TargetName}.TypeMapping).Clone(")
+                    .IncrementIndent();
+
+                for (var i = 0; i < cloneParameters.Count; i++)
+                {
+                    if (i > 0)
+                    {
+                        mainBuilder.AppendLine(",");
+                    }
+
+                    mainBuilder.Append(cloneParameters[i]);
+                }
+
+                mainBuilder
+                    .Append(")")
+                    .DecrementIndent();
+            }
         }
     }
 }

@@ -2,10 +2,13 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Data.Common;
+using System.Linq;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Design.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MySqlConnector;
@@ -14,6 +17,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 {
     public class MySqlJsonTypeMapping<T> : MySqlJsonTypeMapping
     {
+        public static new MySqlJsonTypeMapping<T> Default { get; } = new("json", null, null, false, true);
+
         public MySqlJsonTypeMapping(
             [NotNull] string storeType,
             [CanBeNull] ValueConverter valueConverter,
@@ -41,9 +46,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
             => new MySqlJsonTypeMapping<T>(parameters, MySqlDbType, NoBackslashEscapes, ReplaceLineBreaksWithCharFunction);
+
+        protected override RelationalTypeMapping Clone(bool? noBackslashEscapes = null, bool? replaceLineBreaksWithCharFunction = null)
+            => new MySqlJsonTypeMapping<T>(
+                Parameters,
+                MySqlDbType,
+                noBackslashEscapes ?? NoBackslashEscapes,
+                replaceLineBreaksWithCharFunction ?? ReplaceLineBreaksWithCharFunction);
     }
 
-    public abstract class MySqlJsonTypeMapping : MySqlStringTypeMapping
+    public abstract class MySqlJsonTypeMapping : MySqlStringTypeMapping, IMySqlCSharpRuntimeAnnotationTypeMappingCodeGenerator
     {
         public MySqlJsonTypeMapping(
             [NotNull] string storeType,
@@ -87,6 +99,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         {
         }
 
+        /// <summary>
+        /// Supports compiled models via IMySqlCSharpRuntimeAnnotationTypeMappingCodeGenerator.Create.
+        /// </summary>
+        protected abstract RelationalTypeMapping Clone(
+            bool? noBackslashEscapes = null,
+            bool? replaceLineBreaksWithCharFunction = null);
+
         protected override void ConfigureParameter(DbParameter parameter)
         {
             base.ConfigureParameter(parameter);
@@ -96,6 +115,56 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             if (parameter.Value is MySqlJsonString mySqlJsonString)
             {
                 parameter.Value = (string)mySqlJsonString;
+            }
+        }
+
+        void IMySqlCSharpRuntimeAnnotationTypeMappingCodeGenerator.Create(
+            CSharpRuntimeAnnotationCodeGeneratorParameters codeGeneratorParameters,
+            CSharpRuntimeAnnotationCodeGeneratorDependencies codeGeneratorDependencies)
+        {
+            var defaultTypeMapping = Default;
+            if (defaultTypeMapping == this)
+            {
+                return;
+            }
+
+            var code = codeGeneratorDependencies.CSharpHelper;
+
+            var cloneParameters = new List<string>();
+
+            if (NoBackslashEscapes != defaultTypeMapping.NoBackslashEscapes)
+            {
+                cloneParameters.Add($"noBackslashEscapes: {code.Literal(NoBackslashEscapes)}");
+            }
+
+            if (ReplaceLineBreaksWithCharFunction != defaultTypeMapping.ReplaceLineBreaksWithCharFunction)
+            {
+                cloneParameters.Add($"replaceLineBreaksWithCharFunction: {code.Literal(ReplaceLineBreaksWithCharFunction)}");
+            }
+
+            if (cloneParameters.Any())
+            {
+                var mainBuilder = codeGeneratorParameters.MainBuilder;
+
+                mainBuilder.AppendLine(";");
+
+                mainBuilder
+                    .AppendLine($"{codeGeneratorParameters.TargetName}.TypeMapping = (({code.Reference(GetType())}){codeGeneratorParameters.TargetName}.TypeMapping).Clone(")
+                    .IncrementIndent();
+
+                for (var i = 0; i < cloneParameters.Count; i++)
+                {
+                    if (i > 0)
+                    {
+                        mainBuilder.AppendLine(",");
+                    }
+
+                    mainBuilder.Append(cloneParameters[i]);
+                }
+
+                mainBuilder
+                    .Append(")")
+                    .DecrementIndent();
             }
         }
     }

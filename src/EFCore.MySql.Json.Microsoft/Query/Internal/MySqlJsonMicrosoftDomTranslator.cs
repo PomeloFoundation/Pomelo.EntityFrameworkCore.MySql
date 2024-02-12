@@ -186,7 +186,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Query.Internal
                 sqlConstantExpression.TypeMapping is MySqlStringTypeMapping stringTypeMapping &&
                 !stringTypeMapping.IsUnquoted)
             {
-                pathLocation = sqlConstantExpression.ApplyTypeMapping(stringTypeMapping.Clone(true));
+                pathLocation = sqlConstantExpression.ApplyTypeMapping(stringTypeMapping.Clone(unquoted: true));
             }
 
             return pathLocation;
