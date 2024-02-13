@@ -36,13 +36,14 @@ Officially supported versions are:
 
 - MySQL 8.0
 - MySQL 5.7
-- MariaDB 10.9
-- MariaDB 10.8
-- MariaDB 10.7
-- MariaDB 10.6
-- MariaDB 10.5
-- MariaDB 10.4
-- MariaDB 10.3
+- MariaDB 11.2
+- MariaDB 11.1
+- MariaDB 11.0
+- MariaDB 10.11 (LTS)
+- MariaDB 10.10
+- MariaDB 10.6 (LTS)
+- MariaDB 10.5 (LTS)
+- MariaDB 10.4 (LTS)
 
 ## Schedule and Roadmap
 
