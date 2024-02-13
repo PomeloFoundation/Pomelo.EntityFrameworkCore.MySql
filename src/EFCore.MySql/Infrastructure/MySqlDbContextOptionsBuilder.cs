@@ -124,12 +124,9 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
             => WithOption(e => e.WithStringComparisonTranslations(enable));
 
         /// <summary>
-        ///     Configures the context to translate string related methods, containing a parameter of type <see cref="StringComparison"/>,
-        ///     to their SQL equivalent, even though MySQL might not be able to use indexes when executing the query, resulting in decreased
-        ///     performance. Whether MySQL is able to use indexes for the query, depends on the <see cref="StringComparison"/> option, the
-        ///     underlying collation and the scenario.
-        ///     It is also possible to just use `EF.Functions.Collate()`, possibly in addition to `string.ToUpper()` if needed, to achieve
-        ///     the same result but with full control over the SQL generation.
+        ///     Configures the context to translate using primitive collections. At the time of the Pomelo 8.0.0 release, MySQL Server can
+        ///     crash when using primitive collections with JSON and MariaDB support is incomplete. Support and translations in regards to
+        ///     this option can change at any time in the future. This optin is disabled by default. Enabled at your own risk.
         /// </summary>
         public virtual MySqlDbContextOptionsBuilder EnablePrimitiveCollectionsSupport(bool enable = true)
             => WithOption(e => e.WithPrimitiveCollectionsSupport(enable));
