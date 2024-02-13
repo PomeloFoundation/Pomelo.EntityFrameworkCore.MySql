@@ -426,12 +426,12 @@ jobs:
         if: ${{ env.pushToMygetOrg == 'true' }}
         working-directory: nupkgs
         shell: pwsh
-        run: dotnet nuget push './Debug/withPdbs/**/*.nupkg' --api-key '${{ secrets.MYGETORG_POMELO_ALLPACKAGES_DEBUG_PUSHNEW }}' --source 'https://www.myget.org/F/pomelo-debug/api/v3/index.json' -SkipDuplicate
+        run: dotnet nuget push './Debug/withPdbs/**/*.nupkg' --api-key '${{ secrets.MYGETORG_POMELO_ALLPACKAGES_DEBUG_PUSHNEW }}' --source 'https://www.myget.org/F/pomelo-debug/api/v3/index.json' --skip-duplicate
       - name: "NuGet Push - myget.org - Release"
         if: ${{ env.pushToMygetOrg == 'true' }}
         working-directory: nupkgs
         shell: pwsh
-        run: dotnet nuget push './Release/default/**/*.nupkg' --api-key '${{ secrets.MYGETORG_POMELO_ALLPACKAGES_PUSHNEW }}' --source 'https://www.myget.org/F/pomelo/api/v3/index.json' -SkipDuplicate
+        run: dotnet nuget push './Release/default/**/*.nupkg' --api-key '${{ secrets.MYGETORG_POMELO_ALLPACKAGES_PUSHNEW }}' --source 'https://www.myget.org/F/pomelo/api/v3/index.json' --skip-duplicate
       - name: "NuGet Push - nuget.org - Release"
         if: ${{ env.pushToNugetOrg == 'true' }}
         working-directory: nupkgs
