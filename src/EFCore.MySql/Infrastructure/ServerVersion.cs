@@ -71,7 +71,12 @@ namespace Microsoft.EntityFrameworkCore
         public static ServerVersion AutoDetect(string connectionString)
         {
             using var connection = new MySqlConnection(
-                new MySqlConnectionStringBuilder(connectionString) {Database = string.Empty}.ConnectionString);
+                new MySqlConnectionStringBuilder(connectionString)
+                {
+                    Database = string.Empty,
+                    AutoEnlist = false,
+                    Pooling = false,
+                }.ConnectionString);
             connection.Open();
             return Parse(connection.ServerVersion);
         }
@@ -95,7 +100,12 @@ namespace Microsoft.EntityFrameworkCore
             if (connection.State != ConnectionState.Open)
             {
                 using var clonedConnection = connection.CloneWith(
-                    new MySqlConnectionStringBuilder(connection.ConnectionString) {Database = string.Empty}.ConnectionString);
+                    new MySqlConnectionStringBuilder(connection.ConnectionString)
+                    {
+                        Database = string.Empty,
+                        AutoEnlist = false,
+                        Pooling = false,
+                    }.ConnectionString);
                 clonedConnection.Open();
                 serverVersion = clonedConnection.ServerVersion;
             }
