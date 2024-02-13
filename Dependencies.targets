@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup Label="Common Versions">
-    <EFCoreVersion>8.0.0</EFCoreVersion>
+    <EFCoreVersion>[8.0.0, 8.1.0-0)</EFCoreVersion>
   </PropertyGroup>
 
   <ItemGroup Label="Dependencies">
@@ -9,8 +9,8 @@
     <PackageReference Update="Microsoft.EntityFrameworkCore.Relational" Version="$(EFCoreVersion)" />
     <PackageReference Update="Microsoft.EntityFrameworkCore" Version="$(EFCoreVersion)" />
 
-    <PackageReference Update="MySqlConnector" Version="2.3.1" />
-    <PackageReference Update="MySqlConnector.DependencyInjection" Version="2.3.1" />
+    <PackageReference Update="MySqlConnector" Version="2.3.5" />
+    <PackageReference Update="MySqlConnector.DependencyInjection" Version="2.3.5" />
 
     <PackageReference Update="NetTopologySuite" Version="2.5.0" />
     <PackageReference Update="System.Text.Json" Version="8.0.0" />
@@ -30,9 +30,9 @@
     <PackageReference Update="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Update="Microsoft.Extensions.DependencyModel" Version="8.0.0" />
     <PackageReference Update="Microsoft.Extensions.Logging" Version="8.0.0" />
-    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.7.2" />
-    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.1.1" />
-    <PackageReference Update="Moq" Version="4.20.69" />
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+    <PackageReference Update="Moq" Version="4.20.70" />
     <PackageReference Update="System.Collections.Immutable" Version="8.0.0" />
     <PackageReference Update="System.ComponentModel.TypeConverter" Version="4.3.0" />
     <PackageReference Update="System.Diagnostics.DiagnosticSource" Version="8.0.0" />
