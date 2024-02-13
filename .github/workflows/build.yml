@@ -399,7 +399,7 @@ jobs:
           {
             nuget sources Add -ConfigFile './azdo-nuget/nuget.config' -Name 'azdo-pomelo-efcore-debug' -Source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-debug/nuget/v3/index.json' -UserName '${{ vars.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_USERNAME }}' -Password '${{ secrets.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_PASSWORD }}' -StorePasswordInClearText
 
-            nuget push './Release/withPdbs/**/*.nupkg' -ConfigFile './azdo-nuget/nuget.config' -ApiKey 'foo' -Source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-debug/nuget/v3/index.json'
+            nuget push './Release/withPdbs/**/*.nupkg' -ConfigFile './azdo-nuget/nuget.config' -ApiKey 'foo' -Source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-debug/nuget/v3/index.json' -SkipDuplicate
           }
           finally
           {
@@ -416,7 +416,7 @@ jobs:
           {
             nuget sources Add -ConfigFile './azdo-nuget/nuget.config' -Name 'azdo-pomelo-efcore-public' -Source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-public/nuget/v3/index.json' -UserName '${{ vars.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_USERNAME }}' -Password '${{ secrets.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_PASSWORD }}' -StorePasswordInClearText
 
-            nuget push './Release/withPdbs/**/*.nupkg' -ConfigFile './azdo-nuget/nuget.config' -ApiKey 'foo' -Source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-public/nuget/v3/index.json'
+            nuget push './Release/withPdbs/**/*.nupkg' -ConfigFile './azdo-nuget/nuget.config' -ApiKey 'foo' -Source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-public/nuget/v3/index.json' -SkipDuplicate
           }
           finally
           {
@@ -426,12 +426,12 @@ jobs:
         if: ${{ env.pushToMygetOrg == 'true' }}
         working-directory: nupkgs
         shell: pwsh
-        run: dotnet nuget push './Debug/withPdbs/**/*.nupkg' --api-key '${{ secrets.MYGETORG_POMELO_ALLPACKAGES_DEBUG_PUSHNEW }}' --source 'https://www.myget.org/F/pomelo-debug/api/v3/index.json'
+        run: dotnet nuget push './Debug/withPdbs/**/*.nupkg' --api-key '${{ secrets.MYGETORG_POMELO_ALLPACKAGES_DEBUG_PUSHNEW }}' --source 'https://www.myget.org/F/pomelo-debug/api/v3/index.json' -SkipDuplicate
       - name: "NuGet Push - myget.org - Release"
         if: ${{ env.pushToMygetOrg == 'true' }}
         working-directory: nupkgs
         shell: pwsh
-        run: dotnet nuget push './Release/default/**/*.nupkg' --api-key '${{ secrets.MYGETORG_POMELO_ALLPACKAGES_PUSHNEW }}' --source 'https://www.myget.org/F/pomelo/api/v3/index.json'
+        run: dotnet nuget push './Release/default/**/*.nupkg' --api-key '${{ secrets.MYGETORG_POMELO_ALLPACKAGES_PUSHNEW }}' --source 'https://www.myget.org/F/pomelo/api/v3/index.json' -SkipDuplicate
       - name: "NuGet Push - nuget.org - Release"
         if: ${{ env.pushToNugetOrg == 'true' }}
         working-directory: nupkgs
