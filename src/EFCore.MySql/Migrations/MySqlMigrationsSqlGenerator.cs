@@ -33,6 +33,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
     /// </summary>
     public class MySqlMigrationsSqlGenerator : MigrationsSqlGenerator
     {
+        private const string InternalAnnotationPrefix = MySqlAnnotationNames.Prefix + "MySqlMigrationsSqlGenerator:";
+        private const string OutputPrimaryKeyConstraintOnAutoIncrementAnnotationName = InternalAnnotationPrefix + "OutputPrimaryKeyConstraint";
+
         private static readonly Regex _typeRegex = new Regex(@"(?<Name>[a-z0-9]+)\s*?(?:\(\s*(?<Length>\d+)?\s*\))?",
             RegexOptions.IgnoreCase);
 
@@ -67,6 +70,86 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             _commandBatchPreparer = commandBatchPreparer;
             _options = options;
             _stringTypeMapping = dependencies.TypeMappingSource.GetMapping(typeof(string));
+        }
+
+        public override IReadOnlyList<MigrationCommand> Generate(
+            IReadOnlyList<MigrationOperation> operations,
+            IModel model = null,
+            MigrationsSqlGenerationOptions options = MigrationsSqlGenerationOptions.Default)
+        {
+            try
+            {
+                var filteredOperations = FilterOperations(operations, model);
+                var migrationCommands = base.Generate(filteredOperations, model, options);
+
+                return migrationCommands;
+            }
+            finally
+            {
+                CleanUpInternalAnnotations(operations);
+            }
+        }
+
+        private static void CleanUpInternalAnnotations(IReadOnlyList<MigrationOperation> filteredOperations)
+        {
+            foreach (var filteredOperation in filteredOperations)
+            {
+                foreach (var annotation in filteredOperation.GetAnnotations().ToList())
+                {
+                    if (annotation.Name.StartsWith(InternalAnnotationPrefix))
+                    {
+                        filteredOperation.RemoveAnnotation(annotation.Name);
+                    }
+                }
+            }
+        }
+
+        protected virtual IReadOnlyList<MigrationOperation> FilterOperations(IReadOnlyList<MigrationOperation> operations, IModel model)
+        {
+            if (operations.Count <= 0)
+            {
+                return operations;
+            }
+
+            var filteredOperations = new List<MigrationOperation>();
+
+            var previousOperation = operations.First();
+            filteredOperations.Add(previousOperation);
+
+            foreach (var currentOperation in operations.Skip(1))
+            {
+                // Merge a ColumnOperation immediately followed by an AddPrimaryKeyOperation into a single operation (and SQL statement), if
+                // the ColumnOperation is for an AUTO_INCREMENT column. The *immediately followed* restriction could be lifted, if it later
+                // turns out to be necessary.
+                // MySQL dictates that there can be only one AUTO_INCREMENT column and it has to be a key.
+                // If we first add a new column with the AUTO_INCREMENT flag and *then* make it a primary key in the *next* statement, the
+                // first statement will fail, because the column is not a key yet, and AUTO_INCREMENT columns have to be keys.
+                if (previousOperation is ColumnOperation columnOperation &&
+                    currentOperation is AddPrimaryKeyOperation addPrimaryKeyOperation &&
+                    addPrimaryKeyOperation.Schema == columnOperation.Schema &&
+                    addPrimaryKeyOperation.Table == columnOperation.Table &&
+                    addPrimaryKeyOperation.Columns.Length == 1 &&
+                    addPrimaryKeyOperation.Columns[0] == columnOperation.Name &&
+                    // The following 3 conditions match the ones from `ColumnDefinition()`.
+                    MySqlValueGenerationStrategyCompatibility.GetValueGenerationStrategy(columnOperation.GetAnnotations().OfType<IAnnotation>().ToArray()) is var valueGenerationStrategy &&
+                    GetColumBaseTypeAndLength(columnOperation, model) is var (columnBaseType, _) &&
+                    IsAutoIncrement(columnOperation, columnBaseType, valueGenerationStrategy))
+                {
+                    // This internal annotation lets our `ColumnDefinition()` implementation generate a second clause for the primary key
+                    // constraint in the same statement.
+                    columnOperation[OutputPrimaryKeyConstraintOnAutoIncrementAnnotationName] = true;
+
+                    // We now skip adding the AddPrimaryKeyOperation to the list of operations.
+                }
+                else
+                {
+                    filteredOperations.Add(currentOperation);
+                }
+
+                previousOperation = currentOperation;
+            }
+
+            return filteredOperations.AsReadOnly();
         }
 
         /// <summary>
@@ -1031,33 +1114,16 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
             Check.NotNull(operation, nameof(operation));
             Check.NotNull(builder, nameof(builder));
 
-            var matchType = GetColumnType(schema, table, name, operation, model);
-            var matchLen = "";
-            var match = _typeRegex.Match(matchType ?? "-");
-            if (match.Success)
-            {
-                matchType = match.Groups["Name"].Value.ToLower();
-                if (match.Groups["Length"].Success)
-                {
-                    matchLen = match.Groups["Length"].Value;
-                }
-            }
-
+            var (matchType, matchLen) = GetColumBaseTypeAndLength(schema, table, name, operation, model);
             var valueGenerationStrategy = MySqlValueGenerationStrategyCompatibility.GetValueGenerationStrategy(operation.GetAnnotations().OfType<IAnnotation>().ToArray());
+            var autoIncrement = IsAutoIncrement(operation, matchType, valueGenerationStrategy);
 
-            var autoIncrement = false;
-            if (valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn &&
-                string.IsNullOrWhiteSpace(operation.DefaultValueSql) && operation.DefaultValue == null)
+            if (!autoIncrement &&
+                valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn &&
+                string.IsNullOrWhiteSpace(operation.DefaultValueSql))
             {
                 switch (matchType)
                 {
-                    case "tinyint":
-                    case "smallint":
-                    case "mediumint":
-                    case "int":
-                    case "bigint":
-                        autoIncrement = true;
-                        break;
                     case "datetime":
                         if (!_options.ServerVersion.Supports.DateTimeCurrentTimestamp)
                         {
@@ -1102,11 +1168,6 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
             {
                 ColumnDefinitionWithCharSet(schema, table, name, operation, model, builder);
 
-                if (autoIncrement)
-                {
-                    builder.Append(" AUTO_INCREMENT");
-                }
-
                 GenerateComment(operation.Comment, builder);
 
                 // AUTO_INCREMENT has priority over reference definitions.
@@ -1115,6 +1176,26 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
                     builder
                         .Append(" ON UPDATE ")
                         .Append(onUpdateSql);
+                }
+
+                if (autoIncrement)
+                {
+                    builder.Append(" AUTO_INCREMENT");
+
+                    // TODO: Add support for a non-primary key that is used as with auto_increment.
+                    if (model?.GetRelationalModel().FindTable(table, schema) is { PrimaryKey: { Columns.Count: 1 } primaryKey } &&
+                        primaryKey.Columns[0].Name == operation.Name &&
+                        (bool?)operation[OutputPrimaryKeyConstraintOnAutoIncrementAnnotationName] == true)
+                    {
+                        builder
+                            .AppendLine(",")
+                            .Append("ADD ");
+
+                        PrimaryKeyConstraint(
+                            AddPrimaryKeyOperation.CreateFrom(primaryKey),
+                            model,
+                            builder);
+                    }
                 }
             }
             else
@@ -1139,6 +1220,54 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
 
                 GenerateComment(operation.Comment, builder);
             }
+        }
+
+        protected virtual (string matchType, string matchLen) GetColumBaseTypeAndLength(
+            ColumnOperation operation,
+            IModel model)
+            => GetColumBaseTypeAndLength(operation.Schema, operation.Table, operation.Name, operation, model);
+
+        protected virtual (string matchType, string matchLen) GetColumBaseTypeAndLength(
+            string schema,
+            string table,
+            string name,
+            ColumnOperation operation,
+            IModel model)
+        {
+            var matchType = GetColumnType(schema, table, name, operation, model);
+            var matchLen = "";
+            var match = _typeRegex.Match(matchType ?? "-");
+            if (match.Success)
+            {
+                matchType = match.Groups["Name"].Value.ToLower();
+                if (match.Groups["Length"].Success)
+                {
+                    matchLen = match.Groups["Length"].Value;
+                }
+            }
+
+            return (matchType, matchLen);
+        }
+
+        protected virtual bool IsAutoIncrement(ColumnOperation operation,
+            string columnType,
+            MySqlValueGenerationStrategy? valueGenerationStrategy)
+        {
+            if (valueGenerationStrategy == MySqlValueGenerationStrategy.IdentityColumn &&
+                string.IsNullOrWhiteSpace(operation.DefaultValueSql))
+            {
+                switch (columnType)
+                {
+                    case "tinyint":
+                    case "smallint":
+                    case "mediumint":
+                    case "int":
+                    case "bigint":
+                        return true;
+                }
+            }
+
+            return false;
         }
 
         private void GenerateComment(string comment, MigrationCommandListBuilder builder)
