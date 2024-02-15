@@ -1171,13 +1171,6 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
                 GenerateComment(operation.Comment, builder);
 
                 // AUTO_INCREMENT has priority over reference definitions.
-                if (onUpdateSql != null && !autoIncrement)
-                {
-                    builder
-                        .Append(" ON UPDATE ")
-                        .Append(onUpdateSql);
-                }
-
                 if (autoIncrement)
                 {
                     builder.Append(" AUTO_INCREMENT");
@@ -1196,6 +1189,12 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
                             model,
                             builder);
                     }
+                }
+                else if (onUpdateSql != null)
+                {
+                    builder
+                        .Append(" ON UPDATE ")
+                        .Append(onUpdateSql);
                 }
             }
             else
