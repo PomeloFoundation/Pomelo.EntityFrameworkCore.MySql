@@ -262,36 +262,6 @@ WHERE (
 """);
     }
 
-    public override async Task Parameter_collection_of_ints_Contains(bool async)
-    {
-        await base.Parameter_collection_of_ints_Contains(async);
-
-        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
-        {
-            AssertSql(
-"""
-SELECT `p`.`Id`, `p`.`Bool`, `p`.`Bools`, `p`.`DateTime`, `p`.`DateTimes`, `p`.`Enum`, `p`.`Enums`, `p`.`Int`, `p`.`Ints`, `p`.`NullableInt`, `p`.`NullableInts`, `p`.`NullableString`, `p`.`NullableStrings`, `p`.`String`, `p`.`Strings`
-FROM `PrimitiveCollectionsEntity` AS `p`
-WHERE `p`.`Int` IN (
-    SELECT `i`.`value`
-    FROM JSON_TABLE('[10,999]', '$[*]' COLUMNS (
-        `key` FOR ORDINALITY,
-        `value` int PATH '$[0]'
-    )) AS `i`
-)
-""");
-        }
-        else
-        {
-            AssertSql(
-"""
-SELECT `p`.`Id`, `p`.`Bool`, `p`.`Bools`, `p`.`DateTime`, `p`.`DateTimes`, `p`.`Enum`, `p`.`Enums`, `p`.`Int`, `p`.`Ints`, `p`.`NullableInt`, `p`.`NullableInts`, `p`.`NullableString`, `p`.`NullableStrings`, `p`.`String`, `p`.`Strings`
-FROM `PrimitiveCollectionsEntity` AS `p`
-WHERE `p`.`Int` IN (10, 999)
-""");
-        }
-    }
-
     public override async Task Parameter_collection_of_nullable_ints_Contains_int(bool async)
     {
         await base.Parameter_collection_of_nullable_ints_Contains_int(async);
@@ -378,36 +348,6 @@ WHERE EXISTS (
 SELECT `p`.`Id`, `p`.`Bool`, `p`.`Bools`, `p`.`DateTime`, `p`.`DateTimes`, `p`.`Enum`, `p`.`Enums`, `p`.`Int`, `p`.`Ints`, `p`.`NullableInt`, `p`.`NullableInts`, `p`.`NullableString`, `p`.`NullableStrings`, `p`.`String`, `p`.`Strings`
 FROM `PrimitiveCollectionsEntity` AS `p`
 WHERE `p`.`NullableString` IS NULL OR (`p`.`NullableString` = '999')
-""");
-        }
-    }
-
-    public override async Task Parameter_collection_of_strings_Contains_non_nullable_string(bool async)
-    {
-        await base.Parameter_collection_of_strings_Contains_non_nullable_string(async);
-
-        if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
-        {
-            AssertSql(
-"""
-SELECT `p`.`Id`, `p`.`Bool`, `p`.`Bools`, `p`.`DateTime`, `p`.`DateTimes`, `p`.`Enum`, `p`.`Enums`, `p`.`Int`, `p`.`Ints`, `p`.`NullableInt`, `p`.`NullableInts`, `p`.`NullableString`, `p`.`NullableStrings`, `p`.`String`, `p`.`Strings`
-FROM `PrimitiveCollectionsEntity` AS `p`
-WHERE `p`.`String` IN (
-    SELECT `s`.`value`
-    FROM JSON_TABLE('["10","999"]', '$[*]' COLUMNS (
-        `key` FOR ORDINALITY,
-        `value` longtext PATH '$[0]'
-    )) AS `s`
-)
-""");
-        }
-        else
-        {
-            AssertSql(
-"""
-SELECT `p`.`Id`, `p`.`Bool`, `p`.`Bools`, `p`.`DateTime`, `p`.`DateTimes`, `p`.`Enum`, `p`.`Enums`, `p`.`Int`, `p`.`Ints`, `p`.`NullableInt`, `p`.`NullableInts`, `p`.`NullableString`, `p`.`NullableStrings`, `p`.`String`, `p`.`Strings`
-FROM `PrimitiveCollectionsEntity` AS `p`
-WHERE `p`.`String` IN ('10', '999')
 """);
         }
     }

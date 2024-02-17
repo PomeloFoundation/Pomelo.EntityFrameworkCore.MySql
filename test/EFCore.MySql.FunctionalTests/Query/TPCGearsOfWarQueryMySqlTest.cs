@@ -3077,18 +3077,6 @@ WHERE `c`.`Location` LIKE '%Jacinto%'
 """);
     }
 
-    public override async Task Non_unicode_string_literals_is_used_for_non_unicode_column_with_concat(bool async)
-    {
-        await base.Non_unicode_string_literals_is_used_for_non_unicode_column_with_concat(async);
-
-        AssertSql(
-"""
-SELECT `c`.`Name`, `c`.`Location`, `c`.`Nation`
-FROM `Cities` AS `c`
-WHERE CONCAT(COALESCE(`c`.`Location`, ''), 'Added') LIKE '%Add%'
-""");
-    }
-
     public override void Include_on_GroupJoin_SelectMany_DefaultIfEmpty_with_coalesce_result1()
     {
         base.Include_on_GroupJoin_SelectMany_DefaultIfEmpty_with_coalesce_result1();

@@ -22,7 +22,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             typeof(LoggingRelationalTestBase<,>),
 
             // We have our own JSON support for now
-            typeof(JsonQueryAdHocTestBase),
             typeof(JsonQueryTestBase<>),
             typeof(JsonTypesRelationalTestBase),
             typeof(JsonTypesTestBase),
