@@ -417,23 +417,23 @@ ORDER BY `e`.`Key1`, `e`.`Key2`, `e`.`Key3`, `t`.`LeafId`, `t`.`CompositeId1`, `
         await base.Skip_navigation_of_type(async);
 
         AssertSql(
-$"""
+"""
 SELECT `e`.`Key1`, `e`.`Key2`, `e`.`Key3`, `t0`.`Id`, `t0`.`Name`, `t0`.`Number`, `t0`.`IsGreen`, `t0`.`Discriminator`, `t0`.`RootSkipSharedId`, `t0`.`CompositeKeySkipSharedKey1`, `t0`.`CompositeKeySkipSharedKey2`, `t0`.`CompositeKeySkipSharedKey3`
 FROM `EntityCompositeKeys` AS `e`
 LEFT JOIN (
     SELECT `t`.`Id`, `t`.`Name`, `t`.`Number`, `t`.`IsGreen`, `t`.`Discriminator`, `e0`.`RootSkipSharedId`, `e0`.`CompositeKeySkipSharedKey1`, `e0`.`CompositeKeySkipSharedKey2`, `e0`.`CompositeKeySkipSharedKey3`
     FROM `EntityCompositeKeyEntityRoot` AS `e0`
     INNER JOIN (
-        SELECT `r`.`Id`, `r`.`Name`, {MySqlTestHelpers.MySqlBug96947Workaround(@"NULL", "signed")} AS `Number`, {MySqlTestHelpers.MySqlBug96947Workaround(@"NULL", "signed")} AS `IsGreen`, {MySqlTestHelpers.MySqlBug96947Workaround(@"'EntityRoot'")} AS `Discriminator`
+        SELECT `r`.`Id`, `r`.`Name`, NULL AS `Number`, NULL AS `IsGreen`, 'EntityRoot' AS `Discriminator`
         FROM `Roots` AS `r`
         UNION ALL
-        SELECT `b`.`Id`, `b`.`Name`, `b`.`Number`, {MySqlTestHelpers.MySqlBug96947Workaround(@"NULL", "signed")} AS `IsGreen`, {MySqlTestHelpers.MySqlBug96947Workaround(@"'EntityBranch'")} AS `Discriminator`
+        SELECT `b`.`Id`, `b`.`Name`, `b`.`Number`, NULL AS `IsGreen`, 'EntityBranch' AS `Discriminator`
         FROM `Branches` AS `b`
         UNION ALL
         SELECT `l`.`Id`, `l`.`Name`, `l`.`Number`, `l`.`IsGreen`, 'EntityLeaf' AS `Discriminator`
         FROM `Leaves` AS `l`
         UNION ALL
-        SELECT `l0`.`Id`, `l0`.`Name`, {MySqlTestHelpers.MySqlBug96947Workaround(@"NULL", "signed")} AS `Number`, {MySqlTestHelpers.MySqlBug96947Workaround(@"NULL", "signed")} AS `IsGreen`, {MySqlTestHelpers.MySqlBug96947Workaround(@"'EntityLeaf2'")} AS `Discriminator`
+        SELECT `l0`.`Id`, `l0`.`Name`, NULL AS `Number`, NULL AS `IsGreen`, 'EntityLeaf2' AS `Discriminator`
         FROM `Leaf2s` AS `l0`
     ) AS `t` ON `e0`.`RootSkipSharedId` = `t`.`Id`
     WHERE `t`.`Discriminator` = 'EntityLeaf'
@@ -710,23 +710,23 @@ ORDER BY `e`.`Id`
         await base.Include_skip_navigation(async);
 
         AssertSql(
-$"""
+"""
 SELECT `e`.`Key1`, `e`.`Key2`, `e`.`Key3`, `e`.`Name`, `t0`.`RootSkipSharedId`, `t0`.`CompositeKeySkipSharedKey1`, `t0`.`CompositeKeySkipSharedKey2`, `t0`.`CompositeKeySkipSharedKey3`, `t0`.`Id`, `t0`.`Name`, `t0`.`Number`, `t0`.`Slumber`, `t0`.`IsGreen`, `t0`.`IsBrown`, `t0`.`Discriminator`
 FROM `EntityCompositeKeys` AS `e`
 LEFT JOIN (
     SELECT `e0`.`RootSkipSharedId`, `e0`.`CompositeKeySkipSharedKey1`, `e0`.`CompositeKeySkipSharedKey2`, `e0`.`CompositeKeySkipSharedKey3`, `t`.`Id`, `t`.`Name`, `t`.`Number`, `t`.`Slumber`, `t`.`IsGreen`, `t`.`IsBrown`, `t`.`Discriminator`
     FROM `EntityCompositeKeyEntityRoot` AS `e0`
     INNER JOIN (
-        SELECT `r`.`Id`, `r`.`Name`, {MySqlTestHelpers.MySqlBug96947Workaround(@"NULL", "signed")} AS `Number`, {MySqlTestHelpers.MySqlBug96947Workaround(@"NULL", "signed")} AS `Slumber`, {MySqlTestHelpers.MySqlBug96947Workaround(@"NULL", "signed")} AS `IsGreen`, {MySqlTestHelpers.MySqlBug96947Workaround(@"NULL", "signed")} AS `IsBrown`, {MySqlTestHelpers.MySqlBug96947Workaround(@"'EntityRoot'")} AS `Discriminator`
+        SELECT `r`.`Id`, `r`.`Name`, NULL AS `Number`, NULL AS `Slumber`, NULL AS `IsGreen`, NULL AS `IsBrown`, 'EntityRoot' AS `Discriminator`
         FROM `Roots` AS `r`
         UNION ALL
-        SELECT `b`.`Id`, `b`.`Name`, `b`.`Number`, {MySqlTestHelpers.MySqlBug96947Workaround(@"NULL", "signed")} AS `Slumber`, {MySqlTestHelpers.MySqlBug96947Workaround(@"NULL", "signed")} AS `IsGreen`, {MySqlTestHelpers.MySqlBug96947Workaround(@"NULL", "signed")} AS `IsBrown`, {MySqlTestHelpers.MySqlBug96947Workaround(@"'EntityBranch'")} AS `Discriminator`
+        SELECT `b`.`Id`, `b`.`Name`, `b`.`Number`, NULL AS `Slumber`, NULL AS `IsGreen`, NULL AS `IsBrown`, 'EntityBranch' AS `Discriminator`
         FROM `Branches` AS `b`
         UNION ALL
         SELECT `l`.`Id`, `l`.`Name`, `l`.`Number`, NULL AS `Slumber`, `l`.`IsGreen`, NULL AS `IsBrown`, 'EntityLeaf' AS `Discriminator`
         FROM `Leaves` AS `l`
         UNION ALL
-        SELECT `l0`.`Id`, `l0`.`Name`, {MySqlTestHelpers.MySqlBug96947Workaround(@"NULL", "signed")} AS `Number`, `l0`.`Slumber`, {MySqlTestHelpers.MySqlBug96947Workaround(@"NULL", "signed")} AS `IsGreen`, `l0`.`IsBrown`, {MySqlTestHelpers.MySqlBug96947Workaround(@"'EntityLeaf2'")} AS `Discriminator`
+        SELECT `l0`.`Id`, `l0`.`Name`, NULL AS `Number`, `l0`.`Slumber`, NULL AS `IsGreen`, `l0`.`IsBrown`, 'EntityLeaf2' AS `Discriminator`
         FROM `Leaf2s` AS `l0`
     ) AS `t` ON `e0`.`RootSkipSharedId` = `t`.`Id`
 ) AS `t0` ON ((`e`.`Key1` = `t0`.`CompositeKeySkipSharedKey1`) AND (`e`.`Key2` = `t0`.`CompositeKeySkipSharedKey2`)) AND (`e`.`Key3` = `t0`.`CompositeKeySkipSharedKey3`)
@@ -2259,7 +2259,7 @@ LEFT JOIN (
         await base.Skip_navigation_of_type_unidirectional(async);
 
         AssertSql(
-$"""
+"""
 SELECT `u`.`Key1`, `u`.`Key2`, `u`.`Key3`, `t0`.`Id`, `t0`.`Name`, `t0`.`Number`, `t0`.`IsGreen`, `t0`.`Discriminator`, `t0`.`RootSkipSharedId`, `t0`.`UnidirectionalEntityCompositeKeyKey1`, `t0`.`UnidirectionalEntityCompositeKeyKey2`, `t0`.`UnidirectionalEntityCompositeKeyKey3`
 FROM `UnidirectionalEntityCompositeKeys` AS `u`
 LEFT JOIN (
@@ -2272,7 +2272,7 @@ LEFT JOIN (
         SELECT `u2`.`Id`, `u2`.`Name`, `u2`.`Number`, NULL AS `IsGreen`, 'UnidirectionalEntityBranch' AS `Discriminator`
         FROM `UnidirectionalBranches` AS `u2`
         UNION ALL
-        SELECT `u3`.`Id`, `u3`.`Name`, `u3`.`Number`, `u3`.`IsGreen`, {MySqlTestHelpers.MySqlBug96947Workaround(@"'UnidirectionalEntityLeaf'")} AS `Discriminator`
+        SELECT `u3`.`Id`, `u3`.`Name`, `u3`.`Number`, `u3`.`IsGreen`, 'UnidirectionalEntityLeaf' AS `Discriminator`
         FROM `UnidirectionalLeaves` AS `u3`
     ) AS `t` ON `u0`.`RootSkipSharedId` = `t`.`Id`
     WHERE `t`.`Discriminator` = 'UnidirectionalEntityLeaf'
@@ -2448,7 +2448,7 @@ ORDER BY `u`.`Id`, `t`.`LeftId`, `t`.`RightId`
         await base.Include_skip_navigation_unidirectional(async);
 
         AssertSql(
-$"""
+"""
 SELECT `u`.`Key1`, `u`.`Key2`, `u`.`Key3`, `u`.`Name`, `t0`.`RootSkipSharedId`, `t0`.`UnidirectionalEntityCompositeKeyKey1`, `t0`.`UnidirectionalEntityCompositeKeyKey2`, `t0`.`UnidirectionalEntityCompositeKeyKey3`, `t0`.`Id`, `t0`.`Name`, `t0`.`Number`, `t0`.`IsGreen`, `t0`.`Discriminator`
 FROM `UnidirectionalEntityCompositeKeys` AS `u`
 LEFT JOIN (
@@ -2461,7 +2461,7 @@ LEFT JOIN (
         SELECT `u2`.`Id`, `u2`.`Name`, `u2`.`Number`, NULL AS `IsGreen`, 'UnidirectionalEntityBranch' AS `Discriminator`
         FROM `UnidirectionalBranches` AS `u2`
         UNION ALL
-        SELECT `u3`.`Id`, `u3`.`Name`, `u3`.`Number`, `u3`.`IsGreen`, {MySqlTestHelpers.MySqlBug96947Workaround(@"'UnidirectionalEntityLeaf'")} AS `Discriminator`
+        SELECT `u3`.`Id`, `u3`.`Name`, `u3`.`Number`, `u3`.`IsGreen`, 'UnidirectionalEntityLeaf' AS `Discriminator`
         FROM `UnidirectionalLeaves` AS `u3`
     ) AS `t` ON `u0`.`RootSkipSharedId` = `t`.`Id`
 ) AS `t0` ON ((`u`.`Key1` = `t0`.`UnidirectionalEntityCompositeKeyKey1`) AND (`u`.`Key2` = `t0`.`UnidirectionalEntityCompositeKeyKey2`)) AND (`u`.`Key3` = `t0`.`UnidirectionalEntityCompositeKeyKey3`)

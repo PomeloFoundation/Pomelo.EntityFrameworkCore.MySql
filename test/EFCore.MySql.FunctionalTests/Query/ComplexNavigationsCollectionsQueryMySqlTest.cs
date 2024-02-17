@@ -883,22 +883,24 @@ ORDER BY `l`.`Id`, `t0`.`Id`, `l1`.`Id`");
             await base.Select_subquery_single_nested_subquery2(async);
 
             AssertSql(
-                $@"SELECT `l`.`Id`, `t1`.`Id`, `t1`.`Id0`, `t1`.`Id1`, `t1`.`c`
-FROM `LevelOne` AS `l`
-LEFT JOIN (
-    SELECT `l0`.`Id`, `t0`.`Id` AS `Id0`, `l1`.`Id` AS `Id1`, `t0`.`c`, `l0`.`OneToMany_Optional_Inverse2Id`
-    FROM `LevelTwo` AS `l0`
-    LEFT JOIN (
-        SELECT `t`.`c`, `t`.`Id`, `t`.`OneToMany_Optional_Inverse3Id`
-        FROM (
-            SELECT {(AppConfig.ServerVersion.Supports.MySqlBug96947Workaround ? "CAST(1 AS signed)" : "1")} AS `c`, `l2`.`Id`, `l2`.`OneToMany_Optional_Inverse3Id`, ROW_NUMBER() OVER(PARTITION BY `l2`.`OneToMany_Optional_Inverse3Id` ORDER BY `l2`.`Id`) AS `row`
-            FROM `LevelThree` AS `l2`
-        ) AS `t`
-        WHERE `t`.`row` <= 1
-    ) AS `t0` ON `l0`.`Id` = `t0`.`OneToMany_Optional_Inverse3Id`
-    LEFT JOIN `LevelFour` AS `l1` ON `t0`.`Id` = `l1`.`OneToMany_Optional_Inverse4Id`
-) AS `t1` ON `l`.`Id` = `t1`.`OneToMany_Optional_Inverse2Id`
-ORDER BY `l`.`Id`, `t1`.`Id`, `t1`.`Id0`, `t1`.`Id1`");
+                """
+ SELECT `l`.`Id`, `t1`.`Id`, `t1`.`Id0`, `t1`.`Id1`, `t1`.`c`
+ FROM `LevelOne` AS `l`
+ LEFT JOIN (
+     SELECT `l0`.`Id`, `t0`.`Id` AS `Id0`, `l1`.`Id` AS `Id1`, `t0`.`c`, `l0`.`OneToMany_Optional_Inverse2Id`
+     FROM `LevelTwo` AS `l0`
+     LEFT JOIN (
+         SELECT `t`.`c`, `t`.`Id`, `t`.`OneToMany_Optional_Inverse3Id`
+         FROM (
+             SELECT 1 AS `c`, `l2`.`Id`, `l2`.`OneToMany_Optional_Inverse3Id`, ROW_NUMBER() OVER(PARTITION BY `l2`.`OneToMany_Optional_Inverse3Id` ORDER BY `l2`.`Id`) AS `row`
+             FROM `LevelThree` AS `l2`
+         ) AS `t`
+         WHERE `t`.`row` <= 1
+     ) AS `t0` ON `l0`.`Id` = `t0`.`OneToMany_Optional_Inverse3Id`
+     LEFT JOIN `LevelFour` AS `l1` ON `t0`.`Id` = `l1`.`OneToMany_Optional_Inverse4Id`
+ ) AS `t1` ON `l`.`Id` = `t1`.`OneToMany_Optional_Inverse2Id`
+ ORDER BY `l`.`Id`, `t1`.`Id`, `t1`.`Id0`, `t1`.`Id1`
+ """);
         }
 
         public override async Task Filtered_include_basic_Where(bool async)

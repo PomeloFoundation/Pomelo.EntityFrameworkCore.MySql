@@ -1,13 +1,10 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Bugs
 {
-    [SupportedServerVersionCondition(nameof(ServerVersionSupport.MySqlBug96947Workaround))]
     public class MySqlBug96947 : RawSqlTestWithFixture<MySqlBug96947.FixtureClass>
     {
         public MySqlBug96947(FixtureClass fixture, ITestOutputHelper testOutputHelper)
