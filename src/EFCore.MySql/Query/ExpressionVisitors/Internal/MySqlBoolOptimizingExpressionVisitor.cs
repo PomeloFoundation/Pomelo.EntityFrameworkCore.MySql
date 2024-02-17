@@ -98,7 +98,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         }
 
         protected override Expression VisitDelete(DeleteExpression deleteExpression)
-            => deleteExpression.Update((SelectExpression)Visit(deleteExpression.SelectExpression));
+            => deleteExpression.Update(deleteExpression.Table, (SelectExpression)Visit(deleteExpression.SelectExpression));
 
         protected override Expression VisitDistinct(DistinctExpression distinctExpression)
         {

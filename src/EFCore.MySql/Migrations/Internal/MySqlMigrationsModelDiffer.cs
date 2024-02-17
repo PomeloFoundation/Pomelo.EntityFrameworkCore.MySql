@@ -32,11 +32,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         public MySqlMigrationsModelDiffer(
             IRelationalTypeMappingSource typeMappingSource,
             IMigrationsAnnotationProvider migrationsAnnotationProvider,
+            IRelationalAnnotationProvider relationalAnnotationProvider,
             IRowIdentityMapFactory rowIdentityMapFactory,
             CommandBatchPreparerDependencies commandBatchPreparerDependencies)
             : base(
                 typeMappingSource,
                 migrationsAnnotationProvider,
+                relationalAnnotationProvider,
                 rowIdentityMapFactory,
                 commandBatchPreparerDependencies)
         {

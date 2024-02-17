@@ -7,7 +7,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
@@ -29,16 +31,18 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
     private readonly IMySqlOptions _options;
     private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
     private readonly IRelationalTypeMappingSource _typeMappingSource;
+    private readonly SqlAliasManager _sqlAliasManager;
 
     public MySqlQueryableMethodTranslatingExpressionVisitor(
         QueryableMethodTranslatingExpressionVisitorDependencies dependencies,
         RelationalQueryableMethodTranslatingExpressionVisitorDependencies relationalDependencies,
-        QueryCompilationContext queryCompilationContext,
+        RelationalQueryCompilationContext relationalQueryCompilationContext,
         IMySqlOptions options)
-        : base(dependencies, relationalDependencies, queryCompilationContext)
+        : base(dependencies, relationalDependencies, relationalQueryCompilationContext)
     {
         _sqlExpressionFactory = (MySqlSqlExpressionFactory)relationalDependencies.SqlExpressionFactory;
         _typeMappingSource = relationalDependencies.TypeMappingSource;
+        _sqlAliasManager = relationalQueryCompilationContext.SqlAliasManager;
         _options = options;
     }
 
@@ -62,19 +66,20 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
                    Orderings:
                    [
                        {
-                           Expression: ColumnExpression { Name: "key", Table: var orderingTable } orderingColumn,
+                           Expression: ColumnExpression { Name: "key", TableAlias: var orderingTable } orderingColumn,
                            IsAscending: true
                        }
                    ]
                }
-               && orderingTable == mainTable
-               && IsJsonEachKeyColumn(orderingColumn);
+               && orderingTable == mainTable.Alias
+               && IsJsonEachKeyColumn(selectExpression, orderingColumn);
 
-        bool IsJsonEachKeyColumn(ColumnExpression orderingColumn)
-            => orderingColumn.Table is MySqlJsonTableExpression
-               || (orderingColumn.Table is SelectExpression subquery
-                   && subquery.Projection.FirstOrDefault(p => p.Alias == "key")?.Expression is ColumnExpression projectedColumn
-                   && IsJsonEachKeyColumn(projectedColumn));
+        bool IsJsonEachKeyColumn(SelectExpression selectExpression, ColumnExpression orderingColumn)
+            => selectExpression.Tables.FirstOrDefault(t => t.Alias == orderingColumn.TableAlias)?.UnwrapJoin() is TableExpressionBase table
+               && (table is MySqlJsonTableExpression
+                   || (table is SelectExpression subquery
+                       && subquery.Projection.FirstOrDefault(p => p.Alias == "key")?.Expression is ColumnExpression projectedColumn
+                       && IsJsonEachKeyColumn(subquery, projectedColumn)));
     }
 
     protected override bool IsValidSelectExpressionForExecuteDelete(
@@ -97,11 +102,7 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
                 var projectionBindingExpression = (ProjectionBindingExpression)shaper.ValueBufferExpression;
                 var entityProjectionExpression = (StructuralTypeProjectionExpression)selectExpression.GetProjection(projectionBindingExpression);
                 var column = entityProjectionExpression.BindProperty(shaper.StructuralType.GetProperties().First());
-                table = column.Table;
-                if (table is JoinExpressionBase joinExpressionBase)
-                {
-                    table = joinExpressionBase.Table;
-                }
+                table = selectExpression.GetTable(column).UnwrapJoin();
             }
 
             if (table is TableExpression te)
@@ -178,7 +179,7 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
                         typeof(int)),
                     _sqlExpressionFactory.Constant(0));
 
-            return source.UpdateQueryExpression(_sqlExpressionFactory.Select(translation));
+            return source.UpdateQueryExpression(new SelectExpression(translation, _sqlAliasManager));
         }
 
         return base.TranslateAny(source, predicate);
@@ -206,7 +207,7 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
                 Limit: null,
                 Offset: null
             } selectExpression
-            && orderingColumn.Table == jsonEachExpression
+            && orderingColumn.TableAlias == jsonEachExpression.Alias
             && TranslateExpression(index) is { } translatedIndex)
         {
             // Index on JSON array
@@ -238,7 +239,7 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
                         translation, _sqlExpressionFactory, projectionColumn.TypeMapping, projectionColumn.IsNullable);
                 }
 
-                return source.UpdateQueryExpression(_sqlExpressionFactory.Select(translation));
+                return source.UpdateQueryExpression(new SelectExpression(translation, _sqlAliasManager));
             }
         }
 
@@ -309,21 +310,21 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
         // which case we only have the CLR type (note that we cannot produce different SQLs based on the nullability of an *element* in
         // a parameter collection - our caching mechanism only supports varying by the nullability of the parameter itself (i.e. the
         // collection).
-        // TODO: if property is non-null, GetElementType() should never be null, but we have #31469 for shadow properties
-        var isElementNullable = property?.GetElementType() is null
-            ? elementClrType.IsNullableType()
-            : property.GetElementType()!.IsNullable;
+        var isElementNullable = property?.GetElementType()!.IsNullable;
+
+        var keyColumnTypeMapping = _typeMappingSource.FindMapping(typeof(int))!;
 
 #pragma warning disable EF1001 // Internal EF Core API usage.
         var selectExpression = new SelectExpression(
-            jsonTableExpression,
-            columnName: "value",
-            columnType: elementClrType,
-            columnTypeMapping: elementTypeMapping,
-            isElementNullable,
-            identifierColumnName: "key",
-            identifierColumnType: typeof(uint),
-            identifierColumnTypeMapping: _typeMappingSource.FindMapping(typeof(uint)));
+            [jsonTableExpression],
+            new ColumnExpression(
+                "value",
+                tableAlias,
+                elementClrType.UnwrapNullableType(),
+                elementTypeMapping,
+                isElementNullable ?? elementClrType.IsNullableType()),
+            identifier: [(new ColumnExpression("key", tableAlias, typeof(int), keyColumnTypeMapping, nullable: false), keyColumnTypeMapping.Comparer)],
+            _sqlAliasManager);
 #pragma warning restore EF1001 // Internal EF Core API usage.
 
         // JSON_TABLE() doesn't guarantee the ordering of the elements coming out; when using JSON_TABLE() without COLUMNS, a [key] column is returned
@@ -360,7 +361,7 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
 
     protected override Expression ApplyInferredTypeMappings(
         Expression expression,
-        IReadOnlyDictionary<(TableExpressionBase, string), RelationalTypeMapping> inferredTypeMappings)
+        IReadOnlyDictionary<(string, string), RelationalTypeMapping> inferredTypeMappings)
         => new MySqlInferredTypeMappingApplier(
             RelationalDependencies.Model, _typeMappingSource, _sqlExpressionFactory, inferredTypeMappings).Visit(expression);
 
@@ -384,7 +385,7 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
     {
         private readonly IRelationalTypeMappingSource _typeMappingSource;
         private readonly ISqlExpressionFactory _sqlExpressionFactory;
-        private Dictionary<TableExpressionBase, RelationalTypeMapping> _currentSelectInferredTypeMappings;
+        private Dictionary<string, RelationalTypeMapping> _currentSelectInferredTypeMappings;
 
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -396,7 +397,7 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
             IModel model,
             IRelationalTypeMappingSource typeMappingSource,
             ISqlExpressionFactory sqlExpressionFactory,
-            IReadOnlyDictionary<(TableExpressionBase, string), RelationalTypeMapping> inferredTypeMappings)
+            IReadOnlyDictionary<(string, string), RelationalTypeMapping> inferredTypeMappings)
             : base(model, sqlExpressionFactory, inferredTypeMappings)
         {
             (_typeMappingSource, _sqlExpressionFactory) = (typeMappingSource, sqlExpressionFactory);
@@ -413,7 +414,7 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
             switch (expression)
             {
                 case MySqlJsonTableExpression { Name: "JSON_TABLE", Schema: null, IsBuiltIn: true } jsonTableExpression
-                    when TryGetInferredTypeMapping(jsonTableExpression, "value", out var typeMapping):
+                    when TryGetInferredTypeMapping(jsonTableExpression.Alias, "value", out var typeMapping):
                     return ApplyTypeMappingsOnJsonTableExpression(jsonTableExpression, typeMapping);
 
                 // Above, we applied the type mapping the the parameter that JSON_TABLE accepts as an argument.
@@ -422,20 +423,20 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
                 // in the immediate SelectExpression, and continue visiting down (see ColumnExpression visitation below).
                 case SelectExpression selectExpression:
                 {
-                    Dictionary<TableExpressionBase, RelationalTypeMapping> previousSelectInferredTypeMappings = null;
+                    Dictionary<string, RelationalTypeMapping> previousSelectInferredTypeMappings = null;
 
                     foreach (var table in selectExpression.Tables)
                     {
                         if (table is TableValuedFunctionExpression { Name: "JSON_TABLE", Schema: null, IsBuiltIn: true } jsonTableExpression
-                            && TryGetInferredTypeMapping(jsonTableExpression, "value", out var inferredTypeMapping))
+                            && TryGetInferredTypeMapping(jsonTableExpression.Alias, "value", out var inferredTypeMapping))
                         {
                             if (previousSelectInferredTypeMappings is null)
                             {
                                 previousSelectInferredTypeMappings = _currentSelectInferredTypeMappings;
-                                _currentSelectInferredTypeMappings = new Dictionary<TableExpressionBase, RelationalTypeMapping>();
+                                _currentSelectInferredTypeMappings = new Dictionary<string, RelationalTypeMapping>();
                             }
 
-                            _currentSelectInferredTypeMappings![jsonTableExpression] = inferredTypeMapping;
+                            _currentSelectInferredTypeMappings![jsonTableExpression.Alias] = inferredTypeMapping;
                         }
                     }
 
@@ -450,7 +451,7 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
                 // opposed to parameter collections, where the type mapping needs to be inferred). This is in order to apply SQL conversion
                 // logic later in the process, see note in TranslateCollection.
                 case ColumnExpression { Name: "value" } columnExpression
-                    when _currentSelectInferredTypeMappings?.TryGetValue(columnExpression.Table, out var inferredTypeMapping) is true:
+                    when _currentSelectInferredTypeMappings?.TryGetValue(columnExpression.TableAlias, out var inferredTypeMapping) is true:
                     return ApplyJsonSqlConversion(
                         columnExpression.ApplyTypeMapping(inferredTypeMapping),
                         _sqlExpressionFactory,

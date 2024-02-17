@@ -43,5 +43,5 @@ public class MySqlQueryableMethodTranslatingExpressionVisitorFactory : IQueryabl
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public virtual QueryableMethodTranslatingExpressionVisitor Create(QueryCompilationContext queryCompilationContext)
-        => new MySqlQueryableMethodTranslatingExpressionVisitor(Dependencies, RelationalDependencies, queryCompilationContext, _options);
+        => new MySqlQueryableMethodTranslatingExpressionVisitor(Dependencies, RelationalDependencies, (MySqlQueryCompilationContext)queryCompilationContext, _options);
 }

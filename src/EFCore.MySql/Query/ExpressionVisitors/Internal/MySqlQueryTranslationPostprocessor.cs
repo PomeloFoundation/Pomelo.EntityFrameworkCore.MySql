@@ -16,7 +16,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         public MySqlQueryTranslationPostprocessor(
             QueryTranslationPostprocessorDependencies dependencies,
             RelationalQueryTranslationPostprocessorDependencies relationalDependencies,
-            QueryCompilationContext queryCompilationContext,
+            MySqlQueryCompilationContext queryCompilationContext,
             IMySqlOptions options,
             MySqlSqlExpressionFactory sqlExpressionFactory)
             : base(dependencies, relationalDependencies, queryCompilationContext)
