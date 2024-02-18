@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -66,18 +66,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     .OrderBy(e => e.Name) // <-- fix
                     .Take(1));
 
-            AssertSql(
-                @"@__p_0='1'
+        AssertSql(
+"""
+@__p_0='1'
 
-SELECT `t`.`Name`
+SELECT `l1`.`Name`
 FROM `Level1` AS `l`
 INNER JOIN (
     SELECT `l0`.`Level2_Name` AS `Name`, `l0`.`OneToMany_Optional_Inverse2Id`
     FROM `Level1` AS `l0`
     WHERE (`l0`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`l0`.`Level1_Required_Id` IS NOT NULL)) AND `l0`.`OneToMany_Required_Inverse2Id` IS NOT NULL
-) AS `t` ON `l`.`Id` = `t`.`OneToMany_Optional_Inverse2Id`
-ORDER BY `t`.`Name`
-LIMIT @__p_0");
+) AS `l1` ON `l`.`Id` = `l1`.`OneToMany_Optional_Inverse2Id`
+ORDER BY `l1`.`Name`
+LIMIT @__p_0
+""");
         }
 
         public override async Task Method_call_on_optional_navigation_translates_to_null_conditional_properly_for_arguments(bool async)
@@ -92,8 +94,8 @@ LEFT JOIN (
     SELECT `l0`.`Level1_Optional_Id`, `l0`.`Level2_Name`
     FROM `Level1` AS `l0`
     WHERE (`l0`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`l0`.`Level1_Required_Id` IS NOT NULL)) AND `l0`.`OneToMany_Required_Inverse2Id` IS NOT NULL
-) AS `t` ON `l`.`Id` = `t`.`Level1_Optional_Id`
-WHERE `t`.`Level2_Name` IS NOT NULL AND (LEFT(`t`.`Level2_Name`, CHAR_LENGTH(`t`.`Level2_Name`)) = `t`.`Level2_Name`)
+) AS `l1` ON `l`.`Id` = `l1`.`Level1_Optional_Id`
+WHERE `l1`.`Level2_Name` IS NOT NULL AND (LEFT(`l1`.`Level2_Name`, CHAR_LENGTH(`l1`.`Level2_Name`)) = `l1`.`Level2_Name`)
 """);
         }
 

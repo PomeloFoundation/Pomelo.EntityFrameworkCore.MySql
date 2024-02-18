@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
@@ -40,9 +40,11 @@ FROM `Orders` AS `o`");
         {
             await base.Select_datetime_month_component(async);
 
-            AssertSql(
-                @"SELECT EXTRACT(month FROM `o`.`OrderDate`)
-FROM `Orders` AS `o`");
+        AssertSql(
+"""
+SELECT EXTRACT(month FROM `o`.`OrderDate`)
+FROM `Orders` AS `o`
+""");
         }
 
         [ConditionalTheory]

@@ -80,11 +80,12 @@ LIMIT @__p_0");
             await Assert.ThrowsAsync<EqualException>(
                 async () => await base.Nested_SelectMany_correlated_with_join_table_correctly_translated_to_apply(async));
 
-            AssertSql(
-                @"SELECT `t0`.`l1Name`, `t0`.`l2Name`, `t0`.`l3Name`
+        AssertSql(
+"""
+SELECT `s0`.`l1Name`, `s0`.`l2Name`, `s0`.`l3Name`
 FROM `LevelOne` AS `l`
 LEFT JOIN LATERAL (
-    SELECT `t`.`l1Name`, `t`.`l2Name`, `t`.`l3Name`
+    SELECT `s`.`l1Name`, `s`.`l2Name`, `s`.`l3Name`
     FROM `LevelTwo` AS `l0`
     LEFT JOIN `LevelThree` AS `l1` ON `l0`.`Id` = `l1`.`Id`
     JOIN LATERAL (
@@ -92,9 +93,10 @@ LEFT JOIN LATERAL (
         FROM `LevelFour` AS `l2`
         LEFT JOIN `LevelThree` AS `l3` ON `l2`.`OneToOne_Optional_PK_Inverse4Id` = `l3`.`Id`
         WHERE `l1`.`Id` IS NOT NULL AND (`l1`.`Id` = `l2`.`OneToMany_Optional_Inverse4Id`)
-    ) AS `t` ON TRUE
+    ) AS `s` ON TRUE
     WHERE `l`.`Id` = `l0`.`OneToMany_Optional_Inverse2Id`
-) AS `t0` ON TRUE");
+) AS `s0` ON TRUE
+""");
         }
 
         public override async Task Method_call_on_optional_navigation_translates_to_null_conditional_properly_for_arguments(bool async)

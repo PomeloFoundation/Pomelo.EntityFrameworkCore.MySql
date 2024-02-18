@@ -108,7 +108,8 @@ SET `b`.`CreationTimestamp` = TIMESTAMP '2020-01-01 00:00:00'
 
         AssertSql(
 """
-UPDATE `BlogsPart1` AS `b0`
+UPDATE `Blogs` AS `b`
+INNER JOIN `BlogsPart1` AS `b0` ON `b`.`Id` = `b0`.`Id`
 SET `b0`.`Rating` = CHAR_LENGTH(`b0`.`Title`),
     `b0`.`Title` = CAST(`b0`.`Rating` AS char)
 """);

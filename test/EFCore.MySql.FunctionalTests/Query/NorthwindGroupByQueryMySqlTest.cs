@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
@@ -27,96 +27,106 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             await base.AsEnumerable_in_subquery_for_GroupBy(async);
 
-            AssertSql(
-                @"SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `t2`.`OrderID`, `t2`.`CustomerID`, `t2`.`EmployeeID`, `t2`.`OrderDate`, `t2`.`CustomerID0`
+        AssertSql(
+"""
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `s`.`OrderID`, `s`.`CustomerID`, `s`.`EmployeeID`, `s`.`OrderDate`, `s`.`CustomerID0`
 FROM `Customers` AS `c`
 LEFT JOIN LATERAL (
-    SELECT `t0`.`OrderID`, `t0`.`CustomerID`, `t0`.`EmployeeID`, `t0`.`OrderDate`, `t`.`CustomerID` AS `CustomerID0`
+    SELECT `o3`.`OrderID`, `o3`.`CustomerID`, `o3`.`EmployeeID`, `o3`.`OrderDate`, `o1`.`CustomerID` AS `CustomerID0`
     FROM (
         SELECT `o`.`CustomerID`
         FROM `Orders` AS `o`
         WHERE `o`.`CustomerID` = `c`.`CustomerID`
         GROUP BY `o`.`CustomerID`
-    ) AS `t`
+    ) AS `o1`
     LEFT JOIN (
-        SELECT `t1`.`OrderID`, `t1`.`CustomerID`, `t1`.`EmployeeID`, `t1`.`OrderDate`
+        SELECT `o2`.`OrderID`, `o2`.`CustomerID`, `o2`.`EmployeeID`, `o2`.`OrderDate`
         FROM (
             SELECT `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`, ROW_NUMBER() OVER(PARTITION BY `o0`.`CustomerID` ORDER BY `o0`.`OrderDate` DESC) AS `row`
             FROM `Orders` AS `o0`
             WHERE `o0`.`CustomerID` = `c`.`CustomerID`
-        ) AS `t1`
-        WHERE `t1`.`row` <= 1
-    ) AS `t0` ON `t`.`CustomerID` = `t0`.`CustomerID`
-) AS `t2` ON TRUE
+        ) AS `o2`
+        WHERE `o2`.`row` <= 1
+    ) AS `o3` ON `o1`.`CustomerID` = `o3`.`CustomerID`
+) AS `s` ON TRUE
 WHERE `c`.`CustomerID` LIKE 'F%'
-ORDER BY `c`.`CustomerID`, `t2`.`CustomerID0`");
+ORDER BY `c`.`CustomerID`, `s`.`CustomerID0`
+""");
         }
 
         public override async Task Complex_query_with_groupBy_in_subquery1(bool async)
         {
             await base.Complex_query_with_groupBy_in_subquery1(async);
 
-            AssertSql(
-                @"SELECT `c`.`CustomerID`, `t`.`Sum`, `t`.`CustomerID`
+        AssertSql(
+"""
+SELECT `c`.`CustomerID`, `o0`.`Sum`, `o0`.`CustomerID`
 FROM `Customers` AS `c`
 LEFT JOIN LATERAL (
     SELECT COALESCE(SUM(`o`.`OrderID`), 0) AS `Sum`, `o`.`CustomerID`
     FROM `Orders` AS `o`
     WHERE `c`.`CustomerID` = `o`.`CustomerID`
     GROUP BY `o`.`CustomerID`
-) AS `t` ON TRUE
-ORDER BY `c`.`CustomerID`");
+) AS `o0` ON TRUE
+ORDER BY `c`.`CustomerID`
+""");
         }
 
         public override async Task Complex_query_with_groupBy_in_subquery2(bool async)
         {
             await base.Complex_query_with_groupBy_in_subquery2(async);
 
-            AssertSql(
-                @"SELECT `c`.`CustomerID`, `t`.`Max`, `t`.`Sum`, `t`.`CustomerID`
+        AssertSql(
+"""
+SELECT `c`.`CustomerID`, `o0`.`Max`, `o0`.`Sum`, `o0`.`CustomerID`
 FROM `Customers` AS `c`
 LEFT JOIN LATERAL (
     SELECT MAX(CHAR_LENGTH(`o`.`CustomerID`)) AS `Max`, COALESCE(SUM(`o`.`OrderID`), 0) AS `Sum`, `o`.`CustomerID`
     FROM `Orders` AS `o`
     WHERE `c`.`CustomerID` = `o`.`CustomerID`
     GROUP BY `o`.`CustomerID`
-) AS `t` ON TRUE
-ORDER BY `c`.`CustomerID`");
+) AS `o0` ON TRUE
+ORDER BY `c`.`CustomerID`
+""");
         }
 
         public override async Task Complex_query_with_groupBy_in_subquery3(bool async)
         {
             await base.Complex_query_with_groupBy_in_subquery3(async);
 
-            AssertSql(
-                @"SELECT `c`.`CustomerID`, `t`.`Max`, `t`.`Sum`, `t`.`CustomerID`
+        AssertSql(
+"""
+SELECT `c`.`CustomerID`, `o0`.`Max`, `o0`.`Sum`, `o0`.`CustomerID`
 FROM `Customers` AS `c`
 LEFT JOIN LATERAL (
     SELECT MAX(CHAR_LENGTH(`o`.`CustomerID`)) AS `Max`, COALESCE(SUM(`o`.`OrderID`), 0) AS `Sum`, `o`.`CustomerID`
     FROM `Orders` AS `o`
     GROUP BY `o`.`CustomerID`
-) AS `t` ON TRUE
-ORDER BY `c`.`CustomerID`");
+) AS `o0` ON TRUE
+ORDER BY `c`.`CustomerID`
+""");
         }
 
         public override async Task Select_nested_collection_with_groupby(bool async)
         {
             await base.Select_nested_collection_with_groupby(async);
 
-            AssertSql(
-                @"SELECT EXISTS (
+        AssertSql(
+"""
+SELECT EXISTS (
     SELECT 1
     FROM `Orders` AS `o`
-    WHERE `c`.`CustomerID` = `o`.`CustomerID`), `c`.`CustomerID`, `t`.`OrderID`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`), `c`.`CustomerID`, `o1`.`OrderID`
 FROM `Customers` AS `c`
 LEFT JOIN LATERAL (
     SELECT `o0`.`OrderID`
     FROM `Orders` AS `o0`
     WHERE `c`.`CustomerID` = `o0`.`CustomerID`
     GROUP BY `o0`.`OrderID`
-) AS `t` ON TRUE
+) AS `o1` ON TRUE
 WHERE `c`.`CustomerID` LIKE 'F%'
-ORDER BY `c`.`CustomerID`");
+ORDER BY `c`.`CustomerID`
+""");
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]
