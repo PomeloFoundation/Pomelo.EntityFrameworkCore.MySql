@@ -37,6 +37,7 @@
     <PackageReference Update="System.ComponentModel.TypeConverter" Version="4.3.0" />
     <PackageReference Update="System.Diagnostics.DiagnosticSource" Version="[9.0.0-preview.1.24080.9,9.0.0-preview.1.999999]" />
     <PackageReference Update="GitHubActionsTestLogger" Version="2.3.3" />
+    <PackageReference Update="Xunit.SkippableFact" Version="1.4.13" />
 
     <!-- Keep at the same level that the EF Core projects use. -->
     <PackageReference Update="xunit.assert" Version="2.6.1" />

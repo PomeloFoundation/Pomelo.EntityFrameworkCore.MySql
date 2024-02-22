@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -473,6 +473,14 @@ FROM (
 LEFT JOIN `Orders` AS `o1` ON `o0`.`CustomerID` = `o1`.`CustomerID`
 ORDER BY `o0`.`CustomerID`, `o1`.`OrderID`
 """);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WhereSubqueryReferencesOuterQuery))]
+        public override async Task Subquery_with_navigation_inside_inline_collection(bool async)
+        {
+            await base.Subquery_with_navigation_inside_inline_collection(async);
+
+            AssertSql("");
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]

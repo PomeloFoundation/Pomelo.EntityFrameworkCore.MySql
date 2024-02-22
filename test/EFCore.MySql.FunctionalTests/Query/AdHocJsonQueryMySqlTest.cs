@@ -9,7 +9,8 @@ using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
-public class AdHocJsonQueryMySqlTest : AdHocJsonQueryTestBase
+// Disabled via internal access. The EF Core 7.0 JSON support isn't currently implemented.
+internal class AdHocJsonQueryMySqlTest : AdHocJsonQueryTestBase
 {
     protected override ITestStoreFactory TestStoreFactory
         => MySqlTestStoreFactory.Instance;

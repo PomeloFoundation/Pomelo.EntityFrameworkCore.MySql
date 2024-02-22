@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
 
@@ -139,6 +140,21 @@ SET `o`.`Total` = (
     FROM `OrderProduct` AS `o0`
     WHERE `o`.`Id` = `o0`.`OrderId`)
 WHERE `o`.`Id` = 1
+""");
+    }
+
+    public override Task Delete_with_owned_collection_and_non_natively_translatable_query(bool async)
+        => Assert.ThrowsAsync<MySqlException>(() =>base.Delete_with_owned_collection_and_non_natively_translatable_query(async));
+
+    public override async Task Update_non_owned_property_on_entity_with_owned_in_join(bool async)
+    {
+        await base.Update_non_owned_property_on_entity_with_owned_in_join(async);
+
+        AssertSql(
+"""
+UPDATE `Owner` AS `o`
+INNER JOIN `Owner` AS `o0` ON `o`.`Id` = `o0`.`Id`
+SET `o`.`Title` = 'NewValue'
 """);
     }
 

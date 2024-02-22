@@ -1302,6 +1302,43 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;",
                 },
                 withConventions: false);
 
+        #region ToJson
+
+        public override Task Create_table_with_json_column()
+            => Assert.ThrowsAsync<NullReferenceException>(() => base.Create_table_with_json_column());
+
+        public override Task Create_table_with_json_column_explicit_json_column_names()
+            => Assert.ThrowsAsync<NullReferenceException>(() => base.Create_table_with_json_column_explicit_json_column_names());
+
+        public override Task Rename_table_with_json_column()
+            => Assert.ThrowsAsync<NullReferenceException>(() => base.Rename_table_with_json_column());
+
+        public override Task Add_json_columns_to_existing_table()
+            => Assert.ThrowsAsync<NullReferenceException>(() => base.Add_json_columns_to_existing_table());
+
+        public override Task Convert_json_entities_to_regular_owned()
+            => Assert.ThrowsAsync<NullReferenceException>(() => base.Convert_json_entities_to_regular_owned());
+
+        public override Task Convert_regular_owned_entities_to_json()
+            => Assert.ThrowsAsync<NullReferenceException>(() => base.Convert_regular_owned_entities_to_json());
+
+        public override Task Convert_string_column_to_a_json_column_containing_reference()
+            => Assert.ThrowsAsync<NullReferenceException>(() => base.Convert_string_column_to_a_json_column_containing_reference());
+
+        public override Task Convert_string_column_to_a_json_column_containing_required_reference()
+            => Assert.ThrowsAsync<NullReferenceException>(() => base.Convert_string_column_to_a_json_column_containing_required_reference());
+
+        public override Task Convert_string_column_to_a_json_column_containing_collection()
+            => Assert.ThrowsAsync<NullReferenceException>(() => base.Convert_string_column_to_a_json_column_containing_collection());
+
+        public override Task Drop_json_columns_from_existing_table()
+            => Assert.ThrowsAsync<NullReferenceException>(() => base.Drop_json_columns_from_existing_table());
+
+        public override Task Rename_json_column()
+            => Assert.ThrowsAsync<NullReferenceException>(() => base.Rename_json_column());
+
+        #endregion ToJson
+
         // The constraint name for a primary key is always PRIMARY in MySQL.
         protected override bool AssertConstraintNames
             => false;

@@ -35,6 +35,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             => MySqlTestStore.GetOrCreate(storeName, noBackslashEscapes: NoBackslashEscapes, databaseCollation: DatabaseCollation, guidFormat: GuidFormat);
 
         public override IServiceCollection AddProviderServices(IServiceCollection serviceCollection)
-            => serviceCollection.AddEntityFrameworkMySql();
+            => serviceCollection
+                .AddEntityFrameworkMySql()
+                .AddEntityFrameworkMySqlNetTopologySuite();
     }
 }

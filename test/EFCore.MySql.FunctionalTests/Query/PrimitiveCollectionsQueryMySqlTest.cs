@@ -761,7 +761,7 @@ WHERE (JSON_LENGTH(`p`.`Strings`) > 0) AND (CAST(JSON_UNQUOTE(JSON_EXTRACT(`p`.`
         }
     }
 
-    [SupportedServerVersionCondition(nameof(ServerVersionSupport.OffsetReferencesOuterQuery))]
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.WhereSubqueryReferencesOuterQuery))]
     public override async Task Inline_collection_index_Column(bool async)
     {
         await base.Inline_collection_index_Column(async);

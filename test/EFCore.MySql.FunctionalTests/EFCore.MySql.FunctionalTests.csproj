@@ -20,6 +20,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Scaffolding\Baselines\**\*" />
+    <None Include="Scaffolding\Baselines\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\Shared\**\*.cs" />
   </ItemGroup>
 
