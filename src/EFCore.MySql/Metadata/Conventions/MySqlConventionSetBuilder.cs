@@ -50,6 +50,10 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
             ReplaceConvention(conventionSet.ForeignKeyRemovedConventions, valueGenerationConvention);
             conventionSet.PropertyAnnotationChangedConventions.Add(valueGenerationConvention);
 
+            ReplaceConvention(
+                conventionSet.ModelFinalizedConventions,
+                (RuntimeModelConvention)new MySqlRuntimeModelConvention(Dependencies, RelationalDependencies));
+
             return conventionSet;
         }
 

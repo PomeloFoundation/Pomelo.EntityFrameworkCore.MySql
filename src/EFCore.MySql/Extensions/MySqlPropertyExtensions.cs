@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -453,8 +454,24 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="property">The property of which to get the columns charset from.</param>
         /// <returns>The name of the charset or null, if no explicit charset was set.</returns>
         public static string GetCharSet([NotNull] this IReadOnlyProperty property)
-            => property[MySqlAnnotationNames.CharSet] as string ??
-               property.GetMySqlLegacyCharSet();
+            => (property is RuntimeProperty)
+                ? throw new InvalidOperationException(CoreStrings.RuntimeModelMissingData)
+                : property[MySqlAnnotationNames.CharSet] as string ??
+                  property.GetMySqlLegacyCharSet();
+
+        /// <summary>
+        /// Returns the name of the charset used by the column of the property.
+        /// </summary>
+        /// <param name="property">The property of which to get the columns charset from.</param>
+        /// <param name="storeObject">The identifier of the table-like store object containing the column.</param>
+        /// <returns>The name of the charset or null, if no explicit charset was set.</returns>
+        public static string GetCharSet(this IReadOnlyProperty property, in StoreObjectIdentifier storeObject)
+            => property is RuntimeProperty
+                ? throw new InvalidOperationException(CoreStrings.RuntimeModelMissingData)
+                : property.FindAnnotation(MySqlAnnotationNames.CharSet) is { } annotation
+                    ? annotation.Value as string ??
+                      property.GetMySqlLegacyCharSet()
+                    : property.FindSharedStoreObjectRootProperty(storeObject)?.GetCharSet(storeObject);
 
         /// <summary>
         /// Returns the name of the charset used by the column of the property, defined as part of the column type.
@@ -545,7 +562,22 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="property">The property of which to get the columns SRID from.</param>
         /// <returns>The SRID or null, if no explicit SRID has been set.</returns>
         public static int? GetSpatialReferenceSystem([NotNull] this IReadOnlyProperty property)
-            => (int?)property[MySqlAnnotationNames.SpatialReferenceSystemId];
+            => (property is RuntimeProperty)
+                ? throw new InvalidOperationException(CoreStrings.RuntimeModelMissingData)
+                : (int?)property[MySqlAnnotationNames.SpatialReferenceSystemId];
+
+        /// <summary>
+        /// Returns the Spatial Reference System Identifier (SRID) used by the column of the property.
+        /// </summary>
+        /// <param name="property">The property of which to get the columns SRID from.</param>
+        /// <param name="storeObject">The identifier of the table-like store object containing the column.</param>
+        /// <returns>The SRID or null, if no explicit SRID has been set.</returns>
+        public static int? GetSpatialReferenceSystem(this IReadOnlyProperty property, in StoreObjectIdentifier storeObject)
+            => property is RuntimeProperty
+                ? throw new InvalidOperationException(CoreStrings.RuntimeModelMissingData)
+                : property.FindAnnotation(MySqlAnnotationNames.SpatialReferenceSystemId) is { } annotation
+                    ? (int?)annotation.Value
+                    : property.FindSharedStoreObjectRootProperty(storeObject)?.GetSpatialReferenceSystem(storeObject);
 
         /// <summary>
         /// Sets the Spatial Reference System Identifier (SRID) in use by the column of the property.
