@@ -1,12 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using MySqlConnector;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {
     public class MySqlTestStoreFactory : RelationalTestStoreFactory
     {
-        public static MySqlTestStoreFactory Instance { get; } = new MySqlTestStoreFactory();
+        public static MySqlTestStoreFactory Instance => InstanceCi;
+        public static MySqlTestStoreFactory InstanceCi { get; } = new MySqlTestStoreFactory(databaseCollation: AppConfig.ServerVersion.DefaultUtf8CiCollation);
+        public static MySqlTestStoreFactory InstanceCs { get; } = new MySqlTestStoreFactory(databaseCollation: AppConfig.ServerVersion.DefaultUtf8CsCollation);
+
         public static MySqlTestStoreFactory NoBackslashEscapesInstance { get; } = new MySqlTestStoreFactory(noBackslashEscapes: true);
         public static MySqlTestStoreFactory GuidBinary16Instance { get; } = new MySqlTestStoreFactory(guidFormat: MySqlGuidFormat.Binary16);
 
