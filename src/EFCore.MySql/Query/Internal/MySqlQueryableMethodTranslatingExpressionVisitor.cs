@@ -256,8 +256,10 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
     {
         if (!_options.PrimitiveCollectionsSupport)
         {
-            AddTranslationErrorDetails("Primitive collections support has not been enabled.");
-            return null;
+            throw new InvalidOperationException(
+                CoreStrings.TranslationFailedWithDetails(
+                    sqlExpression.Print(),
+                    "Primitive collections support has not been enabled."));
         }
 
         // if (!_options.ServerVersion.Supports.JsonTableImplementationUsesImplicitLateralJoin &&
