@@ -21,17 +21,11 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="model"> The model. </param>
         /// <returns> The default <see cref="MySqlValueGenerationStrategy" />. </returns>
         public static MySqlValueGenerationStrategy? GetValueGenerationStrategy([NotNull] this IReadOnlyModel model)
-        {
-            // Allow users to use the underlying type value instead of the enum itself.
-            // Workaround for: https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1205
-            if (model[MySqlAnnotationNames.ValueGenerationStrategy] is { } annotation &&
-                ObjectToEnumConverter.GetEnumValue<MySqlValueGenerationStrategy>(annotation) is { } enumValue)
-            {
-                return enumValue;
-            }
-
-            return null;
-        }
+            => model[MySqlAnnotationNames.ValueGenerationStrategy] is { } annotationValue
+                ? ObjectToEnumConverter.GetEnumValue<MySqlValueGenerationStrategy>(annotationValue) is { } enumValue
+                    ? enumValue
+                    : (MySqlValueGenerationStrategy)annotationValue
+                : null;
 
         /// <summary>
         ///     Attempts to set the <see cref="MySqlValueGenerationStrategy" /> to use for properties

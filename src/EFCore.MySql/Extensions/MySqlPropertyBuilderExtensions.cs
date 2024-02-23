@@ -6,7 +6,6 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Utilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 
 // ReSharper disable once CheckNamespace
@@ -17,13 +16,15 @@ namespace Microsoft.EntityFrameworkCore
     /// </summary>
     public static class MySqlPropertyBuilderExtensions
     {
+        #region AutoIncrement
+
         /// <summary>
-        ///     Configures the key property to use the MySQL IDENTITY feature to generate values for new entities,
+        ///     Configures the key property to use the AUTO_INCREMENT feature to generate values for new entities,
         ///     when targeting MySQL. This method sets the property to be <see cref="ValueGenerated.OnAdd" />.
         /// </summary>
         /// <param name="propertyBuilder"> The builder for the property being configured. </param>
         /// <returns> The same builder instance so that multiple calls can be chained. </returns>
-        public static PropertyBuilder UseMySqlIdentityColumn(
+        public static PropertyBuilder UseMySqlIdentityColumn( // TODO: Mark as obsolete and introduce UseAutoIncrementColumn instead.
             [NotNull] this PropertyBuilder propertyBuilder)
         {
             Check.NotNull(propertyBuilder, nameof(propertyBuilder));
@@ -35,15 +36,68 @@ namespace Microsoft.EntityFrameworkCore
         }
 
         /// <summary>
-        ///     Configures the key property to use the MySQL IDENTITY feature to generate values for new entities,
+        ///     Configures the key property to use the AUTO_INCREMENT feature to generate values for new entities,
         ///     when targeting MySQL. This method sets the property to be <see cref="ValueGenerated.OnAdd" />.
         /// </summary>
         /// <typeparam name="TProperty"> The type of the property being configured. </typeparam>
         /// <param name="propertyBuilder"> The builder for the property being configured. </param>
         /// <returns> The same builder instance so that multiple calls can be chained. </returns>
-        public static PropertyBuilder<TProperty> UseMySqlIdentityColumn<TProperty>(
+        public static PropertyBuilder<TProperty> UseMySqlIdentityColumn<TProperty>( // TODO: Mark as obsolete and introduce UseAutoIncrementColumn instead.
             [NotNull] this PropertyBuilder<TProperty> propertyBuilder)
             => (PropertyBuilder<TProperty>)UseMySqlIdentityColumn((PropertyBuilder)propertyBuilder);
+
+        #endregion Identity
+
+        #region General value generation strategy
+
+        /// <summary>
+        ///     Configures the value generation strategy for the key property, when targeting MySQL.
+        /// </summary>
+        /// <param name="propertyBuilder">The builder for the property being configured.</param>
+        /// <param name="valueGenerationStrategy">The value generation strategy.</param>
+        /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
+        /// <returns>
+        ///     The same builder instance if the configuration was applied, <see langword="null"/> otherwise.
+        /// </returns>
+        public static IConventionPropertyBuilder HasValueGenerationStrategy(
+            this IConventionPropertyBuilder propertyBuilder,
+            MySqlValueGenerationStrategy? valueGenerationStrategy,
+            bool fromDataAnnotation = false)
+        {
+            if (propertyBuilder.CanSetAnnotation(
+                    MySqlAnnotationNames.ValueGenerationStrategy, valueGenerationStrategy, fromDataAnnotation))
+            {
+                propertyBuilder.Metadata.SetValueGenerationStrategy(valueGenerationStrategy, fromDataAnnotation);
+
+                return propertyBuilder;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        ///     Returns a value indicating whether the given value can be set as the value generation strategy.
+        /// </summary>
+        /// <param name="propertyBuilder">The builder for the property being configured.</param>
+        /// <param name="valueGenerationStrategy">The value generation strategy.</param>
+        /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
+        /// <returns><see langword="true"/> if the given value can be set as the default value generation strategy.</returns>
+        public static bool CanSetValueGenerationStrategy(
+            this IConventionPropertyBuilder propertyBuilder,
+            MySqlValueGenerationStrategy? valueGenerationStrategy,
+            bool fromDataAnnotation = false)
+        {
+            Check.NotNull(propertyBuilder, nameof(propertyBuilder));
+
+            return (valueGenerationStrategy is null ||
+                    MySqlPropertyExtensions.IsCompatibleIdentityColumn(propertyBuilder.Metadata))
+                && propertyBuilder.CanSetAnnotation(
+                    MySqlAnnotationNames.ValueGenerationStrategy, valueGenerationStrategy, fromDataAnnotation);
+        }
+
+        #endregion General value generation strategy
+
+        #region Computed
 
         /// <summary>
         ///     Configures the key property to use the MySQL Computed feature to generate values for new entities,
@@ -72,6 +126,10 @@ namespace Microsoft.EntityFrameworkCore
         public static PropertyBuilder<TProperty> UseMySqlComputedColumn<TProperty>(
             [NotNull] this PropertyBuilder<TProperty> propertyBuilder)
             => (PropertyBuilder<TProperty>)UseMySqlComputedColumn((PropertyBuilder)propertyBuilder);
+
+        #endregion Computed
+
+        #region CharSet
 
         /// <summary>
         /// Configures the charset for the property's column.
@@ -142,6 +200,10 @@ namespace Microsoft.EntityFrameworkCore
                 charSet,
                 fromDataAnnotation);
 
+        #endregion CharSet
+
+        #region Collation
+
         /// <summary>
         /// Configures the collation for the property's column.
         /// </summary>
@@ -169,6 +231,10 @@ namespace Microsoft.EntityFrameworkCore
             [NotNull] this PropertyBuilder<TProperty> propertyBuilder,
             string collation)
             => (PropertyBuilder<TProperty>)HasCollation((PropertyBuilder)propertyBuilder, collation);
+
+        #endregion Collation
+
+        #region SRID
 
         /// <summary>
         /// Restricts the Spatial Reference System Identifier (SRID) for the property's column.
@@ -198,5 +264,7 @@ namespace Microsoft.EntityFrameworkCore
             [NotNull] this PropertyBuilder<TProperty> propertyBuilder,
             int? srid)
             => (PropertyBuilder<TProperty>)HasSpatialReferenceSystem((PropertyBuilder)propertyBuilder, srid);
+
+        #endregion SRID
     }
 }

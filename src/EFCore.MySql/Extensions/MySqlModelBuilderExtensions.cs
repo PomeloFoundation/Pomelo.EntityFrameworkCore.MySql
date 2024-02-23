@@ -6,7 +6,6 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Utilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 
 // ReSharper disable once CheckNamespace
@@ -14,6 +13,69 @@ namespace Microsoft.EntityFrameworkCore
 {
     public static class MySqlModelBuilderExtensions
     {
+        #region AutoIncrement
+
+        /// <summary>
+        ///     Configures the model to use the AUTO_INCREMENT feature to generate values for properties
+        ///     marked as <see cref="ValueGenerated.OnAdd" />, when targeting MySQL.
+        /// </summary>
+        /// <param name="modelBuilder">The model builder.</param>
+        /// <returns>The same builder instance so that multiple calls can be chained.</returns>
+        public static ModelBuilder AutoIncrementColumns(this ModelBuilder modelBuilder)
+        {
+            Check.NotNull(modelBuilder, nameof(modelBuilder));
+
+            var model = modelBuilder.Model;
+
+            model.SetValueGenerationStrategy(MySqlValueGenerationStrategy.IdentityColumn);
+
+            return modelBuilder;
+        }
+
+        /// <summary>
+        ///     Configures the value generation strategy for the key property, when targeting MySQL.
+        /// </summary>
+        /// <param name="modelBuilder">The builder for the property being configured.</param>
+        /// <param name="valueGenerationStrategy">The value generation strategy.</param>
+        /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
+        /// <returns>
+        ///     The same builder instance if the configuration was applied, <see langword="null"/> otherwise.
+        /// </returns>
+        public static IConventionModelBuilder HasValueGenerationStrategy(
+            this IConventionModelBuilder modelBuilder,
+            MySqlValueGenerationStrategy? valueGenerationStrategy,
+            bool fromDataAnnotation = false)
+        {
+            if (modelBuilder.CanSetValueGenerationStrategy(valueGenerationStrategy, fromDataAnnotation))
+            {
+                modelBuilder.Metadata.SetValueGenerationStrategy(valueGenerationStrategy, fromDataAnnotation);
+
+                return modelBuilder;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        ///     Returns a value indicating whether the given value can be set as the default value generation strategy.
+        /// </summary>
+        /// <param name="modelBuilder"> The model builder. </param>
+        /// <param name="valueGenerationStrategy"> The value generation strategy. </param>
+        /// <param name="fromDataAnnotation"> Indicates whether the configuration was specified using a data annotation. </param>
+        /// <returns> <see langword="true"/> if the given value can be set as the default value generation strategy. </returns>
+        public static bool CanSetValueGenerationStrategy(
+            this IConventionModelBuilder modelBuilder,
+            MySqlValueGenerationStrategy? valueGenerationStrategy,
+            bool fromDataAnnotation = false)
+        {
+            Check.NotNull(modelBuilder, nameof(modelBuilder));
+
+            return modelBuilder.CanSetAnnotation(
+                MySqlAnnotationNames.ValueGenerationStrategy, valueGenerationStrategy, fromDataAnnotation);
+        }
+
+        #endregion Identity
+
         #region CharSet and delegation
 
         /// <summary>
