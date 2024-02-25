@@ -8,7 +8,7 @@ using Xunit.Sdk;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
 {
-    public class MySqlTestCaseOrderer : ITestCaseOrderer
+    public class MySqlTestCaseOrderer : ITestCaseOrderer, IMySqlTestClassOrderer
     {
 #if SPECIFIC_TEST_ORDER
         private static readonly bool _isSpecificTestCaseOrderingEnabled = true;
@@ -39,19 +39,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
 
         public IEnumerable<TTestCase> OrderTestCases<TTestCase>(IEnumerable<TTestCase> testCases)
             where TTestCase : ITestCase
-        {
-            var orderedTestCases = testCases
-                .OrderBy(
-                    c => _specificTestCaseDisplayNamesWithIndex.TryGetValue(c.DisplayName, out var index) &&
-                         index > -1
-                        ? index
-                        : int.MaxValue)
+            => testCases
+                .OrderBy(c => _specificTestCaseDisplayNamesWithIndex.GetValueOrDefault(c.DisplayName, int.MaxValue))
                 .ThenBy(c => c.DisplayName, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(c => c.DisplayName, StringComparer.Ordinal)
-                .ThenBy(c => c.UniqueID)
-                .ToArray();
+                .ThenBy(c => c.UniqueID);
 
-            return orderedTestCases;
-        }
+        public IEnumerable<ITestClass> OrderTestClasses(IEnumerable<ITestClass> testClasses)
+            => testClasses.OrderBy(c => c.Class.Name);
     }
 }

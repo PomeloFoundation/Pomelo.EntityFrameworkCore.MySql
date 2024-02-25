@@ -1,4 +1,6 @@
-﻿using Xunit.Abstractions;
+﻿using System;
+using System.Reflection;
+using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
@@ -11,5 +13,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
 
         protected override ITestFrameworkDiscoverer CreateDiscoverer(IAssemblyInfo assemblyInfo)
             => new MySqlXunitTestFrameworkDiscoverer(assemblyInfo, SourceInformationProvider, DiagnosticMessageSink);
+
+        protected override ITestFrameworkExecutor CreateExecutor(AssemblyName assemblyName)
+            => new MySqlXunitTestFrameworkExecutor(assemblyName, SourceInformationProvider, DiagnosticMessageSink);
     }
 }
