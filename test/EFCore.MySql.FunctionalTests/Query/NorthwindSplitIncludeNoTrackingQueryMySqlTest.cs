@@ -2,19 +2,23 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Microsoft.Extensions.DependencyInjection;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.DebugServices;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public class NorthwindSplitIncludeNoTrackingQueryMySqlTest : NorthwindSplitIncludeNoTrackingQueryTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>
+    // We use our custom fixture here, to inject a custom debug services.
+    public class NorthwindSplitIncludeNoTrackingQueryMySqlTest : NorthwindSplitIncludeNoTrackingQueryTestBase<NorthwindSplitIncludeNoTrackingQueryMySqlTest.NorthwindSplitIncludeNoTrackingQueryMySqlFixture>
     {
-        public NorthwindSplitIncludeNoTrackingQueryMySqlTest(NorthwindQueryMySqlFixture<NoopModelCustomizer> fixture, ITestOutputHelper testOutputHelper)
+        public NorthwindSplitIncludeNoTrackingQueryMySqlTest(NorthwindSplitIncludeNoTrackingQueryMySqlFixture fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
         {
-            //TestSqlLoggerFactory.CaptureOutput(testOutputHelper);
+            Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
         public override Task Include_duplicate_collection_result_operator2(bool async)
@@ -60,6 +64,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 elementAsserter: (e, a) => AssertInclude(e, a, new ExpectedInclude<Order>(o => o.OrderDetails)));
         }
 
+        // Used to track down a bug in Oracle's MySQL implementation, related to `SELECT ... ORDER BY (SELECT 1)`.
+        public override Task Include_collection_OrderBy_empty_list_contains(bool async)
+            => base.Include_collection_OrderBy_empty_list_contains(async);
+
         [ConditionalTheory(Skip = "https://github.com/dotnet/efcore/issues/21202")]
         public override Task Include_collection_skip_no_order_by(bool async)
         {
@@ -82,6 +90,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         public override Task Include_duplicate_collection_result_operator(bool async)
         {
             return base.Include_duplicate_collection_result_operator(async);
+        }
+
+        public class NorthwindSplitIncludeNoTrackingQueryMySqlFixture : NorthwindQueryMySqlFixture<NoopModelCustomizer>
+        {
+            // We used our `DebugRelationalCommandBuilderFactory` implementation to track down a
+            // bug in Oracle's MySQL implementation, related to `SELECT ... ORDER BY (SELECT 1)`.
+            protected override IServiceCollection AddServices(IServiceCollection serviceCollection)
+                => base.AddServices(serviceCollection)
+                    .AddSingleton<IRelationalCommandBuilderFactory, DebugRelationalCommandBuilderFactory>();
         }
     }
 }
