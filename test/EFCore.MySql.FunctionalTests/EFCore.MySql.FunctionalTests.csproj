@@ -7,10 +7,16 @@
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <DefaultItemExcludes>$(DefaultItemExcludes);*.trx</DefaultItemExcludes>
   </PropertyGroup>
+  
+  <PropertyGroup>
+    <FixedTestOrder Condition="'$(FixedTestOrder)' == ''">false</FixedTestOrder>
+    <SpecificTestOrder Condition="'$(SpecificTestOrder)' == ''">false</SpecificTestOrder>
+  </PropertyGroup>
 
   <PropertyGroup>
     <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);$(NoWarn)</MSBuildWarningsAsMessages>
     <DefineConstants Condition="'$(FixedTestOrder)' == 'true'">$(DefineConstants);FIXED_TEST_ORDER</DefineConstants>
+    <DefineConstants Condition="'$(SpecificTestOrder)' == 'true'">$(DefineConstants);SPECIFIC_TEST_ORDER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
