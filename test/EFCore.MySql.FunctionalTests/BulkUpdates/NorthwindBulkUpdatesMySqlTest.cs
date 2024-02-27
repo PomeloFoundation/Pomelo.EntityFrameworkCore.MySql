@@ -19,7 +19,7 @@ public class NorthwindBulkUpdatesMySqlTest : NorthwindBulkUpdatesTestBase<Northw
         : base(fixture, testOutputHelper)
     {
         ClearLog();
-        // Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
+        Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
     }
 
     [ConditionalFact]
@@ -426,8 +426,8 @@ WHERE EXISTS (
         SELECT `o1`.`OrderID`, `o1`.`ProductID`, `o1`.`Discount`, `o1`.`Quantity`, `o1`.`UnitPrice`
         FROM `Order Details` AS `o1`
         WHERE `o1`.`OrderID` > 11250
-    ) AS `t`
-    WHERE (`t`.`OrderID` = `o`.`OrderID`) AND (`t`.`ProductID` = `o`.`ProductID`))
+    ) AS `i`
+    WHERE (`i`.`OrderID` = `o`.`OrderID`) AND (`i`.`ProductID` = `o`.`ProductID`))
 """);
     }
 
@@ -449,8 +449,8 @@ WHERE EXISTS (
         SELECT `o1`.`OrderID`, `o1`.`ProductID`, `o1`.`Discount`, `o1`.`Quantity`, `o1`.`UnitPrice`
         FROM `Order Details` AS `o1`
         WHERE `o1`.`OrderID` > 11250
-    ) AS `t`
-    WHERE (`t`.`OrderID` = `o`.`OrderID`) AND (`t`.`ProductID` = `o`.`ProductID`))
+    ) AS `e`
+    WHERE (`e`.`OrderID` = `o`.`OrderID`) AND (`e`.`ProductID` = `o`.`ProductID`))
 """);
     }
 
@@ -1165,17 +1165,17 @@ SET `c1`.`ContactName` = 'Updated'
 
         AssertExecuteUpdateSql(
 """
-UPDATE `Customers` AS `c`
+UPDATE `Customers` AS `c1`
 INNER JOIN (
+    SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+    FROM `Customers` AS `c`
+    WHERE `c`.`CustomerID` LIKE 'F%'
+    EXCEPT
     SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
     FROM `Customers` AS `c0`
-    WHERE `c0`.`CustomerID` LIKE 'F%'
-    EXCEPT
-    SELECT `c1`.`CustomerID`, `c1`.`Address`, `c1`.`City`, `c1`.`CompanyName`, `c1`.`ContactName`, `c1`.`ContactTitle`, `c1`.`Country`, `c1`.`Fax`, `c1`.`Phone`, `c1`.`PostalCode`, `c1`.`Region`
-    FROM `Customers` AS `c1`
-    WHERE `c1`.`CustomerID` LIKE 'A%'
-) AS `t` ON `c`.`CustomerID` = `t`.`CustomerID`
-SET `c`.`ContactName` = 'Updated'
+    WHERE `c0`.`CustomerID` LIKE 'A%'
+) AS `e` ON `c1`.`CustomerID` = `e`.`CustomerID`
+SET `c1`.`ContactName` = 'Updated'
 """);
     }
 
@@ -1185,17 +1185,17 @@ SET `c`.`ContactName` = 'Updated'
 
         AssertExecuteUpdateSql(
 """
-UPDATE `Customers` AS `c`
+UPDATE `Customers` AS `c1`
 INNER JOIN (
+    SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+    FROM `Customers` AS `c`
+    WHERE `c`.`CustomerID` LIKE 'F%'
+    INTERSECT
     SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
     FROM `Customers` AS `c0`
-    WHERE `c0`.`CustomerID` LIKE 'F%'
-    INTERSECT
-    SELECT `c1`.`CustomerID`, `c1`.`Address`, `c1`.`City`, `c1`.`CompanyName`, `c1`.`ContactName`, `c1`.`ContactTitle`, `c1`.`Country`, `c1`.`Fax`, `c1`.`Phone`, `c1`.`PostalCode`, `c1`.`Region`
-    FROM `Customers` AS `c1`
-    WHERE `c1`.`CustomerID` LIKE 'A%'
-) AS `t` ON `c`.`CustomerID` = `t`.`CustomerID`
-SET `c`.`ContactName` = 'Updated'
+    WHERE `c0`.`CustomerID` LIKE 'A%'
+) AS `i` ON `c1`.`CustomerID` = `i`.`CustomerID`
+SET `c1`.`ContactName` = 'Updated'
 """);
     }
 
