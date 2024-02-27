@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
@@ -26,7 +27,9 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="entityType"> The entity type. </param>
         /// <returns> The name of the character set. </returns>
         public static string GetCharSet([NotNull] this IReadOnlyEntityType entityType)
-            => entityType[MySqlAnnotationNames.CharSet] as string;
+            => (entityType is RuntimeEntityType)
+                ? throw new InvalidOperationException(CoreStrings.RuntimeModelMissingData)
+                : entityType[MySqlAnnotationNames.CharSet] as string;
 
         /// <summary>
         /// Sets the MySQL character set on the table associated with this entity. When you only specify the character set, MySQL implicitly
@@ -81,12 +84,14 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="entityType"> The entity type. </param>
         /// <returns> The character set delegation modes. </returns>
         public static DelegationModes? GetCharSetDelegation([NotNull] this IReadOnlyEntityType entityType)
-            => ObjectToEnumConverter.GetEnumValue<DelegationModes>(entityType[MySqlAnnotationNames.CharSetDelegation]) ??
-               (entityType[MySqlAnnotationNames.CharSetDelegation] is bool explicitlyDelegateToChildren
-                   ? explicitlyDelegateToChildren
-                       ? DelegationModes.ApplyToAll
-                       : DelegationModes.ApplyToDatabases
-                   : null);
+            => (entityType is RuntimeEntityType)
+                ? throw new InvalidOperationException(CoreStrings.RuntimeModelMissingData)
+                : ObjectToEnumConverter.GetEnumValue<DelegationModes>(entityType[MySqlAnnotationNames.CharSetDelegation]) ??
+                  (entityType[MySqlAnnotationNames.CharSetDelegation] is bool explicitlyDelegateToChildren
+                      ? explicitlyDelegateToChildren
+                          ? DelegationModes.ApplyToAll
+                          : DelegationModes.ApplyToDatabases
+                      : null);
 
         /// <summary>
         ///     Attempts to set the character set delegation modes for entity/table.
@@ -153,7 +158,9 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="entityType"> The entity type. </param>
         /// <returns> The name of the collation. </returns>
         public static string GetCollation([NotNull] this IReadOnlyEntityType entityType)
-            => entityType[RelationalAnnotationNames.Collation] as string;
+            => (entityType is RuntimeEntityType)
+                ? throw new InvalidOperationException(CoreStrings.RuntimeModelMissingData)
+                : entityType[RelationalAnnotationNames.Collation] as string;
 
         /// <summary>
         /// Sets the MySQL collation on the table associated with this entity. When you specify the collation, MySQL implicitly sets the
@@ -208,12 +215,14 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="entityType"> The entity type. </param>
         /// <returns> The collation delegation modes. </returns>
         public static DelegationModes? GetCollationDelegation([NotNull] this IReadOnlyEntityType entityType)
-            => ObjectToEnumConverter.GetEnumValue<DelegationModes>(entityType[MySqlAnnotationNames.CollationDelegation]) ??
-               (entityType[MySqlAnnotationNames.CollationDelegation] is bool explicitlyDelegateToChildren
-                   ? explicitlyDelegateToChildren
-                       ? DelegationModes.ApplyToAll
-                       : DelegationModes.ApplyToDatabases
-                   : null);
+            => (entityType is RuntimeEntityType)
+                ? throw new InvalidOperationException(CoreStrings.RuntimeModelMissingData)
+                : ObjectToEnumConverter.GetEnumValue<DelegationModes>(entityType[MySqlAnnotationNames.CollationDelegation]) ??
+                  (entityType[MySqlAnnotationNames.CollationDelegation] is bool explicitlyDelegateToChildren
+                      ? explicitlyDelegateToChildren
+                          ? DelegationModes.ApplyToAll
+                          : DelegationModes.ApplyToDatabases
+                      : null);
 
         /// <summary>
         ///     Attempts to set the collation delegation modes for entity/table.
@@ -280,7 +289,9 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="entityType"> The entity type. </param>
         /// <returns> A dictionary of table options. </returns>
         public static Dictionary<string, string> GetTableOptions([NotNull] this IReadOnlyEntityType entityType)
-            => DeserializeTableOptions(entityType[MySqlAnnotationNames.StoreOptions] as string);
+            => (entityType is RuntimeEntityType)
+                ? throw new InvalidOperationException(CoreStrings.RuntimeModelMissingData)
+                : DeserializeTableOptions(entityType[MySqlAnnotationNames.StoreOptions] as string);
 
         /// <summary>
         /// Sets the MySQL table options for the table associated with this entity.

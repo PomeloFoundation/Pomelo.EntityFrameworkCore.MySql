@@ -48,19 +48,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             { "multipolygon", typeof(MultiPolygon) },             // geometry -> geometrycollection -> multisurface -> multipolygon
         };
 
-        private static readonly Dictionary<Type, string> _spatialClrTypeMappings = new Dictionary<Type, string>
-        {
-            { typeof(Geometry), "geometry" },                     // geometry
-            { typeof(Point), "point" },                           // geometry -> point
-            { typeof(LineString), "linestring" },                 // geometry -> curve -> linestring
-            { typeof(LinearRing), "linearring" },                 // geometry -> curve -> linestring -> linearring
-            { typeof(Polygon), "polygon" },                       // geometry -> surface -> polygon
-            { typeof(GeometryCollection), "geometrycollection" }, // geometry -> geometrycollection
-            { typeof(MultiPoint), "multipoint" },                 // geometry -> geometrycollection -> multipoint
-            { typeof(MultiLineString), "multilinestring" },       // geometry -> geometrycollection -> multicurve -> multilinestring
-            { typeof(MultiPolygon), "multipolygon" },             // geometry -> geometrycollection -> multisurface -> multipolygon
-        };
-
         private readonly NtsGeometryServices _geometryServices;
         private readonly IMySqlOptions _options;
 
@@ -89,72 +76,75 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         public virtual RelationalTypeMapping FindMapping(in RelationalTypeMappingInfo mappingInfo)
         {
             var clrType = mappingInfo.ClrType;
-            var storeTypeName = mappingInfo.StoreTypeName;
-            var storeTypeNameBase = mappingInfo.StoreTypeNameBase;
+            var storeTypeName = mappingInfo.StoreTypeName?.ToLowerInvariant();
+            string defaultStoreType = null;
+            Type defaultClrType = null;
 
-            if (storeTypeName != null)
-            {
-                // First look for the fully qualified store type name.
-                if (_spatialStoreTypeMappings.TryGetValue(storeTypeName, out var mappedClrType))
-                {
-                    // We found the user-specified store type.
-                    // If no CLR type was provided, we're probably scaffolding from an existing database. Take the first
-                    // mapping as the default.
-                    // If a CLR type was provided, look for a mapping between the store and CLR types. If none is found,
-                    // fail immediately.
-                    clrType = clrType == null
-                        ? mappedClrType
-                        : clrType.IsAssignableFrom(mappedClrType)
-                            ? clrType
-                            : null;
-
-                    return clrType == null
-                        ? null
-                        : (RelationalTypeMapping)Activator.CreateInstance(
-                            typeof(MySqlGeometryTypeMapping<>).MakeGenericType(clrType),
-                            _geometryServices,
-                            storeTypeName,
-                            _options);
-                }
-
-                // Then look for the base store type name.
-                if (_spatialStoreTypeMappings.TryGetValue(storeTypeNameBase, out mappedClrType))
-                {
-                    clrType = clrType == null
-                        ? mappedClrType
-                        : clrType.IsAssignableFrom(mappedClrType)
-                            ? clrType
-                            : null;
-
-                    if (clrType == null)
-                    {
-                        return null;
-                    }
-
-                    var typeMapping = (RelationalTypeMapping)Activator.CreateInstance(
-                        typeof(MySqlGeometryTypeMapping<>).MakeGenericType(clrType),
-                        _geometryServices,
-                        storeTypeName,
-                        _options);
-
-                    return typeMapping.Clone(mappingInfo);
-                }
-
-                // A store type name was provided, but is unknown. This could be a domain (alias) type, in which case
-                // we proceed with a CLR type lookup (if the type doesn't exist at all the failure will come later).
-            }
-
-            if (clrType != null &&
-                _spatialClrTypeMappings.TryGetValue(clrType, out var mappedStoreTypeName))
-            {
-                return (RelationalTypeMapping)Activator.CreateInstance(
-                    typeof(MySqlGeometryTypeMapping<>).MakeGenericType(clrType),
+            return (clrType != null
+                    && TryGetDefaultStoreType(clrType, out defaultStoreType))
+                   || (storeTypeName != null
+                       && _spatialStoreTypeMappings.TryGetValue(storeTypeName, out defaultClrType))
+                ? (RelationalTypeMapping)Activator.CreateInstance(
+                    typeof(MySqlGeometryTypeMapping<>).MakeGenericType(clrType ?? defaultClrType ?? typeof(Geometry)),
                     _geometryServices,
-                    mappedStoreTypeName,
-                    _options);
+                    storeTypeName ?? defaultStoreType ?? "geometry",
+                    _options)
+                : null;
+        }
+
+        private static bool TryGetDefaultStoreType(Type type, out string defaultStoreType)
+        {
+            // geometry -> geometrycollection -> multisurface -> multipolygon
+            if (typeof(MultiPolygon).IsAssignableFrom(type))
+            {
+                defaultStoreType = "multipolygon";
+            }
+            // geometry -> geometrycollection -> multicurve -> multilinestring
+            else if (typeof(MultiLineString).IsAssignableFrom(type))
+            {
+                defaultStoreType = "multilinestring";
+            }
+            // geometry -> geometrycollection -> multipoint
+            else if (typeof(MultiPoint).IsAssignableFrom(type))
+            {
+                defaultStoreType = "multipoint";
+            }
+            // geometry -> geometrycollection
+            else if (typeof(GeometryCollection).IsAssignableFrom(type))
+            {
+                defaultStoreType = "geometrycollection";
+            }
+            // geometry -> surface -> polygon
+            else if (typeof(Polygon).IsAssignableFrom(type))
+            {
+                defaultStoreType = "polygon";
+            }
+            // geometry -> curve -> linestring -> linearring
+            else if (typeof(LinearRing).IsAssignableFrom(type))
+            {
+                defaultStoreType = "linearring";
+            }
+            // geometry -> curve -> linestring
+            else if (typeof(LineString).IsAssignableFrom(type))
+            {
+                defaultStoreType = "linestring";
+            }
+            // geometry -> point
+            else if (typeof(Point).IsAssignableFrom(type))
+            {
+                defaultStoreType = "point";
+            }
+            // geometry
+            else if (typeof(Geometry).IsAssignableFrom(type))
+            {
+                defaultStoreType = "geometry";
+            }
+            else
+            {
+                defaultStoreType = null;
             }
 
-            return null;
+            return defaultStoreType != null;
         }
     }
 }

@@ -1658,6 +1658,36 @@ WHERE `p`.`Id` IN (2, 999)
         AssertSql();
     }
 
+    public override async Task Nested_contains_with_Lists_and_no_inferred_type_mapping(bool async)
+    {
+        await base.Nested_contains_with_Lists_and_no_inferred_type_mapping(async);
+
+        AssertSql(
+"""
+SELECT `p`.`Id`, `p`.`Bool`, `p`.`Bools`, `p`.`DateTime`, `p`.`DateTimes`, `p`.`Enum`, `p`.`Enums`, `p`.`Int`, `p`.`Ints`, `p`.`NullableInt`, `p`.`NullableInts`, `p`.`NullableString`, `p`.`NullableStrings`, `p`.`String`, `p`.`Strings`
+FROM `PrimitiveCollectionsEntity` AS `p`
+WHERE CASE
+    WHEN `p`.`Int` IN (1, 2, 3) THEN 'one'
+    ELSE 'two'
+END IN ('one', 'two', 'three')
+""");
+    }
+
+    public override async Task Nested_contains_with_arrays_and_no_inferred_type_mapping(bool async)
+    {
+        await base.Nested_contains_with_arrays_and_no_inferred_type_mapping(async);
+
+        AssertSql(
+"""
+SELECT `p`.`Id`, `p`.`Bool`, `p`.`Bools`, `p`.`DateTime`, `p`.`DateTimes`, `p`.`Enum`, `p`.`Enums`, `p`.`Int`, `p`.`Ints`, `p`.`NullableInt`, `p`.`NullableInts`, `p`.`NullableString`, `p`.`NullableStrings`, `p`.`String`, `p`.`Strings`
+FROM `PrimitiveCollectionsEntity` AS `p`
+WHERE CASE
+    WHEN `p`.`Int` IN (1, 2, 3) THEN 'one'
+    ELSE 'two'
+END IN ('one', 'two', 'three')
+""");
+    }
+
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
         => TestHelpers.AssertAllMethodsOverridden(GetType());

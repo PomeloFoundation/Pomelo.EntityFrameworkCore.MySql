@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
+using System;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 
@@ -19,7 +21,9 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="index"> The index. </param>
         /// <returns> <see langword="true"/> if the index is full text. </returns>
         public static bool? IsFullText([NotNull] this IIndex index)
-            => (bool?)index[MySqlAnnotationNames.FullTextIndex];
+            => (index is RuntimeIndex)
+                ? throw new InvalidOperationException(CoreStrings.RuntimeModelMissingData)
+                : (bool?)index[MySqlAnnotationNames.FullTextIndex];
 
         /// <summary>
         ///     Sets a value indicating whether the index is full text.
@@ -58,7 +62,9 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="index"> The index. </param>
         /// <returns> The name of the full text parser. </returns>
         [CanBeNull] public static string FullTextParser([NotNull] this IIndex index)
-            => (string)index[MySqlAnnotationNames.FullTextParser];
+            => (index is RuntimeIndex)
+                ? throw new InvalidOperationException(CoreStrings.RuntimeModelMissingData)
+                : (string)index[MySqlAnnotationNames.FullTextParser];
 
         /// <summary>
         ///     Sets a value indicating which full text parser to used.
@@ -98,7 +104,9 @@ namespace Microsoft.EntityFrameworkCore
         /// <returns> The prefix lengths.
         /// A value of `0` indicates, that the full length should be used for that column. </returns>
         public static int[] PrefixLength([NotNull] this IIndex index)
-            => (int[])index[MySqlAnnotationNames.IndexPrefixLength];
+            => (index is RuntimeIndex)
+                ? throw new InvalidOperationException(CoreStrings.RuntimeModelMissingData)
+                : (int[])index[MySqlAnnotationNames.IndexPrefixLength];
 
         /// <summary>
         ///     Sets prefix lengths for the index.
@@ -139,7 +147,9 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="index"> The index. </param>
         /// <returns> <see langword="true"/> if the index is spartial. </returns>
         public static bool? IsSpatial([NotNull] this IIndex index)
-            => (bool?)index[MySqlAnnotationNames.SpatialIndex];
+            => (index is RuntimeIndex)
+                ? throw new InvalidOperationException(CoreStrings.RuntimeModelMissingData)
+                : (bool?)index[MySqlAnnotationNames.SpatialIndex];
 
         /// <summary>
         ///     Sets a value indicating whether the index is spartial.

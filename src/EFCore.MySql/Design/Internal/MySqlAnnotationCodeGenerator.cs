@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -19,6 +19,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
 {
     public class MySqlAnnotationCodeGenerator : AnnotationCodeGenerator
     {
+        private static readonly MethodInfo _modelUseIdentityColumnsMethodInfo
+            = typeof(MySqlModelBuilderExtensions).GetRequiredRuntimeMethod(
+                nameof(MySqlModelBuilderExtensions.AutoIncrementColumns),
+                typeof(ModelBuilder));
+
         private static readonly MethodInfo _modelHasCharSetMethodInfo
             = typeof(MySqlModelBuilderExtensions).GetRequiredRuntimeMethod(
                 nameof(MySqlModelBuilderExtensions.HasCharSet),
@@ -39,6 +44,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
                 typeof(ModelBuilder),
                 typeof(string));
 
+        private static readonly MethodInfo _modelHasAnnotationMethodInfo
+            = typeof(ModelBuilder).GetRequiredRuntimeMethod(
+                nameof(ModelBuilder.HasAnnotation),
+                typeof(string),
+                typeof(object));
+
         private static readonly MethodInfo _entityTypeHasCharSetMethodInfo
             = typeof(MySqlEntityTypeBuilderExtensions).GetRequiredRuntimeMethod(
                 nameof(MySqlEntityTypeBuilderExtensions.HasCharSet),
@@ -53,13 +64,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
                 typeof(string),
                 typeof(DelegationModes?));
 
+        private static readonly MethodInfo _propertyUseIdentityColumnMethodInfo
+            = typeof(MySqlPropertyBuilderExtensions).GetRequiredRuntimeMethod(
+                nameof(MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn),
+                typeof(PropertyBuilder));
+
+        private static readonly MethodInfo _propertyUseComputedColumnMethodInfo
+            = typeof(MySqlPropertyBuilderExtensions).GetRequiredRuntimeMethod(
+                nameof(MySqlPropertyBuilderExtensions.UseMySqlComputedColumn),
+                typeof(PropertyBuilder));
+
         private static readonly MethodInfo _propertyHasCharSetMethodInfo
             = typeof(MySqlPropertyBuilderExtensions).GetRequiredRuntimeMethod(
                 nameof(MySqlPropertyBuilderExtensions.HasCharSet),
                 typeof(PropertyBuilder),
                 typeof(string));
 
-        public MySqlAnnotationCodeGenerator([NotNull] AnnotationCodeGeneratorDependencies dependencies)
+        public MySqlAnnotationCodeGenerator([JetBrains.Annotations.NotNull] AnnotationCodeGeneratorDependencies dependencies)
             : base(dependencies)
         {
         }
@@ -94,7 +115,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
                 var delegationModes = model[MySqlAnnotationNames.CharSetDelegation] as DelegationModes?;
                 return new MethodCallCodeFragment(
                     _modelHasCharSetMethodInfo,
-                    new[] {annotation.Value}
+                    new[] { annotation.Value }
                         .AppendIfTrue(delegationModes.HasValue, delegationModes)
                         .ToArray());
             }
@@ -115,7 +136,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
                 var delegationModes = model[MySqlAnnotationNames.CollationDelegation] as DelegationModes?;
                 return new MethodCallCodeFragment(
                     _modelUseCollationMethodInfo,
-                    new[] {annotation.Value}
+                    new[] { annotation.Value }
                         .AppendIfTrue(delegationModes.HasValue, delegationModes)
                         .ToArray());
             }
@@ -146,7 +167,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
                 var delegationModes = entityType[MySqlAnnotationNames.CharSetDelegation] as DelegationModes?;
                 return new MethodCallCodeFragment(
                     _entityTypeHasCharSetMethodInfo,
-                    new[] {annotation.Value}
+                    new[] { annotation.Value }
                         .AppendIfTrue(delegationModes.HasValue, delegationModes)
                         .ToArray());
             }
@@ -165,7 +186,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
                 var delegationModes = entityType[MySqlAnnotationNames.CollationDelegation] as DelegationModes?;
                 return new MethodCallCodeFragment(
                     _entityTypeUseCollationMethodInfo,
-                    new[] {annotation.Value}
+                    new[] { annotation.Value }
                         .AppendIfTrue(delegationModes.HasValue, delegationModes)
                         .ToArray());
             }
@@ -192,7 +213,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
                 var delegationModes = entityType[MySqlAnnotationNames.CharSetDelegation] as DelegationModes?;
                 return new AttributeCodeFragment(
                     typeof(MySqlCharSetAttribute),
-                    new[] {annotation.Value}
+                    new[] { annotation.Value }
                         .AppendIfTrue(delegationModes.HasValue, delegationModes)
                         .ToArray());
             }
@@ -211,7 +232,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
                 var delegationModes = entityType[MySqlAnnotationNames.CollationDelegation] as DelegationModes?;
                 return new AttributeCodeFragment(
                     typeof(MySqlCollationAttribute),
-                    new[] {annotation.Value}
+                    new[] { annotation.Value }
                         .AppendIfTrue(delegationModes.HasValue, delegationModes)
                         .ToArray());
             }
@@ -240,7 +261,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
 
             switch (annotation.Name)
             {
-                case MySqlAnnotationNames.CharSet when annotation.Value is string {Length: > 0} charSet:
+                case MySqlAnnotationNames.CharSet when annotation.Value is string { Length: > 0 } charSet:
                     return new MethodCallCodeFragment(
                         _propertyHasCharSetMethodInfo,
                         charSet);
@@ -257,10 +278,74 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
 
             return annotation.Name switch
             {
-                MySqlAnnotationNames.CharSet when annotation.Value is string {Length: > 0} charSet => new AttributeCodeFragment(typeof(MySqlCharSetAttribute), charSet),
-                RelationalAnnotationNames.Collation when annotation.Value is string {Length: > 0} collation => new AttributeCodeFragment(typeof(MySqlCollationAttribute), collation),
+                MySqlAnnotationNames.CharSet when annotation.Value is string { Length: > 0 } charSet => new AttributeCodeFragment(
+                    typeof(MySqlCharSetAttribute), charSet),
+                RelationalAnnotationNames.Collation when annotation.Value is string { Length: > 0 } collation => new AttributeCodeFragment(
+                    typeof(MySqlCollationAttribute), collation),
                 _ => base.GenerateDataAnnotation(property, annotation)
             };
+        }
+
+        public override IReadOnlyList<MethodCallCodeFragment> GenerateFluentApiCalls(
+            IModel model,
+            IDictionary<string, IAnnotation> annotations)
+        {
+            var fragments = new List<MethodCallCodeFragment>(base.GenerateFluentApiCalls(model, annotations));
+
+            if (GenerateValueGenerationStrategy(annotations, onModel: true) is { } valueGenerationStrategy)
+            {
+                fragments.Add(valueGenerationStrategy);
+            }
+
+            return fragments;
+        }
+
+        public override IReadOnlyList<MethodCallCodeFragment> GenerateFluentApiCalls(
+            IProperty property,
+            IDictionary<string, IAnnotation> annotations)
+        {
+            var fragments = new List<MethodCallCodeFragment>(base.GenerateFluentApiCalls(property, annotations));
+
+            if (GenerateValueGenerationStrategy(annotations, onModel: false) is { } valueGenerationStrategy)
+            {
+                fragments.Add(valueGenerationStrategy);
+            }
+
+            return fragments;
+        }
+
+        private MethodCallCodeFragment GenerateValueGenerationStrategy(IDictionary<string, IAnnotation> annotations, bool onModel)
+            => TryGetAndRemove(annotations, MySqlAnnotationNames.ValueGenerationStrategy, out MySqlValueGenerationStrategy strategy)
+                ? strategy switch
+                {
+                    MySqlValueGenerationStrategy.IdentityColumn => new MethodCallCodeFragment(
+                        onModel
+                            ? _modelUseIdentityColumnsMethodInfo
+                            : _propertyUseIdentityColumnMethodInfo),
+                    MySqlValueGenerationStrategy.ComputedColumn => new MethodCallCodeFragment(_propertyUseComputedColumnMethodInfo),
+                    MySqlValueGenerationStrategy.None => new MethodCallCodeFragment(
+                        _modelHasAnnotationMethodInfo,
+                        MySqlAnnotationNames.ValueGenerationStrategy,
+                        MySqlValueGenerationStrategy.None),
+                    _ => throw new ArgumentOutOfRangeException(strategy.ToString())
+                }
+                : null;
+
+        private static bool TryGetAndRemove<T>(
+            IDictionary<string, IAnnotation> annotations,
+            string annotationName,
+            [NotNullWhen(true)] out T annotationValue)
+        {
+            if (annotations.TryGetValue(annotationName, out var annotation)
+                && annotation.Value is not null)
+            {
+                annotations.Remove(annotationName);
+                annotationValue = (T)annotation.Value;
+                return true;
+            }
+
+            annotationValue = default;
+            return false;
         }
     }
 }

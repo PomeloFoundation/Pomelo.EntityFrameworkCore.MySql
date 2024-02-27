@@ -2,9 +2,9 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -32,12 +32,21 @@ namespace Microsoft.EntityFrameworkCore
         /// <returns> The strategy, or <see cref="MySqlValueGenerationStrategy.None"/> if none was set. </returns>
         public static MySqlValueGenerationStrategy GetValueGenerationStrategy([NotNull] this IReadOnlyProperty property)
         {
-            // Allow users to use the underlying type value instead of the enum itself.
-            // Workaround for: https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1205
-            if (property[MySqlAnnotationNames.ValueGenerationStrategy] is { } annotationValue &&
-                ObjectToEnumConverter.GetEnumValue<MySqlValueGenerationStrategy>(annotationValue) is { } enumValue)
+            if (property.FindAnnotation(MySqlAnnotationNames.ValueGenerationStrategy) is { } annotation)
             {
-                return enumValue;
+                if (annotation.Value is { } annotationValue)
+                {
+                    // Allow users to use the underlying type value instead of the enum itself.
+                    // Workaround for: https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1205
+                    if (ObjectToEnumConverter.GetEnumValue<MySqlValueGenerationStrategy>(annotationValue) is { } enumValue)
+                    {
+                        return enumValue;
+                    }
+
+                    return (MySqlValueGenerationStrategy)annotationValue;
+                }
+
+                return MySqlValueGenerationStrategy.None;
             }
 
             if (property.ValueGenerated == ValueGenerated.OnAdd)
@@ -48,11 +57,6 @@ namespace Microsoft.EntityFrameworkCore
                     || property.GetComputedColumnSql() != null)
                 {
                     return MySqlValueGenerationStrategy.None;
-                }
-
-                if (IsCompatibleIdentityColumn(property))
-                {
-                    return MySqlValueGenerationStrategy.IdentityColumn;
                 }
 
                 return GetDefaultValueGenerationStrategy(property);
@@ -126,11 +130,6 @@ namespace Microsoft.EntityFrameworkCore
                     return MySqlValueGenerationStrategy.None;
                 }
 
-                if (IsCompatibleIdentityColumn(property))
-                {
-                    return MySqlValueGenerationStrategy.IdentityColumn;
-                }
-
                 var defaultStrategy = GetDefaultValueGenerationStrategy(property, storeObject, typeMappingSource);
                 if (defaultStrategy != MySqlValueGenerationStrategy.None)
                 {
@@ -172,13 +171,10 @@ namespace Microsoft.EntityFrameworkCore
         {
             var modelStrategy = property.DeclaringType.Model.GetValueGenerationStrategy();
 
-            if (modelStrategy == MySqlValueGenerationStrategy.IdentityColumn &&
-                IsCompatibleAutoIncrementColumn(property))
-            {
-                return MySqlValueGenerationStrategy.IdentityColumn;
-            }
-
-            return MySqlValueGenerationStrategy.None;
+            return modelStrategy == MySqlValueGenerationStrategy.IdentityColumn &&
+                   IsCompatibleIdentityColumn(property)
+                ? MySqlValueGenerationStrategy.IdentityColumn
+                : MySqlValueGenerationStrategy.None;
         }
 
         private static MySqlValueGenerationStrategy GetDefaultValueGenerationStrategy(
@@ -189,7 +185,7 @@ namespace Microsoft.EntityFrameworkCore
             var modelStrategy = property.DeclaringType.Model.GetValueGenerationStrategy();
 
             return modelStrategy == MySqlValueGenerationStrategy.IdentityColumn
-                   && IsCompatibleAutoIncrementColumn(property, storeObject, typeMappingSource)
+                   && IsCompatibleIdentityColumn(property, storeObject, typeMappingSource)
                 ? MySqlValueGenerationStrategy.IdentityColumn
                 : MySqlValueGenerationStrategy.None;
         }
@@ -359,9 +355,12 @@ namespace Microsoft.EntityFrameworkCore
         /// <returns> <see langword="true"/> if compatible. </returns>
         public static bool IsCompatibleAutoIncrementColumn(IReadOnlyProperty property)
         {
-            var valueConverter = GetConverter(property);
+            var valueConverter = property.GetValueConverter() ??
+                                 property.FindTypeMapping()?.Converter;
+
             var type = (valueConverter?.ProviderClrType ?? property.ClrType).UnwrapNullableType();
             return type.IsInteger() ||
+                   type.IsEnum ||
                    type == typeof(decimal);
         }
 
@@ -375,11 +374,15 @@ namespace Microsoft.EntityFrameworkCore
                 return false;
             }
 
-            var valueConverter = GetConverter(property, storeObject, typeMappingSource);
+            var valueConverter = property.GetValueConverter() ??
+                                 (property.FindRelationalTypeMapping(storeObject) ??
+                                  typeMappingSource?.FindMapping((IProperty)property))?.Converter;
+
             var type = (valueConverter?.ProviderClrType ?? property.ClrType).UnwrapNullableType();
 
-            return (type.IsInteger()
-                    || type == typeof(decimal));
+            return (type.IsInteger() ||
+                    type.IsEnum ||
+                    type == typeof(decimal));
         }
 
         /// <summary>
@@ -453,8 +456,24 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="property">The property of which to get the columns charset from.</param>
         /// <returns>The name of the charset or null, if no explicit charset was set.</returns>
         public static string GetCharSet([NotNull] this IReadOnlyProperty property)
-            => property[MySqlAnnotationNames.CharSet] as string ??
-               property.GetMySqlLegacyCharSet();
+            => (property is RuntimeProperty)
+                ? throw new InvalidOperationException(CoreStrings.RuntimeModelMissingData)
+                : property[MySqlAnnotationNames.CharSet] as string ??
+                  property.GetMySqlLegacyCharSet();
+
+        /// <summary>
+        /// Returns the name of the charset used by the column of the property.
+        /// </summary>
+        /// <param name="property">The property of which to get the columns charset from.</param>
+        /// <param name="storeObject">The identifier of the table-like store object containing the column.</param>
+        /// <returns>The name of the charset or null, if no explicit charset was set.</returns>
+        public static string GetCharSet(this IReadOnlyProperty property, in StoreObjectIdentifier storeObject)
+            => property is RuntimeProperty
+                ? throw new InvalidOperationException(CoreStrings.RuntimeModelMissingData)
+                : property.FindAnnotation(MySqlAnnotationNames.CharSet) is { } annotation
+                    ? annotation.Value as string ??
+                      property.GetMySqlLegacyCharSet()
+                    : property.FindSharedStoreObjectRootProperty(storeObject)?.GetCharSet(storeObject);
 
         /// <summary>
         /// Returns the name of the charset used by the column of the property, defined as part of the column type.
@@ -545,7 +564,22 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="property">The property of which to get the columns SRID from.</param>
         /// <returns>The SRID or null, if no explicit SRID has been set.</returns>
         public static int? GetSpatialReferenceSystem([NotNull] this IReadOnlyProperty property)
-            => (int?)property[MySqlAnnotationNames.SpatialReferenceSystemId];
+            => (property is RuntimeProperty)
+                ? throw new InvalidOperationException(CoreStrings.RuntimeModelMissingData)
+                : (int?)property[MySqlAnnotationNames.SpatialReferenceSystemId];
+
+        /// <summary>
+        /// Returns the Spatial Reference System Identifier (SRID) used by the column of the property.
+        /// </summary>
+        /// <param name="property">The property of which to get the columns SRID from.</param>
+        /// <param name="storeObject">The identifier of the table-like store object containing the column.</param>
+        /// <returns>The SRID or null, if no explicit SRID has been set.</returns>
+        public static int? GetSpatialReferenceSystem(this IReadOnlyProperty property, in StoreObjectIdentifier storeObject)
+            => property is RuntimeProperty
+                ? throw new InvalidOperationException(CoreStrings.RuntimeModelMissingData)
+                : property.FindAnnotation(MySqlAnnotationNames.SpatialReferenceSystemId) is { } annotation
+                    ? (int?)annotation.Value
+                    : property.FindSharedStoreObjectRootProperty(storeObject)?.GetSpatialReferenceSystem(storeObject);
 
         /// <summary>
         /// Sets the Spatial Reference System Identifier (SRID) in use by the column of the property.

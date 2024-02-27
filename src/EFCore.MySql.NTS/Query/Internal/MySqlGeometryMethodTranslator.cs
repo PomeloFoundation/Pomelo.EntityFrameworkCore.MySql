@@ -127,7 +127,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                                 _sqlExpressionFactory.Constant(1))
                         },
                         method.ReturnType,
-                        _typeMappingSource.FindMapping(method.ReturnType, storeType),
+                        _typeMappingSource.FindMapping(method.ReturnType),
                         false);
                 }
 
@@ -137,7 +137,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         instance,
                         arguments[0],
                         method.ReturnType,
-                        _typeMappingSource.FindMapping(method.ReturnType, storeType));
+                        _typeMappingSource.FindMapping(method.ReturnType));
                 }
 
                 if (Equals(method, _isWithinDistance))

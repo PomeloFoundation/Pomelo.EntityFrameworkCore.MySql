@@ -1131,8 +1131,8 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
                                 $"Error in {table}.{name}: DATETIME does not support values generated " +
                                 $"on Add or Update in server version {_options.ServerVersion}. Try explicitly setting the column type to TIMESTAMP.");
                         }
-
                         goto case "timestamp";
+
                     case "timestamp":
                         operation.DefaultValueSql = $"CURRENT_TIMESTAMP({matchLen})";
                         break;

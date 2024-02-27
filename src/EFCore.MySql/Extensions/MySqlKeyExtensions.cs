@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
+using System;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 
@@ -20,7 +22,9 @@ namespace Microsoft.EntityFrameworkCore
         /// <returns> The prefix lengths.
         /// A value of `0` indicates, that the full length should be used for that column. </returns>
         public static int[] PrefixLength([NotNull] this IKey key)
-            => (int[])key[MySqlAnnotationNames.IndexPrefixLength];
+            => (key is RuntimeKey)
+                ? throw new InvalidOperationException(CoreStrings.RuntimeModelMissingData)
+                : (int[])key[MySqlAnnotationNames.IndexPrefixLength];
 
         /// <summary>
         ///     Sets prefix lengths for the key.
