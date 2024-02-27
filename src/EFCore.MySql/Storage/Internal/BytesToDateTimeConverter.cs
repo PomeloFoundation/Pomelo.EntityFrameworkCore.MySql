@@ -13,9 +13,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         public BytesToDateTimeConverter()
             : base(
-                v => DateTime.FromBinary((long)_longToBytes.ConvertFromProvider(v)),
-                v => (byte[])_longToBytes.ConvertToProvider(v.ToBinary()))
+                v => FromBytes(v),
+                v => ToBytes(v))
         {
         }
+
+        public static byte[] ToBytes(DateTime v)
+            => (byte[])_longToBytes.ConvertToProvider(v.ToBinary());
+
+        public static DateTime FromBytes(byte[] v)
+            => DateTime.FromBinary((long)_longToBytes.ConvertFromProvider(v));
     }
 }
