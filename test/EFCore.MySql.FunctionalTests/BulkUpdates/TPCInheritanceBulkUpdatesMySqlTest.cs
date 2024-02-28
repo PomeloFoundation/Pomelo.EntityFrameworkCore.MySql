@@ -50,13 +50,13 @@ FROM `Countries` AS `c`
 WHERE (
     SELECT COUNT(*)
     FROM (
-        SELECT `e`.`Id`, `e`.`CountryId`, `e`.`Name`, `e`.`Species`, `e`.`EagleId`, `e`.`IsFlightless`, `e`.`Group`, NULL AS `FoundOn`, 'Eagle' AS `Discriminator`
+        SELECT `e`.`CountryId`
         FROM `Eagle` AS `e`
         UNION ALL
-        SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, NULL AS `Group`, `k`.`FoundOn`, 'Kiwi' AS `Discriminator`
+        SELECT `k`.`CountryId`
         FROM `Kiwi` AS `k`
-    ) AS `t`
-    WHERE (`c`.`Id` = `t`.`CountryId`) AND (`t`.`CountryId` > 0)) > 0
+    ) AS `u`
+    WHERE (`c`.`Id` = `u`.`CountryId`) AND (`u`.`CountryId` > 0)) > 0
 """);
     }
 
@@ -71,10 +71,10 @@ FROM `Countries` AS `c`
 WHERE (
     SELECT COUNT(*)
     FROM (
-        SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, NULL AS `Group`, `k`.`FoundOn`, 'Kiwi' AS `Discriminator`
+        SELECT `k`.`CountryId`
         FROM `Kiwi` AS `k`
-    ) AS `t`
-    WHERE (`c`.`Id` = `t`.`CountryId`) AND (`t`.`CountryId` > 0)) > 0
+    ) AS `u`
+    WHERE (`c`.`Id` = `u`.`CountryId`) AND (`u`.`CountryId` > 0)) > 0
 """);
     }
 
@@ -131,13 +131,13 @@ SET `c`.`Name` = 'Monovia'
 WHERE (
     SELECT COUNT(*)
     FROM (
-        SELECT `e`.`Id`, `e`.`CountryId`, `e`.`Name`, `e`.`Species`, `e`.`EagleId`, `e`.`IsFlightless`, `e`.`Group`, NULL AS `FoundOn`, 'Eagle' AS `Discriminator`
+        SELECT `e`.`CountryId`
         FROM `Eagle` AS `e`
         UNION ALL
-        SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, NULL AS `Group`, `k`.`FoundOn`, 'Kiwi' AS `Discriminator`
+        SELECT `k`.`CountryId`
         FROM `Kiwi` AS `k`
-    ) AS `t`
-    WHERE (`c`.`Id` = `t`.`CountryId`) AND (`t`.`CountryId` > 0)) > 0
+    ) AS `u`
+    WHERE (`c`.`Id` = `u`.`CountryId`) AND (`u`.`CountryId` > 0)) > 0
 """);
     }
 
@@ -152,10 +152,10 @@ SET `c`.`Name` = 'Monovia'
 WHERE (
     SELECT COUNT(*)
     FROM (
-        SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, NULL AS `Group`, `k`.`FoundOn`, 'Kiwi' AS `Discriminator`
+        SELECT `k`.`CountryId`
         FROM `Kiwi` AS `k`
-    ) AS `t`
-    WHERE (`c`.`Id` = `t`.`CountryId`) AND (`t`.`CountryId` > 0)) > 0
+    ) AS `u`
+    WHERE (`c`.`Id` = `u`.`CountryId`) AND (`u`.`CountryId` > 0)) > 0
 """);
     }
 
@@ -172,15 +172,15 @@ WHERE (
 
         AssertSql(
 """
-SELECT `t`.`Id`, `t`.`CountryId`, `t`.`Name`, `t`.`Species`, `t`.`EagleId`, `t`.`IsFlightless`, `t`.`Group`, `t`.`FoundOn`, `t`.`Discriminator`
+SELECT `u`.`Id`, `u`.`CountryId`, `u`.`Name`, `u`.`Species`, `u`.`EagleId`, `u`.`IsFlightless`, `u`.`Group`, `u`.`FoundOn`, `u`.`Discriminator`
 FROM (
     SELECT `e`.`Id`, `e`.`CountryId`, `e`.`Name`, `e`.`Species`, `e`.`EagleId`, `e`.`IsFlightless`, `e`.`Group`, NULL AS `FoundOn`, 'Eagle' AS `Discriminator`
     FROM `Eagle` AS `e`
     UNION ALL
     SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, NULL AS `Group`, `k`.`FoundOn`, 'Kiwi' AS `Discriminator`
     FROM `Kiwi` AS `k`
-) AS `t`
-WHERE `t`.`Name` = 'Great spotted kiwi'
+) AS `u`
+WHERE `u`.`Name` = 'Great spotted kiwi'
 """);
     }
 

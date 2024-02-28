@@ -14,5 +14,6 @@
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="xunit.runner.console" />
     <PackageReference Include="GitHubActionsTestLogger" />
+    <PackageReference Include="Xunit.SkippableFact" />
   </ItemGroup>
 </Project>

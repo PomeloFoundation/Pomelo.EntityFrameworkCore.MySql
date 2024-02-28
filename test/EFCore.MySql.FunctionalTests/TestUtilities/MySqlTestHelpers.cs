@@ -2,11 +2,13 @@ using System;
 using System.Linq;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Tests;
 
@@ -26,6 +28,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 
         public override DbContextOptionsBuilder UseProviderOptions(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder.UseMySql("Database=DummyDatabase", AppConfig.ServerVersion);
+
+        public override LoggingDefinitions LoggingDefinitions { get; } = new MySqlLoggingDefinitions();
 
         public IServiceProvider CreateContextServices(ServerVersion serverVersion)
             => ((IInfrastructure<IServiceProvider>)new DbContext(CreateOptions(serverVersion))).Instance;

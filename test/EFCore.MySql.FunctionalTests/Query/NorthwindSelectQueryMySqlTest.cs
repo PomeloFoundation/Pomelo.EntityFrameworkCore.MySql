@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
@@ -40,9 +44,11 @@ FROM `Orders` AS `o`");
         {
             await base.Select_datetime_month_component(async);
 
-            AssertSql(
-                @"SELECT EXTRACT(month FROM `o`.`OrderDate`)
-FROM `Orders` AS `o`");
+        AssertSql(
+"""
+SELECT EXTRACT(month FROM `o`.`OrderDate`)
+FROM `Orders` AS `o`
+""");
         }
 
         [ConditionalTheory]
@@ -170,7 +176,14 @@ ORDER BY `t`.`OrderDate`, `t`.`CustomerID`
                     () => base.Correlated_collection_after_distinct_with_complex_projection_not_containing_original_identifier(async)))
                 .Message;
 
-            Assert.Equal(RelationalStrings.InsufficientInformationToIdentifyElementOfCollectionJoin, message);
+            if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
+            {
+                Assert.Equal(RelationalStrings.InsufficientInformationToIdentifyElementOfCollectionJoin, message);
+            }
+            else
+            {
+                Assert.Contains("Primitive collections support has not been enabled.", message);
+            }
 
             AssertSql();
         }

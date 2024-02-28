@@ -1,6 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.TestModels.FunkyDataModel;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -173,6 +175,18 @@ WHERE `f`.`FirstName` IS NULL
 SELECT `f`.`FirstName`
 FROM `FunkyCustomers` AS `f`
 """);
+    }
+
+    public override Task String_Contains_and_StartsWith_with_same_parameter(bool async)
+    {
+        var s = "B";
+
+        return AssertQuery(
+            async,
+            ss => ss.Set<FunkyCustomer>().Where(
+                c => c.FirstName.Contains(s) || c.LastName.StartsWith(s)),
+            ss => ss.Set<FunkyCustomer>().Where(
+                c => c.FirstName.MaybeScalar(f => f.Contains(s)) == true || c.LastName.MaybeScalar(l => l.StartsWith(s)) == true));
     }
 
     protected override void ClearLog()

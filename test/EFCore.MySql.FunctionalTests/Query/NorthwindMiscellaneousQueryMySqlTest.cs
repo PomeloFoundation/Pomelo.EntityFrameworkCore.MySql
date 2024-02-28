@@ -170,19 +170,21 @@ ORDER BY `c`.`CustomerID`");
         {
             await base.Take_Skip(async);
 
-            AssertSql(
-                @"@__p_0='10'
+        AssertSql(
+"""
+@__p_0='10'
 @__p_1='5'
 
-SELECT `t`.`CustomerID`, `t`.`Address`, `t`.`City`, `t`.`CompanyName`, `t`.`ContactName`, `t`.`ContactTitle`, `t`.`Country`, `t`.`Fax`, `t`.`Phone`, `t`.`PostalCode`, `t`.`Region`
+SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
 FROM (
     SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
     FROM `Customers` AS `c`
     ORDER BY `c`.`ContactName`
     LIMIT @__p_0
-) AS `t`
-ORDER BY `t`.`ContactName`
-LIMIT 18446744073709551610 OFFSET @__p_1");
+) AS `c0`
+ORDER BY `c0`.`ContactName`
+LIMIT 18446744073709551610 OFFSET @__p_1
+""");
         }
 
         [ConditionalTheory]
@@ -247,19 +249,21 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
                     AssertCollection(e.ProductIds, a.ProductIds, ordered: true, elementAsserter: (ie, ia) => Assert.Equal(ie, ia));
                 });
 
-            AssertSql(
-                @"@__p_0='5'
+        AssertSql(
+"""
+@__p_0='5'
 
-SELECT `t`.`OrderID`, `o0`.`ProductID`, `o0`.`OrderID`
+SELECT `o1`.`OrderID`, `o0`.`ProductID`, `o0`.`OrderID`
 FROM (
     SELECT `o`.`OrderID`
     FROM `Orders` AS `o`
     WHERE `o`.`OrderID` < 10300
     ORDER BY `o`.`OrderID`
     LIMIT 18446744073709551610 OFFSET @__p_0
-) AS `t`
-LEFT JOIN `Order Details` AS `o0` ON `t`.`OrderID` = `o0`.`OrderID`
-ORDER BY `t`.`OrderID`, `o0`.`ProductID`");
+) AS `o1`
+LEFT JOIN `Order Details` AS `o0` ON `o1`.`OrderID` = `o0`.`OrderID`
+ORDER BY `o1`.`OrderID`, `o0`.`ProductID`
+""");
         }
 
         /// <summary>
@@ -284,20 +288,22 @@ ORDER BY `t`.`OrderID`, `o0`.`ProductID`");
                     AssertCollection(e.ProductIds, a.ProductIds, ordered: true, elementAsserter: (ie, ia) => Assert.Equal(ie, ia));
                 });
 
-            AssertSql(
-                @"@__p_1='10'
+        AssertSql(
+"""
+@__p_1='10'
 @__p_0='5'
 
-SELECT `t`.`OrderID`, `o0`.`ProductID`, `o0`.`OrderID`
+SELECT `o1`.`OrderID`, `o0`.`ProductID`, `o0`.`OrderID`
 FROM (
     SELECT `o`.`OrderID`
     FROM `Orders` AS `o`
     WHERE `o`.`OrderID` < 10300
     ORDER BY `o`.`OrderID`
     LIMIT @__p_1 OFFSET @__p_0
-) AS `t`
-LEFT JOIN `Order Details` AS `o0` ON `t`.`OrderID` = `o0`.`OrderID`
-ORDER BY `t`.`OrderID`, `o0`.`ProductID`");
+) AS `o1`
+LEFT JOIN `Order Details` AS `o0` ON `o1`.`OrderID` = `o0`.`OrderID`
+ORDER BY `o1`.`OrderID`, `o0`.`ProductID`
+""");
         }
 
         /// <summary>
@@ -321,19 +327,21 @@ ORDER BY `t`.`OrderID`, `o0`.`ProductID`");
                     AssertCollection(e.ProductIds, a.ProductIds, ordered: true, elementAsserter: (ie, ia) => Assert.Equal(ie, ia));
                 });
 
-            AssertSql(
-                @"@__p_0='10'
+        AssertSql(
+"""
+@__p_0='10'
 
-SELECT `t`.`OrderID`, `o0`.`ProductID`, `o0`.`OrderID`
+SELECT `o1`.`OrderID`, `o0`.`ProductID`, `o0`.`OrderID`
 FROM (
     SELECT `o`.`OrderID`
     FROM `Orders` AS `o`
     WHERE `o`.`OrderID` < 10300
     ORDER BY `o`.`OrderID`
     LIMIT @__p_0
-) AS `t`
-LEFT JOIN `Order Details` AS `o0` ON `t`.`OrderID` = `o0`.`OrderID`
-ORDER BY `t`.`OrderID`, `o0`.`ProductID`");
+) AS `o1`
+LEFT JOIN `Order Details` AS `o0` ON `o1`.`OrderID` = `o0`.`OrderID`
+ORDER BY `o1`.`OrderID`, `o0`.`ProductID`
+""");
         }
 
         public override Task Complex_nested_query_doesnt_try_binding_to_grandparent_when_parent_returns_complex_result(bool async)
@@ -454,17 +462,25 @@ FROM `Customers` AS `c`");
                 Assert.True(expected[i].Orders?.SequenceEqual(actual[i].Orders) ?? true);
             }
 
-            AssertSql(
+        AssertSql(
 """
-SELECT `t`.`CustomerID`, `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
+SELECT `o0`.`CustomerID`, `o1`.`OrderID`, `o1`.`CustomerID`, `o1`.`EmployeeID`, `o1`.`OrderDate`
 FROM (
     SELECT DISTINCT `o`.`CustomerID`
     FROM `Orders` AS `o`
     WHERE `o`.`OrderID` < 10300
-) AS `t`
-LEFT JOIN `Orders` AS `o0` ON `t`.`CustomerID` = `o0`.`CustomerID`
-ORDER BY `t`.`CustomerID`, `o0`.`OrderID`
+) AS `o0`
+LEFT JOIN `Orders` AS `o1` ON `o0`.`CustomerID` = `o1`.`CustomerID`
+ORDER BY `o0`.`CustomerID`, `o1`.`OrderID`
 """);
+        }
+
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WhereSubqueryReferencesOuterQuery))]
+        public override async Task Subquery_with_navigation_inside_inline_collection(bool async)
+        {
+            await base.Subquery_with_navigation_inside_inline_collection(async);
+
+            AssertSql("");
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.OuterReferenceInMultiLevelSubquery))]

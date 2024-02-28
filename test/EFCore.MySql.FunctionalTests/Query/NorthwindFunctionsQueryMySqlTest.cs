@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -528,13 +528,13 @@ WHERE `c`.`ContactName` LIKE '%     %'");
         {
             await base.String_Contains_parameter_with_whitespace(async);
 
-            AssertSql(
+        AssertSql(
 """
-@__pattern_0_rewritten='%     %' (Size = 30)
+@__pattern_0_contains='%     %' (Size = 30)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` LIKE @__pattern_0_rewritten
+WHERE `c`.`ContactName` LIKE @__pattern_0_contains
 """);
         }
 
@@ -1806,13 +1806,13 @@ WHERE (`o`.`CustomerID` = 'ALFKI') AND ((CAST(`o`.`OrderDate` AS char) LIKE '%19
         {
             await base.String_StartsWith_Parameter(async);
 
-            AssertSql(
+        AssertSql(
 """
-@__pattern_0_rewritten='M%' (Size = 30)
+@__pattern_0_startswith='M%' (Size = 30)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` LIKE @__pattern_0_rewritten
+WHERE `c`.`ContactName` LIKE @__pattern_0_startswith
 """);
         }
 
@@ -1820,13 +1820,13 @@ WHERE `c`.`ContactName` LIKE @__pattern_0_rewritten
         {
             await base.String_EndsWith_Parameter(async);
 
-            AssertSql(
+        AssertSql(
 """
-@__pattern_0_rewritten='%b' (Size = 30)
+@__pattern_0_endswith='%b' (Size = 30)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` LIKE @__pattern_0_rewritten
+WHERE `c`.`ContactName` LIKE @__pattern_0_endswith
 """);
         }
 
@@ -1834,16 +1834,16 @@ WHERE `c`.`ContactName` LIKE @__pattern_0_rewritten
         {
             await base.String_Join_over_non_nullable_column(async);
 
-            AssertSql(
+        AssertSql(
 """
-SELECT `t`.`City`, `c0`.`CustomerID`
+SELECT `c1`.`City`, `c0`.`CustomerID`
 FROM (
     SELECT `c`.`City`
     FROM `Customers` AS `c`
     GROUP BY `c`.`City`
-) AS `t`
-LEFT JOIN `Customers` AS `c0` ON `t`.`City` = `c0`.`City`
-ORDER BY `t`.`City`
+) AS `c1`
+LEFT JOIN `Customers` AS `c0` ON `c1`.`City` = `c0`.`City`
+ORDER BY `c1`.`City`
 """);
         }
 
@@ -1851,20 +1851,20 @@ ORDER BY `t`.`City`
         {
             await base.String_Join_with_predicate(async);
 
-            AssertSql(
+        AssertSql(
 """
-SELECT `t`.`City`, `t0`.`CustomerID`
+SELECT `c1`.`City`, `c2`.`CustomerID`
 FROM (
     SELECT `c`.`City`
     FROM `Customers` AS `c`
     GROUP BY `c`.`City`
-) AS `t`
+) AS `c1`
 LEFT JOIN (
     SELECT `c0`.`CustomerID`, `c0`.`City`
     FROM `Customers` AS `c0`
     WHERE CHAR_LENGTH(`c0`.`ContactName`) > 10
-) AS `t0` ON `t`.`City` = `t0`.`City`
-ORDER BY `t`.`City`
+) AS `c2` ON `c1`.`City` = `c2`.`City`
+ORDER BY `c1`.`City`
 """);
         }
 
@@ -1872,16 +1872,16 @@ ORDER BY `t`.`City`
         {
             await base.String_Join_with_ordering(async);
 
-            AssertSql(
+        AssertSql(
 """
-SELECT `t`.`City`, `c0`.`CustomerID`
+SELECT `c1`.`City`, `c0`.`CustomerID`
 FROM (
     SELECT `c`.`City`
     FROM `Customers` AS `c`
     GROUP BY `c`.`City`
-) AS `t`
-LEFT JOIN `Customers` AS `c0` ON `t`.`City` = `c0`.`City`
-ORDER BY `t`.`City`, `c0`.`CustomerID` DESC
+) AS `c1`
+LEFT JOIN `Customers` AS `c0` ON `c1`.`City` = `c0`.`City`
+ORDER BY `c1`.`City`, `c0`.`CustomerID` DESC
 """);
         }
 
@@ -1889,16 +1889,16 @@ ORDER BY `t`.`City`, `c0`.`CustomerID` DESC
         {
             await base.String_Join_over_nullable_column(async);
 
-            AssertSql(
+        AssertSql(
 """
-SELECT `t`.`City`, `c0`.`Region`, `c0`.`CustomerID`
+SELECT `c1`.`City`, `c0`.`Region`, `c0`.`CustomerID`
 FROM (
     SELECT `c`.`City`
     FROM `Customers` AS `c`
     GROUP BY `c`.`City`
-) AS `t`
-LEFT JOIN `Customers` AS `c0` ON `t`.`City` = `c0`.`City`
-ORDER BY `t`.`City`
+) AS `c1`
+LEFT JOIN `Customers` AS `c0` ON `c1`.`City` = `c0`.`City`
+ORDER BY `c1`.`City`
 """);
         }
 
@@ -1906,16 +1906,16 @@ ORDER BY `t`.`City`
         {
             await base.String_Concat(async);
 
-            AssertSql(
+        AssertSql(
 """
-SELECT `t`.`City`, `c0`.`CustomerID`
+SELECT `c1`.`City`, `c0`.`CustomerID`
 FROM (
     SELECT `c`.`City`
     FROM `Customers` AS `c`
     GROUP BY `c`.`City`
-) AS `t`
-LEFT JOIN `Customers` AS `c0` ON `t`.`City` = `c0`.`City`
-ORDER BY `t`.`City`
+) AS `c1`
+LEFT JOIN `Customers` AS `c0` ON `c1`.`City` = `c0`.`City`
+ORDER BY `c1`.`City`
 """);
         }
 

@@ -242,14 +242,14 @@ WHERE `m`.`Timeline` > (UTC_TIMESTAMP() - @__timeSpan_0)
         {
             await base.Group_by_on_StartsWith_with_null_parameter_as_argument(async);
 
-            AssertSql(
+        AssertSql(
 """
-SELECT `t`.`Key`
+SELECT `g0`.`Key`
 FROM (
     SELECT FALSE AS `Key`
     FROM `Gears` AS `g`
-) AS `t`
-GROUP BY `t`.`Key`
+) AS `g0`
+GROUP BY `g0`.`Key`
 """);
         }
 

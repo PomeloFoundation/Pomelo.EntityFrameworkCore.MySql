@@ -30,7 +30,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             => new MySqlQueryTranslationPostprocessor(
                 _dependencies,
                 _relationalDependencies,
-                queryCompilationContext,
+                (MySqlQueryCompilationContext)queryCompilationContext,
                 _options,
                 _sqlExpressionFactory);
     }

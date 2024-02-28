@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
@@ -40,19 +40,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 assertOrder: true,
                 assertEmpty: true); // TODO: Use a linq query that does not return an empty result.
 
-            AssertSql(
-                @"SELECT `t`.`Year`, `t`.`Count`
+        AssertSql(
+"""
+SELECT `o3`.`Year`, `o3`.`Count`
 FROM (
-    SELECT `t`.`Year`, COUNT(*) AS `Count`, `t`.`CustomerID`, `t`.`Year` = 1995 AS `c`
+    SELECT `o0`.`Year`, COUNT(*) AS `Count`, `o0`.`CustomerID`, `o0`.`Year` = 1995 AS `c`
     FROM (
         SELECT `o`.`CustomerID`, EXTRACT(year FROM `o`.`OrderDate`) AS `Year`
         FROM `Orders` AS `o`
         WHERE (`o`.`CustomerID` = 'ALFKI') AND `o`.`OrderDate` IS NOT NULL
-    ) AS `t`
-    GROUP BY `t`.`CustomerID`, `t`.`Year`, `c`
+    ) AS `o0`
+    GROUP BY `o0`.`CustomerID`, `o0`.`Year`, `c`
     HAVING `c`
-) AS `t`
-ORDER BY `t`.`Year`");
+) AS `o3`
+ORDER BY `o3`.`Year`
+""");
         }
 
         [ConditionalTheory]
@@ -76,27 +78,29 @@ ORDER BY `t`.`Year`");
                         .Select(k => k.Year)),
                 assertOrder: true);
 
-            AssertSql(
-                @"SELECT `t`.`Year`
+        AssertSql(
+"""
+SELECT `o7`.`Year`
 FROM (
-    SELECT `t`.`Year`, `t`.`CustomerID`, `t`.`Year` = 1995 AS `c`
+    SELECT `o0`.`Year`, `o0`.`CustomerID`, `o0`.`Year` = 1995 AS `c`
     FROM (
         SELECT `o`.`CustomerID`, EXTRACT(year FROM `o`.`OrderDate`) AS `Year`
         FROM `Orders` AS `o`
         WHERE (`o`.`CustomerID` = 'ALFKI') AND `o`.`OrderDate` IS NOT NULL
-    ) AS `t`
-    GROUP BY `t`.`CustomerID`, `t`.`Year`, `c`
+    ) AS `o0`
+    GROUP BY `o0`.`CustomerID`, `o0`.`Year`, `c`
     HAVING `c`
-) AS `t`
+) AS `o7`
 UNION ALL
-SELECT `t1`.`Key` AS `Year`
+SELECT `o2`.`Key` AS `Year`
 FROM (
-    SELECT EXTRACT(year FROM `o0`.`OrderDate`) AS `Key`
-    FROM `Orders` AS `o0`
-    WHERE `o0`.`OrderDate` IS NOT NULL
-) AS `t1`
-GROUP BY `t1`.`Key`
-HAVING COUNT(*) > 0");
+    SELECT EXTRACT(year FROM `o1`.`OrderDate`) AS `Key`
+    FROM `Orders` AS `o1`
+    WHERE `o1`.`OrderDate` IS NOT NULL
+) AS `o2`
+GROUP BY `o2`.`Key`
+HAVING COUNT(*) > 0
+""");
         }
     }
 }

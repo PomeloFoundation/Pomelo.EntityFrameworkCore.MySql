@@ -46,9 +46,6 @@ FROM `Countries` AS `c`
 WHERE (
     SELECT COUNT(*)
     FROM `Animals` AS `a`
-    LEFT JOIN `Birds` AS `b` ON `a`.`Id` = `b`.`Id`
-    LEFT JOIN `Eagle` AS `e` ON `a`.`Id` = `e`.`Id`
-    LEFT JOIN `Kiwi` AS `k` ON `a`.`Id` = `k`.`Id`
     WHERE ((`a`.`CountryId` = 1) AND (`c`.`Id` = `a`.`CountryId`)) AND (`a`.`CountryId` > 0)) > 0
 """);
     }
@@ -64,8 +61,6 @@ FROM `Countries` AS `c`
 WHERE (
     SELECT COUNT(*)
     FROM `Animals` AS `a`
-    LEFT JOIN `Birds` AS `b` ON `a`.`Id` = `b`.`Id`
-    LEFT JOIN `Eagle` AS `e` ON `a`.`Id` = `e`.`Id`
     LEFT JOIN `Kiwi` AS `k` ON `a`.`Id` = `k`.`Id`
     WHERE (((`a`.`CountryId` = 1) AND (`c`.`Id` = `a`.`CountryId`)) AND `k`.`Id` IS NOT NULL) AND (`a`.`CountryId` > 0)) > 0
 """);
@@ -124,9 +119,6 @@ SET `c`.`Name` = 'Monovia'
 WHERE (
     SELECT COUNT(*)
     FROM `Animals` AS `a`
-    LEFT JOIN `Birds` AS `b` ON `a`.`Id` = `b`.`Id`
-    LEFT JOIN `Eagle` AS `e` ON `a`.`Id` = `e`.`Id`
-    LEFT JOIN `Kiwi` AS `k` ON `a`.`Id` = `k`.`Id`
     WHERE ((`a`.`CountryId` = 1) AND (`c`.`Id` = `a`.`CountryId`)) AND (`a`.`CountryId` > 0)) > 0
 """);
     }
@@ -142,8 +134,6 @@ SET `c`.`Name` = 'Monovia'
 WHERE (
     SELECT COUNT(*)
     FROM `Animals` AS `a`
-    LEFT JOIN `Birds` AS `b` ON `a`.`Id` = `b`.`Id`
-    LEFT JOIN `Eagle` AS `e` ON `a`.`Id` = `e`.`Id`
     LEFT JOIN `Kiwi` AS `k` ON `a`.`Id` = `k`.`Id`
     WHERE (((`a`.`CountryId` = 1) AND (`c`.`Id` = `a`.`CountryId`)) AND `k`.`Id` IS NOT NULL) AND (`a`.`CountryId` > 0)) > 0
 """);

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -517,7 +518,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                             _sqlExpressionFactory.Constant(string.Empty, stringTypeMapping)))));
         }
 
-        protected virtual SqlExpression GetLikeExpressionUsingParameter(QueryCompilationContext queryCompilationContext,
+        protected virtual SqlExpression GetLikeExpressionUsingParameter(
+            QueryCompilationContext queryCompilationContext,
             SqlExpression target,
             Func<SqlExpression, SqlExpression> targetTransform,
             SqlExpression pattern,
@@ -538,7 +540,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     QueryCompilationContext.QueryContextParameter);
 
                 var escapedPatternParameter =
-                    queryCompilationContext.RegisterRuntimeParameter(patternParameter.Name + "_rewritten", lambda);
+                    queryCompilationContext.RegisterRuntimeParameter(
+                        $"{patternParameter.Name}_{methodType.ToString().ToLower(CultureInfo.InvariantCulture)}",
+                        lambda);
 
                 return _sqlExpressionFactory.Like(
                     targetTransform(target),

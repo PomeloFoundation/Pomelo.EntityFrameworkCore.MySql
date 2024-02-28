@@ -1,6 +1,8 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
@@ -66,6 +68,7 @@ START TRANSACTION;
 CREATE TABLE `Table1` (
     `Id` int NOT NULL,
     `Foo` int NOT NULL,
+    `Description` longtext NOT NULL,
     CONSTRAINT `PK_Table1` PRIMARY KEY (`Id`)
 );
 
@@ -87,6 +90,51 @@ START TRANSACTION;
 
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('00000000000003_Migration3', '7.0.0-test');
+
+COMMIT;
+
+START TRANSACTION;
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000004_Migration4', '7.0.0-test');
+
+COMMIT;
+
+START TRANSACTION;
+
+INSERT INTO Table1 (Id, Bar, Description) VALUES (-1, ' ', 'Value With
+
+Empty Lines')
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000005_Migration5', '7.0.0-test');
+
+COMMIT;
+
+START TRANSACTION;
+
+INSERT INTO Table1 (Id, Bar, Description) VALUES (-2, ' ', 'GO
+Value With
+
+Empty Lines')
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000006_Migration6', '7.0.0-test');
+
+COMMIT;
+
+START TRANSACTION;
+
+INSERT INTO Table1 (Id, Bar, Description) VALUES (-3, ' ', 'GO
+Value With
+
+GO
+
+Empty Lines
+GO')
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000007_Migration7', '7.0.0-test');
 
 COMMIT;
 
@@ -154,6 +202,7 @@ BEGIN
     CREATE TABLE `Table1` (
         `Id` int NOT NULL,
         `Foo` int NOT NULL,
+        `Description` longtext NOT NULL,
         CONSTRAINT `PK_Table1` PRIMARY KEY (`Id`)
     );
 
@@ -223,6 +272,135 @@ BEGIN
 
     INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
     VALUES ('00000000000003_Migration3', '7.0.0-test');
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
+COMMIT;
+
+START TRANSACTION;
+
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000004_Migration4') THEN
+
+    INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+    VALUES ('00000000000004_Migration4', '7.0.0-test');
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
+COMMIT;
+
+START TRANSACTION;
+
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000005_Migration5') THEN
+
+    INSERT INTO Table1 (Id, Bar, Description) VALUES (-1, ' ', 'Value With
+
+    Empty Lines')
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000005_Migration5') THEN
+
+    INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+    VALUES ('00000000000005_Migration5', '7.0.0-test');
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
+COMMIT;
+
+START TRANSACTION;
+
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000006_Migration6') THEN
+
+    INSERT INTO Table1 (Id, Bar, Description) VALUES (-2, ' ', 'GO
+    Value With
+
+    Empty Lines')
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000006_Migration6') THEN
+
+    INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+    VALUES ('00000000000006_Migration6', '7.0.0-test');
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
+COMMIT;
+
+START TRANSACTION;
+
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000007_Migration7') THEN
+
+    INSERT INTO Table1 (Id, Bar, Description) VALUES (-3, ' ', 'GO
+    Value With
+
+    GO
+
+    Empty Lines
+    GO')
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000007_Migration7') THEN
+
+    INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+    VALUES ('00000000000007_Migration7', '7.0.0-test');
 
     END IF;
 END //
@@ -400,6 +578,7 @@ COMMIT;
 CREATE TABLE `Table1` (
     `Id` int NOT NULL,
     `Foo` int NOT NULL,
+    `Description` longtext NOT NULL,
     CONSTRAINT `PK_Table1` PRIMARY KEY (`Id`)
 );
 
@@ -413,6 +592,35 @@ VALUES ('00000000000002_Migration2', '7.0.0-test');
 
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('00000000000003_Migration3', '7.0.0-test');
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000004_Migration4', '7.0.0-test');
+
+INSERT INTO Table1 (Id, Bar, Description) VALUES (-1, ' ', 'Value With
+
+Empty Lines')
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000005_Migration5', '7.0.0-test');
+
+INSERT INTO Table1 (Id, Bar, Description) VALUES (-2, ' ', 'GO
+Value With
+
+Empty Lines')
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000006_Migration6', '7.0.0-test');
+
+INSERT INTO Table1 (Id, Bar, Description) VALUES (-3, ' ', 'GO
+Value With
+
+GO
+
+Empty Lines
+GO')
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000007_Migration7', '7.0.0-test');
 
 ",
                 Sql,
@@ -439,6 +647,7 @@ BEGIN
     CREATE TABLE `Table1` (
         `Id` int NOT NULL,
         `Foo` int NOT NULL,
+        `Description` longtext NOT NULL,
         CONSTRAINT `PK_Table1` PRIMARY KEY (`Id`)
     );
 
@@ -507,6 +716,119 @@ DELIMITER ;
 CALL MigrationsScript();
 DROP PROCEDURE MigrationsScript;
 
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000004_Migration4') THEN
+
+    INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+    VALUES ('00000000000004_Migration4', '7.0.0-test');
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000005_Migration5') THEN
+
+    INSERT INTO Table1 (Id, Bar, Description) VALUES (-1, ' ', 'Value With
+
+    Empty Lines')
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000005_Migration5') THEN
+
+    INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+    VALUES ('00000000000005_Migration5', '7.0.0-test');
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000006_Migration6') THEN
+
+    INSERT INTO Table1 (Id, Bar, Description) VALUES (-2, ' ', 'GO
+    Value With
+
+    Empty Lines')
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000006_Migration6') THEN
+
+    INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+    VALUES ('00000000000006_Migration6', '7.0.0-test');
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000007_Migration7') THEN
+
+    INSERT INTO Table1 (Id, Bar, Description) VALUES (-3, ' ', 'GO
+    Value With
+
+    GO
+
+    Empty Lines
+    GO')
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000007_Migration7') THEN
+
+    INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+    VALUES ('00000000000007_Migration7', '7.0.0-test');
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
 ",
                 Sql,
                 ignoreLineEndingDifferences: true);
@@ -535,6 +857,21 @@ DROP PROCEDURE MigrationsScript;
         {
             throw new NotImplementedException();
         }
+
+        public override void Can_apply_all_migrations()
+            => Assert.Throws<MySqlException>(() => base.Can_apply_all_migrations());
+
+        public override void Can_apply_range_of_migrations()
+            => Assert.Throws<MySqlException>(() => base.Can_apply_range_of_migrations());
+
+        public override void Can_revert_all_migrations()
+            => Assert.Throws<MySqlException>(() => base.Can_revert_all_migrations());
+
+        public override void Can_revert_one_migrations()
+            => Assert.Throws<MySqlException>(() => base.Can_revert_one_migrations());
+
+        public override Task Can_apply_all_migrations_async()
+            => Assert.ThrowsAsync<MySqlException>(() => base.Can_apply_all_migrations_async());
 
         public class MigrationsInfrastructureMySqlFixture : MigrationsInfrastructureFixtureBase
         {
