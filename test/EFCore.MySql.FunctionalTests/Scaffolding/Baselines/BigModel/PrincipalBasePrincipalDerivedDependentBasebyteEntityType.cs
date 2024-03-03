@@ -140,7 +140,7 @@ namespace TestNamespace
                 converter: new ValueConverter<byte[], DateTime>(
                     (Byte[] v) => BytesToDateTimeConverter.FromBytes(v),
                     (DateTime v) => BytesToDateTimeConverter.ToBytes(v)));
-            rowid.AddAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.ComputedColumn);
+            rowid.AddAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.None);
 
             var key = runtimeEntityType.AddKey(
                 new[] { derivedsId, derivedsAlternateId, principalsId, principalsAlternateId });

@@ -64,7 +64,10 @@ namespace Microsoft.EntityFrameworkCore
 
             if (property.ValueGenerated == ValueGenerated.OnAddOrUpdate)
             {
-                if (IsCompatibleComputedColumn(property))
+                // We explicitly check for RowVersion when generation migrations. We therefore handle RowVersion separately from other cases
+                // of using CURRENT_TIMESTAMP etc. and we don't generate a MySqlValueGenerationStrategy.ComputedColumn annotation.
+                if (IsCompatibleComputedColumn(property) &&
+                    !property.IsConcurrencyToken)
                 {
                     return MySqlValueGenerationStrategy.ComputedColumn;
                 }
@@ -144,7 +147,10 @@ namespace Microsoft.EntityFrameworkCore
 
             if (property.ValueGenerated == ValueGenerated.OnAddOrUpdate)
             {
-                if (IsCompatibleComputedColumn(property))
+                // We explicitly check for RowVersion when generation migrations. We therefore handle RowVersion separately from other cases
+                // of using CURRENT_TIMESTAMP etc. and we don't generate a MySqlValueGenerationStrategy.ComputedColumn annotation.
+                if (IsCompatibleComputedColumn(property) &&
+                    !property.IsConcurrencyToken)
                 {
                     return MySqlValueGenerationStrategy.ComputedColumn;
                 }
