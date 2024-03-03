@@ -53,7 +53,7 @@ public class Startup
 
 ## License
 
-_Pomelo.EntityFrameworkCore.MySql_ is released as open source under the [MIT license](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/blob/master/LICENSE).
+_Pomelo.EntityFrameworkCore.MySql_ is released as open source under the [MIT license](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/blob/main/LICENSE).
 
 ## Feedback
 
