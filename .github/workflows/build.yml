@@ -318,7 +318,7 @@ jobs:
           $officialBuild = '${{ github.ref }}' -match '(?<=^refs/tags/)\d+\.\d+\.\d+.*$'
           $officialVersion = $Matches.0
           $wipBuild = '${{ github.ref }}' -match '^refs/heads/.*-wip$'
-          $ciBuildOnly = $wipBuild -or ('${{ github.ref }}' -match '^refs/heads/(?:master|release/.*)$')
+          $ciBuildOnly = $wipBuild -or ('${{ github.ref }}' -match '^refs/heads/(?:main|master|release/.*)$')
           $continuousIntegrationTimestamp = Get-Date -Format yyyyMMddHHmmss
           $buildSha = '${{ github.sha }}'.SubString(0, 7);
           $pack = $officialBuild -or $ciBuildOnly
