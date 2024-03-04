@@ -196,5 +196,39 @@ FROM `Weapons` AS `w`
 WHERE `w`.`IsAutomatic` = TRUE"), keys); // Breaking change in 5.0 due to bool expression optimization in `SqlNullabilityProcessor`.
                                          // Was "`w`.`IsAutomatic` <> FALSE" before.
         }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual async Task DateTimeOffset_DateTime(bool async)
+        {
+            await AssertQuery(
+                async,
+                ss => ss.Set<Mission>().Where(e => e.Timeline == e.Timeline.DateTime),
+                ss => ss.Set<Mission>().Where(e => true));
+
+            AssertSql(
+                """
+SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
+FROM `Missions` AS `m`
+WHERE `m`.`Timeline` = `m`.`Timeline`
+""");
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual async Task DateTimeOffset_UtcDateTime(bool async)
+        {
+            await AssertQuery(
+                async,
+                ss => ss.Set<Mission>().Where(e => e.Timeline == e.Timeline.UtcDateTime),
+                ss => ss.Set<Mission>().Where(e => true));
+
+            AssertSql(
+                """
+SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
+FROM `Missions` AS `m`
+WHERE `m`.`Timeline` = `m`.`Timeline`
+""");
+        }
     }
 }
