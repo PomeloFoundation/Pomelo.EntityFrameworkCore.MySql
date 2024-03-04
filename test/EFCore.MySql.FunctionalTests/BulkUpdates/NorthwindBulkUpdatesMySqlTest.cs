@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -757,6 +758,7 @@ LIMIT @__p_0
 """);
     }
 
+    [SupportedServerVersionCondition("0.0.0-mysql", Skip = "Can fail non-deterministically when targeting MySQL, if certain tests precede it.")]
     public override async Task Update_Where_Skip_Take_set_constant(bool async)
     {
         await base.Update_Where_Skip_Take_set_constant(async);
