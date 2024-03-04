@@ -156,7 +156,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     arguments[2],
                     match.TypeMapping);
 
-                var excapeChar = arguments.Count == 4
+                var escapeChar = arguments.Count == 4
                     ? InferStringTypeMappingOrApplyDefault(
                         arguments[3],
                         match.TypeMapping)
@@ -165,7 +165,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 return _sqlExpressionFactory.Like(
                     match,
                     pattern,
-                    excapeChar);
+                    escapeChar);
             }
 
             if (Equals(method, _isMatchMethodInfo) ||
