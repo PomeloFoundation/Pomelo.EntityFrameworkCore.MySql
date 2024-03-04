@@ -44,7 +44,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set additional variables
         shell: pwsh
         run: |
@@ -97,14 +97,14 @@ jobs:
           echo "github.repository: ${{ github.repository }}"
       - name: Cache - Database Image - Linux
         id: cache-databaseImage-linux
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: ${{ env.os == 'linux' }}
         with:
           path: cache/database
           key: database-linux-${{ env.databaseServerType }}-${{ env.databaseServerVersion }}-v2
       - name: Cache - Database Image - Windows
         id: cache-databaseImage-windows
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: ${{ env.os == 'windows' }}
         with:
           path: ${{ env.windowsUserTempLocation }}\Pomelo.Chocolatey.${{ env.databaseServerType }}.Server
@@ -211,7 +211,7 @@ jobs:
         shell: pwsh
         run: ${{ env.clientCommandPrefix }} -u root -pPassword12! -e 'SHOW VARIABLES;'
       - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
       - name: .NET Information
@@ -303,9 +303,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
       - name: .NET Information
