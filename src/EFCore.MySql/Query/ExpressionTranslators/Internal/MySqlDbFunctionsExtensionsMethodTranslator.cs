@@ -23,7 +23,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
     {
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
 
-        private static readonly HashSet<MethodInfo> _convertDateTimeTimeZoneMethodInfos =
+        private static readonly HashSet<MethodInfo> _convertTimeZoneMethodInfos =
         [
             typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(
                 nameof(MySqlDbFunctionsExtensions.ConvertTimeZone),
@@ -183,7 +183,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             IReadOnlyList<SqlExpression> arguments,
             IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
-            if (_convertDateTimeTimeZoneMethodInfos.TryGetValue(method, out _))
+            if (_convertTimeZoneMethodInfos.TryGetValue(method, out _))
             {
                 // Will not just return `NULL` if any of its parameters is `NULL`, but also if `fromTimeZone` or `toTimeZone` is incorrect.
                 // Will do no conversion at all if `dateTime` is outside the supported range.
