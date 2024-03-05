@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup Label="Common Versions">
-    <EFCoreVersion>[8.0.1,8.0.999]</EFCoreVersion>
+    <EFCoreVersion>[8.0.2,8.0.999]</EFCoreVersion>
   </PropertyGroup>
 
   <ItemGroup Label="Dependencies">
@@ -13,12 +13,12 @@
     <PackageReference Update="MySqlConnector.DependencyInjection" Version="2.3.5" />
 
     <PackageReference Update="NetTopologySuite" Version="2.5.0" />
-    <PackageReference Update="System.Text.Json" Version="8.0.1" />
+    <PackageReference Update="System.Text.Json" Version="8.0.2" />
     <PackageReference Update="Newtonsoft.Json" Version="13.0.3" />
 
     <PackageReference Update="Castle.Core" Version="5.1.1" />
-    <PackageReference Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.1" />
-    <PackageReference Update="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.1" />
+    <PackageReference Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.2" />
+    <PackageReference Update="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.2" />
     <PackageReference Update="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
     <PackageReference Update="Microsoft.Bcl.HashCode" Version="1.1.1" />
     <PackageReference Update="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />

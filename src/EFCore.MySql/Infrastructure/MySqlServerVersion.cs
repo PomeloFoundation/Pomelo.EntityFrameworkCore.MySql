@@ -15,7 +15,7 @@ namespace Microsoft.EntityFrameworkCore
     public class MySqlServerVersion : ServerVersion
     {
         public static readonly string MySqlTypeIdentifier = nameof(ServerType.MySql).ToLowerInvariant();
-        public static readonly ServerVersion LatestSupportedServerVersion = new MySqlServerVersion(new Version(8, 0, 31));
+        public static readonly ServerVersion LatestSupportedServerVersion = new MySqlServerVersion(new Version(8, 0, 36));
 
         public override ServerVersionSupport Supports { get; }
 
