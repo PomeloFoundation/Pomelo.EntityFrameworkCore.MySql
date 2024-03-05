@@ -383,7 +383,7 @@ jobs:
           echo "pushToMygetOrg=$pushToMygetOrg" >> $env:GITHUB_ENV
           echo "pushToNugetOrg=$pushToNugetOrg" >> $env:GITHUB_ENV
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: nupkgs
           path: nupkgs
