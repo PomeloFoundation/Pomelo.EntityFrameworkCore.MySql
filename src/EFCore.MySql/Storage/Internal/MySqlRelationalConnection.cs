@@ -176,14 +176,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
             optionsBuilderInfrastructure.AddOrUpdateExtension(masterMySqlOptions);
 
-            return new MySqlRelationalConnection(
+            return CreateMasterConnectionCore(optionsBuilder, _mySqlConnectionStringOptionsValidator);
+        }
+
+        protected virtual IMySqlRelationalConnection CreateMasterConnectionCore(
+            DbContextOptionsBuilder optionsBuilder,
+            IMySqlConnectionStringOptionsValidator mySqlConnectionStringOptionsValidator)
+            => new MySqlRelationalConnection(
                 Dependencies with { ContextOptions = optionsBuilder.Options },
-                _mySqlConnectionStringOptionsValidator,
+                mySqlConnectionStringOptionsValidator,
                 dataSource: null)
             {
                 IsMasterConnection = true
             };
-        }
 
         protected virtual MySqlConnectionStringBuilder AddConnectionStringOptions(MySqlConnectionStringBuilder builder)
         {
