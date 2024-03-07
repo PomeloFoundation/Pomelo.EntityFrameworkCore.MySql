@@ -90,7 +90,7 @@ namespace Microsoft.EntityFrameworkCore
             public override bool JsonValue => true;
             public override bool Values => ServerVersion.Version >= new Version(10, 3, 3);
             public override bool ValuesWithRows => false;
-            public override bool OffsetReferencesOuterQuery => false;
+            public override bool WhereSubqueryReferencesOuterQuery => false;
 
             public override bool JsonTableImplementationStable => false;
             public override bool JsonTableImplementationWithoutMariaDbBugs => false;
