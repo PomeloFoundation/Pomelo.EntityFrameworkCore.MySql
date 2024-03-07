@@ -52,6 +52,30 @@ LIMIT 2
                 Fixture.Sql);
         }
 
+        [ConditionalFact]
+        public void DateTimeOffset_LocalDateTime()
+        {
+            using var context = Fixture.CreateContext();
+            SetSessionTimeZone(context);
+            Fixture.ClearSql();
+
+            var metalContainer = context.Set<Model.Container>()
+                .Where(c => c.DeliveredDateTimeOffset.LocalDateTime == MySqlTimeZoneFixture.OriginalDateTimeUtc.AddHours(MySqlTimeZoneFixture.SessionOffset))
+                .Select(c => new { c.DeliveredDateTimeOffset.LocalDateTime })
+                .Single();
+
+            Assert.Equal(MySqlTimeZoneFixture.OriginalDateTimeUtc.AddHours(MySqlTimeZoneFixture.SessionOffset), metalContainer.LocalDateTime);
+
+            Assert.Equal(
+                """
+SELECT CONVERT_TZ(`c`.`DeliveredDateTimeOffset`, '+00:00', @@session.time_zone) AS `LocalDateTime`
+FROM `Container` AS `c`
+WHERE CONVERT_TZ(`c`.`DeliveredDateTimeOffset`, '+00:00', @@session.time_zone) = TIMESTAMP '2023-12-31 15:00:00'
+LIMIT 2
+""",
+                Fixture.Sql);
+        }
+
         private static void SetSessionTimeZone(MySqlTimeZoneFixture.MySqlTimeZoneContext context)
         {
             context.Database.OpenConnection();
@@ -63,6 +87,7 @@ LIMIT 2
 
         public class MySqlTimeZoneFixture : MySqlTestFixtureBase<MySqlTimeZoneFixture.MySqlTimeZoneContext>
         {
+            public const int SessionOffset = -8; // UTC-8
             public const int OriginalOffset = 2; // UTC+2
             public static readonly DateTime OriginalDateTimeUtc = new DateTime(2023, 12, 31, 23, 0, 0);
             public static readonly DateTime OriginalDateTime = OriginalDateTimeUtc.AddHours(OriginalOffset);

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Pomelo.EntityFrameworkCore.MySql.Utilities;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
@@ -138,6 +139,27 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                             new[] { instance },
                             returnType),
                         _sqlExpressionFactory.Constant(366));
+                }
+            }
+
+            if (declaringType == typeof(DateTimeOffset))
+            {
+                switch (member.Name)
+                {
+                    case nameof(DateTimeOffset.DateTime):
+                    case nameof(DateTimeOffset.UtcDateTime):
+                        // We represent `DateTimeOffset` values as UTC datetime values in the database. Therefore, `DateTimeOffset`,
+                        // `DateTimeOffset.DateTime` and `DateTimeOffset.UtcDateTime` are all the same.
+                        return _sqlExpressionFactory.Convert(instance, typeof(DateTime));
+
+                    case nameof(DateTimeOffset.LocalDateTime):
+                        return _sqlExpressionFactory.NullableFunction(
+                            "CONVERT_TZ",
+                            [instance, _sqlExpressionFactory.Constant("+00:00"), _sqlExpressionFactory.Fragment("@@session.time_zone")],
+                            typeof(DateTime),
+                            null,
+                            false,
+                            Statics.GetTrueValues(3));
                 }
             }
 
