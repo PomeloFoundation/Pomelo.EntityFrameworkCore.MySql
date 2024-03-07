@@ -1032,7 +1032,7 @@ WHERE `c`.`CustomerID` LIKE 'F%'
 
         AssertExecuteUpdateSql(
 """
-@__value_0='Abc' (Size = 30)
+@__value_0='Abc' (Size = 4000)
 
 UPDATE `Customers` AS `c`
 SET `c`.`ContactName` = CONCAT(COALESCE(`c`.`ContactName`, ''), @__value_0)
