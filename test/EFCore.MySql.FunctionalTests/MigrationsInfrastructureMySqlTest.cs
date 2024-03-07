@@ -55,7 +55,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             base.Can_generate_up_scripts();
 
             Assert.Equal(
-                @"CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
+"""
+CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
     `MigrationId` varchar(150) CHARACTER SET utf8mb4 NOT NULL,
     `ProductVersion` varchar(32) CHARACTER SET utf8mb4 NOT NULL,
     CONSTRAINT `PK___EFMigrationsHistory` PRIMARY KEY (`MigrationId`)
@@ -90,7 +91,15 @@ VALUES ('00000000000003_Migration3', '7.0.0-test');
 
 COMMIT;
 
-",
+START TRANSACTION;
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000004_Migration4', '7.0.0-test');
+
+COMMIT;
+
+
+""",
                 Sql,
                 ignoreLineEndingDifferences: true);
         }
@@ -137,7 +146,9 @@ COMMIT;
         {
             base.Can_generate_idempotent_up_scripts();
 
-            Assert.Equal(@"CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
+            Assert.Equal(
+"""
+CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
     `MigrationId` varchar(150) CHARACTER SET utf8mb4 NOT NULL,
     `ProductVersion` varchar(32) CHARACTER SET utf8mb4 NOT NULL,
     CONSTRAINT `PK___EFMigrationsHistory` PRIMARY KEY (`MigrationId`)
@@ -232,7 +243,27 @@ DROP PROCEDURE MigrationsScript;
 
 COMMIT;
 
-",
+START TRANSACTION;
+
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000004_Migration4') THEN
+
+    INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+    VALUES ('00000000000004_Migration4', '7.0.0-test');
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
+COMMIT;
+
+
+""",
                 Sql,
                 ignoreLineEndingDifferences: true);
         }
@@ -391,7 +422,8 @@ COMMIT;
             base.Can_generate_up_scripts_noTransactions();
 
             Assert.Equal(
-                @"CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
+"""
+CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
     `MigrationId` varchar(150) CHARACTER SET utf8mb4 NOT NULL,
     `ProductVersion` varchar(32) CHARACTER SET utf8mb4 NOT NULL,
     CONSTRAINT `PK___EFMigrationsHistory` PRIMARY KEY (`MigrationId`)
@@ -414,7 +446,11 @@ VALUES ('00000000000002_Migration2', '7.0.0-test');
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('00000000000003_Migration3', '7.0.0-test');
 
-",
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000004_Migration4', '7.0.0-test');
+
+
+""",
                 Sql,
                 ignoreLineEndingDifferences: true);
         }
@@ -424,7 +460,8 @@ VALUES ('00000000000003_Migration3', '7.0.0-test');
             base.Can_generate_idempotent_up_scripts_noTransactions();
 
             Assert.Equal(
-                @"CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
+"""
+CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
     `MigrationId` varchar(150) CHARACTER SET utf8mb4 NOT NULL,
     `ProductVersion` varchar(32) CHARACTER SET utf8mb4 NOT NULL,
     CONSTRAINT `PK___EFMigrationsHistory` PRIMARY KEY (`MigrationId`)
@@ -507,7 +544,23 @@ DELIMITER ;
 CALL MigrationsScript();
 DROP PROCEDURE MigrationsScript;
 
-",
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000004_Migration4') THEN
+
+    INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+    VALUES ('00000000000004_Migration4', '7.0.0-test');
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
+
+""",
                 Sql,
                 ignoreLineEndingDifferences: true);
         }

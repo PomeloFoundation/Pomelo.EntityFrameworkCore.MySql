@@ -503,6 +503,14 @@ ORDER BY (
 #endif
         }
 
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.WhereSubqueryReferencesOuterQuery))]
+        public override async Task Subquery_with_navigation_inside_inline_collection(bool async)
+        {
+            await base.Subquery_with_navigation_inside_inline_collection(async);
+
+            AssertSql("");
+        }
+
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 

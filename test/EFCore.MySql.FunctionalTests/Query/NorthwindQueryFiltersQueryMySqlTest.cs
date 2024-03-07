@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Xunit.Abstractions;
 
@@ -22,11 +22,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
         AssertSql(
 """
-@__ef_filter__TenantPrefix_0_rewritten='B%' (Size = 40)
+@__ef_filter__TenantPrefix_0_startswith='B%' (Size = 40)
 
 SELECT COUNT(*)
 FROM `Customers` AS `c`
-WHERE `c`.`CompanyName` LIKE @__ef_filter__TenantPrefix_0_rewritten
+WHERE `c`.`CompanyName` LIKE @__ef_filter__TenantPrefix_0_startswith
 """);
         }
 
