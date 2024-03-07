@@ -473,6 +473,36 @@ ORDER BY `t`.`CustomerID`, `o0`.`OrderID`
             return base.DefaultIfEmpty_Sum_over_collection_navigation(async);
         }
 
+        public override async Task Parameter_collection_Contains_with_projection_and_ordering(bool async)
+        {
+#if EFCORE_DEBUG_BUILD
+            // GroupBy debug assert. Issue #26104.
+            Assert.StartsWith(
+                "Missing alias in the list",
+                (await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => base.Parameter_collection_Contains_with_projection_and_ordering(async))).Message);
+#else
+            await base.Parameter_collection_Contains_with_projection_and_ordering(async);
+
+            AssertSql(
+"""
+SELECT `o`.`Quantity` AS `Key`, (
+    SELECT MAX(`o3`.`OrderDate`)
+    FROM `Order Details` AS `o2`
+    INNER JOIN `Orders` AS `o3` ON `o2`.`OrderID` = `o3`.`OrderID`
+    WHERE `o2`.`OrderID` IN (10248, 10249) AND (`o`.`Quantity` = `o2`.`Quantity`)) AS `MaxTimestamp`
+FROM `Order Details` AS `o`
+WHERE `o`.`OrderID` IN (10248, 10249)
+GROUP BY `o`.`Quantity`
+ORDER BY (
+    SELECT MAX(`o3`.`OrderDate`)
+    FROM `Order Details` AS `o2`
+    INNER JOIN `Orders` AS `o3` ON `o2`.`OrderID` = `o3`.`OrderID`
+    WHERE `o2`.`OrderID` IN (10248, 10249) AND (`o`.`Quantity` = `o2`.`Quantity`))
+""");
+#endif
+        }
+
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
