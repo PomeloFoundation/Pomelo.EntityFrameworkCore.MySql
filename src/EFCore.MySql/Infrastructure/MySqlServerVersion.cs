@@ -15,7 +15,7 @@ namespace Microsoft.EntityFrameworkCore
     public class MySqlServerVersion : ServerVersion
     {
         public static readonly string MySqlTypeIdentifier = nameof(ServerType.MySql).ToLowerInvariant();
-        public static readonly ServerVersion LatestSupportedServerVersion = new MySqlServerVersion(new Version(8, 0, 31));
+        public static readonly ServerVersion LatestSupportedServerVersion = new MySqlServerVersion(new Version(8, 0, 36));
 
         public override ServerVersionSupport Supports { get; }
 
@@ -93,7 +93,7 @@ namespace Microsoft.EntityFrameworkCore
             public override bool JsonValue => ServerVersion.Version >= new Version(8, 0, 21);
             public override bool Values => false;
             public override bool ValuesWithRows => ServerVersion.Version >= new Version(8, 0, 19);
-            public override bool OffsetReferencesOuterQuery => false;
+            public override bool WhereSubqueryReferencesOuterQuery => false;
 
             public override bool JsonTableImplementationStable => false;
             public override bool JsonTableImplementationWithoutMySqlBugs => false; // Other non-fatal bugs regarding JSON_TABLE.

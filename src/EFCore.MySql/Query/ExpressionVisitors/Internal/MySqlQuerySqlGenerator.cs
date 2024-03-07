@@ -67,6 +67,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         private string _removeTableAliasOld;
         private string _removeTableAliasNew;
 
+        private static readonly bool _useOldBehavior32375 =
+            AppContext.TryGetSwitch("Microsoft.EntityFrameworkCore.Issue32375", out var enabled32375) && enabled32375;
+
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
@@ -541,6 +544,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             {
                 base.GenerateValues(valuesExpression);
                 return;
+            }
+
+            if (!_useOldBehavior32375 && valuesExpression.RowValues.Count == 0)
+            {
+                throw new InvalidOperationException(RelationalStrings.EmptyCollectionNotSupportedAsInlineQueryRoot);
             }
 
             var rowValues = valuesExpression.RowValues;

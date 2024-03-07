@@ -175,6 +175,21 @@ FROM `FunkyCustomers` AS `f`
 """);
     }
 
+    public override async Task String_Contains_and_StartsWith_with_same_parameter(bool async)
+    {
+        await base.String_Contains_and_StartsWith_with_same_parameter(async);
+
+        AssertSql(
+"""
+@__s_0_contains='%B%' (Size = 4000)
+@__s_0_startswith='B%' (Size = 4000)
+
+SELECT `f`.`Id`, `f`.`FirstName`, `f`.`LastName`, `f`.`NullableBool`
+FROM `FunkyCustomers` AS `f`
+WHERE (`f`.`FirstName` LIKE @__s_0_contains) OR (`f`.`LastName` LIKE @__s_0_startswith)
+""");
+    }
+
     protected override void ClearLog()
         => Fixture.TestSqlLoggerFactory.Clear();
 

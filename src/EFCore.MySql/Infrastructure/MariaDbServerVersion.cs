@@ -15,7 +15,7 @@ namespace Microsoft.EntityFrameworkCore
     public class MariaDbServerVersion : ServerVersion
     {
         public static readonly string MariaDbTypeIdentifier = nameof(ServerType.MariaDb).ToLowerInvariant();
-        public static readonly ServerVersion LatestSupportedServerVersion = new MariaDbServerVersion(new Version(10, 9, 4));
+        public static readonly ServerVersion LatestSupportedServerVersion = new MariaDbServerVersion(new Version(11, 3, 2));
 
         public override ServerVersionSupport Supports { get; }
 
@@ -90,7 +90,7 @@ namespace Microsoft.EntityFrameworkCore
             public override bool JsonValue => true;
             public override bool Values => ServerVersion.Version >= new Version(10, 3, 3);
             public override bool ValuesWithRows => false;
-            public override bool OffsetReferencesOuterQuery => false;
+            public override bool WhereSubqueryReferencesOuterQuery => false;
 
             public override bool JsonTableImplementationStable => false;
             public override bool JsonTableImplementationWithoutMariaDbBugs => false;
