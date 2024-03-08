@@ -64,7 +64,10 @@ namespace Microsoft.EntityFrameworkCore
 
             if (property.ValueGenerated == ValueGenerated.OnAddOrUpdate)
             {
-                if (IsCompatibleComputedColumn(property))
+                // We explicitly check for RowVersion when generation migrations. We therefore handle RowVersion separately from other cases
+                // of using CURRENT_TIMESTAMP etc. and we don't generate a MySqlValueGenerationStrategy.ComputedColumn annotation.
+                if (IsCompatibleComputedColumn(property) &&
+                    !property.IsConcurrencyToken)
                 {
                     return MySqlValueGenerationStrategy.ComputedColumn;
                 }
@@ -144,7 +147,10 @@ namespace Microsoft.EntityFrameworkCore
 
             if (property.ValueGenerated == ValueGenerated.OnAddOrUpdate)
             {
-                if (IsCompatibleComputedColumn(property))
+                // We explicitly check for RowVersion when generation migrations. We therefore handle RowVersion separately from other cases
+                // of using CURRENT_TIMESTAMP etc. and we don't generate a MySqlValueGenerationStrategy.ComputedColumn annotation.
+                if (IsCompatibleComputedColumn(property, storeObject, typeMappingSource) &&
+                    !property.IsConcurrencyToken)
                 {
                     return MySqlValueGenerationStrategy.ComputedColumn;
                 }
@@ -422,20 +428,35 @@ namespace Microsoft.EntityFrameworkCore
         /// <returns> <see langword="true"/> if compatible. </returns>
         public static bool IsCompatibleComputedColumn(IReadOnlyProperty property)
         {
-            var type = property.ClrType;
+            var valueConverter = GetConverter(property);
+            var type = (valueConverter?.ProviderClrType ?? property.ClrType).UnwrapNullableType();
 
             // RowVersion uses byte[] and the BytesToDateTimeConverter.
-            return (type == typeof(DateTime) || type == typeof(DateTimeOffset)) && !HasConverter(property)
-                   || type == typeof(byte[]) && !HasExternalConverter(property);
+            return type == typeof(DateTime) ||
+                   type == typeof(DateTimeOffset) ||
+                   type == typeof(byte[]) && valueConverter is BytesToDateTimeConverter;
         }
 
-        private static bool HasConverter(IReadOnlyProperty property)
-            => GetConverter(property) != null;
-
-        private static bool HasExternalConverter(IReadOnlyProperty property)
+        private static bool IsCompatibleComputedColumn(
+            IReadOnlyProperty property,
+            in StoreObjectIdentifier storeObject,
+            ITypeMappingSource typeMappingSource)
         {
-            var converter = GetConverter(property);
-            return converter != null && !(converter is BytesToDateTimeConverter);
+            if (storeObject.StoreObjectType != StoreObjectType.Table)
+            {
+                return false;
+            }
+
+            var valueConverter = property.GetValueConverter() ??
+                                 (property.FindRelationalTypeMapping(storeObject) ??
+                                  typeMappingSource?.FindMapping((IProperty)property))?.Converter;
+
+            var type = (valueConverter?.ProviderClrType ?? property.ClrType).UnwrapNullableType();
+
+            // RowVersion uses byte[] and the BytesToDateTimeConverter.
+            return type == typeof(DateTime) ||
+                   type == typeof(DateTimeOffset) ||
+                   type == typeof(byte[]) && valueConverter is BytesToDateTimeConverter;
         }
 
         private static ValueConverter GetConverter(IReadOnlyProperty property)
