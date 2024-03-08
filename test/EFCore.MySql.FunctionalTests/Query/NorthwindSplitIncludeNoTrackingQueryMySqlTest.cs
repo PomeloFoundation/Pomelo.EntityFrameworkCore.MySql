@@ -64,6 +64,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 elementAsserter: (e, a) => AssertInclude(e, a, new ExpectedInclude<Order>(o => o.OrderDetails)));
         }
 
+        // Used to track down a bug in Oracle's MySQL implementation, related to `SELECT ... ORDER BY (SELECT 1)`.
+        public override Task Include_collection_OrderBy_empty_list_contains(bool async)
+            => base.Include_collection_OrderBy_empty_list_contains(async);
+
         [ConditionalTheory(Skip = "https://github.com/dotnet/efcore/issues/21202")]
         public override Task Include_collection_skip_no_order_by(bool async)
         {
