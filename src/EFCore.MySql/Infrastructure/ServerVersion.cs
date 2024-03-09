@@ -4,6 +4,8 @@
 using System;
 using System.Data;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Utilities;
 using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
@@ -84,6 +86,36 @@ namespace Microsoft.EntityFrameworkCore
         /// <summary>
         /// Retrieves the <see cref="ServerVersion"/> (version number and server type) from a database server.
         /// </summary>
+        /// <param name="connectionString">The connection string.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
+        /// <returns>
+        /// A task that represents the asynchronous auto detect operation. The task result contains the <see cref="ServerVersion"/> of the database.
+        /// </returns>
+        /// <remarks>
+        /// Uses a connection string to open a connection to the database server and then executes a command.
+        /// The connection will ignore the database specified in the connection string. It therefore makes not difference, whether the
+        /// database already exists or not.
+        /// </remarks>
+        public static async Task<ServerVersion> AutoDetectAsync(string connectionString, CancellationToken cancellationToken = default)
+        {
+            var connection = new MySqlConnection(
+                new MySqlConnectionStringBuilder(connectionString)
+                {
+                    Database = string.Empty,
+                    AutoEnlist = false,
+                    Pooling = false,
+                }.ConnectionString);
+
+            await using (connection.ConfigureAwait(false))
+            {
+                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+                return Parse(connection.ServerVersion);
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the <see cref="ServerVersion"/> (version number and server type) from a database server.
+        /// </summary>
         /// <param name="connection">The connection.</param>
         /// <returns>The <see cref="ServerVersion"/>.</returns>
         /// <remarks>
@@ -115,6 +147,102 @@ namespace Microsoft.EntityFrameworkCore
             }
 
             return Parse(serverVersion);
+        }
+
+        /// <summary>
+        /// Retrieves the <see cref="ServerVersion"/> (version number and server type) from a database server.
+        /// </summary>
+        /// <param name="connection">The connection.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
+        /// <returns>
+        /// A task that represents the asynchronous auto detect operation. The task result contains the <see cref="ServerVersion"/> of the database.
+        /// </returns>
+        /// <remarks>
+        /// Uses a connection to the database server to execute a command.
+        /// If the connection has already been opened, the connection is is being used as is. Otherwise, the connection is being cloned and
+        /// ignores any database specified in the connection string of the connection. It therefore makes not difference, whether the
+        /// database already exists or not, and the <see cref="ConnectionState"/> of the <paramref name="connection"/> parameter after the
+        /// return of the call is the same as before the call.
+        /// </remarks>
+        public static async Task<ServerVersion> AutoDetectAsync(MySqlConnection connection, CancellationToken cancellationToken = default)
+        {
+            string serverVersion;
+
+            if (connection.State != ConnectionState.Open)
+            {
+                var clonedConnection = connection.CloneWith(
+                    new MySqlConnectionStringBuilder(connection.ConnectionString)
+                    {
+                        Database = string.Empty,
+                        AutoEnlist = false,
+                        Pooling = false,
+                    }.ConnectionString);
+
+                await using (clonedConnection.ConfigureAwait(false))
+                {
+                    await clonedConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
+                    serverVersion = clonedConnection.ServerVersion;
+                }
+            }
+            else
+            {
+                serverVersion = connection.ServerVersion;
+            }
+
+            return Parse(serverVersion);
+        }
+
+        /// <summary>
+        /// Retrieves the <see cref="ServerVersion"/> (version number and server type) from a database server.
+        /// </summary>
+        /// <param name="dataSource">The data source.</param>
+        /// <returns>The <see cref="ServerVersion"/>.</returns>
+        /// <remarks>
+        /// Uses a <see cref="MySqlDataSource"/> that represents a database to execute a command.
+        /// The data source is used to create a connection to the database server and ignores any database specified in the underlying
+        /// connection string. It therefore makes not difference, whether a specified database already exists or not.
+        /// </remarks>
+        public static ServerVersion AutoDetect(MySqlDataSource dataSource)
+        {
+            using var connection = dataSource.CreateConnection();
+            connection.ConnectionString = new MySqlConnectionStringBuilder(connection.ConnectionString)
+            {
+                Database = string.Empty,
+                AutoEnlist = false,
+                Pooling = false,
+            }.ConnectionString;
+            connection.Open();
+            return Parse(connection.ServerVersion);
+        }
+
+        /// <summary>
+        /// Retrieves the <see cref="ServerVersion"/> (version number and server type) from a database server.
+        /// </summary>
+        /// <param name="dataSource">The data source.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
+        /// <returns>
+        /// A task that represents the asynchronous auto detect operation. The task result contains the <see cref="ServerVersion"/> of the database.
+        /// </returns>
+        /// <remarks>
+        /// Uses a <see cref="MySqlDataSource"/> that represents a database to execute a command.
+        /// The data source is used to create a connection to the database server and ignores any database specified in the underlying
+        /// connection string. It therefore makes not difference, whether a specified database already exists or not.
+        /// </remarks>
+        public static async Task<ServerVersion> AutoDetectAsync(MySqlDataSource dataSource, CancellationToken cancellationToken = default)
+        {
+            var connection = dataSource.CreateConnection();
+            await using (connection.ConfigureAwait(false))
+            {
+                connection.ConnectionString = new MySqlConnectionStringBuilder(connection.ConnectionString)
+                {
+                    Database = string.Empty,
+                    AutoEnlist = false,
+                    Pooling = false,
+                }.ConnectionString;
+
+                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+                return Parse(connection.ServerVersion);
+            }
         }
 
         /// <summary>

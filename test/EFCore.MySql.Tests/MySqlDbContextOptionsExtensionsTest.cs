@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.TestModels.ConferencePlanner;
 using Microsoft.Extensions.DependencyInjection;
+using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
@@ -326,11 +328,94 @@ namespace Pomelo.EntityFrameworkCore.MySql
             Assert.Equal("mysql", mySqlOptions.ServerVersion.TypeIdentifier);
         }
 
-        [Fact]
-        public void UseMySql_with_ServerVersion_AutoDetect()
+        [ConditionalTheory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task UseMySql_with_ServerVersion_AutoDetect_connection_string(bool async)
         {
             var builder = new DbContextOptionsBuilder();
-            var serverVersion = ServerVersion.AutoDetect(AppConfig.ConnectionString);
+            var serverVersion = async
+                ? await ServerVersion.AutoDetectAsync(AppConfig.ConnectionString)
+                : ServerVersion.AutoDetect(AppConfig.ConnectionString);
+
+            builder.UseMySql(
+                "Server=foo",
+                serverVersion);
+
+            var mySqlOptions = new MySqlOptions();
+            mySqlOptions.Initialize(builder.Options);
+
+            Assert.Equal(serverVersion.Version, mySqlOptions.ServerVersion.Version);
+            Assert.Equal(serverVersion.Type, mySqlOptions.ServerVersion.Type);
+            Assert.Equal(serverVersion.TypeIdentifier, mySqlOptions.ServerVersion.TypeIdentifier);
+        }
+
+        [ConditionalTheory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task UseMySql_with_ServerVersion_AutoDetect_connection_closed(bool async)
+        {
+            var builder = new DbContextOptionsBuilder();
+            await using var connection = new MySqlConnection(AppConfig.ConnectionString);
+            var serverVersion = async
+                ? await ServerVersion.AutoDetectAsync(connection)
+                : ServerVersion.AutoDetect(connection);
+
+            builder.UseMySql(
+                "Server=foo",
+                serverVersion);
+
+            var mySqlOptions = new MySqlOptions();
+            mySqlOptions.Initialize(builder.Options);
+
+            Assert.Equal(serverVersion.Version, mySqlOptions.ServerVersion.Version);
+            Assert.Equal(serverVersion.Type, mySqlOptions.ServerVersion.Type);
+            Assert.Equal(serverVersion.TypeIdentifier, mySqlOptions.ServerVersion.TypeIdentifier);
+        }
+
+        [ConditionalTheory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task UseMySql_with_ServerVersion_AutoDetect_connection_opened(bool async)
+        {
+            var builder = new DbContextOptionsBuilder();
+
+            await using var connection = new MySqlConnection(AppConfig.ConnectionString);
+            if (async)
+            {
+                await connection.OpenAsync();
+            }
+            else
+            {
+                connection.Open();
+            }
+
+            var serverVersion = async
+                ? await ServerVersion.AutoDetectAsync(connection)
+                : ServerVersion.AutoDetect(connection);
+
+            builder.UseMySql(
+                "Server=foo",
+                serverVersion);
+
+            var mySqlOptions = new MySqlOptions();
+            mySqlOptions.Initialize(builder.Options);
+
+            Assert.Equal(serverVersion.Version, mySqlOptions.ServerVersion.Version);
+            Assert.Equal(serverVersion.Type, mySqlOptions.ServerVersion.Type);
+            Assert.Equal(serverVersion.TypeIdentifier, mySqlOptions.ServerVersion.TypeIdentifier);
+        }
+
+        [ConditionalTheory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task UseMySql_with_ServerVersion_AutoDetect_datasource(bool async)
+        {
+            var builder = new DbContextOptionsBuilder();
+            await using var dataSource = new MySqlDataSource(AppConfig.ConnectionString);
+            var serverVersion = async
+                ? await ServerVersion.AutoDetectAsync(dataSource)
+                : ServerVersion.AutoDetect(dataSource);
 
             builder.UseMySql(
                 "Server=foo",
@@ -348,7 +433,7 @@ namespace Pomelo.EntityFrameworkCore.MySql
         public void UseMySql_without_connection_string()
         {
             var builder = new DbContextOptionsBuilder();
-            var serverVersion = ServerVersion.AutoDetect(AppConfig.ConnectionString);
+            var serverVersion = MySqlServerVersion.LatestSupportedServerVersion;
 
             builder.UseMySql(serverVersion);
 
