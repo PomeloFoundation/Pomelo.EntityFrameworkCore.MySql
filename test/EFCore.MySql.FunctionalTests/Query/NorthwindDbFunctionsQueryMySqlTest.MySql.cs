@@ -25,6 +25,40 @@ WHERE TIMESTAMPDIFF(YEAR, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
         }
 
         [ConditionalFact]
+        public virtual void DateDiff_Quarter()
+        {
+            using (var context = CreateContext())
+            {
+                var count = context.Orders
+                    .Count(c => EF.Functions.DateDiffQuarter(c.OrderDate, DateTime.Now) == 0);
+
+                Assert.Equal(0, count);
+
+                AssertSql(
+                    @"SELECT COUNT(*)
+FROM `Orders` AS `o`
+WHERE TIMESTAMPDIFF(QUARTER, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
+            }
+        }
+
+        [ConditionalFact]
+        public virtual void DateDiff_Week()
+        {
+            using (var context = CreateContext())
+            {
+                var count = context.Orders
+                    .Count(c => EF.Functions.DateDiffWeek(c.OrderDate, DateTime.Now) == 0);
+
+                Assert.Equal(0, count);
+
+                AssertSql(
+                    @"SELECT COUNT(*)
+FROM `Orders` AS `o`
+WHERE TIMESTAMPDIFF(WEEK, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
+            }
+        }
+
+        [ConditionalFact]
         public virtual void DateDiff_Month()
         {
             using (var context = CreateContext())
@@ -110,6 +144,23 @@ WHERE TIMESTAMPDIFF(SECOND, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
         }
 
         [ConditionalFact]
+        public virtual void DateDiff_Millisecond()
+        {
+            using (var context = CreateContext())
+            {
+                var count = context.Orders
+                    .Count(o => EF.Functions.DateDiffMillisecond(DateTime.Now, DateTime.Now.AddSeconds(1)) == 0);
+
+                Assert.Equal(0, count);
+
+                AssertSql(
+                    @"SELECT COUNT(*)
+FROM `Orders` AS `o`
+WHERE (TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(), DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL CAST(1.0 AS signed) second))) DIV (1000) = 0");
+            }
+        }
+
+        [ConditionalFact]
         public virtual void DateDiff_Microsecond()
         {
             using (var context = CreateContext())
@@ -123,6 +174,40 @@ WHERE TIMESTAMPDIFF(SECOND, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
 WHERE TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(), DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL CAST(1.0 AS signed) second)) = 0");
+            }
+        }
+
+        [ConditionalFact]
+        public virtual void DateDiff_Tick()
+        {
+            using (var context = CreateContext())
+            {
+                var count = context.Orders
+                    .Count(o => EF.Functions.DateDiffTick(DateTime.Now, DateTime.Now.AddSeconds(1)) == 0);
+
+                Assert.Equal(0, count);
+
+                AssertSql(
+                    @"SELECT COUNT(*)
+FROM `Orders` AS `o`
+WHERE (TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(), DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL CAST(1.0 AS signed) second)) * 10) = 0");
+            }
+        }
+
+        [ConditionalFact]
+        public virtual void DateDiff_Nanosecond()
+        {
+            using (var context = CreateContext())
+            {
+                var count = context.Orders
+                    .Count(o => EF.Functions.DateDiffNanosecond(DateTime.Now, DateTime.Now.AddSeconds(1)) == 0);
+
+                Assert.Equal(0, count);
+
+                AssertSql(
+                    @"SELECT COUNT(*)
+FROM `Orders` AS `o`
+WHERE (TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(), DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL CAST(1.0 AS signed) second)) * 1000) = 0");
             }
         }
 
