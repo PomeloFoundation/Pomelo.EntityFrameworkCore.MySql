@@ -18,7 +18,7 @@ Integration and Performance Tests
 
 Methods:
 
-`GET  /api/async` and `GET /api/sync` return the last ten posts.
+`GET  /api/async` and `GET /api/sync` return the most recent 10 posts.
 
 `POST /api/async` and `POST /api/sync` create a new post. The request body should be `Content-Type: application/json` in the form:
 
