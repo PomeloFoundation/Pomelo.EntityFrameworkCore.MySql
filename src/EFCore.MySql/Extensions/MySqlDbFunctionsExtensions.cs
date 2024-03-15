@@ -14,6 +14,158 @@ namespace Microsoft.EntityFrameworkCore
     /// </summary>
     public static class MySqlDbFunctionsExtensions
     {
+        #region ConvertTimeZone
+
+        /// <summary>
+        ///     Converts the `DateTime` value <paramref name="dateTime"/> from the time zone given by <paramref name="fromTimeZone"/> to the time zone given by <paramref name="toTimeZone"/> and returns the resulting value.
+        ///     Corresponds to `CONVERT_TZ(dateTime, fromTimeZone, toTimeZone)`.
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="dateTime">The `DateTime` value to convert.</param>
+        /// <param name="fromTimeZone">The time zone to convert from.</param>
+        /// <param name="toTimeZone">The time zone to convert to.</param>
+        /// <returns>The converted value.</returns>
+        public static DateTime? ConvertTimeZone(
+            [CanBeNull] this DbFunctions _,
+            DateTime dateTime,
+            string fromTimeZone,
+            string toTimeZone)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(ConvertTimeZone)));
+
+        /// <summary>
+        ///     Converts the `DateOnly` value <paramref name="dateOnly"/> from the time zone given by <paramref name="fromTimeZone"/> to the time zone given by <paramref name="toTimeZone"/> and returns the resulting value.
+        ///     Corresponds to `CONVERT_TZ(dateTime, fromTimeZone, toTimeZone)`..
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="dateOnly">The `DateOnly` value to convert.</param>
+        /// <param name="fromTimeZone">The time zone to convert from.</param>
+        /// <param name="toTimeZone">The time zone to convert to.</param>
+        /// <returns>The converted value.</returns>
+        public static DateOnly? ConvertTimeZone(
+            [CanBeNull] this DbFunctions _,
+            DateOnly dateOnly,
+            string fromTimeZone,
+            string toTimeZone)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(ConvertTimeZone)));
+
+        /// <summary>
+        ///     Converts the `DateTime?` value <paramref name="dateTime"/> from the time zone given by <paramref name="fromTimeZone"/> to the time zone given by <paramref name="toTimeZone"/> and returns the resulting value.
+        ///     Corresponds to `CONVERT_TZ(dateTime, fromTimeZone, toTimeZone)`.
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="dateTime">The `DateTime?` value to convert.</param>
+        /// <param name="fromTimeZone">The time zone to convert from.</param>
+        /// <param name="toTimeZone">The time zone to convert to.</param>
+        /// <returns>The converted value.</returns>
+        public static DateTime? ConvertTimeZone(
+            [CanBeNull] this DbFunctions _,
+            DateTime? dateTime,
+            string fromTimeZone,
+            string toTimeZone)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(ConvertTimeZone)));
+
+        /// <summary>
+        ///     Converts the `DateOnly?` value <paramref name="dateOnly"/> from the time zone given by <paramref name="fromTimeZone"/> to the time zone given by <paramref name="toTimeZone"/> and returns the resulting value.
+        ///     Corresponds to `CONVERT_TZ(dateTime, fromTimeZone, toTimeZone)`..
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="dateOnly">The `DateOnly?` value to convert.</param>
+        /// <param name="fromTimeZone">The time zone to convert from.</param>
+        /// <param name="toTimeZone">The time zone to convert to.</param>
+        /// <returns>The converted value.</returns>
+        public static DateOnly? ConvertTimeZone(
+            [CanBeNull] this DbFunctions _,
+            DateOnly? dateOnly,
+            string fromTimeZone,
+            string toTimeZone)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(ConvertTimeZone)));
+
+        /// <summary>
+        ///     Converts the `DateTime` value <paramref name="dateTime"/> from `@@session.time_zone` to the time zone given by <paramref name="toTimeZone"/> and returns the resulting value.
+        ///     Corresponds to `CONVERT_TZ(dateTime, @@session.time_zone, toTimeZone)`.
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="dateTime">The `DateTime` value to convert.</param>
+        /// <param name="toTimeZone">The time zone to convert to.</param>
+        /// <returns>The converted value.</returns>
+        public static DateTime? ConvertTimeZone(
+            [CanBeNull] this DbFunctions _,
+            DateTime dateTime,
+            string toTimeZone)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(ConvertTimeZone)));
+
+        /// <summary>
+        ///     Converts the `DateTimeOffset` value <paramref name="dateTimeOffset"/> from `+00:00`/UTC to the time zone given by <paramref name="toTimeZone"/> and returns the resulting value as a `DateTime`.
+        ///     Corresponds to `CONVERT_TZ(dateTime, '+00:00', toTimeZone)`.
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="dateTimeOffset">The `DateTimeOffset` value to convert.</param>
+        /// <param name="toTimeZone">The time zone to convert to.</param>
+        /// <returns>The converted `DateTime?` value.</returns>
+        public static DateTime? ConvertTimeZone(
+            [CanBeNull] this DbFunctions _,
+            DateTimeOffset dateTimeOffset,
+            string toTimeZone)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(ConvertTimeZone)));
+
+        /// <summary>
+        ///     Converts the `DateOnly` value <paramref name="dateOnly"/> from `@@session.time_zone` to the time zone given by <paramref name="toTimeZone"/> and returns the resulting value.
+        ///     Corresponds to `CONVERT_TZ(dateTime, @@session.time_zone, toTimeZone)`.
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="dateOnly">The `DateOnly` value to convert.</param>
+        /// <param name="toTimeZone">The time zone to convert to.</param>
+        /// <returns>The converted value.</returns>
+        public static DateOnly? ConvertTimeZone(
+            [CanBeNull] this DbFunctions _,
+            DateOnly dateOnly,
+            string toTimeZone)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(ConvertTimeZone)));
+
+        /// <summary>
+        ///     Converts the `DateTime?` value <paramref name="dateTime"/> from `@@session.time_zone` to the time zone given by <paramref name="toTimeZone"/> and returns the resulting value.
+        ///     Corresponds to `CONVERT_TZ(dateTime, @@session.time_zone, toTimeZone)`.
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="dateTime">The `DateTime?` value to convert.</param>
+        /// <param name="toTimeZone">The time zone to convert to.</param>
+        /// <returns>The converted value.</returns>
+        public static DateTime? ConvertTimeZone(
+            [CanBeNull] this DbFunctions _,
+            DateTime? dateTime,
+            string toTimeZone)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(ConvertTimeZone)));
+
+        /// <summary>
+        ///     Converts the `DateTimeOffset?` value <paramref name="dateTimeOffset"/> from `+00:00`/UTC to the time zone given by <paramref name="toTimeZone"/> and returns the resulting value as a `DateTime`.
+        ///     Corresponds to `CONVERT_TZ(dateTime, '+00:00', toTimeZone)`.
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="dateTimeOffset">The `DateTimeOffset?` value to convert.</param>
+        /// <param name="toTimeZone">The time zone to convert to.</param>
+        /// <returns>The converted `DateTime?` value.</returns>
+        public static DateTime? ConvertTimeZone(
+            [CanBeNull] this DbFunctions _,
+            DateTimeOffset? dateTimeOffset,
+            string toTimeZone)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(ConvertTimeZone)));
+
+        /// <summary>
+        ///     Converts the `DateOnly?` value <paramref name="dateOnly"/> from `@@session.time_zone` to the time zone given by <paramref name="toTimeZone"/> and returns the resulting value.
+        ///     Corresponds to `CONVERT_TZ(dateTime, @@session.time_zone, toTimeZone)`.
+        /// </summary>
+        /// <param name="_">The DbFunctions instance.</param>
+        /// <param name="dateOnly">The `DateOnly?` value to convert.</param>
+        /// <param name="toTimeZone">The time zone to convert to.</param>
+        /// <returns>The converted value.</returns>
+        public static DateOnly? ConvertTimeZone(
+            [CanBeNull] this DbFunctions _,
+            DateOnly? dateOnly,
+            string toTimeZone)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(ConvertTimeZone)));
+
+        #endregion ConvertTimeZone
+
         /// <summary>
         ///     Counts the number of year boundaries crossed between the startDate and endDate.
         ///     Corresponds to TIMESTAMPDIFF(YEAR,startDate,endDate).
