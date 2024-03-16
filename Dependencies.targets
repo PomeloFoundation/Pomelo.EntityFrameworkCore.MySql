@@ -16,6 +16,7 @@
     <PackageReference Update="Newtonsoft.Json" Version="13.0.2" />
 
     <PackageReference Update="Castle.Core" Version="5.1.1" />
+    <PackageReference Update="GitHubActionsTestLogger" Version="2.3.3" />
     <PackageReference Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.2" />
     <PackageReference Update="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.2" />
     <PackageReference Update="Microsoft.Bcl.AsyncInterfaces" Version="7.0.0" />

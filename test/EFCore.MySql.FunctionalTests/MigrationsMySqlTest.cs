@@ -552,12 +552,35 @@ ALTER TABLE `TestSequenceMove` RENAME `TestSequenceSchema_TestSequenceMove`;
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
         public override async Task Rename_sequence()
         {
-            await base.Rename_sequence();
+            if (OperatingSystem.IsWindows())
+            {
+                // On Windows, with `lower_case_table_names = 2`, renaming `TestSequence` to `testsequence` doesn't do anything, because
+                // `TestSequence` is internally being transformed to lower case, before it is processes further.
+                await Test(
+                    builder => { },
+                    builder => builder.HasSequence<int>("TestSequence"),
+                    builder => builder.HasSequence<int>("testsequence2"),
+                    builder => builder.RenameSequence(name: "TestSequence", newName: "testsequence2"),
+                    model =>
+                    {
+                        var sequence = Assert.Single(model.Sequences);
+                        Assert.Equal("testsequence2", sequence.Name);
+                    });
 
-            AssertSql(
+               AssertSql(
+"""
+ALTER TABLE `TestSequence` RENAME `testsequence2`;
+""");
+            }
+            else
+            {
+                await base.Rename_sequence();
+
+               AssertSql(
 """
 ALTER TABLE `TestSequence` RENAME `testsequence`;
 """);
+            }
         }
 
         [ConditionalTheory(Skip = "TODO")]

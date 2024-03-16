@@ -13,5 +13,6 @@
     <PackageReference Include="xunit.assert" />
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="xunit.runner.console" />
+    <PackageReference Include="GitHubActionsTestLogger" />
   </ItemGroup>
 </Project>
