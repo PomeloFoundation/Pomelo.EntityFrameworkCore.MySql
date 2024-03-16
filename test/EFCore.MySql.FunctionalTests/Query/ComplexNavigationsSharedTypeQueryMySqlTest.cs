@@ -77,6 +77,22 @@ ORDER BY `t`.`Name`
 LIMIT @__p_0");
         }
 
+        public override Task Subquery_with_Distinct_Skip_FirstOrDefault_without_OrderBy(bool async)
+        {
+            // Since this method is explicitly **not** using OrderBy() before Take(),
+            // there is no way to guarantee what elements get returned.
+            // Therefore, it cannot be verified against the "expected" data.
+            // The only thing that could reliably be verified is the count of the queried entities.
+            return AssertQuery(
+                async,
+                ss => from l1 in ss.Set<Level1>()
+                    where l1.Id < 3
+                    select (from l3 in ss.Set<Level3>()
+                        orderby l3.Id
+                        select l3).Distinct().Skip(1).FirstOrDefault().Name,
+                elementAsserter: (expected, actual) => { });
+        }
+
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
