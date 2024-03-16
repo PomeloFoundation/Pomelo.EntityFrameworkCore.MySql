@@ -31,10 +31,10 @@ jobs:
         dbVersion:
           - 8.0.36-mysql
           - 5.7.44-mysql
-          # - 11.3.2-mariadb
-          # - 11.2.3-mariadb
-          # - 11.1.4-mariadb
-          # - 11.0.5-mariadb
+          - 11.3.2-mariadb
+          - 11.2.3-mariadb
+          - 11.1.4-mariadb
+          - 11.0.5-mariadb
           - 10.11.7-mariadb
           - 10.10.7-mariadb
           - 10.9.8-mariadb
