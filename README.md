@@ -16,9 +16,9 @@ The following versions of MySqlConnector, EF Core, .NET (Core), .NET Standard an
 Release | Branch                                                                                           | MySqlConnector     |        EF Core        | .NET (Core) | .NET Standard | .NET Framework
 --- |--------------------------------------------------------------------------------------------------|--------------------|:---------------------:|:-----------:| :---: | :---:
 [9.0.0-<br />preview.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/9.0.0-preview.1) | [main](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/main)       | >= 2.3.5           | 9.0.0-<br />preview.1 |    8.0+     | - | -
-[8.0.1](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/8.0.1) | [8.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/8.0-maint) | >= 2.3.5           |         8.0.x         |    8.0+     | - | -
+[8.0.2](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/8.0.2) | [8.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/8.0-maint) | >= 2.3.5           |         8.0.2         |    8.0+     | - | -
 [7.0.0](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/7.0.0) | [7.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/7.0-maint) | >= 2.2.5           |         7.0.x         |    6.0+     | - | -
-[6.0.2](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/6.0.2) | [6.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/6.0-maint) | >= 2.1.2           |         6.0.x         |    6.0+     | - | -
+[6.0.3](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/6.0.3) | [6.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/6.0-maint) | >= 2.1.2           |         6.0.x         |    6.0+     | - | -
 [5.0.4](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/5.0.4) | [5.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/5.0-maint) | >= 1.3.13          |         5.0.x         |    3.0+     | 2.1 | -
 [3.2.7](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/3.2.7) | [3.2-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/3.2-maint) | >= 0.69.10 < 1.0.0 |         3.1.x         |    2.0+     | 2.0 | 4.6.1+
 
@@ -36,11 +36,11 @@ Release | Branch                                                                
 Officially supported versions are:
 
 - MySQL 8.0
+- MariaDB 11.3
 - MariaDB 11.2
 - MariaDB 11.1
 - MariaDB 11.0
 - MariaDB 10.11 (LTS)
-- MariaDB 10.10
 - MariaDB 10.6 (LTS)
 - MariaDB 10.5 (LTS)
 - MariaDB 10.4 (LTS)
@@ -50,9 +50,9 @@ Officially supported versions are:
 Milestone | Status   | Release Date
 ----------|----------|-------------
 9.0.0-preview.1 | Released | 2024-02-28 (see [#1841](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1841))
-8.0.1 | Released | 2024-02-28
+8.0.2 | Released | 2024-03-16
 7.0.0 | Released | 2023-01-16
-6.0.2 | Released | 2022-07-24
+6.0.3 | Released | 2024-03-16
 5.0.4 | Released | 2022-01-22
 3.2.7 | Released | 2021-10-04
 
@@ -95,7 +95,7 @@ All `.pdb` files use Source Link.
 Ensure that your `.csproj` file contains the following reference:
 
 ```xml
-<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.1" />
+<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
 ```
 
 ### 2. Services Configuration
