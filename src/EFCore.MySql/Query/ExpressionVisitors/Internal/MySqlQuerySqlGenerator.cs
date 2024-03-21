@@ -106,13 +106,33 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         protected virtual Expression VisitJsonPathTraversal(MySqlJsonTraversalExpression expression)
         {
-            // If the path contains parameters, then the -> and ->> aliases are not supported by MySQL, because
-            // we need to concatenate the path and the parameters.
-            // We will use JSON_EXTRACT (and JSON_UNQUOTE if needed) only in this case, because the aliases
-            // are much more readable.
-            var isSimplePath = expression.Path.All(
-                l => l is SqlConstantExpression ||
-                     l is MySqlJsonArrayIndexExpression e && e.Expression is SqlConstantExpression);
+            var isScalar = expression.Type.IsPrimitive();
+            var useJsonValue = _options.ServerVersion.Supports.JsonValue &&
+                               isScalar;
+
+            if (useJsonValue)
+            {
+                VisitJsonPathTraversalCore(expression, "JSON_VALUE");
+                return expression;
+            }
+
+            // JSON_EXTRACT() returns the SQL string `null` for a JSON value of `null`, instead of a SQL value of `NULL`.
+            // This is an unfortunate oversight by the MySQL team, that is unlikely to be corrected (see
+            // https://bugs.mysql.com/bug.php?id=85755).
+            // While JSON_VALUE() handles this scenario correctly for scalar values, for MySQL versions without JSON_VALUE()
+            // support, we need to explicitly ensure that the returned value is not `null`, or we could return a string
+            // containing `null` independent of what is expected.
+
+            Sql.Append("CASE ");
+
+            VisitJsonPathTraversalCore(
+                expression,
+                "JSON_CONTAINS",
+                new SqlConstantExpression(
+                    Expression.Constant("null"),
+                    _typeMappingSource.GetMapping(typeof(string))));
+
+            Sql.Append(" WHEN TRUE THEN NULL ELSE ");
 
             if (expression.ReturnsText)
             {
@@ -121,59 +141,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
             if (expression.Path.Count > 0)
             {
-                Sql.Append("JSON_EXTRACT(");
-            }
-
-            Visit(expression.Expression);
-
-            if (expression.Path.Count > 0)
-            {
-                Sql.Append(", ");
-
-                if (!isSimplePath)
-                {
-                    Sql.Append("CONCAT(");
-                }
-
-                Sql.Append("'$");
-
-                foreach (var location in expression.Path)
-                {
-                    if (location is MySqlJsonArrayIndexExpression arrayIndexExpression)
-                    {
-                        var isConstantExpression = arrayIndexExpression.Expression is SqlConstantExpression;
-
-                        Sql.Append("[");
-
-                        if (!isConstantExpression)
-                        {
-                            Sql.Append("', ");
-                        }
-
-                        Visit(arrayIndexExpression.Expression);
-
-                        if (!isConstantExpression)
-                        {
-                            Sql.Append(", '");
-                        }
-
-                        Sql.Append("]");
-                    }
-                    else
-                    {
-                        Sql.Append(".");
-                        Visit(location);
-                    }
-                }
-
-                Sql.Append("'");
-
-                if (!isSimplePath)
-                {
-                    Sql.Append(")");
-                }
-
-                Sql.Append(")");
+                VisitJsonPathTraversalCore(expression, "JSON_EXTRACT");
             }
 
             if (expression.ReturnsText)
@@ -181,7 +149,92 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 Sql.Append(")");
             }
 
+            Sql.Append(" END");
+
             return expression;
+        }
+
+        protected virtual Expression VisitJsonPathTraversalCore(
+            MySqlJsonTraversalExpression expression,
+            string functionName,
+            SqlExpression secondArgumentExpression = null)
+        {
+            Sql.Append(functionName)
+                .Append("(");
+
+            Visit(expression.Expression);
+
+            if (secondArgumentExpression is not null)
+            {
+                Sql.Append(", ");
+
+                Visit(secondArgumentExpression);
+            }
+
+            if (expression.Path.Count > 0)
+            {
+                Sql.Append(", ");
+
+                GenerateJsonPathExpression(expression.Path);
+            }
+
+            Sql.Append(")");
+
+            return expression;
+        }
+
+        private void GenerateJsonPathExpression(IReadOnlyList<SqlExpression> path)
+        {
+            // If the path contains parameters, then the -> and ->> aliases are not supported by MySQL, because
+            // we need to concatenate the path and the parameters.
+            // We will use JSON_EXTRACT (and JSON_UNQUOTE if needed) only in this case, because the aliases
+            // are much more readable.
+            var isSimplePath = path.All(
+                l => l is SqlConstantExpression ||
+                     l is MySqlJsonArrayIndexExpression e && e.Expression is SqlConstantExpression);
+
+            if (!isSimplePath)
+            {
+                Sql.Append("CONCAT(");
+            }
+
+            Sql.Append("'$");
+
+            foreach (var location in path)
+            {
+                if (location is MySqlJsonArrayIndexExpression arrayIndexExpression)
+                {
+                    var isConstantExpression = arrayIndexExpression.Expression is SqlConstantExpression;
+
+                    Sql.Append("[");
+
+                    if (!isConstantExpression)
+                    {
+                        Sql.Append("', ");
+                    }
+
+                    Visit(arrayIndexExpression.Expression);
+
+                    if (!isConstantExpression)
+                    {
+                        Sql.Append(", '");
+                    }
+
+                    Sql.Append("]");
+                }
+                else
+                {
+                    Sql.Append(".");
+                    Visit(location);
+                }
+            }
+
+            Sql.Append("'");
+
+            if (!isSimplePath)
+            {
+                Sql.Append(")");
+            }
         }
 
         protected override Expression VisitColumn(ColumnExpression columnExpression)

@@ -813,7 +813,7 @@ WHERE (LOCATE(CONVERT(LCASE('nt') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.
 
             AssertSql(
 $"""
-SELECT LOG(7.0, CAST(`o`.`Discount` AS double))
+SELECT LOG(7.0, {MySqlTestHelpers.CastAsDouble("`o`.`Discount`")})
 FROM `Order Details` AS `o`
 WHERE ((`o`.`OrderID` = 11077) AND (`o`.`Discount` > 0)) AND (LOG(7.0, {MySqlTestHelpers.CastAsDouble("`o`.`Discount`")}) < -1.0)
 """);

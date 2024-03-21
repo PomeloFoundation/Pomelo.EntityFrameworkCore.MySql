@@ -39,7 +39,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
             bool returnsText,
             [NotNull] Type type,
             [CanBeNull] RelationalTypeMapping typeMapping)
-            : this(expression, new SqlExpression[0], returnsText, type, typeMapping)
+            : this(expression, new SqlExpression[0], returnsText, type.UnwrapNullableType(), typeMapping)
         {
         }
 
