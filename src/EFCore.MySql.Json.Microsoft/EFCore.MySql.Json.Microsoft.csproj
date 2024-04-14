@@ -31,10 +31,6 @@
     <ProjectReference Include="..\EFCore.MySql\EFCore.MySql.csproj" PrivateAssets="contentfiles;build" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.Text.Json" />
-  </ItemGroup>
-
   <ItemGroup Condition="'$(LocalMySqlConnectorRepository)' == ''">
     <PackageReference Include="MySqlConnector" />
   </ItemGroup>
