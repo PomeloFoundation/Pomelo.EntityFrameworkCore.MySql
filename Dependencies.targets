@@ -13,7 +13,6 @@
     <PackageReference Update="MySqlConnector.DependencyInjection" Version="2.3.5" />
 
     <PackageReference Update="NetTopologySuite" Version="2.5.0" />
-    <PackageReference Update="System.Text.Json" Version="[9.0.0-preview.1.24080.9,9.0.0-preview.1.999999]" />
     <PackageReference Update="Newtonsoft.Json" Version="13.0.3" />
 
     <PackageReference Update="Castle.Core" Version="5.1.1" />
