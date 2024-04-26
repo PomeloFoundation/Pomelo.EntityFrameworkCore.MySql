@@ -4,16 +4,16 @@ Integration and Performance Tests
 **Configuring the Database**
 
 1. Configure your MySQL database by opening the `config.json.example` file, specifying the connection string and saving the changed file as `config.json`.
-2. Run the `scripts/rebuild.sh` script on Linux or the `scripts/rebuild.ps1` script on Windows to rebuild all migrations. Any time you make changes to database models, run the rebuild script again.
+2. Run the `scripts/rebuild.ps1` PowerShell script on Linux or Windows to rebuild all migrations (for installing PowerShell, see [Install PowerShell on Windows, Linux, and macOS](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell)). Any time you make changes to the database models, run the rebuild script again.
 
 **Running Integration Tests**
 
-1. Ensure that you configured the database (see previous paragraph).
-2. Run `dotnet test`. This will execute all tests in the Tests/ directory.
+1. Ensure that you configured the database correctly (see previous paragraph).
+2. Run `dotnet test`. This will execute all tests in the `Tests/` directory.
 
 **Running Performance Tests**
 
-1. Configure the Database
+1. Configure the database.
 2. Run `dotnet run`. This will start a .NET Core MVC API application on "http://localhost:5000".
 
 Methods:
@@ -38,15 +38,11 @@ Methods:
 }
 ```
 
-The `scripts` directory contains load testing scripts. These scripts require that the  [Vegeta](https://github.com/tsenart/vegeta/releases) binary is installed and accessible in your PATH. Here are examples of how to call the load testing scripts:
+The `scripts` directory contains load testing scripts. These scripts require that the  [Vegeta](https://github.com/tsenart/vegeta/releases) binary is installed and accessible in your PATH. Here are some examples of how to call the load testing scripts:
 ```
-# by default, runs 50 async queries per second for 5 seconds
-./stress.sh     # bash for linux
-./stress.ps1    # powershell for windows
+# runs 50 async queries per second for 5 seconds by default 
+./stress.ps1
 
-# runs 100 async queries per second for 10 seconds on linux
-./stress.sh 100 10s async
-
-# run 50 sync queries per second for 1 minute on windows
-./stress.ps1 50 1m sync
+# runs 100 sync queries per second for 1 minute
+./stress.ps1 100 1m sync
 ```
