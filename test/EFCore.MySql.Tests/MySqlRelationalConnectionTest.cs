@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Transactions;
@@ -9,8 +10,10 @@ using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
@@ -30,6 +33,19 @@ public class MySqlRelationalConnectionTest
         using var connection = CreateConnection();
 
         Assert.IsType<MySqlConnection>(connection.DbConnection);
+    }
+
+    [Fact]
+    public void Accepts_named_connection_string()
+    {
+        using var connection = CreateConnection(
+            new DbContextOptionsBuilder()
+                .UseMySql(@"name=NamedConnectionString", AppConfig.ServerVersion)
+                .UseApplicationServiceProvider(
+                    new ServiceCollection()
+                        .AddSingleton<IConfiguration, FakeConfiguration>()
+                        .BuildServiceProvider())
+                .Options);
     }
 
     [Fact]
@@ -274,7 +290,7 @@ public class MySqlRelationalConnectionTest
     private static MySqlRelationalConnection CreateConnection(DbContextOptions options = null, DbDataSource dataSource = null)
     {
         options ??= new DbContextOptionsBuilder()
-            .UseMySql(@"Server=localhost;User ID=some_user;Password=some_password;Database=MySqlConnectionTest", AppConfig.ServerVersion)
+            .UseMySql(ConnectionString, AppConfig.ServerVersion)
             .Options;
 
         foreach (var extension in options.Extensions)
@@ -318,20 +334,7 @@ public class MySqlRelationalConnectionTest
             singletonOptions);
     }
 
-    private const string ConnectionString = "Fake Connection String";
-
-    private static IDbContextOptions CreateOptions(
-        RelationalOptionsExtension optionsExtension = null)
-    {
-        var optionsBuilder = new DbContextOptionsBuilder();
-
-        ((IDbContextOptionsBuilderInfrastructure)optionsBuilder)
-            .AddOrUpdateExtension(
-                optionsExtension
-                ?? new FakeRelationalOptionsExtension().WithConnectionString(ConnectionString));
-
-        return optionsBuilder.Options;
-    }
+    private const string ConnectionString = @"Server=localhost;User ID=some_user;Password=some_password;Database=MySqlConnectionTest";
 
     private class FakeDbContext : DbContext
     {
@@ -342,6 +345,24 @@ public class MySqlRelationalConnectionTest
         public FakeDbContext(DbContextOptions<FakeDbContext> options)
             : base(options)
         {
+        }
+    }
+
+    private class FakeConfiguration : IConfiguration
+    {
+        public IConfigurationSection GetSection(string key)
+            => throw new NotImplementedException();
+
+        public IEnumerable<IConfigurationSection> GetChildren()
+            => throw new NotImplementedException();
+
+        public IChangeToken GetReloadToken()
+            => throw new NotImplementedException();
+
+        public string this[string key]
+        {
+            get => ConnectionString;
+            set => throw new NotImplementedException();
         }
     }
 }
