@@ -66,7 +66,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         public async Task MySqlContainsOptimizedTranslator()
         {
             var result = await _db.DataTypesVariable.Select(m =>
-                new {
+                new
+                {
                     m.Id,
                     Contains = m.TypeString.Contains("Fram"),
                     NotContains = m.TypeString.Contains("asdf")
@@ -80,7 +81,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         public async Task MySqlDateAddTranslator()
         {
             var result = await _db.DataTypesSimple.Select(m =>
-                new {
+                new
+                {
                     m.Id,
                     FutureYear = m.TypeDateTime.AddYears(1),
                     FutureMonth = m.TypeDateTime.AddMonths(1),
@@ -122,7 +124,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         public async Task MySqlDatePartTranslator()
         {
             var result = await _db.DataTypesSimple.Select(m =>
-                new {
+                new
+                {
                     m.Id,
                     m.TypeDateTime.Year,
                     m.TypeDateTime.Month,
@@ -154,7 +157,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
 #pragma warning restore EF1002
 
             var result = await _db.DataTypesSimple.Select(m =>
-                new {
+                new
+                {
                     m.Id,
                     DateTime.Now,
                     DateTime.UtcNow
@@ -170,7 +174,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         public async Task MySqlEndsWithOptimizedTranslator()
         {
             var result = await _db.DataTypesVariable.Select(m =>
-                new {
+                new
+                {
                     m.Id,
                     EndsWith = m.TypeString.EndsWith("Framework"),
                     NotEndsWith = m.TypeString.EndsWith("Entity")
@@ -184,7 +189,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         public async Task MySqlMathAbsTranslator()
         {
             var result = await _db.DataTypesSimple.Select(m =>
-                new {
+                new
+                {
                     m.Id,
                     Abs = Math.Abs(m.TypeDoubleN.Value),
                 }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
@@ -196,7 +202,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         public async Task MySqlMathCeilingTranslator()
         {
             var result = await _db.DataTypesSimple.Select(m =>
-                new {
+                new
+                {
                     m.Id,
                     Ceiling = Math.Ceiling(m.TypeDouble),
                 }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
@@ -208,7 +215,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         public async Task MySqlMathFloorTranslator()
         {
             var result = await _db.DataTypesSimple.Select(m =>
-                new {
+                new
+                {
                     m.Id,
                     Floor = Math.Floor(m.TypeDouble),
                 }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
@@ -220,7 +228,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         public async Task MySqlMathPowerTranslator()
         {
             var result = await _db.DataTypesSimple.Select(m =>
-                new {
+                new
+                {
                     m.Id,
                     Pow = Math.Pow(m.TypeDouble, m.TypeDouble),
                 }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
@@ -232,7 +241,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         public async Task MySqlMathRoundTranslator()
         {
             var result = await _db.DataTypesSimple.Select(m =>
-                new {
+                new
+                {
                     m.Id,
                     Round = Math.Round(m.TypeDouble),
                 }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
@@ -244,7 +254,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         public async Task MySqlMathTruncateTranslator()
         {
             var result = await _db.DataTypesSimple.Select(m =>
-                new {
+                new
+                {
                     m.Id,
                     Truncate = Math.Truncate(m.TypeDouble),
                 }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
@@ -256,7 +267,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         public async Task MySqlNewGuidTranslator()
         {
             var result = await _db.DataTypesSimple.Select(m =>
-                new {
+                new
+                {
                     m.Id,
                     Guid = Guid.NewGuid(),
                 }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
@@ -268,7 +280,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         public async Task MySqlRegexIsMatchTranslator()
         {
             var result = await _db.DataTypesVariable.Select(m =>
-                new {
+                new
+                {
                     m.Id,
                     Match = Regex.IsMatch(m.TypeString, @"^Entity[a-zA-Z]{9}$"),
                     NotMatch = Regex.IsMatch(m.TypeString, @"^Entity[a-zA-Z]{8}$")
@@ -282,7 +295,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         public async Task MySqlStringEqualsTranslator()
         {
             var result = await _db.DataTypesVariable.Select(m =>
-                new {
+                new
+                {
                     m.Id,
                     StringEquals = m.TypeString.Equals("EntityFramework"),
                     StringNotEquals = m.TypeString.Equals("asdf")
@@ -296,7 +310,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         public async Task MySqlStartsWithOptimizedTranslator()
         {
             var result = await _db.DataTypesVariable.Select(m =>
-                new {
+                new
+                {
                     m.Id,
                     StartsWith = m.TypeString.StartsWith("Entity"),
                     NotStartsWith = m.TypeString.StartsWith("Framework")
@@ -310,7 +325,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         public async Task MySqlStringLengthTranslator()
         {
             var result = await _db.DataTypesVariable.Select(m =>
-                new {
+                new
+                {
                     m.Id,
                     m.TypeString.Length,
                 }).FirstOrDefaultAsync(m => m.Id == _variable.Id);
@@ -321,7 +337,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         public async Task MySqlStringReplaceTranslator()
         {
             var result = await _db.DataTypesVariable.Select(m =>
-                new {
+                new
+                {
                     m.Id,
                     Replaced = m.TypeString.Replace("Entity", "Pomelo.Entity")
                 }).FirstOrDefaultAsync(m => m.Id == _variable.Id);
@@ -333,7 +350,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         public async Task MySqlStringSubstringTranslator()
         {
             var result = await _db.DataTypesVariable.Select(m =>
-                new {
+                new
+                {
                     m.Id,
                     First3Chars = m.TypeString.Substring(0, 3),
                     Last3Chars = m.TypeString.Substring(m.TypeString.Length - 4, 3),
@@ -349,7 +367,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         public async Task MySqlStringToLowerTranslator()
         {
             var result = await _db.DataTypesVariable.Select(m =>
-                new {
+                new
+                {
                     m.Id,
                     Lower = m.TypeString.ToLower()
                 }).FirstOrDefaultAsync(m => m.Id == _variable.Id);
@@ -361,7 +380,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         public async Task MySqlStringToUpperTranslator()
         {
             var result = await _db.DataTypesVariable.Select(m =>
-                new {
+                new
+                {
                     m.Id,
                     Upper = m.TypeString.ToUpper()
                 }).FirstOrDefaultAsync(m => m.Id == _variable.Id);
@@ -373,7 +393,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         public async Task MySqlMathAcosTranslator()
         {
             var result = await _db.DataTypesSimple.Select(m =>
-                new {
+                new
+                {
                     m.Id,
                     Acos = Math.Acos(m.TypeDoubleN.Value),
                 }).FirstOrDefaultAsync(m => m.Id == _simple2.Id);
@@ -385,7 +406,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         public async Task MySqlMathCosTranslator()
         {
             var result = await _db.DataTypesSimple.Select(m =>
-                new {
+                new
+                {
                     m.Id,
                     Cos = Math.Cos(m.TypeDouble),
                 }).FirstOrDefaultAsync(m => m.Id == _simple2.Id);
@@ -397,7 +419,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         public async Task MySqlMathSinTranslator()
         {
             var result = await _db.DataTypesSimple.Select(m =>
-                new {
+                new
+                {
                     m.Id,
                     Sin = Math.Sin(m.TypeDouble),
                 }).FirstOrDefaultAsync(m => m.Id == _simple2.Id);
@@ -415,7 +438,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         [Fact]
         public async Task MySqlToStringConvertTranslator()
         {
-            var result = await _db.DataTypesSimple.Select(m => new {
+            var result = await _db.DataTypesSimple.Select(m => new
+            {
                 ConvertedInt32 = m.Id.ToString(),
                 ConvertedLong = m.TypeLong.ToString(),
                 ConvertedByte = m.TypeByte.ToString(),
@@ -436,14 +460,64 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         [Fact]
         public async Task MySqlCastTranslator()
         {
-            var result = await _db.DataTypesSimple.Select(m => new {
-                IntToUlong = (ulong) m.TypeInt,
-                IntToDecimal = (decimal) m.TypeInt,
+            var result = await _db.DataTypesSimple.Select(m => new
+            {
+                IntToUlong = (ulong)m.TypeInt,
+                IntToDecimal = (decimal)m.TypeInt,
                 IntToString = "test" + m.TypeInt,
             }
             ).FirstOrDefaultAsync();
 
             Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task MySqlTimeStampTotalsTranslator()
+        {
+            var result = await _db.DataTypesSimple.Select(m =>
+                new
+                {
+                    m.Id,
+                    m.TypeTimeSpan.TotalNanoseconds,
+                    m.TypeTimeSpan.TotalMilliseconds,
+                    m.TypeTimeSpan.TotalSeconds,
+                    m.TypeTimeSpan.TotalMinutes,
+                    m.TypeTimeSpan.TotalHours,
+                    m.TypeTimeSpan.TotalDays,
+                }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
+
+            Assert.Equal(_simple.TypeTimeSpan.TotalNanoseconds, result.TotalNanoseconds);
+            Assert.Equal(_simple.TypeTimeSpan.TotalMilliseconds, result.TotalMilliseconds);
+            Assert.Equal(_simple.TypeTimeSpan.TotalSeconds, result.TotalSeconds);
+            Assert.Equal(_simple.TypeTimeSpan.TotalMinutes, result.TotalMinutes);
+            Assert.Equal(_simple.TypeTimeSpan.TotalHours, result.TotalHours);
+            Assert.Equal(_simple.TypeTimeSpan.TotalDays, result.TotalDays);
+        }
+
+        [Fact]
+        public async Task MySqlTimeStampTotalsCalculationTranslator()
+        {
+            var custom = new TimeSpan(1, 2, 3, 4);
+
+            var result = await _db.DataTypesSimple
+                .Select(x => custom)
+                .Select(c =>
+                new
+                {
+                    c.TotalNanoseconds,
+                    c.TotalMilliseconds,
+                    c.TotalSeconds,
+                    c.TotalMinutes,
+                    c.TotalHours,
+                    c.TotalDays,
+                }).FirstOrDefaultAsync();
+
+            Assert.Equal(custom.TotalNanoseconds, result.TotalNanoseconds);
+            Assert.Equal(custom.TotalMilliseconds, result.TotalMilliseconds);
+            Assert.Equal(custom.TotalSeconds, result.TotalSeconds);
+            Assert.Equal(custom.TotalMinutes, result.TotalMinutes, tolerance: 0.00001);
+            Assert.Equal(custom.TotalHours, result.TotalHours, tolerance: 0.00001);
+            Assert.Equal(custom.TotalDays, result.TotalDays, tolerance: 0.00001);
         }
 
     }
