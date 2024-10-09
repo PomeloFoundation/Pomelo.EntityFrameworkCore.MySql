@@ -80,16 +80,28 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             string defaultStoreType = null;
             Type defaultClrType = null;
 
-            return (clrType != null
-                    && TryGetDefaultStoreType(clrType, out defaultStoreType))
-                   || (storeTypeName != null
-                       && _spatialStoreTypeMappings.TryGetValue(storeTypeName, out defaultClrType))
-                ? (RelationalTypeMapping)Activator.CreateInstance(
-                    typeof(MySqlGeometryTypeMapping<>).MakeGenericType(clrType ?? defaultClrType ?? typeof(Geometry)),
-                    _geometryServices,
-                    storeTypeName ?? defaultStoreType ?? "geometry",
-                    _options)
-                : null;
+            var hasDefaultStoreType = clrType != null
+                    && TryGetDefaultStoreType(clrType, out defaultStoreType);
+            var hasDefaultClrType = storeTypeName != null
+                       && _spatialStoreTypeMappings.TryGetValue(storeTypeName, out defaultClrType);
+
+            // NOTE: If the incoming user-specified 'clrType' is of the known calculated 'defaultClrType', ONLY then proceeed
+            // with the creation of 'MySqlGeometryTypeMapping'.
+            var hasDefaultStoreOrClrType = hasDefaultStoreType || hasDefaultClrType;
+            var isClrTypeNotAssignable = clrType != null
+                && !clrType.IsAssignableFrom(defaultClrType);
+
+            if (!hasDefaultStoreOrClrType
+                || (!hasDefaultStoreType && isClrTypeNotAssignable))
+            {
+                return null;
+            }
+
+            return (RelationalTypeMapping)Activator.CreateInstance(
+                typeof(MySqlGeometryTypeMapping<>).MakeGenericType(clrType ?? defaultClrType ?? typeof(Geometry)),
+                _geometryServices,
+                storeTypeName ?? defaultStoreType ?? "geometry",
+                _options);
         }
 
         private static bool TryGetDefaultStoreType(Type type, out string defaultStoreType)

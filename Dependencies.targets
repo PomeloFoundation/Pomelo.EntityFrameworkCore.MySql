@@ -13,7 +13,7 @@
     <PackageReference Update="MySqlConnector.DependencyInjection" Version="2.3.5" />
 
     <PackageReference Update="NetTopologySuite" Version="2.5.0" />
-    <PackageReference Update="System.Text.Json" Version="8.0.3" />
+    <PackageReference Update="System.Text.Json" Version="8.0.5" />
     <PackageReference Update="Newtonsoft.Json" Version="13.0.3" />
 
     <PackageReference Update="Castle.Core" Version="5.1.1" />
@@ -46,6 +46,7 @@
     <PackageReference Update="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" />
     <PackageReference Update="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
     <PackageReference Update="Microsoft.CodeAnalysis" Version="4.5.0" />
+    <PackageReference Update="Shouldly" Version="4.0.3" />
     <PackageReference Update="Microsoft.CodeAnalysis.Features" Version="4.5.0" />
     <PackageReference Update="Microsoft.CodeAnalysis.CSharp.Features" Version="4.5.0" />
     <PackageReference Update="Microsoft.CodeAnalysis.VisualBasic.Features" Version="4.5.0" />
