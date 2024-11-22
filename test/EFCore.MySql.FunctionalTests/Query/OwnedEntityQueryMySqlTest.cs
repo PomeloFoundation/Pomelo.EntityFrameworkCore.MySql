@@ -69,7 +69,7 @@ LEFT JOIN (
         // Use base implementation once https://github.com/dotnet/efcore/pull/32509#issuecomment-1948812777 is fixed.
         public override async Task Projecting_correlated_collection_property_for_owned_entity(bool async)
         {
-            var contextFactory = await InitializeAsync<Context18582>(seed: c => c.Seed());
+            var contextFactory = await InitializeAsync<Context18582>(seed: c => c.SeedAsync());
 
             using var context = contextFactory.CreateContext();
             var query = context.Warehouses.Select(
@@ -90,62 +90,11 @@ LEFT JOIN (
             Assert.True(new[] { "US", "CA" }.SequenceEqual(warehouseModel.DestinationCountryCodes));
         }
 
-        // The `Context18582` in `OwnedEntityQueryTestBase.cs` is private (as many other context classes there), so we cannot override any
-        // tests that use it without duplicating the the whole context class, even though we don't need to change the class at all.
-        private class Context18582(DbContextOptions options) : DbContext(options)
-        {
-            public DbSet<Warehouse> Warehouses { get; set; }
-
-            public void Seed()
-            {
-                Add(
-                    new Warehouse
-                    {
-                        WarehouseCode = "W001",
-                        DestinationCountries =
-                        {
-                            new WarehouseDestinationCountry { Id = "1", CountryCode = "US" },
-                            new WarehouseDestinationCountry { Id = "2", CountryCode = "CA" }
-                        }
-                    });
-
-                SaveChanges();
-            }
-
-            protected override void OnModelCreating(ModelBuilder modelBuilder)
-                => modelBuilder.Entity<Warehouse>()
-                    .OwnsMany(x => x.DestinationCountries)
-                    .WithOwner()
-                    .HasForeignKey(x => x.WarehouseCode)
-                    .HasPrincipalKey(x => x.WarehouseCode);
-
-            public class Warehouse
-            {
-                public int Id { get; set; }
-                public string WarehouseCode { get; set; }
-                public ICollection<WarehouseDestinationCountry> DestinationCountries { get; set; } = new HashSet<WarehouseDestinationCountry>();
-            }
-
-            public class WarehouseDestinationCountry
-            {
-                public string Id { get; set; }
-                public string WarehouseCode { get; set; }
-                public string CountryCode { get; set; }
-            }
-
-            public class WarehouseModel
-            {
-                public string WarehouseCode { get; set; }
-
-                public ICollection<string> DestinationCountryCodes { get; set; }
-            }
-        }
-
         // Use base implementation once https://github.com/dotnet/efcore/pull/32509#issuecomment-1948812777 is fixed and the base
         // implementation has been fixed to use a deterministic order.
         public override async Task Correlated_subquery_with_owned_navigation_being_compared_to_null_works()
         {
-            var contextFactory = await InitializeAsync<Context13157>(seed: c => c.Seed());
+            var contextFactory = await InitializeAsync<Context13157>(seed: c => c.SeedAsync());
 
             using (var context = contextFactory.CreateContext())
             {
@@ -185,48 +134,6 @@ FROM `Partners` AS `p`
 LEFT JOIN `Address` AS `a` ON `p`.`Id` = `a`.`PartnerId`
 ORDER BY `p`.`Id`
 """);
-        }
-
-        // The `Context13157` in `OwnedEntityQueryTestBase.cs` is private (as many other context classes there), so we cannot override any
-        // tests that use it without duplicating the the whole context class, even though we don't need to change the class at all.
-        private class Context13157(DbContextOptions options) : DbContext(options)
-        {
-            public virtual DbSet<Partner> Partners { get; set; }
-
-            protected override void OnModelCreating(ModelBuilder modelBuilder)
-                => modelBuilder.Entity<Address>().OwnsOne(x => x.Turnovers);
-
-            public void Seed()
-            {
-                AddRange(
-                    new Partner
-                    {
-                        Addresses = new List<Address>
-                        {
-                            new() { Turnovers = new AddressTurnovers { AmountIn = 10 } }, new() { Turnovers = null },
-                        }
-                    }
-                );
-
-                SaveChanges();
-            }
-
-            public class Partner
-            {
-                public int Id { get; set; }
-                public ICollection<Address> Addresses { get; set; }
-            }
-
-            public class Address
-            {
-                public int Id { get; set; }
-                public AddressTurnovers Turnovers { get; set; }
-            }
-
-            public class AddressTurnovers
-            {
-                public int AmountIn { get; set; }
-            }
         }
     }
 }

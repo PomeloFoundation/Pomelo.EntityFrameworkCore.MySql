@@ -44,6 +44,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
         private static readonly MethodInfo _timeOnlyAddTimeSpanMethod = typeof(TimeOnly).GetRuntimeMethod(nameof(TimeOnly.Add), new[] { typeof(TimeSpan) })!;
         private static readonly MethodInfo _timeOnlyIsBetweenMethod = typeof(TimeOnly).GetRuntimeMethod(nameof(TimeOnly.IsBetween), new[] { typeof(TimeOnly), typeof(TimeOnly) })!;
+        private static readonly MethodInfo _timeOnlyFromDateTimeMethod = typeof(TimeOnly).GetRuntimeMethod(nameof(TimeOnly.FromDateTime), new[] { typeof(DateTime) })!;
+        private static readonly MethodInfo _timeOnlyFromTimeSpanMethod = typeof(TimeOnly).GetRuntimeMethod(nameof(TimeOnly.FromTimeSpan), new[] { typeof(TimeSpan) })!;
 
         private static readonly MethodInfo _dateOnlyFromDateTimeMethod = typeof(DateOnly).GetRuntimeMethod(nameof(DateOnly.FromDateTime), new[] { typeof(DateTime) })!;
         private static readonly MethodInfo _dateOnlyToDateTimeMethod = typeof(DateOnly).GetRuntimeMethod(nameof(DateOnly.ToDateTime), new[] { typeof(TimeOnly) })!;
@@ -137,11 +139,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         _sqlExpressionFactory.GreaterThanOrEqual(instance, arguments[0]),
                         _sqlExpressionFactory.LessThan(instance, arguments[1]));
                 }
+
+                if (instance is null &&
+                    arguments.Count == 1)
+                {
+                    if (method == _timeOnlyFromDateTimeMethod)
+                    {
+                        return _sqlExpressionFactory.NullableFunction(
+                            "TIME",
+                            arguments,
+                            typeof(TimeOnly),
+                            onlyNullWhenAnyNullPropagatingArgumentIsNull: true);
+                    }
+
+                    if (method == _timeOnlyFromTimeSpanMethod)
+                    {
+                        return _sqlExpressionFactory.Convert(arguments[0], method.ReturnType);
+                    }
+                }
             }
 
             if (method.DeclaringType == typeof(DateOnly))
             {
-                if (method == _dateOnlyFromDateTimeMethod)
+                if (method == _dateOnlyFromDateTimeMethod &&
+                    instance is null &&
+                    arguments.Count == 1)
                 {
                     return _sqlExpressionFactory.NullableFunction(
                         "DATE",

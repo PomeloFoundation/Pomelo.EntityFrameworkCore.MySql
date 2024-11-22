@@ -13,9 +13,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        protected override bool CanExecuteQueryString
-            => true;
-
         public class OwnedQueryMySqlFixture : RelationalOwnedQueryFixture
         {
             protected override ITestStoreFactory TestStoreFactory

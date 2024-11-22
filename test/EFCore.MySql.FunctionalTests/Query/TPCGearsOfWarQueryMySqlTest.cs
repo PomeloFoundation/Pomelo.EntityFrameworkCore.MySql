@@ -24,9 +24,6 @@ public class TPCGearsOfWarQueryMySqlTest : TPCGearsOfWarQueryRelationalTestBase<
         //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
     }
 
-    protected override bool CanExecuteQueryString
-        => true;
-
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
         => TestHelpers.AssertAllMethodsOverridden(GetType());
@@ -5504,21 +5501,74 @@ LEFT JOIN (
 """);
     }
 
-    public override async Task Enum_ToString_is_client_eval(bool async)
+    public override async Task ToString_enum_property_projection(bool async)
     {
-        await base.Enum_ToString_is_client_eval(async);
+        await base.ToString_enum_property_projection(async);
 
         AssertSql(
 """
-SELECT `u`.`Rank`
+SELECT CASE [u].[Rank]
+    WHEN 0 THEN N'None'
+    WHEN 1 THEN N'Private'
+    WHEN 2 THEN N'Corporal'
+    WHEN 4 THEN N'Sergeant'
+    WHEN 8 THEN N'Lieutenant'
+    WHEN 16 THEN N'Captain'
+    WHEN 32 THEN N'Major'
+    WHEN 64 THEN N'Colonel'
+    WHEN 128 THEN N'General'
+    ELSE CAST([u].[Rank] AS nvarchar(max))
+END
 FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`Rank`
-    FROM `Gears` AS `g`
+    SELECT [g].[Rank]
+    FROM [Gears] AS [g]
     UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`Rank`
-    FROM `Officers` AS `o`
-) AS `u`
-ORDER BY `u`.`SquadId`, `u`.`Nickname`
+    SELECT [o].[Rank]
+    FROM [Officers] AS [o]
+) AS [u]
+""");
+    }
+
+    public override async Task ToString_nullable_enum_property_projection(bool async)
+    {
+        await base.ToString_nullable_enum_property_projection(async);
+
+        AssertSql(
+"""
+SELECT CASE [w].[AmmunitionType]
+    WHEN 1 THEN N'Cartridge'
+    WHEN 2 THEN N'Shell'
+    ELSE COALESCE(CAST([w].[AmmunitionType] AS nvarchar(max)), N'')
+END
+FROM [Weapons] AS [w]
+""");
+    }
+
+    public override async Task ToString_enum_contains(bool async)
+    {
+        await base.ToString_enum_contains(async);
+
+        AssertSql(
+"""
+SELECT [m].[CodeName]
+FROM [Missions] AS [m]
+WHERE CAST([m].[Difficulty] AS nvarchar(max)) LIKE N'%Med%'
+""");
+    }
+
+    public override async Task ToString_nullable_enum_contains(bool async)
+    {
+        await base.ToString_nullable_enum_contains(async);
+
+        AssertSql(
+"""
+SELECT [w].[Name]
+FROM [Weapons] AS [w]
+WHERE CASE [w].[AmmunitionType]
+    WHEN 1 THEN N'Cartridge'
+    WHEN 2 THEN N'Shell'
+    ELSE COALESCE(CAST([w].[AmmunitionType] AS nvarchar(max)), N'')
+END LIKE N'%Cart%'
 """);
     }
 

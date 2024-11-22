@@ -10,8 +10,5 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             Fixture.TestSqlLoggerFactory.Clear();
         }
-
-        protected override bool CanExecuteQueryString
-            => true;
     }
 }

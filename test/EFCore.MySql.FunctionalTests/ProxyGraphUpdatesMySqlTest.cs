@@ -62,11 +62,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             {
             }
 
-            // Needs lazy loading
-            public override void Save_two_entity_cycle_with_lazy_loading()
-            {
-            }
-
             protected override bool DoesLazyLoading
                 => false;
 

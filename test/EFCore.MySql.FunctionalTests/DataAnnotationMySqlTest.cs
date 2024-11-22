@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -109,9 +110,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             return model;
         }
 
-        public override void ConcurrencyCheckAttribute_throws_if_value_in_database_changed()
+        public override async Task ConcurrencyCheckAttribute_throws_if_value_in_database_changed()
         {
-            base.ConcurrencyCheckAttribute_throws_if_value_in_database_changed();
+            await base.ConcurrencyCheckAttribute_throws_if_value_in_database_changed();
 
             AssertSql(
                 """
@@ -153,9 +154,9 @@ SELECT ROW_COUNT();
 """);
         }
 
-        public override void DatabaseGeneratedAttribute_autogenerates_values_when_set_to_identity()
+        public override async Task DatabaseGeneratedAttribute_autogenerates_values_when_set_to_identity()
         {
-            base.DatabaseGeneratedAttribute_autogenerates_values_when_set_to_identity();
+            await base.DatabaseGeneratedAttribute_autogenerates_values_when_set_to_identity();
 
             if (AppConfig.ServerVersion.Supports.Returning)
             {

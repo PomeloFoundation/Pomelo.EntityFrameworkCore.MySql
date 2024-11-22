@@ -2,6 +2,7 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System.Linq.Expressions;
+using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
@@ -13,6 +14,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 {
     public class MySqlRegexpExpression : SqlExpression
     {
+        private static ConstructorInfo _quotingConstructor;
+
         public MySqlRegexpExpression(
             [NotNull] SqlExpression match,
             [NotNull] SqlExpression pattern,
@@ -45,6 +48,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 
             return Update(match, pattern);
         }
+
+        /// <inheritdoc />
+        public override Expression Quote()
+            => New(
+                _quotingConstructor ??= typeof(MySqlInlinedParameterExpression).GetConstructor(
+                    [typeof(SqlExpression), typeof(SqlExpression), typeof(RelationalTypeMapping)])!,
+                Match.Quote(),
+                Pattern.Quote(),
+                RelationalExpressionQuotingUtilities.QuoteTypeMapping(TypeMapping));
 
         public virtual MySqlRegexpExpression Update(SqlExpression match, SqlExpression pattern)
             => match != Match ||

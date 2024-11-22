@@ -20,7 +20,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             _options = options;
         }
 
-        public virtual RelationalParameterBasedSqlProcessor Create(bool useRelationalNulls)
-            => new MySqlParameterBasedSqlProcessor(_dependencies, useRelationalNulls, _options);
+        public virtual RelationalParameterBasedSqlProcessor Create(RelationalParameterBasedSqlProcessorParameters parameters)
+            => new MySqlParameterBasedSqlProcessor(_dependencies, parameters, _options);
     }
 }

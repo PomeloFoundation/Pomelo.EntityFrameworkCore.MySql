@@ -8,6 +8,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -231,7 +232,9 @@ public class CompiledModelMySqlTest : CompiledModelRelationalTestBase
         }
     }
 
-    public override void Tpc()
+    // TODO: 9.0
+    // Check if we can use `UseSprocReturnValue` now.
+    public override Task Tpc_Sprocs()
     {
         // The CompiledModelRelationalTestBase implementation uses stored procedures with return values and result columns, which are not
         // supported in MySQL.
@@ -239,10 +242,10 @@ public class CompiledModelMySqlTest : CompiledModelRelationalTestBase
         // method (possible maintenance issue, because the class is likely to have a higher volatility), or we need to skip the stored procedure
         // validation to allow the unsupported stored procedure features.
         // We do the latter here.
-        Test(
-            BuildTpcModel,
-            AssertTpc,
-            options: new CompiledModelCodeGenerationOptions { UseNullableReferenceTypes = true },
+        return Test(
+            BuildTpcSprocsModel,
+            AssertTpcSprocs,
+            options: new CompiledModelCodeGenerationOptions { UseNullableReferenceTypes = true, ForNativeAot = true },
             addServices: s => s.AddSingleton<IModelValidator, StoredProcedureValidationExceptionIgnoringMySqlModelValidator>());
     }
 
@@ -326,11 +329,11 @@ public class CompiledModelMySqlTest : CompiledModelRelationalTestBase
             });
     }
 
-    public override void BigModel_with_JSON_columns()
+    public override async Task BigModel_with_JSON_columns()
     {
         Assert.Equal(
             MySqlStrings.Ef7CoreJsonMappingNotSupported,
-            Assert.Throws<InvalidOperationException>(() => base.BigModel_with_JSON_columns()).Message);
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => base.BigModel_with_JSON_columns())).Message);
     }
 
     protected override TestHelpers TestHelpers => MySqlTestHelpers.Instance;

@@ -52,7 +52,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     && IsZero(selectExpression.Offset))
                 {
                     return selectExpression.Update(
-                        selectExpression.Projection,
                         selectExpression.Tables,
                         selectExpression.GroupBy.Count > 0
                             ? selectExpression.Predicate
@@ -61,6 +60,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         selectExpression.GroupBy.Count > 0
                             ? _sqlExpressionFactory.ApplyDefaultTypeMapping(_sqlExpressionFactory.Constant(false))
                             : null,
+                        selectExpression.Projection,
                         new List<OrderingExpression>(0),
                         limit: null,
                         offset: null);

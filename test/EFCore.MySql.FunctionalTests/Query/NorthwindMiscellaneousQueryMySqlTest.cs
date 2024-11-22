@@ -30,9 +30,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        protected override bool CanExecuteQueryString
-            => true;
-
         public override async Task Select_bitwise_or(bool async)
         {
             await base.Select_bitwise_or(async);

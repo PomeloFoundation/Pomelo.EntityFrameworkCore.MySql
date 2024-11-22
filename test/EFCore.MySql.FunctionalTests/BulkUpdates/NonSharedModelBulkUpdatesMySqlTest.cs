@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
-public class NonSharedModelBulkUpdatesMySqlTest : NonSharedModelBulkUpdatesTestBase
+public class NonSharedModelBulkUpdatesMySqlTest : NonSharedModelBulkUpdatesRelationalTestBase
 {
     protected override ITestStoreFactory TestStoreFactory
         => MySqlTestStoreFactory.Instance;

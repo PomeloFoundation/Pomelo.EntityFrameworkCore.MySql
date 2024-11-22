@@ -21,9 +21,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        protected override bool CanExecuteQueryString
-            => true;
-
         public override Task DateTimeOffset_Contains_Less_than_Greater_than(bool async)
         {
             var dto = MySqlTestHelpers.GetExpectedValue(new DateTimeOffset(599898024001234567, new TimeSpan(1, 30, 0)));

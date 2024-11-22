@@ -10,6 +10,10 @@ using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal;
 
+// TODO: 9.0
+// Remove MySqlQueryableMethodNormalizingExpressionVisitor, MySqlBipolarExpression and
+// MySqlQueryTranslationPreprocessor.NormalizeQueryableMethod (or the whole class) and use ElementAt() directly in Json translation classes.
+
 /// <summary>
 /// Skips normalization of array[index].Property to array.Select(e => e.Property).ElementAt(index),
 /// because it messes-up our JSON-Array handling in `MySqlSqlTranslatingExpressionVisitor`.
@@ -18,7 +22,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal;
 public class MySqlQueryableMethodNormalizingExpressionVisitor : QueryableMethodNormalizingExpressionVisitor
 {
     public MySqlQueryableMethodNormalizingExpressionVisitor(QueryCompilationContext queryCompilationContext)
-        : base(queryCompilationContext)
+        : base(queryCompilationContext, isEfConstantSupported: true)
     {
     }
 
@@ -75,7 +79,7 @@ public class MySqlQueryableMethodNormalizingExpressionVisitor : QueryableMethodN
             {
                 foreach (var expression in arguments)
                 {
-                    yield return VisitExtension(expression);
+                    yield return Visit(expression);
                 }
             }
 

@@ -120,7 +120,7 @@ WHERE `o`.`Value` NOT LIKE 'A%' OR (`o`.`Value` IS NULL)
     public override Task Concat_and_json_scalar(bool async)
         => Assert.ThrowsAsync<InvalidOperationException>(() => base.Concat_and_json_scalar(async));
 
-    protected override void Seed(OperatorsContext ctx)
+    protected override async Task Seed(OperatorsContext ctx)
     {
         ctx.Set<OperatorEntityString>().AddRange(ExpectedData.OperatorEntitiesString);
         ctx.Set<OperatorEntityInt>().AddRange(ExpectedData.OperatorEntitiesInt);
@@ -130,6 +130,6 @@ WHERE `o`.`Value` NOT LIKE 'A%' OR (`o`.`Value` IS NULL)
         ctx.Set<OperatorEntityNullableBool>().AddRange(ExpectedData.OperatorEntitiesNullableBool);
         // ctx.Set<OperatorEntityDateTimeOffset>().AddRange(ExpectedData.OperatorEntitiesDateTimeOffset);
 
-        ctx.SaveChanges();
+        await ctx.SaveChangesAsync();
     }
 }

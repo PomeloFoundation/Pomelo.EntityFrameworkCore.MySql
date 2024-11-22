@@ -525,6 +525,26 @@ ALTER TABLE `TestSequenceMove` RENAME `TestSequenceSchema_TestSequenceMove`;
 """);
         }
 
+        public override async Task Add_required_primitive_collection_with_custom_default_value_sql_to_existing_table()
+        {
+            await base.Add_required_primitve_collection_with_custom_default_value_sql_to_existing_table_core("N'[3, 2, 1]'");
+
+            AssertSql(
+"""
+ALTER TABLE [Customers] ADD [Numbers] nvarchar(max) NOT NULL DEFAULT (N'[3, 2, 1]');
+""");
+        }
+
+        public override async Task Add_required_primitve_collection_with_custom_default_value_sql_to_existing_table()
+        {
+            await base.Add_required_primitve_collection_with_custom_default_value_sql_to_existing_table_core("N'[3, 2, 1]'");
+
+            AssertSql(
+"""
+ALTER TABLE [Customers] ADD [Numbers] nvarchar(max) NOT NULL DEFAULT (N'[3, 2, 1]');
+""");
+        }
+
         [ConditionalTheory(Skip = "TODO")]
         public override Task Move_table()
         {

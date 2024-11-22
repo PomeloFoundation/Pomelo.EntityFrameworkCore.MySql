@@ -633,13 +633,13 @@ SELECT @_out_p4;
         }
     }
 
-    protected override void CreateStoredProcedures(DbContext context, string createSprocSql)
+    protected override async Task CreateStoredProcedures(DbContext context, string createSprocSql)
     {
         foreach (var batch in
                  new Regex(@"[\r\n\s]*(?:\r|\n)GO;?[\r\n\s]*", RegexOptions.IgnoreCase | RegexOptions.Singleline, TimeSpan.FromMilliseconds(1000.0))
                      .Split(createSprocSql).Where(b => !string.IsNullOrEmpty(b)))
         {
-            context.Database.ExecuteSqlRaw(batch);
+            await context.Database.ExecuteSqlRawAsync(batch);
         }
     }
 

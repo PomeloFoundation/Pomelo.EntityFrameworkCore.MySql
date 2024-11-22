@@ -4,8 +4,11 @@
 using System;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
@@ -27,6 +30,65 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         {
             _sqlGenerationHelper = (MySqlSqlGenerationHelper)dependencies.SqlGenerationHelper;
         }
+
+        public override LockReleaseBehavior LockReleaseBehavior
+            => LockReleaseBehavior.Transaction;
+
+        public override IMigrationsDatabaseLock AcquireDatabaseLock()
+        {
+            Dependencies.MigrationsLogger.AcquiringMigrationLock();
+
+            Dependencies.RawSqlCommandBuilder
+                .Build(GetAcquireLockCommandSql())
+                .ExecuteNonQuery(CreateRelationalCommandParameters());
+
+            return CreateMigrationDatabaseLock();
+        }
+
+        public override async Task<IMigrationsDatabaseLock> AcquireDatabaseLockAsync(CancellationToken cancellationToken = default)
+        {
+            await Dependencies.RawSqlCommandBuilder
+                .Build(GetAcquireLockCommandSql())
+                .ExecuteNonQueryAsync(CreateRelationalCommandParameters(), cancellationToken)
+                .ConfigureAwait(false);
+
+            return CreateMigrationDatabaseLock();
+        }
+
+        /// <summary>
+        ///     Returns the name of the database-wide for migrations. Currently, this is actully a database *server*-wide lock, so the lock
+        ///     should contain the database name to make it more database specific.
+        /// </summary>
+        protected virtual string GetDatabaseLockName(string databaseName)
+            => $"__{databaseName}_EFMigrationsLock";
+
+        // We cannot use LOCK TABLES/UNLOCK TABLES, because we would need to know *all* the table we want to access by name beforehand,
+        // since after the LOCK TABLES statement has run, only the tables specified can be access and access to any other table results in
+        // an error.
+        // We use GET_LOCK()/RELEASE_LOCK() for now. We don't specify a timeout for now, because we cannot know how long the migration
+        // operations are supposed to take. If RELEASE_LOCK() is never called, the lock is automatically release when the session ends or is
+        // killed. This function pair is bound to a database, but is a database server wide global mutex. We therefore explicitly use the
+        // database name in
+        // If it turns out, that users want a replication-save method later, we could implement a locking table mechanism as Sqlite does.
+        private string GetAcquireLockCommandSql()
+            => $"SELECT GET_LOCK('{GetDatabaseLockName(Dependencies.Connection.DbConnection.Database)}', -1)";
+
+        private RelationalCommandParameterObject CreateRelationalCommandParameters()
+            => new(
+                Dependencies.Connection,
+                null,
+                null,
+                Dependencies.CurrentContext.Context,
+                Dependencies.CommandLogger, CommandSource.Migrations);
+
+        private MySqlMigrationDatabaseLock CreateMigrationDatabaseLock()
+            => new(
+                this,
+                CreateReleaseLockCommand(),
+                CreateRelationalCommandParameters());
+
+        private IRelationalCommand CreateReleaseLockCommand()
+            => Dependencies.RawSqlCommandBuilder.Build($"SELECT RELEASE_LOCK('{GetDatabaseLockName(Dependencies.Connection.DbConnection.Database)}')");
 
         protected override void ConfigureTable([NotNull] EntityTypeBuilder<HistoryRow> history)
         {
@@ -175,5 +237,21 @@ DROP PROCEDURE {MigrationsScript};
                 .GetColumnName();
 
         #endregion Necessary implementation because we cannot directly override EnsureModel
+
+        private sealed class MySqlMigrationDatabaseLock(
+            MySqlHistoryRepository historyRepository,
+            IRelationalCommand releaseLockCommand,
+            RelationalCommandParameterObject relationalCommandParameters,
+            CancellationToken cancellationToken = default)
+            : IMigrationsDatabaseLock
+        {
+            public IHistoryRepository HistoryRepository => historyRepository;
+
+            public void Dispose()
+                => releaseLockCommand.ExecuteScalar(relationalCommandParameters);
+
+            public async ValueTask DisposeAsync()
+                => await releaseLockCommand.ExecuteScalarAsync(relationalCommandParameters, cancellationToken).ConfigureAwait(false);
+        }
     }
 }

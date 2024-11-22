@@ -1,25 +1,30 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
+using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
-    public abstract class ServiceProviderPerContextFixtureBase<TContext> : ServiceProviderFixtureBase
+    public abstract class ServiceProviderPerContextFixtureBase<TContext> : ServiceProviderFixtureBase, IAsyncLifetime
         where TContext : DbContext
     {
         protected abstract string StoreName { get; }
-        public TestStore TestStore { get; }
+        public TestStore TestStore { get; private set; }
         public TestSqlLoggerFactory TestSqlLoggerFactory => (TestSqlLoggerFactory)ListLoggerFactory;
 
-        public ServiceProviderPerContextFixtureBase()
+        public async Task InitializeAsync()
         {
             TestStore = TestStoreFactory.GetOrCreate(StoreName);
 
             // Setup database.
             var serviceProvider = SetupServices();
-            TestStore.Initialize(serviceProvider, () => CreateContextFromServiceProvider(serviceProvider), c => Seed((TContext)c), Clean);
+            await TestStore.InitializeAsync(serviceProvider, () => CreateContextFromServiceProvider(serviceProvider), c => SeedAsync((TContext)c), CleanAsync);
         }
+
+        public Task DisposeAsync()
+            => Task.CompletedTask;
 
         // We cannot use ServiceProviderFixtureBase.CreateOptions() here, because it does not accept an existing
         // DbContextOptionsBuilder or DbContextOptions object as a parameter, and we might already have one setup.
@@ -64,12 +69,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         public virtual TContext CreateContextFromServiceProvider(IServiceProvider serviceProvider)
             => (TContext)serviceProvider.GetRequiredService(typeof(TContext));
 
-        protected virtual void Clean(DbContext context)
-        {
-        }
+        protected virtual Task CleanAsync(DbContext context)
+            => Task.CompletedTask;
 
-        protected virtual void Seed(TContext context)
-        {
-        }
+        protected virtual Task SeedAsync(TContext context)
+            => Task.CompletedTask;
     }
 }

@@ -1679,7 +1679,7 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
             }
         }
 
-        protected override void IndexOptions(CreateIndexOperation operation, IModel model, MigrationCommandListBuilder builder)
+        protected override void IndexOptions(MigrationOperation operation, IModel model, MigrationCommandListBuilder builder)
         {
             // The base implementation supports index filters in form of a WHERE clause.
             // This is not supported by MySQL, so we don't call it here.

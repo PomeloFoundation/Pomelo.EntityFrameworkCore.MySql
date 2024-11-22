@@ -2,7 +2,6 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
@@ -17,7 +16,6 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal;
 
@@ -361,12 +359,6 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
         return new ShapedQueryExpression(selectExpression, shaperExpression);
     }
 
-    protected override Expression ApplyInferredTypeMappings(
-        Expression expression,
-        IReadOnlyDictionary<(string, string), RelationalTypeMapping> inferredTypeMappings)
-        => new MySqlInferredTypeMappingApplier(
-            RelationalDependencies.Model, _typeMappingSource, _sqlExpressionFactory, inferredTypeMappings).Visit(expression);
-
     /// <summary>
     /// Wraps the given expression with any SQL logic necessary to convert a value coming out of a JSON document into the relational value
     /// represented by the given type mapping.
@@ -382,128 +374,6 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
             ByteArrayTypeMapping => sqlExpressionFactory.Function("FROM_BASE64", new[] { expression }, isNullable, new[] { true }, typeof(byte[]), typeMapping),
             _ => expression
         };
-
-    protected class MySqlInferredTypeMappingApplier : RelationalInferredTypeMappingApplier
-    {
-        private readonly IRelationalTypeMappingSource _typeMappingSource;
-        private readonly ISqlExpressionFactory _sqlExpressionFactory;
-        private Dictionary<string, RelationalTypeMapping> _currentSelectInferredTypeMappings;
-
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        public MySqlInferredTypeMappingApplier(
-            IModel model,
-            IRelationalTypeMappingSource typeMappingSource,
-            ISqlExpressionFactory sqlExpressionFactory,
-            IReadOnlyDictionary<(string, string), RelationalTypeMapping> inferredTypeMappings)
-            : base(model, sqlExpressionFactory, inferredTypeMappings)
-        {
-            (_typeMappingSource, _sqlExpressionFactory) = (typeMappingSource, sqlExpressionFactory);
-        }
-
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        protected override Expression VisitExtension(Expression expression)
-        {
-            switch (expression)
-            {
-                case MySqlJsonTableExpression { Name: "JSON_TABLE", Schema: null, IsBuiltIn: true } jsonTableExpression
-                    when TryGetInferredTypeMapping(jsonTableExpression.Alias, "value", out var typeMapping):
-                    return ApplyTypeMappingsOnJsonTableExpression(jsonTableExpression, typeMapping);
-
-                // Above, we applied the type mapping the the parameter that JSON_TABLE accepts as an argument.
-                // But the inferred type mapping also needs to be applied as a SQL conversion on the column projections coming out of the
-                // SelectExpression containing the JSON_TABLE call. So we set state to know about JSON_TABLE tables and their type mappings
-                // in the immediate SelectExpression, and continue visiting down (see ColumnExpression visitation below).
-                case SelectExpression selectExpression:
-                {
-                    Dictionary<string, RelationalTypeMapping> previousSelectInferredTypeMappings = null;
-
-                    foreach (var table in selectExpression.Tables)
-                    {
-                        if (table is TableValuedFunctionExpression { Name: "JSON_TABLE", Schema: null, IsBuiltIn: true } jsonTableExpression
-                            && TryGetInferredTypeMapping(jsonTableExpression.Alias, "value", out var inferredTypeMapping))
-                        {
-                            if (previousSelectInferredTypeMappings is null)
-                            {
-                                previousSelectInferredTypeMappings = _currentSelectInferredTypeMappings;
-                                _currentSelectInferredTypeMappings = new Dictionary<string, RelationalTypeMapping>();
-                            }
-
-                            _currentSelectInferredTypeMappings![jsonTableExpression.Alias] = inferredTypeMapping;
-                        }
-                    }
-
-                    var visited = base.VisitExtension(expression);
-
-                    _currentSelectInferredTypeMappings = previousSelectInferredTypeMappings;
-
-                    return visited;
-                }
-
-                // Note that we match also ColumnExpressions which already have a type mapping, i.e. coming out of column collections (as
-                // opposed to parameter collections, where the type mapping needs to be inferred). This is in order to apply SQL conversion
-                // logic later in the process, see note in TranslateCollection.
-                case ColumnExpression { Name: "value" } columnExpression
-                    when _currentSelectInferredTypeMappings?.TryGetValue(columnExpression.TableAlias, out var inferredTypeMapping) is true:
-                    return ApplyJsonSqlConversion(
-                        columnExpression.ApplyTypeMapping(inferredTypeMapping),
-                        _sqlExpressionFactory,
-                        inferredTypeMapping,
-                        columnExpression.IsNullable);
-
-                default:
-                    return base.VisitExtension(expression);
-            }
-        }
-
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        protected virtual TableValuedFunctionExpression ApplyTypeMappingsOnJsonTableExpression(
-            MySqlJsonTableExpression jsonTableExpression,
-            RelationalTypeMapping inferredTypeMapping)
-        {
-            // Constant queryables are translated to VALUES, no need for JSON.
-            // Column queryables have their type mapping from the model, so we don't ever need to apply an inferred mapping on them.
-            if (jsonTableExpression.JsonExpression is not SqlParameterExpression parameterExpression)
-            {
-                return jsonTableExpression;
-            }
-
-            if (_typeMappingSource.FindMapping(parameterExpression.Type, Model, inferredTypeMapping) is not MySqlStringTypeMapping
-                parameterTypeMapping)
-            {
-                throw new InvalidOperationException("Type mapping for 'string' could not be found or was not a MySqlStringTypeMapping");
-            }
-
-            Check.DebugAssert(parameterTypeMapping.ElementTypeMapping != null, "Collection type mapping missing element mapping.");
-
-            return jsonTableExpression.Update(
-                parameterExpression.ApplyTypeMapping(parameterTypeMapping),
-                jsonTableExpression.Path,
-                new[]
-                {
-                    new MySqlJsonTableExpression.ColumnInfo
-                    {
-                        Name = "value",
-                        TypeMapping = (RelationalTypeMapping)parameterTypeMapping.ElementTypeMapping,
-                        Path = new[] { new PathSegment(_sqlExpressionFactory.Constant(0, _typeMappingSource.FindMapping(typeof(int)))) },
-                    }
-                });
-        }
-    }
 
     private sealed class FakeMemberInfo : MemberInfo
     {

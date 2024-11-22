@@ -20,9 +20,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        protected override bool CanExecuteQueryString
-            => true;
-
         public override async Task AsEnumerable_in_subquery_for_GroupBy(bool async)
         {
             await base.AsEnumerable_in_subquery_for_GroupBy(async);

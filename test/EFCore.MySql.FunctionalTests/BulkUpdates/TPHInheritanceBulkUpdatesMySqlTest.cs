@@ -5,13 +5,16 @@ using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
 public class TPHInheritanceBulkUpdatesMySqlTest : TPHInheritanceBulkUpdatesTestBase<TPHInheritanceBulkUpdatesMySqlFixture>
 {
-    public TPHInheritanceBulkUpdatesMySqlTest(TPHInheritanceBulkUpdatesMySqlFixture fixture)
-        : base(fixture)
+    public TPHInheritanceBulkUpdatesMySqlTest(
+        TPHInheritanceBulkUpdatesMySqlFixture fixture,
+        ITestOutputHelper testOutputHelper)
+        : base(fixture, testOutputHelper)
     {
         ClearLog();
     }

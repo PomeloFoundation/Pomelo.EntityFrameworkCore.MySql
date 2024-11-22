@@ -2,16 +2,15 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public class SqlExecutorMySqlTest : SqlExecutorTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>
+    public class SqlExecutorMySqlTest : SqlExecutorTestBase<NorthwindQueryMySqlFixture<SqlExecutorModelCustomizer>>
     {
-        public SqlExecutorMySqlTest(NorthwindQueryMySqlFixture<NoopModelCustomizer> fixture, ITestOutputHelper testOutputHelper)
+        public SqlExecutorMySqlTest(NorthwindQueryMySqlFixture<SqlExecutorModelCustomizer> fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
         {
             Fixture.TestSqlLoggerFactory.Clear();

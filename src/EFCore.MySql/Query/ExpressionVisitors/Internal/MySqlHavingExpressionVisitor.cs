@@ -61,21 +61,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                     groupBy.Add(columnAliasReferenceExpression);
 
                     subQuery = subQuery.Update(
-                        subQuery.Projection,
                         subQuery.Tables,
                         subQuery.Predicate,
                         groupBy,
                         columnAliasReferenceExpression,
+                        subQuery.Projection,
                         subQuery.Orderings,
                         subQuery.Limit,
                         subQuery.Offset);
 
                     selectExpression = selectExpression.Update(
-                        selectExpression.Projection,
                         new[] {subQuery},
                         selectExpression.Predicate,
                         selectExpression.GroupBy,
                         selectExpression.Having,
+                        selectExpression.Projection,
                         selectExpression.Orderings,
                         selectExpression.Limit,
                         selectExpression.Offset);

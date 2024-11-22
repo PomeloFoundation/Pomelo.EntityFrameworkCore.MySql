@@ -26,11 +26,11 @@
 
   <PropertyGroup>
     <PomeloTargetFramework>net8.0</PomeloTargetFramework>
-    <PomeloTestTargetFramework>net8.0</PomeloTestTargetFramework>
+    <PomeloTestTargetFramework>net9.0</PomeloTestTargetFramework>
     <EfCoreTargetFramework>net8.0</EfCoreTargetFramework>
-    <EfCoreTestTargetFramework>net8.0</EfCoreTestTargetFramework>
+    <EfCoreTestTargetFramework>net9.0</EfCoreTestTargetFramework>
     <MySqlConnectorTargetFramework>net8.0</MySqlConnectorTargetFramework>
-    <MySqlConnectorDependencyInjectionTargetFramework>net7.0</MySqlConnectorDependencyInjectionTargetFramework>
+    <MySqlConnectorDependencyInjectionTargetFramework>net8.0</MySqlConnectorDependencyInjectionTargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -39,7 +39,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)icon.png" Pack="true" PackagePath=""/>
+    <None Include="$(MSBuildThisFileDirectory)icon.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <ItemGroup>

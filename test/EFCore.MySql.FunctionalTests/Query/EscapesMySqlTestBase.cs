@@ -24,21 +24,21 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         [ConditionalFact]
-        public virtual void Input_query_escapes_parameter()
+        public virtual async Task Input_query_escapes_parameter()
         {
-            ExecuteWithStrategyInTransaction(
-                context =>
+            await ExecuteWithStrategyInTransactionAsync(
+                async context =>
                 {
                     context.Artists.Add(new Artist
                     {
                         Name = @"Back\slash's Garden Party",
                     });
 
-                    context.SaveChanges();
+                    await context.SaveChangesAsync();
                 },
-                context =>
+                async context =>
                 {
-                    var artists = context.Artists.Where(x => x.Name.EndsWith(" Garden Party")).ToList();
+                    var artists = await context.Artists.Where(x => x.Name.EndsWith(" Garden Party")).ToListAsync();
                     Assert.Single(artists);
                     Assert.True(artists[0].Name == @"Back\slash's Garden Party");
                 });
@@ -108,18 +108,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         protected void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
-        protected virtual void ExecuteWithStrategyInTransaction(
-            Action<MusicStoreContext> testOperation,
-            Action<MusicStoreContext> nestedTestOperation1 = null,
-            Action<MusicStoreContext> nestedTestOperation2 = null)
-        {
-            TestHelpers.ExecuteWithStrategyInTransaction(
+        protected virtual Task ExecuteWithStrategyInTransactionAsync(
+            Func<MusicStoreContext, Task> testOperation,
+            Func<MusicStoreContext, Task> nestedTestOperation1 = null,
+            Func<MusicStoreContext, Task> nestedTestOperation2 = null)
+            => TestHelpers.ExecuteWithStrategyInTransactionAsync(
                 CreateContext,
                 UseTransaction,
                 testOperation,
                 nestedTestOperation1,
                 nestedTestOperation2);
-        }
 
         protected virtual void UseTransaction(DatabaseFacade facade, IDbContextTransaction transaction)
             => facade.UseTransaction(transaction.GetDbTransaction());
@@ -137,7 +135,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 MySqlTestHelpers.Instance.EnsureSufficientKeySpace(modelBuilder.Model, TestStore);
             }
 
-            protected override void Seed(MusicStoreContext context)
+            protected override async Task SeedAsync(MusicStoreContext context)
             {
                 context.Artists.AddRange(
                     new Artist { ArtistId = 1, Name = @"Back\slasher's" },
@@ -145,7 +143,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     new Artist { ArtistId = 3, Name = @"John's Chill Box" }
                 );
 
-                context.SaveChanges();
+                await context.SaveChangesAsync();
             }
         }
     }

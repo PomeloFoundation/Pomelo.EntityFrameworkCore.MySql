@@ -22,9 +22,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        protected override bool CanExecuteQueryString
-            => true;
-
         [ConditionalTheory]
         public override async Task Where_datetime_now(bool async)
         {
@@ -379,7 +376,7 @@ WHERE CONCAT(@__i_0, @__j_1, `c`.`CustomerID`) = `c`.`CompanyName`");
 
             await AssertQuery(
                 async,
-                ss => ss.Set<Customer>().Where(c => string.Concat(i, j, k, c.CustomerID) == c.CompanyName).Select(c => c.CustomerID),
+                ss => ss.Set<Customer>().Where(c => string.Concat(new[] { i, j, k, c.CustomerID }) == c.CompanyName).Select(c => c.CustomerID),
                 assertEmpty: true);
 
         AssertSql(
@@ -405,7 +402,7 @@ WHERE CONCAT(@__i_0, @__j_1, @__k_2, `c`.`CustomerID`) = `c`.`CompanyName`
 
             await AssertQuery(
                 async,
-                ss => ss.Set<Customer>().Where(c => string.Concat(i, j, k, m, c.CustomerID) == c.CompanyName).Select(c => c.CustomerID),
+                ss => ss.Set<Customer>().Where(c => string.Concat(new[] { i, j, k, m, c.CustomerID }) == c.CompanyName).Select(c => c.CustomerID),
                 assertEmpty: true);
 
         AssertSql(
@@ -470,7 +467,7 @@ WHERE @__Concat_0 = `c`.`CompanyName`");
 
             await AssertQuery(
                 async,
-                ss => ss.Set<Customer>().Where(c => string.Concat(i, j, k, m, c.CustomerID) == c.CompanyName).Select(c => c.CustomerID),
+                ss => ss.Set<Customer>().Where(c => string.Concat(new[] { i, j, k, m, c.CustomerID }) == c.CompanyName).Select(c => c.CustomerID),
                 assertEmpty: true);
 
         AssertSql(

@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq.Expressions;
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
@@ -14,6 +15,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 {
     public class MySqlMatchExpression : SqlExpression
     {
+        private static ConstructorInfo _quotingConstructor;
+
         public MySqlMatchExpression(
             SqlExpression match,
             SqlExpression against,
@@ -50,6 +53,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 
             return Update(match, against);
         }
+
+        /// <inheritdoc />
+        public override Expression Quote()
+            => New(
+                _quotingConstructor ??= typeof(MySqlInlinedParameterExpression).GetConstructor(
+                    [typeof(SqlExpression), typeof(SqlExpression), typeof(MySqlMatchSearchMode), typeof(RelationalTypeMapping)])!,
+                Match.Quote(),
+                Against.Quote(),
+                Constant(SearchMode),
+                RelationalExpressionQuotingUtilities.QuoteTypeMapping(TypeMapping));
 
         public virtual MySqlMatchExpression Update(SqlExpression match, SqlExpression against)
             => match != Match || against != Against

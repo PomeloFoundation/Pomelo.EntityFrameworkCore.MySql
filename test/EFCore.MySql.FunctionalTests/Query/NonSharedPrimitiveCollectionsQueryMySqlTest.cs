@@ -1,5 +1,7 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
@@ -379,10 +381,6 @@ LIMIT 2
     }
 
     [ConditionalFact]
-    public override Task Array_of_array_is_not_supported()
-        => base.Array_of_array_is_not_supported();
-
-    [ConditionalFact]
     public override Task Multidimensional_array_is_not_supported()
         => base.Multidimensional_array_is_not_supported();
 
@@ -498,14 +496,20 @@ WHERE JSON_VALUE(JSON_VALUE([t].[Owned], '$.Strings'), '$[1]') = N'bar'
     public virtual void Check_all_tests_overridden()
         => TestHelpers.AssertAllMethodsOverridden(GetType());
 
+    protected override DbContextOptionsBuilder SetTranslateParameterizedCollectionsToConstants(DbContextOptionsBuilder optionsBuilder)
+    {
+        new MySqlDbContextOptionsBuilder(optionsBuilder).TranslateParameterizedCollectionsToConstants();
+
+        return optionsBuilder;
+    }
+
+    protected override DbContextOptionsBuilder SetTranslateParameterizedCollectionsToParameters(DbContextOptionsBuilder optionsBuilder)
+    {
+        new MySqlDbContextOptionsBuilder(optionsBuilder).TranslateParameterizedCollectionsToParameters();
+
+        return optionsBuilder;
+    }
+
     protected override ITestStoreFactory TestStoreFactory
         => MySqlTestStoreFactory.Instance;
 }
-
-
-
-
-
-
-
-

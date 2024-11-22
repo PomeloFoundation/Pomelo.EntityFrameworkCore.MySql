@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
-public class NorthwindBulkUpdatesMySqlTest : NorthwindBulkUpdatesTestBase<NorthwindBulkUpdatesMySqlFixture<NoopModelCustomizer>>
+public class NorthwindBulkUpdatesMySqlTest : NorthwindBulkUpdatesRelationalTestBase<NorthwindBulkUpdatesMySqlFixture<NoopModelCustomizer>>
 {
     public NorthwindBulkUpdatesMySqlTest(
         NorthwindBulkUpdatesMySqlFixture<NoopModelCustomizer> fixture,

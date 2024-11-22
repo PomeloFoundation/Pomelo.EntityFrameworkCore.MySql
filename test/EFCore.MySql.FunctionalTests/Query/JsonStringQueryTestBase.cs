@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
@@ -243,7 +244,7 @@ WHERE JSON_CONTAINS_PATH(`j`.`CustomerJson`, 'all', '$.foo', '$.Age')");
 
             public JsonStringQueryContext(DbContextOptions options) : base(options) {}
 
-            public static void Seed(JsonStringQueryContext context)
+            public static async Task SeedAsync(JsonStringQueryContext context)
             {
                 const string customer1 = @"
                 {
@@ -303,7 +304,7 @@ WHERE JSON_CONTAINS_PATH(`j`.`CustomerJson`, 'all', '$.foo', '$.Age')");
                 context.JsonEntities.AddRange(
                     new JsonEntity { Id = 1, CustomerJson = customer1 },
                     new JsonEntity { Id = 2, CustomerJson = customer2 });
-                context.SaveChanges();
+                await context.SaveChangesAsync();
             }
         }
 
@@ -320,7 +321,7 @@ WHERE JSON_CONTAINS_PATH(`j`.`CustomerJson`, 'all', '$.foo', '$.Age')");
             protected override string StoreName => "JsonStringQueryTest";
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
             public TestSqlLoggerFactory TestSqlLoggerFactory => (TestSqlLoggerFactory)ListLoggerFactory;
-            protected override void Seed(JsonStringQueryContext context) => JsonStringQueryContext.Seed(context);
+            protected override Task SeedAsync(JsonStringQueryContext context) => JsonStringQueryContext.SeedAsync(context);
         }
 
         #endregion

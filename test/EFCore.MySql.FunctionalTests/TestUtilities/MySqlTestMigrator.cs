@@ -2,10 +2,10 @@
 
 using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Migrations.Internal;
@@ -17,19 +17,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         public Func<MigrationsSqlGenerationOptions, MigrationsSqlGenerationOptions> MigrationsSqlGenerationOptionsOverrider { get; set; }
 
         public MySqlTestMigrator(
-            [NotNull] IMigrationsAssembly migrationsAssembly,
-            [NotNull] IHistoryRepository historyRepository,
-            [NotNull] IDatabaseCreator databaseCreator,
-            [NotNull] IMigrationsSqlGenerator migrationsSqlGenerator,
-            [NotNull] IRawSqlCommandBuilder rawSqlCommandBuilder,
-            [NotNull] IMigrationCommandExecutor migrationCommandExecutor,
-            [NotNull] IRelationalConnection connection,
-            [NotNull] ISqlGenerationHelper sqlGenerationHelper,
-            [NotNull] ICurrentDbContext currentContext,
-            [NotNull] IModelRuntimeInitializer modelRuntimeInitializer,
-            [NotNull] IDiagnosticsLogger<DbLoggerCategory.Migrations> logger,
-            [NotNull] IRelationalCommandDiagnosticsLogger commandLogger,
-            [NotNull] IDatabaseProvider databaseProvider)
+            IMigrationsAssembly migrationsAssembly,
+            IHistoryRepository historyRepository,
+            IDatabaseCreator databaseCreator,
+            IMigrationsSqlGenerator migrationsSqlGenerator,
+            IRawSqlCommandBuilder rawSqlCommandBuilder,
+            IMigrationCommandExecutor migrationCommandExecutor,
+            IRelationalConnection connection,
+            ISqlGenerationHelper sqlGenerationHelper,
+            ICurrentDbContext currentContext,
+            IModelRuntimeInitializer modelRuntimeInitializer,
+            IDiagnosticsLogger<DbLoggerCategory.Migrations> logger,
+            IRelationalCommandDiagnosticsLogger commandLogger,
+            IDatabaseProvider databaseProvider,
+            IMigrationsModelDiffer migrationsModelDiffer,
+            IDesignTimeModel designTimeModel,
+            IDbContextOptions contextOptions,
+            IExecutionStrategy executionStrategy)
             : base(
                 migrationsAssembly,
                 historyRepository,
@@ -43,7 +47,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 modelRuntimeInitializer,
                 logger,
                 commandLogger,
-                databaseProvider)
+                databaseProvider,
+                migrationsModelDiffer,
+                designTimeModel,
+                contextOptions,
+                executionStrategy)
         {
         }
 

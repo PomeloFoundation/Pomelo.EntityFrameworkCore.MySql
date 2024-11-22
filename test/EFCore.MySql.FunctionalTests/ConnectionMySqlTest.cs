@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -53,65 +55,65 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         }
 
         [Fact]
-        public void Can_create_admin_connection_with_data_source()
+        public async Task Can_create_admin_connection_with_data_source()
         {
-            using var _ = ((MySqlTestStore)MySqlNorthwindTestStoreFactory.Instance
+            await using var _ = await ((MySqlTestStore)MySqlNorthwindTestStoreFactory.Instance
                     .GetOrCreate("ConnectionTest"))
-                .Initialize(null, (Func<DbContext>)null);
+                .InitializeAsync(null, (Func<DbContext>)null);
 
-            using var dataSource = new MySqlDataSourceBuilder(MySqlTestStore.CreateConnectionString("ConnectionTest")).Build();
+            await using var dataSource = new MySqlDataSourceBuilder(MySqlTestStore.CreateConnectionString("ConnectionTest")).Build();
 
             var optionsBuilder = new DbContextOptionsBuilder<GeneralOptionsContext>();
             optionsBuilder.UseMySql(dataSource, AppConfig.ServerVersion, b => b.ApplyConfiguration());
-            using var context = new GeneralOptionsContext(optionsBuilder.Options);
+            await using var context = new GeneralOptionsContext(optionsBuilder.Options);
 
             var relationalConnection = context.GetService<IMySqlRelationalConnection>();
-            using var masterConnection = relationalConnection.CreateMasterConnection();
+            await using var masterConnection = relationalConnection.CreateMasterConnection();
 
             Assert.Equal(string.Empty, new MySqlConnectionStringBuilder(masterConnection.ConnectionString).Database);
 
-            masterConnection.Open();
+            await masterConnection.OpenAsync(default);
         }
 
         [Fact]
-        public void Can_create_admin_connection_with_connection_string()
+        public async Task Can_create_admin_connection_with_connection_string()
         {
-            using var _ = ((MySqlTestStore)MySqlNorthwindTestStoreFactory.Instance
+            await using var _ = await ((MySqlTestStore)MySqlNorthwindTestStoreFactory.Instance
                     .GetOrCreate("ConnectionTest"))
-                .Initialize(null, (Func<DbContext>)null);
+                .InitializeAsync(null, (Func<DbContext>)null);
 
             var optionsBuilder = new DbContextOptionsBuilder<GeneralOptionsContext>();
             optionsBuilder.UseMySql(MySqlTestStore.CreateConnectionString("ConnectionTest"), AppConfig.ServerVersion, b => b.ApplyConfiguration());
-            using var context = new GeneralOptionsContext(optionsBuilder.Options);
+            await using var context = new GeneralOptionsContext(optionsBuilder.Options);
 
             var relationalConnection = context.GetService<IMySqlRelationalConnection>();
-            using var masterConnection = relationalConnection.CreateMasterConnection();
+            await using var masterConnection = relationalConnection.CreateMasterConnection();
 
             Assert.Equal(string.Empty, new MySqlConnectionStringBuilder(masterConnection.ConnectionString).Database);
 
-            masterConnection.Open();
+            await masterConnection.OpenAsync(default);
         }
 
         [Fact]
-        public void Can_create_admin_connection_with_connection()
+        public async Task Can_create_admin_connection_with_connection()
         {
-            using var _ = ((MySqlTestStore)MySqlNorthwindTestStoreFactory.Instance
+            await using var _ = await ((MySqlTestStore)MySqlNorthwindTestStoreFactory.Instance
                     .GetOrCreate("ConnectionTest"))
-                .Initialize(null, (Func<DbContext>)null);
+                .InitializeAsync(null, (Func<DbContext>)null);
 
-            using var connection = new MySqlConnection(MySqlTestStore.CreateConnectionString("ConnectionTest"));
+            await using var connection = new MySqlConnection(MySqlTestStore.CreateConnectionString("ConnectionTest"));
             connection.Open();
 
             var optionsBuilder = new DbContextOptionsBuilder<GeneralOptionsContext>();
             optionsBuilder.UseMySql(connection, AppConfig.ServerVersion, b => b.ApplyConfiguration());
-            using var context = new GeneralOptionsContext(optionsBuilder.Options);
+            await using var context = new GeneralOptionsContext(optionsBuilder.Options);
 
             var relationalConnection = context.GetService<IMySqlRelationalConnection>();
-            using var masterConnection = relationalConnection.CreateMasterConnection();
+            await using var masterConnection = relationalConnection.CreateMasterConnection();
 
             Assert.Equal(string.Empty, new MySqlConnectionStringBuilder(masterConnection.ConnectionString).Database);
 
-            masterConnection.Open();
+            await masterConnection.OpenAsync(default);
         }
 
         [Fact]
