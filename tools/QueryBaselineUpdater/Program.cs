@@ -8,7 +8,7 @@ namespace QueryBaselineUpdater
 {
     internal static class Program
     {
-        private const string AssertSqlPattern = @"\s*Assert(?:ExecuteUpdate)?Sql\(\s*(?:(?:@?(""""""|"")).*?\1)?\);\r?\n";
+        private const string AssertSqlPattern = @"(?<LeadingWhitespace>\s*)Assert(?:ExecuteUpdate)?Sql\(\s*(?:(?:@?(""""""|"")).*?\1)?\);\r?\n";
 
         private static int Main(string[] args)
         {
@@ -85,7 +85,7 @@ namespace QueryBaselineUpdater
                                 retryCustomized,
                                 f => f.Id,
                                 s => s,
-                                (inner, _) => inner)
+                                (outer, _) => outer)
                             .OrderByDescending(t => t.Line)
                             .Aggregate(
                                 File.ReadAllText(customizedFilePath),
@@ -122,7 +122,7 @@ namespace QueryBaselineUpdater
             var replacedResult = Regex.Replace(
                 inputText,
                 $"^{AssertSqlPattern}",
-                current.AssertSql,
+                "${LeadingWhitespace}" + current.AssertSql.TrimStart(),
                 RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
             if (inputText == replacedResult)
