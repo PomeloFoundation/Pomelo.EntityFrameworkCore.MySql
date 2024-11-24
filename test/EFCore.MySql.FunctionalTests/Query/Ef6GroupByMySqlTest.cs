@@ -165,12 +165,10 @@ GROUP BY `a`.`FirstName`
 
         AssertSql(
 """
-@__p_0='False'
-
 SELECT CASE
     WHEN `a`.`FirstName` IS NULL THEN 'is null'
     ELSE 'not null'
-END AS `keyIsNull`, @__p_0 AS `logicExpression`
+END AS `keyIsNull`, FALSE AS `logicExpression`
 FROM `ArubaOwner` AS `a`
 GROUP BY `a`.`FirstName`
 """);
@@ -489,12 +487,11 @@ GROUP BY `a`.`Id`, `a`.`Alias`, `a`.`FirstName`, `a`.`LastName`
 """
 SELECT `c`.`Id`, `c`.`CompanyName`, `c`.`Region`, `s`.`Id`, `s`.`CustomerId`, `s`.`OrderDate`, `s`.`Total`, `s`.`Id0`
 FROM `CustomerForLinq` AS `c`
-LEFT JOIN LATERAL (
+LEFT JOIN (
     SELECT `o`.`Id`, `o`.`CustomerId`, `o`.`OrderDate`, `o`.`Total`, `c0`.`Id` AS `Id0`
     FROM `OrderForLinq` AS `o`
     LEFT JOIN `CustomerForLinq` AS `c0` ON `o`.`CustomerId` = `c0`.`Id`
-    WHERE `c`.`Id` = `c0`.`Id`
-) AS `s` ON TRUE
+) AS `s` ON `c`.`Id` = `s`.`Id0`
 ORDER BY `c`.`Id`, `s`.`Id`
 """);
     }

@@ -56,60 +56,35 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
             base.Can_apply_one_migration();
 
-            Assert.Equal(
-"""
-
-""",
-                Sql,
-                ignoreLineEndingDifferences: true);
+            Assert.Null(Sql);
         }
 
         public override void Can_apply_one_migration_in_parallel()
         {
             base.Can_apply_one_migration_in_parallel();
 
-            Assert.Equal(
-"""
-
-""",
-                Sql,
-                ignoreLineEndingDifferences: true);
+            Assert.Null(Sql);
         }
 
         public override void Can_apply_second_migration_in_parallel()
         {
             base.Can_apply_second_migration_in_parallel();
 
-            Assert.Equal(
-"""
-
-""",
-                Sql,
-                ignoreLineEndingDifferences: true);
+            Assert.Null(Sql);
         }
 
         public override async Task Can_apply_one_migration_in_parallel_async()
         {
             await base.Can_apply_one_migration_in_parallel_async();
 
-            Assert.Equal(
-                """
-
-                """,
-                Sql,
-                ignoreLineEndingDifferences: true);
+            Assert.Null(Sql);
         }
 
         public override async Task Can_apply_second_migration_in_parallel_async()
         {
             await base.Can_apply_second_migration_in_parallel_async();
 
-            Assert.Equal(
-"""
-
-""",
-                Sql,
-                ignoreLineEndingDifferences: true);
+            Assert.Null(Sql);
         }
 
         public override async Task Can_generate_up_and_down_scripts()
@@ -118,6 +93,73 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
             Assert.Equal(
 """
+CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
+    `MigrationId` varchar(150) CHARACTER SET utf8mb4 NOT NULL,
+    `ProductVersion` varchar(32) CHARACTER SET utf8mb4 NOT NULL,
+    CONSTRAINT `PK___EFMigrationsHistory` PRIMARY KEY (`MigrationId`)
+) CHARACTER SET=utf8mb4;
+
+START TRANSACTION;
+CREATE TABLE `Table1` (
+    `Id` int NOT NULL,
+    `Foo` int NOT NULL,
+    `Description` longtext NOT NULL,
+    CONSTRAINT `PK_Table1` PRIMARY KEY (`Id`)
+);
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000001_Migration1', '7.0.0-test');
+
+ALTER TABLE `Table1` RENAME COLUMN `Foo` TO `Bar`;
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000002_Migration2', '7.0.0-test');
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000003_Migration3', '7.0.0-test');
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000004_Migration4', '7.0.0-test');
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000005_Migration5', '7.0.0-test');
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000006_Migration6', '7.0.0-test');
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000007_Migration7', '7.0.0-test');
+
+COMMIT;
+
+START TRANSACTION;
+DELETE FROM `__EFMigrationsHistory`
+WHERE `MigrationId` = '00000000000007_Migration7';
+
+DELETE FROM `__EFMigrationsHistory`
+WHERE `MigrationId` = '00000000000006_Migration6';
+
+DELETE FROM `__EFMigrationsHistory`
+WHERE `MigrationId` = '00000000000005_Migration5';
+
+DELETE FROM `__EFMigrationsHistory`
+WHERE `MigrationId` = '00000000000004_Migration4';
+
+DELETE FROM `__EFMigrationsHistory`
+WHERE `MigrationId` = '00000000000003_Migration3';
+
+ALTER TABLE `Table1` RENAME COLUMN `Bar` TO `Foo`;
+
+DELETE FROM `__EFMigrationsHistory`
+WHERE `MigrationId` = '00000000000002_Migration2';
+
+DROP TABLE `Table1`;
+
+DELETE FROM `__EFMigrationsHistory`
+WHERE `MigrationId` = '00000000000001_Migration1';
+
+COMMIT;
+
 
 """,
                 Sql,
@@ -130,6 +172,67 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
             Assert.Equal(
 """
+CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
+    `MigrationId` varchar(150) CHARACTER SET utf8mb4 NOT NULL,
+    `ProductVersion` varchar(32) CHARACTER SET utf8mb4 NOT NULL,
+    CONSTRAINT `PK___EFMigrationsHistory` PRIMARY KEY (`MigrationId`)
+) CHARACTER SET=utf8mb4;
+
+CREATE TABLE `Table1` (
+    `Id` int NOT NULL,
+    `Foo` int NOT NULL,
+    `Description` longtext NOT NULL,
+    CONSTRAINT `PK_Table1` PRIMARY KEY (`Id`)
+);
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000001_Migration1', '7.0.0-test');
+
+ALTER TABLE `Table1` RENAME COLUMN `Foo` TO `Bar`;
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000002_Migration2', '7.0.0-test');
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000003_Migration3', '7.0.0-test');
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000004_Migration4', '7.0.0-test');
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000005_Migration5', '7.0.0-test');
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000006_Migration6', '7.0.0-test');
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000007_Migration7', '7.0.0-test');
+
+DELETE FROM `__EFMigrationsHistory`
+WHERE `MigrationId` = '00000000000007_Migration7';
+
+DELETE FROM `__EFMigrationsHistory`
+WHERE `MigrationId` = '00000000000006_Migration6';
+
+DELETE FROM `__EFMigrationsHistory`
+WHERE `MigrationId` = '00000000000005_Migration5';
+
+DELETE FROM `__EFMigrationsHistory`
+WHERE `MigrationId` = '00000000000004_Migration4';
+
+DELETE FROM `__EFMigrationsHistory`
+WHERE `MigrationId` = '00000000000003_Migration3';
+
+ALTER TABLE `Table1` RENAME COLUMN `Bar` TO `Foo`;
+
+DELETE FROM `__EFMigrationsHistory`
+WHERE `MigrationId` = '00000000000002_Migration2';
+
+DROP TABLE `Table1`;
+
+DELETE FROM `__EFMigrationsHistory`
+WHERE `MigrationId` = '00000000000001_Migration1';
+
 
 """,
                 Sql,
@@ -142,6 +245,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
             Assert.Equal(
 """
+START TRANSACTION;
+ALTER TABLE `Table1` RENAME COLUMN `Foo` TO `Bar`;
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000002_Migration2', '7.0.0-test');
+
+COMMIT;
+
+START TRANSACTION;
+ALTER TABLE `Table1` RENAME COLUMN `Bar` TO `Foo`;
+
+DELETE FROM `__EFMigrationsHistory`
+WHERE `MigrationId` = '00000000000002_Migration2';
+
+COMMIT;
+
 
 """,
                 Sql,
@@ -154,6 +273,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
             Assert.Equal(
 """
+START TRANSACTION;
+ALTER TABLE `Table1` RENAME COLUMN `Foo` TO `Bar`;
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('00000000000002_Migration2', '7.0.0-test');
+
+COMMIT;
+
+START TRANSACTION;
+ALTER TABLE `Table1` RENAME COLUMN `Bar` TO `Foo`;
+
+DELETE FROM `__EFMigrationsHistory`
+WHERE `MigrationId` = '00000000000002_Migration2';
+
+COMMIT;
+
 
 """,
                 Sql,
@@ -162,10 +297,83 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
         public override async Task Can_generate_idempotent_up_and_down_scripts()
         {
-            await base.Can_generate_idempotent_up_and_down_scripts();
+            var exception = await Assert.ThrowsAsync<MySqlException>(() => base.Can_generate_idempotent_up_and_down_scripts());
 
+            Assert.Equal("'DELIMITER' should not be used with MySqlConnector. See https://mysqlconnector.net/delimiter", exception.Message);
             Assert.Equal(
 """
+CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
+    `MigrationId` varchar(150) CHARACTER SET utf8mb4 NOT NULL,
+    `ProductVersion` varchar(32) CHARACTER SET utf8mb4 NOT NULL,
+    CONSTRAINT `PK___EFMigrationsHistory` PRIMARY KEY (`MigrationId`)
+) CHARACTER SET=utf8mb4;
+
+START TRANSACTION;
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000001_Migration1') THEN
+
+    CREATE TABLE `Table1` (
+        `Id` int NOT NULL,
+        `Foo` int NOT NULL,
+        `Description` longtext NOT NULL,
+        CONSTRAINT `PK_Table1` PRIMARY KEY (`Id`)
+    );
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000001_Migration1') THEN
+
+    INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+    VALUES ('00000000000001_Migration1', '7.0.0-test');
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000002_Migration2') THEN
+
+    ALTER TABLE `Table1` RENAME COLUMN `Foo` TO `Bar`;
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000002_Migration2') THEN
+
+    INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+    VALUES ('00000000000002_Migration2', '7.0.0-test');
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
+COMMIT;
+
 
 """,
                 Sql,
@@ -174,10 +382,80 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
         public override async Task Can_generate_idempotent_up_and_down_scripts_noTransactions()
         {
-            await base.Can_generate_idempotent_up_and_down_scripts_noTransactions();
+            var exception = await Assert.ThrowsAsync<MySqlException>(() => base.Can_generate_idempotent_up_and_down_scripts_noTransactions());
 
+            Assert.Equal("'DELIMITER' should not be used with MySqlConnector. See https://mysqlconnector.net/delimiter", exception.Message);
             Assert.Equal(
 """
+CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
+    `MigrationId` varchar(150) CHARACTER SET utf8mb4 NOT NULL,
+    `ProductVersion` varchar(32) CHARACTER SET utf8mb4 NOT NULL,
+    CONSTRAINT `PK___EFMigrationsHistory` PRIMARY KEY (`MigrationId`)
+) CHARACTER SET=utf8mb4;
+
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000001_Migration1') THEN
+
+    CREATE TABLE `Table1` (
+        `Id` int NOT NULL,
+        `Foo` int NOT NULL,
+        `Description` longtext NOT NULL,
+        CONSTRAINT `PK_Table1` PRIMARY KEY (`Id`)
+    );
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000001_Migration1') THEN
+
+    INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+    VALUES ('00000000000001_Migration1', '7.0.0-test');
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000002_Migration2') THEN
+
+    ALTER TABLE `Table1` RENAME COLUMN `Foo` TO `Bar`;
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
+DROP PROCEDURE IF EXISTS MigrationsScript;
+DELIMITER //
+CREATE PROCEDURE MigrationsScript()
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM `__EFMigrationsHistory` WHERE `MigrationId` = '00000000000002_Migration2') THEN
+
+    INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+    VALUES ('00000000000002_Migration2', '7.0.0-test');
+
+    END IF;
+END //
+DELIMITER ;
+CALL MigrationsScript();
+DROP PROCEDURE MigrationsScript;
+
 
 """,
                 Sql,
@@ -216,22 +494,42 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         }
 
         public override void Can_apply_all_migrations()
-            => Assert.Throws<MySqlException>(() => base.Can_apply_all_migrations());
+        {
+            base.Can_apply_all_migrations();
+
+            Assert.Null(Sql);
+        }
 
         public override void Can_apply_range_of_migrations()
-            => Assert.Throws<MySqlException>(() => base.Can_apply_range_of_migrations());
+        {
+            base.Can_apply_range_of_migrations();
+
+            Assert.Null(Sql);
+        }
 
         public override void Can_revert_all_migrations()
-            => Assert.Throws<MySqlException>(() => base.Can_revert_all_migrations());
+        {
+            base.Can_revert_all_migrations();
+
+            Assert.Null(Sql);
+        }
 
         public override void Can_revert_one_migrations()
-            => Assert.Throws<MySqlException>(() => base.Can_revert_one_migrations());
+        {
+            base.Can_revert_one_migrations();
+
+            Assert.Null(Sql);
+        }
 
         protected override Task ExecuteSqlAsync(string value)
             => ((MySqlTestStore)Fixture.TestStore).ExecuteNonQueryAsync(value);
 
-        public override Task Can_apply_all_migrations_async()
-            => Assert.ThrowsAsync<MySqlException>(() => base.Can_apply_all_migrations_async());
+        public override async Task Can_apply_all_migrations_async()
+        {
+            await base.Can_apply_all_migrations_async();
+
+            Assert.Null(Sql);
+        }
 
         public class MigrationsInfrastructureMySqlFixture : MigrationsInfrastructureFixtureBase
         {

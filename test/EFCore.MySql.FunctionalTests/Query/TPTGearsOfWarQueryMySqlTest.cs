@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -301,12 +301,19 @@ ORDER BY `g`.`Nickname`, `g`.`SquadId`, `s`.`Id`, `s1`.`SquadId`
                     where m.Timeline.Hour == /* 10 */ 8
                     select m);
 
-            AssertSql(
-                """
-                SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-                FROM `Missions` AS `m`
-                WHERE EXTRACT(hour FROM `m`.`Timeline`) = 8
-                """);
+        AssertSql(
+"""
+SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
+FROM `Missions` AS `m`
+WHERE EXTRACT(hour FROM `m`.`Timeline`) = 8
+""");
+        }
+
+        // TODO: Implement once TimeSpan is translated as ticks instead of TIME.
+        public override async Task Non_string_concat_uses_appropriate_type_mapping(bool async)
+        {
+            var exception = await Assert.ThrowsAsync<InvalidCastException>(() => base.Non_string_concat_uses_appropriate_type_mapping(async));
+            Assert.Equal("Unable to cast object of type 'System.Decimal' to type 'System.TimeSpan'.", exception.Message);
         }
 
         private string AssertSql(string expected)

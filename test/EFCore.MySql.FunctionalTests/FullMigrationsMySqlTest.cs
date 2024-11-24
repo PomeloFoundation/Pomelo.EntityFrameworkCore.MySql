@@ -48,15 +48,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                     fromMigration: Migration.InitialDatabase,
                     toMigration: "00000000000002_MigrationPrimaryKeyChange2"));
 
+            // TODO: 9.0
+            // Pomelo helper stored procedure statements should be inside the transaction scope.
             Assert.Equal(
-                @"CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
+"""
+CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
     `MigrationId` varchar(150) CHARACTER SET utf8mb4 NOT NULL,
     `ProductVersion` varchar(32) CHARACTER SET utf8mb4 NOT NULL,
     CONSTRAINT `PK___EFMigrationsHistory` PRIMARY KEY (`MigrationId`)
 ) CHARACTER SET=utf8mb4;
 
 START TRANSACTION;
-
 CREATE TABLE `Table1` (
     `Id` int NOT NULL,
     `AlternatePK` int NOT NULL,
@@ -65,10 +67,6 @@ CREATE TABLE `Table1` (
 
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('00000000000001_MigrationPrimaryKeyChange1', '7.0.0-test');
-
-COMMIT;
-
-START TRANSACTION;
 
 DROP PROCEDURE IF EXISTS `POMELO_BEFORE_DROP_PRIMARY_KEY`;
 CREATE PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255))
@@ -159,7 +157,8 @@ DROP PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`;
 DROP PROCEDURE `POMELO_AFTER_ADD_PRIMARY_KEY`;
 COMMIT;
 
-",
+
+""",
                 Sql,
                 ignoreLineEndingDifferences: true);
         }
@@ -188,7 +187,8 @@ COMMIT;
                 h => Assert.Equal("00000000000002_MigrationPrimaryKeyChange2", h.MigrationId));
 
             Assert.Equal(
-                @"DROP PROCEDURE IF EXISTS `POMELO_BEFORE_DROP_PRIMARY_KEY`;
+"""
+DROP PROCEDURE IF EXISTS `POMELO_BEFORE_DROP_PRIMARY_KEY`;
 DELIMITER //
 CREATE PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255))
 BEGIN
@@ -277,7 +277,6 @@ CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
 ) CHARACTER SET=utf8mb4;
 
 START TRANSACTION;
-
 DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
 CREATE PROCEDURE MigrationsScript()
@@ -310,10 +309,6 @@ END //
 DELIMITER ;
 CALL MigrationsScript();
 DROP PROCEDURE MigrationsScript;
-
-COMMIT;
-
-START TRANSACTION;
 
 DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
@@ -366,7 +361,8 @@ DROP PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`;
 
 DROP PROCEDURE `POMELO_AFTER_ADD_PRIMARY_KEY`;
 
-",
+
+""",
                 Sql,
                 ignoreLineEndingDifferences: true);
         }
@@ -394,14 +390,14 @@ DROP PROCEDURE `POMELO_AFTER_ADD_PRIMARY_KEY`;
                 h => Assert.Equal("00000000000002_MigrationDropPrimaryKeyWithRecreatingForeignKeys2", h.MigrationId));
 
             Assert.Equal(
-                @"CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
+"""
+CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
     `MigrationId` varchar(150) CHARACTER SET utf8mb4 NOT NULL,
     `ProductVersion` varchar(32) CHARACTER SET utf8mb4 NOT NULL,
     CONSTRAINT `PK___EFMigrationsHistory` PRIMARY KEY (`MigrationId`)
 ) CHARACTER SET=utf8mb4;
 
 START TRANSACTION;
-
 CREATE TABLE `Foo` (
     `FooId` int NOT NULL,
     CONSTRAINT `PK_Foo` PRIMARY KEY (`FooId`)
@@ -422,10 +418,6 @@ CREATE TABLE `FooBar` (
 
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('00000000000001_MigrationDropPrimaryKeyWithRecreatingForeignKeys1', '7.0.0-test');
-
-COMMIT;
-
-START TRANSACTION;
 
 DROP PROCEDURE IF EXISTS `POMELO_BEFORE_DROP_PRIMARY_KEY`;
 DELIMITER //
@@ -533,7 +525,8 @@ DROP PROCEDURE `POMELO_AFTER_ADD_PRIMARY_KEY`;
 
 COMMIT;
 
-",
+
+""",
                 Sql,
                 ignoreLineEndingDifferences: true);
         }

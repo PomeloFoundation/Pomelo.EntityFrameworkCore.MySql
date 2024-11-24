@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
@@ -472,22 +473,8 @@ LIMIT 2
 
     public override async Task Column_collection_inside_json_owned_entity()
     {
-        await base.Column_collection_inside_json_owned_entity();
-
-        AssertSql(
-            """
-SELECT TOP(2) [t].[Id], [t].[Owned]
-FROM [TestOwner] AS [t]
-WHERE (
-    SELECT COUNT(*)
-    FROM OPENJSON(JSON_VALUE([t].[Owned], '$.Strings')) AS [s]) = 2
-""",
-            //
-            """
-SELECT TOP(2) [t].[Id], [t].[Owned]
-FROM [TestOwner] AS [t]
-WHERE JSON_VALUE(JSON_VALUE([t].[Owned], '$.Strings'), '$[1]') = N'bar'
-""");
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => base.Column_collection_inside_json_owned_entity());
+        Assert.Equal(MySqlStrings.Ef7CoreJsonMappingNotSupported, exception.Message);
     }
 
     #endregion Type mapping inference
@@ -496,14 +483,27 @@ WHERE JSON_VALUE(JSON_VALUE([t].[Owned], '$.Strings'), '$[1]') = N'bar'
     {
         await base.Parameter_collection_Count_with_column_predicate_with_default_constants();
 
-        AssertSql();
+        AssertSql(
+"""
+SELECT `t`.`Id`
+FROM `TestEntity` AS `t`
+WHERE (
+    SELECT COUNT(*)
+    FROM (SELECT 2 AS `Value` UNION ALL VALUES ROW(999)) AS `i`
+    WHERE `i`.`Value` > `t`.`Id`) = 1
+""");
     }
 
     public override async Task Parameter_collection_of_ints_Contains_int_with_default_constants()
     {
         await base.Parameter_collection_of_ints_Contains_int_with_default_constants();
 
-        AssertSql();
+        AssertSql(
+"""
+SELECT `t`.`Id`
+FROM `TestEntity` AS `t`
+WHERE `t`.`Id` IN (2, 999)
+""");
     }
 
     public override async Task Parameter_collection_Count_with_column_predicate_with_default_constants_EF_Parameter()
@@ -538,21 +538,38 @@ WHERE JSON_VALUE(JSON_VALUE([t].[Owned], '$.Strings'), '$[1]') = N'bar'
     {
         await base.Parameter_collection_Count_with_column_predicate_with_default_parameters_EF_Constant();
 
-        AssertSql();
+        AssertSql(
+"""
+SELECT `t`.`Id`
+FROM `TestEntity` AS `t`
+WHERE (
+    SELECT COUNT(*)
+    FROM (SELECT 2 AS `Value` UNION ALL VALUES ROW(999)) AS `i`
+    WHERE `i`.`Value` > `t`.`Id`) = 1
+""");
     }
 
     public override async Task Parameter_collection_of_ints_Contains_int_with_default_parameters_EF_Constant()
     {
         await base.Parameter_collection_of_ints_Contains_int_with_default_parameters_EF_Constant();
 
-        AssertSql();
+        AssertSql(
+"""
+SELECT `t`.`Id`
+FROM `TestEntity` AS `t`
+WHERE `t`.`Id` IN (2, 999)
+""");
     }
 
     public override async Task Project_collection_from_entity_type_with_owned()
     {
         await base.Project_collection_from_entity_type_with_owned();
 
-        AssertSql();
+        AssertSql(
+"""
+SELECT `t`.`Ints`
+FROM `TestEntityWithOwned` AS `t`
+""");
     }
 
     [ConditionalFact]

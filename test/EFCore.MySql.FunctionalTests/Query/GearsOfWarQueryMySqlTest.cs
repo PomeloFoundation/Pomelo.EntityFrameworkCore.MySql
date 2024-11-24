@@ -310,10 +310,13 @@ ORDER BY `g`.`Nickname`, `g`.`SquadId`, `s`.`Id`, `s1`.`SquadId`
 
             AssertSql(
 """
-SELECT `g`.`FullName`
-FROM `Gears` AS `g`
-GROUP BY `g`.`FullName`
-HAVING FALSE
+SELECT `g0`.`FullName`
+FROM (
+    SELECT `g`.`FullName`, FALSE AS `c`
+    FROM `Gears` AS `g`
+    GROUP BY `g`.`FullName`, `c`
+    HAVING `c`
+) AS `g0`
 """);
         }
 
@@ -344,12 +347,19 @@ FROM `Gears` AS `g`
                     where m.Timeline.Hour == /* 10 */ 8
                     select m);
 
-            AssertSql(
+        AssertSql(
 """
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
+SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
 FROM `Missions` AS `m`
 WHERE EXTRACT(hour FROM `m`.`Timeline`) = 8
 """);
+        }
+
+        // TODO: Implement once TimeSpan is translated as ticks instead of TIME.
+        public override async Task Non_string_concat_uses_appropriate_type_mapping(bool async)
+        {
+            var exception = await Assert.ThrowsAsync<InvalidCastException>(() => base.Non_string_concat_uses_appropriate_type_mapping(async));
+            Assert.Equal("Unable to cast object of type 'System.Decimal' to type 'System.TimeSpan'.", exception.Message);
         }
     }
 }

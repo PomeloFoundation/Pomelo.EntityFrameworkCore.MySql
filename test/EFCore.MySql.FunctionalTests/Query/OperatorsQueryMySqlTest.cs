@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Operators;
@@ -20,7 +20,15 @@ public class OperatorsQueryMySqlTest : OperatorsQueryTestBase
     {
         await base.Bitwise_and_on_expression_with_like_and_null_check_being_compared_to_false();
 
-        AssertSql("");
+        AssertSql(
+"""
+SELECT `o`.`Value` AS `Value1`, `o0`.`Value` AS `Value2`, `o1`.`Value` AS `Value3`
+FROM `OperatorEntityString` AS `o`
+CROSS JOIN `OperatorEntityString` AS `o0`
+CROSS JOIN `OperatorEntityBool` AS `o1`
+WHERE (((`o0`.`Value` LIKE 'B') AND `o0`.`Value` IS NOT NULL) OR `o1`.`Value`) AND `o`.`Value` IS NOT NULL
+ORDER BY `o`.`Id`, `o0`.`Id`, `o1`.`Id`
+""");
     }
 
     public override async Task Complex_predicate_with_bitwise_and_modulo_and_negation()
@@ -43,7 +51,15 @@ ORDER BY `o`.`Id`, `o0`.`Id`, `o1`.`Id`, `o2`.`Id`
     {
         await base.Complex_predicate_with_bitwise_and_arithmetic_operations();
 
-        AssertSql("");
+        AssertSql(
+"""
+SELECT `o`.`Value` AS `Value0`, `o0`.`Value` AS `Value1`, `o1`.`Value` AS `Value2`
+FROM `OperatorEntityInt` AS `o`
+CROSS JOIN `OperatorEntityInt` AS `o0`
+CROSS JOIN `OperatorEntityBool` AS `o1`
+WHERE ((CAST(CAST(`o0`.`Value` & (`o`.`Value` + `o`.`Value`) AS signed) & `o`.`Value` AS signed) / 1) > CAST(`o0`.`Value` & 10 AS signed)) AND `o1`.`Value`
+ORDER BY `o`.`Id`, `o0`.`Id`, `o1`.`Id`
+""");
     }
 
     public override async Task Or_on_two_nested_binaries_and_another_simple_comparison()
@@ -58,7 +74,7 @@ CROSS JOIN `OperatorEntityString` AS `o0`
 CROSS JOIN `OperatorEntityString` AS `o1`
 CROSS JOIN `OperatorEntityString` AS `o2`
 CROSS JOIN `OperatorEntityInt` AS `o3`
-WHERE ((((`o`.`Value` = 'A') AND `o`.`Value` IS NOT NULL) AND ((`o0`.`Value` = 'A') AND `o0`.`Value` IS NOT NULL)) | (((`o1`.`Value` = 'B') AND `o1`.`Value` IS NOT NULL) AND ((`o2`.`Value` = 'B') AND `o2`.`Value` IS NOT NULL))) AND (`o3`.`Value` = 2)
+WHERE (((`o`.`Value` = 'A') AND (`o0`.`Value` = 'A')) OR ((`o1`.`Value` = 'B') AND (`o2`.`Value` = 'B'))) AND (`o3`.`Value` = 2)
 ORDER BY `o`.`Id`, `o0`.`Id`, `o1`.`Id`, `o2`.`Id`, `o3`.`Id`
 """);
     }

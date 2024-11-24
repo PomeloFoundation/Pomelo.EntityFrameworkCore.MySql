@@ -88,7 +88,7 @@ SET `o`.`Title` = CONCAT(COALESCE(`o`.`Title`, ''), '_Suffix')
 """
 UPDATE `Owner` AS `o`
 SET `o`.`OwnedReference_Number` = CHAR_LENGTH(`o`.`Title`),
-    `o`.`Title` = CAST(`o`.`OwnedReference_Number` AS char)
+    `o`.`Title` = COALESCE(CAST(`o`.`OwnedReference_Number` AS char), '')
 """);
     }
 
@@ -162,7 +162,12 @@ SET `o`.`Title` = 'NewValue'
     {
         await base.Replace_ColumnExpression_in_column_setter(async);
 
-        AssertSql();
+        AssertSql(
+"""
+UPDATE `Owner` AS `o`
+INNER JOIN `OwnedCollection` AS `o0` ON `o`.`Id` = `o0`.`OwnerId`
+SET `o0`.`Value` = 'SomeValue'
+""");
     }
 
     private void AssertSql(params string[] expected)

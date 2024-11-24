@@ -2426,13 +2426,10 @@ ORDER BY `l7`.`Name`, `l9`.`Id`
 """
 SELECT `l3`.`Id`, `l3`.`Date`, `l3`.`Name`, `l3`.`OneToMany_Optional_Self_Inverse1Id`, `l3`.`OneToMany_Required_Self_Inverse1Id`, `l3`.`OneToOne_Optional_Self1Id`, `l1`.`Name`
 FROM (
-    SELECT `l10`.`Name`
-    FROM (
-        SELECT `l`.`Name`, (`l`.`Name` <> 'Foo') OR `l`.`Name` IS NULL AS `c`
-        FROM `LevelOne` AS `l`
-        GROUP BY `l`.`Name`, `c`
-        HAVING `c`
-    ) AS `l10`
+    SELECT `l`.`Name`, (`l`.`Name` <> 'Foo') OR `l`.`Name` IS NULL AS `c`
+    FROM `LevelOne` AS `l`
+    GROUP BY `l`.`Name`, `c`
+    HAVING `c`
 ) AS `l1`
 LEFT JOIN (
     SELECT `l2`.`Id`, `l2`.`Date`, `l2`.`Name`, `l2`.`OneToMany_Optional_Self_Inverse1Id`, `l2`.`OneToMany_Required_Self_Inverse1Id`, `l2`.`OneToOne_Optional_Self1Id`
@@ -2448,13 +2445,10 @@ ORDER BY `l1`.`Name`, `l3`.`Id`
                 """
 SELECT `l6`.`Id`, `l6`.`Date`, `l6`.`Level1_Optional_Id`, `l6`.`Level1_Required_Id`, `l6`.`Name`, `l6`.`OneToMany_Optional_Inverse2Id`, `l6`.`OneToMany_Optional_Self_Inverse2Id`, `l6`.`OneToMany_Required_Inverse2Id`, `l6`.`OneToMany_Required_Self_Inverse2Id`, `l6`.`OneToOne_Optional_PK_Inverse2Id`, `l6`.`OneToOne_Optional_Self2Id`, `l7`.`Name`, `l9`.`Id`
 FROM (
-    SELECT `l11`.`Name`
-    FROM (
-        SELECT `l`.`Name`, (`l`.`Name` <> 'Foo') OR `l`.`Name` IS NULL AS `c`
-        FROM `LevelOne` AS `l`
-        GROUP BY `l`.`Name`, `c`
-        HAVING `c`
-    ) AS `l11`
+    SELECT `l`.`Name`, (`l`.`Name` <> 'Foo') OR `l`.`Name` IS NULL AS `c`
+    FROM `LevelOne` AS `l`
+    GROUP BY `l`.`Name`, `c`
+    HAVING `c`
 ) AS `l7`
 LEFT JOIN (
     SELECT `l8`.`Id`, `l8`.`Name`

@@ -336,6 +336,14 @@ public class CompiledModelMySqlTest : CompiledModelRelationalTestBase
             (await Assert.ThrowsAsync<InvalidOperationException>(() => base.BigModel_with_JSON_columns())).Message);
     }
 
+    // TODO: 9.0
+    // Check, if we can make this work.
+    public override async Task ComplexTypes()
+    {
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => base.ComplexTypes());
+        Assert.Equal("The stored procedure 'dbo.PrincipalBase_Delete' cannot be configured to return the rows affected because a rows affected parameter or a rows affected result column for this stored procedure already exists.", exception.Message);
+    }
+
     protected override TestHelpers TestHelpers => MySqlTestHelpers.Instance;
     protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
 

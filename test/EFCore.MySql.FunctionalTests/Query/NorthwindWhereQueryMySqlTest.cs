@@ -599,10 +599,14 @@ WHERE @__Concat_0 = `c`.`CompanyName`");
 
         public override async Task Where_bitwise_xor(bool async)
         {
-            // Cannot eval 'where (([c].CustomerID == \"ALFKI\") ^ True)'. Issue #16645.
-            await AssertTranslationFailed(() => base.Where_bitwise_xor(async));
+            await base.Where_bitwise_xor(async);
 
-            AssertSql();
+            AssertSql(
+"""
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE (`c`.`CustomerID` = 'ALFKI') ^ TRUE
+""");
         }
 
         public override async Task Where_compare_constructed_equal(bool async)
