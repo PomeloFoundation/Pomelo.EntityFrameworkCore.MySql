@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
@@ -21,7 +22,7 @@ public class TPHFiltersInheritanceBulkUpdatesMySqlTest : FiltersInheritanceBulkU
 
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
-        => TestHelpers.AssertAllMethodsOverridden(GetType());
+        => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 
     public override async Task Delete_where_hierarchy(bool async)
     {

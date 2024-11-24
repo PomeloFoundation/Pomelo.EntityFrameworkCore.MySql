@@ -16,7 +16,7 @@ public class EntitySplittingQueryMySqlTest : EntitySplittingQueryTestBase
 
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
-        => TestHelpers.AssertAllMethodsOverridden(GetType());
+        => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 
     public override async Task Can_query_entity_which_is_split_in_two(bool async)
     {

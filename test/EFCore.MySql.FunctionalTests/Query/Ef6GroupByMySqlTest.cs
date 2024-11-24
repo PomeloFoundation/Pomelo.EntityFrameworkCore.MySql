@@ -20,7 +20,7 @@ public class Ef6GroupByMySqlTest : Ef6GroupByTestBase<Ef6GroupByMySqlTest.Ef6Gro
 
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
-        => TestHelpers.AssertAllMethodsOverridden(GetType());
+        => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 
     public override async Task GroupBy_is_optimized_when_projecting_group_key(bool async)
     {

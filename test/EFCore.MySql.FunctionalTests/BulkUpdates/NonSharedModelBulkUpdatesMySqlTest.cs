@@ -14,7 +14,7 @@ public class NonSharedModelBulkUpdatesMySqlTest : NonSharedModelBulkUpdatesRelat
 
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
-        => TestHelpers.AssertAllMethodsOverridden(GetType());
+        => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 
     public override async Task Delete_aggregate_root_when_eager_loaded_owned_collection(bool async)
     {

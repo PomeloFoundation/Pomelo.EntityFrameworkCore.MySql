@@ -26,7 +26,7 @@ public class TPCGearsOfWarQueryMySqlTest : TPCGearsOfWarQueryRelationalTestBase<
 
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
-        => TestHelpers.AssertAllMethodsOverridden(GetType());
+        => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 
     public override async Task Entity_equality_empty(bool async)
     {

@@ -304,7 +304,7 @@ FROM `Customer` AS `c`
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
     {
-        TestHelpers.AssertAllMethodsOverridden(GetType());
+        MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
     }
 
     private void AssertExecuteUpdateSql(params string[] expected)
