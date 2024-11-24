@@ -180,7 +180,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                             _sqlExpressionFactory.IsNotNull(replacementArgument),
                             replaceCall)
                     },
-                    _sqlExpressionFactory.Constant(null, RelationalTypeMapping.NullMapping));
+                    _sqlExpressionFactory.Constant(null, replaceCall.Type, replaceCall.TypeMapping));
             }
 
             if (_toLowerMethodInfo.Equals(method)

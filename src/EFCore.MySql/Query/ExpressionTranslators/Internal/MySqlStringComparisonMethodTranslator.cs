@@ -409,7 +409,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 // in C# and send a simple LIKE.
                 return constantPrefixSuffixExpression.Value switch
                 {
-                    null => _sqlExpressionFactory.Like(targetTransform(target), _sqlExpressionFactory.Constant(null, stringTypeMapping)),
+                    null => _sqlExpressionFactory.Like(targetTransform(target), _sqlExpressionFactory.Constant(null, typeof(string), stringTypeMapping)),
                     "" => _sqlExpressionFactory.Like(targetTransform(target), _sqlExpressionFactory.Constant("%")),
                     string s => _sqlExpressionFactory.Like(
                         targetTransform(target),
@@ -472,7 +472,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 // in C# and send a simple LIKE.
                 return constantPatternExpression.Value switch
                 {
-                    null => _sqlExpressionFactory.Like(targetTransform(target), _sqlExpressionFactory.Constant(null, stringTypeMapping)),
+                    null => _sqlExpressionFactory.Like(targetTransform(target), _sqlExpressionFactory.Constant(null, typeof(string), stringTypeMapping)),
                     "" => _sqlExpressionFactory.Like(targetTransform(target), _sqlExpressionFactory.Constant("%")),
                     string s => _sqlExpressionFactory.Like(
                         targetTransform(target),
