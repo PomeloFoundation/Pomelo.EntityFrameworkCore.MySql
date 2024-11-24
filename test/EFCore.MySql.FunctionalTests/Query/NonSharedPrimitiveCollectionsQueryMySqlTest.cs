@@ -492,6 +492,69 @@ WHERE JSON_VALUE(JSON_VALUE([t].[Owned], '$.Strings'), '$[1]') = N'bar'
 
     #endregion Type mapping inference
 
+    public override async Task Parameter_collection_Count_with_column_predicate_with_default_constants()
+    {
+        await base.Parameter_collection_Count_with_column_predicate_with_default_constants();
+
+        AssertSql();
+    }
+
+    public override async Task Parameter_collection_of_ints_Contains_int_with_default_constants()
+    {
+        await base.Parameter_collection_of_ints_Contains_int_with_default_constants();
+
+        AssertSql();
+    }
+
+    public override async Task Parameter_collection_Count_with_column_predicate_with_default_constants_EF_Parameter()
+    {
+        await base.Parameter_collection_Count_with_column_predicate_with_default_constants_EF_Parameter();
+
+        AssertSql();
+    }
+
+    public override async Task Parameter_collection_of_ints_Contains_int_with_default_constants_EF_Parameter()
+    {
+        await base.Parameter_collection_of_ints_Contains_int_with_default_constants_EF_Parameter();
+
+        AssertSql();
+    }
+
+    public override async Task Parameter_collection_Count_with_column_predicate_with_default_parameters()
+    {
+        await base.Parameter_collection_Count_with_column_predicate_with_default_parameters();
+
+        AssertSql();
+    }
+
+    public override async Task Parameter_collection_of_ints_Contains_int_with_default_parameters()
+    {
+        await base.Parameter_collection_of_ints_Contains_int_with_default_parameters();
+
+        AssertSql();
+    }
+
+    public override async Task Parameter_collection_Count_with_column_predicate_with_default_parameters_EF_Constant()
+    {
+        await base.Parameter_collection_Count_with_column_predicate_with_default_parameters_EF_Constant();
+
+        AssertSql();
+    }
+
+    public override async Task Parameter_collection_of_ints_Contains_int_with_default_parameters_EF_Constant()
+    {
+        await base.Parameter_collection_of_ints_Contains_int_with_default_parameters_EF_Constant();
+
+        AssertSql();
+    }
+
+    public override async Task Project_collection_from_entity_type_with_owned()
+    {
+        await base.Project_collection_from_entity_type_with_owned();
+
+        AssertSql();
+    }
+
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
         => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());

@@ -1322,6 +1322,419 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;",
                 },
                 withConventions: false);
 
+        public override async Task Create_table()
+        {
+            await base.Create_table();
+
+            AssertSql();
+        }
+
+        public override async Task Create_table_no_key()
+        {
+            await base.Create_table_no_key();
+
+            AssertSql();
+        }
+
+        public override async Task Create_table_with_comments()
+        {
+            await base.Create_table_with_comments();
+
+            AssertSql();
+        }
+
+        public override async Task Alter_table_add_comment()
+        {
+            await base.Alter_table_add_comment();
+
+            AssertSql();
+        }
+
+        public override async Task Alter_table_change_comment()
+        {
+            await base.Alter_table_change_comment();
+
+            AssertSql();
+        }
+
+        public override async Task Alter_table_remove_comment()
+        {
+            await base.Alter_table_remove_comment();
+
+            AssertSql();
+        }
+
+        public override async Task Drop_table()
+        {
+            await base.Drop_table();
+
+            AssertSql();
+        }
+
+        public override async Task Add_column_with_defaultValueSql_unspecified()
+        {
+            await base.Add_column_with_defaultValueSql_unspecified();
+
+            AssertSql();
+        }
+
+        public override async Task Add_column_with_defaultValue_unspecified()
+        {
+            await base.Add_column_with_defaultValue_unspecified();
+
+            AssertSql();
+        }
+
+        public override async Task Add_column_with_computedSql_unspecified()
+        {
+            await base.Add_column_with_computedSql_unspecified();
+
+            AssertSql();
+        }
+
+        public override async Task Add_column_with_required()
+        {
+            await base.Add_column_with_required();
+
+            AssertSql();
+        }
+
+        public override async Task Add_column_with_ansi()
+        {
+            await base.Add_column_with_ansi();
+
+            AssertSql();
+        }
+
+        public override async Task Add_column_with_max_length()
+        {
+            await base.Add_column_with_max_length();
+
+            AssertSql();
+        }
+
+        public override async Task Add_column_with_unbounded_max_length()
+        {
+            await base.Add_column_with_unbounded_max_length();
+
+            AssertSql();
+        }
+
+        public override async Task Add_column_with_max_length_on_derived()
+        {
+            await base.Add_column_with_max_length_on_derived();
+
+            AssertSql();
+        }
+
+        public override async Task Add_column_with_fixed_length()
+        {
+            await base.Add_column_with_fixed_length();
+
+            AssertSql();
+        }
+
+        public override async Task Add_column_with_comment()
+        {
+            await base.Add_column_with_comment();
+
+            AssertSql();
+        }
+
+        public override async Task Add_column_shared()
+        {
+            await base.Add_column_shared();
+
+            AssertSql();
+        }
+
+        public override async Task Add_column_with_check_constraint()
+        {
+            await base.Add_column_with_check_constraint();
+
+            AssertSql();
+        }
+
+        public override async Task Alter_column_make_required_with_null_data()
+        {
+            await base.Alter_column_make_required_with_null_data();
+
+            AssertSql();
+        }
+
+        public override async Task Alter_column_make_required_with_index()
+        {
+            await base.Alter_column_make_required_with_index();
+
+            AssertSql();
+        }
+
+        public override async Task Alter_column_make_required_with_composite_index()
+        {
+            await base.Alter_column_make_required_with_composite_index();
+
+            AssertSql();
+        }
+
+        public override async Task Alter_column_change_computed_recreates_indexes()
+        {
+            await base.Alter_column_change_computed_recreates_indexes();
+
+            AssertSql();
+        }
+
+        public override async Task Alter_column_add_comment()
+        {
+            await base.Alter_column_add_comment();
+
+            AssertSql();
+        }
+
+        public override async Task Alter_computed_column_add_comment()
+        {
+            await base.Alter_computed_column_add_comment();
+
+            AssertSql();
+        }
+
+        public override async Task Alter_column_change_comment()
+        {
+            await base.Alter_column_change_comment();
+
+            AssertSql();
+        }
+
+        public override async Task Alter_column_remove_comment()
+        {
+            await base.Alter_column_remove_comment();
+
+            AssertSql();
+        }
+
+        public override async Task Alter_column_reset_collation()
+        {
+            await base.Alter_column_reset_collation();
+
+            AssertSql();
+        }
+
+        public override async Task Drop_column()
+        {
+            await base.Drop_column();
+
+            AssertSql();
+        }
+
+        public override async Task Drop_column_computed_and_non_computed_with_dependency()
+        {
+            await base.Drop_column_computed_and_non_computed_with_dependency();
+
+            AssertSql();
+        }
+
+        public override async Task Rename_column()
+        {
+            await base.Rename_column();
+
+            AssertSql();
+        }
+
+        public override async Task Create_index()
+        {
+            await base.Create_index();
+
+            AssertSql();
+        }
+
+        public override async Task Create_index_unique()
+        {
+            await base.Create_index_unique();
+
+            AssertSql();
+        }
+
+        public override async Task Alter_index_make_unique()
+        {
+            await base.Alter_index_make_unique();
+
+            AssertSql();
+        }
+
+        public override async Task Drop_index()
+        {
+            await base.Drop_index();
+
+            AssertSql();
+        }
+
+        public override async Task Add_primary_key_int()
+        {
+            await base.Add_primary_key_int();
+
+            AssertSql();
+        }
+
+        public override async Task Add_foreign_key_with_name()
+        {
+            await base.Add_foreign_key_with_name();
+
+            AssertSql();
+        }
+
+        public override async Task Drop_foreign_key()
+        {
+            await base.Drop_foreign_key();
+
+            AssertSql();
+        }
+
+        public override async Task Drop_unique_constraint()
+        {
+            await base.Drop_unique_constraint();
+
+            AssertSql();
+        }
+
+        public override async Task Add_check_constraint_with_name()
+        {
+            await base.Add_check_constraint_with_name();
+
+            AssertSql();
+        }
+
+        public override async Task InsertDataOperation()
+        {
+            await base.InsertDataOperation();
+
+            AssertSql();
+        }
+
+        public override async Task DeleteDataOperation_simple_key()
+        {
+            await base.DeleteDataOperation_simple_key();
+
+            AssertSql();
+        }
+
+        public override async Task DeleteDataOperation_composite_key()
+        {
+            await base.DeleteDataOperation_composite_key();
+
+            AssertSql();
+        }
+
+        public override async Task UpdateDataOperation_simple_key()
+        {
+            await base.UpdateDataOperation_simple_key();
+
+            AssertSql();
+        }
+
+        public override async Task UpdateDataOperation_composite_key()
+        {
+            await base.UpdateDataOperation_composite_key();
+
+            AssertSql();
+        }
+
+        public override async Task UpdateDataOperation_multiple_columns()
+        {
+            await base.UpdateDataOperation_multiple_columns();
+
+            AssertSql();
+        }
+
+        public override async Task SqlOperation()
+        {
+            await base.SqlOperation();
+
+            AssertSql();
+        }
+
+        public override async Task Create_table_with_complex_type_with_required_properties_on_derived_entity_in_TPH()
+        {
+            await base.Create_table_with_complex_type_with_required_properties_on_derived_entity_in_TPH();
+
+            AssertSql();
+        }
+
+        public override async Task Add_required_primitive_collection_to_existing_table()
+        {
+            await base.Add_required_primitive_collection_to_existing_table();
+
+            AssertSql();
+        }
+
+        public override async Task Add_required_primitive_collection_with_custom_default_value_to_existing_table()
+        {
+            await base.Add_required_primitive_collection_with_custom_default_value_to_existing_table();
+
+            AssertSql();
+        }
+
+        public override async Task Add_required_primitive_collection_with_custom_converter_to_existing_table()
+        {
+            await base.Add_required_primitive_collection_with_custom_converter_to_existing_table();
+
+            AssertSql();
+        }
+
+        public override async Task Add_required_primitive_collection_with_custom_converter_and_custom_default_value_to_existing_table()
+        {
+            await base.Add_required_primitive_collection_with_custom_converter_and_custom_default_value_to_existing_table();
+
+            AssertSql();
+        }
+
+        public override async Task Add_optional_primitive_collection_to_existing_table()
+        {
+            await base.Add_optional_primitive_collection_to_existing_table();
+
+            AssertSql();
+        }
+
+        public override async Task Create_table_with_required_primitive_collection()
+        {
+            await base.Create_table_with_required_primitive_collection();
+
+            AssertSql();
+        }
+
+        public override async Task Create_table_with_optional_primitive_collection()
+        {
+            await base.Create_table_with_optional_primitive_collection();
+
+            AssertSql();
+        }
+
+        public override async Task Add_required_primitve_collection_to_existing_table()
+        {
+            await base.Add_required_primitve_collection_to_existing_table();
+
+            AssertSql();
+        }
+
+        public override async Task Add_required_primitve_collection_with_custom_default_value_to_existing_table()
+        {
+            await base.Add_required_primitve_collection_with_custom_default_value_to_existing_table();
+
+            AssertSql();
+        }
+
+        public override async Task Add_required_primitve_collection_with_custom_converter_to_existing_table()
+        {
+            await base.Add_required_primitve_collection_with_custom_converter_to_existing_table();
+
+            AssertSql();
+        }
+
+        public override async Task Add_required_primitve_collection_with_custom_converter_and_custom_default_value_to_existing_table()
+        {
+            await base.Add_required_primitve_collection_with_custom_converter_and_custom_default_value_to_existing_table();
+
+            AssertSql();
+        }
+
         #region ToJson
 
         public override Task Create_table_with_json_column()
@@ -1358,6 +1771,10 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;",
             => Assert.ThrowsAsync<NullReferenceException>(() => base.Rename_json_column());
 
         #endregion ToJson
+
+        [ConditionalFact]
+        public virtual void Check_all_tests_overridden()
+            => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 
         // The constraint name for a primary key is always PRIMARY in MySQL.
         protected override bool AssertConstraintNames

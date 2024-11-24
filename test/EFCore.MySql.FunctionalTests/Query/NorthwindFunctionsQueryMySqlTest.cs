@@ -2400,8 +2400,145 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (DATE(`o`.`OrderDate`) = DATE '1996-09-16'
 """);
         }
 
+        public override async Task String_StartsWith_with_StringComparison_Ordinal(bool async)
+        {
+            await base.String_StartsWith_with_StringComparison_Ordinal(async);
+
+            AssertSql();
+        }
+
+        public override async Task String_StartsWith_with_StringComparison_OrdinalIgnoreCase(bool async)
+        {
+            await base.String_StartsWith_with_StringComparison_OrdinalIgnoreCase(async);
+
+            AssertSql();
+        }
+
+        public override async Task String_EndsWith_with_StringComparison_Ordinal(bool async)
+        {
+            await base.String_EndsWith_with_StringComparison_Ordinal(async);
+
+            AssertSql();
+        }
+
+        public override async Task String_EndsWith_with_StringComparison_OrdinalIgnoreCase(bool async)
+        {
+            await base.String_EndsWith_with_StringComparison_OrdinalIgnoreCase(async);
+
+            AssertSql();
+        }
+
+        public override async Task String_Contains_with_StringComparison_Ordinal(bool async)
+        {
+            await base.String_Contains_with_StringComparison_Ordinal(async);
+
+            AssertSql();
+        }
+
+        public override async Task String_Contains_with_StringComparison_OrdinalIgnoreCase(bool async)
+        {
+            await base.String_Contains_with_StringComparison_OrdinalIgnoreCase(async);
+
+            AssertSql();
+        }
+
+        public override async Task String_StartsWith_with_StringComparison_unsupported(bool async)
+        {
+            await base.String_StartsWith_with_StringComparison_unsupported(async);
+
+            AssertSql();
+        }
+
+        public override async Task String_EndsWith_with_StringComparison_unsupported(bool async)
+        {
+            await base.String_EndsWith_with_StringComparison_unsupported(async);
+
+            AssertSql();
+        }
+
+        public override async Task String_Contains_in_projection(bool async)
+        {
+            await base.String_Contains_in_projection(async);
+
+            AssertSql();
+        }
+
+        public override async Task String_Contains_negated_in_predicate(bool async)
+        {
+            await base.String_Contains_negated_in_predicate(async);
+
+            AssertSql();
+        }
+
+        public override async Task String_Contains_negated_in_projection(bool async)
+        {
+            await base.String_Contains_negated_in_projection(async);
+
+            AssertSql();
+        }
+
+        public override async Task String_Contains_with_StringComparison_unsupported(bool async)
+        {
+            await base.String_Contains_with_StringComparison_unsupported(async);
+
+            AssertSql();
+        }
+
+        public override async Task String_Join_non_aggregate(bool async)
+        {
+            await base.String_Join_non_aggregate(async);
+
+            AssertSql();
+        }
+
+        public override async Task Where_math_max_nested(bool async)
+        {
+            await base.Where_math_max_nested(async);
+
+            AssertSql();
+        }
+
+        public override async Task Where_math_max_nested_twice(bool async)
+        {
+            await base.Where_math_max_nested_twice(async);
+
+            AssertSql();
+        }
+
+        public override async Task Where_math_min_nested(bool async)
+        {
+            await base.Where_math_min_nested(async);
+
+            AssertSql();
+        }
+
+        public override async Task Where_math_min_nested_twice(bool async)
+        {
+            await base.Where_math_min_nested_twice(async);
+
+            AssertSql();
+        }
+
+        public override async Task Select_ToString_IndexOf(bool async)
+        {
+            await base.Select_ToString_IndexOf(async);
+
+            AssertSql();
+        }
+
+        public override async Task Select_IndexOf_ToString(bool async)
+        {
+            await base.Select_IndexOf_ToString(async);
+
+            AssertSql();
+        }
+
         public override Task Datetime_subtraction_TotalDays(bool async)
             => AssertTranslationFailed(() => base.Datetime_subtraction_TotalDays(async));
+
+        [ConditionalFact]
+        public virtual void Check_all_tests_overridden()
+            => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);

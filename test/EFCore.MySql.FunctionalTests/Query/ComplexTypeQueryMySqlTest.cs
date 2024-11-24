@@ -748,6 +748,153 @@ FROM `ValuedCustomer` AS `v0`
 """);
     }
 
+    public override async Task Project_same_nested_complex_type_twice_with_pushdown(bool async)
+    {
+        await base.Project_same_nested_complex_type_twice_with_pushdown(async);
+
+        AssertSql();
+    }
+
+    public override async Task Project_same_entity_with_nested_complex_type_twice_with_pushdown(bool async)
+    {
+        await base.Project_same_entity_with_nested_complex_type_twice_with_pushdown(async);
+
+        AssertSql();
+    }
+
+    public override async Task Project_same_nested_complex_type_twice_with_double_pushdown(bool async)
+    {
+        await base.Project_same_nested_complex_type_twice_with_double_pushdown(async);
+
+        AssertSql();
+    }
+
+    public override async Task Project_same_entity_with_nested_complex_type_twice_with_double_pushdown(bool async)
+    {
+        await base.Project_same_entity_with_nested_complex_type_twice_with_double_pushdown(async);
+
+        AssertSql();
+    }
+
+    public override async Task Project_same_struct_nested_complex_type_twice_with_pushdown(bool async)
+    {
+        await base.Project_same_struct_nested_complex_type_twice_with_pushdown(async);
+
+        AssertSql();
+    }
+
+    public override async Task Project_same_entity_with_struct_nested_complex_type_twice_with_pushdown(bool async)
+    {
+        await base.Project_same_entity_with_struct_nested_complex_type_twice_with_pushdown(async);
+
+        AssertSql();
+    }
+
+    public override async Task Project_same_struct_nested_complex_type_twice_with_double_pushdown(bool async)
+    {
+        await base.Project_same_struct_nested_complex_type_twice_with_double_pushdown(async);
+
+        AssertSql();
+    }
+
+    public override async Task Project_same_entity_with_struct_nested_complex_type_twice_with_double_pushdown(bool async)
+    {
+        await base.Project_same_entity_with_struct_nested_complex_type_twice_with_double_pushdown(async);
+
+        AssertSql();
+    }
+
+    public override async Task Union_of_same_entity_with_nested_complex_type_projected_twice_with_pushdown(bool async)
+    {
+        await base.Union_of_same_entity_with_nested_complex_type_projected_twice_with_pushdown(async);
+
+        AssertSql();
+    }
+
+    public override async Task Union_of_same_entity_with_nested_complex_type_projected_twice_with_double_pushdown(bool async)
+    {
+        await base.Union_of_same_entity_with_nested_complex_type_projected_twice_with_double_pushdown(async);
+
+        AssertSql();
+    }
+
+    public override async Task Union_of_same_nested_complex_type_projected_twice_with_pushdown(bool async)
+    {
+        await base.Union_of_same_nested_complex_type_projected_twice_with_pushdown(async);
+
+        AssertSql();
+    }
+
+    public override async Task Union_of_same_nested_complex_type_projected_twice_with_double_pushdown(bool async)
+    {
+        await base.Union_of_same_nested_complex_type_projected_twice_with_double_pushdown(async);
+
+        AssertSql();
+    }
+
+    public override async Task Same_entity_with_complex_type_projected_twice_with_pushdown_as_part_of_another_projection(bool async)
+    {
+        await base.Same_entity_with_complex_type_projected_twice_with_pushdown_as_part_of_another_projection(async);
+
+        AssertSql();
+    }
+
+    public override async Task Same_complex_type_projected_twice_with_pushdown_as_part_of_another_projection(bool async)
+    {
+        await base.Same_complex_type_projected_twice_with_pushdown_as_part_of_another_projection(async);
+
+        AssertSql();
+    }
+
+    public override async Task GroupBy_over_property_in_nested_complex_type(bool async)
+    {
+        await base.GroupBy_over_property_in_nested_complex_type(async);
+
+        AssertSql();
+    }
+
+    public override async Task GroupBy_over_complex_type(bool async)
+    {
+        await base.GroupBy_over_complex_type(async);
+
+        AssertSql();
+    }
+
+    public override async Task GroupBy_over_nested_complex_type(bool async)
+    {
+        await base.GroupBy_over_nested_complex_type(async);
+
+        AssertSql();
+    }
+
+    public override async Task Entity_with_complex_type_with_group_by_and_first(bool async)
+    {
+        await base.Entity_with_complex_type_with_group_by_and_first(async);
+
+        AssertSql();
+    }
+
+    public override async Task Projecting_property_of_complex_type_using_left_join_with_pushdown(bool async)
+    {
+        await base.Projecting_property_of_complex_type_using_left_join_with_pushdown(async);
+
+        AssertSql();
+    }
+
+    public override async Task Projecting_complex_from_optional_navigation_using_conditional(bool async)
+    {
+        await base.Projecting_complex_from_optional_navigation_using_conditional(async);
+
+        AssertSql();
+    }
+
+    public override async Task Project_entity_with_complex_type_pushdown_and_then_left_join(bool async)
+    {
+        await base.Project_entity_with_complex_type_pushdown_and_then_left_join(async);
+
+        AssertSql();
+    }
+
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
         => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());

@@ -158,6 +158,13 @@ SET `o`.`Title` = 'NewValue'
 """);
     }
 
+    public override async Task Replace_ColumnExpression_in_column_setter(bool async)
+    {
+        await base.Replace_ColumnExpression_in_column_setter(async);
+
+        AssertSql();
+    }
+
     private void AssertSql(params string[] expected)
         => TestSqlLoggerFactory.AssertBaseline(expected);
 
