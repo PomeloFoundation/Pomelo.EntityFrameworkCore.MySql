@@ -46,8 +46,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     .Visit(queryExpression);
             }
 
-            queryExpression = new MySqlHavingExpressionVisitor((MySqlSqlExpressionFactory)Dependencies.SqlExpressionFactory).Visit(queryExpression);
-
             queryExpression = new MySqlParameterInliningExpressionVisitor(
                 Dependencies.TypeMappingSource,
                 Dependencies.SqlExpressionFactory,
