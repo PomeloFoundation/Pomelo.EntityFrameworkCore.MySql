@@ -36,7 +36,7 @@ namespace TestNamespace
             AddAnnotation("Relational:Sequences", sequences);
             AddAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn);
             AddAnnotation("Relational:MaxIdentifierLength", 64);
-            AddRuntimeAnnotation("Relational:RelationalModel", CreateRelationalModel());
+            AddRuntimeAnnotation("Relational:RelationalModelFactory", () => CreateRelationalModel());
         }
 
         private IRelationalModel CreateRelationalModel()
