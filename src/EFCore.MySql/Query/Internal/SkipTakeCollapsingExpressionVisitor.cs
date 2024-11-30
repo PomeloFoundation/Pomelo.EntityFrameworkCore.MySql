@@ -62,8 +62,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                             : null,
                         selectExpression.Projection,
                         new List<OrderingExpression>(0),
-                        limit: null,
-                        offset: null);
+                        offset: null,
+                        limit: null);
                 }
 
                 bool IsZero(SqlExpression? sqlExpression)

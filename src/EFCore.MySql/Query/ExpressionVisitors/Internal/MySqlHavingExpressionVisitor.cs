@@ -115,8 +115,8 @@ public class MySqlHavingExpressionVisitor : ExpressionVisitor
                     having: columnAliasReferenceExpression,
                     selectExpression.Projection,
                     selectExpression.Orderings,
-                    selectExpression.Limit,
-                    selectExpression.Offset);
+                    selectExpression.Offset,
+                    selectExpression.Limit);
             }
         }
 

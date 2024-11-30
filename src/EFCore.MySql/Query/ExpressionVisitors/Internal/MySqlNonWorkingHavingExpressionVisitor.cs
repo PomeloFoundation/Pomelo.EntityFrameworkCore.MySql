@@ -159,8 +159,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                         subquery.Limit is not null || subquery.Offset is not null
                             ? subquery.Orderings
                             : [],
-                        subquery.Limit,
-                        subquery.Offset);
+                        subquery.Offset, // Offset/limit parameters got switched around between EF Core 8 and 9 for no good reason.
+                        subquery.Limit);
 
 
                     var outerSelectOrderings = selectExpression.Orderings;
