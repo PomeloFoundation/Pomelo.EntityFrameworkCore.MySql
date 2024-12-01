@@ -26,8 +26,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         protected override void UseTransaction(DatabaseFacade facade, IDbContextTransaction transaction)
             => facade.UseTransaction(transaction.GetDbTransaction());
 
-        public class ManyToManyTrackingMySqlFixtureBase : ManyToManyTrackingRelationalFixture
+        public class ManyToManyTrackingMySqlFixtureBase : ManyToManyTrackingRelationalFixture, ITestSqlLoggerFactory
         {
+            public TestSqlLoggerFactory TestSqlLoggerFactory => (TestSqlLoggerFactory)ListLoggerFactory;
+
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
 
             protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)

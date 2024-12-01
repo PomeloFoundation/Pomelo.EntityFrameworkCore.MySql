@@ -203,7 +203,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         // TODO: Inherit from SpatialQueryRelationalFixture.
-        public class SpatialGeographyQueryMySqlFixture : SharedStoreFixtureBase<SpatialGeographyContext>, IQueryFixtureBase
+        public class SpatialGeographyQueryMySqlFixture : SharedStoreFixtureBase<SpatialGeographyContext>, IQueryFixtureBase, ITestSqlLoggerFactory
         {
             private GeometryFactory _geometryFactory;
 

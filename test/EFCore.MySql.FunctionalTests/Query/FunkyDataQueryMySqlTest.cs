@@ -195,7 +195,7 @@ FROM `FunkyCustomers` AS `f`
     private void AssertSql(params string[] expected)
         => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
-    public class FunkyDataQueryMySqlFixture : FunkyDataQueryFixtureBase
+    public class FunkyDataQueryMySqlFixture : FunkyDataQueryFixtureBase, ITestSqlLoggerFactory
     {
         public TestSqlLoggerFactory TestSqlLoggerFactory
             => (TestSqlLoggerFactory)ServiceProvider.GetRequiredService<ILoggerFactory>();

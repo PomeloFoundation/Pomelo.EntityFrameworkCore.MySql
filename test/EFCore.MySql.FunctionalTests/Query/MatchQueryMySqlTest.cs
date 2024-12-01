@@ -527,7 +527,7 @@ WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First' WITH QUERY EXPANSION) > 
 
         protected virtual DbContext CreateContext() => Fixture.CreateContext();
 
-        public abstract class MatchQueryMySqlFixtureBase : SharedStoreFixtureBase<PoolableDbContext>, IQueryFixtureBase
+        public abstract class MatchQueryMySqlFixtureBase : SharedStoreFixtureBase<PoolableDbContext>, IQueryFixtureBase, ITestSqlLoggerFactory
         {
             protected override string StoreName { get; } = "MatchQueryTest";
             public TestSqlLoggerFactory TestSqlLoggerFactory => (TestSqlLoggerFactory)ListLoggerFactory;

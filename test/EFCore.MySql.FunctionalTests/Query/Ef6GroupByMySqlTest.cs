@@ -912,7 +912,7 @@ ORDER BY `p2`.`LastName` DESC, `p4`.`Id`, `p6`.`LastName`, `p6`.`Id`
     private void AssertSql(params string[] expected)
         => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
-    public class Ef6GroupByMySqlFixture : Ef6GroupByFixtureBase
+    public class Ef6GroupByMySqlFixture : Ef6GroupByFixtureBase, ITestSqlLoggerFactory
     {
         public TestSqlLoggerFactory TestSqlLoggerFactory
             => (TestSqlLoggerFactory)ListLoggerFactory;

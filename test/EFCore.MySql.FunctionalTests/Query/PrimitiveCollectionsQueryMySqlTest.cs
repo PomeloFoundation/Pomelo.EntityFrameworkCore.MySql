@@ -1900,7 +1900,7 @@ LIMIT 1
     private PrimitiveCollectionsContext CreateContext()
         => Fixture.CreateContext();
 
-    public class PrimitiveCollectionsQueryMySqlFixture : PrimitiveCollectionsQueryFixtureBase
+    public class PrimitiveCollectionsQueryMySqlFixture : PrimitiveCollectionsQueryFixtureBase, ITestSqlLoggerFactory
     {
         public TestSqlLoggerFactory TestSqlLoggerFactory
             => (TestSqlLoggerFactory)ListLoggerFactory;

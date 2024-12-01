@@ -14,7 +14,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
         }
 
-        public class ManyToManyFieldsLoadMySqlFixture : ManyToManyFieldsLoadFixtureBase
+        public class ManyToManyFieldsLoadMySqlFixture : ManyToManyFieldsLoadFixtureBase, ITestSqlLoggerFactory
         {
             public TestSqlLoggerFactory TestSqlLoggerFactory
                 => (TestSqlLoggerFactory)ListLoggerFactory;
