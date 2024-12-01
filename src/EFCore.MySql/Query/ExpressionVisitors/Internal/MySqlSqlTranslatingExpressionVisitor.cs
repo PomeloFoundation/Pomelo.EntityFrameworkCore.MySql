@@ -126,21 +126,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 ResetTranslationErrorDetails();
             }
 
-            var visitedExpression = base.VisitUnary(unaryExpression);
-
-            if (visitedExpression is SqlUnaryExpression sqlUnaryExpression &&
-                sqlUnaryExpression.OperatorType == ExpressionType.Not &&
-                sqlUnaryExpression.Type != typeof(bool))
-            {
-                // MySQL implicitly casts numbers used in BITWISE NOT operations (~ operator) to BIGINT UNSIGNED.
-                // We need to cast them back, to get the expected result.
-                return _sqlExpressionFactory.Convert(
-                    sqlUnaryExpression,
-                    sqlUnaryExpression.Type,
-                    sqlUnaryExpression.TypeMapping);
-            }
-
-            return visitedExpression;
+            return base.VisitUnary(unaryExpression);
         }
 
         protected override Expression VisitBinary(BinaryExpression binaryExpression)

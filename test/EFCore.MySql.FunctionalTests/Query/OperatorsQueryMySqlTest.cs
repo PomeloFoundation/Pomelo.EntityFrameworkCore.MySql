@@ -27,7 +27,16 @@ public class OperatorsQueryMySqlTest : OperatorsQueryTestBase
     {
         await base.Complex_predicate_with_bitwise_and_modulo_and_negation();
 
-        AssertSql("");
+        AssertSql(
+"""
+SELECT `o`.`Value` AS `Value0`, `o0`.`Value` AS `Value1`, `o1`.`Value` AS `Value2`, `o2`.`Value` AS `Value3`
+FROM `OperatorEntityLong` AS `o`
+CROSS JOIN `OperatorEntityLong` AS `o0`
+CROSS JOIN `OperatorEntityLong` AS `o1`
+CROSS JOIN `OperatorEntityLong` AS `o2`
+WHERE CAST(((`o0`.`Value` % 2) / `o`.`Value`) & ((CAST(`o2`.`Value` | `o1`.`Value` AS signed) - `o`.`Value`) - (`o1`.`Value` * `o1`.`Value`)) AS signed) >= (((`o0`.`Value` / CAST(~`o2`.`Value` AS signed)) % 2) % (CAST(~`o`.`Value` AS signed) + 1))
+ORDER BY `o`.`Id`, `o0`.`Id`, `o1`.`Id`, `o2`.`Id`
+""");
     }
 
     public override async Task Complex_predicate_with_bitwise_and_arithmetic_operations()

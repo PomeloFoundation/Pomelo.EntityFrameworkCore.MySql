@@ -43,6 +43,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 query = new MySqlBug96947WorkaroundExpressionVisitor(_sqlExpressionFactory).Visit(query);
             }
 
+            query = new BitwiseOperationReturnTypeCorrectingExpressionVisitor(_sqlExpressionFactory).Visit(query);
+
             return query;
         }
     }

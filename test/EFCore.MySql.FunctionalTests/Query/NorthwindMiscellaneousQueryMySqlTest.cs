@@ -127,9 +127,11 @@ WHERE CAST(~`o`.`OrderID` AS signed) = @__negatedId_0");
             await base.Where_bitwise_binary_and(async);
 
             AssertSql(
-                @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+"""
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`OrderID` & 10248) = 10248");
+WHERE CAST(`o`.`OrderID` & 10248 AS signed) = 10248
+""");
         }
 
         public override async Task Where_bitwise_binary_or(bool async)
@@ -137,9 +139,11 @@ WHERE (`o`.`OrderID` & 10248) = 10248");
             await base.Where_bitwise_binary_or(async);
 
             AssertSql(
-                @"SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+"""
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`OrderID` | 10248) = 10248");
+WHERE CAST(`o`.`OrderID` | 10248 AS signed) = 10248
+""");
         }
 
         public override async Task Select_bitwise_or_with_logical_or(bool async)
