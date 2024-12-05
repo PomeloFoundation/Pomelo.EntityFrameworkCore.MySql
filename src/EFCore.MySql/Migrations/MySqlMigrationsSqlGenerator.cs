@@ -222,6 +222,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             [NotNull] MigrationCommandListBuilder builder,
             bool terminate = true)
         {
+            // Create a unique constraint for an AUTO_INCREMENT column that is part of a compound primary key, but is not the first column
+            // in that key. In this case, for InnoDB to be satisfied, an index (preferably UNIQUE) with the AUTO_INCREMENT column as the first
+            // column, has to exists.
+            //
+            // TODO: Only add the column, if there is not an already existing index that has the AUTO_INCREMENT column as the first index.
+            //       We should also monitor all related operations, to remove the index, if it is not needed anymore.
+            //       Check/test, whether this does not only apply to primary keys, but also to other (alternate) ones as well, or is
+            //       completely independent of keys, and really just applies to any AUTO_INCREMENT column.
+            //       Also, move handling to conventions.
+            if (operation.PrimaryKey is { Columns.Length: > 1 } primaryKey &&
+                primaryKey.Columns[0] is var firstPrimaryKeyColumnName &&
+                operation.Columns.Single(c => c.Name == firstPrimaryKeyColumnName) is var firstPrimaryKeyColumn &&
+                operation.Columns.FirstOrDefault(c => c[MySqlAnnotationNames.ValueGenerationStrategy] is MySqlValueGenerationStrategy.IdentityColumn) is { } autoIncrementColumn &&
+                operation.Columns.Contains(autoIncrementColumn) &&
+                autoIncrementColumn != firstPrimaryKeyColumn)
+            {
+                operation.UniqueConstraints.Add(
+                    new AddUniqueConstraintOperation
+                    {
+                        Schema = operation.PrimaryKey.Schema,
+                        Table = operation.PrimaryKey.Table,
+                        Columns = [autoIncrementColumn.Name],
+                    });
+            }
+
             base.Generate(operation, model, builder, false);
 
             var tableOptions = new List<(string, string)>();
@@ -1459,47 +1484,16 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
             [CanBeNull] IModel model,
             [NotNull] MigrationCommandListBuilder builder)
         {
-            Check.NotNull(operation, nameof(operation));
-            Check.NotNull(builder, nameof(builder));
+            // We used to move an AUTO_INCREMENT column to the first position in a primary key, if the PK was a compound key and the column
+            // was not in the first position. We did this to satisfy InnoDB.
+            // However, this is technically an inaccuracy, and leads to incompatible FK -> PK mappings in MySQL 8.4.
+            // We will therefore reverse that behavior to leaving the key order unchanged again.
+            // This will lead to two issues:
+            //     - Migrations that upgrade vom Pomelo < 9.0 to Pomelo 9.0 will not include this change automatically, because the model
+            //       never changed (we only made the change (before and now) here in MySqlMigrationsSqlGenerator).
+            //     - There now needs to be an index for those cases, that contains the AUTO_INCREMENT column as its first column.
 
-            var primaryKey = operation.PrimaryKey;
-            if (primaryKey != null)
-            {
-                builder.AppendLine(",");
-
-                // MySQL InnoDB has the requirement, that an AUTO_INCREMENT column has to be the first
-                // column participating in an index.
-
-                var sortedColumnNames = primaryKey.Columns.Length > 1
-                    ? primaryKey.Columns
-                        .Select(columnName => operation.Columns.First(co => co.Name == columnName))
-                        .OrderBy(co => co[MySqlAnnotationNames.ValueGenerationStrategy] is MySqlValueGenerationStrategy generationStrategy
-                                       && generationStrategy == MySqlValueGenerationStrategy.IdentityColumn
-                            ? 0
-                            : 1)
-                        .Select(co => co.Name)
-                        .ToArray()
-                    : primaryKey.Columns;
-
-                var sortedPrimaryKey = new AddPrimaryKeyOperation()
-                {
-                    Schema = primaryKey.Schema,
-                    Table = primaryKey.Table,
-                    Name = primaryKey.Name,
-                    Columns = sortedColumnNames,
-                    IsDestructiveChange = primaryKey.IsDestructiveChange,
-                };
-
-                foreach (var annotation in primaryKey.GetAnnotations())
-                {
-                    sortedPrimaryKey[annotation.Name] = annotation.Value;
-                }
-
-                PrimaryKeyConstraint(
-                    sortedPrimaryKey,
-                    model,
-                    builder);
-            }
+            base.CreateTablePrimaryKeyConstraint(operation, model, builder);
         }
 
         protected override void PrimaryKeyConstraint(
