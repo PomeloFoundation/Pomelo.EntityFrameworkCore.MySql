@@ -1054,49 +1054,43 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
             EndStatement(builder);
         }
 
-        /// <summary>
-        ///     Generates a SQL fragment configuring a sequence with the given options.
-        /// </summary>
-        /// <param name="schema"> The schema that contains the sequence, or <see langword="null"/> to use the default schema. </param>
-        /// <param name="name"> The sequence name. </param>
-        /// <param name="operation"> The sequence options. </param>
-        /// <param name="model"> The target model which may be <see langword="null"/> if the operations exist without a model. </param>
-        /// <param name="builder"> The command builder to use to add the SQL fragment. </param>
         protected override void SequenceOptions(
             string schema,
             string name,
             SequenceOperation operation,
             IModel model,
-            MigrationCommandListBuilder builder)
+            MigrationCommandListBuilder builder,
+            bool forAlter)
         {
-            Check.NotEmpty(name, nameof(name));
-            Check.NotNull(operation, nameof(operation));
-            Check.NotNull(builder, nameof(builder));
+            var intTypeMapping = Dependencies.TypeMappingSource.GetMapping(typeof(int));
+            var longTypeMapping = Dependencies.TypeMappingSource.GetMapping(typeof(long));
 
             builder
                 .Append(" INCREMENT BY ")
-                .Append(IntegerConstant(operation.IncrementBy));
+                .Append(intTypeMapping.GenerateSqlLiteral(operation.IncrementBy));
 
-            if (operation.MinValue.HasValue)
+            if (operation.MinValue != null)
             {
                 builder
                     .Append(" MINVALUE ")
-                    .Append(IntegerConstant(operation.MinValue.Value));
+                    .Append(longTypeMapping.GenerateSqlLiteral(operation.MinValue));
             }
-            else
+            else if (forAlter)
             {
-                builder.Append(" NO MINVALUE");
+                builder
+                    .Append(" NO MINVALUE");
             }
 
-            if (operation.MaxValue.HasValue)
+            if (operation.MaxValue != null)
             {
                 builder
                     .Append(" MAXVALUE ")
-                    .Append(IntegerConstant(operation.MaxValue.Value));
+                    .Append(longTypeMapping.GenerateSqlLiteral(operation.MaxValue));
             }
-            else
+            else if (forAlter)
             {
-                builder.Append(" NO MAXVALUE");
+                builder
+                    .Append(" NO MAXVALUE");
             }
 
             builder.Append(operation.IsCyclic ? " CYCLE" : " NOCYCLE");

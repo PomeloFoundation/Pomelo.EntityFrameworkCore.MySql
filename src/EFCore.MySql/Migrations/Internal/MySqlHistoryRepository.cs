@@ -32,7 +32,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         }
 
         public override LockReleaseBehavior LockReleaseBehavior
-            => LockReleaseBehavior.Transaction;
+            => LockReleaseBehavior.Connection;
 
         public override IMigrationsDatabaseLock AcquireDatabaseLock()
         {
@@ -65,13 +65,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         // We cannot use LOCK TABLES/UNLOCK TABLES, because we would need to know *all* the table we want to access by name beforehand,
         // since after the LOCK TABLES statement has run, only the tables specified can be access and access to any other table results in
         // an error.
-        // We use GET_LOCK()/RELEASE_LOCK() for now. We don't specify a timeout for now, because we cannot know how long the migration
-        // operations are supposed to take. If RELEASE_LOCK() is never called, the lock is automatically release when the session ends or is
-        // killed. This function pair is bound to a database, but is a database server wide global mutex. We therefore explicitly use the
-        // database name in
+        // We use GET_LOCK()/RELEASE_LOCK() for now. We would like to not specify a timeout, because we cannot know how long the migration
+        // operations are supposed to take. However, while MySQL interprets negative timeout values as infinite, MariaDB does not. We
+        // therefore specify a very large timeout in seconds instead (currently 72 hours). If RELEASE_LOCK() is never called, the lock is automatically released
+        // when the session ends or is killed. This function pair is not bound to a database, but is a database server wide global mutex. We
+        // therefore explicitly use the database name as part of the lock name.
         // If it turns out, that users want a replication-save method later, we could implement a locking table mechanism as Sqlite does.
         private string GetAcquireLockCommandSql()
-            => $"SELECT GET_LOCK('{GetDatabaseLockName(Dependencies.Connection.DbConnection.Database)}', -1)";
+            => $"SELECT GET_LOCK('{GetDatabaseLockName(Dependencies.Connection.DbConnection.Database)}', {60 * 60 * 24 * 3})";
 
         private RelationalCommandParameterObject CreateRelationalCommandParameters()
             => new(
