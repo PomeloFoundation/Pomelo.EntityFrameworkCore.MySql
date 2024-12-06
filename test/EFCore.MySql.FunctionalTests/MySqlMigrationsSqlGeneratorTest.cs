@@ -1696,7 +1696,6 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
         public virtual void CreateSequenceOperation_without_minValue_and_maxValue()
         {
-
             Generate(
               new CreateSequenceOperation
               {
@@ -1707,7 +1706,7 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
               });
 
             Assert.Equal(
-               @"CREATE SEQUENCE `MySequence` START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE NOCYCLE;" + EOL,
+               @"CREATE SEQUENCE `MySequence` START WITH 1 INCREMENT BY 1 NOCYCLE;" + EOL,
                Sql,
                ignoreLineEndingDifferences: true);
         }

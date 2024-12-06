@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Design;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using MySqlConnector;
@@ -25,11 +26,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 {
     public class MigrationsMySqlTest : MigrationsTestBase<MigrationsMySqlTest.MigrationsMySqlFixture>
     {
+        private readonly IRelationalTypeMappingSource _typeMappingSource;
+
         public MigrationsMySqlTest(MigrationsMySqlFixture fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
         {
             Fixture.TestSqlLoggerFactory.Clear();
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
+
+            _typeMappingSource = Fixture.ServiceProvider.GetService<IRelationalTypeMappingSource>();
         }
 
         public override async Task Alter_check_constraint()
@@ -62,7 +67,8 @@ ALTER TABLE `People` MODIFY COLUMN `Sum` int AS (`X` + `Y`){computedColumnTypeSq
             else
             {
                 var exception = await Assert.ThrowsAsync<MySqlException>(() => base.Alter_column_make_computed(stored));
-                Assert.Equal("'Changing the STORED status' is not supported for generated columns.", exception.Message);
+                Assert.True(exception.Message is "'Changing the STORED status' is not supported for generated columns."
+                                              or "This is not yet supported for generated columns");
             }
         }
 
@@ -71,10 +77,11 @@ ALTER TABLE `People` MODIFY COLUMN `Sum` int AS (`X` + `Y`){computedColumnTypeSq
             await base.Add_column_computed_with_collation(stored);
 
             var computedColumnTypeSql = stored ? " STORED" : "";
+            var nullableGeneratedColumnSql = AppConfig.ServerVersion.Supports.NullableGeneratedColumns ? " NULL" : string.Empty;
 
             AssertSql(
 $"""
-ALTER TABLE `People` ADD `Name` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs AS ('hello'){computedColumnTypeSql} NULL;
+ALTER TABLE `People` ADD `Name` longtext CHARACTER SET utf8mb4 COLLATE {NonDefaultCollation} AS ('hello'){computedColumnTypeSql}{nullableGeneratedColumnSql};
 """);
         }
 
@@ -83,8 +90,8 @@ ALTER TABLE `People` ADD `Name` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0
             await base.Add_column_with_collation();
 
             AssertSql(
-"""
-ALTER TABLE `People` ADD `Name` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NULL;
+$"""
+ALTER TABLE `People` ADD `Name` longtext CHARACTER SET utf8mb4 COLLATE {NonDefaultCollation} NULL;
 """);
         }
 
@@ -346,12 +353,23 @@ ALTER TABLE `People` ADD CONSTRAINT `PK_Foo` PRIMARY KEY (`SomeField1`, `SomeFie
         public override async Task Alter_column_change_computed_type()
         {
             var exception = await Assert.ThrowsAsync<MySqlException>(() => base.Alter_column_change_computed_type());
-            Assert.Equal("'Changing the STORED status' is not supported for generated columns.", exception.Message);
+            Assert.True(exception.Message is "'Changing the STORED status' is not supported for generated columns."
+                                          or "This is not yet supported for generated columns");
         }
 
         public override async Task Alter_column_change_type()
         {
-            await base.Alter_column_change_type();
+            // await base.Alter_column_change_type();
+            await Test(
+                builder => builder.Entity("People").Property<int>("Id"),
+                builder => builder.Entity("People").Property<int>("SomeColumn"),
+                builder => builder.Entity("People").Property<long>("SomeColumn"),
+                model =>
+                {
+                    var table = Assert.Single(model.Tables);
+                    var column = Assert.Single(table.Columns, c => c.Name == "SomeColumn");
+                    Assert.StartsWith(_typeMappingSource.FindMapping(typeof(long)).StoreTypeNameBase, column.StoreType);
+                });
 
             AssertSql(
 """
@@ -364,8 +382,8 @@ ALTER TABLE `People` MODIFY COLUMN `SomeColumn` bigint NOT NULL;
             await base.Alter_column_set_collation();
 
             AssertSql(
-"""
-ALTER TABLE `People` MODIFY COLUMN `Name` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NULL;
+$"""
+ALTER TABLE `People` MODIFY COLUMN `Name` longtext CHARACTER SET utf8mb4 COLLATE {NonDefaultCollation} NULL;
 """);
         }
 
@@ -389,7 +407,10 @@ ALTER SEQUENCE `foo` START WITH -3 RESTART;
         {
             await base.Alter_sequence_increment_by();
 
-            AssertSql("");
+            AssertSql(
+"""
+ALTER SEQUENCE `foo` INCREMENT BY 2 NO MINVALUE NO MAXVALUE NOCYCLE;
+""");
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
@@ -437,7 +458,10 @@ CREATE TABLE `People` (
         {
             await base.Create_sequence();
 
-            AssertSql("");
+            AssertSql(
+"""
+CREATE SEQUENCE `TestSequence` START WITH 1 INCREMENT BY 1 NOCYCLE;
+""");
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
@@ -445,7 +469,10 @@ CREATE TABLE `People` (
         {
             await base.Create_sequence_long();
 
-            AssertSql("");
+            AssertSql(
+"""
+CREATE SEQUENCE `TestSequence` START WITH 1 INCREMENT BY 1 NOCYCLE;
+""");
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
@@ -453,7 +480,10 @@ CREATE TABLE `People` (
         {
             await base.Create_sequence_short();
 
-            AssertSql("");
+            AssertSql(
+"""
+CREATE SEQUENCE `TestSequence` START WITH 1 INCREMENT BY 1 NOCYCLE;
+""");
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
@@ -473,7 +503,7 @@ CREATE TABLE `People` (
 
                     // Assert.Equal("TestSequence", sequence.Name);
                     // Assert.Equal("dbo2", sequence.Schema);
-                    Assert.Equal("dbo2_TestSequence", sequence.Name);
+                    Assert.Equal("TestSequence", sequence.Name);
 
                     Assert.Equal(3, sequence.StartValue);
                     Assert.Equal(2, sequence.IncrementBy);
@@ -484,7 +514,7 @@ CREATE TABLE `People` (
 
             AssertSql(
 """
-CREATE SEQUENCE `dbo2_TestSequence` START WITH 3 INCREMENT BY 2 MINVALUE 2 MAXVALUE 916 CYCLE;
+CREATE SEQUENCE `TestSequence` START WITH 3 INCREMENT BY 2 MINVALUE 2 MAXVALUE 916 CYCLE;
 """);
         }
 
@@ -590,9 +620,13 @@ ALTER TABLE `People` DROP CONSTRAINT `CK_People_Foo`;
         {
             await base.Drop_sequence();
 
-            AssertSql("");
+            AssertSql(
+"""
+DROP SEQUENCE `TestSequence`;
+""");
         }
 
+        [ConditionalFact(Skip = "There are no schemas in MySQL, that a sequence can be moved between.")]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
         public override async Task Move_sequence()
         {
@@ -604,13 +638,10 @@ ALTER TABLE `People` DROP CONSTRAINT `CK_People_Foo`;
                     var sequence = Assert.Single(model.Sequences);
                     // Assert.Equal("TestSequenceSchema", sequence.Schema);
                     // Assert.Equal("TestSequence", sequence.Name);
-                    Assert.Equal("TestSequenceSchema_TestSequenceMove", sequence.Name);
+                    Assert.Equal("TestSequenceMove", sequence.Name);
                 });
 
-            AssertSql(
-"""
-ALTER TABLE `TestSequenceMove` RENAME `TestSequenceSchema_TestSequenceMove`;
-""");
+            AssertSql("");
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.DefaultExpression), nameof(ServerVersionSupport.AlternativeDefaultExpression))]
@@ -696,10 +727,11 @@ ALTER TABLE `TestSequence` RENAME `testsequence`;
             await base.Add_column_with_computedSql(stored);
 
             var computedColumnTypeSql = stored == true ? " STORED" : "";
+            var nullableGeneratedColumnSql = AppConfig.ServerVersion.Supports.NullableGeneratedColumns ? " NULL" : string.Empty;
 
             AssertSql(
 $"""
-ALTER TABLE `People` ADD `Sum` longtext CHARACTER SET utf8mb4 AS (`X` + `Y`){computedColumnTypeSql} NULL;
+ALTER TABLE `People` ADD `Sum` longtext CHARACTER SET utf8mb4 AS (`X` + `Y`){computedColumnTypeSql}{nullableGeneratedColumnSql};
 """);
         }
 
@@ -709,12 +741,13 @@ ALTER TABLE `People` ADD `Sum` longtext CHARACTER SET utf8mb4 AS (`X` + `Y`){com
             await base.Create_table_with_computed_column(stored);
 
             var computedColumnTypeSql = stored == true ? " STORED" : "";
+            var nullableGeneratedColumnSql = AppConfig.ServerVersion.Supports.NullableGeneratedColumns ? " NULL" : string.Empty;
 
             AssertSql(
 $"""
 CREATE TABLE `People` (
     `Id` int NOT NULL AUTO_INCREMENT,
-    `Sum` longtext CHARACTER SET utf8mb4 AS (`X` + `Y`){computedColumnTypeSql} NULL,
+    `Sum` longtext CHARACTER SET utf8mb4 AS (`X` + `Y`){computedColumnTypeSql}{nullableGeneratedColumnSql},
     `X` int NOT NULL,
     `Y` int NOT NULL,
     CONSTRAINT `PK_People` PRIMARY KEY (`Id`)
@@ -1918,7 +1951,13 @@ VALUES (1, 'Daenerys Targaryen'),
             await base.DeleteDataOperation_simple_key();
 
             AssertSql(
+                AppConfig.ServerVersion.Supports.Returning
+                    ? """
+DELETE FROM `Person`
+WHERE `Id` = 2
+RETURNING 1;
 """
+                    : """
 DELETE FROM `Person`
 WHERE `Id` = 2;
 SELECT ROW_COUNT();
@@ -1930,7 +1969,13 @@ SELECT ROW_COUNT();
             await base.DeleteDataOperation_composite_key();
 
             AssertSql(
+                AppConfig.ServerVersion.Supports.Returning
+                    ? """
+DELETE FROM `Person`
+WHERE `AnotherId` = 12 AND `Id` = 2
+RETURNING 1;
 """
+                    : """
 DELETE FROM `Person`
 WHERE `AnotherId` = 12 AND `Id` = 2;
 SELECT ROW_COUNT();

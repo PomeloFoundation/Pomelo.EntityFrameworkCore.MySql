@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
@@ -2600,12 +2601,24 @@ INNER JOIN (
             await base.GroupBy_aggregate_after_skip_0_take_0(async);
 
             AssertSql(
-"""
+                AppConfig.ServerVersion.Supports.MySqlBugLimit0Offset0ExistsWorkaround
+                    ? """
 SELECT `o0`.`CustomerID` AS `Key`, COUNT(*) AS `Total`
 FROM (
     SELECT `o`.`CustomerID`
     FROM `Orders` AS `o`
     WHERE FALSE
+) AS `o0`
+GROUP BY `o0`.`CustomerID`
+"""
+                    : """
+@__p_0='0'
+
+SELECT `o0`.`CustomerID` AS `Key`, COUNT(*) AS `Total`
+FROM (
+    SELECT `o`.`CustomerID`
+    FROM `Orders` AS `o`
+    LIMIT @__p_0 OFFSET @__p_0
 ) AS `o0`
 GROUP BY `o0`.`CustomerID`
 """);
@@ -2616,12 +2629,22 @@ GROUP BY `o0`.`CustomerID`
             await base.GroupBy_skip_0_take_0_aggregate(async);
 
             AssertSql(
-"""
+                AppConfig.ServerVersion.Supports.MySqlBugLimit0Offset0ExistsWorkaround
+                    ? """
 SELECT `o`.`CustomerID` AS `Key`, COUNT(*) AS `Total`
 FROM `Orders` AS `o`
 WHERE `o`.`OrderID` > 10500
 GROUP BY `o`.`CustomerID`
 HAVING FALSE
+"""
+                    : """
+@__p_0='0'
+
+SELECT `o`.`CustomerID` AS `Key`, COUNT(*) AS `Total`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderID` > 10500
+GROUP BY `o`.`CustomerID`
+LIMIT @__p_0 OFFSET @__p_0
 """);
         }
 

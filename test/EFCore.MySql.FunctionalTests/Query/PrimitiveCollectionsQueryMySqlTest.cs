@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Tests;
@@ -1702,13 +1703,15 @@ WHERE `p`.`Id` IN (2, 999, 1000)
     {
         await base.Parameter_collection_Where_with_EF_Constant_Where_Any(async);
 
+        var rowSql = AppConfig.ServerVersion.Supports.ValuesWithRows ? "ROW" : string.Empty;
+
         AssertSql(
-"""
+$"""
 SELECT `p`.`Id`, `p`.`Bool`, `p`.`Bools`, `p`.`DateTime`, `p`.`DateTimes`, `p`.`Enum`, `p`.`Enums`, `p`.`Int`, `p`.`Ints`, `p`.`NullableInt`, `p`.`NullableInts`, `p`.`NullableString`, `p`.`NullableStrings`, `p`.`String`, `p`.`Strings`
 FROM `PrimitiveCollectionsEntity` AS `p`
 WHERE EXISTS (
     SELECT 1
-    FROM (SELECT 2 AS `Value` UNION ALL VALUES ROW(999), ROW(1000)) AS `i`
+    FROM (SELECT 2 AS `Value` UNION ALL VALUES {rowSql}(999), {rowSql}(1000)) AS `i`
     WHERE `i`.`Value` > 0)
 """);
     }
@@ -1717,13 +1720,15 @@ WHERE EXISTS (
     {
         await base.Parameter_collection_Count_with_column_predicate_with_EF_Constant(async);
 
+        var rowSql = AppConfig.ServerVersion.Supports.ValuesWithRows ? "ROW" : string.Empty;
+
         AssertSql(
-"""
+$"""
 SELECT `p`.`Id`, `p`.`Bool`, `p`.`Bools`, `p`.`DateTime`, `p`.`DateTimes`, `p`.`Enum`, `p`.`Enums`, `p`.`Int`, `p`.`Ints`, `p`.`NullableInt`, `p`.`NullableInts`, `p`.`NullableString`, `p`.`NullableStrings`, `p`.`String`, `p`.`Strings`
 FROM `PrimitiveCollectionsEntity` AS `p`
 WHERE (
     SELECT COUNT(*)
-    FROM (SELECT 2 AS `Value` UNION ALL VALUES ROW(999), ROW(1000)) AS `i`
+    FROM (SELECT 2 AS `Value` UNION ALL VALUES {rowSql}(999), {rowSql}(1000)) AS `i`
     WHERE `i`.`Value` > `p`.`Id`) = 2
 """);
     }
@@ -1972,9 +1977,11 @@ WHERE GREATEST(30, `p`.`Int`, @__i_0) = 35
 
     public override async Task Inline_collection_of_nullable_value_type_Min(bool async)
     {
-        await base.Inline_collection_of_nullable_value_type_Min(async);
+        if (AppConfig.ServerVersion.Supports.FieldReferenceInTableValueConstructor)
+        {
+            await base.Inline_collection_of_nullable_value_type_Min(async);
 
-        AssertSql(
+            AssertSql(
 """
 @__i_0='25' (Nullable = true)
 
@@ -1984,13 +1991,22 @@ WHERE (
     SELECT MIN(`v`.`Value`)
     FROM (SELECT CAST(30 AS signed) AS `Value` UNION ALL VALUES ROW(`p`.`Int`), ROW(@__i_0)) AS `v`) = 25
 """);
+        }
+        else
+        {
+            var exception = await Assert.ThrowsAsync<MySqlException>(() => base.Inline_collection_of_nullable_value_type_Min(async));
+            Assert.True(exception.Message is "Field reference 'p.Int' can't be used in table value constructor"
+                                          or "Unknown table 'p' in order clause");
+        }
     }
 
     public override async Task Inline_collection_of_nullable_value_type_Max(bool async)
     {
-        await base.Inline_collection_of_nullable_value_type_Max(async);
+        if (AppConfig.ServerVersion.Supports.FieldReferenceInTableValueConstructor)
+        {
+            await base.Inline_collection_of_nullable_value_type_Max(async);
 
-        AssertSql(
+            AssertSql(
 """
 @__i_0='35' (Nullable = true)
 
@@ -2000,13 +2016,22 @@ WHERE (
     SELECT MAX(`v`.`Value`)
     FROM (SELECT CAST(30 AS signed) AS `Value` UNION ALL VALUES ROW(`p`.`Int`), ROW(@__i_0)) AS `v`) = 35
 """);
+        }
+        else
+        {
+            var exception = await Assert.ThrowsAsync<MySqlException>(() => base.Inline_collection_of_nullable_value_type_Max(async));
+            Assert.True(exception.Message is "Field reference 'p.Int' can't be used in table value constructor"
+                                          or "Unknown table 'p' in order clause");
+        }
     }
 
     public override async Task Inline_collection_of_nullable_value_type_with_null_Min(bool async)
     {
-        await base.Inline_collection_of_nullable_value_type_with_null_Min(async);
+        if (AppConfig.ServerVersion.Supports.FieldReferenceInTableValueConstructor)
+        {
+            await base.Inline_collection_of_nullable_value_type_with_null_Min(async);
 
-        AssertSql(
+            AssertSql(
 """
 SELECT `p`.`Id`, `p`.`Bool`, `p`.`Bools`, `p`.`DateTime`, `p`.`DateTimes`, `p`.`Enum`, `p`.`Enums`, `p`.`Int`, `p`.`Ints`, `p`.`NullableInt`, `p`.`NullableInts`, `p`.`NullableString`, `p`.`NullableStrings`, `p`.`String`, `p`.`Strings`
 FROM `PrimitiveCollectionsEntity` AS `p`
@@ -2014,13 +2039,22 @@ WHERE (
     SELECT MIN(`v`.`Value`)
     FROM (SELECT CAST(30 AS signed) AS `Value` UNION ALL VALUES ROW(`p`.`NullableInt`), ROW(NULL)) AS `v`) = 30
 """);
+        }
+        else
+        {
+            var exception = await Assert.ThrowsAsync<MySqlException>(() => base.Inline_collection_of_nullable_value_type_with_null_Min(async));
+            Assert.True(exception.Message is "Field reference 'p.NullableInt' can't be used in table value constructor"
+                                          or "Unknown table 'p' in order clause");
+        }
     }
 
     public override async Task Inline_collection_of_nullable_value_type_with_null_Max(bool async)
     {
-        await base.Inline_collection_of_nullable_value_type_with_null_Max(async);
+        if (AppConfig.ServerVersion.Supports.FieldReferenceInTableValueConstructor)
+        {
+            await base.Inline_collection_of_nullable_value_type_with_null_Max(async);
 
-        AssertSql(
+            AssertSql(
 """
 SELECT `p`.`Id`, `p`.`Bool`, `p`.`Bools`, `p`.`DateTime`, `p`.`DateTimes`, `p`.`Enum`, `p`.`Enums`, `p`.`Int`, `p`.`Ints`, `p`.`NullableInt`, `p`.`NullableInts`, `p`.`NullableString`, `p`.`NullableStrings`, `p`.`String`, `p`.`Strings`
 FROM `PrimitiveCollectionsEntity` AS `p`
@@ -2028,6 +2062,13 @@ WHERE (
     SELECT MAX(`v`.`Value`)
     FROM (SELECT CAST(30 AS signed) AS `Value` UNION ALL VALUES ROW(`p`.`NullableInt`), ROW(NULL)) AS `v`) = 30
 """);
+        }
+        else
+        {
+            var exception = await Assert.ThrowsAsync<MySqlException>(() => base.Inline_collection_of_nullable_value_type_with_null_Max(async));
+            Assert.True(exception.Message is "Field reference 'p.NullableInt' can't be used in table value constructor"
+                                          or "Unknown table 'p' in order clause");
+        }
     }
 
     public override async Task Inline_collection_Contains_with_EF_Parameter(bool async)
