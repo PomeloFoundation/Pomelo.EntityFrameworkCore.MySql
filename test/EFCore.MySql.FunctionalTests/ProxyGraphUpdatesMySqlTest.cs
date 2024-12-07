@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -63,9 +64,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             }
 
             // Needs lazy loading
-            public override void Save_two_entity_cycle_with_lazy_loading()
-            {
-            }
+            public override Task Save_two_entity_cycle_with_lazy_loading()
+                => Task.CompletedTask;
 
             protected override bool DoesLazyLoading
                 => false;

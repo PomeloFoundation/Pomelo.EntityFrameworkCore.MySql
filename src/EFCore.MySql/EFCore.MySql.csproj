@@ -6,6 +6,8 @@
     <AssemblyName>Pomelo.EntityFrameworkCore.MySql</AssemblyName>
     <RootNamespace>Pomelo.EntityFrameworkCore.MySql</RootNamespace>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <NoWarn>$(NoWarn);EF9100</NoWarn> <!-- Precompiled query is experimental -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn> <!-- TODO: Missing XML comment for publicly visible type or member 'Type_or_Member' -->
   </PropertyGroup>
 
   <PropertyGroup>
@@ -48,7 +50,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
-    <PackageReference Include="Microsoft.Bcl.HashCode" />
     <PackageReference Include="System.Collections.Immutable" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>

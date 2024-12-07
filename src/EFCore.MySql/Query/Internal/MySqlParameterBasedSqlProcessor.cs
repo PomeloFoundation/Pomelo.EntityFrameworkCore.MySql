@@ -18,9 +18,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
         public MySqlParameterBasedSqlProcessor(
             RelationalParameterBasedSqlProcessorDependencies dependencies,
-            bool useRelationalNulls,
+            RelationalParameterBasedSqlProcessorParameters parameters,
             IMySqlOptions options)
-            : base(dependencies, useRelationalNulls)
+            : base(dependencies, parameters)
         {
             _options = options;
         }
@@ -46,8 +46,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     .Visit(queryExpression);
             }
 
-            queryExpression = new MySqlHavingExpressionVisitor((MySqlSqlExpressionFactory)Dependencies.SqlExpressionFactory).Visit(queryExpression);
-
             queryExpression = new MySqlParameterInliningExpressionVisitor(
                 Dependencies.TypeMappingSource,
                 Dependencies.SqlExpressionFactory,
@@ -70,7 +68,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             Check.NotNull(queryExpression, nameof(queryExpression));
             Check.NotNull(parametersValues, nameof(parametersValues));
 
-            queryExpression = new MySqlSqlNullabilityProcessor(Dependencies, UseRelationalNulls)
+            queryExpression = new MySqlSqlNullabilityProcessor(Dependencies, Parameters)
                 .Process(queryExpression, parametersValues, out canCache);
 
             return queryExpression;

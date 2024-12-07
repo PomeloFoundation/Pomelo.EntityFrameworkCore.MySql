@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -25,9 +25,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             ClearLog();
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
-
-        protected override bool CanExecuteQueryString
-            => true;
 
         [ConditionalTheory]
         public override async Task Select_datetime_year_component(bool async)

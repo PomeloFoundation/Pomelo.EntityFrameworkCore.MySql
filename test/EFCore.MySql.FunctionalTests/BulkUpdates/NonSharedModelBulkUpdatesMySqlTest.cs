@@ -7,14 +7,14 @@ using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
-public class NonSharedModelBulkUpdatesMySqlTest : NonSharedModelBulkUpdatesTestBase
+public class NonSharedModelBulkUpdatesMySqlTest : NonSharedModelBulkUpdatesRelationalTestBase
 {
     protected override ITestStoreFactory TestStoreFactory
         => MySqlTestStoreFactory.Instance;
 
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
-        => TestHelpers.AssertAllMethodsOverridden(GetType());
+        => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 
     public override async Task Delete_aggregate_root_when_eager_loaded_owned_collection(bool async)
     {
@@ -88,7 +88,7 @@ SET `o`.`Title` = CONCAT(COALESCE(`o`.`Title`, ''), '_Suffix')
 """
 UPDATE `Owner` AS `o`
 SET `o`.`OwnedReference_Number` = CHAR_LENGTH(`o`.`Title`),
-    `o`.`Title` = CAST(`o`.`OwnedReference_Number` AS char)
+    `o`.`Title` = COALESCE(CAST(`o`.`OwnedReference_Number` AS char), '')
 """);
     }
 
@@ -155,6 +155,18 @@ WHERE `o`.`Id` = 1
 UPDATE `Owner` AS `o`
 INNER JOIN `Owner` AS `o0` ON `o`.`Id` = `o0`.`Id`
 SET `o`.`Title` = 'NewValue'
+""");
+    }
+
+    public override async Task Replace_ColumnExpression_in_column_setter(bool async)
+    {
+        await base.Replace_ColumnExpression_in_column_setter(async);
+
+        AssertSql(
+"""
+UPDATE `Owner` AS `o`
+INNER JOIN `OwnedCollection` AS `o0` ON `o`.`Id` = `o0`.`OwnerId`
+SET `o0`.`Value` = 'SomeValue'
 """);
     }
 

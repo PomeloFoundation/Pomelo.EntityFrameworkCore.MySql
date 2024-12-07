@@ -94,6 +94,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
         public virtual bool Values => false;
         public virtual bool ValuesWithRows => false;
         public virtual bool WhereSubqueryReferencesOuterQuery => false;
+        public virtual bool FieldReferenceInTableValueConstructor => false;
+        public virtual bool CollationCharacterSetApplicabilityWithFullCollationNameColumn => false;
 
         public virtual bool JsonTableImplementationStable => JsonTable;
         public virtual bool JsonTableImplementationWithoutMySqlBugs => JsonTable;

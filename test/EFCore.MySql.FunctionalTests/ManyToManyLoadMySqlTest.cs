@@ -13,7 +13,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
         }
 
-        public class ManyToManyLoadMySqlFixture : ManyToManyLoadFixtureBase
+        public class ManyToManyLoadMySqlFixture : ManyToManyLoadFixtureBase, ITestSqlLoggerFactory
         {
             public TestSqlLoggerFactory TestSqlLoggerFactory => (TestSqlLoggerFactory)ListLoggerFactory;
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;

@@ -23,16 +23,16 @@ public class ExistingConnectionMySqlTest
             .AddEntityFrameworkMySql()
             .BuildServiceProvider();
 
-        using (var store = (MySqlTestStore)MySqlNorthwindTestStoreFactory.Instance
-                   .GetOrCreate(null)
-                   .Initialize(null, (Func<DbContext>)null))
+        await using (var store = (MySqlTestStore)await MySqlNorthwindTestStoreFactory.Instance
+                         .GetOrCreate(null)
+                         .InitializeAsync(null, (Func<DbContext>)null))
         {
             store.CloseConnection();
 
             var openCount = 0;
             var closeCount = 0;
 
-            using (var connection = new MySqlConnection(store.ConnectionString))
+            await using (var connection = new MySqlConnection(store.ConnectionString))
             {
                 if (openConnection)
                 {
@@ -56,7 +56,7 @@ public class ExistingConnectionMySqlTest
                     .UseInternalServiceProvider(serviceProvider)
                     .Options;
 
-                using (var context = new NorthwindContext(options))
+                await using (var context = new NorthwindContext(options))
                 {
                     Assert.Equal(91, await context.Customers.CountAsync());
                 }
@@ -84,9 +84,9 @@ public class ExistingConnectionMySqlTest
             .AddEntityFrameworkMySql()
             .BuildServiceProvider();
 
-        await using (var store = (MySqlTestStore)MySqlNorthwindTestStoreFactory.Instance
+        await using (var store = (MySqlTestStore)await MySqlNorthwindTestStoreFactory.Instance
                          .GetOrCreate(null)
-                         .Initialize(null, (Func<DbContext>)null))
+                         .InitializeAsync(null, (Func<DbContext>)null))
         {
             store.CloseConnection();
 
@@ -99,7 +99,7 @@ public class ExistingConnectionMySqlTest
                     .UseInternalServiceProvider(serviceProvider)
                     .Options;
 
-                using var context = new NorthwindContext(options);
+                await using var context = new NorthwindContext(options);
 
                 Assert.Equal(91, await context.Customers.CountAsync());
             }
@@ -109,9 +109,9 @@ public class ExistingConnectionMySqlTest
     [Fact]
     private static async Task Opened_connection_missing_AllowUserVariables_true_in_original_connection_string_throws()
     {
-        await using (var store = (MySqlTestStore)MySqlNorthwindTestStoreFactory.Instance
+        await using (var store = (MySqlTestStore)await MySqlNorthwindTestStoreFactory.Instance
                          .GetOrCreate(null)
-                         .Initialize(null, (Func<DbContext>)null))
+                         .InitializeAsync(null, (Func<DbContext>)null))
         {
             store.CloseConnection();
 
@@ -145,9 +145,9 @@ public class ExistingConnectionMySqlTest
             .AddEntityFrameworkMySql()
             .BuildServiceProvider();
 
-        await using (var store = (MySqlTestStore)MySqlNorthwindTestStoreFactory.Instance
+        await using (var store = (MySqlTestStore)await MySqlNorthwindTestStoreFactory.Instance
                          .GetOrCreate(null)
-                         .Initialize(null, (Func<DbContext>)null))
+                         .InitializeAsync(null, (Func<DbContext>)null))
         {
             store.CloseConnection();
 
@@ -160,7 +160,7 @@ public class ExistingConnectionMySqlTest
                     .UseInternalServiceProvider(serviceProvider)
                     .Options;
 
-                using var context = new NorthwindContext(options);
+                await using var context = new NorthwindContext(options);
 
                 Assert.Equal(91, await context.Customers.CountAsync());
             }
@@ -170,9 +170,9 @@ public class ExistingConnectionMySqlTest
     [Fact]
     private static async Task Opened_connection_missing_UseAffectedRows_false_in_original_connection_string_throws()
     {
-        await using (var store = (MySqlTestStore)MySqlNorthwindTestStoreFactory.Instance
+        await using (var store = (MySqlTestStore)await MySqlNorthwindTestStoreFactory.Instance
                          .GetOrCreate(null)
-                         .Initialize(null, (Func<DbContext>)null))
+                         .InitializeAsync(null, (Func<DbContext>)null))
         {
             store.CloseConnection();
 

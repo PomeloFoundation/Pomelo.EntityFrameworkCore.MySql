@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -35,14 +36,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
 
-            public override void Reseed()
+            public override async Task ReseedAsync()
             {
-                using var context = CreateContext();
+                await using var context = CreateContext();
                 context.Set<TransactionCustomer>().RemoveRange(context.Set<TransactionCustomer>());
                 context.Set<TransactionOrder>().RemoveRange(context.Set<TransactionOrder>());
-                context.SaveChanges();
+                await context.SaveChangesAsync();
 
-                base.Seed(context);
+                await base.SeedAsync(context);
             }
 
             public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)

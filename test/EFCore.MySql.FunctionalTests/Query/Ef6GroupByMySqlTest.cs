@@ -20,7 +20,7 @@ public class Ef6GroupByMySqlTest : Ef6GroupByTestBase<Ef6GroupByMySqlTest.Ef6Gro
 
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
-        => TestHelpers.AssertAllMethodsOverridden(GetType());
+        => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 
     public override async Task GroupBy_is_optimized_when_projecting_group_key(bool async)
     {
@@ -165,12 +165,10 @@ GROUP BY `a`.`FirstName`
 
         AssertSql(
 """
-@__p_0='False'
-
 SELECT CASE
     WHEN `a`.`FirstName` IS NULL THEN 'is null'
     ELSE 'not null'
-END AS `keyIsNull`, @__p_0 AS `logicExpression`
+END AS `keyIsNull`, FALSE AS `logicExpression`
 FROM `ArubaOwner` AS `a`
 GROUP BY `a`.`FirstName`
 """);
@@ -186,10 +184,10 @@ GROUP BY `a`.`FirstName`
         // )  AS [Distinct1]";
     }
 
-    public override async Task GroupBy_is_optimized_when_filerting_and_projecting_anonymous_type_with_group_key_and_function_aggregate(
+    public override async Task GroupBy_is_optimized_when_filtering_and_projecting_anonymous_type_with_group_key_and_function_aggregate(
         bool async)
     {
-        await base.GroupBy_is_optimized_when_filerting_and_projecting_anonymous_type_with_group_key_and_function_aggregate(async);
+        await base.GroupBy_is_optimized_when_filtering_and_projecting_anonymous_type_with_group_key_and_function_aggregate(async);
 
         AssertSql(
 $"""
@@ -489,12 +487,11 @@ GROUP BY `a`.`Id`, `a`.`Alias`, `a`.`FirstName`, `a`.`LastName`
 """
 SELECT `c`.`Id`, `c`.`CompanyName`, `c`.`Region`, `s`.`Id`, `s`.`CustomerId`, `s`.`OrderDate`, `s`.`Total`, `s`.`Id0`
 FROM `CustomerForLinq` AS `c`
-LEFT JOIN LATERAL (
+LEFT JOIN (
     SELECT `o`.`Id`, `o`.`CustomerId`, `o`.`OrderDate`, `o`.`Total`, `c0`.`Id` AS `Id0`
     FROM `OrderForLinq` AS `o`
     LEFT JOIN `CustomerForLinq` AS `c0` ON `o`.`CustomerId` = `c0`.`Id`
-    WHERE `c`.`Id` = `c0`.`Id`
-) AS `s` ON TRUE
+) AS `s` ON `c`.`Id` = `s`.`Id0`
 ORDER BY `c`.`Id`, `s`.`Id`
 """);
     }
@@ -912,7 +909,7 @@ ORDER BY `p2`.`LastName` DESC, `p4`.`Id`, `p6`.`LastName`, `p6`.`Id`
     private void AssertSql(params string[] expected)
         => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
-    public class Ef6GroupByMySqlFixture : Ef6GroupByFixtureBase
+    public class Ef6GroupByMySqlFixture : Ef6GroupByFixtureBase, ITestSqlLoggerFactory
     {
         public TestSqlLoggerFactory TestSqlLoggerFactory
             => (TestSqlLoggerFactory)ListLoggerFactory;

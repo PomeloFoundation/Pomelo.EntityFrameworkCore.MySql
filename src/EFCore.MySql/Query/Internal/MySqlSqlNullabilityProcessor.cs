@@ -20,11 +20,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         /// Creates a new instance of the <see cref="MySqlSqlNullabilityProcessor" /> class.
         /// </summary>
         /// <param name="dependencies">Parameter object containing dependencies for this class.</param>
-        /// <param name="useRelationalNulls">A bool value indicating whether relational null semantics are in use.</param>
+        /// <param name="parameters">Parameter object containing parameters for this class.</param>
         public MySqlSqlNullabilityProcessor(
             [NotNull] RelationalParameterBasedSqlProcessorDependencies dependencies,
-            bool useRelationalNulls)
-            : base(dependencies, useRelationalNulls)
+            RelationalParameterBasedSqlProcessorParameters parameters)
+            : base(dependencies, parameters)
             => _sqlExpressionFactory = dependencies.SqlExpressionFactory;
 
         /// <inheritdoc />

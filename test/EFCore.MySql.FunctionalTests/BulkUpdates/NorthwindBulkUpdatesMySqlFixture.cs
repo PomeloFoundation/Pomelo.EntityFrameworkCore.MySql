@@ -7,8 +7,8 @@ using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
-public class NorthwindBulkUpdatesMySqlFixture<TModelCustomizer> : NorthwindBulkUpdatesFixture<TModelCustomizer>
-    where TModelCustomizer : IModelCustomizer, new()
+public class NorthwindBulkUpdatesMySqlFixture<TModelCustomizer> : NorthwindBulkUpdatesRelationalFixture<TModelCustomizer>
+    where TModelCustomizer : ITestModelCustomizer, new()
 {
     protected override ITestStoreFactory TestStoreFactory
         => MySqlNorthwindTestStoreFactory.Instance;

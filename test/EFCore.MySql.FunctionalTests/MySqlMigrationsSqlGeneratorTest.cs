@@ -1380,17 +1380,23 @@ ALTER DATABASE COLLATE latin1_swedish_ci;" + EOL,
                         .OldAnnotation(RelationalAnnotationNames.Collation, "latin1_general_ci");
                 });
 
+            var collationColumnName = AppConfig.ServerVersion.Supports.CollationCharacterSetApplicabilityWithFullCollationNameColumn
+                ? "FULL_COLLATION_NAME"
+                : "COLLATION_NAME";
+
             Assert.Equal(
-                @"set @__pomelo_TableCharset = (
-    SELECT `ccsa`.`CHARACTER_SET_NAME` as `TABLE_CHARACTER_SET`
-    FROM `INFORMATION_SCHEMA`.`TABLES` as `t`
-    LEFT JOIN `INFORMATION_SCHEMA`.`COLLATION_CHARACTER_SET_APPLICABILITY` as `ccsa` ON `ccsa`.`COLLATION_NAME` = `t`.`TABLE_COLLATION`
-    WHERE `TABLE_SCHEMA` = SCHEMA() AND `TABLE_NAME` = 'IceCreams' AND `TABLE_TYPE` IN ('BASE TABLE', 'VIEW'));
+$"""
+set @__pomelo_TableCharset = (
+SELECT `ccsa`.`CHARACTER_SET_NAME` as `TABLE_CHARACTER_SET`
+FROM `INFORMATION_SCHEMA`.`TABLES` as `t`
+LEFT JOIN `INFORMATION_SCHEMA`.`COLLATION_CHARACTER_SET_APPLICABILITY` as `ccsa` ON `ccsa`.`{collationColumnName}` = `t`.`TABLE_COLLATION`
+WHERE `TABLE_SCHEMA` = SCHEMA() AND `TABLE_NAME` = 'IceCreams' AND `TABLE_TYPE` IN ('BASE TABLE', 'VIEW'));
 
 SET @__pomelo_SqlExpr = CONCAT('ALTER TABLE `IceCreams` CHARACTER SET = ', @__pomelo_TableCharset, ';');
 PREPARE __pomelo_SqlExprExecute FROM @__pomelo_SqlExpr;
 EXECUTE __pomelo_SqlExprExecute;
-DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
+DEALLOCATE PREPARE __pomelo_SqlExprExecute;
+""" + EOL,
                 Sql,
                 ignoreLineEndingDifferences: true);
         }
@@ -1499,17 +1505,23 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
                         .OldAnnotation(MySqlAnnotationNames.CharSet, "latin1");
                 });
 
+            var collationColumnName = AppConfig.ServerVersion.Supports.CollationCharacterSetApplicabilityWithFullCollationNameColumn
+                ? "FULL_COLLATION_NAME"
+                : "COLLATION_NAME";
+
             Assert.Equal(
-                @"set @__pomelo_TableCharset = (
-    SELECT `ccsa`.`CHARACTER_SET_NAME` as `TABLE_CHARACTER_SET`
-    FROM `INFORMATION_SCHEMA`.`TABLES` as `t`
-    LEFT JOIN `INFORMATION_SCHEMA`.`COLLATION_CHARACTER_SET_APPLICABILITY` as `ccsa` ON `ccsa`.`COLLATION_NAME` = `t`.`TABLE_COLLATION`
-    WHERE `TABLE_SCHEMA` = SCHEMA() AND `TABLE_NAME` = 'IceCreams' AND `TABLE_TYPE` IN ('BASE TABLE', 'VIEW'));
+$"""
+set @__pomelo_TableCharset = (
+SELECT `ccsa`.`CHARACTER_SET_NAME` as `TABLE_CHARACTER_SET`
+FROM `INFORMATION_SCHEMA`.`TABLES` as `t`
+LEFT JOIN `INFORMATION_SCHEMA`.`COLLATION_CHARACTER_SET_APPLICABILITY` as `ccsa` ON `ccsa`.`{collationColumnName}` = `t`.`TABLE_COLLATION`
+WHERE `TABLE_SCHEMA` = SCHEMA() AND `TABLE_NAME` = 'IceCreams' AND `TABLE_TYPE` IN ('BASE TABLE', 'VIEW'));
 
 SET @__pomelo_SqlExpr = CONCAT('ALTER TABLE `IceCreams` CHARACTER SET = ', @__pomelo_TableCharset, ';');
 PREPARE __pomelo_SqlExprExecute FROM @__pomelo_SqlExpr;
 EXECUTE __pomelo_SqlExprExecute;
-DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
+DEALLOCATE PREPARE __pomelo_SqlExprExecute;
+""" + EOL,
                 Sql,
                 ignoreLineEndingDifferences: true);
         }
@@ -1696,7 +1708,6 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.Sequences))]
         public virtual void CreateSequenceOperation_without_minValue_and_maxValue()
         {
-
             Generate(
               new CreateSequenceOperation
               {
@@ -1707,7 +1718,7 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;" + EOL,
               });
 
             Assert.Equal(
-               @"CREATE SEQUENCE `MySequence` START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE NOCYCLE;" + EOL,
+               @"CREATE SEQUENCE `MySequence` START WITH 1 INCREMENT BY 1 NOCYCLE;" + EOL,
                Sql,
                ignoreLineEndingDifferences: true);
         }

@@ -5,7 +5,10 @@ using System.Net;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Json;
@@ -18,7 +21,8 @@ using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 namespace TestNamespace
 {
-    internal partial class PrincipalBaseEntityType
+    [EntityFrameworkInternal]
+    public partial class PrincipalBaseEntityType
     {
         public static RuntimeEntityType Create(RuntimeModel model, RuntimeEntityType baseEntityType = null)
         {
@@ -40,19 +44,43 @@ namespace TestNamespace
                 propertyInfo: typeof(CompiledModelTestBase.PrincipalBase).GetProperty("Id", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 fieldInfo: typeof(CompiledModelTestBase.PrincipalBase).GetField("<Id>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 afterSaveBehavior: PropertySaveBehavior.Throw);
+            id.SetGetter(
+                long? (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.Id(entity),
+                bool (CompiledModelTestBase.PrincipalBase entity) => !(PrincipalBaseUnsafeAccessors.Id(entity).HasValue),
+                long? (CompiledModelTestBase.PrincipalBase instance) => PrincipalBaseUnsafeAccessors.Id(instance),
+                bool (CompiledModelTestBase.PrincipalBase instance) => !(PrincipalBaseUnsafeAccessors.Id(instance).HasValue));
+            id.SetSetter(
+                (CompiledModelTestBase.PrincipalBase entity, long? value) => PrincipalBaseUnsafeAccessors.Id(entity) = value);
+            id.SetMaterializationSetter(
+                (CompiledModelTestBase.PrincipalBase entity, long? value) => PrincipalBaseUnsafeAccessors.Id(entity) = value);
+            id.SetAccessors(
+                long? (InternalEntityEntry entry) => (entry.FlaggedAsStoreGenerated(0) ? entry.ReadStoreGeneratedValue<long?>(0) : (entry.FlaggedAsTemporary(0) && !(PrincipalBaseUnsafeAccessors.Id(((CompiledModelTestBase.PrincipalBase)(entry.Entity))).HasValue) ? entry.ReadTemporaryValue<long?>(0) : PrincipalBaseUnsafeAccessors.Id(((CompiledModelTestBase.PrincipalBase)(entry.Entity))))),
+                long? (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.Id(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                long? (InternalEntityEntry entry) => entry.ReadOriginalValue<long?>(id, 0),
+                long? (InternalEntityEntry entry) => entry.ReadRelationshipSnapshotValue<long?>(id, 0),
+                object (ValueBuffer valueBuffer) => valueBuffer[0]);
+            id.SetPropertyIndexes(
+                index: 0,
+                originalValueIndex: 0,
+                shadowIndex: -1,
+                relationshipIndex: 0,
+                storeGenerationIndex: 0);
             id.TypeMapping = MySqlLongTypeMapping.Default.Clone(
-                comparer: new ValueComparer<long?>(
-                    (Nullable<long> v1, Nullable<long> v2) => v1.HasValue && v2.HasValue && (long)v1 == (long)v2 || !v1.HasValue && !v2.HasValue,
-                    (Nullable<long> v) => v.HasValue ? ((long)v).GetHashCode() : 0,
-                    (Nullable<long> v) => v.HasValue ? (Nullable<long>)(long)v : default(Nullable<long>)),
-                keyComparer: new ValueComparer<long?>(
-                    (Nullable<long> v1, Nullable<long> v2) => v1.HasValue && v2.HasValue && (long)v1 == (long)v2 || !v1.HasValue && !v2.HasValue,
-                    (Nullable<long> v) => v.HasValue ? ((long)v).GetHashCode() : 0,
-                    (Nullable<long> v) => v.HasValue ? (Nullable<long>)(long)v : default(Nullable<long>)),
-                providerValueComparer: new ValueComparer<long?>(
-                    (Nullable<long> v1, Nullable<long> v2) => v1.HasValue && v2.HasValue && (long)v1 == (long)v2 || !v1.HasValue && !v2.HasValue,
-                    (Nullable<long> v) => v.HasValue ? ((long)v).GetHashCode() : 0,
-                    (Nullable<long> v) => v.HasValue ? (Nullable<long>)(long)v : default(Nullable<long>)));
+                comparer: new ValueComparer<long>(
+                    bool (long v1, long v2) => v1 == v2,
+                    int (long v) => ((object)v).GetHashCode(),
+                    long (long v) => v),
+                keyComparer: new ValueComparer<long>(
+                    bool (long v1, long v2) => v1 == v2,
+                    int (long v) => ((object)v).GetHashCode(),
+                    long (long v) => v),
+                providerValueComparer: new ValueComparer<long>(
+                    bool (long v1, long v2) => v1 == v2,
+                    int (long v) => ((object)v).GetHashCode(),
+                    long (long v) => v));
+            id.SetCurrentValueComparer(new EntryCurrentValueComparer<long?>(id));
+            id.SetComparer(new NullableValueComparer<long>(id.TypeMapping.Comparer));
+            id.SetKeyComparer(new NullableValueComparer<long>(id.TypeMapping.KeyComparer));
 
             var overrides = new StoreObjectDictionary<RuntimeRelationalPropertyOverrides>();
             var idPrincipalDerived = new RuntimeRelationalPropertyOverrides(
@@ -73,19 +101,41 @@ namespace TestNamespace
                 afterSaveBehavior: PropertySaveBehavior.Throw,
                 sentinel: new Guid("00000000-0000-0000-0000-000000000000"),
                 jsonValueReaderWriter: JsonGuidReaderWriter.Instance);
+            alternateId.SetGetter(
+                Guid (CompiledModelTestBase.PrincipalBase entity) => entity.AlternateId,
+                bool (CompiledModelTestBase.PrincipalBase entity) => entity.AlternateId == new Guid("00000000-0000-0000-0000-000000000000"),
+                Guid (CompiledModelTestBase.PrincipalBase instance) => instance.AlternateId,
+                bool (CompiledModelTestBase.PrincipalBase instance) => instance.AlternateId == new Guid("00000000-0000-0000-0000-000000000000"));
+            alternateId.SetSetter(
+                (CompiledModelTestBase.PrincipalBase entity, Guid value) => entity.AlternateId = value);
+            alternateId.SetMaterializationSetter(
+                (CompiledModelTestBase.PrincipalBase entity, Guid value) => entity.AlternateId = value);
+            alternateId.SetAccessors(
+                Guid (InternalEntityEntry entry) => (entry.FlaggedAsStoreGenerated(1) ? entry.ReadStoreGeneratedValue<Guid>(1) : (entry.FlaggedAsTemporary(1) && ((CompiledModelTestBase.PrincipalBase)(entry.Entity)).AlternateId == new Guid("00000000-0000-0000-0000-000000000000") ? entry.ReadTemporaryValue<Guid>(1) : ((CompiledModelTestBase.PrincipalBase)(entry.Entity)).AlternateId)),
+                Guid (InternalEntityEntry entry) => ((CompiledModelTestBase.PrincipalBase)(entry.Entity)).AlternateId,
+                Guid (InternalEntityEntry entry) => entry.ReadOriginalValue<Guid>(alternateId, 1),
+                Guid (InternalEntityEntry entry) => entry.ReadRelationshipSnapshotValue<Guid>(alternateId, 1),
+                object (ValueBuffer valueBuffer) => valueBuffer[1]);
+            alternateId.SetPropertyIndexes(
+                index: 1,
+                originalValueIndex: 1,
+                shadowIndex: -1,
+                relationshipIndex: 1,
+                storeGenerationIndex: 1);
             alternateId.TypeMapping = MySqlGuidTypeMapping.Default.Clone(
                 comparer: new ValueComparer<Guid>(
-                    (Guid v1, Guid v2) => v1 == v2,
-                    (Guid v) => v.GetHashCode(),
-                    (Guid v) => v),
+                    bool (Guid v1, Guid v2) => v1 == v2,
+                    int (Guid v) => ((object)v).GetHashCode(),
+                    Guid (Guid v) => v),
                 keyComparer: new ValueComparer<Guid>(
-                    (Guid v1, Guid v2) => v1 == v2,
-                    (Guid v) => v.GetHashCode(),
-                    (Guid v) => v),
+                    bool (Guid v1, Guid v2) => v1 == v2,
+                    int (Guid v) => ((object)v).GetHashCode(),
+                    Guid (Guid v) => v),
                 providerValueComparer: new ValueComparer<Guid>(
-                    (Guid v1, Guid v2) => v1 == v2,
-                    (Guid v) => v.GetHashCode(),
-                    (Guid v) => v));
+                    bool (Guid v1, Guid v2) => v1 == v2,
+                    int (Guid v) => ((object)v).GetHashCode(),
+                    Guid (Guid v) => v));
+            alternateId.SetCurrentValueComparer(new EntryCurrentValueComparer<Guid>(alternateId));
             alternateId.AddAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.None);
 
             var enum1 = runtimeEntityType.AddProperty(
@@ -93,27 +143,48 @@ namespace TestNamespace
                 typeof(CompiledModelTestBase.AnEnum),
                 propertyInfo: typeof(CompiledModelTestBase.PrincipalBase).GetProperty("Enum1", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 fieldInfo: typeof(CompiledModelTestBase.PrincipalBase).GetField("<Enum1>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly));
+            enum1.SetGetter(
+                CompiledModelTestBase.AnEnum (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.Enum1(entity),
+                bool (CompiledModelTestBase.PrincipalBase entity) => object.Equals(((object)(PrincipalBaseUnsafeAccessors.Enum1(entity))), ((object)((CompiledModelTestBase.AnEnum)0L))),
+                CompiledModelTestBase.AnEnum (CompiledModelTestBase.PrincipalBase instance) => PrincipalBaseUnsafeAccessors.Enum1(instance),
+                bool (CompiledModelTestBase.PrincipalBase instance) => object.Equals(((object)(PrincipalBaseUnsafeAccessors.Enum1(instance))), ((object)((CompiledModelTestBase.AnEnum)0L))));
+            enum1.SetSetter(
+                (CompiledModelTestBase.PrincipalBase entity, CompiledModelTestBase.AnEnum value) => PrincipalBaseUnsafeAccessors.Enum1(entity) = value);
+            enum1.SetMaterializationSetter(
+                (CompiledModelTestBase.PrincipalBase entity, CompiledModelTestBase.AnEnum value) => PrincipalBaseUnsafeAccessors.Enum1(entity) = value);
+            enum1.SetAccessors(
+                CompiledModelTestBase.AnEnum (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.Enum1(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                CompiledModelTestBase.AnEnum (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.Enum1(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                CompiledModelTestBase.AnEnum (InternalEntityEntry entry) => entry.ReadOriginalValue<CompiledModelTestBase.AnEnum>(enum1, 2),
+                CompiledModelTestBase.AnEnum (InternalEntityEntry entry) => entry.GetCurrentValue<CompiledModelTestBase.AnEnum>(enum1),
+                object (ValueBuffer valueBuffer) => valueBuffer[2]);
+            enum1.SetPropertyIndexes(
+                index: 2,
+                originalValueIndex: 2,
+                shadowIndex: -1,
+                relationshipIndex: -1,
+                storeGenerationIndex: -1);
             enum1.TypeMapping = MySqlIntTypeMapping.Default.Clone(
                 comparer: new ValueComparer<CompiledModelTestBase.AnEnum>(
-                    (CompiledModelTestBase.AnEnum v1, CompiledModelTestBase.AnEnum v2) => object.Equals((object)v1, (object)v2),
-                    (CompiledModelTestBase.AnEnum v) => v.GetHashCode(),
-                    (CompiledModelTestBase.AnEnum v) => v),
+                    bool (CompiledModelTestBase.AnEnum v1, CompiledModelTestBase.AnEnum v2) => object.Equals(((object)(v1)), ((object)(v2))),
+                    int (CompiledModelTestBase.AnEnum v) => ((object)v).GetHashCode(),
+                    CompiledModelTestBase.AnEnum (CompiledModelTestBase.AnEnum v) => v),
                 keyComparer: new ValueComparer<CompiledModelTestBase.AnEnum>(
-                    (CompiledModelTestBase.AnEnum v1, CompiledModelTestBase.AnEnum v2) => object.Equals((object)v1, (object)v2),
-                    (CompiledModelTestBase.AnEnum v) => v.GetHashCode(),
-                    (CompiledModelTestBase.AnEnum v) => v),
+                    bool (CompiledModelTestBase.AnEnum v1, CompiledModelTestBase.AnEnum v2) => object.Equals(((object)(v1)), ((object)(v2))),
+                    int (CompiledModelTestBase.AnEnum v) => ((object)v).GetHashCode(),
+                    CompiledModelTestBase.AnEnum (CompiledModelTestBase.AnEnum v) => v),
                 providerValueComparer: new ValueComparer<int>(
-                    (int v1, int v2) => v1 == v2,
-                    (int v) => v,
-                    (int v) => v),
+                    bool (int v1, int v2) => v1 == v2,
+                    int (int v) => v,
+                    int (int v) => v),
                 converter: new ValueConverter<CompiledModelTestBase.AnEnum, int>(
-                    (CompiledModelTestBase.AnEnum value) => (int)value,
-                    (int value) => (CompiledModelTestBase.AnEnum)value),
+                    int (CompiledModelTestBase.AnEnum value) => ((int)(value)),
+                    CompiledModelTestBase.AnEnum (int value) => ((CompiledModelTestBase.AnEnum)(value))),
                 jsonValueReaderWriter: new JsonConvertedValueReaderWriter<CompiledModelTestBase.AnEnum, int>(
                     JsonInt32ReaderWriter.Instance,
                     new ValueConverter<CompiledModelTestBase.AnEnum, int>(
-                        (CompiledModelTestBase.AnEnum value) => (int)value,
-                        (int value) => (CompiledModelTestBase.AnEnum)value)));
+                        int (CompiledModelTestBase.AnEnum value) => ((int)(value)),
+                        CompiledModelTestBase.AnEnum (int value) => ((CompiledModelTestBase.AnEnum)(value)))));
             enum1.SetSentinelFromProviderValue(0);
             enum1.AddAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.None);
 
@@ -123,27 +194,50 @@ namespace TestNamespace
                 propertyInfo: typeof(CompiledModelTestBase.PrincipalBase).GetProperty("Enum2", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 fieldInfo: typeof(CompiledModelTestBase.PrincipalBase).GetField("<Enum2>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 nullable: true);
+            enum2.SetGetter(
+                CompiledModelTestBase.AnEnum? (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.Enum2(entity),
+                bool (CompiledModelTestBase.PrincipalBase entity) => !(PrincipalBaseUnsafeAccessors.Enum2(entity).HasValue),
+                CompiledModelTestBase.AnEnum? (CompiledModelTestBase.PrincipalBase instance) => PrincipalBaseUnsafeAccessors.Enum2(instance),
+                bool (CompiledModelTestBase.PrincipalBase instance) => !(PrincipalBaseUnsafeAccessors.Enum2(instance).HasValue));
+            enum2.SetSetter(
+                (CompiledModelTestBase.PrincipalBase entity, CompiledModelTestBase.AnEnum? value) => PrincipalBaseUnsafeAccessors.Enum2(entity) = (value == null ? value : ((CompiledModelTestBase.AnEnum? )(((CompiledModelTestBase.AnEnum)(value))))));
+            enum2.SetMaterializationSetter(
+                (CompiledModelTestBase.PrincipalBase entity, CompiledModelTestBase.AnEnum? value) => PrincipalBaseUnsafeAccessors.Enum2(entity) = (value == null ? value : ((CompiledModelTestBase.AnEnum? )(((CompiledModelTestBase.AnEnum)(value))))));
+            enum2.SetAccessors(
+                CompiledModelTestBase.AnEnum? (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.Enum2(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                CompiledModelTestBase.AnEnum? (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.Enum2(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                CompiledModelTestBase.AnEnum? (InternalEntityEntry entry) => entry.ReadOriginalValue<CompiledModelTestBase.AnEnum?>(enum2, 3),
+                CompiledModelTestBase.AnEnum? (InternalEntityEntry entry) => entry.GetCurrentValue<CompiledModelTestBase.AnEnum?>(enum2),
+                object (ValueBuffer valueBuffer) => valueBuffer[3]);
+            enum2.SetPropertyIndexes(
+                index: 3,
+                originalValueIndex: 3,
+                shadowIndex: -1,
+                relationshipIndex: -1,
+                storeGenerationIndex: -1);
             enum2.TypeMapping = MySqlIntTypeMapping.Default.Clone(
-                comparer: new ValueComparer<CompiledModelTestBase.AnEnum?>(
-                    (Nullable<CompiledModelTestBase.AnEnum> v1, Nullable<CompiledModelTestBase.AnEnum> v2) => v1.HasValue && v2.HasValue && object.Equals((object)(CompiledModelTestBase.AnEnum)v1, (object)(CompiledModelTestBase.AnEnum)v2) || !v1.HasValue && !v2.HasValue,
-                    (Nullable<CompiledModelTestBase.AnEnum> v) => v.HasValue ? ((CompiledModelTestBase.AnEnum)v).GetHashCode() : 0,
-                    (Nullable<CompiledModelTestBase.AnEnum> v) => v.HasValue ? (Nullable<CompiledModelTestBase.AnEnum>)(CompiledModelTestBase.AnEnum)v : default(Nullable<CompiledModelTestBase.AnEnum>)),
-                keyComparer: new ValueComparer<CompiledModelTestBase.AnEnum?>(
-                    (Nullable<CompiledModelTestBase.AnEnum> v1, Nullable<CompiledModelTestBase.AnEnum> v2) => v1.HasValue && v2.HasValue && object.Equals((object)(CompiledModelTestBase.AnEnum)v1, (object)(CompiledModelTestBase.AnEnum)v2) || !v1.HasValue && !v2.HasValue,
-                    (Nullable<CompiledModelTestBase.AnEnum> v) => v.HasValue ? ((CompiledModelTestBase.AnEnum)v).GetHashCode() : 0,
-                    (Nullable<CompiledModelTestBase.AnEnum> v) => v.HasValue ? (Nullable<CompiledModelTestBase.AnEnum>)(CompiledModelTestBase.AnEnum)v : default(Nullable<CompiledModelTestBase.AnEnum>)),
+                comparer: new ValueComparer<CompiledModelTestBase.AnEnum>(
+                    bool (CompiledModelTestBase.AnEnum v1, CompiledModelTestBase.AnEnum v2) => object.Equals(((object)(v1)), ((object)(v2))),
+                    int (CompiledModelTestBase.AnEnum v) => ((object)v).GetHashCode(),
+                    CompiledModelTestBase.AnEnum (CompiledModelTestBase.AnEnum v) => v),
+                keyComparer: new ValueComparer<CompiledModelTestBase.AnEnum>(
+                    bool (CompiledModelTestBase.AnEnum v1, CompiledModelTestBase.AnEnum v2) => object.Equals(((object)(v1)), ((object)(v2))),
+                    int (CompiledModelTestBase.AnEnum v) => ((object)v).GetHashCode(),
+                    CompiledModelTestBase.AnEnum (CompiledModelTestBase.AnEnum v) => v),
                 providerValueComparer: new ValueComparer<int>(
-                    (int v1, int v2) => v1 == v2,
-                    (int v) => v,
-                    (int v) => v),
+                    bool (int v1, int v2) => v1 == v2,
+                    int (int v) => v,
+                    int (int v) => v),
                 converter: new ValueConverter<CompiledModelTestBase.AnEnum, int>(
-                    (CompiledModelTestBase.AnEnum value) => (int)value,
-                    (int value) => (CompiledModelTestBase.AnEnum)value),
+                    int (CompiledModelTestBase.AnEnum value) => ((int)(value)),
+                    CompiledModelTestBase.AnEnum (int value) => ((CompiledModelTestBase.AnEnum)(value))),
                 jsonValueReaderWriter: new JsonConvertedValueReaderWriter<CompiledModelTestBase.AnEnum, int>(
                     JsonInt32ReaderWriter.Instance,
                     new ValueConverter<CompiledModelTestBase.AnEnum, int>(
-                        (CompiledModelTestBase.AnEnum value) => (int)value,
-                        (int value) => (CompiledModelTestBase.AnEnum)value)));
+                        int (CompiledModelTestBase.AnEnum value) => ((int)(value)),
+                        CompiledModelTestBase.AnEnum (int value) => ((CompiledModelTestBase.AnEnum)(value)))));
+            enum2.SetComparer(new NullableValueComparer<CompiledModelTestBase.AnEnum>(enum2.TypeMapping.Comparer));
+            enum2.SetKeyComparer(new NullableValueComparer<CompiledModelTestBase.AnEnum>(enum2.TypeMapping.KeyComparer));
             enum2.AddAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.None);
 
             var flagsEnum1 = runtimeEntityType.AddProperty(
@@ -151,56 +245,99 @@ namespace TestNamespace
                 typeof(CompiledModelTestBase.AFlagsEnum),
                 propertyInfo: typeof(CompiledModelTestBase.PrincipalBase).GetProperty("FlagsEnum1", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 fieldInfo: typeof(CompiledModelTestBase.PrincipalBase).GetField("<FlagsEnum1>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly));
+            flagsEnum1.SetGetter(
+                CompiledModelTestBase.AFlagsEnum (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.FlagsEnum1(entity),
+                bool (CompiledModelTestBase.PrincipalBase entity) => object.Equals(((object)(PrincipalBaseUnsafeAccessors.FlagsEnum1(entity))), ((object)((CompiledModelTestBase.AFlagsEnum)0L))),
+                CompiledModelTestBase.AFlagsEnum (CompiledModelTestBase.PrincipalBase instance) => PrincipalBaseUnsafeAccessors.FlagsEnum1(instance),
+                bool (CompiledModelTestBase.PrincipalBase instance) => object.Equals(((object)(PrincipalBaseUnsafeAccessors.FlagsEnum1(instance))), ((object)((CompiledModelTestBase.AFlagsEnum)0L))));
+            flagsEnum1.SetSetter(
+                (CompiledModelTestBase.PrincipalBase entity, CompiledModelTestBase.AFlagsEnum value) => PrincipalBaseUnsafeAccessors.FlagsEnum1(entity) = value);
+            flagsEnum1.SetMaterializationSetter(
+                (CompiledModelTestBase.PrincipalBase entity, CompiledModelTestBase.AFlagsEnum value) => PrincipalBaseUnsafeAccessors.FlagsEnum1(entity) = value);
+            flagsEnum1.SetAccessors(
+                CompiledModelTestBase.AFlagsEnum (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.FlagsEnum1(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                CompiledModelTestBase.AFlagsEnum (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.FlagsEnum1(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                CompiledModelTestBase.AFlagsEnum (InternalEntityEntry entry) => entry.ReadOriginalValue<CompiledModelTestBase.AFlagsEnum>(flagsEnum1, 4),
+                CompiledModelTestBase.AFlagsEnum (InternalEntityEntry entry) => entry.GetCurrentValue<CompiledModelTestBase.AFlagsEnum>(flagsEnum1),
+                object (ValueBuffer valueBuffer) => valueBuffer[4]);
+            flagsEnum1.SetPropertyIndexes(
+                index: 4,
+                originalValueIndex: 4,
+                shadowIndex: -1,
+                relationshipIndex: -1,
+                storeGenerationIndex: -1);
             flagsEnum1.TypeMapping = MySqlIntTypeMapping.Default.Clone(
                 comparer: new ValueComparer<CompiledModelTestBase.AFlagsEnum>(
-                    (CompiledModelTestBase.AFlagsEnum v1, CompiledModelTestBase.AFlagsEnum v2) => object.Equals((object)v1, (object)v2),
-                    (CompiledModelTestBase.AFlagsEnum v) => v.GetHashCode(),
-                    (CompiledModelTestBase.AFlagsEnum v) => v),
+                    bool (CompiledModelTestBase.AFlagsEnum v1, CompiledModelTestBase.AFlagsEnum v2) => object.Equals(((object)(v1)), ((object)(v2))),
+                    int (CompiledModelTestBase.AFlagsEnum v) => ((object)v).GetHashCode(),
+                    CompiledModelTestBase.AFlagsEnum (CompiledModelTestBase.AFlagsEnum v) => v),
                 keyComparer: new ValueComparer<CompiledModelTestBase.AFlagsEnum>(
-                    (CompiledModelTestBase.AFlagsEnum v1, CompiledModelTestBase.AFlagsEnum v2) => object.Equals((object)v1, (object)v2),
-                    (CompiledModelTestBase.AFlagsEnum v) => v.GetHashCode(),
-                    (CompiledModelTestBase.AFlagsEnum v) => v),
+                    bool (CompiledModelTestBase.AFlagsEnum v1, CompiledModelTestBase.AFlagsEnum v2) => object.Equals(((object)(v1)), ((object)(v2))),
+                    int (CompiledModelTestBase.AFlagsEnum v) => ((object)v).GetHashCode(),
+                    CompiledModelTestBase.AFlagsEnum (CompiledModelTestBase.AFlagsEnum v) => v),
                 providerValueComparer: new ValueComparer<int>(
-                    (int v1, int v2) => v1 == v2,
-                    (int v) => v,
-                    (int v) => v),
+                    bool (int v1, int v2) => v1 == v2,
+                    int (int v) => v,
+                    int (int v) => v),
                 converter: new ValueConverter<CompiledModelTestBase.AFlagsEnum, int>(
-                    (CompiledModelTestBase.AFlagsEnum value) => (int)value,
-                    (int value) => (CompiledModelTestBase.AFlagsEnum)value),
+                    int (CompiledModelTestBase.AFlagsEnum value) => ((int)(value)),
+                    CompiledModelTestBase.AFlagsEnum (int value) => ((CompiledModelTestBase.AFlagsEnum)(value))),
                 jsonValueReaderWriter: new JsonConvertedValueReaderWriter<CompiledModelTestBase.AFlagsEnum, int>(
                     JsonInt32ReaderWriter.Instance,
                     new ValueConverter<CompiledModelTestBase.AFlagsEnum, int>(
-                        (CompiledModelTestBase.AFlagsEnum value) => (int)value,
-                        (int value) => (CompiledModelTestBase.AFlagsEnum)value)));
+                        int (CompiledModelTestBase.AFlagsEnum value) => ((int)(value)),
+                        CompiledModelTestBase.AFlagsEnum (int value) => ((CompiledModelTestBase.AFlagsEnum)(value)))));
             flagsEnum1.SetSentinelFromProviderValue(0);
             flagsEnum1.AddAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.None);
 
             var flagsEnum2 = runtimeEntityType.AddProperty(
                 "FlagsEnum2",
                 typeof(CompiledModelTestBase.AFlagsEnum),
-                propertyInfo: typeof(CompiledModelTestBase.PrincipalBase).GetProperty("FlagsEnum2", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
-                fieldInfo: typeof(CompiledModelTestBase.PrincipalBase).GetField("<FlagsEnum2>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly));
+                propertyInfo: typeof(CompiledModelTestBase.PrincipalBase).GetProperty("FlagsEnum2", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
+                fieldInfo: typeof(CompiledModelTestBase.PrincipalBase).GetField("<FlagsEnum2>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
+                propertyAccessMode: PropertyAccessMode.Property);
+            flagsEnum2.SetGetter(
+                CompiledModelTestBase.AFlagsEnum (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.Get_FlagsEnum2(entity),
+                bool (CompiledModelTestBase.PrincipalBase entity) => object.Equals(((object)(PrincipalBaseUnsafeAccessors.Get_FlagsEnum2(entity))), ((object)(CompiledModelTestBase.AFlagsEnum.B | CompiledModelTestBase.AFlagsEnum.C))),
+                CompiledModelTestBase.AFlagsEnum (CompiledModelTestBase.PrincipalBase instance) => PrincipalBaseUnsafeAccessors.Get_FlagsEnum2(instance),
+                bool (CompiledModelTestBase.PrincipalBase instance) => object.Equals(((object)(PrincipalBaseUnsafeAccessors.Get_FlagsEnum2(instance))), ((object)(CompiledModelTestBase.AFlagsEnum.B | CompiledModelTestBase.AFlagsEnum.C))));
+            flagsEnum2.SetSetter(
+                (CompiledModelTestBase.PrincipalBase entity, CompiledModelTestBase.AFlagsEnum value) => PrincipalBaseUnsafeAccessors.Set_FlagsEnum2(entity, value));
+            flagsEnum2.SetMaterializationSetter(
+                (CompiledModelTestBase.PrincipalBase entity, CompiledModelTestBase.AFlagsEnum value) => PrincipalBaseUnsafeAccessors.Set_FlagsEnum2(entity, value));
+            flagsEnum2.SetAccessors(
+                CompiledModelTestBase.AFlagsEnum (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.Get_FlagsEnum2(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                CompiledModelTestBase.AFlagsEnum (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.Get_FlagsEnum2(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                CompiledModelTestBase.AFlagsEnum (InternalEntityEntry entry) => entry.ReadOriginalValue<CompiledModelTestBase.AFlagsEnum>(flagsEnum2, 5),
+                CompiledModelTestBase.AFlagsEnum (InternalEntityEntry entry) => entry.GetCurrentValue<CompiledModelTestBase.AFlagsEnum>(flagsEnum2),
+                object (ValueBuffer valueBuffer) => valueBuffer[5]);
+            flagsEnum2.SetPropertyIndexes(
+                index: 5,
+                originalValueIndex: 5,
+                shadowIndex: -1,
+                relationshipIndex: -1,
+                storeGenerationIndex: -1);
             flagsEnum2.TypeMapping = MySqlIntTypeMapping.Default.Clone(
                 comparer: new ValueComparer<CompiledModelTestBase.AFlagsEnum>(
-                    (CompiledModelTestBase.AFlagsEnum v1, CompiledModelTestBase.AFlagsEnum v2) => object.Equals((object)v1, (object)v2),
-                    (CompiledModelTestBase.AFlagsEnum v) => v.GetHashCode(),
-                    (CompiledModelTestBase.AFlagsEnum v) => v),
+                    bool (CompiledModelTestBase.AFlagsEnum v1, CompiledModelTestBase.AFlagsEnum v2) => object.Equals(((object)(v1)), ((object)(v2))),
+                    int (CompiledModelTestBase.AFlagsEnum v) => ((object)v).GetHashCode(),
+                    CompiledModelTestBase.AFlagsEnum (CompiledModelTestBase.AFlagsEnum v) => v),
                 keyComparer: new ValueComparer<CompiledModelTestBase.AFlagsEnum>(
-                    (CompiledModelTestBase.AFlagsEnum v1, CompiledModelTestBase.AFlagsEnum v2) => object.Equals((object)v1, (object)v2),
-                    (CompiledModelTestBase.AFlagsEnum v) => v.GetHashCode(),
-                    (CompiledModelTestBase.AFlagsEnum v) => v),
+                    bool (CompiledModelTestBase.AFlagsEnum v1, CompiledModelTestBase.AFlagsEnum v2) => object.Equals(((object)(v1)), ((object)(v2))),
+                    int (CompiledModelTestBase.AFlagsEnum v) => ((object)v).GetHashCode(),
+                    CompiledModelTestBase.AFlagsEnum (CompiledModelTestBase.AFlagsEnum v) => v),
                 providerValueComparer: new ValueComparer<int>(
-                    (int v1, int v2) => v1 == v2,
-                    (int v) => v,
-                    (int v) => v),
+                    bool (int v1, int v2) => v1 == v2,
+                    int (int v) => v,
+                    int (int v) => v),
                 converter: new ValueConverter<CompiledModelTestBase.AFlagsEnum, int>(
-                    (CompiledModelTestBase.AFlagsEnum value) => (int)value,
-                    (int value) => (CompiledModelTestBase.AFlagsEnum)value),
+                    int (CompiledModelTestBase.AFlagsEnum value) => ((int)(value)),
+                    CompiledModelTestBase.AFlagsEnum (int value) => ((CompiledModelTestBase.AFlagsEnum)(value))),
                 jsonValueReaderWriter: new JsonConvertedValueReaderWriter<CompiledModelTestBase.AFlagsEnum, int>(
                     JsonInt32ReaderWriter.Instance,
                     new ValueConverter<CompiledModelTestBase.AFlagsEnum, int>(
-                        (CompiledModelTestBase.AFlagsEnum value) => (int)value,
-                        (int value) => (CompiledModelTestBase.AFlagsEnum)value)));
+                        int (CompiledModelTestBase.AFlagsEnum value) => ((int)(value)),
+                        CompiledModelTestBase.AFlagsEnum (int value) => ((CompiledModelTestBase.AFlagsEnum)(value)))));
             flagsEnum2.SetSentinelFromProviderValue(6);
             flagsEnum2.AddAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.None);
 
@@ -212,6 +349,18 @@ namespace TestNamespace
                 valueConverter: new CastingConverter<Point, Point>(),
                 valueComparer: new CompiledModelTestBase.CustomValueComparer<Point>(),
                 providerValueComparer: new CompiledModelTestBase.CustomValueComparer<Point>());
+            point.SetAccessors(
+                Point (InternalEntityEntry entry) => (entry.FlaggedAsStoreGenerated(6) ? entry.ReadStoreGeneratedValue<Point>(2) : (entry.FlaggedAsTemporary(6) && entry.ReadShadowValue<Point>(0) == null ? entry.ReadTemporaryValue<Point>(2) : entry.ReadShadowValue<Point>(0))),
+                Point (InternalEntityEntry entry) => entry.ReadShadowValue<Point>(0),
+                Point (InternalEntityEntry entry) => entry.ReadOriginalValue<Point>(point, 6),
+                Point (InternalEntityEntry entry) => entry.GetCurrentValue<Point>(point),
+                object (ValueBuffer valueBuffer) => valueBuffer[6]);
+            point.SetPropertyIndexes(
+                index: 6,
+                originalValueIndex: 6,
+                shadowIndex: 0,
+                relationshipIndex: -1,
+                storeGenerationIndex: 2);
             point.TypeMapping = null;
             point.AddAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.None);
             point.AddAnnotation("Relational:ColumnType", "geometry");
@@ -223,58 +372,79 @@ namespace TestNamespace
                 propertyInfo: typeof(CompiledModelTestBase.PrincipalBase).GetProperty("RefTypeArray", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 fieldInfo: typeof(CompiledModelTestBase.PrincipalBase).GetField("<RefTypeArray>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 nullable: true);
+            refTypeArray.SetGetter(
+                IPAddress[] (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.RefTypeArray(entity),
+                bool (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.RefTypeArray(entity) == null,
+                IPAddress[] (CompiledModelTestBase.PrincipalBase instance) => PrincipalBaseUnsafeAccessors.RefTypeArray(instance),
+                bool (CompiledModelTestBase.PrincipalBase instance) => PrincipalBaseUnsafeAccessors.RefTypeArray(instance) == null);
+            refTypeArray.SetSetter(
+                (CompiledModelTestBase.PrincipalBase entity, IPAddress[] value) => PrincipalBaseUnsafeAccessors.RefTypeArray(entity) = value);
+            refTypeArray.SetMaterializationSetter(
+                (CompiledModelTestBase.PrincipalBase entity, IPAddress[] value) => PrincipalBaseUnsafeAccessors.RefTypeArray(entity) = value);
+            refTypeArray.SetAccessors(
+                IPAddress[] (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.RefTypeArray(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                IPAddress[] (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.RefTypeArray(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                IPAddress[] (InternalEntityEntry entry) => entry.ReadOriginalValue<IPAddress[]>(refTypeArray, 7),
+                IPAddress[] (InternalEntityEntry entry) => entry.GetCurrentValue<IPAddress[]>(refTypeArray),
+                object (ValueBuffer valueBuffer) => valueBuffer[7]);
+            refTypeArray.SetPropertyIndexes(
+                index: 7,
+                originalValueIndex: 7,
+                shadowIndex: -1,
+                relationshipIndex: -1,
+                storeGenerationIndex: -1);
             refTypeArray.TypeMapping = MySqlStringTypeMapping.Default.Clone(
-                comparer: new ListComparer<IPAddress>(new ValueComparer<IPAddress>(
-                    (IPAddress v1, IPAddress v2) => v1 == null && v2 == null || v1 != null && v2 != null && v1.Equals(v2),
-                    (IPAddress v) => v.GetHashCode(),
-                    (IPAddress v) => v)),
-                keyComparer: new ListComparer<IPAddress>(new ValueComparer<IPAddress>(
-                    (IPAddress v1, IPAddress v2) => v1 == null && v2 == null || v1 != null && v2 != null && v1.Equals(v2),
-                    (IPAddress v) => v.GetHashCode(),
-                    (IPAddress v) => v)),
+                comparer: new ListOfReferenceTypesComparer<IPAddress[], IPAddress>(new ValueComparer<IPAddress>(
+                    bool (IPAddress v1, IPAddress v2) => v1 == null && v2 == null || v1 != null && v2 != null && v1.Equals(v2),
+                    int (IPAddress v) => ((object)v).GetHashCode(),
+                    IPAddress (IPAddress v) => v)),
+                keyComparer: new ListOfReferenceTypesComparer<IPAddress[], IPAddress>(new ValueComparer<IPAddress>(
+                    bool (IPAddress v1, IPAddress v2) => v1 == null && v2 == null || v1 != null && v2 != null && v1.Equals(v2),
+                    int (IPAddress v) => ((object)v).GetHashCode(),
+                    IPAddress (IPAddress v) => v)),
                 providerValueComparer: new ValueComparer<string>(
-                    (string v1, string v2) => v1 == v2,
-                    (string v) => v.GetHashCode(),
-                    (string v) => v),
+                    bool (string v1, string v2) => v1 == v2,
+                    int (string v) => ((object)v).GetHashCode(),
+                    string (string v) => v),
                 mappingInfo: new RelationalTypeMappingInfo(
                     storeTypeName: "longtext"),
-                converter: new CollectionToJsonStringConverter<IPAddress>(new JsonCollectionReaderWriter<IPAddress[], IPAddress[], IPAddress>(
+                converter: new CollectionToJsonStringConverter<IPAddress>(new JsonCollectionOfReferencesReaderWriter<IPAddress[], IPAddress>(
                     new JsonConvertedValueReaderWriter<IPAddress, string>(
                         JsonStringReaderWriter.Instance,
                         new ValueConverter<IPAddress, string>(
-                            (IPAddress v) => v.ToString(),
-                            (string v) => IPAddress.Parse(v))))),
+                            string (IPAddress v) => ((object)v).ToString(),
+                            IPAddress (string v) => IPAddress.Parse(v))))),
                 storeTypePostfix: StoreTypePostfix.None,
-                jsonValueReaderWriter: new JsonCollectionReaderWriter<IPAddress[], IPAddress[], IPAddress>(
+                jsonValueReaderWriter: new JsonCollectionOfReferencesReaderWriter<IPAddress[], IPAddress>(
                     new JsonConvertedValueReaderWriter<IPAddress, string>(
                         JsonStringReaderWriter.Instance,
                         new ValueConverter<IPAddress, string>(
-                            (IPAddress v) => v.ToString(),
-                            (string v) => IPAddress.Parse(v)))),
+                            string (IPAddress v) => ((object)v).ToString(),
+                            IPAddress (string v) => IPAddress.Parse(v)))),
                 elementMapping: MySqlStringTypeMapping.Default.Clone(
                     comparer: new ValueComparer<IPAddress>(
-                        (IPAddress v1, IPAddress v2) => v1 == null && v2 == null || v1 != null && v2 != null && v1.Equals(v2),
-                        (IPAddress v) => v.GetHashCode(),
-                        (IPAddress v) => v),
+                        bool (IPAddress v1, IPAddress v2) => v1 == null && v2 == null || v1 != null && v2 != null && v1.Equals(v2),
+                        int (IPAddress v) => ((object)v).GetHashCode(),
+                        IPAddress (IPAddress v) => v),
                     keyComparer: new ValueComparer<IPAddress>(
-                        (IPAddress v1, IPAddress v2) => v1 == null && v2 == null || v1 != null && v2 != null && v1.Equals(v2),
-                        (IPAddress v) => v.GetHashCode(),
-                        (IPAddress v) => v),
+                        bool (IPAddress v1, IPAddress v2) => v1 == null && v2 == null || v1 != null && v2 != null && v1.Equals(v2),
+                        int (IPAddress v) => ((object)v).GetHashCode(),
+                        IPAddress (IPAddress v) => v),
                     providerValueComparer: new ValueComparer<string>(
-                        (string v1, string v2) => v1 == v2,
-                        (string v) => v.GetHashCode(),
-                        (string v) => v),
+                        bool (string v1, string v2) => v1 == v2,
+                        int (string v) => ((object)v).GetHashCode(),
+                        string (string v) => v),
                     mappingInfo: new RelationalTypeMappingInfo(
                         storeTypeName: "varchar(45)",
                         size: 45),
                     converter: new ValueConverter<IPAddress, string>(
-                        (IPAddress v) => v.ToString(),
-                        (string v) => IPAddress.Parse(v)),
+                        string (IPAddress v) => ((object)v).ToString(),
+                        IPAddress (string v) => IPAddress.Parse(v)),
                     jsonValueReaderWriter: new JsonConvertedValueReaderWriter<IPAddress, string>(
                         JsonStringReaderWriter.Instance,
                         new ValueConverter<IPAddress, string>(
-                            (IPAddress v) => v.ToString(),
-                            (string v) => IPAddress.Parse(v)))));
+                            string (IPAddress v) => ((object)v).ToString(),
+                            IPAddress (string v) => IPAddress.Parse(v)))));
             refTypeArray.AddAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.None);
 
             var refTypeEnumerable = runtimeEntityType.AddProperty(
@@ -283,39 +453,60 @@ namespace TestNamespace
                 propertyInfo: typeof(CompiledModelTestBase.PrincipalBase).GetProperty("RefTypeEnumerable", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 fieldInfo: typeof(CompiledModelTestBase.PrincipalBase).GetField("<RefTypeEnumerable>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 nullable: true);
+            refTypeEnumerable.SetGetter(
+                IEnumerable<string> (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.RefTypeEnumerable(entity),
+                bool (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.RefTypeEnumerable(entity) == null,
+                IEnumerable<string> (CompiledModelTestBase.PrincipalBase instance) => PrincipalBaseUnsafeAccessors.RefTypeEnumerable(instance),
+                bool (CompiledModelTestBase.PrincipalBase instance) => PrincipalBaseUnsafeAccessors.RefTypeEnumerable(instance) == null);
+            refTypeEnumerable.SetSetter(
+                (CompiledModelTestBase.PrincipalBase entity, IEnumerable<string> value) => PrincipalBaseUnsafeAccessors.RefTypeEnumerable(entity) = value);
+            refTypeEnumerable.SetMaterializationSetter(
+                (CompiledModelTestBase.PrincipalBase entity, IEnumerable<string> value) => PrincipalBaseUnsafeAccessors.RefTypeEnumerable(entity) = value);
+            refTypeEnumerable.SetAccessors(
+                IEnumerable<string> (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.RefTypeEnumerable(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                IEnumerable<string> (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.RefTypeEnumerable(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                IEnumerable<string> (InternalEntityEntry entry) => entry.ReadOriginalValue<IEnumerable<string>>(refTypeEnumerable, 8),
+                IEnumerable<string> (InternalEntityEntry entry) => entry.GetCurrentValue<IEnumerable<string>>(refTypeEnumerable),
+                object (ValueBuffer valueBuffer) => valueBuffer[8]);
+            refTypeEnumerable.SetPropertyIndexes(
+                index: 8,
+                originalValueIndex: 8,
+                shadowIndex: -1,
+                relationshipIndex: -1,
+                storeGenerationIndex: -1);
             refTypeEnumerable.TypeMapping = MySqlStringTypeMapping.Default.Clone(
-                comparer: new ListComparer<string>(new ValueComparer<string>(
-                    (string v1, string v2) => v1 == v2,
-                    (string v) => v.GetHashCode(),
-                    (string v) => v)),
-                keyComparer: new ListComparer<string>(new ValueComparer<string>(
-                    (string v1, string v2) => v1 == v2,
-                    (string v) => v.GetHashCode(),
-                    (string v) => v)),
+                comparer: new ListOfReferenceTypesComparer<List<string>, string>(new ValueComparer<string>(
+                    bool (string v1, string v2) => v1 == v2,
+                    int (string v) => ((object)v).GetHashCode(),
+                    string (string v) => v)),
+                keyComparer: new ListOfReferenceTypesComparer<List<string>, string>(new ValueComparer<string>(
+                    bool (string v1, string v2) => v1 == v2,
+                    int (string v) => ((object)v).GetHashCode(),
+                    string (string v) => v)),
                 providerValueComparer: new ValueComparer<string>(
-                    (string v1, string v2) => v1 == v2,
-                    (string v) => v.GetHashCode(),
-                    (string v) => v),
+                    bool (string v1, string v2) => v1 == v2,
+                    int (string v) => ((object)v).GetHashCode(),
+                    string (string v) => v),
                 mappingInfo: new RelationalTypeMappingInfo(
                     storeTypeName: "longtext"),
-                converter: new CollectionToJsonStringConverter<string>(new JsonCollectionReaderWriter<IEnumerable<string>, List<string>, string>(
+                converter: new CollectionToJsonStringConverter<string>(new JsonCollectionOfReferencesReaderWriter<List<string>, string>(
                     JsonStringReaderWriter.Instance)),
                 storeTypePostfix: StoreTypePostfix.None,
-                jsonValueReaderWriter: new JsonCollectionReaderWriter<IEnumerable<string>, List<string>, string>(
+                jsonValueReaderWriter: new JsonCollectionOfReferencesReaderWriter<List<string>, string>(
                     JsonStringReaderWriter.Instance),
                 elementMapping: MySqlStringTypeMapping.Default.Clone(
                     comparer: new ValueComparer<string>(
-                        (string v1, string v2) => v1 == v2,
-                        (string v) => v.GetHashCode(),
-                        (string v) => v),
+                        bool (string v1, string v2) => v1 == v2,
+                        int (string v) => ((object)v).GetHashCode(),
+                        string (string v) => v),
                     keyComparer: new ValueComparer<string>(
-                        (string v1, string v2) => v1 == v2,
-                        (string v) => v.GetHashCode(),
-                        (string v) => v),
+                        bool (string v1, string v2) => v1 == v2,
+                        int (string v) => ((object)v).GetHashCode(),
+                        string (string v) => v),
                     providerValueComparer: new ValueComparer<string>(
-                        (string v1, string v2) => v1 == v2,
-                        (string v) => v.GetHashCode(),
-                        (string v) => v),
+                        bool (string v1, string v2) => v1 == v2,
+                        int (string v) => ((object)v).GetHashCode(),
+                        string (string v) => v),
                     mappingInfo: new RelationalTypeMappingInfo(
                         storeTypeName: "longtext"),
                     storeTypePostfix: StoreTypePostfix.None));
@@ -327,39 +518,60 @@ namespace TestNamespace
                 propertyInfo: typeof(CompiledModelTestBase.PrincipalBase).GetProperty("RefTypeIList", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 fieldInfo: typeof(CompiledModelTestBase.PrincipalBase).GetField("<RefTypeIList>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 nullable: true);
+            refTypeIList.SetGetter(
+                IList<string> (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.RefTypeIList(entity),
+                bool (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.RefTypeIList(entity) == null,
+                IList<string> (CompiledModelTestBase.PrincipalBase instance) => PrincipalBaseUnsafeAccessors.RefTypeIList(instance),
+                bool (CompiledModelTestBase.PrincipalBase instance) => PrincipalBaseUnsafeAccessors.RefTypeIList(instance) == null);
+            refTypeIList.SetSetter(
+                (CompiledModelTestBase.PrincipalBase entity, IList<string> value) => PrincipalBaseUnsafeAccessors.RefTypeIList(entity) = value);
+            refTypeIList.SetMaterializationSetter(
+                (CompiledModelTestBase.PrincipalBase entity, IList<string> value) => PrincipalBaseUnsafeAccessors.RefTypeIList(entity) = value);
+            refTypeIList.SetAccessors(
+                IList<string> (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.RefTypeIList(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                IList<string> (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.RefTypeIList(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                IList<string> (InternalEntityEntry entry) => entry.ReadOriginalValue<IList<string>>(refTypeIList, 9),
+                IList<string> (InternalEntityEntry entry) => entry.GetCurrentValue<IList<string>>(refTypeIList),
+                object (ValueBuffer valueBuffer) => valueBuffer[9]);
+            refTypeIList.SetPropertyIndexes(
+                index: 9,
+                originalValueIndex: 9,
+                shadowIndex: -1,
+                relationshipIndex: -1,
+                storeGenerationIndex: -1);
             refTypeIList.TypeMapping = MySqlStringTypeMapping.Default.Clone(
-                comparer: new ListComparer<string>(new ValueComparer<string>(
-                    (string v1, string v2) => v1 == v2,
-                    (string v) => v.GetHashCode(),
-                    (string v) => v)),
-                keyComparer: new ListComparer<string>(new ValueComparer<string>(
-                    (string v1, string v2) => v1 == v2,
-                    (string v) => v.GetHashCode(),
-                    (string v) => v)),
+                comparer: new ListOfReferenceTypesComparer<List<string>, string>(new ValueComparer<string>(
+                    bool (string v1, string v2) => v1 == v2,
+                    int (string v) => ((object)v).GetHashCode(),
+                    string (string v) => v)),
+                keyComparer: new ListOfReferenceTypesComparer<List<string>, string>(new ValueComparer<string>(
+                    bool (string v1, string v2) => v1 == v2,
+                    int (string v) => ((object)v).GetHashCode(),
+                    string (string v) => v)),
                 providerValueComparer: new ValueComparer<string>(
-                    (string v1, string v2) => v1 == v2,
-                    (string v) => v.GetHashCode(),
-                    (string v) => v),
+                    bool (string v1, string v2) => v1 == v2,
+                    int (string v) => ((object)v).GetHashCode(),
+                    string (string v) => v),
                 mappingInfo: new RelationalTypeMappingInfo(
                     storeTypeName: "longtext"),
-                converter: new CollectionToJsonStringConverter<string>(new JsonCollectionReaderWriter<IList<string>, List<string>, string>(
+                converter: new CollectionToJsonStringConverter<string>(new JsonCollectionOfReferencesReaderWriter<List<string>, string>(
                     JsonStringReaderWriter.Instance)),
                 storeTypePostfix: StoreTypePostfix.None,
-                jsonValueReaderWriter: new JsonCollectionReaderWriter<IList<string>, List<string>, string>(
+                jsonValueReaderWriter: new JsonCollectionOfReferencesReaderWriter<List<string>, string>(
                     JsonStringReaderWriter.Instance),
                 elementMapping: MySqlStringTypeMapping.Default.Clone(
                     comparer: new ValueComparer<string>(
-                        (string v1, string v2) => v1 == v2,
-                        (string v) => v.GetHashCode(),
-                        (string v) => v),
+                        bool (string v1, string v2) => v1 == v2,
+                        int (string v) => ((object)v).GetHashCode(),
+                        string (string v) => v),
                     keyComparer: new ValueComparer<string>(
-                        (string v1, string v2) => v1 == v2,
-                        (string v) => v.GetHashCode(),
-                        (string v) => v),
+                        bool (string v1, string v2) => v1 == v2,
+                        int (string v) => ((object)v).GetHashCode(),
+                        string (string v) => v),
                     providerValueComparer: new ValueComparer<string>(
-                        (string v1, string v2) => v1 == v2,
-                        (string v) => v.GetHashCode(),
-                        (string v) => v),
+                        bool (string v1, string v2) => v1 == v2,
+                        int (string v) => ((object)v).GetHashCode(),
+                        string (string v) => v),
                     mappingInfo: new RelationalTypeMappingInfo(
                         storeTypeName: "longtext"),
                     storeTypePostfix: StoreTypePostfix.None));
@@ -371,58 +583,79 @@ namespace TestNamespace
                 propertyInfo: typeof(CompiledModelTestBase.PrincipalBase).GetProperty("RefTypeList", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 fieldInfo: typeof(CompiledModelTestBase.PrincipalBase).GetField("<RefTypeList>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 nullable: true);
+            refTypeList.SetGetter(
+                List<IPAddress> (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.RefTypeList(entity),
+                bool (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.RefTypeList(entity) == null,
+                List<IPAddress> (CompiledModelTestBase.PrincipalBase instance) => PrincipalBaseUnsafeAccessors.RefTypeList(instance),
+                bool (CompiledModelTestBase.PrincipalBase instance) => PrincipalBaseUnsafeAccessors.RefTypeList(instance) == null);
+            refTypeList.SetSetter(
+                (CompiledModelTestBase.PrincipalBase entity, List<IPAddress> value) => PrincipalBaseUnsafeAccessors.RefTypeList(entity) = value);
+            refTypeList.SetMaterializationSetter(
+                (CompiledModelTestBase.PrincipalBase entity, List<IPAddress> value) => PrincipalBaseUnsafeAccessors.RefTypeList(entity) = value);
+            refTypeList.SetAccessors(
+                List<IPAddress> (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.RefTypeList(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                List<IPAddress> (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.RefTypeList(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                List<IPAddress> (InternalEntityEntry entry) => entry.ReadOriginalValue<List<IPAddress>>(refTypeList, 10),
+                List<IPAddress> (InternalEntityEntry entry) => entry.GetCurrentValue<List<IPAddress>>(refTypeList),
+                object (ValueBuffer valueBuffer) => valueBuffer[10]);
+            refTypeList.SetPropertyIndexes(
+                index: 10,
+                originalValueIndex: 10,
+                shadowIndex: -1,
+                relationshipIndex: -1,
+                storeGenerationIndex: -1);
             refTypeList.TypeMapping = MySqlStringTypeMapping.Default.Clone(
-                comparer: new ListComparer<IPAddress>(new ValueComparer<IPAddress>(
-                    (IPAddress v1, IPAddress v2) => v1 == null && v2 == null || v1 != null && v2 != null && v1.Equals(v2),
-                    (IPAddress v) => v.GetHashCode(),
-                    (IPAddress v) => v)),
-                keyComparer: new ListComparer<IPAddress>(new ValueComparer<IPAddress>(
-                    (IPAddress v1, IPAddress v2) => v1 == null && v2 == null || v1 != null && v2 != null && v1.Equals(v2),
-                    (IPAddress v) => v.GetHashCode(),
-                    (IPAddress v) => v)),
+                comparer: new ListOfReferenceTypesComparer<List<IPAddress>, IPAddress>(new ValueComparer<IPAddress>(
+                    bool (IPAddress v1, IPAddress v2) => v1 == null && v2 == null || v1 != null && v2 != null && v1.Equals(v2),
+                    int (IPAddress v) => ((object)v).GetHashCode(),
+                    IPAddress (IPAddress v) => v)),
+                keyComparer: new ListOfReferenceTypesComparer<List<IPAddress>, IPAddress>(new ValueComparer<IPAddress>(
+                    bool (IPAddress v1, IPAddress v2) => v1 == null && v2 == null || v1 != null && v2 != null && v1.Equals(v2),
+                    int (IPAddress v) => ((object)v).GetHashCode(),
+                    IPAddress (IPAddress v) => v)),
                 providerValueComparer: new ValueComparer<string>(
-                    (string v1, string v2) => v1 == v2,
-                    (string v) => v.GetHashCode(),
-                    (string v) => v),
+                    bool (string v1, string v2) => v1 == v2,
+                    int (string v) => ((object)v).GetHashCode(),
+                    string (string v) => v),
                 mappingInfo: new RelationalTypeMappingInfo(
                     storeTypeName: "longtext"),
-                converter: new CollectionToJsonStringConverter<IPAddress>(new JsonCollectionReaderWriter<List<IPAddress>, List<IPAddress>, IPAddress>(
+                converter: new CollectionToJsonStringConverter<IPAddress>(new JsonCollectionOfReferencesReaderWriter<List<IPAddress>, IPAddress>(
                     new JsonConvertedValueReaderWriter<IPAddress, string>(
                         JsonStringReaderWriter.Instance,
                         new ValueConverter<IPAddress, string>(
-                            (IPAddress v) => v.ToString(),
-                            (string v) => IPAddress.Parse(v))))),
+                            string (IPAddress v) => ((object)v).ToString(),
+                            IPAddress (string v) => IPAddress.Parse(v))))),
                 storeTypePostfix: StoreTypePostfix.None,
-                jsonValueReaderWriter: new JsonCollectionReaderWriter<List<IPAddress>, List<IPAddress>, IPAddress>(
+                jsonValueReaderWriter: new JsonCollectionOfReferencesReaderWriter<List<IPAddress>, IPAddress>(
                     new JsonConvertedValueReaderWriter<IPAddress, string>(
                         JsonStringReaderWriter.Instance,
                         new ValueConverter<IPAddress, string>(
-                            (IPAddress v) => v.ToString(),
-                            (string v) => IPAddress.Parse(v)))),
+                            string (IPAddress v) => ((object)v).ToString(),
+                            IPAddress (string v) => IPAddress.Parse(v)))),
                 elementMapping: MySqlStringTypeMapping.Default.Clone(
                     comparer: new ValueComparer<IPAddress>(
-                        (IPAddress v1, IPAddress v2) => v1 == null && v2 == null || v1 != null && v2 != null && v1.Equals(v2),
-                        (IPAddress v) => v.GetHashCode(),
-                        (IPAddress v) => v),
+                        bool (IPAddress v1, IPAddress v2) => v1 == null && v2 == null || v1 != null && v2 != null && v1.Equals(v2),
+                        int (IPAddress v) => ((object)v).GetHashCode(),
+                        IPAddress (IPAddress v) => v),
                     keyComparer: new ValueComparer<IPAddress>(
-                        (IPAddress v1, IPAddress v2) => v1 == null && v2 == null || v1 != null && v2 != null && v1.Equals(v2),
-                        (IPAddress v) => v.GetHashCode(),
-                        (IPAddress v) => v),
+                        bool (IPAddress v1, IPAddress v2) => v1 == null && v2 == null || v1 != null && v2 != null && v1.Equals(v2),
+                        int (IPAddress v) => ((object)v).GetHashCode(),
+                        IPAddress (IPAddress v) => v),
                     providerValueComparer: new ValueComparer<string>(
-                        (string v1, string v2) => v1 == v2,
-                        (string v) => v.GetHashCode(),
-                        (string v) => v),
+                        bool (string v1, string v2) => v1 == v2,
+                        int (string v) => ((object)v).GetHashCode(),
+                        string (string v) => v),
                     mappingInfo: new RelationalTypeMappingInfo(
                         storeTypeName: "varchar(45)",
                         size: 45),
                     converter: new ValueConverter<IPAddress, string>(
-                        (IPAddress v) => v.ToString(),
-                        (string v) => IPAddress.Parse(v)),
+                        string (IPAddress v) => ((object)v).ToString(),
+                        IPAddress (string v) => IPAddress.Parse(v)),
                     jsonValueReaderWriter: new JsonConvertedValueReaderWriter<IPAddress, string>(
                         JsonStringReaderWriter.Instance,
                         new ValueConverter<IPAddress, string>(
-                            (IPAddress v) => v.ToString(),
-                            (string v) => IPAddress.Parse(v)))));
+                            string (IPAddress v) => ((object)v).ToString(),
+                            IPAddress (string v) => IPAddress.Parse(v)))));
             refTypeList.AddAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.None);
 
             var stringWithCharSet = runtimeEntityType.AddProperty(
@@ -433,30 +666,42 @@ namespace TestNamespace
                 valueConverter: new CastingConverter<string, string>(),
                 valueComparer: new CompiledModelTestBase.CustomValueComparer<string>(),
                 providerValueComparer: new CompiledModelTestBase.CustomValueComparer<string>());
+            stringWithCharSet.SetAccessors(
+                string (InternalEntityEntry entry) => (entry.FlaggedAsStoreGenerated(11) ? entry.ReadStoreGeneratedValue<string>(3) : (entry.FlaggedAsTemporary(11) && entry.ReadShadowValue<string>(1) == null ? entry.ReadTemporaryValue<string>(3) : entry.ReadShadowValue<string>(1))),
+                string (InternalEntityEntry entry) => entry.ReadShadowValue<string>(1),
+                string (InternalEntityEntry entry) => entry.ReadOriginalValue<string>(stringWithCharSet, 11),
+                string (InternalEntityEntry entry) => entry.GetCurrentValue<string>(stringWithCharSet),
+                object (ValueBuffer valueBuffer) => valueBuffer[11]);
+            stringWithCharSet.SetPropertyIndexes(
+                index: 11,
+                originalValueIndex: 11,
+                shadowIndex: 1,
+                relationshipIndex: -1,
+                storeGenerationIndex: 3);
             stringWithCharSet.TypeMapping = MySqlStringTypeMapping.Default.Clone(
                 comparer: new ValueComparer<string>(
-                    (string v1, string v2) => v1 == v2,
-                    (string v) => v.GetHashCode(),
-                    (string v) => v),
+                    bool (string v1, string v2) => v1 == v2,
+                    int (string v) => ((object)v).GetHashCode(),
+                    string (string v) => v),
                 keyComparer: new ValueComparer<string>(
-                    (string v1, string v2) => v1 == v2,
-                    (string v) => v.GetHashCode(),
-                    (string v) => v),
+                    bool (string v1, string v2) => v1 == v2,
+                    int (string v) => ((object)v).GetHashCode(),
+                    string (string v) => v),
                 providerValueComparer: new ValueComparer<string>(
-                    (string v1, string v2) => v1 == v2,
-                    (string v) => v.GetHashCode(),
-                    (string v) => v),
+                    bool (string v1, string v2) => v1 == v2,
+                    int (string v) => ((object)v).GetHashCode(),
+                    string (string v) => v),
                 mappingInfo: new RelationalTypeMappingInfo(
                     storeTypeName: "varchar(128)",
                     size: 128),
                 converter: new ValueConverter<string, string>(
-                    (string v) => (string)v,
-                    (string v) => (string)v),
+                    string (string v) => ((string)(v)),
+                    string (string v) => ((string)(v))),
                 jsonValueReaderWriter: new JsonConvertedValueReaderWriter<string, string>(
                     JsonStringReaderWriter.Instance,
                     new ValueConverter<string, string>(
-                        (string v) => (string)v,
-                        (string v) => (string)v)));
+                        string (string v) => ((string)(v)),
+                        string (string v) => ((string)(v)))));
             stringWithCharSet.AddAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.None);
             stringWithCharSet.AddAnnotation("Relational:ColumnType", "varchar(128)");
             stringWithCharSet.AddAnnotation("Relational:DefaultValue", "String having charset");
@@ -469,30 +714,42 @@ namespace TestNamespace
                 valueConverter: new CastingConverter<string, string>(),
                 valueComparer: new CompiledModelTestBase.CustomValueComparer<string>(),
                 providerValueComparer: new CompiledModelTestBase.CustomValueComparer<string>());
+            stringWithCollation.SetAccessors(
+                string (InternalEntityEntry entry) => (entry.FlaggedAsStoreGenerated(12) ? entry.ReadStoreGeneratedValue<string>(4) : (entry.FlaggedAsTemporary(12) && entry.ReadShadowValue<string>(2) == null ? entry.ReadTemporaryValue<string>(4) : entry.ReadShadowValue<string>(2))),
+                string (InternalEntityEntry entry) => entry.ReadShadowValue<string>(2),
+                string (InternalEntityEntry entry) => entry.ReadOriginalValue<string>(stringWithCollation, 12),
+                string (InternalEntityEntry entry) => entry.GetCurrentValue<string>(stringWithCollation),
+                object (ValueBuffer valueBuffer) => valueBuffer[12]);
+            stringWithCollation.SetPropertyIndexes(
+                index: 12,
+                originalValueIndex: 12,
+                shadowIndex: 2,
+                relationshipIndex: -1,
+                storeGenerationIndex: 4);
             stringWithCollation.TypeMapping = MySqlStringTypeMapping.Default.Clone(
                 comparer: new ValueComparer<string>(
-                    (string v1, string v2) => v1 == v2,
-                    (string v) => v.GetHashCode(),
-                    (string v) => v),
+                    bool (string v1, string v2) => v1 == v2,
+                    int (string v) => ((object)v).GetHashCode(),
+                    string (string v) => v),
                 keyComparer: new ValueComparer<string>(
-                    (string v1, string v2) => v1 == v2,
-                    (string v) => v.GetHashCode(),
-                    (string v) => v),
+                    bool (string v1, string v2) => v1 == v2,
+                    int (string v) => ((object)v).GetHashCode(),
+                    string (string v) => v),
                 providerValueComparer: new ValueComparer<string>(
-                    (string v1, string v2) => v1 == v2,
-                    (string v) => v.GetHashCode(),
-                    (string v) => v),
+                    bool (string v1, string v2) => v1 == v2,
+                    int (string v) => ((object)v).GetHashCode(),
+                    string (string v) => v),
                 mappingInfo: new RelationalTypeMappingInfo(
                     storeTypeName: "varchar(128)",
                     size: 128),
                 converter: new ValueConverter<string, string>(
-                    (string v) => (string)v,
-                    (string v) => (string)v),
+                    string (string v) => ((string)(v)),
+                    string (string v) => ((string)(v))),
                 jsonValueReaderWriter: new JsonConvertedValueReaderWriter<string, string>(
                     JsonStringReaderWriter.Instance,
                     new ValueConverter<string, string>(
-                        (string v) => (string)v,
-                        (string v) => (string)v)));
+                        string (string v) => ((string)(v)),
+                        string (string v) => ((string)(v)))));
             stringWithCollation.AddAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.None);
             stringWithCollation.AddAnnotation("Relational:ColumnType", "varchar(128)");
             stringWithCollation.AddAnnotation("Relational:DefaultValue", "String using collation");
@@ -503,39 +760,60 @@ namespace TestNamespace
                 propertyInfo: typeof(CompiledModelTestBase.PrincipalBase).GetProperty("ValueTypeArray", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 fieldInfo: typeof(CompiledModelTestBase.PrincipalBase).GetField("<ValueTypeArray>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 nullable: true);
+            valueTypeArray.SetGetter(
+                DateTime[] (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.ValueTypeArray(entity),
+                bool (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.ValueTypeArray(entity) == null,
+                DateTime[] (CompiledModelTestBase.PrincipalBase instance) => PrincipalBaseUnsafeAccessors.ValueTypeArray(instance),
+                bool (CompiledModelTestBase.PrincipalBase instance) => PrincipalBaseUnsafeAccessors.ValueTypeArray(instance) == null);
+            valueTypeArray.SetSetter(
+                (CompiledModelTestBase.PrincipalBase entity, DateTime[] value) => PrincipalBaseUnsafeAccessors.ValueTypeArray(entity) = value);
+            valueTypeArray.SetMaterializationSetter(
+                (CompiledModelTestBase.PrincipalBase entity, DateTime[] value) => PrincipalBaseUnsafeAccessors.ValueTypeArray(entity) = value);
+            valueTypeArray.SetAccessors(
+                DateTime[] (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.ValueTypeArray(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                DateTime[] (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.ValueTypeArray(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                DateTime[] (InternalEntityEntry entry) => entry.ReadOriginalValue<DateTime[]>(valueTypeArray, 13),
+                DateTime[] (InternalEntityEntry entry) => entry.GetCurrentValue<DateTime[]>(valueTypeArray),
+                object (ValueBuffer valueBuffer) => valueBuffer[13]);
+            valueTypeArray.SetPropertyIndexes(
+                index: 13,
+                originalValueIndex: 13,
+                shadowIndex: -1,
+                relationshipIndex: -1,
+                storeGenerationIndex: -1);
             valueTypeArray.TypeMapping = MySqlStringTypeMapping.Default.Clone(
-                comparer: new ListComparer<DateTime>(new ValueComparer<DateTime>(
-                    (DateTime v1, DateTime v2) => v1.Equals(v2),
-                    (DateTime v) => v.GetHashCode(),
-                    (DateTime v) => v)),
-                keyComparer: new ListComparer<DateTime>(new ValueComparer<DateTime>(
-                    (DateTime v1, DateTime v2) => v1.Equals(v2),
-                    (DateTime v) => v.GetHashCode(),
-                    (DateTime v) => v)),
+                comparer: new ListOfValueTypesComparer<DateTime[], DateTime>(new ValueComparer<DateTime>(
+                    bool (DateTime v1, DateTime v2) => v1.Equals(v2),
+                    int (DateTime v) => ((object)v).GetHashCode(),
+                    DateTime (DateTime v) => v)),
+                keyComparer: new ListOfValueTypesComparer<DateTime[], DateTime>(new ValueComparer<DateTime>(
+                    bool (DateTime v1, DateTime v2) => v1.Equals(v2),
+                    int (DateTime v) => ((object)v).GetHashCode(),
+                    DateTime (DateTime v) => v)),
                 providerValueComparer: new ValueComparer<string>(
-                    (string v1, string v2) => v1 == v2,
-                    (string v) => v.GetHashCode(),
-                    (string v) => v),
+                    bool (string v1, string v2) => v1 == v2,
+                    int (string v) => ((object)v).GetHashCode(),
+                    string (string v) => v),
                 mappingInfo: new RelationalTypeMappingInfo(
                     storeTypeName: "longtext"),
-                converter: new CollectionToJsonStringConverter<DateTime>(new JsonCollectionReaderWriter<DateTime[], DateTime[], DateTime>(
+                converter: new CollectionToJsonStringConverter<DateTime>(new JsonCollectionOfStructsReaderWriter<DateTime[], DateTime>(
                     JsonDateTimeReaderWriter.Instance)),
                 storeTypePostfix: StoreTypePostfix.None,
-                jsonValueReaderWriter: new JsonCollectionReaderWriter<DateTime[], DateTime[], DateTime>(
+                jsonValueReaderWriter: new JsonCollectionOfStructsReaderWriter<DateTime[], DateTime>(
                     JsonDateTimeReaderWriter.Instance),
                 elementMapping: MySqlDateTimeTypeMapping.Default.Clone(
                     comparer: new ValueComparer<DateTime>(
-                        (DateTime v1, DateTime v2) => v1.Equals(v2),
-                        (DateTime v) => v.GetHashCode(),
-                        (DateTime v) => v),
+                        bool (DateTime v1, DateTime v2) => v1.Equals(v2),
+                        int (DateTime v) => ((object)v).GetHashCode(),
+                        DateTime (DateTime v) => v),
                     keyComparer: new ValueComparer<DateTime>(
-                        (DateTime v1, DateTime v2) => v1.Equals(v2),
-                        (DateTime v) => v.GetHashCode(),
-                        (DateTime v) => v),
+                        bool (DateTime v1, DateTime v2) => v1.Equals(v2),
+                        int (DateTime v) => ((object)v).GetHashCode(),
+                        DateTime (DateTime v) => v),
                     providerValueComparer: new ValueComparer<DateTime>(
-                        (DateTime v1, DateTime v2) => v1.Equals(v2),
-                        (DateTime v) => v.GetHashCode(),
-                        (DateTime v) => v),
+                        bool (DateTime v1, DateTime v2) => v1.Equals(v2),
+                        int (DateTime v) => ((object)v).GetHashCode(),
+                        DateTime (DateTime v) => v),
                     mappingInfo: new RelationalTypeMappingInfo(
                         storeTypeName: "datetime(6)",
                         precision: 6)));
@@ -547,39 +825,60 @@ namespace TestNamespace
                 propertyInfo: typeof(CompiledModelTestBase.PrincipalBase).GetProperty("ValueTypeEnumerable", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 fieldInfo: typeof(CompiledModelTestBase.PrincipalBase).GetField("<ValueTypeEnumerable>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 nullable: true);
+            valueTypeEnumerable.SetGetter(
+                IEnumerable<byte> (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.ValueTypeEnumerable(entity),
+                bool (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.ValueTypeEnumerable(entity) == null,
+                IEnumerable<byte> (CompiledModelTestBase.PrincipalBase instance) => PrincipalBaseUnsafeAccessors.ValueTypeEnumerable(instance),
+                bool (CompiledModelTestBase.PrincipalBase instance) => PrincipalBaseUnsafeAccessors.ValueTypeEnumerable(instance) == null);
+            valueTypeEnumerable.SetSetter(
+                (CompiledModelTestBase.PrincipalBase entity, IEnumerable<byte> value) => PrincipalBaseUnsafeAccessors.ValueTypeEnumerable(entity) = value);
+            valueTypeEnumerable.SetMaterializationSetter(
+                (CompiledModelTestBase.PrincipalBase entity, IEnumerable<byte> value) => PrincipalBaseUnsafeAccessors.ValueTypeEnumerable(entity) = value);
+            valueTypeEnumerable.SetAccessors(
+                IEnumerable<byte> (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.ValueTypeEnumerable(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                IEnumerable<byte> (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.ValueTypeEnumerable(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                IEnumerable<byte> (InternalEntityEntry entry) => entry.ReadOriginalValue<IEnumerable<byte>>(valueTypeEnumerable, 14),
+                IEnumerable<byte> (InternalEntityEntry entry) => entry.GetCurrentValue<IEnumerable<byte>>(valueTypeEnumerable),
+                object (ValueBuffer valueBuffer) => valueBuffer[14]);
+            valueTypeEnumerable.SetPropertyIndexes(
+                index: 14,
+                originalValueIndex: 14,
+                shadowIndex: -1,
+                relationshipIndex: -1,
+                storeGenerationIndex: -1);
             valueTypeEnumerable.TypeMapping = MySqlStringTypeMapping.Default.Clone(
-                comparer: new ListComparer<byte>(new ValueComparer<byte>(
-                    (byte v1, byte v2) => v1 == v2,
-                    (byte v) => (int)v,
-                    (byte v) => v)),
-                keyComparer: new ListComparer<byte>(new ValueComparer<byte>(
-                    (byte v1, byte v2) => v1 == v2,
-                    (byte v) => (int)v,
-                    (byte v) => v)),
+                comparer: new ListOfValueTypesComparer<List<byte>, byte>(new ValueComparer<byte>(
+                    bool (byte v1, byte v2) => v1 == v2,
+                    int (byte v) => ((int)(v)),
+                    byte (byte v) => v)),
+                keyComparer: new ListOfValueTypesComparer<List<byte>, byte>(new ValueComparer<byte>(
+                    bool (byte v1, byte v2) => v1 == v2,
+                    int (byte v) => ((int)(v)),
+                    byte (byte v) => v)),
                 providerValueComparer: new ValueComparer<string>(
-                    (string v1, string v2) => v1 == v2,
-                    (string v) => v.GetHashCode(),
-                    (string v) => v),
+                    bool (string v1, string v2) => v1 == v2,
+                    int (string v) => ((object)v).GetHashCode(),
+                    string (string v) => v),
                 mappingInfo: new RelationalTypeMappingInfo(
                     storeTypeName: "longtext"),
-                converter: new CollectionToJsonStringConverter<byte>(new JsonCollectionReaderWriter<IEnumerable<byte>, List<byte>, byte>(
+                converter: new CollectionToJsonStringConverter<byte>(new JsonCollectionOfStructsReaderWriter<List<byte>, byte>(
                     JsonByteReaderWriter.Instance)),
                 storeTypePostfix: StoreTypePostfix.None,
-                jsonValueReaderWriter: new JsonCollectionReaderWriter<IEnumerable<byte>, List<byte>, byte>(
+                jsonValueReaderWriter: new JsonCollectionOfStructsReaderWriter<List<byte>, byte>(
                     JsonByteReaderWriter.Instance),
                 elementMapping: MySqlByteTypeMapping.Default.Clone(
                     comparer: new ValueComparer<byte>(
-                        (byte v1, byte v2) => v1 == v2,
-                        (byte v) => (int)v,
-                        (byte v) => v),
+                        bool (byte v1, byte v2) => v1 == v2,
+                        int (byte v) => ((int)(v)),
+                        byte (byte v) => v),
                     keyComparer: new ValueComparer<byte>(
-                        (byte v1, byte v2) => v1 == v2,
-                        (byte v) => (int)v,
-                        (byte v) => v),
+                        bool (byte v1, byte v2) => v1 == v2,
+                        int (byte v) => ((int)(v)),
+                        byte (byte v) => v),
                     providerValueComparer: new ValueComparer<byte>(
-                        (byte v1, byte v2) => v1 == v2,
-                        (byte v) => (int)v,
-                        (byte v) => v)));
+                        bool (byte v1, byte v2) => v1 == v2,
+                        int (byte v) => ((int)(v)),
+                        byte (byte v) => v)));
             valueTypeEnumerable.AddAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.None);
 
             var valueTypeIList = runtimeEntityType.AddProperty(
@@ -588,39 +887,60 @@ namespace TestNamespace
                 propertyInfo: typeof(CompiledModelTestBase.PrincipalBase).GetProperty("ValueTypeIList", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 fieldInfo: typeof(CompiledModelTestBase.PrincipalBase).GetField("<ValueTypeIList>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 nullable: true);
+            valueTypeIList.SetGetter(
+                IList<byte> (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.ValueTypeIList(entity),
+                bool (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.ValueTypeIList(entity) == null,
+                IList<byte> (CompiledModelTestBase.PrincipalBase instance) => PrincipalBaseUnsafeAccessors.ValueTypeIList(instance),
+                bool (CompiledModelTestBase.PrincipalBase instance) => PrincipalBaseUnsafeAccessors.ValueTypeIList(instance) == null);
+            valueTypeIList.SetSetter(
+                (CompiledModelTestBase.PrincipalBase entity, IList<byte> value) => PrincipalBaseUnsafeAccessors.ValueTypeIList(entity) = value);
+            valueTypeIList.SetMaterializationSetter(
+                (CompiledModelTestBase.PrincipalBase entity, IList<byte> value) => PrincipalBaseUnsafeAccessors.ValueTypeIList(entity) = value);
+            valueTypeIList.SetAccessors(
+                IList<byte> (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.ValueTypeIList(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                IList<byte> (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.ValueTypeIList(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                IList<byte> (InternalEntityEntry entry) => entry.ReadOriginalValue<IList<byte>>(valueTypeIList, 15),
+                IList<byte> (InternalEntityEntry entry) => entry.GetCurrentValue<IList<byte>>(valueTypeIList),
+                object (ValueBuffer valueBuffer) => valueBuffer[15]);
+            valueTypeIList.SetPropertyIndexes(
+                index: 15,
+                originalValueIndex: 15,
+                shadowIndex: -1,
+                relationshipIndex: -1,
+                storeGenerationIndex: -1);
             valueTypeIList.TypeMapping = MySqlStringTypeMapping.Default.Clone(
-                comparer: new ListComparer<byte>(new ValueComparer<byte>(
-                    (byte v1, byte v2) => v1 == v2,
-                    (byte v) => (int)v,
-                    (byte v) => v)),
-                keyComparer: new ListComparer<byte>(new ValueComparer<byte>(
-                    (byte v1, byte v2) => v1 == v2,
-                    (byte v) => (int)v,
-                    (byte v) => v)),
+                comparer: new ListOfValueTypesComparer<List<byte>, byte>(new ValueComparer<byte>(
+                    bool (byte v1, byte v2) => v1 == v2,
+                    int (byte v) => ((int)(v)),
+                    byte (byte v) => v)),
+                keyComparer: new ListOfValueTypesComparer<List<byte>, byte>(new ValueComparer<byte>(
+                    bool (byte v1, byte v2) => v1 == v2,
+                    int (byte v) => ((int)(v)),
+                    byte (byte v) => v)),
                 providerValueComparer: new ValueComparer<string>(
-                    (string v1, string v2) => v1 == v2,
-                    (string v) => v.GetHashCode(),
-                    (string v) => v),
+                    bool (string v1, string v2) => v1 == v2,
+                    int (string v) => ((object)v).GetHashCode(),
+                    string (string v) => v),
                 mappingInfo: new RelationalTypeMappingInfo(
                     storeTypeName: "longtext"),
-                converter: new CollectionToJsonStringConverter<byte>(new JsonCollectionReaderWriter<IList<byte>, List<byte>, byte>(
+                converter: new CollectionToJsonStringConverter<byte>(new JsonCollectionOfStructsReaderWriter<List<byte>, byte>(
                     JsonByteReaderWriter.Instance)),
                 storeTypePostfix: StoreTypePostfix.None,
-                jsonValueReaderWriter: new JsonCollectionReaderWriter<IList<byte>, List<byte>, byte>(
+                jsonValueReaderWriter: new JsonCollectionOfStructsReaderWriter<List<byte>, byte>(
                     JsonByteReaderWriter.Instance),
                 elementMapping: MySqlByteTypeMapping.Default.Clone(
                     comparer: new ValueComparer<byte>(
-                        (byte v1, byte v2) => v1 == v2,
-                        (byte v) => (int)v,
-                        (byte v) => v),
+                        bool (byte v1, byte v2) => v1 == v2,
+                        int (byte v) => ((int)(v)),
+                        byte (byte v) => v),
                     keyComparer: new ValueComparer<byte>(
-                        (byte v1, byte v2) => v1 == v2,
-                        (byte v) => (int)v,
-                        (byte v) => v),
+                        bool (byte v1, byte v2) => v1 == v2,
+                        int (byte v) => ((int)(v)),
+                        byte (byte v) => v),
                     providerValueComparer: new ValueComparer<byte>(
-                        (byte v1, byte v2) => v1 == v2,
-                        (byte v) => (int)v,
-                        (byte v) => v)));
+                        bool (byte v1, byte v2) => v1 == v2,
+                        int (byte v) => ((int)(v)),
+                        byte (byte v) => v)));
             valueTypeIList.AddAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.None);
 
             var valueTypeList = runtimeEntityType.AddProperty(
@@ -629,39 +949,60 @@ namespace TestNamespace
                 propertyInfo: typeof(CompiledModelTestBase.PrincipalBase).GetProperty("ValueTypeList", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 fieldInfo: typeof(CompiledModelTestBase.PrincipalBase).GetField("<ValueTypeList>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 nullable: true);
+            valueTypeList.SetGetter(
+                List<short> (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.ValueTypeList(entity),
+                bool (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.ValueTypeList(entity) == null,
+                List<short> (CompiledModelTestBase.PrincipalBase instance) => PrincipalBaseUnsafeAccessors.ValueTypeList(instance),
+                bool (CompiledModelTestBase.PrincipalBase instance) => PrincipalBaseUnsafeAccessors.ValueTypeList(instance) == null);
+            valueTypeList.SetSetter(
+                (CompiledModelTestBase.PrincipalBase entity, List<short> value) => PrincipalBaseUnsafeAccessors.ValueTypeList(entity) = value);
+            valueTypeList.SetMaterializationSetter(
+                (CompiledModelTestBase.PrincipalBase entity, List<short> value) => PrincipalBaseUnsafeAccessors.ValueTypeList(entity) = value);
+            valueTypeList.SetAccessors(
+                List<short> (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.ValueTypeList(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                List<short> (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.ValueTypeList(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                List<short> (InternalEntityEntry entry) => entry.ReadOriginalValue<List<short>>(valueTypeList, 16),
+                List<short> (InternalEntityEntry entry) => entry.GetCurrentValue<List<short>>(valueTypeList),
+                object (ValueBuffer valueBuffer) => valueBuffer[16]);
+            valueTypeList.SetPropertyIndexes(
+                index: 16,
+                originalValueIndex: 16,
+                shadowIndex: -1,
+                relationshipIndex: -1,
+                storeGenerationIndex: -1);
             valueTypeList.TypeMapping = MySqlStringTypeMapping.Default.Clone(
-                comparer: new ListComparer<short>(new ValueComparer<short>(
-                    (short v1, short v2) => v1 == v2,
-                    (short v) => (int)v,
-                    (short v) => v)),
-                keyComparer: new ListComparer<short>(new ValueComparer<short>(
-                    (short v1, short v2) => v1 == v2,
-                    (short v) => (int)v,
-                    (short v) => v)),
+                comparer: new ListOfValueTypesComparer<List<short>, short>(new ValueComparer<short>(
+                    bool (short v1, short v2) => v1 == v2,
+                    int (short v) => ((int)(v)),
+                    short (short v) => v)),
+                keyComparer: new ListOfValueTypesComparer<List<short>, short>(new ValueComparer<short>(
+                    bool (short v1, short v2) => v1 == v2,
+                    int (short v) => ((int)(v)),
+                    short (short v) => v)),
                 providerValueComparer: new ValueComparer<string>(
-                    (string v1, string v2) => v1 == v2,
-                    (string v) => v.GetHashCode(),
-                    (string v) => v),
+                    bool (string v1, string v2) => v1 == v2,
+                    int (string v) => ((object)v).GetHashCode(),
+                    string (string v) => v),
                 mappingInfo: new RelationalTypeMappingInfo(
                     storeTypeName: "longtext"),
-                converter: new CollectionToJsonStringConverter<short>(new JsonCollectionReaderWriter<List<short>, List<short>, short>(
+                converter: new CollectionToJsonStringConverter<short>(new JsonCollectionOfStructsReaderWriter<List<short>, short>(
                     JsonInt16ReaderWriter.Instance)),
                 storeTypePostfix: StoreTypePostfix.None,
-                jsonValueReaderWriter: new JsonCollectionReaderWriter<List<short>, List<short>, short>(
+                jsonValueReaderWriter: new JsonCollectionOfStructsReaderWriter<List<short>, short>(
                     JsonInt16ReaderWriter.Instance),
                 elementMapping: MySqlShortTypeMapping.Default.Clone(
                     comparer: new ValueComparer<short>(
-                        (short v1, short v2) => v1 == v2,
-                        (short v) => (int)v,
-                        (short v) => v),
+                        bool (short v1, short v2) => v1 == v2,
+                        int (short v) => ((int)(v)),
+                        short (short v) => v),
                     keyComparer: new ValueComparer<short>(
-                        (short v1, short v2) => v1 == v2,
-                        (short v) => (int)v,
-                        (short v) => v),
+                        bool (short v1, short v2) => v1 == v2,
+                        int (short v) => ((int)(v)),
+                        short (short v) => v),
                     providerValueComparer: new ValueComparer<short>(
-                        (short v1, short v2) => v1 == v2,
-                        (short v) => (int)v,
-                        (short v) => v)));
+                        bool (short v1, short v2) => v1 == v2,
+                        int (short v) => ((int)(v)),
+                        short (short v) => v)));
             valueTypeList.AddAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.None);
 
             var key = runtimeEntityType.AddKey(
@@ -700,11 +1041,90 @@ namespace TestNamespace
                 inverse.Inverse = skipNavigation;
             }
 
+            skipNavigation.SetGetter(
+                ICollection<CompiledModelTestBase.PrincipalBase> (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.Deriveds(entity),
+                bool (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.Deriveds(entity) == null,
+                ICollection<CompiledModelTestBase.PrincipalBase> (CompiledModelTestBase.PrincipalBase instance) => PrincipalBaseUnsafeAccessors.Deriveds(instance),
+                bool (CompiledModelTestBase.PrincipalBase instance) => PrincipalBaseUnsafeAccessors.Deriveds(instance) == null);
+            skipNavigation.SetSetter(
+                (CompiledModelTestBase.PrincipalBase entity, ICollection<CompiledModelTestBase.PrincipalBase> value) => PrincipalBaseUnsafeAccessors.Deriveds(entity) = value);
+            skipNavigation.SetMaterializationSetter(
+                (CompiledModelTestBase.PrincipalBase entity, ICollection<CompiledModelTestBase.PrincipalBase> value) => PrincipalBaseUnsafeAccessors.Deriveds(entity) = value);
+            skipNavigation.SetAccessors(
+                ICollection<CompiledModelTestBase.PrincipalBase> (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.Deriveds(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                ICollection<CompiledModelTestBase.PrincipalBase> (InternalEntityEntry entry) => PrincipalBaseUnsafeAccessors.Deriveds(((CompiledModelTestBase.PrincipalBase)(entry.Entity))),
+                null,
+                ICollection<CompiledModelTestBase.PrincipalBase> (InternalEntityEntry entry) => entry.GetCurrentValue<ICollection<CompiledModelTestBase.PrincipalBase>>(skipNavigation),
+                null);
+            skipNavigation.SetPropertyIndexes(
+                index: 1,
+                originalValueIndex: -1,
+                shadowIndex: -1,
+                relationshipIndex: 3,
+                storeGenerationIndex: -1);
+            skipNavigation.SetCollectionAccessor<CompiledModelTestBase.PrincipalBase, ICollection<CompiledModelTestBase.PrincipalBase>, CompiledModelTestBase.PrincipalBase>(
+                ICollection<CompiledModelTestBase.PrincipalBase> (CompiledModelTestBase.PrincipalBase entity) => PrincipalBaseUnsafeAccessors.Deriveds(entity),
+                (CompiledModelTestBase.PrincipalBase entity, ICollection<CompiledModelTestBase.PrincipalBase> collection) => PrincipalBaseUnsafeAccessors.Deriveds(entity) = ((ICollection<CompiledModelTestBase.PrincipalBase>)(collection)),
+                (CompiledModelTestBase.PrincipalBase entity, ICollection<CompiledModelTestBase.PrincipalBase> collection) => PrincipalBaseUnsafeAccessors.Deriveds(entity) = ((ICollection<CompiledModelTestBase.PrincipalBase>)(collection)),
+                ICollection<CompiledModelTestBase.PrincipalBase> (CompiledModelTestBase.PrincipalBase entity, Action<CompiledModelTestBase.PrincipalBase, ICollection<CompiledModelTestBase.PrincipalBase>> setter) => ClrCollectionAccessorFactory.CreateAndSetHashSet<CompiledModelTestBase.PrincipalBase, ICollection<CompiledModelTestBase.PrincipalBase>, CompiledModelTestBase.PrincipalBase>(entity, setter),
+                ICollection<CompiledModelTestBase.PrincipalBase> () => ((ICollection<CompiledModelTestBase.PrincipalBase>)(((ICollection<CompiledModelTestBase.PrincipalBase>)(new HashSet<CompiledModelTestBase.PrincipalBase>(ReferenceEqualityComparer.Instance))))));
             return skipNavigation;
         }
 
         public static void CreateAnnotations(RuntimeEntityType runtimeEntityType)
         {
+            var id = runtimeEntityType.FindProperty("Id");
+            var alternateId = runtimeEntityType.FindProperty("AlternateId");
+            var enum1 = runtimeEntityType.FindProperty("Enum1");
+            var enum2 = runtimeEntityType.FindProperty("Enum2");
+            var flagsEnum1 = runtimeEntityType.FindProperty("FlagsEnum1");
+            var flagsEnum2 = runtimeEntityType.FindProperty("FlagsEnum2");
+            var point = runtimeEntityType.FindProperty("Point");
+            var refTypeArray = runtimeEntityType.FindProperty("RefTypeArray");
+            var refTypeEnumerable = runtimeEntityType.FindProperty("RefTypeEnumerable");
+            var refTypeIList = runtimeEntityType.FindProperty("RefTypeIList");
+            var refTypeList = runtimeEntityType.FindProperty("RefTypeList");
+            var stringWithCharSet = runtimeEntityType.FindProperty("StringWithCharSet");
+            var stringWithCollation = runtimeEntityType.FindProperty("StringWithCollation");
+            var valueTypeArray = runtimeEntityType.FindProperty("ValueTypeArray");
+            var valueTypeEnumerable = runtimeEntityType.FindProperty("ValueTypeEnumerable");
+            var valueTypeIList = runtimeEntityType.FindProperty("ValueTypeIList");
+            var valueTypeList = runtimeEntityType.FindProperty("ValueTypeList");
+            var key = runtimeEntityType.FindKey(new[] { id });
+            key.SetPrincipalKeyValueFactory(KeyValueFactoryFactory.CreateSimpleNullableFactory<long?, long>(key));
+            key.SetIdentityMapFactory(IdentityMapFactoryFactory.CreateFactory<long?>(key));
+            var key0 = runtimeEntityType.FindKey(new[] { id, alternateId });
+            key0.SetPrincipalKeyValueFactory(KeyValueFactoryFactory.CreateCompositeFactory(key0));
+            key0.SetIdentityMapFactory(IdentityMapFactoryFactory.CreateFactory<IReadOnlyList<object>>(key0));
+            var owned = runtimeEntityType.FindNavigation("Owned");
+            runtimeEntityType.SetOriginalValuesFactory(
+                ISnapshot (InternalEntityEntry source) =>
+                {
+                    var entity7 = ((CompiledModelTestBase.PrincipalBase)(source.Entity));
+                    return ((ISnapshot)(new Snapshot<long?, Guid, CompiledModelTestBase.AnEnum, CompiledModelTestBase.AnEnum?, CompiledModelTestBase.AFlagsEnum, CompiledModelTestBase.AFlagsEnum, Point, IPAddress[], IEnumerable<string>, IList<string>, List<IPAddress>, string, string, DateTime[], IEnumerable<byte>, IList<byte>, List<short>>((source.GetCurrentValue<long?>(id) == null ? null : ((ValueComparer<long?>)(((IProperty)id).GetValueComparer())).Snapshot(source.GetCurrentValue<long?>(id))), ((ValueComparer<Guid>)(((IProperty)alternateId).GetValueComparer())).Snapshot(source.GetCurrentValue<Guid>(alternateId)), ((ValueComparer<CompiledModelTestBase.AnEnum>)(((IProperty)enum1).GetValueComparer())).Snapshot(source.GetCurrentValue<CompiledModelTestBase.AnEnum>(enum1)), (source.GetCurrentValue<CompiledModelTestBase.AnEnum?>(enum2) == null ? null : ((ValueComparer<CompiledModelTestBase.AnEnum?>)(((IProperty)enum2).GetValueComparer())).Snapshot(source.GetCurrentValue<CompiledModelTestBase.AnEnum?>(enum2))), ((ValueComparer<CompiledModelTestBase.AFlagsEnum>)(((IProperty)flagsEnum1).GetValueComparer())).Snapshot(source.GetCurrentValue<CompiledModelTestBase.AFlagsEnum>(flagsEnum1)), ((ValueComparer<CompiledModelTestBase.AFlagsEnum>)(((IProperty)flagsEnum2).GetValueComparer())).Snapshot(source.GetCurrentValue<CompiledModelTestBase.AFlagsEnum>(flagsEnum2)), (source.GetCurrentValue<Point>(point) == null ? null : ((ValueComparer<Point>)(((IProperty)point).GetValueComparer())).Snapshot(source.GetCurrentValue<Point>(point))), (((object)(source.GetCurrentValue<IPAddress[]>(refTypeArray))) == null ? null : ((IPAddress[])(((ValueComparer<object>)(((IProperty)refTypeArray).GetValueComparer())).Snapshot(((object)(source.GetCurrentValue<IPAddress[]>(refTypeArray))))))), (((object)(source.GetCurrentValue<IEnumerable<string>>(refTypeEnumerable))) == null ? null : ((IEnumerable<string>)(((ValueComparer<object>)(((IProperty)refTypeEnumerable).GetValueComparer())).Snapshot(((object)(source.GetCurrentValue<IEnumerable<string>>(refTypeEnumerable))))))), (((object)(source.GetCurrentValue<IList<string>>(refTypeIList))) == null ? null : ((IList<string>)(((ValueComparer<object>)(((IProperty)refTypeIList).GetValueComparer())).Snapshot(((object)(source.GetCurrentValue<IList<string>>(refTypeIList))))))), (((object)(source.GetCurrentValue<List<IPAddress>>(refTypeList))) == null ? null : ((List<IPAddress>)(((ValueComparer<object>)(((IProperty)refTypeList).GetValueComparer())).Snapshot(((object)(source.GetCurrentValue<List<IPAddress>>(refTypeList))))))), (source.GetCurrentValue<string>(stringWithCharSet) == null ? null : ((ValueComparer<string>)(((IProperty)stringWithCharSet).GetValueComparer())).Snapshot(source.GetCurrentValue<string>(stringWithCharSet))), (source.GetCurrentValue<string>(stringWithCollation) == null ? null : ((ValueComparer<string>)(((IProperty)stringWithCollation).GetValueComparer())).Snapshot(source.GetCurrentValue<string>(stringWithCollation))), (((IEnumerable<DateTime>)(source.GetCurrentValue<DateTime[]>(valueTypeArray))) == null ? null : ((DateTime[])(((ValueComparer<IEnumerable<DateTime>>)(((IProperty)valueTypeArray).GetValueComparer())).Snapshot(((IEnumerable<DateTime>)(source.GetCurrentValue<DateTime[]>(valueTypeArray))))))), (source.GetCurrentValue<IEnumerable<byte>>(valueTypeEnumerable) == null ? null : ((ValueComparer<IEnumerable<byte>>)(((IProperty)valueTypeEnumerable).GetValueComparer())).Snapshot(source.GetCurrentValue<IEnumerable<byte>>(valueTypeEnumerable))), (((IEnumerable<byte>)(source.GetCurrentValue<IList<byte>>(valueTypeIList))) == null ? null : ((IList<byte>)(((ValueComparer<IEnumerable<byte>>)(((IProperty)valueTypeIList).GetValueComparer())).Snapshot(((IEnumerable<byte>)(source.GetCurrentValue<IList<byte>>(valueTypeIList))))))), (((IEnumerable<short>)(source.GetCurrentValue<List<short>>(valueTypeList))) == null ? null : ((List<short>)(((ValueComparer<IEnumerable<short>>)(((IProperty)valueTypeList).GetValueComparer())).Snapshot(((IEnumerable<short>)(source.GetCurrentValue<List<short>>(valueTypeList))))))))));
+                });
+            runtimeEntityType.SetStoreGeneratedValuesFactory(
+                ISnapshot () => ((ISnapshot)(new Snapshot<long?, Guid, Point, string, string>((default(long? ) == null ? null : ((ValueComparer<long?>)(((IProperty)id).GetValueComparer())).Snapshot(default(long? ))), ((ValueComparer<Guid>)(((IProperty)alternateId).GetValueComparer())).Snapshot(default(Guid)), (default(Point) == null ? null : ((ValueComparer<Point>)(((IProperty)point).GetValueComparer())).Snapshot(default(Point))), (default(string) == null ? null : ((ValueComparer<string>)(((IProperty)stringWithCharSet).GetValueComparer())).Snapshot(default(string))), (default(string) == null ? null : ((ValueComparer<string>)(((IProperty)stringWithCollation).GetValueComparer())).Snapshot(default(string)))))));
+            runtimeEntityType.SetTemporaryValuesFactory(
+                ISnapshot (InternalEntityEntry source) => ((ISnapshot)(new Snapshot<long?, Guid, Point, string, string>(default(long? ), default(Guid), default(Point), default(string), default(string)))));
+            runtimeEntityType.SetShadowValuesFactory(
+                ISnapshot (IDictionary<string, object> source) => ((ISnapshot)(new Snapshot<Point, string, string>((source.ContainsKey("Point") ? ((Point)(source["Point"])) : null), (source.ContainsKey("StringWithCharSet") ? ((string)(source["StringWithCharSet"])) : null), (source.ContainsKey("StringWithCollation") ? ((string)(source["StringWithCollation"])) : null)))));
+            runtimeEntityType.SetEmptyShadowValuesFactory(
+                ISnapshot () => ((ISnapshot)(new Snapshot<Point, string, string>(default(Point), default(string), default(string)))));
+            runtimeEntityType.SetRelationshipSnapshotFactory(
+                ISnapshot (InternalEntityEntry source) =>
+                {
+                    var entity7 = ((CompiledModelTestBase.PrincipalBase)(source.Entity));
+                    return ((ISnapshot)(new Snapshot<long?, Guid, object, object>((source.GetCurrentValue<long?>(id) == null ? null : ((ValueComparer<long?>)(((IProperty)id).GetKeyValueComparer())).Snapshot(source.GetCurrentValue<long?>(id))), ((ValueComparer<Guid>)(((IProperty)alternateId).GetKeyValueComparer())).Snapshot(source.GetCurrentValue<Guid>(alternateId)), PrincipalBaseUnsafeAccessors._ownedField(entity7), (object)(null))));
+                });
+            runtimeEntityType.Counts = new PropertyCounts(
+                propertyCount: 17,
+                navigationCount: 2,
+                complexPropertyCount: 0,
+                originalValueCount: 17,
+                shadowCount: 3,
+                relationshipCount: 4,
+                storeGeneratedCount: 5);
             runtimeEntityType.AddAnnotation("Relational:FunctionName", null);
             runtimeEntityType.AddAnnotation("Relational:MappingStrategy", "TPT");
             runtimeEntityType.AddAnnotation("Relational:Schema", "mySchema");

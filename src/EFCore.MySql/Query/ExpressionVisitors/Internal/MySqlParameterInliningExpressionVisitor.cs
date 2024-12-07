@@ -107,7 +107,7 @@ public class MySqlParameterInliningExpressionVisitor : ExpressionVisitor
 
         return new MySqlInlinedParameterExpression(
             sqlParameterExpression,
-            _sqlExpressionFactory.Constant(
+            (SqlConstantExpression)_sqlExpressionFactory.Constant(
                 _parametersValues[sqlParameterExpression.Name],
                 sqlParameterExpression.TypeMapping));
     }

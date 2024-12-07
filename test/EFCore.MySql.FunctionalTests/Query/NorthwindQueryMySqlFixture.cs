@@ -10,7 +10,7 @@ using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestModels.Northwind;
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class NorthwindQueryMySqlFixture<TModelCustomizer> : NorthwindQueryRelationalFixture<TModelCustomizer>
-        where TModelCustomizer : IModelCustomizer, new()
+        where TModelCustomizer : ITestModelCustomizer, new()
     {
         protected override ITestStoreFactory TestStoreFactory => MySqlNorthwindTestStoreFactory.Instance;
         protected override Type ContextType => typeof(NorthwindMySqlContext);

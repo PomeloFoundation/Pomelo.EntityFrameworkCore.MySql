@@ -3,8 +3,10 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
@@ -693,6 +695,181 @@ FROM (
 """);
     }
 
+    public override async Task Bad_data_error_handling_invalid_cast_key(bool async)
+    {
+        await base.Bad_data_error_handling_invalid_cast_key(async);
+
+        AssertSql(
+"""
+SELECT `ProductName` AS `ProductID`, `ProductID` AS `ProductName`, `SupplierID`, `UnitPrice`, `UnitsInStock`, `Discontinued`
+                      FROM `Products`
+""");
+    }
+
+    public override async Task Bad_data_error_handling_invalid_cast(bool async)
+    {
+        await base.Bad_data_error_handling_invalid_cast(async);
+
+        AssertSql(
+"""
+SELECT `ProductID`, `ProductName` AS `UnitPrice`, `ProductName`, `SupplierID`, `UnitsInStock`, `Discontinued`
+                      FROM `Products`
+""");
+    }
+
+    public override async Task Bad_data_error_handling_invalid_cast_projection(bool async)
+    {
+        await base.Bad_data_error_handling_invalid_cast_projection(async);
+
+        AssertSql(
+"""
+SELECT `m`.`UnitPrice`
+FROM (
+    SELECT `ProductID`, `ProductName` AS `UnitPrice`, `ProductName`, `UnitsInStock`, `Discontinued`
+                          FROM `Products`
+) AS `m`
+""");
+    }
+
+    public override async Task Bad_data_error_handling_invalid_cast_no_tracking(bool async)
+    {
+        await base.Bad_data_error_handling_invalid_cast_no_tracking(async);
+
+        AssertSql(
+"""
+SELECT `ProductName` AS `ProductID`, `ProductID` AS `ProductName`, `SupplierID`, `UnitPrice`, `UnitsInStock`, `Discontinued`
+                    FROM `Products`
+""");
+    }
+
+    public override async Task Bad_data_error_handling_null(bool async)
+    {
+        await base.Bad_data_error_handling_null(async);
+
+        AssertSql(
+"""
+SELECT `ProductID`, `ProductName`, `SupplierID`, `UnitPrice`, `UnitsInStock`, NULL AS `Discontinued`
+                FROM `Products`
+""");
+    }
+
+    public override async Task Bad_data_error_handling_null_projection(bool async)
+    {
+        await base.Bad_data_error_handling_null_projection(async);
+
+        AssertSql(
+"""
+SELECT `m`.`Discontinued`
+FROM (
+    SELECT `ProductID`, `ProductName`, `SupplierID`, `UnitPrice`, `UnitsInStock`, NULL AS `Discontinued`
+                              FROM `Products`
+) AS `m`
+""");
+    }
+
+    public override async Task Bad_data_error_handling_null_no_tracking(bool async)
+    {
+        await base.Bad_data_error_handling_null_no_tracking(async);
+
+        AssertSql(
+"""
+SELECT `ProductID`, `ProductName`, `SupplierID`, `UnitPrice`, `UnitsInStock`, NULL AS `Discontinued`
+                          FROM `Products`
+""");
+    }
+
+    public override async Task SqlQueryRaw_queryable_simple_mapped_type(bool async)
+    {
+        await base.SqlQueryRaw_queryable_simple_mapped_type(async);
+
+        AssertSql(
+"""
+SELECT * FROM `Customers` WHERE `ContactName` LIKE '%z%'
+""");
+    }
+
+    public override async Task SqlQueryRaw_queryable_simple_columns_out_of_order_and_not_enough_columns_throws(bool async)
+    {
+        await base.SqlQueryRaw_queryable_simple_columns_out_of_order_and_not_enough_columns_throws(async);
+
+        AssertSql(
+"""
+SELECT `PostalCode`, `Phone`, `Fax`, `CustomerID`, `Country`, `ContactTitle`, `ContactName`, `CompanyName`, `City`, `Address` FROM `Customers`
+""");
+    }
+
+    public override async Task SqlQueryRaw_queryable_simple_different_cased_columns_and_not_enough_columns_throws(bool async)
+    {
+        await base.SqlQueryRaw_queryable_simple_different_cased_columns_and_not_enough_columns_throws(async);
+
+        AssertSql(
+"""
+SELECT `PostalCODE`, `Phone`, `Fax`, `CustomerID`, `Country`, `ContactTitle`, `ContactName`, `CompanyName`, `City`, `Address` FROM `Customers`
+""");
+    }
+
+    public override async Task SqlQueryRaw_queryable_simple_projection_not_composed(bool async)
+    {
+        await base.SqlQueryRaw_queryable_simple_projection_not_composed(async);
+
+        AssertSql(
+"""
+SELECT `m`.`CustomerID`, `m`.`City`
+FROM (
+    SELECT * FROM `Customers`
+) AS `m`
+""");
+    }
+
+    public override void Ad_hoc_type_with_reference_navigation_throws()
+    {
+        base.Ad_hoc_type_with_reference_navigation_throws();
+
+        AssertSql();
+    }
+
+    public override void Ad_hoc_type_with_collection_navigation_throws()
+    {
+        base.Ad_hoc_type_with_collection_navigation_throws();
+
+        AssertSql();
+    }
+
+    public override void Ad_hoc_type_with_unmapped_property_throws()
+    {
+        base.Ad_hoc_type_with_unmapped_property_throws();
+
+        AssertSql();
+    }
+
+    public override async Task SqlQueryRaw_then_String_Length(bool async)
+    {
+        await base.SqlQueryRaw_then_String_Length(async);
+
+        AssertSql(
+"""
+SELECT `s`.`Value`
+FROM (
+    SELECT 'x' AS `Value` FROM `Customers`
+) AS `s`
+WHERE CHAR_LENGTH(`s`.`Value`) = 0
+""");
+    }
+
+    public override async Task SqlQueryRaw_then_String_ToUpper_String_Length(bool async)
+    {
+        await base.SqlQueryRaw_then_String_ToUpper_String_Length(async);
+
+        AssertSql(
+"""
+SELECT `s`.`Value`
+FROM (
+    SELECT 'x' AS `Value` FROM `Customers`
+) AS `s`
+WHERE CHAR_LENGTH(UPPER(`s`.`Value`)) = 0
+""");
+    }
+
     [SupportedServerVersionCondition(nameof(ServerVersionSupport.CommonTableExpressions))]
     public override async Task SqlQueryRaw_composed_with_common_table_expression(bool async)
     {
@@ -710,6 +887,10 @@ FROM (
 WHERE `m`.`ContactName` LIKE '%z%'
 """);
     }
+
+    [ConditionalFact]
+    public virtual void Check_all_tests_overridden()
+        => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 
     protected override DbParameter CreateDbParameter(string name, object value)
         => new MySqlParameter { ParameterName = name, Value = value };

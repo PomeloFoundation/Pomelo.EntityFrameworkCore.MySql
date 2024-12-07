@@ -45,7 +45,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         {
                             new CaseWhenClause(
                                 _sqlExpressionFactory.IsNull(instance),
-                                _sqlExpressionFactory.Constant(null, RelationalTypeMapping.NullMapping))
+                                _sqlExpressionFactory.Constant(null, returnType))
                         },
                         sqlExpression);
                 }

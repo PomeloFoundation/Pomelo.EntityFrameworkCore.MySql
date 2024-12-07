@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -476,7 +477,7 @@ LIMIT 2");
 
             public JsonDomQueryContext(DbContextOptions options) : base(options) {}
 
-            public static void Seed(JsonDomQueryContext context)
+            public static async Task SeedAsync(JsonDomQueryContext context)
             {
                 var (customer1, customer2, customer3) = (createCustomer1(), createCustomer2(), createCustomer3());
 
@@ -484,7 +485,7 @@ LIMIT 2");
                     new JsonEntity { Id = 1, CustomerDocument = customer1, CustomerElement = customer1.RootElement },
                     new JsonEntity { Id = 2, CustomerDocument = customer2, CustomerElement = customer2.RootElement },
                     new JsonEntity { Id = 3, CustomerDocument = customer3, CustomerElement = customer3.RootElement });
-                context.SaveChanges();
+                await context.SaveChangesAsync();
 
                 static JsonDocument createCustomer1() => JsonDocument.Parse(@"
                 {
@@ -564,7 +565,7 @@ LIMIT 2");
             protected override string StoreName => "JsonMicrosoftDomQueryTest";
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
             public TestSqlLoggerFactory TestSqlLoggerFactory => (TestSqlLoggerFactory)ListLoggerFactory;
-            protected override void Seed(JsonDomQueryContext context) => JsonDomQueryContext.Seed(context);
+            protected override Task SeedAsync(JsonDomQueryContext context) => JsonDomQueryContext.SeedAsync(context);
 
             protected override IServiceCollection AddServices(IServiceCollection serviceCollection)
             {

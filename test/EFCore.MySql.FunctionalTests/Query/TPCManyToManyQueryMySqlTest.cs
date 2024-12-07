@@ -16,12 +16,9 @@ public class TPCManyToManyQueryMySqlTest : TPCManyToManyQueryRelationalTestBase<
         //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
     }
 
-    protected override bool CanExecuteQueryString
-        => true;
-
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
-        => TestHelpers.AssertAllMethodsOverridden(GetType());
+        => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 
     public override async Task Skip_navigation_all(bool async)
     {

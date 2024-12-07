@@ -127,9 +127,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                                 .Append(_sqlExpressionFactory.Constant("one"))
                                 .Append(args[1])
                                 .AppendIfTrue(
-                                    args.Length >= 3, () => args.Length >= 4
+                                    args.Length >= 3,
+                                    () => args.Length >= 4
                                         ? args[3]
-                                        : _sqlExpressionFactory.Constant(null, RelationalTypeMapping.NullMapping))
+                                        : _sqlExpressionFactory.Constant(null, typeof(string)))
                                 .AppendIfTrue(args.Length >= 3, () => args[2]),
                             typeof(bool),
                             null,

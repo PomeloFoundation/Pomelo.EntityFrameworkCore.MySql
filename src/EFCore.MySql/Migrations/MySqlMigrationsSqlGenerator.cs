@@ -222,6 +222,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
             [NotNull] MigrationCommandListBuilder builder,
             bool terminate = true)
         {
+            // Create a unique constraint for an AUTO_INCREMENT column that is part of a compound primary key, but is not the first column
+            // in that key. In this case, for InnoDB to be satisfied, an index (preferably UNIQUE) with the AUTO_INCREMENT column as the first
+            // column, has to exists.
+            //
+            // TODO: Only add the column, if there is not an already existing index that has the AUTO_INCREMENT column as the first index.
+            //       We should also monitor all related operations, to remove the index, if it is not needed anymore.
+            //       Check/test, whether this does not only apply to primary keys, but also to other (alternate) ones as well, or is
+            //       completely independent of keys, and really just applies to any AUTO_INCREMENT column.
+            //       Also, move handling to conventions.
+            if (operation.PrimaryKey is { Columns.Length: > 1 } primaryKey &&
+                primaryKey.Columns[0] is var firstPrimaryKeyColumnName &&
+                operation.Columns.Single(c => c.Name == firstPrimaryKeyColumnName) is var firstPrimaryKeyColumn &&
+                operation.Columns.FirstOrDefault(c => c[MySqlAnnotationNames.ValueGenerationStrategy] is MySqlValueGenerationStrategy.IdentityColumn) is { } autoIncrementColumn &&
+                operation.Columns.Contains(autoIncrementColumn) &&
+                autoIncrementColumn != firstPrimaryKeyColumn)
+            {
+                operation.UniqueConstraints.Add(
+                    new AddUniqueConstraintOperation
+                    {
+                        Schema = operation.PrimaryKey.Schema,
+                        Table = operation.PrimaryKey.Table,
+                        Columns = [autoIncrementColumn.Name],
+                    });
+            }
+
             base.Generate(operation, model, builder, false);
 
             var tableOptions = new List<(string, string)>();
@@ -301,17 +326,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
                 }
                 else
                 {
+                    var collationColumnName = _options.ServerVersion.Supports.CollationCharacterSetApplicabilityWithFullCollationNameColumn
+                        ? "FULL_COLLATION_NAME"
+                        : "COLLATION_NAME";
+
                     // The charset (and any collation) has been reset to the default.
-                    var resetCharSetSql = $@"set @__pomelo_TableCharset = (
-    SELECT `ccsa`.`CHARACTER_SET_NAME` as `TABLE_CHARACTER_SET`
-    FROM `INFORMATION_SCHEMA`.`TABLES` as `t`
-    LEFT JOIN `INFORMATION_SCHEMA`.`COLLATION_CHARACTER_SET_APPLICABILITY` as `ccsa` ON `ccsa`.`COLLATION_NAME` = `t`.`TABLE_COLLATION`
-    WHERE `TABLE_SCHEMA` = SCHEMA() AND `TABLE_NAME` = {_stringTypeMapping.GenerateSqlLiteral(operation.Name)} AND `TABLE_TYPE` IN ('BASE TABLE', 'VIEW'));
+                    var resetCharSetSql = $"""
+set @__pomelo_TableCharset = (
+SELECT `ccsa`.`CHARACTER_SET_NAME` as `TABLE_CHARACTER_SET`
+FROM `INFORMATION_SCHEMA`.`TABLES` as `t`
+LEFT JOIN `INFORMATION_SCHEMA`.`COLLATION_CHARACTER_SET_APPLICABILITY` as `ccsa` ON `ccsa`.`{collationColumnName}` = `t`.`TABLE_COLLATION`
+WHERE `TABLE_SCHEMA` = SCHEMA() AND `TABLE_NAME` = {_stringTypeMapping.GenerateSqlLiteral(operation.Name)} AND `TABLE_TYPE` IN ('BASE TABLE', 'VIEW'));
 
 SET @__pomelo_SqlExpr = CONCAT('ALTER TABLE {Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name)} CHARACTER SET = ', @__pomelo_TableCharset, ';');
 PREPARE __pomelo_SqlExprExecute FROM @__pomelo_SqlExpr;
 EXECUTE __pomelo_SqlExprExecute;
-DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
+DEALLOCATE PREPARE __pomelo_SqlExprExecute;
+""";
 
                     builder.AppendLine(resetCharSetSql);
                     EndStatement(builder);
@@ -1029,49 +1060,43 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
             EndStatement(builder);
         }
 
-        /// <summary>
-        ///     Generates a SQL fragment configuring a sequence with the given options.
-        /// </summary>
-        /// <param name="schema"> The schema that contains the sequence, or <see langword="null"/> to use the default schema. </param>
-        /// <param name="name"> The sequence name. </param>
-        /// <param name="operation"> The sequence options. </param>
-        /// <param name="model"> The target model which may be <see langword="null"/> if the operations exist without a model. </param>
-        /// <param name="builder"> The command builder to use to add the SQL fragment. </param>
         protected override void SequenceOptions(
             string schema,
             string name,
             SequenceOperation operation,
             IModel model,
-            MigrationCommandListBuilder builder)
+            MigrationCommandListBuilder builder,
+            bool forAlter)
         {
-            Check.NotEmpty(name, nameof(name));
-            Check.NotNull(operation, nameof(operation));
-            Check.NotNull(builder, nameof(builder));
+            var intTypeMapping = Dependencies.TypeMappingSource.GetMapping(typeof(int));
+            var longTypeMapping = Dependencies.TypeMappingSource.GetMapping(typeof(long));
 
             builder
                 .Append(" INCREMENT BY ")
-                .Append(IntegerConstant(operation.IncrementBy));
+                .Append(intTypeMapping.GenerateSqlLiteral(operation.IncrementBy));
 
-            if (operation.MinValue.HasValue)
+            if (operation.MinValue != null)
             {
                 builder
                     .Append(" MINVALUE ")
-                    .Append(IntegerConstant(operation.MinValue.Value));
+                    .Append(longTypeMapping.GenerateSqlLiteral(operation.MinValue));
             }
-            else
+            else if (forAlter)
             {
-                builder.Append(" NO MINVALUE");
+                builder
+                    .Append(" NO MINVALUE");
             }
 
-            if (operation.MaxValue.HasValue)
+            if (operation.MaxValue != null)
             {
                 builder
                     .Append(" MAXVALUE ")
-                    .Append(IntegerConstant(operation.MaxValue.Value));
+                    .Append(longTypeMapping.GenerateSqlLiteral(operation.MaxValue));
             }
-            else
+            else if (forAlter)
             {
-                builder.Append(" NO MAXVALUE");
+                builder
+                    .Append(" NO MAXVALUE");
             }
 
             builder.Append(operation.IsCyclic ? " CYCLE" : " NOCYCLE");
@@ -1459,47 +1484,16 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
             [CanBeNull] IModel model,
             [NotNull] MigrationCommandListBuilder builder)
         {
-            Check.NotNull(operation, nameof(operation));
-            Check.NotNull(builder, nameof(builder));
+            // We used to move an AUTO_INCREMENT column to the first position in a primary key, if the PK was a compound key and the column
+            // was not in the first position. We did this to satisfy InnoDB.
+            // However, this is technically an inaccuracy, and leads to incompatible FK -> PK mappings in MySQL 8.4.
+            // We will therefore reverse that behavior to leaving the key order unchanged again.
+            // This will lead to two issues:
+            //     - Migrations that upgrade vom Pomelo < 9.0 to Pomelo 9.0 will not include this change automatically, because the model
+            //       never changed (we only made the change (before and now) here in MySqlMigrationsSqlGenerator).
+            //     - There now needs to be an index for those cases, that contains the AUTO_INCREMENT column as its first column.
 
-            var primaryKey = operation.PrimaryKey;
-            if (primaryKey != null)
-            {
-                builder.AppendLine(",");
-
-                // MySQL InnoDB has the requirement, that an AUTO_INCREMENT column has to be the first
-                // column participating in an index.
-
-                var sortedColumnNames = primaryKey.Columns.Length > 1
-                    ? primaryKey.Columns
-                        .Select(columnName => operation.Columns.First(co => co.Name == columnName))
-                        .OrderBy(co => co[MySqlAnnotationNames.ValueGenerationStrategy] is MySqlValueGenerationStrategy generationStrategy
-                                       && generationStrategy == MySqlValueGenerationStrategy.IdentityColumn
-                            ? 0
-                            : 1)
-                        .Select(co => co.Name)
-                        .ToArray()
-                    : primaryKey.Columns;
-
-                var sortedPrimaryKey = new AddPrimaryKeyOperation()
-                {
-                    Schema = primaryKey.Schema,
-                    Table = primaryKey.Table,
-                    Name = primaryKey.Name,
-                    Columns = sortedColumnNames,
-                    IsDestructiveChange = primaryKey.IsDestructiveChange,
-                };
-
-                foreach (var annotation in primaryKey.GetAnnotations())
-                {
-                    sortedPrimaryKey[annotation.Name] = annotation.Value;
-                }
-
-                PrimaryKeyConstraint(
-                    sortedPrimaryKey,
-                    model,
-                    builder);
-            }
+            base.CreateTablePrimaryKeyConstraint(operation, model, builder);
         }
 
         protected override void PrimaryKeyConstraint(
@@ -1679,7 +1673,7 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
             }
         }
 
-        protected override void IndexOptions(CreateIndexOperation operation, IModel model, MigrationCommandListBuilder builder)
+        protected override void IndexOptions(MigrationOperation operation, IModel model, MigrationCommandListBuilder builder)
         {
             // The base implementation supports index filters in form of a WHERE clause.
             // This is not supported by MySQL, so we don't call it here.

@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Update.Internal;
+using NetTopologySuite.Geometries;
 
 #pragma warning disable 219, 612, 618
 #nullable disable
@@ -55,7 +57,7 @@ namespace TestNamespace
 
             AddAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn);
             AddAnnotation("Relational:MaxIdentifierLength", 64);
-            AddRuntimeAnnotation("Relational:RelationalModel", CreateRelationalModel());
+            AddRuntimeAnnotation("Relational:RelationalModelFactory", () => CreateRelationalModel());
         }
 
         private IRelationalModel CreateRelationalModel()
@@ -104,34 +106,31 @@ namespace TestNamespace
             var dataTable = new Table("Data", null, relationalModel);
             var idColumn = new Column("Id", "int", dataTable);
             dataTable.Columns.Add("Id", idColumn);
+            idColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<int>(idColumn);
             var blobColumn = new Column("Blob", "longblob", dataTable)
             {
                 IsNullable = true
             };
             dataTable.Columns.Add("Blob", blobColumn);
+            blobColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<byte[]>(blobColumn);
             var pointColumn = new Column("Point", "point", dataTable)
             {
                 IsNullable = true
             };
             dataTable.Columns.Add("Point", pointColumn);
+            pointColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<Point>(pointColumn);
             var stringWithCharSetColumn = new Column("StringWithCharSet", "varchar(128)", dataTable)
             {
                 IsNullable = true
             };
             dataTable.Columns.Add("StringWithCharSet", stringWithCharSetColumn);
+            stringWithCharSetColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(stringWithCharSetColumn);
             var stringWithCollationColumn = new Column("StringWithCollation", "varchar(128)", dataTable)
             {
                 IsNullable = true
             };
             dataTable.Columns.Add("StringWithCollation", stringWithCollationColumn);
-            var pK_Data = new UniqueConstraint("PK_Data", dataTable, new[] { idColumn });
-            dataTable.PrimaryKey = pK_Data;
-            var pK_DataUc = RelationalModel.GetKey(this,
-                "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+Data",
-                new[] { "Id" });
-            pK_Data.MappedKeys.Add(pK_DataUc);
-            RelationalModel.GetOrCreateUniqueConstraints(pK_DataUc).Add(pK_Data);
-            dataTable.UniqueConstraints.Add("PK_Data", pK_Data);
+            stringWithCollationColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(stringWithCollationColumn);
             relationalModel.Tables.Add(("Data", null), dataTable);
             var dataTableMapping = new TableMapping(data, dataTable, null);
             dataTable.AddTypeMapping(dataTableMapping, false);
@@ -141,6 +140,15 @@ namespace TestNamespace
             RelationalModel.CreateColumnMapping(pointColumn, data.FindProperty("Point")!, dataTableMapping);
             RelationalModel.CreateColumnMapping(stringWithCharSetColumn, data.FindProperty("StringWithCharSet")!, dataTableMapping);
             RelationalModel.CreateColumnMapping(stringWithCollationColumn, data.FindProperty("StringWithCollation")!, dataTableMapping);
+            var pK_Data = new UniqueConstraint("PK_Data", dataTable, new[] { idColumn });
+            dataTable.PrimaryKey = pK_Data;
+            pK_Data.SetRowKeyValueFactory(new SimpleRowKeyValueFactory<int>(pK_Data));
+            var pK_DataKey = RelationalModel.GetKey(this,
+                "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+Data",
+                new[] { "Id" });
+            pK_Data.MappedKeys.Add(pK_DataKey);
+            RelationalModel.GetOrCreateUniqueConstraints(pK_DataKey).Add(pK_Data);
+            dataTable.UniqueConstraints.Add("PK_Data", pK_Data);
 
             var dependentBase = FindEntityType("Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+DependentBase<byte?>")!;
 
@@ -182,41 +190,31 @@ namespace TestNamespace
             var dependentBasebyteTable = new Table("DependentBase<byte?>", null, relationalModel);
             var principalIdColumn = new Column("PrincipalId", "bigint", dependentBasebyteTable);
             dependentBasebyteTable.Columns.Add("PrincipalId", principalIdColumn);
+            principalIdColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<long>(principalIdColumn);
             var principalAlternateIdColumn = new Column("PrincipalAlternateId", "char(36)", dependentBasebyteTable);
             dependentBasebyteTable.Columns.Add("PrincipalAlternateId", principalAlternateIdColumn);
+            principalAlternateIdColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<Guid>(principalAlternateIdColumn);
             var dataColumn = new Column("Data", "char(20)", dependentBasebyteTable)
             {
                 IsNullable = true
             };
             dependentBasebyteTable.Columns.Add("Data", dataColumn);
+            dataColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(dataColumn);
             var enumDiscriminatorColumn = new Column("EnumDiscriminator", "int", dependentBasebyteTable);
             dependentBasebyteTable.Columns.Add("EnumDiscriminator", enumDiscriminatorColumn);
+            enumDiscriminatorColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<int>(enumDiscriminatorColumn);
             var idColumn0 = new Column("Id", "tinyint unsigned", dependentBasebyteTable)
             {
                 IsNullable = true
             };
             dependentBasebyteTable.Columns.Add("Id", idColumn0);
+            idColumn0.Accessors = ColumnAccessorsFactory.CreateGeneric<byte>(idColumn0);
             var moneyColumn = new Column("Money", "decimal(9,3)", dependentBasebyteTable)
             {
                 IsNullable = true
             };
             dependentBasebyteTable.Columns.Add("Money", moneyColumn);
-            var pK_DependentBasebyte = new UniqueConstraint("PK_DependentBase<byte?>", dependentBasebyteTable, new[] { principalIdColumn, principalAlternateIdColumn });
-            dependentBasebyteTable.PrimaryKey = pK_DependentBasebyte;
-            var pK_DependentBasebyteUc = RelationalModel.GetKey(this,
-                "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+DependentBase<byte?>",
-                new[] { "PrincipalId", "PrincipalAlternateId" });
-            pK_DependentBasebyte.MappedKeys.Add(pK_DependentBasebyteUc);
-            RelationalModel.GetOrCreateUniqueConstraints(pK_DependentBasebyteUc).Add(pK_DependentBasebyte);
-            dependentBasebyteTable.UniqueConstraints.Add("PK_DependentBase<byte?>", pK_DependentBasebyte);
-            var iX_DependentBasebyte_PrincipalId = new TableIndex(
-            "IX_DependentBase<byte?>_PrincipalId", dependentBasebyteTable, new[] { principalIdColumn }, true);
-            var iX_DependentBasebyte_PrincipalIdIx = RelationalModel.GetIndex(this,
-                "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+DependentBase<byte?>",
-                new[] { "PrincipalId" });
-            iX_DependentBasebyte_PrincipalId.MappedIndexes.Add(iX_DependentBasebyte_PrincipalIdIx);
-            RelationalModel.GetOrCreateTableIndexes(iX_DependentBasebyte_PrincipalIdIx).Add(iX_DependentBasebyte_PrincipalId);
-            dependentBasebyteTable.Indexes.Add("IX_DependentBase<byte?>_PrincipalId", iX_DependentBasebyte_PrincipalId);
+            moneyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<decimal>(moneyColumn);
             relationalModel.Tables.Add(("DependentBase<byte?>", null), dependentBasebyteTable);
             var dependentBasebyteTableMapping = new TableMapping(dependentBase, dependentBasebyteTable, true)
             {
@@ -257,6 +255,24 @@ namespace TestNamespace
             RelationalModel.CreateColumnMapping(enumDiscriminatorColumn, dependentDerived.FindProperty("EnumDiscriminator")!, dependentBasebyteTableMapping0);
             RelationalModel.CreateColumnMapping(idColumn0, dependentDerived.FindProperty("Id")!, dependentBasebyteTableMapping0);
             RelationalModel.CreateColumnMapping(moneyColumn, dependentDerived.FindProperty("Money")!, dependentBasebyteTableMapping0);
+            var pK_DependentBasebyte = new UniqueConstraint("PK_DependentBase<byte?>", dependentBasebyteTable, new[] { principalIdColumn, principalAlternateIdColumn });
+            dependentBasebyteTable.PrimaryKey = pK_DependentBasebyte;
+            pK_DependentBasebyte.SetRowKeyValueFactory(new CompositeRowKeyValueFactory(pK_DependentBasebyte));
+            var pK_DependentBasebyteKey = RelationalModel.GetKey(this,
+                "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+DependentBase<byte?>",
+                new[] { "PrincipalId", "PrincipalAlternateId" });
+            pK_DependentBasebyte.MappedKeys.Add(pK_DependentBasebyteKey);
+            RelationalModel.GetOrCreateUniqueConstraints(pK_DependentBasebyteKey).Add(pK_DependentBasebyte);
+            dependentBasebyteTable.UniqueConstraints.Add("PK_DependentBase<byte?>", pK_DependentBasebyte);
+            var iX_DependentBasebyte_PrincipalId = new TableIndex(
+            "IX_DependentBase<byte?>_PrincipalId", dependentBasebyteTable, new[] { principalIdColumn }, true);
+            iX_DependentBasebyte_PrincipalId.SetRowIndexValueFactory(new SimpleRowIndexValueFactory<long>(iX_DependentBasebyte_PrincipalId));
+            var iX_DependentBasebyte_PrincipalIdIx = RelationalModel.GetIndex(this,
+                "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+DependentBase<byte?>",
+                new[] { "PrincipalId" });
+            iX_DependentBasebyte_PrincipalId.MappedIndexes.Add(iX_DependentBasebyte_PrincipalIdIx);
+            RelationalModel.GetOrCreateTableIndexes(iX_DependentBasebyte_PrincipalIdIx).Add(iX_DependentBasebyte_PrincipalId);
+            dependentBasebyteTable.Indexes.Add("IX_DependentBase<byte?>_PrincipalId", iX_DependentBasebyte_PrincipalId);
 
             var manyTypes = FindEntityType("Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+ManyTypes")!;
 
@@ -1104,607 +1120,835 @@ namespace TestNamespace
             var manyTypesTable = new Table("ManyTypes", null, relationalModel);
             var idColumn1 = new Column("Id", "int", manyTypesTable);
             manyTypesTable.Columns.Add("Id", idColumn1);
+            idColumn1.Accessors = ColumnAccessorsFactory.CreateGeneric<int>(idColumn1);
             var boolColumn = new Column("Bool", "tinyint(1)", manyTypesTable);
             manyTypesTable.Columns.Add("Bool", boolColumn);
+            boolColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<bool>(boolColumn);
             var boolArrayColumn = new Column("BoolArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("BoolArray", boolArrayColumn);
+            boolArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(boolArrayColumn);
             var boolToStringConverterPropertyColumn = new Column("BoolToStringConverterProperty", "varchar(1)", manyTypesTable);
             manyTypesTable.Columns.Add("BoolToStringConverterProperty", boolToStringConverterPropertyColumn);
+            boolToStringConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(boolToStringConverterPropertyColumn);
             var boolToTwoValuesConverterPropertyColumn = new Column("BoolToTwoValuesConverterProperty", "tinyint unsigned", manyTypesTable);
             manyTypesTable.Columns.Add("BoolToTwoValuesConverterProperty", boolToTwoValuesConverterPropertyColumn);
+            boolToTwoValuesConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<byte>(boolToTwoValuesConverterPropertyColumn);
             var boolToZeroOneConverterPropertyColumn = new Column("BoolToZeroOneConverterProperty", "smallint", manyTypesTable);
             manyTypesTable.Columns.Add("BoolToZeroOneConverterProperty", boolToZeroOneConverterPropertyColumn);
+            boolToZeroOneConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<short>(boolToZeroOneConverterPropertyColumn);
             var bytesColumn = new Column("Bytes", "longblob", manyTypesTable);
             manyTypesTable.Columns.Add("Bytes", bytesColumn);
+            bytesColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<byte[]>(bytesColumn);
             var bytesArrayColumn = new Column("BytesArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("BytesArray", bytesArrayColumn);
+            bytesArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(bytesArrayColumn);
             var bytesToStringConverterPropertyColumn = new Column("BytesToStringConverterProperty", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("BytesToStringConverterProperty", bytesToStringConverterPropertyColumn);
+            bytesToStringConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(bytesToStringConverterPropertyColumn);
             var castingConverterPropertyColumn = new Column("CastingConverterProperty", "decimal(65,30)", manyTypesTable);
             manyTypesTable.Columns.Add("CastingConverterProperty", castingConverterPropertyColumn);
+            castingConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<decimal>(castingConverterPropertyColumn);
             var charColumn = new Column("Char", "varchar(1)", manyTypesTable);
             manyTypesTable.Columns.Add("Char", charColumn);
+            charColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(charColumn);
             var charArrayColumn = new Column("CharArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("CharArray", charArrayColumn);
+            charArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(charArrayColumn);
             var charToStringConverterPropertyColumn = new Column("CharToStringConverterProperty", "varchar(1)", manyTypesTable);
             manyTypesTable.Columns.Add("CharToStringConverterProperty", charToStringConverterPropertyColumn);
+            charToStringConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(charToStringConverterPropertyColumn);
             var dateOnlyColumn = new Column("DateOnly", "date", manyTypesTable);
             manyTypesTable.Columns.Add("DateOnly", dateOnlyColumn);
+            dateOnlyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<DateOnly>(dateOnlyColumn);
             var dateOnlyArrayColumn = new Column("DateOnlyArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("DateOnlyArray", dateOnlyArrayColumn);
+            dateOnlyArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(dateOnlyArrayColumn);
             var dateOnlyToStringConverterPropertyColumn = new Column("DateOnlyToStringConverterProperty", "varchar(10)", manyTypesTable);
             manyTypesTable.Columns.Add("DateOnlyToStringConverterProperty", dateOnlyToStringConverterPropertyColumn);
+            dateOnlyToStringConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(dateOnlyToStringConverterPropertyColumn);
             var dateTimeColumn = new Column("DateTime", "datetime(6)", manyTypesTable);
             manyTypesTable.Columns.Add("DateTime", dateTimeColumn);
+            dateTimeColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<DateTime>(dateTimeColumn);
             var dateTimeArrayColumn = new Column("DateTimeArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("DateTimeArray", dateTimeArrayColumn);
+            dateTimeArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(dateTimeArrayColumn);
             var dateTimeOffsetToBinaryConverterPropertyColumn = new Column("DateTimeOffsetToBinaryConverterProperty", "bigint", manyTypesTable);
             manyTypesTable.Columns.Add("DateTimeOffsetToBinaryConverterProperty", dateTimeOffsetToBinaryConverterPropertyColumn);
+            dateTimeOffsetToBinaryConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<long>(dateTimeOffsetToBinaryConverterPropertyColumn);
             var dateTimeOffsetToBytesConverterPropertyColumn = new Column("DateTimeOffsetToBytesConverterProperty", "varbinary(12)", manyTypesTable);
             manyTypesTable.Columns.Add("DateTimeOffsetToBytesConverterProperty", dateTimeOffsetToBytesConverterPropertyColumn);
+            dateTimeOffsetToBytesConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<byte[]>(dateTimeOffsetToBytesConverterPropertyColumn);
             var dateTimeOffsetToStringConverterPropertyColumn = new Column("DateTimeOffsetToStringConverterProperty", "varchar(48)", manyTypesTable);
             manyTypesTable.Columns.Add("DateTimeOffsetToStringConverterProperty", dateTimeOffsetToStringConverterPropertyColumn);
+            dateTimeOffsetToStringConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(dateTimeOffsetToStringConverterPropertyColumn);
             var dateTimeToBinaryConverterPropertyColumn = new Column("DateTimeToBinaryConverterProperty", "bigint", manyTypesTable);
             manyTypesTable.Columns.Add("DateTimeToBinaryConverterProperty", dateTimeToBinaryConverterPropertyColumn);
+            dateTimeToBinaryConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<long>(dateTimeToBinaryConverterPropertyColumn);
             var dateTimeToStringConverterPropertyColumn = new Column("DateTimeToStringConverterProperty", "varchar(48)", manyTypesTable);
             manyTypesTable.Columns.Add("DateTimeToStringConverterProperty", dateTimeToStringConverterPropertyColumn);
+            dateTimeToStringConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(dateTimeToStringConverterPropertyColumn);
             var dateTimeToTicksConverterPropertyColumn = new Column("DateTimeToTicksConverterProperty", "datetime(6)", manyTypesTable);
             manyTypesTable.Columns.Add("DateTimeToTicksConverterProperty", dateTimeToTicksConverterPropertyColumn);
+            dateTimeToTicksConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<DateTime>(dateTimeToTicksConverterPropertyColumn);
             var decimalColumn = new Column("Decimal", "decimal(65,30)", manyTypesTable);
             manyTypesTable.Columns.Add("Decimal", decimalColumn);
+            decimalColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<decimal>(decimalColumn);
             var decimalArrayColumn = new Column("DecimalArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("DecimalArray", decimalArrayColumn);
+            decimalArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(decimalArrayColumn);
             var decimalNumberToBytesConverterPropertyColumn = new Column("DecimalNumberToBytesConverterProperty", "varbinary(16)", manyTypesTable);
             manyTypesTable.Columns.Add("DecimalNumberToBytesConverterProperty", decimalNumberToBytesConverterPropertyColumn);
+            decimalNumberToBytesConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<byte[]>(decimalNumberToBytesConverterPropertyColumn);
             var decimalNumberToStringConverterPropertyColumn = new Column("DecimalNumberToStringConverterProperty", "varchar(64)", manyTypesTable);
             manyTypesTable.Columns.Add("DecimalNumberToStringConverterProperty", decimalNumberToStringConverterPropertyColumn);
+            decimalNumberToStringConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(decimalNumberToStringConverterPropertyColumn);
             var doubleColumn = new Column("Double", "double", manyTypesTable);
             manyTypesTable.Columns.Add("Double", doubleColumn);
+            doubleColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<double>(doubleColumn);
             var doubleArrayColumn = new Column("DoubleArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("DoubleArray", doubleArrayColumn);
+            doubleArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(doubleArrayColumn);
             var doubleNumberToBytesConverterPropertyColumn = new Column("DoubleNumberToBytesConverterProperty", "varbinary(8)", manyTypesTable);
             manyTypesTable.Columns.Add("DoubleNumberToBytesConverterProperty", doubleNumberToBytesConverterPropertyColumn);
+            doubleNumberToBytesConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<byte[]>(doubleNumberToBytesConverterPropertyColumn);
             var doubleNumberToStringConverterPropertyColumn = new Column("DoubleNumberToStringConverterProperty", "varchar(64)", manyTypesTable);
             manyTypesTable.Columns.Add("DoubleNumberToStringConverterProperty", doubleNumberToStringConverterPropertyColumn);
+            doubleNumberToStringConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(doubleNumberToStringConverterPropertyColumn);
             var enum16Column = new Column("Enum16", "smallint", manyTypesTable);
             manyTypesTable.Columns.Add("Enum16", enum16Column);
+            enum16Column.Accessors = ColumnAccessorsFactory.CreateGeneric<short>(enum16Column);
             var enum16ArrayColumn = new Column("Enum16Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Enum16Array", enum16ArrayColumn);
+            enum16ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enum16ArrayColumn);
             var enum16AsStringColumn = new Column("Enum16AsString", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Enum16AsString", enum16AsStringColumn);
+            enum16AsStringColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enum16AsStringColumn);
             var enum16AsStringArrayColumn = new Column("Enum16AsStringArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Enum16AsStringArray", enum16AsStringArrayColumn);
+            enum16AsStringArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enum16AsStringArrayColumn);
             var enum16AsStringCollectionColumn = new Column("Enum16AsStringCollection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Enum16AsStringCollection", enum16AsStringCollectionColumn);
+            enum16AsStringCollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enum16AsStringCollectionColumn);
             var enum16CollectionColumn = new Column("Enum16Collection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Enum16Collection", enum16CollectionColumn);
+            enum16CollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enum16CollectionColumn);
             var enum32Column = new Column("Enum32", "int", manyTypesTable);
             manyTypesTable.Columns.Add("Enum32", enum32Column);
+            enum32Column.Accessors = ColumnAccessorsFactory.CreateGeneric<int>(enum32Column);
             var enum32ArrayColumn = new Column("Enum32Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Enum32Array", enum32ArrayColumn);
+            enum32ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enum32ArrayColumn);
             var enum32AsStringColumn = new Column("Enum32AsString", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Enum32AsString", enum32AsStringColumn);
+            enum32AsStringColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enum32AsStringColumn);
             var enum32AsStringArrayColumn = new Column("Enum32AsStringArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Enum32AsStringArray", enum32AsStringArrayColumn);
+            enum32AsStringArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enum32AsStringArrayColumn);
             var enum32AsStringCollectionColumn = new Column("Enum32AsStringCollection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Enum32AsStringCollection", enum32AsStringCollectionColumn);
+            enum32AsStringCollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enum32AsStringCollectionColumn);
             var enum32CollectionColumn = new Column("Enum32Collection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Enum32Collection", enum32CollectionColumn);
+            enum32CollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enum32CollectionColumn);
             var enum64Column = new Column("Enum64", "bigint", manyTypesTable);
             manyTypesTable.Columns.Add("Enum64", enum64Column);
+            enum64Column.Accessors = ColumnAccessorsFactory.CreateGeneric<long>(enum64Column);
             var enum64ArrayColumn = new Column("Enum64Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Enum64Array", enum64ArrayColumn);
+            enum64ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enum64ArrayColumn);
             var enum64AsStringColumn = new Column("Enum64AsString", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Enum64AsString", enum64AsStringColumn);
+            enum64AsStringColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enum64AsStringColumn);
             var enum64AsStringArrayColumn = new Column("Enum64AsStringArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Enum64AsStringArray", enum64AsStringArrayColumn);
+            enum64AsStringArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enum64AsStringArrayColumn);
             var enum64AsStringCollectionColumn = new Column("Enum64AsStringCollection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Enum64AsStringCollection", enum64AsStringCollectionColumn);
+            enum64AsStringCollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enum64AsStringCollectionColumn);
             var enum64CollectionColumn = new Column("Enum64Collection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Enum64Collection", enum64CollectionColumn);
+            enum64CollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enum64CollectionColumn);
             var enum8Column = new Column("Enum8", "tinyint", manyTypesTable);
             manyTypesTable.Columns.Add("Enum8", enum8Column);
+            enum8Column.Accessors = ColumnAccessorsFactory.CreateGeneric<sbyte>(enum8Column);
             var enum8ArrayColumn = new Column("Enum8Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Enum8Array", enum8ArrayColumn);
+            enum8ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enum8ArrayColumn);
             var enum8AsStringColumn = new Column("Enum8AsString", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Enum8AsString", enum8AsStringColumn);
+            enum8AsStringColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enum8AsStringColumn);
             var enum8AsStringArrayColumn = new Column("Enum8AsStringArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Enum8AsStringArray", enum8AsStringArrayColumn);
+            enum8AsStringArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enum8AsStringArrayColumn);
             var enum8AsStringCollectionColumn = new Column("Enum8AsStringCollection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Enum8AsStringCollection", enum8AsStringCollectionColumn);
+            enum8AsStringCollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enum8AsStringCollectionColumn);
             var enum8CollectionColumn = new Column("Enum8Collection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Enum8Collection", enum8CollectionColumn);
+            enum8CollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enum8CollectionColumn);
             var enumToNumberConverterPropertyColumn = new Column("EnumToNumberConverterProperty", "int", manyTypesTable);
             manyTypesTable.Columns.Add("EnumToNumberConverterProperty", enumToNumberConverterPropertyColumn);
+            enumToNumberConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<int>(enumToNumberConverterPropertyColumn);
             var enumToStringConverterPropertyColumn = new Column("EnumToStringConverterProperty", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("EnumToStringConverterProperty", enumToStringConverterPropertyColumn);
+            enumToStringConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enumToStringConverterPropertyColumn);
             var enumU16Column = new Column("EnumU16", "smallint unsigned", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU16", enumU16Column);
+            enumU16Column.Accessors = ColumnAccessorsFactory.CreateGeneric<ushort>(enumU16Column);
             var enumU16ArrayColumn = new Column("EnumU16Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU16Array", enumU16ArrayColumn);
+            enumU16ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enumU16ArrayColumn);
             var enumU16AsStringColumn = new Column("EnumU16AsString", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU16AsString", enumU16AsStringColumn);
+            enumU16AsStringColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enumU16AsStringColumn);
             var enumU16AsStringArrayColumn = new Column("EnumU16AsStringArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU16AsStringArray", enumU16AsStringArrayColumn);
+            enumU16AsStringArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enumU16AsStringArrayColumn);
             var enumU16AsStringCollectionColumn = new Column("EnumU16AsStringCollection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU16AsStringCollection", enumU16AsStringCollectionColumn);
+            enumU16AsStringCollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enumU16AsStringCollectionColumn);
             var enumU16CollectionColumn = new Column("EnumU16Collection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU16Collection", enumU16CollectionColumn);
+            enumU16CollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enumU16CollectionColumn);
             var enumU32Column = new Column("EnumU32", "int unsigned", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU32", enumU32Column);
+            enumU32Column.Accessors = ColumnAccessorsFactory.CreateGeneric<uint>(enumU32Column);
             var enumU32ArrayColumn = new Column("EnumU32Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU32Array", enumU32ArrayColumn);
+            enumU32ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enumU32ArrayColumn);
             var enumU32AsStringColumn = new Column("EnumU32AsString", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU32AsString", enumU32AsStringColumn);
+            enumU32AsStringColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enumU32AsStringColumn);
             var enumU32AsStringArrayColumn = new Column("EnumU32AsStringArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU32AsStringArray", enumU32AsStringArrayColumn);
+            enumU32AsStringArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enumU32AsStringArrayColumn);
             var enumU32AsStringCollectionColumn = new Column("EnumU32AsStringCollection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU32AsStringCollection", enumU32AsStringCollectionColumn);
+            enumU32AsStringCollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enumU32AsStringCollectionColumn);
             var enumU32CollectionColumn = new Column("EnumU32Collection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU32Collection", enumU32CollectionColumn);
+            enumU32CollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enumU32CollectionColumn);
             var enumU64Column = new Column("EnumU64", "bigint unsigned", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU64", enumU64Column);
+            enumU64Column.Accessors = ColumnAccessorsFactory.CreateGeneric<ulong>(enumU64Column);
             var enumU64ArrayColumn = new Column("EnumU64Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU64Array", enumU64ArrayColumn);
+            enumU64ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enumU64ArrayColumn);
             var enumU64AsStringColumn = new Column("EnumU64AsString", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU64AsString", enumU64AsStringColumn);
+            enumU64AsStringColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enumU64AsStringColumn);
             var enumU64AsStringArrayColumn = new Column("EnumU64AsStringArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU64AsStringArray", enumU64AsStringArrayColumn);
+            enumU64AsStringArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enumU64AsStringArrayColumn);
             var enumU64AsStringCollectionColumn = new Column("EnumU64AsStringCollection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU64AsStringCollection", enumU64AsStringCollectionColumn);
+            enumU64AsStringCollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enumU64AsStringCollectionColumn);
             var enumU64CollectionColumn = new Column("EnumU64Collection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU64Collection", enumU64CollectionColumn);
+            enumU64CollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enumU64CollectionColumn);
             var enumU8Column = new Column("EnumU8", "tinyint unsigned", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU8", enumU8Column);
+            enumU8Column.Accessors = ColumnAccessorsFactory.CreateGeneric<byte>(enumU8Column);
             var enumU8ArrayColumn = new Column("EnumU8Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU8Array", enumU8ArrayColumn);
+            enumU8ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enumU8ArrayColumn);
             var enumU8AsStringColumn = new Column("EnumU8AsString", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU8AsString", enumU8AsStringColumn);
+            enumU8AsStringColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enumU8AsStringColumn);
             var enumU8AsStringArrayColumn = new Column("EnumU8AsStringArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU8AsStringArray", enumU8AsStringArrayColumn);
+            enumU8AsStringArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enumU8AsStringArrayColumn);
             var enumU8AsStringCollectionColumn = new Column("EnumU8AsStringCollection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU8AsStringCollection", enumU8AsStringCollectionColumn);
+            enumU8AsStringCollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enumU8AsStringCollectionColumn);
             var enumU8CollectionColumn = new Column("EnumU8Collection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("EnumU8Collection", enumU8CollectionColumn);
+            enumU8CollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(enumU8CollectionColumn);
             var floatColumn = new Column("Float", "float", manyTypesTable);
             manyTypesTable.Columns.Add("Float", floatColumn);
+            floatColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<float>(floatColumn);
             var floatArrayColumn = new Column("FloatArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("FloatArray", floatArrayColumn);
+            floatArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(floatArrayColumn);
             var guidColumn = new Column("Guid", "char(36)", manyTypesTable);
             manyTypesTable.Columns.Add("Guid", guidColumn);
+            guidColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<Guid>(guidColumn);
             var guidArrayColumn = new Column("GuidArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("GuidArray", guidArrayColumn);
+            guidArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(guidArrayColumn);
             var guidToBytesConverterPropertyColumn = new Column("GuidToBytesConverterProperty", "varbinary(16)", manyTypesTable);
             manyTypesTable.Columns.Add("GuidToBytesConverterProperty", guidToBytesConverterPropertyColumn);
+            guidToBytesConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<byte[]>(guidToBytesConverterPropertyColumn);
             var guidToStringConverterPropertyColumn = new Column("GuidToStringConverterProperty", "varchar(36)", manyTypesTable);
             manyTypesTable.Columns.Add("GuidToStringConverterProperty", guidToStringConverterPropertyColumn);
+            guidToStringConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(guidToStringConverterPropertyColumn);
             var iPAddressColumn = new Column("IPAddress", "varchar(45)", manyTypesTable);
             manyTypesTable.Columns.Add("IPAddress", iPAddressColumn);
+            iPAddressColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(iPAddressColumn);
             var iPAddressArrayColumn = new Column("IPAddressArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("IPAddressArray", iPAddressArrayColumn);
+            iPAddressArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(iPAddressArrayColumn);
             var iPAddressToBytesConverterPropertyColumn = new Column("IPAddressToBytesConverterProperty", "varbinary(16)", manyTypesTable);
             manyTypesTable.Columns.Add("IPAddressToBytesConverterProperty", iPAddressToBytesConverterPropertyColumn);
+            iPAddressToBytesConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<byte[]>(iPAddressToBytesConverterPropertyColumn);
             var iPAddressToStringConverterPropertyColumn = new Column("IPAddressToStringConverterProperty", "varchar(45)", manyTypesTable);
             manyTypesTable.Columns.Add("IPAddressToStringConverterProperty", iPAddressToStringConverterPropertyColumn);
+            iPAddressToStringConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(iPAddressToStringConverterPropertyColumn);
             var int16Column = new Column("Int16", "smallint", manyTypesTable);
             manyTypesTable.Columns.Add("Int16", int16Column);
+            int16Column.Accessors = ColumnAccessorsFactory.CreateGeneric<short>(int16Column);
             var int16ArrayColumn = new Column("Int16Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Int16Array", int16ArrayColumn);
+            int16ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(int16ArrayColumn);
             var int32Column = new Column("Int32", "int", manyTypesTable);
             manyTypesTable.Columns.Add("Int32", int32Column);
+            int32Column.Accessors = ColumnAccessorsFactory.CreateGeneric<int>(int32Column);
             var int32ArrayColumn = new Column("Int32Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Int32Array", int32ArrayColumn);
+            int32ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(int32ArrayColumn);
             var int64Column = new Column("Int64", "bigint", manyTypesTable);
             manyTypesTable.Columns.Add("Int64", int64Column);
+            int64Column.Accessors = ColumnAccessorsFactory.CreateGeneric<long>(int64Column);
             var int64ArrayColumn = new Column("Int64Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Int64Array", int64ArrayColumn);
+            int64ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(int64ArrayColumn);
             var int8Column = new Column("Int8", "tinyint", manyTypesTable);
             manyTypesTable.Columns.Add("Int8", int8Column);
+            int8Column.Accessors = ColumnAccessorsFactory.CreateGeneric<sbyte>(int8Column);
             var int8ArrayColumn = new Column("Int8Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Int8Array", int8ArrayColumn);
+            int8ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(int8ArrayColumn);
             var intNumberToBytesConverterPropertyColumn = new Column("IntNumberToBytesConverterProperty", "varbinary(4)", manyTypesTable);
             manyTypesTable.Columns.Add("IntNumberToBytesConverterProperty", intNumberToBytesConverterPropertyColumn);
+            intNumberToBytesConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<byte[]>(intNumberToBytesConverterPropertyColumn);
             var intNumberToStringConverterPropertyColumn = new Column("IntNumberToStringConverterProperty", "varchar(64)", manyTypesTable);
             manyTypesTable.Columns.Add("IntNumberToStringConverterProperty", intNumberToStringConverterPropertyColumn);
+            intNumberToStringConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(intNumberToStringConverterPropertyColumn);
             var nullIntToNullStringConverterPropertyColumn = new Column("NullIntToNullStringConverterProperty", "longtext", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullIntToNullStringConverterProperty", nullIntToNullStringConverterPropertyColumn);
+            nullIntToNullStringConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullIntToNullStringConverterPropertyColumn);
             var nullableBoolColumn = new Column("NullableBool", "tinyint(1)", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableBool", nullableBoolColumn);
+            nullableBoolColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<bool>(nullableBoolColumn);
             var nullableBoolArrayColumn = new Column("NullableBoolArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableBoolArray", nullableBoolArrayColumn);
+            nullableBoolArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableBoolArrayColumn);
             var nullableBytesColumn = new Column("NullableBytes", "longblob", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableBytes", nullableBytesColumn);
+            nullableBytesColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<byte[]>(nullableBytesColumn);
             var nullableBytesArrayColumn = new Column("NullableBytesArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableBytesArray", nullableBytesArrayColumn);
+            nullableBytesArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableBytesArrayColumn);
             var nullableCharColumn = new Column("NullableChar", "varchar(1)", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableChar", nullableCharColumn);
+            nullableCharColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableCharColumn);
             var nullableCharArrayColumn = new Column("NullableCharArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableCharArray", nullableCharArrayColumn);
+            nullableCharArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableCharArrayColumn);
             var nullableDateOnlyColumn = new Column("NullableDateOnly", "date", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableDateOnly", nullableDateOnlyColumn);
+            nullableDateOnlyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<DateOnly>(nullableDateOnlyColumn);
             var nullableDateOnlyArrayColumn = new Column("NullableDateOnlyArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableDateOnlyArray", nullableDateOnlyArrayColumn);
+            nullableDateOnlyArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableDateOnlyArrayColumn);
             var nullableDateTimeColumn = new Column("NullableDateTime", "datetime(6)", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableDateTime", nullableDateTimeColumn);
+            nullableDateTimeColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<DateTime>(nullableDateTimeColumn);
             var nullableDateTimeArrayColumn = new Column("NullableDateTimeArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableDateTimeArray", nullableDateTimeArrayColumn);
+            nullableDateTimeArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableDateTimeArrayColumn);
             var nullableDecimalColumn = new Column("NullableDecimal", "decimal(65,30)", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableDecimal", nullableDecimalColumn);
+            nullableDecimalColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<decimal>(nullableDecimalColumn);
             var nullableDecimalArrayColumn = new Column("NullableDecimalArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableDecimalArray", nullableDecimalArrayColumn);
+            nullableDecimalArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableDecimalArrayColumn);
             var nullableDoubleColumn = new Column("NullableDouble", "double", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableDouble", nullableDoubleColumn);
+            nullableDoubleColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<double>(nullableDoubleColumn);
             var nullableDoubleArrayColumn = new Column("NullableDoubleArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableDoubleArray", nullableDoubleArrayColumn);
+            nullableDoubleArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableDoubleArrayColumn);
             var nullableEnum16Column = new Column("NullableEnum16", "smallint", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableEnum16", nullableEnum16Column);
+            nullableEnum16Column.Accessors = ColumnAccessorsFactory.CreateGeneric<short>(nullableEnum16Column);
             var nullableEnum16ArrayColumn = new Column("NullableEnum16Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnum16Array", nullableEnum16ArrayColumn);
+            nullableEnum16ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnum16ArrayColumn);
             var nullableEnum16AsStringColumn = new Column("NullableEnum16AsString", "smallint", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableEnum16AsString", nullableEnum16AsStringColumn);
+            nullableEnum16AsStringColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<short>(nullableEnum16AsStringColumn);
             var nullableEnum16AsStringArrayColumn = new Column("NullableEnum16AsStringArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnum16AsStringArray", nullableEnum16AsStringArrayColumn);
+            nullableEnum16AsStringArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnum16AsStringArrayColumn);
             var nullableEnum16AsStringCollectionColumn = new Column("NullableEnum16AsStringCollection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnum16AsStringCollection", nullableEnum16AsStringCollectionColumn);
+            nullableEnum16AsStringCollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnum16AsStringCollectionColumn);
             var nullableEnum16CollectionColumn = new Column("NullableEnum16Collection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnum16Collection", nullableEnum16CollectionColumn);
+            nullableEnum16CollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnum16CollectionColumn);
             var nullableEnum32Column = new Column("NullableEnum32", "int", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableEnum32", nullableEnum32Column);
+            nullableEnum32Column.Accessors = ColumnAccessorsFactory.CreateGeneric<int>(nullableEnum32Column);
             var nullableEnum32ArrayColumn = new Column("NullableEnum32Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnum32Array", nullableEnum32ArrayColumn);
+            nullableEnum32ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnum32ArrayColumn);
             var nullableEnum32AsStringColumn = new Column("NullableEnum32AsString", "int", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableEnum32AsString", nullableEnum32AsStringColumn);
+            nullableEnum32AsStringColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<int>(nullableEnum32AsStringColumn);
             var nullableEnum32AsStringArrayColumn = new Column("NullableEnum32AsStringArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnum32AsStringArray", nullableEnum32AsStringArrayColumn);
+            nullableEnum32AsStringArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnum32AsStringArrayColumn);
             var nullableEnum32AsStringCollectionColumn = new Column("NullableEnum32AsStringCollection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnum32AsStringCollection", nullableEnum32AsStringCollectionColumn);
+            nullableEnum32AsStringCollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnum32AsStringCollectionColumn);
             var nullableEnum32CollectionColumn = new Column("NullableEnum32Collection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnum32Collection", nullableEnum32CollectionColumn);
+            nullableEnum32CollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnum32CollectionColumn);
             var nullableEnum64Column = new Column("NullableEnum64", "bigint", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableEnum64", nullableEnum64Column);
+            nullableEnum64Column.Accessors = ColumnAccessorsFactory.CreateGeneric<long>(nullableEnum64Column);
             var nullableEnum64ArrayColumn = new Column("NullableEnum64Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnum64Array", nullableEnum64ArrayColumn);
+            nullableEnum64ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnum64ArrayColumn);
             var nullableEnum64AsStringColumn = new Column("NullableEnum64AsString", "bigint", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableEnum64AsString", nullableEnum64AsStringColumn);
+            nullableEnum64AsStringColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<long>(nullableEnum64AsStringColumn);
             var nullableEnum64AsStringArrayColumn = new Column("NullableEnum64AsStringArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnum64AsStringArray", nullableEnum64AsStringArrayColumn);
+            nullableEnum64AsStringArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnum64AsStringArrayColumn);
             var nullableEnum64AsStringCollectionColumn = new Column("NullableEnum64AsStringCollection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnum64AsStringCollection", nullableEnum64AsStringCollectionColumn);
+            nullableEnum64AsStringCollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnum64AsStringCollectionColumn);
             var nullableEnum64CollectionColumn = new Column("NullableEnum64Collection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnum64Collection", nullableEnum64CollectionColumn);
+            nullableEnum64CollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnum64CollectionColumn);
             var nullableEnum8Column = new Column("NullableEnum8", "tinyint", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableEnum8", nullableEnum8Column);
+            nullableEnum8Column.Accessors = ColumnAccessorsFactory.CreateGeneric<sbyte>(nullableEnum8Column);
             var nullableEnum8ArrayColumn = new Column("NullableEnum8Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnum8Array", nullableEnum8ArrayColumn);
+            nullableEnum8ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnum8ArrayColumn);
             var nullableEnum8AsStringColumn = new Column("NullableEnum8AsString", "tinyint", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableEnum8AsString", nullableEnum8AsStringColumn);
+            nullableEnum8AsStringColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<sbyte>(nullableEnum8AsStringColumn);
             var nullableEnum8AsStringArrayColumn = new Column("NullableEnum8AsStringArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnum8AsStringArray", nullableEnum8AsStringArrayColumn);
+            nullableEnum8AsStringArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnum8AsStringArrayColumn);
             var nullableEnum8AsStringCollectionColumn = new Column("NullableEnum8AsStringCollection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnum8AsStringCollection", nullableEnum8AsStringCollectionColumn);
+            nullableEnum8AsStringCollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnum8AsStringCollectionColumn);
             var nullableEnum8CollectionColumn = new Column("NullableEnum8Collection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnum8Collection", nullableEnum8CollectionColumn);
+            nullableEnum8CollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnum8CollectionColumn);
             var nullableEnumU16Column = new Column("NullableEnumU16", "smallint unsigned", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableEnumU16", nullableEnumU16Column);
+            nullableEnumU16Column.Accessors = ColumnAccessorsFactory.CreateGeneric<ushort>(nullableEnumU16Column);
             var nullableEnumU16ArrayColumn = new Column("NullableEnumU16Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnumU16Array", nullableEnumU16ArrayColumn);
+            nullableEnumU16ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnumU16ArrayColumn);
             var nullableEnumU16AsStringColumn = new Column("NullableEnumU16AsString", "smallint unsigned", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableEnumU16AsString", nullableEnumU16AsStringColumn);
+            nullableEnumU16AsStringColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<ushort>(nullableEnumU16AsStringColumn);
             var nullableEnumU16AsStringArrayColumn = new Column("NullableEnumU16AsStringArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnumU16AsStringArray", nullableEnumU16AsStringArrayColumn);
+            nullableEnumU16AsStringArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnumU16AsStringArrayColumn);
             var nullableEnumU16AsStringCollectionColumn = new Column("NullableEnumU16AsStringCollection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnumU16AsStringCollection", nullableEnumU16AsStringCollectionColumn);
+            nullableEnumU16AsStringCollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnumU16AsStringCollectionColumn);
             var nullableEnumU16CollectionColumn = new Column("NullableEnumU16Collection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnumU16Collection", nullableEnumU16CollectionColumn);
+            nullableEnumU16CollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnumU16CollectionColumn);
             var nullableEnumU32Column = new Column("NullableEnumU32", "int unsigned", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableEnumU32", nullableEnumU32Column);
+            nullableEnumU32Column.Accessors = ColumnAccessorsFactory.CreateGeneric<uint>(nullableEnumU32Column);
             var nullableEnumU32ArrayColumn = new Column("NullableEnumU32Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnumU32Array", nullableEnumU32ArrayColumn);
+            nullableEnumU32ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnumU32ArrayColumn);
             var nullableEnumU32AsStringColumn = new Column("NullableEnumU32AsString", "int unsigned", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableEnumU32AsString", nullableEnumU32AsStringColumn);
+            nullableEnumU32AsStringColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<uint>(nullableEnumU32AsStringColumn);
             var nullableEnumU32AsStringArrayColumn = new Column("NullableEnumU32AsStringArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnumU32AsStringArray", nullableEnumU32AsStringArrayColumn);
+            nullableEnumU32AsStringArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnumU32AsStringArrayColumn);
             var nullableEnumU32AsStringCollectionColumn = new Column("NullableEnumU32AsStringCollection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnumU32AsStringCollection", nullableEnumU32AsStringCollectionColumn);
+            nullableEnumU32AsStringCollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnumU32AsStringCollectionColumn);
             var nullableEnumU32CollectionColumn = new Column("NullableEnumU32Collection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnumU32Collection", nullableEnumU32CollectionColumn);
+            nullableEnumU32CollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnumU32CollectionColumn);
             var nullableEnumU64Column = new Column("NullableEnumU64", "bigint unsigned", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableEnumU64", nullableEnumU64Column);
+            nullableEnumU64Column.Accessors = ColumnAccessorsFactory.CreateGeneric<ulong>(nullableEnumU64Column);
             var nullableEnumU64ArrayColumn = new Column("NullableEnumU64Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnumU64Array", nullableEnumU64ArrayColumn);
+            nullableEnumU64ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnumU64ArrayColumn);
             var nullableEnumU64AsStringColumn = new Column("NullableEnumU64AsString", "bigint unsigned", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableEnumU64AsString", nullableEnumU64AsStringColumn);
+            nullableEnumU64AsStringColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<ulong>(nullableEnumU64AsStringColumn);
             var nullableEnumU64AsStringArrayColumn = new Column("NullableEnumU64AsStringArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnumU64AsStringArray", nullableEnumU64AsStringArrayColumn);
+            nullableEnumU64AsStringArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnumU64AsStringArrayColumn);
             var nullableEnumU64AsStringCollectionColumn = new Column("NullableEnumU64AsStringCollection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnumU64AsStringCollection", nullableEnumU64AsStringCollectionColumn);
+            nullableEnumU64AsStringCollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnumU64AsStringCollectionColumn);
             var nullableEnumU64CollectionColumn = new Column("NullableEnumU64Collection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnumU64Collection", nullableEnumU64CollectionColumn);
+            nullableEnumU64CollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnumU64CollectionColumn);
             var nullableEnumU8Column = new Column("NullableEnumU8", "tinyint unsigned", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableEnumU8", nullableEnumU8Column);
+            nullableEnumU8Column.Accessors = ColumnAccessorsFactory.CreateGeneric<byte>(nullableEnumU8Column);
             var nullableEnumU8ArrayColumn = new Column("NullableEnumU8Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnumU8Array", nullableEnumU8ArrayColumn);
+            nullableEnumU8ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnumU8ArrayColumn);
             var nullableEnumU8AsStringColumn = new Column("NullableEnumU8AsString", "tinyint unsigned", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableEnumU8AsString", nullableEnumU8AsStringColumn);
+            nullableEnumU8AsStringColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<byte>(nullableEnumU8AsStringColumn);
             var nullableEnumU8AsStringArrayColumn = new Column("NullableEnumU8AsStringArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnumU8AsStringArray", nullableEnumU8AsStringArrayColumn);
+            nullableEnumU8AsStringArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnumU8AsStringArrayColumn);
             var nullableEnumU8AsStringCollectionColumn = new Column("NullableEnumU8AsStringCollection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnumU8AsStringCollection", nullableEnumU8AsStringCollectionColumn);
+            nullableEnumU8AsStringCollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnumU8AsStringCollectionColumn);
             var nullableEnumU8CollectionColumn = new Column("NullableEnumU8Collection", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableEnumU8Collection", nullableEnumU8CollectionColumn);
+            nullableEnumU8CollectionColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableEnumU8CollectionColumn);
             var nullableFloatColumn = new Column("NullableFloat", "float", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableFloat", nullableFloatColumn);
+            nullableFloatColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<float>(nullableFloatColumn);
             var nullableFloatArrayColumn = new Column("NullableFloatArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableFloatArray", nullableFloatArrayColumn);
+            nullableFloatArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableFloatArrayColumn);
             var nullableGuidColumn = new Column("NullableGuid", "char(36)", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableGuid", nullableGuidColumn);
+            nullableGuidColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<Guid>(nullableGuidColumn);
             var nullableGuidArrayColumn = new Column("NullableGuidArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableGuidArray", nullableGuidArrayColumn);
+            nullableGuidArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableGuidArrayColumn);
             var nullableIPAddressColumn = new Column("NullableIPAddress", "varchar(45)", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableIPAddress", nullableIPAddressColumn);
+            nullableIPAddressColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableIPAddressColumn);
             var nullableIPAddressArrayColumn = new Column("NullableIPAddressArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableIPAddressArray", nullableIPAddressArrayColumn);
+            nullableIPAddressArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableIPAddressArrayColumn);
             var nullableInt16Column = new Column("NullableInt16", "smallint", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableInt16", nullableInt16Column);
+            nullableInt16Column.Accessors = ColumnAccessorsFactory.CreateGeneric<short>(nullableInt16Column);
             var nullableInt16ArrayColumn = new Column("NullableInt16Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableInt16Array", nullableInt16ArrayColumn);
+            nullableInt16ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableInt16ArrayColumn);
             var nullableInt32Column = new Column("NullableInt32", "int", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableInt32", nullableInt32Column);
+            nullableInt32Column.Accessors = ColumnAccessorsFactory.CreateGeneric<int>(nullableInt32Column);
             var nullableInt32ArrayColumn = new Column("NullableInt32Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableInt32Array", nullableInt32ArrayColumn);
+            nullableInt32ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableInt32ArrayColumn);
             var nullableInt64Column = new Column("NullableInt64", "bigint", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableInt64", nullableInt64Column);
+            nullableInt64Column.Accessors = ColumnAccessorsFactory.CreateGeneric<long>(nullableInt64Column);
             var nullableInt64ArrayColumn = new Column("NullableInt64Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableInt64Array", nullableInt64ArrayColumn);
+            nullableInt64ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableInt64ArrayColumn);
             var nullableInt8Column = new Column("NullableInt8", "tinyint", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableInt8", nullableInt8Column);
+            nullableInt8Column.Accessors = ColumnAccessorsFactory.CreateGeneric<sbyte>(nullableInt8Column);
             var nullableInt8ArrayColumn = new Column("NullableInt8Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableInt8Array", nullableInt8ArrayColumn);
+            nullableInt8ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableInt8ArrayColumn);
             var nullablePhysicalAddressColumn = new Column("NullablePhysicalAddress", "varchar(20)", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullablePhysicalAddress", nullablePhysicalAddressColumn);
+            nullablePhysicalAddressColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullablePhysicalAddressColumn);
             var nullablePhysicalAddressArrayColumn = new Column("NullablePhysicalAddressArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullablePhysicalAddressArray", nullablePhysicalAddressArrayColumn);
+            nullablePhysicalAddressArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullablePhysicalAddressArrayColumn);
             var nullableStringColumn = new Column("NullableString", "longtext", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableString", nullableStringColumn);
+            nullableStringColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableStringColumn);
             var nullableStringArrayColumn = new Column("NullableStringArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableStringArray", nullableStringArrayColumn);
+            nullableStringArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableStringArrayColumn);
             var nullableTimeOnlyColumn = new Column("NullableTimeOnly", "time(6)", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableTimeOnly", nullableTimeOnlyColumn);
+            nullableTimeOnlyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<TimeOnly>(nullableTimeOnlyColumn);
             var nullableTimeOnlyArrayColumn = new Column("NullableTimeOnlyArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableTimeOnlyArray", nullableTimeOnlyArrayColumn);
+            nullableTimeOnlyArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableTimeOnlyArrayColumn);
             var nullableTimeSpanColumn = new Column("NullableTimeSpan", "time(6)", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableTimeSpan", nullableTimeSpanColumn);
+            nullableTimeSpanColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<TimeSpan>(nullableTimeSpanColumn);
             var nullableTimeSpanArrayColumn = new Column("NullableTimeSpanArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableTimeSpanArray", nullableTimeSpanArrayColumn);
+            nullableTimeSpanArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableTimeSpanArrayColumn);
             var nullableUInt16Column = new Column("NullableUInt16", "smallint unsigned", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableUInt16", nullableUInt16Column);
+            nullableUInt16Column.Accessors = ColumnAccessorsFactory.CreateGeneric<ushort>(nullableUInt16Column);
             var nullableUInt16ArrayColumn = new Column("NullableUInt16Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableUInt16Array", nullableUInt16ArrayColumn);
+            nullableUInt16ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableUInt16ArrayColumn);
             var nullableUInt32Column = new Column("NullableUInt32", "int unsigned", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableUInt32", nullableUInt32Column);
+            nullableUInt32Column.Accessors = ColumnAccessorsFactory.CreateGeneric<uint>(nullableUInt32Column);
             var nullableUInt32ArrayColumn = new Column("NullableUInt32Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableUInt32Array", nullableUInt32ArrayColumn);
+            nullableUInt32ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableUInt32ArrayColumn);
             var nullableUInt64Column = new Column("NullableUInt64", "bigint unsigned", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableUInt64", nullableUInt64Column);
+            nullableUInt64Column.Accessors = ColumnAccessorsFactory.CreateGeneric<ulong>(nullableUInt64Column);
             var nullableUInt64ArrayColumn = new Column("NullableUInt64Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableUInt64Array", nullableUInt64ArrayColumn);
+            nullableUInt64ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableUInt64ArrayColumn);
             var nullableUInt8Column = new Column("NullableUInt8", "tinyint unsigned", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableUInt8", nullableUInt8Column);
+            nullableUInt8Column.Accessors = ColumnAccessorsFactory.CreateGeneric<byte>(nullableUInt8Column);
             var nullableUInt8ArrayColumn = new Column("NullableUInt8Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableUInt8Array", nullableUInt8ArrayColumn);
+            nullableUInt8ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableUInt8ArrayColumn);
             var nullableUriColumn = new Column("NullableUri", "longtext", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("NullableUri", nullableUriColumn);
+            nullableUriColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableUriColumn);
             var nullableUriArrayColumn = new Column("NullableUriArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("NullableUriArray", nullableUriArrayColumn);
+            nullableUriArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(nullableUriArrayColumn);
             var physicalAddressColumn = new Column("PhysicalAddress", "varchar(20)", manyTypesTable);
             manyTypesTable.Columns.Add("PhysicalAddress", physicalAddressColumn);
+            physicalAddressColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(physicalAddressColumn);
             var physicalAddressArrayColumn = new Column("PhysicalAddressArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("PhysicalAddressArray", physicalAddressArrayColumn);
+            physicalAddressArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(physicalAddressArrayColumn);
             var physicalAddressToBytesConverterPropertyColumn = new Column("PhysicalAddressToBytesConverterProperty", "varbinary(8)", manyTypesTable);
             manyTypesTable.Columns.Add("PhysicalAddressToBytesConverterProperty", physicalAddressToBytesConverterPropertyColumn);
+            physicalAddressToBytesConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<byte[]>(physicalAddressToBytesConverterPropertyColumn);
             var physicalAddressToStringConverterPropertyColumn = new Column("PhysicalAddressToStringConverterProperty", "varchar(20)", manyTypesTable);
             manyTypesTable.Columns.Add("PhysicalAddressToStringConverterProperty", physicalAddressToStringConverterPropertyColumn);
+            physicalAddressToStringConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(physicalAddressToStringConverterPropertyColumn);
             var stringColumn = new Column("String", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("String", stringColumn);
+            stringColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(stringColumn);
             var stringArrayColumn = new Column("StringArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("StringArray", stringArrayColumn);
+            stringArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(stringArrayColumn);
             var stringToBoolConverterPropertyColumn = new Column("StringToBoolConverterProperty", "tinyint(1)", manyTypesTable);
             manyTypesTable.Columns.Add("StringToBoolConverterProperty", stringToBoolConverterPropertyColumn);
+            stringToBoolConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<bool>(stringToBoolConverterPropertyColumn);
             var stringToBytesConverterPropertyColumn = new Column("StringToBytesConverterProperty", "longblob", manyTypesTable)
             {
                 IsNullable = true
             };
             manyTypesTable.Columns.Add("StringToBytesConverterProperty", stringToBytesConverterPropertyColumn);
+            stringToBytesConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<byte[]>(stringToBytesConverterPropertyColumn);
             var stringToCharConverterPropertyColumn = new Column("StringToCharConverterProperty", "varchar(1)", manyTypesTable);
             manyTypesTable.Columns.Add("StringToCharConverterProperty", stringToCharConverterPropertyColumn);
+            stringToCharConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(stringToCharConverterPropertyColumn);
             var stringToDateOnlyConverterPropertyColumn = new Column("StringToDateOnlyConverterProperty", "date", manyTypesTable);
             manyTypesTable.Columns.Add("StringToDateOnlyConverterProperty", stringToDateOnlyConverterPropertyColumn);
+            stringToDateOnlyConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<DateOnly>(stringToDateOnlyConverterPropertyColumn);
             var stringToDateTimeConverterPropertyColumn = new Column("StringToDateTimeConverterProperty", "datetime(6)", manyTypesTable);
             manyTypesTable.Columns.Add("StringToDateTimeConverterProperty", stringToDateTimeConverterPropertyColumn);
+            stringToDateTimeConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<DateTime>(stringToDateTimeConverterPropertyColumn);
             var stringToDateTimeOffsetConverterPropertyColumn = new Column("StringToDateTimeOffsetConverterProperty", "datetime(6)", manyTypesTable);
             manyTypesTable.Columns.Add("StringToDateTimeOffsetConverterProperty", stringToDateTimeOffsetConverterPropertyColumn);
+            stringToDateTimeOffsetConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<DateTimeOffset>(stringToDateTimeOffsetConverterPropertyColumn);
             var stringToDecimalNumberConverterPropertyColumn = new Column("StringToDecimalNumberConverterProperty", "decimal(65,30)", manyTypesTable);
             manyTypesTable.Columns.Add("StringToDecimalNumberConverterProperty", stringToDecimalNumberConverterPropertyColumn);
+            stringToDecimalNumberConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<decimal>(stringToDecimalNumberConverterPropertyColumn);
             var stringToDoubleNumberConverterPropertyColumn = new Column("StringToDoubleNumberConverterProperty", "double", manyTypesTable);
             manyTypesTable.Columns.Add("StringToDoubleNumberConverterProperty", stringToDoubleNumberConverterPropertyColumn);
+            stringToDoubleNumberConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<double>(stringToDoubleNumberConverterPropertyColumn);
             var stringToEnumConverterPropertyColumn = new Column("StringToEnumConverterProperty", "int unsigned", manyTypesTable);
             manyTypesTable.Columns.Add("StringToEnumConverterProperty", stringToEnumConverterPropertyColumn);
+            stringToEnumConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<uint>(stringToEnumConverterPropertyColumn);
             var stringToGuidConverterPropertyColumn = new Column("StringToGuidConverterProperty", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("StringToGuidConverterProperty", stringToGuidConverterPropertyColumn);
+            stringToGuidConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(stringToGuidConverterPropertyColumn);
             var stringToIntNumberConverterPropertyColumn = new Column("StringToIntNumberConverterProperty", "int", manyTypesTable);
             manyTypesTable.Columns.Add("StringToIntNumberConverterProperty", stringToIntNumberConverterPropertyColumn);
+            stringToIntNumberConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<int>(stringToIntNumberConverterPropertyColumn);
             var stringToTimeOnlyConverterPropertyColumn = new Column("StringToTimeOnlyConverterProperty", "time(6)", manyTypesTable);
             manyTypesTable.Columns.Add("StringToTimeOnlyConverterProperty", stringToTimeOnlyConverterPropertyColumn);
+            stringToTimeOnlyConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<TimeOnly>(stringToTimeOnlyConverterPropertyColumn);
             var stringToTimeSpanConverterPropertyColumn = new Column("StringToTimeSpanConverterProperty", "time(6)", manyTypesTable);
             manyTypesTable.Columns.Add("StringToTimeSpanConverterProperty", stringToTimeSpanConverterPropertyColumn);
+            stringToTimeSpanConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<TimeSpan>(stringToTimeSpanConverterPropertyColumn);
             var stringToUriConverterPropertyColumn = new Column("StringToUriConverterProperty", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("StringToUriConverterProperty", stringToUriConverterPropertyColumn);
+            stringToUriConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(stringToUriConverterPropertyColumn);
             var timeOnlyColumn = new Column("TimeOnly", "time(6)", manyTypesTable);
             manyTypesTable.Columns.Add("TimeOnly", timeOnlyColumn);
+            timeOnlyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<TimeOnly>(timeOnlyColumn);
             var timeOnlyArrayColumn = new Column("TimeOnlyArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("TimeOnlyArray", timeOnlyArrayColumn);
+            timeOnlyArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(timeOnlyArrayColumn);
             var timeOnlyToStringConverterPropertyColumn = new Column("TimeOnlyToStringConverterProperty", "varchar(48)", manyTypesTable);
             manyTypesTable.Columns.Add("TimeOnlyToStringConverterProperty", timeOnlyToStringConverterPropertyColumn);
+            timeOnlyToStringConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(timeOnlyToStringConverterPropertyColumn);
             var timeOnlyToTicksConverterPropertyColumn = new Column("TimeOnlyToTicksConverterProperty", "bigint", manyTypesTable);
             manyTypesTable.Columns.Add("TimeOnlyToTicksConverterProperty", timeOnlyToTicksConverterPropertyColumn);
+            timeOnlyToTicksConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<long>(timeOnlyToTicksConverterPropertyColumn);
             var timeSpanColumn = new Column("TimeSpan", "time(6)", manyTypesTable);
             manyTypesTable.Columns.Add("TimeSpan", timeSpanColumn);
+            timeSpanColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<TimeSpan>(timeSpanColumn);
             var timeSpanArrayColumn = new Column("TimeSpanArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("TimeSpanArray", timeSpanArrayColumn);
+            timeSpanArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(timeSpanArrayColumn);
             var timeSpanToStringConverterPropertyColumn = new Column("TimeSpanToStringConverterProperty", "varchar(48)", manyTypesTable);
             manyTypesTable.Columns.Add("TimeSpanToStringConverterProperty", timeSpanToStringConverterPropertyColumn);
+            timeSpanToStringConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(timeSpanToStringConverterPropertyColumn);
             var timeSpanToTicksConverterPropertyColumn = new Column("TimeSpanToTicksConverterProperty", "bigint", manyTypesTable);
             manyTypesTable.Columns.Add("TimeSpanToTicksConverterProperty", timeSpanToTicksConverterPropertyColumn);
+            timeSpanToTicksConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<long>(timeSpanToTicksConverterPropertyColumn);
             var uInt16Column = new Column("UInt16", "smallint unsigned", manyTypesTable);
             manyTypesTable.Columns.Add("UInt16", uInt16Column);
+            uInt16Column.Accessors = ColumnAccessorsFactory.CreateGeneric<ushort>(uInt16Column);
             var uInt16ArrayColumn = new Column("UInt16Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("UInt16Array", uInt16ArrayColumn);
+            uInt16ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(uInt16ArrayColumn);
             var uInt32Column = new Column("UInt32", "int unsigned", manyTypesTable);
             manyTypesTable.Columns.Add("UInt32", uInt32Column);
+            uInt32Column.Accessors = ColumnAccessorsFactory.CreateGeneric<uint>(uInt32Column);
             var uInt32ArrayColumn = new Column("UInt32Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("UInt32Array", uInt32ArrayColumn);
+            uInt32ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(uInt32ArrayColumn);
             var uInt64Column = new Column("UInt64", "bigint unsigned", manyTypesTable);
             manyTypesTable.Columns.Add("UInt64", uInt64Column);
+            uInt64Column.Accessors = ColumnAccessorsFactory.CreateGeneric<ulong>(uInt64Column);
             var uInt64ArrayColumn = new Column("UInt64Array", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("UInt64Array", uInt64ArrayColumn);
+            uInt64ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(uInt64ArrayColumn);
             var uInt8Column = new Column("UInt8", "tinyint unsigned", manyTypesTable);
             manyTypesTable.Columns.Add("UInt8", uInt8Column);
+            uInt8Column.Accessors = ColumnAccessorsFactory.CreateGeneric<byte>(uInt8Column);
             var uInt8ArrayColumn = new Column("UInt8Array", "longblob", manyTypesTable);
             manyTypesTable.Columns.Add("UInt8Array", uInt8ArrayColumn);
+            uInt8ArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<byte[]>(uInt8ArrayColumn);
             var uriColumn = new Column("Uri", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("Uri", uriColumn);
+            uriColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(uriColumn);
             var uriArrayColumn = new Column("UriArray", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("UriArray", uriArrayColumn);
+            uriArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(uriArrayColumn);
             var uriToStringConverterPropertyColumn = new Column("UriToStringConverterProperty", "longtext", manyTypesTable);
             manyTypesTable.Columns.Add("UriToStringConverterProperty", uriToStringConverterPropertyColumn);
-            var pK_ManyTypes = new UniqueConstraint("PK_ManyTypes", manyTypesTable, new[] { idColumn1 });
-            manyTypesTable.PrimaryKey = pK_ManyTypes;
-            var pK_ManyTypesUc = RelationalModel.GetKey(this,
-                "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+ManyTypes",
-                new[] { "Id" });
-            pK_ManyTypes.MappedKeys.Add(pK_ManyTypesUc);
-            RelationalModel.GetOrCreateUniqueConstraints(pK_ManyTypesUc).Add(pK_ManyTypes);
-            manyTypesTable.UniqueConstraints.Add("PK_ManyTypes", pK_ManyTypes);
+            uriToStringConverterPropertyColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(uriToStringConverterPropertyColumn);
             relationalModel.Tables.Add(("ManyTypes", null), manyTypesTable);
             var manyTypesTableMapping = new TableMapping(manyTypes, manyTypesTable, null);
             manyTypesTable.AddTypeMapping(manyTypesTableMapping, false);
@@ -1945,6 +2189,15 @@ namespace TestNamespace
             RelationalModel.CreateColumnMapping(uriColumn, manyTypes.FindProperty("Uri")!, manyTypesTableMapping);
             RelationalModel.CreateColumnMapping(uriArrayColumn, manyTypes.FindProperty("UriArray")!, manyTypesTableMapping);
             RelationalModel.CreateColumnMapping(uriToStringConverterPropertyColumn, manyTypes.FindProperty("UriToStringConverterProperty")!, manyTypesTableMapping);
+            var pK_ManyTypes = new UniqueConstraint("PK_ManyTypes", manyTypesTable, new[] { idColumn1 });
+            manyTypesTable.PrimaryKey = pK_ManyTypes;
+            pK_ManyTypes.SetRowKeyValueFactory(new SimpleRowKeyValueFactory<int>(pK_ManyTypes));
+            var pK_ManyTypesKey = RelationalModel.GetKey(this,
+                "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+ManyTypes",
+                new[] { "Id" });
+            pK_ManyTypes.MappedKeys.Add(pK_ManyTypesKey);
+            RelationalModel.GetOrCreateUniqueConstraints(pK_ManyTypesKey).Add(pK_ManyTypes);
+            manyTypesTable.UniqueConstraints.Add("PK_ManyTypes", pK_ManyTypes);
 
             var principalBase = FindEntityType("Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+PrincipalBase")!;
 
@@ -2048,144 +2301,142 @@ namespace TestNamespace
             var principalBaseTable = new Table("PrincipalBase", "mySchema", relationalModel);
             var idColumn2 = new Column("Id", "bigint", principalBaseTable);
             principalBaseTable.Columns.Add("Id", idColumn2);
+            idColumn2.Accessors = ColumnAccessorsFactory.CreateGeneric<long>(idColumn2);
             var alternateIdColumn = new Column("AlternateId", "char(36)", principalBaseTable);
             principalBaseTable.Columns.Add("AlternateId", alternateIdColumn);
+            alternateIdColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<Guid>(alternateIdColumn);
             var enum1Column = new Column("Enum1", "int", principalBaseTable);
             principalBaseTable.Columns.Add("Enum1", enum1Column);
+            enum1Column.Accessors = ColumnAccessorsFactory.CreateGeneric<int>(enum1Column);
             var enum2Column = new Column("Enum2", "int", principalBaseTable)
             {
                 IsNullable = true
             };
             principalBaseTable.Columns.Add("Enum2", enum2Column);
+            enum2Column.Accessors = ColumnAccessorsFactory.CreateGeneric<int>(enum2Column);
             var flagsEnum1Column = new Column("FlagsEnum1", "int", principalBaseTable);
             principalBaseTable.Columns.Add("FlagsEnum1", flagsEnum1Column);
+            flagsEnum1Column.Accessors = ColumnAccessorsFactory.CreateGeneric<int>(flagsEnum1Column);
             var flagsEnum2Column = new Column("FlagsEnum2", "int", principalBaseTable);
             principalBaseTable.Columns.Add("FlagsEnum2", flagsEnum2Column);
+            flagsEnum2Column.Accessors = ColumnAccessorsFactory.CreateGeneric<int>(flagsEnum2Column);
             var owned_NumberColumn = new Column("Owned_Number", "int", principalBaseTable);
             principalBaseTable.Columns.Add("Owned_Number", owned_NumberColumn);
+            owned_NumberColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<int>(owned_NumberColumn);
             var owned_RefTypeArrayColumn = new Column("Owned_RefTypeArray", "longtext", principalBaseTable)
             {
                 IsNullable = true
             };
             principalBaseTable.Columns.Add("Owned_RefTypeArray", owned_RefTypeArrayColumn);
+            owned_RefTypeArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(owned_RefTypeArrayColumn);
             var owned_RefTypeEnumerableColumn = new Column("Owned_RefTypeEnumerable", "longtext", principalBaseTable)
             {
                 IsNullable = true
             };
             principalBaseTable.Columns.Add("Owned_RefTypeEnumerable", owned_RefTypeEnumerableColumn);
+            owned_RefTypeEnumerableColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(owned_RefTypeEnumerableColumn);
             var owned_RefTypeIListColumn = new Column("Owned_RefTypeIList", "longtext", principalBaseTable)
             {
                 IsNullable = true
             };
             principalBaseTable.Columns.Add("Owned_RefTypeIList", owned_RefTypeIListColumn);
+            owned_RefTypeIListColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(owned_RefTypeIListColumn);
             var owned_RefTypeListColumn = new Column("Owned_RefTypeList", "longtext", principalBaseTable)
             {
                 IsNullable = true
             };
             principalBaseTable.Columns.Add("Owned_RefTypeList", owned_RefTypeListColumn);
+            owned_RefTypeListColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(owned_RefTypeListColumn);
             var owned_ValueTypeArrayColumn = new Column("Owned_ValueTypeArray", "longtext", principalBaseTable)
             {
                 IsNullable = true
             };
             principalBaseTable.Columns.Add("Owned_ValueTypeArray", owned_ValueTypeArrayColumn);
+            owned_ValueTypeArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(owned_ValueTypeArrayColumn);
             var owned_ValueTypeEnumerableColumn = new Column("Owned_ValueTypeEnumerable", "longtext", principalBaseTable)
             {
                 IsNullable = true
             };
             principalBaseTable.Columns.Add("Owned_ValueTypeEnumerable", owned_ValueTypeEnumerableColumn);
+            owned_ValueTypeEnumerableColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(owned_ValueTypeEnumerableColumn);
             var owned_ValueTypeIListColumn = new Column("Owned_ValueTypeIList", "longtext", principalBaseTable)
             {
                 IsNullable = true
             };
             principalBaseTable.Columns.Add("Owned_ValueTypeIList", owned_ValueTypeIListColumn);
+            owned_ValueTypeIListColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(owned_ValueTypeIListColumn);
             var owned_ValueTypeListColumn = new Column("Owned_ValueTypeList", "longtext", principalBaseTable)
             {
                 IsNullable = true
             };
             principalBaseTable.Columns.Add("Owned_ValueTypeList", owned_ValueTypeListColumn);
+            owned_ValueTypeListColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(owned_ValueTypeListColumn);
             var pointColumn0 = new Column("Point", "geometry", principalBaseTable)
             {
                 IsNullable = true
             };
             principalBaseTable.Columns.Add("Point", pointColumn0);
+            pointColumn0.Accessors = ColumnAccessorsFactory.CreateGeneric<Point>(pointColumn0);
             var refTypeArrayColumn = new Column("RefTypeArray", "longtext", principalBaseTable)
             {
                 IsNullable = true
             };
             principalBaseTable.Columns.Add("RefTypeArray", refTypeArrayColumn);
+            refTypeArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(refTypeArrayColumn);
             var refTypeEnumerableColumn = new Column("RefTypeEnumerable", "longtext", principalBaseTable)
             {
                 IsNullable = true
             };
             principalBaseTable.Columns.Add("RefTypeEnumerable", refTypeEnumerableColumn);
+            refTypeEnumerableColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(refTypeEnumerableColumn);
             var refTypeIListColumn = new Column("RefTypeIList", "longtext", principalBaseTable)
             {
                 IsNullable = true
             };
             principalBaseTable.Columns.Add("RefTypeIList", refTypeIListColumn);
+            refTypeIListColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(refTypeIListColumn);
             var refTypeListColumn = new Column("RefTypeList", "longtext", principalBaseTable)
             {
                 IsNullable = true
             };
             principalBaseTable.Columns.Add("RefTypeList", refTypeListColumn);
+            refTypeListColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(refTypeListColumn);
             var stringWithCharSetColumn0 = new Column("StringWithCharSet", "varchar(128)", principalBaseTable)
             {
                 IsNullable = true
             };
             principalBaseTable.Columns.Add("StringWithCharSet", stringWithCharSetColumn0);
+            stringWithCharSetColumn0.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(stringWithCharSetColumn0);
             var stringWithCollationColumn0 = new Column("StringWithCollation", "varchar(128)", principalBaseTable)
             {
                 IsNullable = true
             };
             principalBaseTable.Columns.Add("StringWithCollation", stringWithCollationColumn0);
+            stringWithCollationColumn0.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(stringWithCollationColumn0);
             var valueTypeArrayColumn = new Column("ValueTypeArray", "longtext", principalBaseTable)
             {
                 IsNullable = true
             };
             principalBaseTable.Columns.Add("ValueTypeArray", valueTypeArrayColumn);
+            valueTypeArrayColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(valueTypeArrayColumn);
             var valueTypeEnumerableColumn = new Column("ValueTypeEnumerable", "longtext", principalBaseTable)
             {
                 IsNullable = true
             };
             principalBaseTable.Columns.Add("ValueTypeEnumerable", valueTypeEnumerableColumn);
+            valueTypeEnumerableColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(valueTypeEnumerableColumn);
             var valueTypeIListColumn = new Column("ValueTypeIList", "longtext", principalBaseTable)
             {
                 IsNullable = true
             };
             principalBaseTable.Columns.Add("ValueTypeIList", valueTypeIListColumn);
+            valueTypeIListColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(valueTypeIListColumn);
             var valueTypeListColumn = new Column("ValueTypeList", "longtext", principalBaseTable)
             {
                 IsNullable = true
             };
             principalBaseTable.Columns.Add("ValueTypeList", valueTypeListColumn);
-            var aK_PrincipalBase_Id = new UniqueConstraint("AK_PrincipalBase_Id", principalBaseTable, new[] { idColumn2 });
-            var aK_PrincipalBase_IdUc = RelationalModel.GetKey(this,
-                "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+PrincipalBase",
-                new[] { "Id" });
-            aK_PrincipalBase_Id.MappedKeys.Add(aK_PrincipalBase_IdUc);
-            RelationalModel.GetOrCreateUniqueConstraints(aK_PrincipalBase_IdUc).Add(aK_PrincipalBase_Id);
-            principalBaseTable.UniqueConstraints.Add("AK_PrincipalBase_Id", aK_PrincipalBase_Id);
-            var pK = new UniqueConstraint("PK", principalBaseTable, new[] { idColumn2, alternateIdColumn });
-            principalBaseTable.PrimaryKey = pK;
-            var pKUc = RelationalModel.GetKey(this,
-                "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+PrincipalBase",
-                new[] { "Id", "AlternateId" });
-            pK.MappedKeys.Add(pKUc);
-            RelationalModel.GetOrCreateUniqueConstraints(pKUc).Add(pK);
-            var pKUc0 = RelationalModel.GetKey(this,
-                "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+PrincipalBase.Owned#OwnedType",
-                new[] { "PrincipalBaseId", "PrincipalBaseAlternateId" });
-            pK.MappedKeys.Add(pKUc0);
-            RelationalModel.GetOrCreateUniqueConstraints(pKUc0).Add(pK);
-            principalBaseTable.UniqueConstraints.Add("PK", pK);
-            var iX_PrincipalBase_AlternateId_Id = new TableIndex(
-            "IX_PrincipalBase_AlternateId_Id", principalBaseTable, new[] { alternateIdColumn, idColumn2 }, false);
-            var iX_PrincipalBase_AlternateId_IdIx = RelationalModel.GetIndex(this,
-                "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+PrincipalBase",
-                new[] { "AlternateId", "Id" });
-            iX_PrincipalBase_AlternateId_Id.MappedIndexes.Add(iX_PrincipalBase_AlternateId_IdIx);
-            RelationalModel.GetOrCreateTableIndexes(iX_PrincipalBase_AlternateId_IdIx).Add(iX_PrincipalBase_AlternateId_Id);
-            principalBaseTable.Indexes.Add("IX_PrincipalBase_AlternateId_Id", iX_PrincipalBase_AlternateId_Id);
+            valueTypeListColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(valueTypeListColumn);
             relationalModel.Tables.Add(("PrincipalBase", "mySchema"), principalBaseTable);
             var principalBaseTableMapping = new TableMapping(principalBase, principalBaseTable, true)
             {
@@ -2312,21 +2563,16 @@ namespace TestNamespace
             var detailsTable = new Table("Details", null, relationalModel);
             var principalBaseIdColumn = new Column("PrincipalBaseId", "bigint", detailsTable);
             detailsTable.Columns.Add("PrincipalBaseId", principalBaseIdColumn);
+            principalBaseIdColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<long>(principalBaseIdColumn);
             var principalBaseAlternateIdColumn = new Column("PrincipalBaseAlternateId", "char(36)", detailsTable);
             detailsTable.Columns.Add("PrincipalBaseAlternateId", principalBaseAlternateIdColumn);
+            principalBaseAlternateIdColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<Guid>(principalBaseAlternateIdColumn);
             var detailsColumn = new Column("Details", "longtext", detailsTable)
             {
                 IsNullable = true
             };
             detailsTable.Columns.Add("Details", detailsColumn);
-            var pK_Details = new UniqueConstraint("PK_Details", detailsTable, new[] { principalBaseIdColumn, principalBaseAlternateIdColumn });
-            detailsTable.PrimaryKey = pK_Details;
-            var pK_DetailsUc = RelationalModel.GetKey(this,
-                "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+PrincipalBase.Owned#OwnedType",
-                new[] { "PrincipalBaseId", "PrincipalBaseAlternateId" });
-            pK_Details.MappedKeys.Add(pK_DetailsUc);
-            RelationalModel.GetOrCreateUniqueConstraints(pK_DetailsUc).Add(pK_Details);
-            detailsTable.UniqueConstraints.Add("PK_Details", pK_Details);
+            detailsColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(detailsColumn);
             relationalModel.Tables.Add(("Details", null), detailsTable);
             var detailsTableMapping = new TableMapping(ownedType, detailsTable, null)
             {
@@ -2337,6 +2583,15 @@ namespace TestNamespace
             RelationalModel.CreateColumnMapping(principalBaseAlternateIdColumn, ownedType.FindProperty("PrincipalBaseAlternateId")!, detailsTableMapping);
             RelationalModel.CreateColumnMapping(principalBaseIdColumn, ownedType.FindProperty("PrincipalBaseId")!, detailsTableMapping);
             RelationalModel.CreateColumnMapping(detailsColumn, ownedType.FindProperty("Details")!, detailsTableMapping);
+            var pK_Details = new UniqueConstraint("PK_Details", detailsTable, new[] { principalBaseIdColumn, principalBaseAlternateIdColumn });
+            detailsTable.PrimaryKey = pK_Details;
+            pK_Details.SetRowKeyValueFactory(new CompositeRowKeyValueFactory(pK_Details));
+            var pK_DetailsKey = RelationalModel.GetKey(this,
+                "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+PrincipalBase.Owned#OwnedType",
+                new[] { "PrincipalBaseId", "PrincipalBaseAlternateId" });
+            pK_Details.MappedKeys.Add(pK_DetailsKey);
+            RelationalModel.GetOrCreateUniqueConstraints(pK_DetailsKey).Add(pK_Details);
+            detailsTable.UniqueConstraints.Add("PK_Details", pK_Details);
 
             var principalDerived = FindEntityType("Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+PrincipalDerived<Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+DependentBase<byte?>>")!;
 
@@ -2399,40 +2654,64 @@ namespace TestNamespace
             RelationalModel.CreateColumnMapping(valueTypeEnumerableColumn, principalDerived.FindProperty("ValueTypeEnumerable")!, principalBaseTableMapping1);
             RelationalModel.CreateColumnMapping(valueTypeIListColumn, principalDerived.FindProperty("ValueTypeIList")!, principalBaseTableMapping1);
             RelationalModel.CreateColumnMapping(valueTypeListColumn, principalDerived.FindProperty("ValueTypeList")!, principalBaseTableMapping1);
+            var aK_PrincipalBase_Id = new UniqueConstraint("AK_PrincipalBase_Id", principalBaseTable, new[] { idColumn2 });
+            aK_PrincipalBase_Id.SetRowKeyValueFactory(new SimpleRowKeyValueFactory<long>(aK_PrincipalBase_Id));
+            var aK_PrincipalBase_IdKey = RelationalModel.GetKey(this,
+                "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+PrincipalBase",
+                new[] { "Id" });
+            aK_PrincipalBase_Id.MappedKeys.Add(aK_PrincipalBase_IdKey);
+            RelationalModel.GetOrCreateUniqueConstraints(aK_PrincipalBase_IdKey).Add(aK_PrincipalBase_Id);
+            principalBaseTable.UniqueConstraints.Add("AK_PrincipalBase_Id", aK_PrincipalBase_Id);
+            var pK = new UniqueConstraint("PK", principalBaseTable, new[] { idColumn2, alternateIdColumn });
+            principalBaseTable.PrimaryKey = pK;
+            pK.SetRowKeyValueFactory(new CompositeRowKeyValueFactory(pK));
+            var pKKey = RelationalModel.GetKey(this,
+                "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+PrincipalBase",
+                new[] { "Id", "AlternateId" });
+            pK.MappedKeys.Add(pKKey);
+            RelationalModel.GetOrCreateUniqueConstraints(pKKey).Add(pK);
+            pK.MappedKeys.Add(pK_DetailsKey);
+            RelationalModel.GetOrCreateUniqueConstraints(pK_DetailsKey).Add(pK);
+            principalBaseTable.UniqueConstraints.Add("PK", pK);
+            var iX_PrincipalBase_AlternateId_Id = new TableIndex(
+            "IX_PrincipalBase_AlternateId_Id", principalBaseTable, new[] { alternateIdColumn, idColumn2 }, false);
+            iX_PrincipalBase_AlternateId_Id.SetRowIndexValueFactory(new CompositeRowIndexValueFactory(iX_PrincipalBase_AlternateId_Id));
+            var iX_PrincipalBase_AlternateId_IdIx = RelationalModel.GetIndex(this,
+                "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+PrincipalBase",
+                new[] { "AlternateId", "Id" });
+            iX_PrincipalBase_AlternateId_Id.MappedIndexes.Add(iX_PrincipalBase_AlternateId_IdIx);
+            RelationalModel.GetOrCreateTableIndexes(iX_PrincipalBase_AlternateId_IdIx).Add(iX_PrincipalBase_AlternateId_Id);
+            principalBaseTable.Indexes.Add("IX_PrincipalBase_AlternateId_Id", iX_PrincipalBase_AlternateId_Id);
             var principalDerivedTable = new Table("PrincipalDerived", null, relationalModel);
             var derivedIdColumn = new Column("DerivedId", "bigint", principalDerivedTable);
             principalDerivedTable.Columns.Add("DerivedId", derivedIdColumn);
+            derivedIdColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<long>(derivedIdColumn);
             var alternateIdColumn0 = new Column("AlternateId", "char(36)", principalDerivedTable);
             principalDerivedTable.Columns.Add("AlternateId", alternateIdColumn0);
-            var aK_PrincipalDerived_DerivedId = new UniqueConstraint("AK_PrincipalDerived_DerivedId", principalDerivedTable, new[] { derivedIdColumn });
-            var aK_PrincipalDerived_DerivedIdUc = RelationalModel.GetKey(this,
-                "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+PrincipalBase",
-                new[] { "Id" });
-            aK_PrincipalDerived_DerivedId.MappedKeys.Add(aK_PrincipalDerived_DerivedIdUc);
-            RelationalModel.GetOrCreateUniqueConstraints(aK_PrincipalDerived_DerivedIdUc).Add(aK_PrincipalDerived_DerivedId);
-            principalDerivedTable.UniqueConstraints.Add("AK_PrincipalDerived_DerivedId", aK_PrincipalDerived_DerivedId);
-            var pK0 = new UniqueConstraint("PK", principalDerivedTable, new[] { derivedIdColumn, alternateIdColumn0 });
-            principalDerivedTable.PrimaryKey = pK0;
-            var pK0Uc = RelationalModel.GetKey(this,
-                "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+PrincipalBase",
-                new[] { "Id", "AlternateId" });
-            pK0.MappedKeys.Add(pK0Uc);
-            RelationalModel.GetOrCreateUniqueConstraints(pK0Uc).Add(pK0);
-            principalDerivedTable.UniqueConstraints.Add("PK", pK0);
-            var iX_PrincipalDerived_AlternateId_DerivedId = new TableIndex(
-            "IX_PrincipalDerived_AlternateId_DerivedId", principalDerivedTable, new[] { alternateIdColumn0, derivedIdColumn }, false);
-            var iX_PrincipalDerived_AlternateId_DerivedIdIx = RelationalModel.GetIndex(this,
-                "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+PrincipalBase",
-                new[] { "AlternateId", "Id" });
-            iX_PrincipalDerived_AlternateId_DerivedId.MappedIndexes.Add(iX_PrincipalDerived_AlternateId_DerivedIdIx);
-            RelationalModel.GetOrCreateTableIndexes(iX_PrincipalDerived_AlternateId_DerivedIdIx).Add(iX_PrincipalDerived_AlternateId_DerivedId);
-            principalDerivedTable.Indexes.Add("IX_PrincipalDerived_AlternateId_DerivedId", iX_PrincipalDerived_AlternateId_DerivedId);
+            alternateIdColumn0.Accessors = ColumnAccessorsFactory.CreateGeneric<Guid>(alternateIdColumn0);
             relationalModel.Tables.Add(("PrincipalDerived", null), principalDerivedTable);
             var principalDerivedTableMapping = new TableMapping(principalDerived, principalDerivedTable, null);
             principalDerivedTable.AddTypeMapping(principalDerivedTableMapping, false);
             tableMappings5.Add(principalDerivedTableMapping);
             RelationalModel.CreateColumnMapping(alternateIdColumn0, principalDerived.FindProperty("AlternateId")!, principalDerivedTableMapping);
             RelationalModel.CreateColumnMapping(derivedIdColumn, principalDerived.FindProperty("Id")!, principalDerivedTableMapping);
+            var aK_PrincipalDerived_DerivedId = new UniqueConstraint("AK_PrincipalDerived_DerivedId", principalDerivedTable, new[] { derivedIdColumn });
+            aK_PrincipalDerived_DerivedId.SetRowKeyValueFactory(new SimpleRowKeyValueFactory<long>(aK_PrincipalDerived_DerivedId));
+            aK_PrincipalDerived_DerivedId.MappedKeys.Add(aK_PrincipalBase_IdKey);
+            RelationalModel.GetOrCreateUniqueConstraints(aK_PrincipalBase_IdKey).Add(aK_PrincipalDerived_DerivedId);
+            principalDerivedTable.UniqueConstraints.Add("AK_PrincipalDerived_DerivedId", aK_PrincipalDerived_DerivedId);
+            var pK0 = new UniqueConstraint("PK", principalDerivedTable, new[] { derivedIdColumn, alternateIdColumn0 });
+            principalDerivedTable.PrimaryKey = pK0;
+            pK0.SetRowKeyValueFactory(new CompositeRowKeyValueFactory(pK0));
+            pK0.MappedKeys.Add(pKKey);
+            RelationalModel.GetOrCreateUniqueConstraints(pKKey).Add(pK0);
+            principalDerivedTable.UniqueConstraints.Add("PK", pK0);
+            var iX_PrincipalDerived_AlternateId_DerivedId = new TableIndex(
+            "IX_PrincipalDerived_AlternateId_DerivedId", principalDerivedTable, new[] { alternateIdColumn0, derivedIdColumn }, false);
+            iX_PrincipalDerived_AlternateId_DerivedId.SetRowIndexValueFactory(new CompositeRowIndexValueFactory(iX_PrincipalDerived_AlternateId_DerivedId));
+            iX_PrincipalDerived_AlternateId_DerivedId.MappedIndexes.Add(iX_PrincipalBase_AlternateId_IdIx);
+            RelationalModel.GetOrCreateTableIndexes(iX_PrincipalBase_AlternateId_IdIx).Add(iX_PrincipalDerived_AlternateId_DerivedId);
+            principalDerivedTable.Indexes.Add("IX_PrincipalDerived_AlternateId_DerivedId", iX_PrincipalDerived_AlternateId_DerivedId);
 
             var ownedType0 = FindEntityType("Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+PrincipalDerived<Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+DependentBase<byte?>>.ManyOwned#OwnedType")!;
 
@@ -2515,65 +2794,70 @@ namespace TestNamespace
             var manyOwnedTable = new Table("ManyOwned", null, relationalModel);
             var principalDerivedDependentBasebyteIdColumn = new Column("PrincipalDerived<DependentBase<byte?>>Id", "bigint", manyOwnedTable);
             manyOwnedTable.Columns.Add("PrincipalDerived<DependentBase<byte?>>Id", principalDerivedDependentBasebyteIdColumn);
+            principalDerivedDependentBasebyteIdColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<long>(principalDerivedDependentBasebyteIdColumn);
             var principalDerivedDependentBasebyteAlternateIdColumn = new Column("PrincipalDerived<DependentBase<byte?>>AlternateId", "char(36)", manyOwnedTable);
             manyOwnedTable.Columns.Add("PrincipalDerived<DependentBase<byte?>>AlternateId", principalDerivedDependentBasebyteAlternateIdColumn);
+            principalDerivedDependentBasebyteAlternateIdColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<Guid>(principalDerivedDependentBasebyteAlternateIdColumn);
             var idColumn3 = new Column("Id", "int", manyOwnedTable);
             manyOwnedTable.Columns.Add("Id", idColumn3);
+            idColumn3.Accessors = ColumnAccessorsFactory.CreateGeneric<int>(idColumn3);
             var detailsColumn0 = new Column("Details", "longtext", manyOwnedTable)
             {
                 IsNullable = true
             };
             manyOwnedTable.Columns.Add("Details", detailsColumn0);
+            detailsColumn0.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(detailsColumn0);
             var numberColumn = new Column("Number", "int", manyOwnedTable);
             manyOwnedTable.Columns.Add("Number", numberColumn);
+            numberColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<int>(numberColumn);
             var refTypeArrayColumn0 = new Column("RefTypeArray", "longtext", manyOwnedTable)
             {
                 IsNullable = true
             };
             manyOwnedTable.Columns.Add("RefTypeArray", refTypeArrayColumn0);
+            refTypeArrayColumn0.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(refTypeArrayColumn0);
             var refTypeEnumerableColumn0 = new Column("RefTypeEnumerable", "longtext", manyOwnedTable)
             {
                 IsNullable = true
             };
             manyOwnedTable.Columns.Add("RefTypeEnumerable", refTypeEnumerableColumn0);
+            refTypeEnumerableColumn0.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(refTypeEnumerableColumn0);
             var refTypeIListColumn0 = new Column("RefTypeIList", "longtext", manyOwnedTable)
             {
                 IsNullable = true
             };
             manyOwnedTable.Columns.Add("RefTypeIList", refTypeIListColumn0);
+            refTypeIListColumn0.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(refTypeIListColumn0);
             var refTypeListColumn0 = new Column("RefTypeList", "longtext", manyOwnedTable)
             {
                 IsNullable = true
             };
             manyOwnedTable.Columns.Add("RefTypeList", refTypeListColumn0);
+            refTypeListColumn0.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(refTypeListColumn0);
             var valueTypeArrayColumn0 = new Column("ValueTypeArray", "longtext", manyOwnedTable)
             {
                 IsNullable = true
             };
             manyOwnedTable.Columns.Add("ValueTypeArray", valueTypeArrayColumn0);
+            valueTypeArrayColumn0.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(valueTypeArrayColumn0);
             var valueTypeEnumerableColumn0 = new Column("ValueTypeEnumerable", "longtext", manyOwnedTable)
             {
                 IsNullable = true
             };
             manyOwnedTable.Columns.Add("ValueTypeEnumerable", valueTypeEnumerableColumn0);
+            valueTypeEnumerableColumn0.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(valueTypeEnumerableColumn0);
             var valueTypeIListColumn0 = new Column("ValueTypeIList", "longtext", manyOwnedTable)
             {
                 IsNullable = true
             };
             manyOwnedTable.Columns.Add("ValueTypeIList", valueTypeIListColumn0);
+            valueTypeIListColumn0.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(valueTypeIListColumn0);
             var valueTypeListColumn0 = new Column("ValueTypeList", "longtext", manyOwnedTable)
             {
                 IsNullable = true
             };
             manyOwnedTable.Columns.Add("ValueTypeList", valueTypeListColumn0);
-            var pK_ManyOwned = new UniqueConstraint("PK_ManyOwned", manyOwnedTable, new[] { principalDerivedDependentBasebyteIdColumn, principalDerivedDependentBasebyteAlternateIdColumn, idColumn3 });
-            manyOwnedTable.PrimaryKey = pK_ManyOwned;
-            var pK_ManyOwnedUc = RelationalModel.GetKey(this,
-                "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+PrincipalDerived<Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+DependentBase<byte?>>.ManyOwned#OwnedType",
-                new[] { "PrincipalDerivedId", "PrincipalDerivedAlternateId", "Id" });
-            pK_ManyOwned.MappedKeys.Add(pK_ManyOwnedUc);
-            RelationalModel.GetOrCreateUniqueConstraints(pK_ManyOwnedUc).Add(pK_ManyOwned);
-            manyOwnedTable.UniqueConstraints.Add("PK_ManyOwned", pK_ManyOwned);
+            valueTypeListColumn0.Accessors = ColumnAccessorsFactory.CreateGeneric<string>(valueTypeListColumn0);
             relationalModel.Tables.Add(("ManyOwned", null), manyOwnedTable);
             var manyOwnedTableMapping = new TableMapping(ownedType0, manyOwnedTable, null);
             manyOwnedTable.AddTypeMapping(manyOwnedTableMapping, false);
@@ -2591,6 +2875,15 @@ namespace TestNamespace
             RelationalModel.CreateColumnMapping(valueTypeEnumerableColumn0, ownedType0.FindProperty("ValueTypeEnumerable")!, manyOwnedTableMapping);
             RelationalModel.CreateColumnMapping(valueTypeIListColumn0, ownedType0.FindProperty("ValueTypeIList")!, manyOwnedTableMapping);
             RelationalModel.CreateColumnMapping(valueTypeListColumn0, ownedType0.FindProperty("ValueTypeList")!, manyOwnedTableMapping);
+            var pK_ManyOwned = new UniqueConstraint("PK_ManyOwned", manyOwnedTable, new[] { principalDerivedDependentBasebyteIdColumn, principalDerivedDependentBasebyteAlternateIdColumn, idColumn3 });
+            manyOwnedTable.PrimaryKey = pK_ManyOwned;
+            pK_ManyOwned.SetRowKeyValueFactory(new CompositeRowKeyValueFactory(pK_ManyOwned));
+            var pK_ManyOwnedKey = RelationalModel.GetKey(this,
+                "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+PrincipalDerived<Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+DependentBase<byte?>>.ManyOwned#OwnedType",
+                new[] { "PrincipalDerivedId", "PrincipalDerivedAlternateId", "Id" });
+            pK_ManyOwned.MappedKeys.Add(pK_ManyOwnedKey);
+            RelationalModel.GetOrCreateUniqueConstraints(pK_ManyOwnedKey).Add(pK_ManyOwned);
+            manyOwnedTable.UniqueConstraints.Add("PK_ManyOwned", pK_ManyOwned);
 
             var principalBasePrincipalDerivedDependentBasebyte = FindEntityType("PrincipalBasePrincipalDerived<DependentBase<byte?>>")!;
 
@@ -2625,33 +2918,22 @@ namespace TestNamespace
             var principalBasePrincipalDerivedDependentBasebyteTable = new Table("PrincipalBasePrincipalDerived<DependentBase<byte?>>", null, relationalModel);
             var derivedsIdColumn = new Column("DerivedsId", "bigint", principalBasePrincipalDerivedDependentBasebyteTable);
             principalBasePrincipalDerivedDependentBasebyteTable.Columns.Add("DerivedsId", derivedsIdColumn);
+            derivedsIdColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<long>(derivedsIdColumn);
             var derivedsAlternateIdColumn = new Column("DerivedsAlternateId", "char(36)", principalBasePrincipalDerivedDependentBasebyteTable);
             principalBasePrincipalDerivedDependentBasebyteTable.Columns.Add("DerivedsAlternateId", derivedsAlternateIdColumn);
+            derivedsAlternateIdColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<Guid>(derivedsAlternateIdColumn);
             var principalsIdColumn = new Column("PrincipalsId", "bigint", principalBasePrincipalDerivedDependentBasebyteTable);
             principalBasePrincipalDerivedDependentBasebyteTable.Columns.Add("PrincipalsId", principalsIdColumn);
+            principalsIdColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<long>(principalsIdColumn);
             var principalsAlternateIdColumn = new Column("PrincipalsAlternateId", "char(36)", principalBasePrincipalDerivedDependentBasebyteTable);
             principalBasePrincipalDerivedDependentBasebyteTable.Columns.Add("PrincipalsAlternateId", principalsAlternateIdColumn);
+            principalsAlternateIdColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<Guid>(principalsAlternateIdColumn);
             var rowidColumn = new Column("rowid", "timestamp(6)", principalBasePrincipalDerivedDependentBasebyteTable)
             {
                 IsNullable = true
             };
             principalBasePrincipalDerivedDependentBasebyteTable.Columns.Add("rowid", rowidColumn);
-            var pK_PrincipalBasePrincipalDerivedDependentBasebyte = new UniqueConstraint("PK_PrincipalBasePrincipalDerived<DependentBase<byte?>>", principalBasePrincipalDerivedDependentBasebyteTable, new[] { derivedsIdColumn, derivedsAlternateIdColumn, principalsIdColumn, principalsAlternateIdColumn });
-            principalBasePrincipalDerivedDependentBasebyteTable.PrimaryKey = pK_PrincipalBasePrincipalDerivedDependentBasebyte;
-            var pK_PrincipalBasePrincipalDerivedDependentBasebyteUc = RelationalModel.GetKey(this,
-                "PrincipalBasePrincipalDerived<DependentBase<byte?>>",
-                new[] { "DerivedsId", "DerivedsAlternateId", "PrincipalsId", "PrincipalsAlternateId" });
-            pK_PrincipalBasePrincipalDerivedDependentBasebyte.MappedKeys.Add(pK_PrincipalBasePrincipalDerivedDependentBasebyteUc);
-            RelationalModel.GetOrCreateUniqueConstraints(pK_PrincipalBasePrincipalDerivedDependentBasebyteUc).Add(pK_PrincipalBasePrincipalDerivedDependentBasebyte);
-            principalBasePrincipalDerivedDependentBasebyteTable.UniqueConstraints.Add("PK_PrincipalBasePrincipalDerived<DependentBase<byte?>>", pK_PrincipalBasePrincipalDerivedDependentBasebyte);
-            var iX_PrincipalBasePrincipalDerivedDependentBasebyte_Principa = new TableIndex(
-            "IX_PrincipalBasePrincipalDerived<DependentBase<byte?>>_Principa~", principalBasePrincipalDerivedDependentBasebyteTable, new[] { principalsIdColumn, principalsAlternateIdColumn }, false);
-            var iX_PrincipalBasePrincipalDerivedDependentBasebyte_PrincipaIx = RelationalModel.GetIndex(this,
-                "PrincipalBasePrincipalDerived<DependentBase<byte?>>",
-                new[] { "PrincipalsId", "PrincipalsAlternateId" });
-            iX_PrincipalBasePrincipalDerivedDependentBasebyte_Principa.MappedIndexes.Add(iX_PrincipalBasePrincipalDerivedDependentBasebyte_PrincipaIx);
-            RelationalModel.GetOrCreateTableIndexes(iX_PrincipalBasePrincipalDerivedDependentBasebyte_PrincipaIx).Add(iX_PrincipalBasePrincipalDerivedDependentBasebyte_Principa);
-            principalBasePrincipalDerivedDependentBasebyteTable.Indexes.Add("IX_PrincipalBasePrincipalDerived<DependentBase<byte?>>_Principa~", iX_PrincipalBasePrincipalDerivedDependentBasebyte_Principa);
+            rowidColumn.Accessors = ColumnAccessorsFactory.CreateGeneric<DateTime>(rowidColumn);
             relationalModel.Tables.Add(("PrincipalBasePrincipalDerived<DependentBase<byte?>>", null), principalBasePrincipalDerivedDependentBasebyteTable);
             var principalBasePrincipalDerivedDependentBasebyteTableMapping = new TableMapping(principalBasePrincipalDerivedDependentBasebyte, principalBasePrincipalDerivedDependentBasebyteTable, null);
             principalBasePrincipalDerivedDependentBasebyteTable.AddTypeMapping(principalBasePrincipalDerivedDependentBasebyteTableMapping, false);
@@ -2661,10 +2943,29 @@ namespace TestNamespace
             RelationalModel.CreateColumnMapping(principalsAlternateIdColumn, principalBasePrincipalDerivedDependentBasebyte.FindProperty("PrincipalsAlternateId")!, principalBasePrincipalDerivedDependentBasebyteTableMapping);
             RelationalModel.CreateColumnMapping(principalsIdColumn, principalBasePrincipalDerivedDependentBasebyte.FindProperty("PrincipalsId")!, principalBasePrincipalDerivedDependentBasebyteTableMapping);
             RelationalModel.CreateColumnMapping(rowidColumn, principalBasePrincipalDerivedDependentBasebyte.FindProperty("rowid")!, principalBasePrincipalDerivedDependentBasebyteTableMapping);
+            var pK_PrincipalBasePrincipalDerivedDependentBasebyte = new UniqueConstraint("PK_PrincipalBasePrincipalDerived<DependentBase<byte?>>", principalBasePrincipalDerivedDependentBasebyteTable, new[] { derivedsIdColumn, derivedsAlternateIdColumn, principalsIdColumn, principalsAlternateIdColumn });
+            principalBasePrincipalDerivedDependentBasebyteTable.PrimaryKey = pK_PrincipalBasePrincipalDerivedDependentBasebyte;
+            pK_PrincipalBasePrincipalDerivedDependentBasebyte.SetRowKeyValueFactory(new CompositeRowKeyValueFactory(pK_PrincipalBasePrincipalDerivedDependentBasebyte));
+            var pK_PrincipalBasePrincipalDerivedDependentBasebyteKey = RelationalModel.GetKey(this,
+                "PrincipalBasePrincipalDerived<DependentBase<byte?>>",
+                new[] { "DerivedsId", "DerivedsAlternateId", "PrincipalsId", "PrincipalsAlternateId" });
+            pK_PrincipalBasePrincipalDerivedDependentBasebyte.MappedKeys.Add(pK_PrincipalBasePrincipalDerivedDependentBasebyteKey);
+            RelationalModel.GetOrCreateUniqueConstraints(pK_PrincipalBasePrincipalDerivedDependentBasebyteKey).Add(pK_PrincipalBasePrincipalDerivedDependentBasebyte);
+            principalBasePrincipalDerivedDependentBasebyteTable.UniqueConstraints.Add("PK_PrincipalBasePrincipalDerived<DependentBase<byte?>>", pK_PrincipalBasePrincipalDerivedDependentBasebyte);
+            var iX_PrincipalBasePrincipalDerivedDependentBasebyte_Principa = new TableIndex(
+            "IX_PrincipalBasePrincipalDerived<DependentBase<byte?>>_Principa~", principalBasePrincipalDerivedDependentBasebyteTable, new[] { principalsIdColumn, principalsAlternateIdColumn }, false);
+            iX_PrincipalBasePrincipalDerivedDependentBasebyte_Principa.SetRowIndexValueFactory(new CompositeRowIndexValueFactory(iX_PrincipalBasePrincipalDerivedDependentBasebyte_Principa));
+            var iX_PrincipalBasePrincipalDerivedDependentBasebyte_PrincipaIx = RelationalModel.GetIndex(this,
+                "PrincipalBasePrincipalDerived<DependentBase<byte?>>",
+                new[] { "PrincipalsId", "PrincipalsAlternateId" });
+            iX_PrincipalBasePrincipalDerivedDependentBasebyte_Principa.MappedIndexes.Add(iX_PrincipalBasePrincipalDerivedDependentBasebyte_PrincipaIx);
+            RelationalModel.GetOrCreateTableIndexes(iX_PrincipalBasePrincipalDerivedDependentBasebyte_PrincipaIx).Add(iX_PrincipalBasePrincipalDerivedDependentBasebyte_Principa);
+            principalBasePrincipalDerivedDependentBasebyteTable.Indexes.Add("IX_PrincipalBasePrincipalDerived<DependentBase<byte?>>_Principa~", iX_PrincipalBasePrincipalDerivedDependentBasebyte_Principa);
             var fK_DependentBasebyte_PrincipalBase_PrincipalId = new ForeignKeyConstraint(
                 "FK_DependentBase<byte?>_PrincipalBase_PrincipalId", dependentBasebyteTable, principalBaseTable,
                 new[] { principalIdColumn },
                 principalBaseTable.FindUniqueConstraint("AK_PrincipalBase_Id")!, ReferentialAction.Cascade);
+            fK_DependentBasebyte_PrincipalBase_PrincipalId.SetRowForeignKeyValueFactory(RowForeignKeyValueFactoryFactory.CreateSimpleNonNullableFactory<long, long>(fK_DependentBasebyte_PrincipalBase_PrincipalId));
             var fK_DependentBasebyte_PrincipalBase_PrincipalIdFk = RelationalModel.GetForeignKey(this,
                 "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+DependentBase<byte?>",
                 new[] { "PrincipalId" },
@@ -2678,6 +2979,7 @@ namespace TestNamespace
                 "FK_DependentBase<byte?>_PrincipalDerived_PrincipalId_PrincipalA~", dependentBasebyteTable, principalDerivedTable,
                 new[] { principalIdColumn, principalAlternateIdColumn },
                 principalDerivedTable.FindUniqueConstraint("PK")!, ReferentialAction.NoAction);
+            fK_DependentBasebyte_PrincipalDerived_PrincipalId_PrincipalA.SetRowForeignKeyValueFactory(new CompositeRowForeignKeyValueFactory(fK_DependentBasebyte_PrincipalDerived_PrincipalId_PrincipalA));
             var fK_DependentBasebyte_PrincipalDerived_PrincipalId_PrincipalAFk = RelationalModel.GetForeignKey(this,
                 "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+DependentBase<byte?>",
                 new[] { "PrincipalId", "PrincipalAlternateId" },
@@ -2691,6 +2993,7 @@ namespace TestNamespace
                 "FK_Details_PrincipalBase_PrincipalBaseId_PrincipalBaseAlternate~", detailsTable, principalBaseTable,
                 new[] { principalBaseIdColumn, principalBaseAlternateIdColumn },
                 principalBaseTable.FindUniqueConstraint("PK")!, ReferentialAction.Cascade);
+            fK_Details_PrincipalBase_PrincipalBaseId_PrincipalBaseAlternate.SetRowForeignKeyValueFactory(new CompositeRowForeignKeyValueFactory(fK_Details_PrincipalBase_PrincipalBaseId_PrincipalBaseAlternate));
             var fK_Details_PrincipalBase_PrincipalBaseId_PrincipalBaseAlternateFk = RelationalModel.GetForeignKey(this,
                 "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+PrincipalBase.Owned#OwnedType",
                 new[] { "PrincipalBaseId", "PrincipalBaseAlternateId" },
@@ -2704,6 +3007,7 @@ namespace TestNamespace
                 "FK_ManyOwned_PrincipalDerived_PrincipalDerived<DependentBase<by~", manyOwnedTable, principalDerivedTable,
                 new[] { principalDerivedDependentBasebyteIdColumn, principalDerivedDependentBasebyteAlternateIdColumn },
                 principalDerivedTable.FindUniqueConstraint("PK")!, ReferentialAction.Cascade);
+            fK_ManyOwned_PrincipalDerived_PrincipalDerivedDependentBaseby.SetRowForeignKeyValueFactory(new CompositeRowForeignKeyValueFactory(fK_ManyOwned_PrincipalDerived_PrincipalDerivedDependentBaseby));
             var fK_ManyOwned_PrincipalDerived_PrincipalDerivedDependentBasebyFk = RelationalModel.GetForeignKey(this,
                 "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+PrincipalDerived<Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+DependentBase<byte?>>.ManyOwned#OwnedType",
                 new[] { "PrincipalDerivedId", "PrincipalDerivedAlternateId" },
@@ -2717,6 +3021,7 @@ namespace TestNamespace
                 "FK_PrincipalBasePrincipalDerived<DependentBase<byte?>>_Principa~", principalBasePrincipalDerivedDependentBasebyteTable, principalDerivedTable,
                 new[] { derivedsIdColumn, derivedsAlternateIdColumn },
                 principalDerivedTable.FindUniqueConstraint("PK")!, ReferentialAction.Cascade);
+            fK_PrincipalBasePrincipalDerivedDependentBasebyte_Principa.SetRowForeignKeyValueFactory(new CompositeRowForeignKeyValueFactory(fK_PrincipalBasePrincipalDerivedDependentBasebyte_Principa));
             var fK_PrincipalBasePrincipalDerivedDependentBasebyte_PrincipaFk = RelationalModel.GetForeignKey(this,
                 "PrincipalBasePrincipalDerived<DependentBase<byte?>>",
                 new[] { "DerivedsId", "DerivedsAlternateId" },
@@ -2730,6 +3035,7 @@ namespace TestNamespace
                 "FK_PrincipalBasePrincipalDerived<DependentBase<byte?>>_Princip~1", principalBasePrincipalDerivedDependentBasebyteTable, principalBaseTable,
                 new[] { principalsIdColumn, principalsAlternateIdColumn },
                 principalBaseTable.FindUniqueConstraint("PK")!, ReferentialAction.Cascade);
+            fK_PrincipalBasePrincipalDerivedDependentBasebyte_Princip1.SetRowForeignKeyValueFactory(new CompositeRowForeignKeyValueFactory(fK_PrincipalBasePrincipalDerivedDependentBasebyte_Princip1));
             var fK_PrincipalBasePrincipalDerivedDependentBasebyte_Princip1Fk = RelationalModel.GetForeignKey(this,
                 "PrincipalBasePrincipalDerived<DependentBase<byte?>>",
                 new[] { "PrincipalsId", "PrincipalsAlternateId" },
@@ -2743,6 +3049,7 @@ namespace TestNamespace
                 "FK_PrincipalDerived_PrincipalBase_DerivedId_AlternateId", principalDerivedTable, principalBaseTable,
                 new[] { derivedIdColumn, alternateIdColumn0 },
                 principalBaseTable.FindUniqueConstraint("PK")!, ReferentialAction.Cascade);
+            fK_PrincipalDerived_PrincipalBase_DerivedId_AlternateId.SetRowForeignKeyValueFactory(new CompositeRowForeignKeyValueFactory(fK_PrincipalDerived_PrincipalBase_DerivedId_AlternateId));
             var fK_PrincipalDerived_PrincipalBase_DerivedId_AlternateIdFk = RelationalModel.GetForeignKey(this,
                 "Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+PrincipalDerived<Microsoft.EntityFrameworkCore.Scaffolding.CompiledModelTestBase+DependentBase<byte?>>",
                 new[] { "Id", "AlternateId" },

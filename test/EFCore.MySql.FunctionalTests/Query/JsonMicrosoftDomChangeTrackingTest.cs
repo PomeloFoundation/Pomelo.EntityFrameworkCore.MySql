@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -226,7 +227,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 }
             }
 
-            public void Seed()
+            public async Task SeedAsync()
             {
                 var (customer1, customer2, customer3) = (CreateCustomer1(), CreateCustomer2(), CreateCustomer3());
 
@@ -234,7 +235,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     new JsonEntity { Id = 1, CustomerDocument = customer1, CustomerElement = customer1.RootElement },
                     new JsonEntity { Id = 2, CustomerDocument = customer2, CustomerElement = customer2.RootElement },
                     new JsonEntity { Id = 3, CustomerDocument = customer3, CustomerElement = customer3.RootElement });
-                SaveChanges();
+                await SaveChangesAsync();
             }
 
             public static JsonDocument CreateCustomer1()
@@ -324,7 +325,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             protected override string StoreName => "JsonMicrosoftDomChangeTrackingTest";
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
-            protected override void Seed(JsonMicrosoftDomChangeTrackingContext context) => context.Seed();
+            protected override Task SeedAsync(JsonMicrosoftDomChangeTrackingContext context) => context.SeedAsync();
 
             protected override IServiceCollection AddServices(IServiceCollection serviceCollection)
             {

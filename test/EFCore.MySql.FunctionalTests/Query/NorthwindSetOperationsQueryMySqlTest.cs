@@ -22,9 +22,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        protected override bool CanExecuteQueryString
-            => true;
-
         public override async Task Client_eval_Union_FirstOrDefault(bool async)
         {
             // Client evaluation in projection. Issue #16243.

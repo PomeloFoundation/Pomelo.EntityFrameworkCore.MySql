@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestModels.UpdatesModel;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -36,9 +37,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.DefaultExpression), nameof(ServerVersionSupport.AlternativeDefaultExpression))]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.Returning))]
-        public override void Save_with_shared_foreign_key()
+        public override Task Save_with_shared_foreign_key()
         {
-            base.Save_with_shared_foreign_key();
+            return base.Save_with_shared_foreign_key();
         }
 
         public class UpdatesMySqlFixture : UpdatesRelationalFixture

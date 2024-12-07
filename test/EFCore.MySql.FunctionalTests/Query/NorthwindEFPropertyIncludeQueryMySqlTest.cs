@@ -24,7 +24,7 @@ public class NorthwindEFPropertyIncludeQueryMySqlTest : NorthwindEFPropertyInclu
 
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
-        => TestHelpers.AssertAllMethodsOverridden(GetType());
+        => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 
     public override async Task Include_collection_with_last_no_orderby(bool async)
     {

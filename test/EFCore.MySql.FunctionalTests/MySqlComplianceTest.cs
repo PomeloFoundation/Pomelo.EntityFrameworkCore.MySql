@@ -17,6 +17,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             typeof(CommandInterceptionTestBase),
             typeof(NorthwindQueryTaggingQueryTestBase<>),
 
+            // TODO: 9.0
+            typeof(AdHocComplexTypeQueryTestBase),
+            typeof(AdHocPrecompiledQueryRelationalTestBase),
+            typeof(JsonQueryRelationalTestBase<>),
+            typeof(PrecompiledQueryRelationalTestBase),
+            typeof(PrecompiledSqlPregenerationQueryRelationalTestBase),
+
             // TODO: Reenable LoggingMySqlTest once its issue has been fixed in EF Core upstream.
             typeof(LoggingTestBase),
             typeof(LoggingRelationalTestBase<,>),

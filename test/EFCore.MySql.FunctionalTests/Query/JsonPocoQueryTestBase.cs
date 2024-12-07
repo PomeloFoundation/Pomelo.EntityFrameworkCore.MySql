@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Newtonsoft.Json;
@@ -474,12 +475,12 @@ WHERE JSON_TYPE(JSON_EXTRACT(`j`.`Customer`, '$.Statistics.Visits')) = 'INTEGER'
 
             public JsonPocoQueryContext(DbContextOptions options) : base(options) {}
 
-            public static void Seed(JsonPocoQueryContext context)
+            public static async Task SeedAsync(JsonPocoQueryContext context)
             {
                 context.JsonEntities.AddRange(
                     new JsonEntity { Id = 1, Customer = createCustomer1(), ToplevelArray = new[] { "one", "two", "three" } },
                     new JsonEntity { Id = 2, Customer = createCustomer2() });
-                context.SaveChanges();
+                await context.SaveChangesAsync();
 
                 static Customer createCustomer1() => new Customer
                 {
@@ -567,7 +568,7 @@ WHERE JSON_TYPE(JSON_EXTRACT(`j`.`Customer`, '$.Statistics.Visits')) = 'INTEGER'
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.GuidBinary16Instance;
 
             public TestSqlLoggerFactory TestSqlLoggerFactory => (TestSqlLoggerFactory)ListLoggerFactory;
-            protected override void Seed(JsonPocoQueryContext context) => JsonPocoQueryContext.Seed(context);
+            protected override Task SeedAsync(JsonPocoQueryContext context) => JsonPocoQueryContext.SeedAsync(context);
         }
 
         public class Customer

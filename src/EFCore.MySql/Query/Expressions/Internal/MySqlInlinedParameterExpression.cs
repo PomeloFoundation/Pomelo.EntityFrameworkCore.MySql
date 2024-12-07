@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq.Expressions;
+using System.Reflection;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Utilities;
@@ -11,6 +12,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
 
 public class MySqlInlinedParameterExpression : SqlExpression
 {
+    private static ConstructorInfo _quotingConstructor;
+
     public MySqlInlinedParameterExpression(
         SqlParameterExpression parameterExpression,
         SqlConstantExpression valueExpression)
@@ -22,7 +25,7 @@ public class MySqlInlinedParameterExpression : SqlExpression
         ValueExpression = valueExpression;
     }
 
-    public virtual Expression ParameterExpression { get; }
+    public virtual SqlParameterExpression ParameterExpression { get; }
     public virtual SqlConstantExpression ValueExpression { get; }
 
     protected override Expression VisitChildren(ExpressionVisitor visitor)
@@ -32,6 +35,14 @@ public class MySqlInlinedParameterExpression : SqlExpression
 
         return Update(parameterExpression, valueExpression);
     }
+
+    /// <inheritdoc />
+    public override Expression Quote()
+        => New(
+            _quotingConstructor ??= typeof(MySqlInlinedParameterExpression).GetConstructor(
+                [typeof(SqlParameterExpression), typeof(SqlConstantExpression)])!,
+            ParameterExpression.Quote(),
+            ValueExpression.Quote());
 
     protected override void Print(ExpressionPrinter expressionPrinter)
     {

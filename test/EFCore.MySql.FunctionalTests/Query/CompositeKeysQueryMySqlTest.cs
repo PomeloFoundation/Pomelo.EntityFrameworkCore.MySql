@@ -15,9 +15,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        protected override bool CanExecuteQueryString
-            => true;
-
         public override async Task Projecting_multiple_collections_same_level_top_level_ordering(bool async)
         {
             await base.Projecting_multiple_collections_same_level_top_level_ordering(async);

@@ -27,7 +27,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         public override Expression Process(Expression query)
         {
+            var mySqlHavingExpressionVisitor = new MySqlHavingExpressionVisitor(_sqlExpressionFactory);
+
+            query = mySqlHavingExpressionVisitor.Process(query, usePrePostprocessorMode: true);
+
+            // Changes `SelectExpression.IsMutable` from `true` to `false`.
             query = base.Process(query);
+
+            query = mySqlHavingExpressionVisitor.Process(query, usePrePostprocessorMode: false);
 
             query = new MySqlJsonParameterExpressionVisitor(_sqlExpressionFactory, _options).Visit(query);
 
@@ -35,6 +42,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             {
                 query = new MySqlBug96947WorkaroundExpressionVisitor(_sqlExpressionFactory).Visit(query);
             }
+
+            query = new BitwiseOperationReturnTypeCorrectingExpressionVisitor(_sqlExpressionFactory).Visit(query);
 
             return query;
         }

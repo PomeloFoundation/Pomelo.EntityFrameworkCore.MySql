@@ -33,26 +33,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return base.Contains_with_subquery_optional_navigation_and_constant_item(async);
         }
 
-        public override Task Distinct_take_without_orderby(bool async)
-        {
-            return AssertQuery(
-                async,
-                ss => from l1 in ss.Set<Level1>()
-                    where l1.Id < 3
-                    select (from l3 in ss.Set<Level3>()
-                        select l3).Distinct().OrderBy(e => e.Id).Take(1).FirstOrDefault().Name); // Apply OrderBy before Skip
-        }
-
-        public override Task Distinct_skip_without_orderby(bool async)
-        {
-            return AssertQuery(
-                async,
-                ss => from l1 in ss.Set<Level1>()
-                    where l1.Id < 3
-                    select (from l3 in ss.Set<Level3>()
-                        select l3).Distinct().OrderBy(e => e.Id).Skip(1).FirstOrDefault().Name); // Apply OrderBy before Skip
-        }
-
         public override async Task SelectMany_subquery_with_custom_projection(bool async)
         {
             // TODO: Fix test in EF Core upstream.

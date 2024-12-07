@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
-public class ComplexTypeBulkUpdatesMySqlTest : ComplexTypeBulkUpdatesTestBase<
+public class ComplexTypeBulkUpdatesMySqlTest : ComplexTypeBulkUpdatesRelationalTestBase<
     ComplexTypeBulkUpdatesMySqlTest.ComplexTypeBulkUpdatesMySqlFixture>
 {
     public ComplexTypeBulkUpdatesMySqlTest(ComplexTypeBulkUpdatesMySqlFixture fixture, ITestOutputHelper testOutputHelper)
@@ -27,9 +27,9 @@ WHERE `c`.`Name` = 'Monty Elias'
 """);
     }
 
-    public override async Task Delete_complex_type_throws(bool async)
+    public override async Task Delete_complex_type(bool async)
     {
-        await base.Delete_complex_type_throws(async);
+        await base.Delete_complex_type(async);
 
         AssertSql();
     }
@@ -95,9 +95,9 @@ SET `c`.`BillingAddress_ZipCode` = 54321,
 """);
     }
 
-    public override async Task Update_projected_complex_type_via_OrderBy_Skip_throws(bool async)
+    public override async Task Update_projected_complex_type_via_OrderBy_Skip(bool async)
     {
-        await base.Update_projected_complex_type_via_OrderBy_Skip_throws(async);
+        await base.Update_projected_complex_type_via_OrderBy_Skip(async);
 
         AssertExecuteUpdateSql();
     }
@@ -304,7 +304,7 @@ FROM `Customer` AS `c`
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
     {
-        TestHelpers.AssertAllMethodsOverridden(GetType());
+        MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
     }
 
     private void AssertExecuteUpdateSql(params string[] expected)
@@ -322,7 +322,7 @@ FROM `Customer` AS `c`
         Fixture.TestSqlLoggerFactory.Clear();
     }
 
-    public class ComplexTypeBulkUpdatesMySqlFixture : ComplexTypeBulkUpdatesFixtureBase
+    public class ComplexTypeBulkUpdatesMySqlFixture : ComplexTypeBulkUpdatesRelationalFixtureBase
     {
         protected override ITestStoreFactory TestStoreFactory
             => MySqlTestStoreFactory.Instance;

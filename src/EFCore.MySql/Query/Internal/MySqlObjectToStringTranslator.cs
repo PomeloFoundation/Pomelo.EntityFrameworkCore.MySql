@@ -51,41 +51,49 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             IReadOnlyList<SqlExpression> arguments,
             IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
-            if (instance == null ||
-                method.Name != nameof(ToString) ||
-                arguments.Count != 0)
+            if (instance == null || method.Name != nameof(ToString) || arguments.Count != 0)
             {
                 return null;
             }
 
-            if (instance.Type == typeof(bool))
+            if (instance.TypeMapping?.ClrType == typeof(string))
             {
-                return instance is ColumnExpression columnExpression &&
-                       columnExpression.IsNullable
-                    ? _sqlExpressionFactory.Case(
-                        new[]
-                        {
-                            new CaseWhenClause(
-                                _sqlExpressionFactory.Equal(instance, _sqlExpressionFactory.Constant(false)),
-                                _sqlExpressionFactory.Constant(false.ToString())),
-                            new CaseWhenClause(
-                                _sqlExpressionFactory.Equal(instance, _sqlExpressionFactory.Constant(true)),
-                                _sqlExpressionFactory.Constant(true.ToString()))
-                        },
-                        _sqlExpressionFactory.Constant(null))
-                    : _sqlExpressionFactory.Case(
-                        new[]
-                        {
-                            new CaseWhenClause(
-                                _sqlExpressionFactory.Equal(instance, _sqlExpressionFactory.Constant(false)),
-                                _sqlExpressionFactory.Constant(false.ToString()))
-                        },
-                        _sqlExpressionFactory.Constant(true.ToString()));
+                return instance;
             }
 
-            // Translates parameterless Object.ToString() calls.
-            return _supportedTypes.Contains(instance.Type.UnwrapNullableType())
-                ? _sqlExpressionFactory.Convert(instance, typeof(string))
+            if (instance.Type == typeof(bool))
+            {
+                if (instance is not ColumnExpression { IsNullable: false })
+                {
+                    return _sqlExpressionFactory.Case(
+                        instance,
+                        new[]
+                        {
+                            new CaseWhenClause(
+                                _sqlExpressionFactory.Constant(false),
+                                _sqlExpressionFactory.Constant(false.ToString())),
+                            new CaseWhenClause(
+                                _sqlExpressionFactory.Constant(true),
+                                _sqlExpressionFactory.Constant(true.ToString()))
+                        },
+                        _sqlExpressionFactory.Constant(string.Empty));
+                }
+
+                return _sqlExpressionFactory.Case(
+                    new[]
+                    {
+                        new CaseWhenClause(
+                            instance,
+                            _sqlExpressionFactory.Constant(true.ToString()))
+                    },
+                    _sqlExpressionFactory.Constant(false.ToString()));
+            }
+
+            // Enums are handled by EnumMethodTranslator.
+            return _supportedTypes.Contains(instance.Type)
+                ? _sqlExpressionFactory.Coalesce(
+                    _sqlExpressionFactory.Convert(instance, typeof(string)),
+                    _sqlExpressionFactory.Constant(string.Empty))
                 : null;
         }
     }

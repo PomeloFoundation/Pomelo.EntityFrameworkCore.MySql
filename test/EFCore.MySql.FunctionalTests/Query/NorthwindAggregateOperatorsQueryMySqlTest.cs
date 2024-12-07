@@ -21,14 +21,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        public override Task Average_over_max_subquery_is_client_eval(bool async)
+        public override Task Average_over_max_subquery(bool async)
             => AssertAverage(
                 async,
                 ss => ss.Set<Customer>().OrderBy(c => c.CustomerID).Take(3),
                 selector: c => (decimal)c.Orders.Average(o => 5 + o.OrderDetails.Max(od => od.ProductID)),
                 asserter: (a, b) => Assert.Equal(a, b, 12)); // added flouting point precision tolerance
 
-        public override Task Average_over_nested_subquery_is_client_eval(bool async)
+        public override Task Average_over_nested_subquery(bool async)
             => AssertAverage(
                 async,
                 ss => ss.Set<Customer>().OrderBy(c => c.CustomerID).Take(3),
@@ -78,9 +78,6 @@ FROM `Order Details` AS `o`
 
             AssertSql();
         }
-
-        protected override bool CanExecuteQueryString
-            => true;
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);

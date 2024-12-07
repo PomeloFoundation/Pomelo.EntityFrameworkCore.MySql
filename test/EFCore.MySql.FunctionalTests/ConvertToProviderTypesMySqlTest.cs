@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -23,8 +24,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             //fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        public override void Can_perform_query_with_ansi_strings_test()
+        public override Task Can_perform_query_with_ansi_strings_test()
         {
+            return Task.CompletedTask;
         }
 
         // TODO: Needed to customize:
@@ -33,7 +35,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         #region https://github.com/dotnet/efcore/issues/26068
 
         [ConditionalFact]
-        public override void Can_insert_and_read_back_all_non_nullable_data_types()
+        public override async Task Can_insert_and_read_back_all_non_nullable_data_types()
         {
             using (var context = CreateContext())
             {
@@ -68,12 +70,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                         EnumS8 = EnumS8.SomeValue
                     });
 
-                Assert.Equal(1, context.SaveChanges());
+                Assert.Equal(1, await context.SaveChangesAsync());
             }
 
             using (var context = CreateContext())
             {
-                var dt = context.Set<BuiltInDataTypes>().Where(e => e.Id == 1).ToList().Single();
+                var dt = (await context.Set<BuiltInDataTypes>().Where(e => e.Id == 1).ToListAsync()).Single();
 
                 var entityType = context.Model.FindEntityType(typeof(BuiltInDataTypes));
                 AssertEqualIfMapped(entityType, (short)-1234, () => dt.TestInt16);
@@ -107,7 +109,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         }
 
         [ConditionalFact]
-        public override void Can_insert_and_read_back_non_nullable_backed_data_types()
+        public override async Task Can_insert_and_read_back_non_nullable_backed_data_types()
         {
             using (var context = CreateContext())
             {
@@ -142,12 +144,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                         EnumS8 = EnumS8.SomeValue
                     });
 
-                Assert.Equal(1, context.SaveChanges());
+                Assert.Equal(1, await context.SaveChangesAsync());
             }
 
             using (var context = CreateContext())
             {
-                var dt = context.Set<NonNullableBackedDataTypes>().Where(ndt => ndt.Id == 101).ToList().Single();
+                var dt = (await context.Set<NonNullableBackedDataTypes>().Where(ndt => ndt.Id == 101).ToListAsync()).Single();
 
                 var entityType = context.Model.FindEntityType(typeof(NonNullableBackedDataTypes));
                 AssertEqualIfMapped(entityType, (short)-1234, () => dt.Int16);
@@ -181,7 +183,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         }
 
         [ConditionalFact]
-        public override void Can_insert_and_read_back_nullable_backed_data_types()
+        public override async Task Can_insert_and_read_back_nullable_backed_data_types()
         {
             using (var context = CreateContext())
             {
@@ -216,12 +218,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                         EnumS8 = EnumS8.SomeValue
                     });
 
-                Assert.Equal(1, context.SaveChanges());
+                Assert.Equal(1, await context.SaveChangesAsync());
             }
 
             using (var context = CreateContext())
             {
-                var dt = context.Set<NullableBackedDataTypes>().Where(ndt => ndt.Id == 101).ToList().Single();
+                var dt = (await context.Set<NullableBackedDataTypes>().Where(ndt => ndt.Id == 101).ToListAsync()).Single();
 
                 var entityType = context.Model.FindEntityType(typeof(NullableBackedDataTypes));
                 AssertEqualIfMapped(entityType, (short)-1234, () => dt.Int16);
@@ -254,7 +256,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         }
 
         [ConditionalFact]
-        public override void Can_insert_and_read_back_object_backed_data_types()
+        public override async Task Can_insert_and_read_back_object_backed_data_types()
         {
             using (var context = CreateContext())
             {
@@ -291,12 +293,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                         EnumS8 = EnumS8.SomeValue
                     });
 
-                Assert.Equal(1, context.SaveChanges());
+                Assert.Equal(1, await context.SaveChangesAsync());
             }
 
             using (var context = CreateContext())
             {
-                var dt = context.Set<ObjectBackedDataTypes>().Where(ndt => ndt.Id == 101).ToList().Single();
+                var dt = (await context.Set<ObjectBackedDataTypes>().Where(ndt => ndt.Id == 101).ToListAsync()).Single();
 
                 var entityType = context.Model.FindEntityType(typeof(ObjectBackedDataTypes));
                 AssertEqualIfMapped(entityType, "TestString", () => dt.String);

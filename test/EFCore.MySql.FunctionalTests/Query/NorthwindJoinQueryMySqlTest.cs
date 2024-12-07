@@ -17,9 +17,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        protected override bool CanExecuteQueryString
-            => true;
-
         /// <summary>
         /// Needs explicit ordering of views to work consistently with MySQL and MariaDB.
         /// But since CustomerViewModel is private, we can't even override the test case properly.

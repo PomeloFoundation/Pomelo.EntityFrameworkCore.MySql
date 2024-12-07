@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -293,12 +294,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 addOrUpdateExtensionMethod.Invoke(optionsBuilder, new object[] {mySqlJsonOptions});
             }
 
-            public void Seed()
+            public async Task SeedAsync()
             {
                 JsonEntities.AddRange(
                     new JsonEntity {Id = 1, Customer = Customer1},
                     new JsonEntity {Id = 2, Customer = Customer2});
-                SaveChanges();
+                await SaveChangesAsync();
             }
 
             public class JsonPocoChangeTrackingContextOptions
@@ -320,7 +321,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             protected override string StoreName => "JsonStringChangeTrackingTest";
             protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
-            protected override void Seed(JsonStringChangeTrackingContext context) => context.Seed();
+            protected override Task SeedAsync(JsonStringChangeTrackingContext context) => context.SeedAsync();
 
             public virtual DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder, MySqlJsonChangeTrackingOptions? changeTrackingOptions)
                 => builder;

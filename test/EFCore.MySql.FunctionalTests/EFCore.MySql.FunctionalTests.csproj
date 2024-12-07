@@ -7,7 +7,7 @@
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <DefaultItemExcludes>$(DefaultItemExcludes);*.trx</DefaultItemExcludes>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <FixedTestOrder Condition="'$(FixedTestOrder)' == ''">false</FixedTestOrder>
     <SpecificTestOrder Condition="'$(SpecificTestOrder)' == ''">false</SpecificTestOrder>
@@ -29,10 +29,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Features" />
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Features" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" />
@@ -75,11 +71,17 @@
     <Reference Include="Microsoft.EntityFrameworkCore.Design">
       <HintPath>$(LocalEFCoreRepository)\artifacts\bin\EFCore.Design.Tests\Debug\$(EfCoreTestTargetFramework)\Microsoft.EntityFrameworkCore.Design.dll</HintPath>
     </Reference>
+    <PackageReference Include="Castle.Core" />
+    <PackageReference Include="Microsoft.CodeAnalysis" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Features" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="NetTopologySuite" />
     <PackageReference Include="System.ComponentModel.TypeConverter" />
-    <PackageReference Include="Castle.Core" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(LocalMySqlConnectorRepository)' != ''">

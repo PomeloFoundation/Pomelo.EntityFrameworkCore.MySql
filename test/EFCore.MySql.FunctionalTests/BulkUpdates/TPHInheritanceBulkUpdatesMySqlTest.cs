@@ -2,23 +2,27 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
 public class TPHInheritanceBulkUpdatesMySqlTest : TPHInheritanceBulkUpdatesTestBase<TPHInheritanceBulkUpdatesMySqlFixture>
 {
-    public TPHInheritanceBulkUpdatesMySqlTest(TPHInheritanceBulkUpdatesMySqlFixture fixture)
-        : base(fixture)
+    public TPHInheritanceBulkUpdatesMySqlTest(
+        TPHInheritanceBulkUpdatesMySqlFixture fixture,
+        ITestOutputHelper testOutputHelper)
+        : base(fixture, testOutputHelper)
     {
         ClearLog();
     }
 
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
-        => TestHelpers.AssertAllMethodsOverridden(GetType());
+        => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 
     public override async Task Delete_where_hierarchy(bool async)
     {

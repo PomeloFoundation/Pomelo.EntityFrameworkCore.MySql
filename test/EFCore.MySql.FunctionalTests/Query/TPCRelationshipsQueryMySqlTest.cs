@@ -21,7 +21,7 @@ public class TPCRelationshipsQueryMySqlTest
 
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
-        => TestHelpers.AssertAllMethodsOverridden(GetType());
+        => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 
     public override void Changes_in_derived_related_entities_are_detected()
     {

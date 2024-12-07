@@ -21,6 +21,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 
         public const int DefaultCommandTimeout = 600;
 
+        private readonly string _connectionString;
         private readonly string _scriptPath;
         private readonly bool _useConnectionString;
         private readonly bool _noBackslashEscapes;
@@ -34,20 +35,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         public static MySqlTestStore GetOrCreate(string name, string scriptPath, bool noBackslashEscapes = false, string databaseCollation = null, MySqlGuidFormat guidFormat = MySqlGuidFormat.Default)
             => new MySqlTestStore(name, scriptPath: scriptPath, noBackslashEscapes: noBackslashEscapes, databaseCollation: databaseCollation, guidFormat: guidFormat);
 
-        public static MySqlTestStore GetOrCreateInitialized(string name)
-            => new MySqlTestStore(name, shared: true).InitializeMySql(null, (Func<DbContext>)null, null);
+        public static Task<MySqlTestStore> GetOrCreateInitializedAsync(string name)
+            => new MySqlTestStore(name, shared: true).InitializeMySqlAsync(null, (Func<DbContext>)null, null);
 
         public static MySqlTestStore Create(string name, bool useConnectionString = false, bool noBackslashEscapes = false, string databaseCollation = null, MySqlGuidFormat guidFormat = MySqlGuidFormat.Default)
             => new MySqlTestStore(name, useConnectionString: useConnectionString, shared: false, noBackslashEscapes: noBackslashEscapes, databaseCollation: databaseCollation, guidFormat: guidFormat);
 
-        public static MySqlTestStore CreateInitialized(string name)
-            => new MySqlTestStore(name, shared: false).InitializeMySql(null, null, null);
+        public static Task<MySqlTestStore> CreateInitializedAsync(string name)
+            => new MySqlTestStore(name, shared: false).InitializeMySqlAsync(null, null, null);
 
-        public static MySqlTestStore RecreateInitialized(string name)
-            => new MySqlTestStore(name, shared: false).InitializeMySql(null, null, null, c =>
+        public static Task<MySqlTestStore> RecreateInitializedAsync(string name)
+            => new MySqlTestStore(name, shared: false).InitializeMySqlAsync(null, null, null, async c =>
             {
-                c.Database.EnsureDeleted();
-                c.Database.EnsureCreated();
+                await c.Database.EnsureDeletedAsync();
+                await c.Database.EnsureCreatedAsync();
             });
 
         public Lazy<ServerVersion> ServerVersion { get; }
@@ -64,12 +65,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             bool shared = true,
             bool noBackslashEscapes = false,
             MySqlGuidFormat guidFormat = MySqlGuidFormat.Default)
-            : base(name, shared)
+            : base(name, shared, new MySqlConnection(CreateConnectionString(name, noBackslashEscapes, guidFormat)))
         {
             _useConnectionString = useConnectionString;
             _noBackslashEscapes = noBackslashEscapes;
-            ConnectionString = CreateConnectionString(name, _noBackslashEscapes, guidFormat);
-            Connection = new MySqlConnection(ConnectionString);
+
+            if (useConnectionString)
+            {
+                _connectionString = CreateConnectionString(name, _noBackslashEscapes, guidFormat);
+            }
+
             ServerVersion = new Lazy<ServerVersion>(() => Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect((MySqlConnection)Connection));
             DatabaseCharSet = databaseCharSet ?? "utf8mb4";
             DatabaseCollation = databaseCollation ?? ServerVersion.Value.DefaultUtf8CsCollation;
@@ -98,7 +103,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 
         public override DbContextOptionsBuilder AddProviderOptions(DbContextOptionsBuilder builder)
             => _useConnectionString
-                ? builder.UseMySql(ConnectionString, AppConfig.ServerVersion, x => AddOptions(x, _noBackslashEscapes))
+                ? builder.UseMySql(_connectionString, AppConfig.ServerVersion, x => AddOptions(x, _noBackslashEscapes))
                 : builder.UseMySql(Connection, AppConfig.ServerVersion, x => AddOptions(x, _noBackslashEscapes));
 
         public static MySqlDbContextOptionsBuilder AddOptions(MySqlDbContextOptionsBuilder builder)
@@ -122,12 +127,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             }
         }
 
-        public MySqlTestStore InitializeMySql(IServiceProvider serviceProvider, Func<DbContext> createContext, Action<DbContext> seed, Action<DbContext> clean = null)
-            => (MySqlTestStore)Initialize(serviceProvider, createContext, seed, clean);
+        public async Task<MySqlTestStore> InitializeMySqlAsync(IServiceProvider serviceProvider, Func<DbContext> createContext, Func<DbContext, Task> seed, Func<DbContext, Task> clean = null)
+            => (MySqlTestStore)await InitializeAsync(serviceProvider, createContext, seed, clean);
 
-        protected override void Initialize(Func<DbContext> createContext, Action<DbContext> seed, Action<DbContext> clean)
+        protected override async Task InitializeAsync(
+            Func<DbContext> createContext,
+            Func<DbContext, Task> seed,
+            Func<DbContext, Task> clean)
         {
-            if (CreateDatabase(clean))
+            if (await CreateDatabaseAsync(clean))
             {
                 if (_scriptPath != null)
                 {
@@ -135,22 +143,26 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 }
                 else
                 {
-                    using (var context = createContext())
+                    await using (var context = createContext())
                     {
-                        context.Database.EnsureCreatedResiliently();
-                        seed?.Invoke(context);
+                        await context.Database.EnsureCreatedResilientlyAsync();
+
+                        if (seed != null)
+                        {
+                            await seed(context);
+                        }
                     }
                 }
             }
         }
 
-        private bool CreateDatabase(Action<DbContext> clean)
+        private async Task<bool> CreateDatabaseAsync(Func<DbContext, Task> clean)
         {
-            using var master = new MySqlConnection(CreateAdminConnectionString());
-            master.Open();
+            await using var master = new MySqlConnection(CreateAdminConnectionString());
+            await master.OpenAsync();
 
             string databaseSetupSql;
-            if (DatabaseExists(Name))
+            if (await DatabaseExistsAsync(Name))
             {
                 // if (_scriptPath != null
                 //     && !TestEnvironment.IsCI)
@@ -158,14 +170,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 //     return false;
                 // }
 
-                using (var context = new DbContext(
-                    AddProviderOptions(
-                            new DbContextOptionsBuilder()
-                                .EnableServiceProviderCaching(false))
-                        .Options))
+                await using (var context = new DbContext(
+                                 AddProviderOptions(
+                                         new DbContextOptionsBuilder()
+                                             .EnableServiceProviderCaching(false))
+                                     .Options))
                 {
-                    clean?.Invoke(context);
-                    Clean(context);
+                    if (clean != null)
+                    {
+                        await clean(context);
+                    }
+
+                    await CleanAsync(context);
                 }
 
                 databaseSetupSql = GetAlterDatabaseStatement(Name, DatabaseCharSet, DatabaseCollation);
@@ -178,7 +194,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 databaseSetupSql = GetCreateDatabaseStatement(Name, DatabaseCharSet, DatabaseCollation);
             }
 
-            ExecuteNonQuery(master, databaseSetupSql);
+            await ExecuteNonQueryAsync(master, databaseSetupSql);
 
             return true;
         }
@@ -195,10 +211,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         private static string GetAlterDatabaseStatement(string name, string charset = null, string collation = null)
             => $@"ALTER DATABASE `{name}`{(string.IsNullOrEmpty(charset) ? null : $" CHARACTER SET {charset}")}{(string.IsNullOrEmpty(collation) ? null : $" COLLATE {collation}")};";
 
-        private static bool DatabaseExists(string name)
+        private static async Task<bool> DatabaseExistsAsync(string name)
         {
-            using (var master = new MySqlConnection(CreateAdminConnectionString()))
-                return ExecuteScalar<long>(master, $@"SELECT COUNT(*) FROM `INFORMATION_SCHEMA`.`SCHEMATA` WHERE `SCHEMA_NAME` = '{name}';") > 0;
+            await using var master = new MySqlConnection(CreateAdminConnectionString());
+            return await ExecuteScalarAsync<long>(master, $@"SELECT COUNT(*) FROM `INFORMATION_SCHEMA`.`SCHEMATA` WHERE `SCHEMA_NAME` = '{name}';") > 0;
         }
 
         private static string CreateAdminConnectionString()
@@ -223,16 +239,30 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                     return 0;
                 }, string.Empty);
 
-        public override void Clean(DbContext context)
-            => context.Database.EnsureClean();
+        public override Task CleanAsync(DbContext context)
+        {
+            context.Database.EnsureClean();
+            return Task.CompletedTask;
+        }
 
         private static T ExecuteScalar<T>(DbConnection connection, string sql, params object[] parameters)
             => Execute(connection, command => (T)command.ExecuteScalar(), sql, false, parameters);
+
+        private static Task<T> ExecuteScalarAsync<T>(DbConnection connection, string sql, params object[] parameters)
+            => ExecuteAsync(connection, async command => (T)(await command.ExecuteScalarAsync()), sql, false, parameters);
 
         private static T Execute<T>(
             DbConnection connection, Func<DbCommand, T> execute, string sql,
             bool useTransaction = false, object[] parameters = null)
             => ExecuteCommand(connection, execute, sql, useTransaction, parameters);
+
+        private static Task<T> ExecuteAsync<T>(
+            DbConnection connection,
+            Func<DbCommand, Task<T>> execute,
+            string sql,
+            bool useTransaction = false,
+            object[] parameters = null)
+            => ExecuteCommandAsync(connection, execute, sql, useTransaction, parameters);
 
         private static T ExecuteCommand<T>(
             DbConnection connection, Func<DbCommand, T> execute, string sql, bool useTransaction, object[] parameters)
@@ -271,11 +301,61 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             }
         }
 
+        private static async Task<T> ExecuteCommandAsync<T>(
+            DbConnection connection,
+            Func<DbCommand, Task<T>> execute,
+            string sql,
+            bool useTransaction,
+            object[] parameters)
+        {
+            if (connection.State != ConnectionState.Closed)
+            {
+                await connection.CloseAsync();
+            }
+
+            await connection.OpenAsync();
+
+            try
+            {
+                await using (var transaction = useTransaction
+                                 ? await connection.BeginTransactionAsync()
+                                 : null)
+                {
+                    T result;
+                    await using (var command = CreateCommand(connection, sql, parameters))
+                    {
+                        command.Transaction = transaction;
+                        result = await execute(command);
+                    }
+
+                    if (transaction != null)
+                    {
+                        await transaction.CommitAsync();
+                    }
+
+                    return result;
+                }
+            }
+            finally
+            {
+                if (connection.State != ConnectionState.Closed)
+                {
+                    await connection.CloseAsync();
+                }
+            }
+        }
+
         public int ExecuteNonQuery(string sql, params object[] parameters)
             => ExecuteNonQuery(Connection, sql, parameters);
 
+        public Task<int> ExecuteNonQueryAsync(string sql, params object[] parameters)
+            => ExecuteNonQueryAsync(Connection, sql, parameters);
+
         private static int ExecuteNonQuery(DbConnection connection, string sql, object[] parameters = null)
             => Execute(connection, command => command.ExecuteNonQuery(), sql, false, parameters);
+
+        private static Task<int> ExecuteNonQueryAsync(DbConnection connection, string sql, object[] parameters = null)
+            => ExecuteAsync(connection, command => command.ExecuteNonQueryAsync(), sql, false, parameters);
 
         public override void OpenConnection()
         {

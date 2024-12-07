@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq.Expressions;
+using System.Reflection;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -27,6 +28,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 
     public class MySqlBinaryExpression : SqlExpression
     {
+        private static ConstructorInfo _quotingConstructor;
+
         public MySqlBinaryExpression(
             MySqlBinaryExpressionOperatorType operatorType,
             SqlExpression left,
@@ -60,6 +63,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 
             return Update(left, right);
         }
+
+        public override Expression Quote()
+            => New(
+                _quotingConstructor ??= typeof(MySqlBinaryExpression).GetConstructor(
+                    [typeof(MySqlBinaryExpressionOperatorType), typeof(SqlExpression), typeof(SqlExpression), typeof(Type), typeof(RelationalTypeMapping)])!,
+                Constant(OperatorType),
+                Left.Quote(),
+                Right.Quote(),
+                Constant(Type),
+                RelationalExpressionQuotingUtilities.QuoteTypeMapping(TypeMapping));
 
         public virtual MySqlBinaryExpression Update(SqlExpression left, SqlExpression right)
             => left != Left || right != Right

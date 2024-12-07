@@ -63,21 +63,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             { typeof(Math).GetRuntimeMethod(nameof(Math.Log10), new[] { typeof(double) }), ("LOG10", false, false) },
             { typeof(MathF).GetRuntimeMethod(nameof(MathF.Log10), new[] { typeof(float) }), ("LOG10", false, false) },
 
-            { typeof(Math).GetRuntimeMethod(nameof(Math.Max), new[] { typeof(decimal), typeof(decimal) }), ("GREATEST", true, false) },
-            { typeof(Math).GetRuntimeMethod(nameof(Math.Max), new[] { typeof(double), typeof(double) }), ("GREATEST", true, false) },
-            { typeof(Math).GetRuntimeMethod(nameof(Math.Max), new[] { typeof(float), typeof(float) }), ("GREATEST", true, false) },
-            { typeof(Math).GetRuntimeMethod(nameof(Math.Max), new[] { typeof(int), typeof(int) }), ("GREATEST", true, false) },
-            { typeof(Math).GetRuntimeMethod(nameof(Math.Max), new[] { typeof(long), typeof(long) }), ("GREATEST", true, false) },
-            { typeof(Math).GetRuntimeMethod(nameof(Math.Max), new[] { typeof(short), typeof(short) }), ("GREATEST", true, false) },
-            { typeof(MathF).GetRuntimeMethod(nameof(MathF.Max), new[] { typeof(float), typeof(float) }), ("GREATEST", true, false) },
-
-            { typeof(Math).GetRuntimeMethod(nameof(Math.Min), new[] { typeof(decimal), typeof(decimal) }), ("LEAST", true, false) },
-            { typeof(Math).GetRuntimeMethod(nameof(Math.Min), new[] { typeof(double), typeof(double) }), ("LEAST", true, false) },
-            { typeof(Math).GetRuntimeMethod(nameof(Math.Min), new[] { typeof(float), typeof(float) }), ("LEAST", true, false) },
-            { typeof(Math).GetRuntimeMethod(nameof(Math.Min), new[] { typeof(int), typeof(int) }), ("LEAST", true, false) },
-            { typeof(Math).GetRuntimeMethod(nameof(Math.Min), new[] { typeof(long), typeof(long) }), ("LEAST", true, false) },
-            { typeof(Math).GetRuntimeMethod(nameof(Math.Min), new[] { typeof(short), typeof(short) }), ("LEAST", true, false) },
-            { typeof(MathF).GetRuntimeMethod(nameof(MathF.Min), new[] { typeof(float), typeof(float) }), ("LEAST", true, false) },
+            // GREATEST is handled in MySqlSqlTranslatingExpressionVisitor.GenerateGreatest():
+            // LEAST is handled in MySqlSqlTranslatingExpressionVisitor.GenerateLeast():
 
             { typeof(Math).GetRuntimeMethod(nameof(Math.Pow), new[] { typeof(double), typeof(double) }), ("POWER", true, false) },
             { typeof(MathF).GetRuntimeMethod(nameof(MathF.Pow), new[] { typeof(float), typeof(float) }), ("POWER", true, false) },
