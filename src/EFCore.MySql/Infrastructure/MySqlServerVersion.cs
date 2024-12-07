@@ -98,6 +98,7 @@ namespace Microsoft.EntityFrameworkCore
             public override bool ValuesWithRows => ServerVersion.Version >= new Version(8, 0, 19);
             public override bool WhereSubqueryReferencesOuterQuery => false;
             public override bool FieldReferenceInTableValueConstructor => true;
+            public override bool CollationCharacterSetApplicabilityWithFullCollationNameColumn => false;
 
             public override bool JsonTableImplementationStable => false;
             public override bool JsonTableImplementationWithoutMySqlBugs => false; // Other non-fatal bugs regarding JSON_TABLE.

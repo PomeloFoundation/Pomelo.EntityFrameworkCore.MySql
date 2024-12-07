@@ -326,17 +326,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
                 }
                 else
                 {
+                    var collationColumnName = _options.ServerVersion.Supports.CollationCharacterSetApplicabilityWithFullCollationNameColumn
+                        ? "FULL_COLLATION_NAME"
+                        : "COLLATION_NAME";
+
                     // The charset (and any collation) has been reset to the default.
-                    var resetCharSetSql = $@"set @__pomelo_TableCharset = (
-    SELECT `ccsa`.`CHARACTER_SET_NAME` as `TABLE_CHARACTER_SET`
-    FROM `INFORMATION_SCHEMA`.`TABLES` as `t`
-    LEFT JOIN `INFORMATION_SCHEMA`.`COLLATION_CHARACTER_SET_APPLICABILITY` as `ccsa` ON `ccsa`.`COLLATION_NAME` = `t`.`TABLE_COLLATION`
-    WHERE `TABLE_SCHEMA` = SCHEMA() AND `TABLE_NAME` = {_stringTypeMapping.GenerateSqlLiteral(operation.Name)} AND `TABLE_TYPE` IN ('BASE TABLE', 'VIEW'));
+                    var resetCharSetSql = $"""
+set @__pomelo_TableCharset = (
+SELECT `ccsa`.`CHARACTER_SET_NAME` as `TABLE_CHARACTER_SET`
+FROM `INFORMATION_SCHEMA`.`TABLES` as `t`
+LEFT JOIN `INFORMATION_SCHEMA`.`COLLATION_CHARACTER_SET_APPLICABILITY` as `ccsa` ON `ccsa`.`{collationColumnName}` = `t`.`TABLE_COLLATION`
+WHERE `TABLE_SCHEMA` = SCHEMA() AND `TABLE_NAME` = {_stringTypeMapping.GenerateSqlLiteral(operation.Name)} AND `TABLE_TYPE` IN ('BASE TABLE', 'VIEW'));
 
 SET @__pomelo_SqlExpr = CONCAT('ALTER TABLE {Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name)} CHARACTER SET = ', @__pomelo_TableCharset, ';');
 PREPARE __pomelo_SqlExprExecute FROM @__pomelo_SqlExpr;
 EXECUTE __pomelo_SqlExprExecute;
-DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
+DEALLOCATE PREPARE __pomelo_SqlExprExecute;
+""";
 
                     builder.AppendLine(resetCharSetSql);
                     EndStatement(builder);

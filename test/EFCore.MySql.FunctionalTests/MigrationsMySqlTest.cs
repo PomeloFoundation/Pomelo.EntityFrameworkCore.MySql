@@ -1094,21 +1094,27 @@ ALTER TABLE `People` MODIFY COLUMN `Sum` int AS (`X` - `Y`);
                         }),
                 result => { });
 
+            var collationColumnName = AppConfig.ServerVersion.Supports.CollationCharacterSetApplicabilityWithFullCollationNameColumn
+                ? "FULL_COLLATION_NAME"
+                : "COLLATION_NAME";
+
             AssertSql(
-                @"set @__pomelo_TableCharset = (
-    SELECT `ccsa`.`CHARACTER_SET_NAME` as `TABLE_CHARACTER_SET`
-    FROM `INFORMATION_SCHEMA`.`TABLES` as `t`
-    LEFT JOIN `INFORMATION_SCHEMA`.`COLLATION_CHARACTER_SET_APPLICABILITY` as `ccsa` ON `ccsa`.`COLLATION_NAME` = `t`.`TABLE_COLLATION`
-    WHERE `TABLE_SCHEMA` = SCHEMA() AND `TABLE_NAME` = 'IceCream' AND `TABLE_TYPE` IN ('BASE TABLE', 'VIEW'));
+$"""
+set @__pomelo_TableCharset = (
+SELECT `ccsa`.`CHARACTER_SET_NAME` as `TABLE_CHARACTER_SET`
+FROM `INFORMATION_SCHEMA`.`TABLES` as `t`
+LEFT JOIN `INFORMATION_SCHEMA`.`COLLATION_CHARACTER_SET_APPLICABILITY` as `ccsa` ON `ccsa`.`{collationColumnName}` = `t`.`TABLE_COLLATION`
+WHERE `TABLE_SCHEMA` = SCHEMA() AND `TABLE_NAME` = 'IceCream' AND `TABLE_TYPE` IN ('BASE TABLE', 'VIEW'));
 
 SET @__pomelo_SqlExpr = CONCAT('ALTER TABLE `IceCream` CHARACTER SET = ', @__pomelo_TableCharset, ';');
 PREPARE __pomelo_SqlExprExecute FROM @__pomelo_SqlExpr;
 EXECUTE __pomelo_SqlExprExecute;
-DEALLOCATE PREPARE __pomelo_SqlExprExecute;",
-                //
-                $@"ALTER TABLE `IceCream` MODIFY COLUMN `Name` longtext COLLATE {NonDefaultCollation} NULL;",
-                //
-                $@"ALTER TABLE `IceCream` MODIFY COLUMN `Brand` longtext COLLATE {NonDefaultCollation2} NULL;");
+DEALLOCATE PREPARE __pomelo_SqlExprExecute;
+""",
+//
+$@"ALTER TABLE `IceCream` MODIFY COLUMN `Name` longtext COLLATE {NonDefaultCollation} NULL;",
+//
+$@"ALTER TABLE `IceCream` MODIFY COLUMN `Brand` longtext COLLATE {NonDefaultCollation2} NULL;");
         }
 
         [ConditionalFact]

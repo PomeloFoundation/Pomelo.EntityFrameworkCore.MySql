@@ -208,7 +208,7 @@ WHERE
 FROM
     `INFORMATION_SCHEMA`.`TABLES` as `t`
 LEFT JOIN
-	`INFORMATION_SCHEMA`.`COLLATION_CHARACTER_SET_APPLICABILITY` as `ccsa` ON `ccsa`.`COLLATION_NAME` = `t`.`TABLE_COLLATION`
+	`INFORMATION_SCHEMA`.`COLLATION_CHARACTER_SET_APPLICABILITY` as `ccsa` ON `ccsa`.`{0}` = `t`.`TABLE_COLLATION`
 WHERE
     `TABLE_SCHEMA` = SCHEMA()
 AND
@@ -222,8 +222,12 @@ AND
         {
             using (var command = connection.CreateCommand())
             {
+                var collationColumnName = _options.ServerVersion.Supports.CollationCharacterSetApplicabilityWithFullCollationNameColumn
+                    ? "FULL_COLLATION_NAME"
+                    : "COLLATION_NAME";
+
                 var tables = new List<DatabaseTable>();
-                command.CommandText = GetTablesQuery;
+                command.CommandText = string.Format(GetTablesQuery, collationColumnName);
                 using (var reader = command.ExecuteReader())
                 {
                     while (reader.Read())
