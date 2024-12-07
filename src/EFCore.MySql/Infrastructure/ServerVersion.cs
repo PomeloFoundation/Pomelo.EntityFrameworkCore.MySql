@@ -38,8 +38,8 @@ namespace Microsoft.EntityFrameworkCore
 
         public virtual int MaxKeyLength => Supports.LargerKeyLength ? 3072 : 767;
         public virtual CharSet DefaultCharSet => Supports.DefaultCharSetUtf8Mb4 ? CharSet.Utf8Mb4 : CharSet.Latin1;
-        public virtual string DefaultUtf8CsCollation => Supports.DefaultCharSetUtf8Mb4 ? "utf8mb4_0900_as_cs" : "utf8mb4_bin";
-        public virtual string DefaultUtf8CiCollation => Supports.DefaultCharSetUtf8Mb4 ? "utf8mb4_0900_ai_ci" : "utf8mb4_general_ci";
+        public abstract string DefaultUtf8CsCollation { get; }
+        public abstract string DefaultUtf8CiCollation { get; }
 
         public override bool Equals(object obj)
             => obj is ServerVersion version &&

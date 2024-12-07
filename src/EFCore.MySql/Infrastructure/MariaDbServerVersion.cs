@@ -19,6 +19,11 @@ namespace Microsoft.EntityFrameworkCore
 
         public override ServerVersionSupport Supports { get; }
 
+        // MariaDB on Linux seems to be using uca1400 collations as the default for the utf8mb4 charset from 11.4.2 onwards, but MariaDB for
+        // Windows seems to be using it only in later minor versions.
+        public override string DefaultUtf8CsCollation => Version >= new Version(11, 4, 2) ? "utf8mb4_uca1400_as_cs" : "utf8mb4_bin";
+        public override string DefaultUtf8CiCollation => Version >= new Version(11, 4, 2) ? "utf8mb4_uca1400_ai_ci" : "utf8mb4_general_ci";
+
         public MariaDbServerVersion(Version version)
             : base(version, ServerType.MariaDb)
         {
@@ -64,7 +69,7 @@ namespace Microsoft.EntityFrameworkCore
             public override bool GeneratedColumns => ServerVersion.Version >= new Version(10, 2, 0);
             public override bool NullableGeneratedColumns => false;
             public override bool ParenthesisEnclosedGeneratedColumnExpressions => false;
-            public override bool DefaultCharSetUtf8Mb4 => false;
+            public override bool DefaultCharSetUtf8Mb4 => ServerVersion.Version >= new Version(11, 4, 2);
             public override bool DefaultExpression => false;
             public override bool AlternativeDefaultExpression => ServerVersion.Version >= new Version(10, 2, 7);
             public override bool SpatialIndexes => ServerVersion.Version >= new Version(10, 2, 2);

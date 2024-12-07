@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -607,6 +608,91 @@ SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`Cont
 FROM `Customers` AS `c`
 WHERE (`c`.`CustomerID` = 'ALFKI') ^ TRUE
 """);
+        }
+
+        // TODO: 9.0
+        [SupportedServerVersionBetweenCondition("11.4.2-mariadb", "11.5.0-mariadb", Invert = true, Skip =
+"""
+There is some strange collation behavior with MariaDB 11.4.x and this test (seems fixed in 11.5).
+The default utf8mb4 collation was changed in 11.4.2 from utf8mb4_general_ci to utf8mb4_uca1400_ai_ci.
+We changed MariaDbServerVersion.DefaultUtf8CiCollation and MariaDbServerVersion.DefaultUtf8CsCollation accordingly.
+If we run the this test against a Ubuntu hosted MariaDB, the test always works.
+If we run the this test against a Windows hosted MariaDB, the test fails only on the first execution (when the database does not preexist). But it works on all consecutive runs.
+If we change MariaDbServerVersion.DefaultUtf8CiCollation and MariaDbServerVersion.DefaultUtf8CsCollation to use the new default collations only from 11.5.0, the Ubuntu/Windows behavior flips to Windows always working and Ubuntu not successfully executing the test on the first run.
+The error is:
+    MySqlConnector.MySqlException : Illegal mix of collations (utf8mb4_bin,NONE) and (utf8mb4_general_ci,IMPLICIT) for operation '='
+""")]
+        public override Task Where_concat_string_int_comparison1(bool async)
+        {
+            return base.Where_concat_string_int_comparison1(async);
+        }
+
+        // TODO: 9.0
+        [SupportedServerVersionBetweenCondition("11.4.2-mariadb", "11.5.0-mariadb", Invert = true, Skip =
+"""
+There is some strange collation behavior with MariaDB 11.4.x and this test (seems fixed in 11.5).
+The default utf8mb4 collation was changed in 11.4.2 from utf8mb4_general_ci to utf8mb4_uca1400_ai_ci.
+We changed MariaDbServerVersion.DefaultUtf8CiCollation and MariaDbServerVersion.DefaultUtf8CsCollation accordingly.
+If we run the this test against a Ubuntu hosted MariaDB, the test always works.
+If we run the this test against a Windows hosted MariaDB, the test fails only on the first execution (when the database does not preexist). But it works on all consecutive runs.
+If we change MariaDbServerVersion.DefaultUtf8CiCollation and MariaDbServerVersion.DefaultUtf8CsCollation to use the new default collations only from 11.5.0, the Ubuntu/Windows behavior flips to Windows always working and Ubuntu not successfully executing the test on the first run.
+The error is:
+    MySqlConnector.MySqlException : Illegal mix of collations (utf8mb4_bin,NONE) and (utf8mb4_general_ci,IMPLICIT) for operation '='
+""")]
+        public override Task Where_concat_string_int_comparison2(bool async)
+        {
+            return base.Where_concat_string_int_comparison2(async);
+        }
+
+        // TODO: 9.0
+        [SupportedServerVersionBetweenCondition("11.4.2-mariadb", "11.5.0-mariadb", Invert = true, Skip =
+"""
+There is some strange collation behavior with MariaDB 11.4.x and this test (seems fixed in 11.5).
+The default utf8mb4 collation was changed in 11.4.2 from utf8mb4_general_ci to utf8mb4_uca1400_ai_ci.
+We changed MariaDbServerVersion.DefaultUtf8CiCollation and MariaDbServerVersion.DefaultUtf8CsCollation accordingly.
+If we run the this test against a Ubuntu hosted MariaDB, the test always works.
+If we run the this test against a Windows hosted MariaDB, the test fails only on the first execution (when the database does not preexist). But it works on all consecutive runs.
+If we change MariaDbServerVersion.DefaultUtf8CiCollation and MariaDbServerVersion.DefaultUtf8CsCollation to use the new default collations only from 11.5.0, the Ubuntu/Windows behavior flips to Windows always working and Ubuntu not successfully executing the test on the first run.
+The error is:
+    MySqlConnector.MySqlException : Illegal mix of collations (utf8mb4_bin,NONE) and (utf8mb4_general_ci,IMPLICIT) for operation '='
+""")]
+        public override Task Where_concat_string_int_comparison3(bool async)
+        {
+            return base.Where_concat_string_int_comparison3(async);
+        }
+
+        // TODO: 9.0
+        [SupportedServerVersionBetweenCondition("11.4.2-mariadb", "11.5.0-mariadb", Invert = true, Skip =
+"""
+There is some strange collation behavior with MariaDB 11.4.x and this test (seems fixed in 11.5).
+The default utf8mb4 collation was changed in 11.4.2 from utf8mb4_general_ci to utf8mb4_uca1400_ai_ci.
+We changed MariaDbServerVersion.DefaultUtf8CiCollation and MariaDbServerVersion.DefaultUtf8CsCollation accordingly.
+If we run the this test against a Ubuntu hosted MariaDB, the test always works.
+If we run the this test against a Windows hosted MariaDB, the test fails only on the first execution (when the database does not preexist). But it works on all consecutive runs.
+If we change MariaDbServerVersion.DefaultUtf8CiCollation and MariaDbServerVersion.DefaultUtf8CsCollation to use the new default collations only from 11.5.0, the Ubuntu/Windows behavior flips to Windows always working and Ubuntu not successfully executing the test on the first run.
+The error is:
+    MySqlConnector.MySqlException : Illegal mix of collations (utf8mb4_bin,NONE) and (utf8mb4_general_ci,IMPLICIT) for operation '='
+""")]
+        public override Task Where_concat_string_int_comparison4(bool async)
+        {
+            return base.Where_concat_string_int_comparison4(async);
+        }
+
+        // TODO: 9.0
+        [SupportedServerVersionBetweenCondition("11.4.2-mariadb", "11.5.0-mariadb", Invert = true, Skip =
+"""
+There is some strange collation behavior with MariaDB 11.4.x and this test (seems fixed in 11.5).
+The default utf8mb4 collation was changed in 11.4.2 from utf8mb4_general_ci to utf8mb4_uca1400_ai_ci.
+We changed MariaDbServerVersion.DefaultUtf8CiCollation and MariaDbServerVersion.DefaultUtf8CsCollation accordingly.
+If we run the this test against a Ubuntu hosted MariaDB, the test always works.
+If we run the this test against a Windows hosted MariaDB, the test fails only on the first execution (when the database does not preexist). But it works on all consecutive runs.
+If we change MariaDbServerVersion.DefaultUtf8CiCollation and MariaDbServerVersion.DefaultUtf8CsCollation to use the new default collations only from 11.5.0, the Ubuntu/Windows behavior flips to Windows always working and Ubuntu not successfully executing the test on the first run.
+The error is:
+    MySqlConnector.MySqlException : Illegal mix of collations (utf8mb4_bin,NONE) and (utf8mb4_uca1400_ai_ci,COERCIBLE) for operation '='
+""")]
+        public override Task Using_same_parameter_twice_in_query_generates_one_sql_parameter(bool async)
+        {
+            return base.Using_same_parameter_twice_in_query_generates_one_sql_parameter(async);
         }
 
         public override async Task Where_compare_constructed_equal(bool async)
