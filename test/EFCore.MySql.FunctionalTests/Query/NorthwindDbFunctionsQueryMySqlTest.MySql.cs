@@ -370,5 +370,101 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'VINET'
 LIMIT 1");
         }
+
+        [ConditionalFact]
+        public virtual void Contains_with_escape_char()
+        {
+            using var context = CreateContext();
+            var count = context.Customers.Count(c => c.CompanyName.Replace("/", @"\").Contains(@"\"));
+
+            Assert.Equal(1, count);
+
+            AssertSql(
+"""
+SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE REPLACE(`c`.`CompanyName`, '/', '\\') LIKE '%\\\\%'
+""");
+        }
+
+        [ConditionalFact]
+        public virtual void Contains_with_wild_char()
+        {
+            using var context = CreateContext();
+            var count = context.Customers.Count(c => c.CompanyName.Replace("/", "%").Contains("%"));
+
+            Assert.Equal(1, count);
+
+            AssertSql(
+"""
+SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE REPLACE(`c`.`CompanyName`, '/', '%') LIKE '%\\%%'
+""");
+        }
+
+        [ConditionalFact]
+        public virtual void StartsWith_with_escape_char()
+        {
+            using var context = CreateContext();
+            var count = context.Customers.Count(c => c.CompanyName.Replace("A", @"\").StartsWith(@"\"));
+
+            Assert.Equal(4, count);
+
+            AssertSql(
+"""
+SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE REPLACE(`c`.`CompanyName`, 'A', '\\') LIKE '\\\\%'
+""");
+        }
+
+        [ConditionalFact]
+        public virtual void StartsWith_with_wild_char()
+        {
+            using var context = CreateContext();
+            var count = context.Customers.Count(c => c.CompanyName.Replace("A", @"%").StartsWith(@"%"));
+
+            Assert.Equal(4, count);
+
+            AssertSql(
+"""
+SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE REPLACE(`c`.`CompanyName`, 'A', '%') LIKE '\\%%'
+""");
+        }
+
+        [ConditionalFact]
+        public virtual void EndsWith_with_escape_char()
+        {
+            using var context = CreateContext();
+            var count = context.Customers.Count(c => c.CompanyName.Replace("a", @"\").EndsWith(@"\"));
+
+            Assert.Equal(7, count);
+
+            AssertSql(
+"""
+SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE REPLACE(`c`.`CompanyName`, 'a', '\\') LIKE '%\\\\'
+""");
+        }
+
+        [ConditionalFact]
+        public virtual void EndsWith_with_wild_char()
+        {
+            using var context = CreateContext();
+            var count = context.Customers.Count(c => c.CompanyName.Replace("a", @"%").EndsWith(@"%"));
+
+            Assert.Equal(7, count);
+
+            AssertSql(
+"""
+SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE REPLACE(`c`.`CompanyName`, 'a', '%') LIKE '%\\%'
+""");
+        }
     }
 }
