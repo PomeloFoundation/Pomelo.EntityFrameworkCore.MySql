@@ -415,7 +415,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                         targetTransform(target),
                         prefixSuffixTransform(
                             _sqlExpressionFactory.Constant(
-                                $"{(startsWith ? string.Empty : "%")}{(s.Any(IsLikeWildChar) ? EscapeLikePattern(s) : s)}{(startsWith ? "%" : string.Empty)}"))),
+                                $"{(startsWith ? string.Empty : "%")}{(s.Any(IsLikeWildOrEscapeChar) ? EscapeLikePattern(s) : s)}{(startsWith ? "%" : string.Empty)}"))),
                     _ => throw new UnreachableException(),
                 };
             }
@@ -468,15 +468,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             {
                 // The prefix is constant. Aside from null or empty, we escape all special characters (%, _, \)
                 // in C# and send a simple LIKE.
-                // The prefix is constant. Aside from null or empty, we escape all special characters (%, _, \)
-                // in C# and send a simple LIKE.
                 return constantPatternExpression.Value switch
                 {
                     null => _sqlExpressionFactory.Like(targetTransform(target), _sqlExpressionFactory.Constant(null, typeof(string), stringTypeMapping)),
                     "" => _sqlExpressionFactory.Like(targetTransform(target), _sqlExpressionFactory.Constant("%")),
                     string s => _sqlExpressionFactory.Like(
                         targetTransform(target),
-                        patternTransform(_sqlExpressionFactory.Constant($"%{(s.Any(IsLikeWildChar) ? EscapeLikePattern(s) : s)}%"))),
+                        patternTransform(_sqlExpressionFactory.Constant($"%{(s.Any(IsLikeWildOrEscapeChar) ? EscapeLikePattern(s) : s)}%"))),
                     _ => throw new UnreachableException(),
                 };
             }
@@ -697,15 +695,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 
         private const char LikeEscapeChar = '\\';
 
-        private static bool IsLikeWildChar(char c) => c == '%' || c == '_';
+        private static bool IsLikeWildOrEscapeChar(char c) => IsLikeWildChar(c) || LikeEscapeChar == c;
+        private static bool IsLikeWildChar(char c) => c is '%' or '_';
 
         private static string EscapeLikePattern(string pattern)
         {
             var builder = new StringBuilder();
             foreach (var c in pattern)
             {
-                if (IsLikeWildChar(c) ||
-                    c == LikeEscapeChar)
+                if (IsLikeWildOrEscapeChar(c))
                 {
                     builder.Append(LikeEscapeChar);
                 }
