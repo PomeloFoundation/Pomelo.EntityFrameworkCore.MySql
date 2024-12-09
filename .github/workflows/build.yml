@@ -396,9 +396,9 @@ jobs:
           dotnet new nugetconfig --output './azdo-nuget' --force
           try
           {
-            nuget sources Add -ConfigFile './azdo-nuget/nuget.config' -Name 'azdo-pomelo-efcore-debug' -Source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-debug/nuget/v3/index.json' -UserName '${{ vars.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_USERNAME }}' -Password '${{ secrets.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_PASSWORD }}' -StorePasswordInClearText
+            dotnet nuget add source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-debug/nuget/v3/index.json' --name 'azdo-pomelo-efcore-debug' --username '${{ vars.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_USERNAME }}' --password '${{ secrets.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_PASSWORD }}' --store-password-in-clear-text --configfile './azdo-nuget/nuget.config'
 
-            nuget push './Release/withPdbs/**/*.nupkg' -ConfigFile './azdo-nuget/nuget.config' -ApiKey 'foo' -Source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-debug/nuget/v3/index.json' -SkipDuplicate
+            dotnet nuget push './Debug/withPdbs/**/*.nupkg' --api-key 'foo' --source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-debug/nuget/v3/index.json' --skip-duplicate
           }
           finally
           {
@@ -413,9 +413,9 @@ jobs:
           dotnet new nugetconfig --output './azdo-nuget' --force
           try
           {
-            nuget sources Add -ConfigFile './azdo-nuget/nuget.config' -Name 'azdo-pomelo-efcore-public' -Source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-public/nuget/v3/index.json' -UserName '${{ vars.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_USERNAME }}' -Password '${{ secrets.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_PASSWORD }}' -StorePasswordInClearText
+            dotnet nuget add source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-public/nuget/v3/index.json' --name 'azdo-pomelo-efcore-public' --username '${{ vars.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_USERNAME }}' --password '${{ secrets.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_PASSWORD }}' --store-password-in-clear-text --configfile './azdo-nuget/nuget.config'
 
-            nuget push './Release/withPdbs/**/*.nupkg' -ConfigFile './azdo-nuget/nuget.config' -ApiKey 'foo' -Source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-public/nuget/v3/index.json' -SkipDuplicate
+            dotnet nuget push './Release/withPdbs/**/*.nupkg' --api-key 'foo' --source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-public/nuget/v3/index.json' --skip-duplicate
           }
           finally
           {
