@@ -56,7 +56,7 @@ public class MySqlModelBuilderGenericTest : MySqlModelBuilderTestBase
             => new ModelBuilderTest.GenericTestModelBuilder(Fixture, configure);
     }
 
-    public class MySqlGenericOwnedTypes(MySqlModelBuilderFixture fixture) : MySqlOwnedTypes(fixture)
+    internal class MySqlGenericOwnedTypes(MySqlModelBuilderFixture fixture) : MySqlOwnedTypes(fixture)
     {
         // MySQL stored procedures do not support result columns.
         public override void Can_use_sproc_mapping_with_owned_reference()

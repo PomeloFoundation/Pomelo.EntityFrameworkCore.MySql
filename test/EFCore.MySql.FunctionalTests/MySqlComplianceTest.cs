@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ModelBuilding;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Update;
 
@@ -12,6 +13,23 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         // TODO: Implement remaining 3.x tests.
         protected override ICollection<Type> IgnoredTestBases { get; } = new HashSet<Type>
         {
+            // There are two classes that can lead to a MySqlEndOfStreamException, if *both* test classes are included in the run:
+            //     - RelationalModelBuilderTest.RelationalComplexTypeTestBase
+            //     - RelationalModelBuilderTest.RelationalOwnedTypesTestBase
+            //
+            // The exception is thrown for MySQL most of the time, though in rare cases also for MariaDB.
+            // We disable `RelationalModelBuilderTest.RelationalOwnedTypesTestBase` for now.
+
+            // typeof(RelationalModelBuilderTest.RelationalNonRelationshipTestBase),
+            // typeof(RelationalModelBuilderTest.RelationalComplexTypeTestBase),
+            // typeof(RelationalModelBuilderTest.RelationalInheritanceTestBase),
+            // typeof(RelationalModelBuilderTest.RelationalOneToManyTestBase),
+            // typeof(RelationalModelBuilderTest.RelationalManyToOneTestBase),
+            // typeof(RelationalModelBuilderTest.RelationalOneToOneTestBase),
+            // typeof(RelationalModelBuilderTest.RelationalManyToManyTestBase),
+            typeof(RelationalModelBuilderTest.RelationalOwnedTypesTestBase),
+            typeof(ModelBuilderTest.OwnedTypesTestBase), // base class of RelationalModelBuilderTest.RelationalOwnedTypesTestBase
+
             typeof(UdfDbFunctionTestBase<>),
             typeof(TransactionInterceptionTestBase),
             typeof(CommandInterceptionTestBase),
