@@ -3,12 +3,15 @@
 
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 {
     public class MySqlMemberTranslatorProvider : RelationalMemberTranslatorProvider
     {
-        public MySqlMemberTranslatorProvider([NotNull] RelationalMemberTranslatorProviderDependencies dependencies)
+        public MySqlMemberTranslatorProvider(
+            [NotNull] RelationalMemberTranslatorProviderDependencies dependencies,
+            IRelationalTypeMappingSource typeMappingSource)
             : base(dependencies)
         {
             var sqlExpressionFactory = (MySqlSqlExpressionFactory)dependencies.SqlExpressionFactory;
@@ -17,7 +20,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 new IMemberTranslator[] {
                     new MySqlDateTimeMemberTranslator(sqlExpressionFactory),
                     new MySqlStringMemberTranslator(sqlExpressionFactory),
-                    new MySqlTimeSpanMemberTranslator(sqlExpressionFactory),
+                    new MySqlTimeSpanMemberTranslator(sqlExpressionFactory, typeMappingSource),
                 });
         }
     }
