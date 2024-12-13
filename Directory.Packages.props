@@ -1,0 +1,57 @@
+<Project>
+  <PropertyGroup Label="Common Versions">
+    <EFCoreVersion>[9.0.0,9.0.999]</EFCoreVersion>
+  </PropertyGroup>
+
+  <ItemGroup Label="Dependencies">
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="$(EFCoreVersion)" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" Version="$(EFCoreVersion)" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="$(EFCoreVersion)" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="$(EFCoreVersion)" />
+
+    <PackageVersion Include="MySqlConnector" Version="2.4.0" />
+    <PackageVersion Include="MySqlConnector.DependencyInjection" Version="2.4.0" />
+
+    <PackageVersion Include="NetTopologySuite" Version="2.5.0" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
+
+    <PackageVersion Include="Castle.Core" Version="5.1.1" />
+    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.0" />
+    <!--<PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.1" />-->
+    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="9.0.0" /> <!-- CHECK: used? -->
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyModel" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+    <PackageVersion Include="Moq" Version="4.20.72" />
+    <PackageVersion Include="System.Collections.Immutable" Version="9.0.0" />
+    <PackageVersion Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
+    <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="9.0.0" />
+    <PackageVersion Include="GitHubActionsTestLogger" Version="2.4.1" />
+    <PackageVersion Include="Xunit.SkippableFact" Version="1.4.13" />
+
+    <!-- Keep at the same level that the EF Core projects use. -->
+    <PackageVersion Include="xunit.assert" Version="2.9.2" />
+    <PackageVersion Include="xunit.core" Version="2.9.2" />
+    <PackageVersion Include="xunit.runner.console" Version="2.9.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <PackageVersion Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" />
+    <PackageVersion Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
+
+    <!-- Needed when using EFCore.Design assembly from local EF Core repository. -->
+    <PackageVersion Include="Microsoft.CodeAnalysis" Version="4.10.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.10.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Features" Version="4.10.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.10.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Features" Version="4.10.0" />
+    <PackageVersion Include="System.Text.Json" Version="9.0.0" />
+  </ItemGroup>
+</Project>
