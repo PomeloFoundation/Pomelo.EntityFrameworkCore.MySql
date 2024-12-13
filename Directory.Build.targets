@@ -1,3 +1,0 @@
-<Project>
-    <Import Project="Dependencies.targets" />
-</Project>
