@@ -350,11 +350,17 @@ jobs:
               $configurations = $combination[1]
               foreach ($configuration in $configurations)
               {
-                $arguments = 'pack', '-c', $configuration, '-o', "nupkgs/$configuration/$type", '-p:ContinuousIntegrationBuild=true'
+                $arguments = 'pack', '-c', $configuration, '-o', "nupkgs/$configuration/$type", '-p:ContinuousIntegrationBuild=true', '-p:OutputVersionProperties=true'
 
                 if ($officialBuild)
                 {
-                  $arguments += "-p:OfficialVersion=$officialVersion"
+                  $finalOfficialVersion = $configuration -eq 'Debug' `
+                    ? $officialVersion.Contains('-') `
+                      ? $officialVersion + '.debug' `
+                      : $officialVersion + '-debug' `
+                    : $officialVersion
+
+                  $arguments += "-p:OfficialVersion=$finalOfficialVersion"
                 }
 
                 if ($ciBuildOnly)

@@ -2,61 +2,86 @@
   <PropertyGroup Label="Version settings">
     <!--
       Use the following values for the different release types:
-          - "alpha"     - EF Core release independent, code quality unstable,         major changes
-          - "beta"      - EF Core release independent, code quality stable,           can introduce breaking changes
-          - "silver"    - EF Core release independent, code quality stable,           only minor changes are expected
+          - "-preview"   - Code quality stable,           can introduce breaking changes
+          - "-rc"        - Code quality production ready, only minor changes are expected
+          - "-rtm"       - Code quality production ready, major release
+          - "-servicing" - Code quality production ready, mainly bugfixes
 
-          - "preview"   - EF Core release targeted,    code quality stable,           can introduce breaking changes
-          - "rc"        - EF Core release targeted,    code quality production ready, only minor changes are expected
-
-          - "rtm"       - EF Core release independent, code quality production ready, major release
-          - "servicing" - EF Core release independent, code quality production ready, mainly bugfixes
+      We also used alpha/beta/silver release types in the past, but they mix poorly with the ones above when orderend according to SemVer2
+      rules.
     -->
     <VersionPrefix>9.0.0</VersionPrefix>
     <PreReleaseVersionLabel>alpha</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
 
     <!--
+      A string like `.efcore.9.0.0` or `.efcore.9.0.0.preview.1` can be added to the version suffix, to indicate that this release targets
+      a specific EF Core release.
+      This can be useful to distinguish between a release that correlates with a EF Core release (e.g. Pomelo `9.0.0-preview.1` implicitly
+      targets EF Core `9.0.0-preview.1`) and one that doesn't (e.g. Pomelo `9.0.0-preview.2.efcore.9.0.0.preview.1` explicitly targets EF
+      Core `9.0.0-preview.1`).
+      If no EF Core release is explicitly targeted, release version correlation should be assumed.
+    -->
+    <TargetedEfCoreVersionPrefix>9.0.0</TargetedEfCoreVersionPrefix> <!-- e.g. `` (empty) or `9.0.0` -->
+    <TargetedEfCoreVersionPreReleaseLabel></TargetedEfCoreVersionPreReleaseLabel> <!-- e.g. `` (empty) or `preview` -->
+    <TargetedEfCoreVersionPreReleaseIteration></TargetedEfCoreVersionPreReleaseIteration> <!-- e.g. `` (empty) or `1` -->
+
+    <!--
       The following properties will automatically be set by CI builds when appropriate:
-        OfficialVersion
+        OfficialVersion: Mainly used to ensure that the git release tag and the version specified in this file are identical.
         ContinuousIntegrationTimestamp
         BuildSha
     -->
   </PropertyGroup>
 
   <!--
-    If no official version has been explicitly set (or no version or version suffix), we generate a version suffix in the following formats:
-      alpha.1.ci.20201004T181121Z+sha.0a1b2c3
-      alpha.1.ci.20201004T181121Z.debug+sha.0a1b2c3
+  The following are all valid version formats:
+    9.0.0
+    9.0.0.ci.20201004T181121Z
+    9.0.0.ci.20201004T181121Z+sha.0a1b2c3
+    9.0.0.ci.20201004T181121Z.debug
+    9.0.0.ci.20201004T181121Z.debug+sha.0a1b2c3
+    9.0.0-preview.2
+    9.0.0-preview.2.ci.20201004T181121Z
+    9.0.0-preview.2.ci.20201004T181121Z+sha.0a1b2c3
+    9.0.0-preview.2.ci.20201004T181121Z.debug
+    9.0.0-preview.2.ci.20201004T181121Z.debug+sha.0a1b2c3
+    9.0.0-preview.2.efcore.9.0.0.ci.20201004T181121Z
+    9.0.0-preview.2.efcore.9.0.0.ci.20201004T181121Z+sha.0a1b2c3
+    9.0.0-preview.2.efcore.9.0.0.ci.20201004T181121Z.debug
+    9.0.0-preview.2.efcore.9.0.0.ci.20201004T181121Z.debug+sha.0a1b2c3
+    9.0.0-preview.2.efcore.9.0.0.preview.1.ci.20201004T181121Z
+    9.0.0-preview.2.efcore.9.0.0.preview.1.ci.20201004T181121Z+sha.0a1b2c3
+    9.0.0-preview.2.efcore.9.0.0.preview.1.ci.20201004T181121Z.debug
+    9.0.0-preview.2.efcore.9.0.0.preview.1.ci.20201004T181121Z.debug+sha.0a1b2c3
   -->
-  <PropertyGroup>
-    <UseVersionOverride Condition="'$(Version)' != ''">true</UseVersionOverride>
-    <UseVersionSuffixOverride Condition="'$(VersionSuffix)' != ''">true</UseVersionSuffixOverride>
-    <FinalOfficialVersion>$(OfficialVersion)</FinalOfficialVersion>
+
+  <PropertyGroup Label="Targeted EF Core Version Handling" Condition="'$(TargetedEfCoreVersionPrefix)' != ''">
+    <TargetedEfCoreVersion>.efcore.$(TargetedEfCoreVersionPrefix)</TargetedEfCoreVersion>
+    <TargetedEfCoreVersion Condition="'$(TargetedEfCoreVersionPreReleaseLabel)' != ''">$(TargetedEfCoreVersion).$(TargetedEfCoreVersionPreReleaseLabel)</TargetedEfCoreVersion>
+    <TargetedEfCoreVersion Condition="'$(TargetedEfCoreVersionPreReleaseLabel)' != '' And '$(TargetedEfCoreVersionPreReleaseIteration)'">$(TargetedEfCoreVersion).$(TargetedEfCoreVersionPreReleaseIteration)</TargetedEfCoreVersion>
   </PropertyGroup>
 
-  <PropertyGroup Label="Version Suffix Handling" Condition="'$(UseVersionOverride)' != 'true' And '$(UseVersionSuffixOverride)' != 'true'">
-    <VersionSuffix Condition="'$(OfficialVersion)' == '' Or $(OfficialVersion.Contains('-'))">$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</VersionSuffix>
+  <PropertyGroup Label="Version Suffix Handling" Condition="'$(Version)' == '' And '$(VersionSuffix)' == ''">
+    <VersionSuffix Condition="'$(OfficialVersion)' == '' Or $(OfficialVersion.Contains('-'))">$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)$(TargetedEfCoreVersion)</VersionSuffix>
     <VersionSuffix Condition="'$(OfficialVersion)' == '' And '$(ContinuousIntegrationTimestamp)' != ''">$(VersionSuffix).ci.$(ContinuousIntegrationTimestamp)</VersionSuffix>
     <VersionSuffix Condition="'$(Configuration)' == 'Debug'">$(VersionSuffix).debug</VersionSuffix>
     <VersionSuffix Condition="'$(BuildSha)' != ''">$(VersionSuffix)+sha.$(BuildSha)</VersionSuffix>
     <VersionSuffix>$(VersionSuffix.TrimStart(`.`))</VersionSuffix>
-
-    <FinalOfficialVersion Condition="'$(Configuration)' == 'Debug' And $(FinalOfficialVersion.Contains('-'))">$(FinalOfficialVersion).debug</FinalOfficialVersion>
-    <FinalOfficialVersion Condition="'$(Configuration)' == 'Debug' And !$(FinalOfficialVersion.Contains('-'))">$(FinalOfficialVersion)-debug</FinalOfficialVersion>
   </PropertyGroup>
 
-  <Target Name="EnsureVersionParameters" BeforeTargets="CoreBuild" Condition="'$(UseVersionOverride)' != 'true' And '$(UseVersionSuffixOverride)' != 'true'">
-    <Message Condition="'$(OfficialVersion)' != ''" Importance="high" Text="OfficialVersion: $(OfficialVersion)" />
-    <Message Condition="'$(OfficialVersion)' != ''" Importance="high" Text="FinalOfficialVersion: $(FinalOfficialVersion)" />
-    <Message Condition="'$(OfficialVersion)' != ''" Importance="high" Text="VersionPrefix: $(VersionPrefix)" />
-    <Message Condition="'$(OfficialVersion)' != ''" Importance="high" Text="VersionSuffix: $(VersionSuffix)" />
-    <Message Condition="'$(OfficialVersion)' != ''" Importance="high" Text="Version: $(Version)" />
+  <Target Name="OutputVersionProperties" BeforeTargets="CoreBuild" Condition="'$(OutputVersionProperties)' == 'true'">
+    <Message Importance="high" Text="OfficialVersion: $(OfficialVersion)" />
+    <Message Importance="high" Text="Version: $(Version)" />
+    <Message Importance="high" Text="VersionPrefix: $(VersionPrefix)" />
+    <Message Importance="high" Text="VersionSuffix: $(VersionSuffix)" />
+  </Target>
 
-    <Error Condition="'$(VersionPrefix)' == ''" Text="The 'VersionPrefix' property needs to be set." />
-    <Error Condition="'$(PreReleaseVersionLabel)' == ''" Text="The 'PreReleaseVersionLabel' property needs to be set." />
-    <Error Condition="'$(PreReleaseVersionIteration)' == ''" Text="The 'PreReleaseVersionIteration' property needs to be set." />
-    <Error Condition="'$(OfficialVersion)' != '' And '$(FinalOfficialVersion)' != '$(VersionPrefix)' And '$(FinalOfficialVersion)' != '$(VersionPrefix)-$(VersionSuffix)'" Text="The 'OfficialVersion' property needs to be identical to the 'VersionPrefix' property or to a combination of the 'VersionPrefix' and the 'VersionSuffix' properties." />
+  <Target Name="EnsureVersionProperties" BeforeTargets="CoreBuild">
+    <Error Condition="'$(Version)' == '' And '$(VersionPrefix)' == ''" Text="The 'VersionPrefix' property needs to be set." />
+    <Error Condition="'$(Version)' == '' And '$(VersionSuffix)' == '' And '$(PreReleaseVersionLabel)' == ''" Text="The 'PreReleaseVersionLabel' property needs to be set." />
+    <Error Condition="'$(Version)' == '' And '$(VersionSuffix)' == '' And '$(PreReleaseVersionIteration)' == ''" Text="The 'PreReleaseVersionIteration' property needs to be set." />
+    <Error Condition="'$(OfficialVersion)' != '' And '$(OfficialVersion)' != '$(Version)' And '$(OfficialVersion)-' != '$(VersionPrefix)-$(VersionSuffix)' And '$(OfficialVersion)' != '$(VersionPrefix)-$(VersionSuffix)'" Text="The 'OfficialVersion' property needs to be identical to the 'Version' property, 'VersionPrefix' property (if the 'VersionSuffix' property is empty) or to a combination of the 'VersionPrefix' and 'VersionSuffix' properties." />
   </Target>
 
   <!-- TODO: Take a look at this. -->
