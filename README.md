@@ -49,7 +49,7 @@ Officially supported versions are:
 
 Milestone | Status   | Release Date
 ----------|----------|-------------
-9.0.0 | Planned | 2025-01 (see [#1841](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1841))
+9.0.0 | Planned | 2025-03 (see [#1841](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1841))
 9.0.0-preview.2.efcore.9.0.0 | Released | 2024-12-13
 8.0.2 | Released | 2024-03-16
 7.0.0 | Released | 2023-01-16
