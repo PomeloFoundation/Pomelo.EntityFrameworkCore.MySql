@@ -60,7 +60,11 @@ namespace Microsoft.EntityFrameworkCore
 
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
             ConfigureWarnings(optionsBuilder);
-            mySqlOptionsAction?.Invoke(new MySqlDbContextOptionsBuilder(optionsBuilder));
+
+            var mySqlDbContextOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder)
+                .TranslateParameterizedCollectionsToConstants();
+
+            mySqlOptionsAction?.Invoke(mySqlDbContextOptionsBuilder);
 
             return optionsBuilder;
         }
@@ -102,7 +106,11 @@ namespace Microsoft.EntityFrameworkCore
 
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
             ConfigureWarnings(optionsBuilder);
-            mySqlOptionsAction?.Invoke(new MySqlDbContextOptionsBuilder(optionsBuilder));
+
+            var mySqlDbContextOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder)
+                .TranslateParameterizedCollectionsToConstants();
+
+            mySqlOptionsAction?.Invoke(mySqlDbContextOptionsBuilder);
 
             return optionsBuilder;
         }
@@ -148,7 +156,11 @@ namespace Microsoft.EntityFrameworkCore
 
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
             ConfigureWarnings(optionsBuilder);
-            mySqlOptionsAction?.Invoke(new MySqlDbContextOptionsBuilder(optionsBuilder));
+
+            var mySqlDbContextOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder)
+                .TranslateParameterizedCollectionsToConstants();
+
+            mySqlOptionsAction?.Invoke(mySqlDbContextOptionsBuilder);
 
             return optionsBuilder;
         }
@@ -191,7 +203,11 @@ namespace Microsoft.EntityFrameworkCore
 
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
             ConfigureWarnings(optionsBuilder);
-            mySqlOptionsAction?.Invoke(new MySqlDbContextOptionsBuilder(optionsBuilder));
+
+            var mySqlDbContextOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder)
+                .TranslateParameterizedCollectionsToConstants();
+
+            mySqlOptionsAction?.Invoke(mySqlDbContextOptionsBuilder);
 
             return optionsBuilder;
         }
