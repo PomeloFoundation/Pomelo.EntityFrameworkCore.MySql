@@ -1793,6 +1793,20 @@ WHERE `p`.`NullableString` IS NOT NULL AND (`p`.`NullableString` <> '999')
 """);
     }
 
+    public override async Task Column_collection_Count_with_predicate(bool async)
+    {
+        await base.Column_collection_Count_with_predicate(async);
+
+        AssertSql("");
+    }
+
+    public override async Task Column_collection_Where_Count(bool async)
+    {
+        await base.Column_collection_Where_Count(async);
+
+        AssertSql("");
+    }
+
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
         => TestHelpers.AssertAllMethodsOverridden(GetType());

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Design;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
@@ -1301,6 +1303,125 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;",
                     Assert.Equal("Persons", table.Name);
                 },
                 withConventions: false);
+
+        public override async Task Add_required_primitve_collection_with_custom_default_value_sql_to_existing_table()
+        {
+            await Add_required_primitve_collection_with_custom_default_value_sql_to_existing_table_core("'[3, 2, 1]'");
+
+            AssertSql(
+                """
+                ALTER TABLE `Customers` ADD `Numbers` varchar(127) CHARACTER SET utf8mb4 NOT NULL DEFAULT '[3, 2, 1]';
+                """);
+        }
+
+        protected override Task Add_required_primitve_collection_with_custom_default_value_sql_to_existing_table_core(string defaultValueSql)
+            => Test(
+                builder => builder.Entity(
+                    "Customer", e =>
+                    {
+                        e.Property<int>("Id").ValueGeneratedOnAdd();
+                        e.HasKey("Id");
+                        e.Property<string>("Name");
+                        e.ToTable("Customers");
+                    }),
+                builder => builder.Entity(
+                    "Customer", e =>
+                    {
+                        e.Property<int>("Id").ValueGeneratedOnAdd();
+                        e.HasKey("Id");
+                        e.Property<string>("Name");
+                        e.Property<List<int>>("Numbers").IsRequired()
+                            .HasMaxLength(127) // <-- MySQL requires a `varchar(n)` instead of a `longtext` type for default value support
+                            .HasDefaultValueSql(defaultValueSql);
+                        e.ToTable("Customers");
+                    }),
+                model =>
+                {
+                    var customersTable = Assert.Single(model.Tables.Where(t => t.Name == "Customers"));
+
+                    Assert.Collection(
+                        customersTable.Columns,
+                        c => Assert.Equal("Id", c.Name),
+                        c => Assert.Equal("Name", c.Name),
+                        c => Assert.Equal("Numbers", c.Name));
+                    Assert.Same(
+                        customersTable.Columns.Single(c => c.Name == "Id"),
+                        Assert.Single(customersTable.PrimaryKey!.Columns));
+                });
+
+        public override Task Add_required_primitve_collection_with_custom_converter_and_custom_default_value_to_existing_table()
+            => Test(
+                builder => builder.Entity(
+                    "Customer", e =>
+                    {
+                        e.Property<int>("Id").ValueGeneratedOnAdd();
+                        e.HasKey("Id");
+                        e.Property<string>("Name");
+                        e.ToTable("Customers");
+                    }),
+                builder => builder.Entity(
+                    "Customer", e =>
+                    {
+                        e.Property<int>("Id").ValueGeneratedOnAdd();
+                        e.HasKey("Id");
+                        e.Property<string>("Name");
+                        e.Property<List<int>>("Numbers")
+                            .HasMaxLength(127) // <-- MySQL requires a `varchar(n)` instead of a `longtext` type for default value support
+                            .HasConversion(new ValueConverter<List<int>, string>(
+                                convertToProviderExpression: x => x != null && x.Count > 0 ? "some numbers" : "nothing",
+                                convertFromProviderExpression: x => x == "nothing" ? new List<int> { } : new List<int> { 7, 8, 9 }))
+                            .HasDefaultValue(new List<int> { 42 })
+                            .IsRequired();
+                        e.ToTable("Customers");
+                    }),
+                model =>
+                {
+                    var customersTable = Assert.Single(model.Tables.Where(t => t.Name == "Customers"));
+
+                    Assert.Collection(
+                        customersTable.Columns,
+                        c => Assert.Equal("Id", c.Name),
+                        c => Assert.Equal("Name", c.Name),
+                        c => Assert.Equal("Numbers", c.Name));
+                    Assert.Same(
+                        customersTable.Columns.Single(c => c.Name == "Id"),
+                        Assert.Single(customersTable.PrimaryKey!.Columns));
+                });
+
+        public override Task Add_required_primitve_collection_with_custom_default_value_to_existing_table()
+            => Test(
+                builder => builder.Entity(
+                    "Customer", e =>
+                    {
+                        e.Property<int>("Id").ValueGeneratedOnAdd();
+                        e.HasKey("Id");
+                        e.Property<string>("Name");
+                        e.ToTable("Customers");
+                    }),
+                builder => builder.Entity(
+                    "Customer", e =>
+                    {
+                        e.Property<int>("Id").ValueGeneratedOnAdd();
+                        e.HasKey("Id");
+                        e.Property<string>("Name");
+                        e.Property<List<int>>("Numbers")
+                            .HasMaxLength(127) // <-- MySQL requires a `varchar(n)` instead of a `longtext` type for default value support
+                            .IsRequired().HasDefaultValue(new List<int> { 1, 2, 3 });
+                        e.ToTable("Customers");
+                    }),
+                model =>
+                {
+                    var customersTable = Assert.Single(model.Tables.Where(t => t.Name == "Customers"));
+
+                    Assert.Collection(
+                        customersTable.Columns,
+                        c => Assert.Equal("Id", c.Name),
+                        c => Assert.Equal("Name", c.Name),
+                        c => Assert.Equal("Numbers", c.Name));
+                    Assert.Same(
+                        customersTable.Columns.Single(c => c.Name == "Id"),
+                        Assert.Single(customersTable.PrimaryKey!.Columns));
+                });
 
         // The constraint name for a primary key is always PRIMARY in MySQL.
         protected override bool AssertConstraintNames
