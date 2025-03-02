@@ -63,7 +63,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Version Suffix Handling" Condition="'$(Version)' == '' And '$(VersionSuffix)' == ''">
-    <VersionSuffix Condition="'$(OfficialVersion)' == '' Or $(OfficialVersion.Contains('-'))">$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)$(TargetedEfCoreVersion)</VersionSuffix>
+    <VersionSuffix Condition="'$(OfficialVersion)' == '' Or $(OfficialVersion.Contains('-')) And !$(OfficialVersion.EndsWith('-debug'))">$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)$(TargetedEfCoreVersion)</VersionSuffix>
     <VersionSuffix Condition="'$(OfficialVersion)' == '' And '$(ContinuousIntegrationTimestamp)' != ''">$(VersionSuffix).ci.$(ContinuousIntegrationTimestamp)</VersionSuffix>
     <VersionSuffix Condition="'$(Configuration)' == 'Debug'">$(VersionSuffix).debug</VersionSuffix>
     <VersionSuffix Condition="'$(BuildSha)' != ''">$(VersionSuffix)+sha.$(BuildSha)</VersionSuffix>
