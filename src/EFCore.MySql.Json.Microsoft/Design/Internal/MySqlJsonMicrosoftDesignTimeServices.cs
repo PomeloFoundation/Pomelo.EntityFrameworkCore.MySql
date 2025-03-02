@@ -7,6 +7,8 @@ using Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Scaffolding.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
+using Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Infrastructure.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Design.Internal
 {
@@ -26,6 +28,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Design.Internal
         /// </summary>
         public virtual void ConfigureDesignTimeServices(IServiceCollection serviceCollection)
             => serviceCollection
+                .AddSingleton<IMysqlJsonOptions, DefaultMysqlJsonOptions>()
                 .AddSingleton<IRelationalTypeMappingSourcePlugin, MySqlJsonMicrosoftTypeMappingSourcePlugin>()
                 .AddSingleton<IProviderCodeGeneratorPlugin, MySqlJsonMicrosoftCodeGeneratorPlugin>();
     }
