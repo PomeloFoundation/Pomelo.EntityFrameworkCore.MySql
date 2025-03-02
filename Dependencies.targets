@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup Label="Common Versions">
-    <EFCoreVersion>[8.0.3,8.0.999]</EFCoreVersion>
+    <EFCoreVersion>[8.0.13,8.0.999]</EFCoreVersion>
   </PropertyGroup>
 
   <ItemGroup Label="Dependencies">
@@ -16,26 +16,26 @@
     <PackageReference Update="Newtonsoft.Json" Version="13.0.3" />
 
     <PackageReference Update="Castle.Core" Version="5.1.1" />
-    <PackageReference Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.3" />
-    <PackageReference Update="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.3" />
+    <PackageReference Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.13" />
+    <PackageReference Update="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.13" />
     <PackageReference Update="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
     <PackageReference Update="Microsoft.Bcl.HashCode" Version="1.1.1" />
-    <PackageReference Update="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
-    <PackageReference Update="Microsoft.Extensions.Configuration.Binder" Version="8.0.1" />
+    <PackageReference Update="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
+    <PackageReference Update="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" />
     <PackageReference Update="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
-    <PackageReference Update="Microsoft.Extensions.Configuration.FileExtensions" Version="8.0.0" />
-    <PackageReference Update="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Configuration.FileExtensions" Version="8.0.1" />
+    <PackageReference Update="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
     <PackageReference Update="Microsoft.Extensions.Configuration" Version="8.0.0" />
-    <PackageReference Update="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-    <PackageReference Update="Microsoft.Extensions.DependencyModel" Version="8.0.0" />
-    <PackageReference Update="Microsoft.Extensions.Logging" Version="8.0.0" />
-    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+    <PackageReference Update="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+    <PackageReference Update="Microsoft.Extensions.DependencyModel" Version="8.0.2" />
+    <PackageReference Update="Microsoft.Extensions.Logging" Version="8.0.1" />
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.13.0" />
     <PackageReference Update="Microsoft.SourceLink.GitHub" Version="8.0.0" />
-    <PackageReference Update="Moq" Version="4.20.70" />
+    <PackageReference Update="Moq" Version="4.20.72" />
     <PackageReference Update="System.Collections.Immutable" Version="8.0.0" />
     <PackageReference Update="System.ComponentModel.TypeConverter" Version="4.3.0" />
-    <PackageReference Update="System.Diagnostics.DiagnosticSource" Version="8.0.0" />
-    <PackageReference Update="GitHubActionsTestLogger" Version="2.3.3" />
+    <PackageReference Update="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
+    <PackageReference Update="GitHubActionsTestLogger" Version="2.4.1" />
 
     <!-- Keep at the same level that the EF Core projects use. -->
     <PackageReference Update="xunit.assert" Version="2.4.2" />
