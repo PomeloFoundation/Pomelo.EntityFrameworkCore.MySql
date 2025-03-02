@@ -10,7 +10,7 @@
       We also used alpha/beta/silver release types in the past, but they mix poorly with the ones above when orderend according to SemVer2
       rules.
     -->
-    <VersionPrefix>8.0.3</VersionPrefix>
+    <VersionPrefix>8.0.4</VersionPrefix>
     <PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
 
