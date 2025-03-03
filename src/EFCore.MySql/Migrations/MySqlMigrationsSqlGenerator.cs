@@ -1166,7 +1166,8 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
 
             if (operation.ComputedColumnSql == null)
             {
-                ColumnDefinitionWithCharSet(schema, table, name, operation, model, builder);
+                // AUTO_INCREMENT columns don't support DEFAULT values.
+                ColumnDefinitionWithCharSet(schema, table, name, operation, model, builder, withDefaultValue: !autoIncrement);
 
                 GenerateComment(operation.Comment, builder);
 
@@ -1280,7 +1281,14 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
                 .Append(MySqlStringTypeMapping.EscapeSqlLiteralWithLineBreaks(comment, !_options.NoBackslashEscapes, false));
         }
 
-        private void ColumnDefinitionWithCharSet(string schema, string table, string name, ColumnOperation operation, IModel model, MigrationCommandListBuilder builder)
+        private void ColumnDefinitionWithCharSet(
+            string schema,
+            string table,
+            string name,
+            ColumnOperation operation,
+            IModel model,
+            MigrationCommandListBuilder builder,
+            bool withDefaultValue)
         {
             if (operation.ComputedColumnSql != null)
             {
@@ -1297,7 +1305,10 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;";
 
             builder.Append(operation.IsNullable ? " NULL" : " NOT NULL");
 
-            DefaultValue(operation.DefaultValue, operation.DefaultValueSql, columnType, builder);
+            if (withDefaultValue)
+            {
+                DefaultValue(operation.DefaultValue, operation.DefaultValueSql, columnType, builder);
+            }
 
             var srid = operation[MySqlAnnotationNames.SpatialReferenceSystemId];
             if (srid is int &&
