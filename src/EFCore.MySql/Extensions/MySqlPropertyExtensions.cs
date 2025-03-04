@@ -553,6 +553,14 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="property">The property to set the columns charset for.</param>
         /// <param name="charSet">The name of the charset used for the column of the property.</param>
+        public static void SetCharSet([NotNull] this IMutableComplexProperty property, string charSet)
+            => property.SetOrRemoveAnnotation(MySqlAnnotationNames.CharSet, charSet);
+
+        /// <summary>
+        /// Sets the name of the charset in use by the column of the property.
+        /// </summary>
+        /// <param name="property">The property to set the columns charset for.</param>
+        /// <param name="charSet">The name of the charset used for the column of the property.</param>
         /// <param name="fromDataAnnotation">Indicates whether the configuration was specified using a data annotation.</param>
         public static string SetCharSet([NotNull] this IConventionProperty property, string charSet, bool fromDataAnnotation = false)
         {
