@@ -380,7 +380,7 @@ WHERE JSON_OVERLAPS(`j`.`CustomerJToken`, '{""Name"": ""Joe"", ""Age"": -1}')");
         }
 
         [Fact]
-\        public void JsonOverlaps_using_JsonExtract_with_json_element()
+        public void JsonOverlaps_using_JsonExtract_with_json_element()
         {
             using var ctx = CreateContext();
             var element = JArray.Parse(@"[3,-1]");
