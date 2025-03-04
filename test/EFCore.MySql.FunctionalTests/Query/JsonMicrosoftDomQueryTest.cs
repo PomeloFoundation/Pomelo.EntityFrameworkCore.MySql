@@ -24,7 +24,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             Fixture = fixture;
             Fixture.TestSqlLoggerFactory.Clear();
-            Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
+            //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
         [Fact]
