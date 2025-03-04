@@ -346,7 +346,71 @@ WHERE JSON_UNQUOTE(`j`.`CustomerJToken`) = 'foo'
 LIMIT 2");
         }
 
-         #region Functions
+        #region Functions
+
+        [Fact]
+        public void JsonOverlaps_with_json_element()
+        {
+            using var ctx = CreateContext();
+            var element = JObject.Parse(@"{""Name"": ""Joe"", ""Age"": -1}").Root;
+            var count = ctx.JsonEntities.Count(e =>
+                EF.Functions.JsonOverlaps(e.CustomerJToken, element));
+
+            Assert.Equal(1, count);
+            AssertSql(
+                $@"@__element_1='{{""Name"":""Joe"",""Age"":-1}}' (Size = 4000)
+
+SELECT COUNT(*)
+FROM `JsonEntities` AS `j`
+WHERE JSON_OVERLAPS(`j`.`CustomerJToken`, {InsertJsonConvert("@__element_1")})");
+        }
+
+        [Fact]
+        public void JsonOverlaps_with_string()
+        {
+            using var ctx = CreateContext();
+            var count = ctx.JsonEntities.Count(e =>
+                EF.Functions.JsonOverlaps(e.CustomerJToken, @"{""Name"": ""Joe"", ""Age"": -1}"));
+
+            Assert.Equal(1, count);
+            AssertSql(
+                @"SELECT COUNT(*)
+FROM `JsonEntities` AS `j`
+WHERE JSON_OVERLAPS(`j`.`CustomerJToken`, '{""Name"": ""Joe"", ""Age"": -1}')");
+        }
+
+        [Fact]
+\        public void JsonOverlaps_using_JsonExtract_with_json_element()
+        {
+            using var ctx = CreateContext();
+            var element = JArray.Parse(@"[3,-1]");
+            var count = ctx.JsonEntities.Count(e =>
+                EF.Functions.JsonOverlaps(EF.Functions.JsonExtract<string[]>(e.CustomerJToken, "$.Statistics.Nested.IntArray"), element));
+
+            Assert.Equal(1, count);
+            var dd = InsertJsonConvert("@__element_1");
+            AssertSql(
+                $@"@__element_1='[3,-1]' (Size = 4000)
+
+SELECT COUNT(*)
+FROM `JsonEntities` AS `j`
+WHERE JSON_OVERLAPS(JSON_EXTRACT(`j`.`CustomerJToken`, '$.Statistics.Nested.IntArray'), {InsertJsonConvert("@__element_1")})");
+        }
+
+        [Fact]
+        public void JsonOverlaps_using_JsonExtract_with_json_string()
+        {
+            using var ctx = CreateContext();
+            var count = ctx.JsonEntities.Count(e =>
+                EF.Functions.JsonOverlaps(EF.Functions.JsonExtract<string[]>(e.CustomerJToken, "$.Statistics.Nested.IntArray"), @"[3,-1]"));
+
+            Assert.Equal(1, count);
+            var dd = InsertJsonConvert("@__element_1");
+            AssertSql(
+                $@"SELECT COUNT(*)
+FROM `JsonEntities` AS `j`
+WHERE JSON_OVERLAPS(JSON_EXTRACT(`j`.`CustomerJToken`, '$.Statistics.Nested.IntArray'), '[3,-1]')");
+        }
 
         [Fact]
         public void JsonContains_with_json_element()
