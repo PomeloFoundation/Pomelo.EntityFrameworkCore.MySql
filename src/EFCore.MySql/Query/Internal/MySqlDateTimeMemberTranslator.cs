@@ -101,13 +101,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                             declaringType == typeof(DateTimeOffset)
                                 ? "UTC_TIMESTAMP"
                                 : "CURRENT_TIMESTAMP",
-                            Array.Empty<SqlExpression>(),
+                            new [] { _sqlExpressionFactory.Constant(6)},
                             returnType);
 
                     case nameof(DateTime.UtcNow):
                         return _sqlExpressionFactory.NonNullableFunction(
                             "UTC_TIMESTAMP",
-                            Array.Empty<SqlExpression>(),
+                            new [] { _sqlExpressionFactory.Constant(6)},
                             returnType);
 
                     case nameof(DateTime.Today):
