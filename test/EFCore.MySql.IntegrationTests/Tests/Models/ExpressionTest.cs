@@ -437,13 +437,60 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
         public async Task MySqlCastTranslator()
         {
             var result = await _db.DataTypesSimple.Select(m => new {
-                IntToUlong = (ulong) m.TypeInt,
-                IntToDecimal = (decimal) m.TypeInt,
+                IntToUlong = (ulong)m.TypeInt,
+                IntToDecimal = (decimal)m.TypeInt,
                 IntToString = "test" + m.TypeInt,
             }
             ).FirstOrDefaultAsync();
 
             Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task MySqlTimeStampTotalsTranslator()
+        {
+            var result = await _db.DataTypesSimple.Select(m =>
+                new {
+                    m.Id,
+                    m.TypeTimeSpan.TotalNanoseconds,
+                    m.TypeTimeSpan.TotalMilliseconds,
+                    m.TypeTimeSpan.TotalSeconds,
+                    m.TypeTimeSpan.TotalMinutes,
+                    m.TypeTimeSpan.TotalHours,
+                    m.TypeTimeSpan.TotalDays,
+                }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
+
+            Assert.Equal(_simple.TypeTimeSpan.TotalNanoseconds, result.TotalNanoseconds);
+            Assert.Equal(_simple.TypeTimeSpan.TotalMilliseconds, result.TotalMilliseconds);
+            Assert.Equal(_simple.TypeTimeSpan.TotalSeconds, result.TotalSeconds);
+            Assert.Equal(_simple.TypeTimeSpan.TotalMinutes, result.TotalMinutes);
+            Assert.Equal(_simple.TypeTimeSpan.TotalHours, result.TotalHours);
+            Assert.Equal(_simple.TypeTimeSpan.TotalDays, result.TotalDays);
+        }
+
+        [Fact]
+        public async Task MySqlTimeStampTotalsCalculationTranslator()
+        {
+            var custom = new TimeSpan(1, 2, 3, 4);
+
+            var result = await _db.DataTypesSimple
+                .Select(x => custom)
+                .Select(c =>
+                new {
+                    c.TotalNanoseconds,
+                    c.TotalMilliseconds,
+                    c.TotalSeconds,
+                    c.TotalMinutes,
+                    c.TotalHours,
+                    c.TotalDays,
+                }).FirstOrDefaultAsync();
+
+            Assert.Equal(custom.TotalNanoseconds, result.TotalNanoseconds);
+            Assert.Equal(custom.TotalMilliseconds, result.TotalMilliseconds);
+            Assert.Equal(custom.TotalSeconds, result.TotalSeconds);
+            Assert.Equal(custom.TotalMinutes, result.TotalMinutes, tolerance: 0.00001);
+            Assert.Equal(custom.TotalHours, result.TotalHours, tolerance: 0.00001);
+            Assert.Equal(custom.TotalDays, result.TotalDays, tolerance: 0.00001);
         }
 
     }
