@@ -33,7 +33,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE CURRENT_TIMESTAMP() <> @__myDatetime_0");
+WHERE CURRENT_TIMESTAMP(6) <> @__myDatetime_0");
         }
 
         [ConditionalTheory]
@@ -46,7 +46,7 @@ WHERE CURRENT_TIMESTAMP() <> @__myDatetime_0");
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE UTC_TIMESTAMP() <> @__myDatetime_0");
+WHERE UTC_TIMESTAMP(6) <> @__myDatetime_0");
         }
 
         [ConditionalTheory]
@@ -57,7 +57,7 @@ WHERE UTC_TIMESTAMP() <> @__myDatetime_0");
             AssertSql(
                 @"SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
 FROM `Employees` AS `e`
-WHERE CONVERT(CURRENT_TIMESTAMP(), date) = CURDATE()");
+WHERE CONVERT(CURRENT_TIMESTAMP(6), date) = CURDATE()");
         }
 
         [ConditionalTheory]
