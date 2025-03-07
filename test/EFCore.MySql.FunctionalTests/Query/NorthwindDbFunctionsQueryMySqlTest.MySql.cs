@@ -20,7 +20,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(YEAR, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
+WHERE TIMESTAMPDIFF(YEAR, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
             }
         }
 
@@ -37,7 +37,7 @@ WHERE TIMESTAMPDIFF(YEAR, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(QUARTER, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
+WHERE TIMESTAMPDIFF(QUARTER, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
             }
         }
 
@@ -54,7 +54,7 @@ WHERE TIMESTAMPDIFF(QUARTER, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(WEEK, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
+WHERE TIMESTAMPDIFF(WEEK, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
             }
         }
 
@@ -71,7 +71,7 @@ WHERE TIMESTAMPDIFF(WEEK, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(MONTH, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
+WHERE TIMESTAMPDIFF(MONTH, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
             }
         }
 
@@ -88,7 +88,7 @@ WHERE TIMESTAMPDIFF(MONTH, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(DAY, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
+WHERE TIMESTAMPDIFF(DAY, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
             }
         }
 
@@ -105,7 +105,7 @@ WHERE TIMESTAMPDIFF(DAY, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(HOUR, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
+WHERE TIMESTAMPDIFF(HOUR, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
             }
         }
 
@@ -122,7 +122,7 @@ WHERE TIMESTAMPDIFF(HOUR, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(MINUTE, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
+WHERE TIMESTAMPDIFF(MINUTE, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
             }
         }
 
@@ -139,7 +139,7 @@ WHERE TIMESTAMPDIFF(MINUTE, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(SECOND, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
+WHERE TIMESTAMPDIFF(SECOND, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
             }
         }
 
@@ -156,7 +156,7 @@ WHERE TIMESTAMPDIFF(SECOND, `o`.`OrderDate`, CURRENT_TIMESTAMP()) = 0");
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE (TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(), DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL CAST(1.0 AS signed) second))) DIV (1000) = 0");
+WHERE (TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(6), DATE_ADD(CURRENT_TIMESTAMP(6), INTERVAL CAST(1.0 AS signed) second))) DIV (1000) = 0");
             }
         }
 
@@ -173,7 +173,7 @@ WHERE (TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(), DATE_ADD(CURRENT_TIMESTAM
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(), DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL CAST(1.0 AS signed) second)) = 0");
+WHERE TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(6), DATE_ADD(CURRENT_TIMESTAMP(6), INTERVAL CAST(1.0 AS signed) second)) = 0");
             }
         }
 
@@ -190,7 +190,7 @@ WHERE TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(), DATE_ADD(CURRENT_TIMESTAMP
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE (TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(), DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL CAST(1.0 AS signed) second)) * 10) = 0");
+WHERE (TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(6), DATE_ADD(CURRENT_TIMESTAMP(6), INTERVAL CAST(1.0 AS signed) second)) * 10) = 0");
             }
         }
 
@@ -207,7 +207,7 @@ WHERE (TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(), DATE_ADD(CURRENT_TIMESTAM
                 AssertSql(
                     @"SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE (TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(), DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL CAST(1.0 AS signed) second)) * 1000) = 0");
+WHERE (TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(6), DATE_ADD(CURRENT_TIMESTAMP(6), INTERVAL CAST(1.0 AS signed) second)) * 1000) = 0");
             }
         }
 

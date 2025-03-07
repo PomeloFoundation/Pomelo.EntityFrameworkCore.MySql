@@ -3845,7 +3845,7 @@ LEFT JOIN `Weapons` AS `w` ON `w`.`SynergyWithId` IS NOT NULL
 """
 SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
 FROM `Missions` AS `m`
-WHERE `m`.`Timeline` <> UTC_TIMESTAMP()
+WHERE `m`.`Timeline` <> UTC_TIMESTAMP(6)
 """);
     }
 
@@ -3857,7 +3857,7 @@ WHERE `m`.`Timeline` <> UTC_TIMESTAMP()
 """
 SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
 FROM `Missions` AS `m`
-WHERE `m`.`Timeline` <> UTC_TIMESTAMP()
+WHERE `m`.`Timeline` <> UTC_TIMESTAMP(6)
 """);
     }
 
@@ -9523,7 +9523,7 @@ FROM `LocustCommanders` AS `l0`
 
         AssertSql(
 """
-SELECT `m`.`Timeline` > UTC_TIMESTAMP()
+SELECT `m`.`Timeline` > UTC_TIMESTAMP(6)
 FROM `Missions` AS `m`
 """);
     }

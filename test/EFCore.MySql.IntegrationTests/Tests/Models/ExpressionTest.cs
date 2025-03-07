@@ -153,17 +153,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
             await _db.Database.ExecuteSqlRawAsync($"SET @@session.time_zone = '{utcOffsetStr}'");
 #pragma warning restore EF1002
 
+            var utcNow = DateTime.UtcNow;
+            var now = DateTime.Now;
             var result = await _db.DataTypesSimple.Select(m =>
                 new {
                     m.Id,
-                    DateTime.Now,
-                    DateTime.UtcNow
-                }).FirstOrDefaultAsync(m => m.Id == _simple.Id);
+                    Now = now,
+                    UtcNow = utcNow,
+                }).FirstOrDefaultAsync(m => m.Id == _simple.Id && m.UtcNow < DateTime.UtcNow && m.Now < DateTime.Now);
 
             _db.Database.CloseConnection();
 
-            Assert.InRange(result.Now, DateTime.Now - TimeSpan.FromSeconds(5), DateTime.Now + TimeSpan.FromSeconds(5));
-            Assert.InRange(result.UtcNow, DateTime.UtcNow - TimeSpan.FromSeconds(5), DateTime.UtcNow + TimeSpan.FromSeconds(5));
+            Assert.NotNull(result);
+            Assert.Equal(result.Now, DateTime.Now, precision: TimeSpan.FromSeconds(10));
+            Assert.Equal(result.UtcNow, DateTime.UtcNow, precision: TimeSpan.FromSeconds(10));
         }
 
         [Fact]

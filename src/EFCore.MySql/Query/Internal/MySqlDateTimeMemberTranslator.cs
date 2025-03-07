@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Utilities;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
@@ -26,10 +27,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 { nameof(DateTime.Millisecond), ("microsecond", 1000) },
             };
         private readonly MySqlSqlExpressionFactory _sqlExpressionFactory;
+        private readonly IMySqlOptions _mySqlOptions;
 
-        public MySqlDateTimeMemberTranslator(ISqlExpressionFactory sqlExpressionFactory)
+        public MySqlDateTimeMemberTranslator(ISqlExpressionFactory sqlExpressionFactory, IMySqlOptions mySqlOptions)
         {
             _sqlExpressionFactory = (MySqlSqlExpressionFactory)sqlExpressionFactory;
+            _mySqlOptions = mySqlOptions;
         }
 
         public virtual SqlExpression Translate(
@@ -101,13 +104,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                             declaringType == typeof(DateTimeOffset)
                                 ? "UTC_TIMESTAMP"
                                 : "CURRENT_TIMESTAMP",
-                            Array.Empty<SqlExpression>(),
+                            _mySqlOptions.ServerVersion.Supports.DateTime6 ?
+                                new [] { _sqlExpressionFactory.Constant(6)} :
+                                Array.Empty<SqlExpression>(),
                             returnType);
 
                     case nameof(DateTime.UtcNow):
                         return _sqlExpressionFactory.NonNullableFunction(
                             "UTC_TIMESTAMP",
-                            Array.Empty<SqlExpression>(),
+                            _mySqlOptions.ServerVersion.Supports.DateTime6 ?
+                                new [] { _sqlExpressionFactory.Constant(6)} :
+                                ArraySegment<SqlExpression>.Empty,
                             returnType);
 
                     case nameof(DateTime.Today):
