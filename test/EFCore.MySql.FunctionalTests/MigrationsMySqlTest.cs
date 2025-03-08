@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -1229,17 +1230,24 @@ $@"ALTER TABLE `IceCream` MODIFY COLUMN `Brand` longtext COLLATE {NonDefaultColl
                             e.Property<string>("Name");
                             e.Property<string>("Brand")
                                 .HasCharSet(NonDefaultCharSet);
+
+                            e.ComplexProperty<Dictionary<string, object>>("ComplexProperty")
+                                .Property<string>("Brand")
+                                .HasCharSet(NonDefaultCharSet);
                         }),
                 result =>
                 {
                     var table = Assert.Single(result.Tables);
                     var nameColumn = Assert.Single(table.Columns.Where(c => c.Name == "Name"));
                     var brandColumn = Assert.Single(table.Columns.Where(c => c.Name == "Brand"));
+                    var complexBrandColumn = Assert.Single(table.Columns.Where(c => c.Name == "ComplexProperty_Brand"));
 
                     Assert.Null(nameColumn[MySqlAnnotationNames.CharSet]);
                     Assert.Null(nameColumn.Collation);
                     Assert.Equal(NonDefaultCharSet, brandColumn[MySqlAnnotationNames.CharSet]);
                     Assert.NotEqual(DefaultCollation, brandColumn.Collation);
+                    Assert.Equal(NonDefaultCharSet, complexBrandColumn[MySqlAnnotationNames.CharSet]);
+                    Assert.NotEqual(DefaultCollation, complexBrandColumn.Collation);
                 });
 
             AssertSql(
@@ -1249,6 +1257,7 @@ $@"ALTER TABLE `IceCream` MODIFY COLUMN `Brand` longtext COLLATE {NonDefaultColl
     `IceCreamId` int NOT NULL AUTO_INCREMENT,
     `Brand` longtext CHARACTER SET {NonDefaultCharSet} NULL,
     `Name` longtext COLLATE {DefaultCollation} NULL,
+    `ComplexProperty_Brand` longtext CHARACTER SET {NonDefaultCharSet} NULL,
     CONSTRAINT `PK_IceCream` PRIMARY KEY (`IceCreamId`)
 ) COLLATE={DefaultCollation};");
         }
