@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
 
@@ -78,6 +79,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
             = typeof(MySqlPropertyBuilderExtensions).GetRequiredRuntimeMethod(
                 nameof(MySqlPropertyBuilderExtensions.HasCharSet),
                 typeof(PropertyBuilder),
+                typeof(string));
+
+        private static readonly MethodInfo _complexTypePropertyHasCharSetMethodInfo
+            = typeof(MySqlComplexTypePropertyBuilderExtensions).GetRequiredRuntimeMethod(
+                nameof(MySqlComplexTypePropertyBuilderExtensions.HasCharSet),
+                typeof(ComplexTypePropertyBuilder),
                 typeof(string));
 
         public MySqlAnnotationCodeGenerator([JetBrains.Annotations.NotNull] AnnotationCodeGeneratorDependencies dependencies)
@@ -262,6 +269,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
             switch (annotation.Name)
             {
                 case MySqlAnnotationNames.CharSet when annotation.Value is string { Length: > 0 } charSet:
+                    if (property.DeclaringType is IComplexType)
+                    {
+                        return new MethodCallCodeFragment(
+                            _complexTypePropertyHasCharSetMethodInfo,
+                            charSet);
+                    }
+
                     return new MethodCallCodeFragment(
                         _propertyHasCharSetMethodInfo,
                         charSet);
