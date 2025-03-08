@@ -90,6 +90,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                         method.ReturnType,
                         _sqlExpressionFactory.FindMapping(method.ReturnType, "json"),
                         false),
+                nameof(MySqlJsonDbFunctionsExtensions.JsonOverlaps)
+                => _sqlExpressionFactory.NullableFunction(
+                    "JSON_OVERLAPS",
+                    new[] { Json(args[0]), args[1] },
+                    typeof(bool)),
                 nameof(MySqlJsonDbFunctionsExtensions.JsonContains)
                     => _sqlExpressionFactory.NullableFunction(
                         "JSON_CONTAINS",

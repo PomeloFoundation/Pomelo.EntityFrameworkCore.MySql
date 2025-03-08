@@ -59,6 +59,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
         public virtual bool CrossApply => false;
         public virtual bool OuterReferenceInMultiLevelSubquery => false;
         public virtual bool Json => false;
+        public virtual bool JsonOverlaps => false;
         public virtual bool GeneratedColumns => false;
         public virtual bool NullableGeneratedColumns => false;
         public virtual bool ParenthesisEnclosedGeneratedColumnExpressions => false;

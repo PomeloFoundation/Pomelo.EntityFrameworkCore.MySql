@@ -85,6 +85,20 @@ namespace Microsoft.EntityFrameworkCore
             => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(JsonExtract)));
 
         /// <summary>
+        /// Checks if <paramref name="json"/> overlaps <paramref name="candidate"/>.
+        /// </summary>
+        /// <param name="_">DbFunctions instance</param>
+        /// <param name="json">
+        /// A JSON column or value. Can be a JSON DOM object, a string property mapped to JSON, or a user POCO mapped to JSON.
+        /// </param>
+        /// <param name="candidate">
+        /// A JSON column or value. Can be a JSON DOM object, a string, or a user POCO mapped to JSON.
+        /// </param>
+        public static bool JsonOverlaps(
+            [CanBeNull] this DbFunctions _, [NotNull] object json, [NotNull] object candidate)
+            => throw new InvalidOperationException(CoreStrings.FunctionOnClient(nameof(JsonOverlaps)));
+
+        /// <summary>
         /// Checks if <paramref name="json"/> contains <paramref name="candidate"/>.
         /// </summary>
         /// <param name="_">DbFunctions instance</param>
