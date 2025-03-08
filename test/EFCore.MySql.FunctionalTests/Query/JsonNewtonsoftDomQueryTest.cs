@@ -348,7 +348,8 @@ LIMIT 2");
 
         #region Functions
 
-        [Fact]
+        [ConditionalFact]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonOverlaps))]
         public void JsonOverlaps_with_json_element()
         {
             using var ctx = CreateContext();
@@ -365,7 +366,8 @@ FROM `JsonEntities` AS `j`
 WHERE JSON_OVERLAPS(`j`.`CustomerJToken`, {InsertJsonConvert("@__element_1")})");
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonOverlaps))]
         public void JsonOverlaps_with_string()
         {
             using var ctx = CreateContext();
@@ -379,7 +381,8 @@ FROM `JsonEntities` AS `j`
 WHERE JSON_OVERLAPS(`j`.`CustomerJToken`, '{""Name"": ""Joe"", ""Age"": -1}')");
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonOverlaps))]
         public void JsonOverlaps_using_JsonExtract_with_json_element()
         {
             using var ctx = CreateContext();
@@ -397,7 +400,8 @@ FROM `JsonEntities` AS `j`
 WHERE JSON_OVERLAPS(JSON_EXTRACT(`j`.`CustomerJToken`, '$.Statistics.Nested.IntArray'), {InsertJsonConvert("@__element_1")})");
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonOverlaps))]
         public void JsonOverlaps_using_JsonExtract_with_json_string()
         {
             using var ctx = CreateContext();

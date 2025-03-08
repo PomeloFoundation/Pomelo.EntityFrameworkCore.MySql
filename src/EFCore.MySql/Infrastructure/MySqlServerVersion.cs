@@ -94,6 +94,7 @@ namespace Microsoft.EntityFrameworkCore
             public override bool LimitWithNonConstantValue => false;
             public override bool JsonTable => ServerVersion.Version >= new Version(8, 0, 4);
             public override bool JsonValue => ServerVersion.Version >= new Version(8, 0, 21);
+            public override bool JsonOverlaps => ServerVersion.Version >= new Version(8, 0, 0);
             public override bool Values => false;
             public override bool ValuesWithRows => ServerVersion.Version >= new Version(8, 0, 19);
             public override bool WhereSubqueryReferencesOuterQuery => false;
