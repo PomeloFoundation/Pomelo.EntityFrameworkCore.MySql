@@ -391,7 +391,6 @@ WHERE JSON_OVERLAPS(`j`.`CustomerJToken`, '{""Name"": ""Joe"", ""Age"": -1}')");
                 EF.Functions.JsonOverlaps(EF.Functions.JsonExtract<string[]>(e.CustomerJToken, "$.Statistics.Nested.IntArray"), element));
 
             Assert.Equal(1, count);
-            var dd = InsertJsonConvert("@__element_1");
             AssertSql(
                 $@"@__element_1='[3,-1]' (Size = 4000)
 
@@ -409,7 +408,6 @@ WHERE JSON_OVERLAPS(JSON_EXTRACT(`j`.`CustomerJToken`, '$.Statistics.Nested.IntA
                 EF.Functions.JsonOverlaps(EF.Functions.JsonExtract<string[]>(e.CustomerJToken, "$.Statistics.Nested.IntArray"), @"[3,-1]"));
 
             Assert.Equal(1, count);
-            var dd = InsertJsonConvert("@__element_1");
             AssertSql(
                 $@"SELECT COUNT(*)
 FROM `JsonEntities` AS `j`
