@@ -13,8 +13,6 @@ namespace Microsoft.EntityFrameworkCore
     /// </summary>
     public static class MySqlComplexTypePropertyBuilderExtensions
     {
-        #region Computed
-
         /// <summary>
         /// Configures the charset for the property's column.
         /// </summary>
@@ -43,8 +41,5 @@ namespace Microsoft.EntityFrameworkCore
             [NotNull] this ComplexTypePropertyBuilder<TProperty> propertyBuilder,
             string charSet)
             => (ComplexTypePropertyBuilder<TProperty>)HasCharSet((ComplexTypePropertyBuilder)propertyBuilder, charSet);
-
-
-        #endregion Computed
     }
 }
