@@ -69,6 +69,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         private readonly MySqlDateTimeOffsetTypeMapping _dateTimeOffset = MySqlDateTimeOffsetTypeMapping.Default;
         private readonly MySqlDateTimeOffsetTypeMapping _timeStampOffset = new MySqlDateTimeOffsetTypeMapping("timestamp");
 
+        // vector
+        private readonly MySqlVectorTypeMapping _floatVector = new MySqlVectorTypeMapping("vector", typeof(float[]));
+        private readonly MySqlVectorTypeMapping _memoryVector = new MySqlVectorTypeMapping("vector", typeof(Memory<float>));
+        private readonly MySqlVectorTypeMapping _readOnlyMemoryVector = new MySqlVectorTypeMapping("vector", typeof(ReadOnlyMemory<float>));
+        private readonly MySqlVectorByteTypeMapping _floatByteVector = new MySqlVectorByteTypeMapping("vector", typeof(float[]));
+        private readonly MySqlVectorByteTypeMapping _memoryByteVector = new MySqlVectorByteTypeMapping("vector", typeof(Memory<float>));
+        private readonly MySqlVectorByteTypeMapping _readOnlyByteMemoryVector = new MySqlVectorByteTypeMapping("vector", typeof(ReadOnlyMemory<float>));
+
+
         private readonly RelationalTypeMapping _binaryRowVersion
             = new MySqlDateTimeTypeMapping(
                 "timestamp",
@@ -251,6 +260,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     { typeof(MySqlJsonString), _jsonDefaultString }
                 };
 
+            // vector
+            if (_options.ServerVersion.Supports.Vector)
+            {
+                _storeTypeMappings[_floatVector.StoreType] = _options.ServerVersion.Type switch
+                {
+                    ServerType.MariaDb => new RelationalTypeMapping[] { _floatByteVector, _memoryByteVector, _readOnlyByteMemoryVector },
+                    _ => new RelationalTypeMapping[] { _floatVector, _readOnlyMemoryVector, _memoryVector, }
+                };
+                _clrTypeMappings[typeof(float[])] = _options.ServerVersion.Type switch
+                {
+                    ServerType.MariaDb => _floatByteVector,
+                    _ => _floatVector,
+                };
+                _clrTypeMappings[typeof(ReadOnlyMemory<float>)] = _options.ServerVersion.Type switch
+                {
+                    ServerType.MariaDb => _readOnlyByteMemoryVector,
+                    _ => _readOnlyMemoryVector,
+                };
+                _clrTypeMappings[typeof(Memory<float>)] = _options.ServerVersion.Type switch
+                {
+                    ServerType.MariaDb => _memoryByteVector,
+                    _ => _memoryVector,
+                };
+            }
+
             // Boolean
             if (_options.DefaultDataTypeMappings.ClrBoolean != MySqlBooleanType.None)
             {
@@ -263,7 +297,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             // Guid
             if (_guid != null)
             {
-                _storeTypeMappings[_guid.StoreType] = new RelationalTypeMapping[]{ _guid };
+                _storeTypeMappings[_guid.StoreType] = new RelationalTypeMapping[] { _guid };
                 _clrTypeMappings[typeof(Guid)] = _guid;
             }
 
@@ -283,6 +317,25 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             // first, try any plugins, allowing them to override built-in mappings
             base.FindMapping(mappingInfo) ??
             FindRawMapping(mappingInfo)?.Clone(mappingInfo);
+
+        protected override RelationalTypeMapping FindCollectionMapping(
+            RelationalTypeMappingInfo mappingInfo,
+            Type modelType,
+            Type providerType,
+            CoreTypeMapping elementMapping)
+        {
+            // Workaround: prevent EF from trying to treat float[] → byte[] mappings as collections
+            if (modelType == typeof(byte[]) && (mappingInfo.StoreTypeName?.Equals("vector", StringComparison.OrdinalIgnoreCase) ?? false))
+            {
+                if (_storeTypeMappings.TryGetValue(mappingInfo.StoreTypeName, out var mappings))
+                {
+                    return mappings.First(x => x.ClrType == typeof(ReadOnlyMemory<float>) || x.ClrType == typeof(Memory<float>) || x.ClrType == typeof(float[]));
+                }
+            }
+
+            // Fallback to base behavior for actual collections
+            return base.FindCollectionMapping(mappingInfo, modelType, providerType, elementMapping);
+        }
 
         private RelationalTypeMapping FindRawMapping(RelationalTypeMappingInfo mappingInfo)
         {
