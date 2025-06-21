@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models
 {
@@ -101,9 +103,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models
 
 		public byte[] TypeByteArrayN    { get; set; }
 
+        [MaxLength(384)]
+        [Column(TypeName = "vector")]
+        public float[] TypeVectorFloatArray { get; set; }
 
-		// json not null
-		[Required]
+        [MaxLength(384)]
+        [Column(TypeName = "vector")]
+        public ReadOnlyMemory<float> TypeVectorReadonlyMemory { get; set; }
+
+        [MaxLength(384)]
+        [Column(TypeName = "vector")]
+        public Memory<float> TypeVectorMemory { get; set; }
+
+        // json not null
+        [Required]
 		public List<string>               TypeJsonArray   { get; set; }
 
 		[Required]
@@ -117,6 +130,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models
 
 	    // static method to create a new empty object
 	    public static readonly byte[] EmptyByteArray = Array.Empty<byte>();
+
+        // MariaDb requires a fully filled vector to store in the database. Using [0.0, 0.0, ..., 0.0]
+        // as an empty vector
+        public static readonly float[] EmptyFloatArray = Enumerable.Repeat(0.0f, 384).ToArray();
 	    public static readonly List<string> EmptyJsonArray = new List<string>();
 	    public static readonly Dictionary<string, string> EmptyJsonObject = new Dictionary<string, string>();
 
@@ -128,6 +145,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models
 	            TypeString255 = "",
 	            TypeByteArray    = EmptyByteArray,
 	            TypeByteArray255 = EmptyByteArray,
+                TypeVectorFloatArray = EmptyFloatArray,
+                TypeVectorMemory = EmptyFloatArray,
+                TypeVectorReadonlyMemory = EmptyFloatArray,
 	            TypeJsonArray    = EmptyJsonArray,
 	            TypeJsonObject   = EmptyJsonObject,
 	        };
