@@ -91,6 +91,8 @@ namespace Microsoft.EntityFrameworkCore
             public override bool CommonTableExpressions => ServerVersion.Version >= new Version(10, 2, 1);
             public override bool LimitWithinInAllAnySomeSubquery => false;
             public override bool LimitWithNonConstantValue => false;
+            public override bool Vector => ServerVersion.Version >= new Version(11, 7, 0);
+            public override bool VectorIndex => ServerVersion.Version >= new Version(11, 7, 0);
             public override bool JsonTable => ServerVersion.Version >= new Version(10, 6, 0); // Since there seems to be no implicit LATERAL support for JSON_TABLE, this is pretty useless except for cases where the JSON is provided by a parameter instead of a column of an outer table.
             public override bool JsonValue => true;
             public override bool JsonOverlaps => ServerVersion.Version >= new Version(10, 9, 0);

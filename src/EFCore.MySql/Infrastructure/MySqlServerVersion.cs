@@ -97,6 +97,7 @@ namespace Microsoft.EntityFrameworkCore
             public override bool JsonOverlaps => ServerVersion.Version >= new Version(8, 0, 0);
             public override bool Values => false;
             public override bool ValuesWithRows => ServerVersion.Version >= new Version(8, 0, 19);
+            public override bool Vector => ServerVersion.Version >= new Version(9, 0, 0);
             public override bool WhereSubqueryReferencesOuterQuery => false;
             public override bool FieldReferenceInTableValueConstructor => true;
             public override bool CollationCharacterSetApplicabilityWithFullCollationNameColumn => false;
