@@ -128,10 +128,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 
         public static bool HasPrimitiveCollectionsSupport<TContext>(SharedStoreFixtureBase<TContext> fixture)
             where TContext : DbContext
-        {
-            return AppConfig.ServerVersion.Supports.JsonTable &&
-                   fixture.CreateOptions().GetExtension<MySqlOptionsExtension>().PrimitiveCollectionsSupport;
-        }
+            => HasPrimitiveCollectionsSupport(fixture.CreateOptions());
+
+        public static bool HasPrimitiveCollectionsSupport(DbContextOptions options)
+            => AppConfig.ServerVersion.Supports.JsonTable &&
+               options.GetExtension<MySqlOptionsExtension>().PrimitiveCollectionsSupport;
 
         /// <summary>
         /// Same implementation as EF Core base class, except that it can generate code for Task returning test without a `bool async`
