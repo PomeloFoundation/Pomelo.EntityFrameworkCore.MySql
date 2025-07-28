@@ -16,7 +16,7 @@
       referenced by Microsoft.AspNetCore.Identity.EntityFrameworkCore
       (e.g. "6.0.0.0").
 
-      To achive that, run the following command in your EntityFrameworkCore
+      To achieve that, run the following command in your EntityFrameworkCore
       base directory:
 
       dotnet build "/p:AssemblyVersion=6.0.0.0"

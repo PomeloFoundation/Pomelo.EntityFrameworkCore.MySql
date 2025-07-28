@@ -1,5 +1,8 @@
 <Project>
   <PropertyGroup Label="Common Versions">
+    <!-- We shoud try: [9.0.0,9.1.0-0)
+         `-0` is the smallest possible prerelease version according to SemVer2.
+    -->
     <EFCoreVersion>[9.0.0,9.0.999]</EFCoreVersion>
   </PropertyGroup>
 
