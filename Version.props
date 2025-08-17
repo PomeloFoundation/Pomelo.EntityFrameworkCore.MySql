@@ -11,7 +11,7 @@
       rules.
     -->
     <VersionPrefix>9.0.0</VersionPrefix>
-    <PreReleaseVersionLabel>rc</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel>rtm</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
 
     <!--
@@ -22,7 +22,7 @@
       Core `9.0.0-preview.1`).
       If no EF Core release is explicitly targeted, release version correlation should be assumed.
     -->
-    <TargetedEfCoreVersionPrefix>9.0.0</TargetedEfCoreVersionPrefix> <!-- e.g. `` (empty) or `9.0.0` -->
+    <TargetedEfCoreVersionPrefix></TargetedEfCoreVersionPrefix> <!-- e.g. `` (empty) or `9.0.0` -->
     <TargetedEfCoreVersionPreReleaseLabel></TargetedEfCoreVersionPreReleaseLabel> <!-- e.g. `` (empty) or `preview` -->
     <TargetedEfCoreVersionPreReleaseIteration></TargetedEfCoreVersionPreReleaseIteration> <!-- e.g. `` (empty) or `1` -->
 
