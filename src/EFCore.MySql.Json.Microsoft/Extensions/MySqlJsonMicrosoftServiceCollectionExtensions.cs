@@ -8,6 +8,8 @@ using Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Query.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 
 // ReSharper disable once CheckNamespace
@@ -33,7 +35,9 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAdd<IMethodCallTranslatorPlugin, MySqlJsonMicrosoftMethodCallTranslatorPlugin>()
                 .TryAdd<IMemberTranslatorPlugin, MySqlJsonMicrosoftMemberTranslatorPlugin>()
                 .TryAddProviderSpecificServices(
-                    x => x.TryAddScopedEnumerable<IMySqlJsonPocoTranslator, MySqlJsonMicrosoftPocoTranslator>());
+                    x => x
+                        .TryAddSingleton<IMysqlJsonOptions, DefaultMysqlJsonOptions>()
+                        .TryAddScopedEnumerable<IMySqlJsonPocoTranslator, MySqlJsonMicrosoftPocoTranslator>());
 
             return serviceCollection;
         }

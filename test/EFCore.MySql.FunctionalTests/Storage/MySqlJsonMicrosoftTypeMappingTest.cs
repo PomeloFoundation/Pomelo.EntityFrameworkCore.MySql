@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore.Design.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Json;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Storage.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Xunit;
@@ -27,6 +30,36 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Storage
                          @"{""Price"":99.5,""ShippingAddress"":""Some address 1"",""ShippingDate"":""2019-10-01T00:00:00""}," +
                          @"{""Price"":23.1,""ShippingAddress"":""Some address 2"",""ShippingDate"":""2019-10-10T00:00:00""}" +
                          @"]}'", literal);
+        }
+
+        [Fact]
+        public void GenerateSqlLiteral_returns_json_object_literal_customJsonOptions()
+        {
+            var jsonSerializerOptions = new JsonSerializerOptions();
+            jsonSerializerOptions.Converters.Add(new BoolJsonConverter());
+
+            var literal = CreateMySqlTypeMappingSource(new DefaultMysqlJsonOptions { JsonSerializerOptions = jsonSerializerOptions })
+                .FindMapping(typeof(Customer), "json").GenerateSqlLiteral(SampleCustomer);
+            Assert.Equal(
+                """
+                '{"Name":"Joe","Age":25,"IsVip":0,"Orders":[{"Price":99.5,"ShippingAddress":"Some address 1","ShippingDate":"2019-10-01T00:00:00"},{"Price":23.1,"ShippingAddress":"Some address 2","ShippingDate":"2019-10-10T00:00:00"}]}'
+                """,
+                literal);
+
+        }
+
+        /// <summary>
+        /// POC converter, verify that custom JsonSerializerOptions is being used
+        /// </summary>
+        private sealed class BoolJsonConverter : JsonConverter<bool>
+        {
+            public override bool Read(
+                ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options
+            ) => reader.TokenType is JsonTokenType.Number && reader.GetInt32() == 1;
+
+            public override void Write(
+                Utf8JsonWriter writer, bool value, JsonSerializerOptions options
+            ) => writer.WriteNumberValue(value ? 1 : 0);
         }
 
         [Fact]
@@ -98,14 +131,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Storage
 
         #region Support
 
-        private static readonly MySqlTypeMappingSource Mapper = new MySqlTypeMappingSource(
+        private static MySqlTypeMappingSource CreateMySqlTypeMappingSource(
+            IMysqlJsonOptions mysqlJsonOptions
+        ) => new MySqlTypeMappingSource(
             new TypeMappingSourceDependencies(
                 new ValueConverterSelector(new ValueConverterSelectorDependencies()),
                 new JsonValueReaderWriterSource(new JsonValueReaderWriterSourceDependencies()),
                 Array.Empty<ITypeMappingSourcePlugin>()),
             new RelationalTypeMappingSourceDependencies(
-                new [] {new MySqlJsonMicrosoftTypeMappingSourcePlugin(new MySqlOptions())}),
+                new[] { new MySqlJsonMicrosoftTypeMappingSourcePlugin(new MySqlOptions(), mysqlJsonOptions) }),
             new MySqlOptions()
+        );
+
+        private static readonly MySqlTypeMappingSource Mapper = CreateMySqlTypeMappingSource(
+            new DefaultMysqlJsonOptions()
         );
 
         private static RelationalTypeMapping GetMapping(string storeType) => Mapper.FindMapping(storeType);
