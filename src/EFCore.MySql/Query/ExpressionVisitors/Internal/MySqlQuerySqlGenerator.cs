@@ -58,6 +58,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             { "json", new []{ "json" } },
             { "char", new []{ "char", "varchar", "text", "tinytext", "mediumtext", "longtext" } },
             { "nchar", new []{ "nchar", "nvarchar" } },
+            { "vector", new []{ "vector" } },
         };
 
         private const ulong LimitUpperBound = 18446744073709551610;

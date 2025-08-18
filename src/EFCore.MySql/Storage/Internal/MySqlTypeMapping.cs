@@ -33,6 +33,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             DbType? dbType = null,
             bool unicode = false,
             int? size = null,
+            StoreTypePostfix storeTypePostfix = StoreTypePostfix.None,
             ValueConverter valueConverter = null,
             ValueComparer valueComparer = null,
             JsonValueReaderWriter jsonValueReaderWriter = null)
@@ -44,7 +45,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                         valueComparer,
                         jsonValueReaderWriter: jsonValueReaderWriter),
                     storeType,
-                    StoreTypePostfix.None,
+                    storeTypePostfix,
                     dbType,
                     unicode,
                     size))

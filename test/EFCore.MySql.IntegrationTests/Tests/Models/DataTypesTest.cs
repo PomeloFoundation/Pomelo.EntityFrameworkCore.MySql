@@ -77,20 +77,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
                 Assert.Null(emptyDb.TypeGuidN);
             }
 
-            const sbyte testSbyte = (sbyte) -128;
-	        const byte testByte = (byte) 255;
-	        const char testChar = 'a';
-	        const float testFloat = (float) 1.23456789e38;
+            const sbyte testSbyte = (sbyte)-128;
+            const byte testByte = (byte)255;
+            const char testChar = 'a';
+            const float testFloat = (float)1.23456789e38;
 
-	        var dateTime = new DateTime(2016, 10, 11, 1, 2, 3, 456);
-	        var dateTimeOffset = dateTime + TimeSpan.FromMilliseconds(123.456);
-	        var timeSpan = new TimeSpan(1, 2, 3, 4, 5);
-			const TestEnum testEnum = TestEnum.TestOne;
-			const TestEnumByte testEnumByte = TestEnumByte.TestOne;
-	        var guid = Guid.NewGuid();
+            var dateTime = new DateTime(2016, 10, 11, 1, 2, 3, 456);
+            var dateTimeOffset = dateTime + TimeSpan.FromMilliseconds(123.456);
+            var timeSpan = new TimeSpan(1, 2, 3, 4, 5);
+            const TestEnum testEnum = TestEnum.TestOne;
+            const TestEnumByte testEnumByte = TestEnumByte.TestOne;
+            var guid = Guid.NewGuid();
 
-	        // test each data type with a valid value
-	        // ReSharper disable once ObjectCreationAsStatement
+            // test each data type with a valid value
+            // ReSharper disable once ObjectCreationAsStatement
             DataTypesSimple newValueMem() => new DataTypesSimple
             {
                 // bool
@@ -216,69 +216,74 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
             }
 
             // create test data objects
-	        var emptyMemAsync = new DataTypesSimple();
-	        var emptyMemSync = new DataTypesSimple();
-	        var valueMemAsync = newValueMem();
-	        var valueMemSync = newValueMem();
+            var emptyMemAsync = new DataTypesSimple();
+            var emptyMemSync = new DataTypesSimple();
+            var valueMemAsync = newValueMem();
+            var valueMemSync = newValueMem();
 
-	        // save them to the database
-	        using (var scope = new AppDbScope())
-			{
-				var db = scope.AppDb;
-		        db.DataTypesSimple.Add(emptyMemAsync);
-		        db.DataTypesSimple.Add(valueMemAsync);
-		        await db.SaveChangesAsync();
+            // save them to the database
+            using (var scope = new AppDbScope())
+            {
+                var db = scope.AppDb;
+                db.DataTypesSimple.Add(emptyMemAsync);
+                db.DataTypesSimple.Add(valueMemAsync);
+                await db.SaveChangesAsync();
 
-		        db.DataTypesSimple.Add(emptyMemSync);
-		        db.DataTypesSimple.Add(valueMemSync);
-		        db.SaveChanges();
-	        }
+                db.DataTypesSimple.Add(emptyMemSync);
+                db.DataTypesSimple.Add(valueMemSync);
+                db.SaveChanges();
+            }
 
-	        // load them from the database and run tests
-	        using (var scope = new AppDbScope())
-			{
-				var db = scope.AppDb;
-		        // ReSharper disable once AccessToDisposedClosure
-	            async Task<DataTypesSimple> fromDbAsync(DataTypesSimple dt) => await db.DataTypesSimple.FirstOrDefaultAsync(m => m.Id == dt.Id);
+            // load them from the database and run tests
+            using (var scope = new AppDbScope())
+            {
+                var db = scope.AppDb;
+                // ReSharper disable once AccessToDisposedClosure
+                async Task<DataTypesSimple> fromDbAsync(DataTypesSimple dt) => await db.DataTypesSimple.FirstOrDefaultAsync(m => m.Id == dt.Id);
 
-	            // ReSharper disable once AccessToDisposedClosure
-	            DataTypesSimple fromDbSync(DataTypesSimple dt) => db.DataTypesSimple.FirstOrDefault(m => m.Id == dt.Id);
+                // ReSharper disable once AccessToDisposedClosure
+                DataTypesSimple fromDbSync(DataTypesSimple dt) => db.DataTypesSimple.FirstOrDefault(m => m.Id == dt.Id);
 
-	            testEmpty(await fromDbAsync(emptyMemAsync));
-		        testEmpty(fromDbSync(emptyMemSync));
-		        testValue(await fromDbAsync(valueMemAsync));
-		        testValue(fromDbSync(valueMemSync));
-	        }
+                testEmpty(await fromDbAsync(emptyMemAsync));
+                testEmpty(fromDbSync(emptyMemSync));
+                testValue(await fromDbAsync(valueMemAsync));
+                testValue(fromDbSync(valueMemSync));
+            }
         }
 
-	    [Fact]
-	    public async Task TestDataTypesVariable()
-	    {
-	        void testEmpty(DataTypesVariable valueDb)
-	        {
-	            // string not null
-	            Assert.Equal("", valueDb.TypeString);
-	            Assert.Equal("", valueDb.TypeString255);
-	            // string null
-	            Assert.Null(valueDb.TypeStringN);
-	            Assert.Null(valueDb.TypeString255N);
+        [Fact]
+        public async Task TestDataTypesVariable()
+        {
+            var emptyVector = Enumerable.Repeat(0.0f, 384).ToArray();
+            void testEmpty(DataTypesVariable valueDb)
+            {
+                // string not null
+                Assert.Equal("", valueDb.TypeString);
+                Assert.Equal("", valueDb.TypeString255);
+                // string null
+                Assert.Null(valueDb.TypeStringN);
+                Assert.Null(valueDb.TypeString255N);
 
-	            // binary not null
-	            Assert.Equal(DataTypesVariable.EmptyByteArray, valueDb.TypeByteArray);
-	            Assert.Equal(DataTypesVariable.EmptyByteArray, valueDb.TypeByteArray255);
-	            // binary null
-	            Assert.Null(valueDb.TypeByteArrayN);
-	            Assert.Null(valueDb.TypeByteArray255N);
+                // binary not null
+                Assert.Equal(DataTypesVariable.EmptyByteArray, valueDb.TypeByteArray);
+                Assert.Equal(DataTypesVariable.EmptyByteArray, valueDb.TypeByteArray255);
+                // binary null
+                Assert.Null(valueDb.TypeByteArrayN);
+                Assert.Null(valueDb.TypeByteArray255N);
 
-	            // json not null
-	            Assert.Equal(DataTypesVariable.EmptyJsonArray, valueDb.TypeJsonArray);
-	            Assert.Equal(DataTypesVariable.EmptyJsonObject, valueDb.TypeJsonObject);
-	            // json null
-	            Assert.Null(valueDb.TypeJsonArrayN);
-	            Assert.Null(valueDb.TypeJsonObjectN);
-	        }
+                Assert.Equal(emptyVector, valueDb.TypeVectorFloatArray);
+                Assert.Equal(emptyVector, valueDb.TypeVectorMemory);
+                Assert.Equal(emptyVector, valueDb.TypeVectorReadonlyMemory);
 
-	        var string255 = new string('a', 255);
+                // json not null
+                Assert.Equal(DataTypesVariable.EmptyJsonArray, valueDb.TypeJsonArray);
+                Assert.Equal(DataTypesVariable.EmptyJsonObject, valueDb.TypeJsonObject);
+                // json null
+                Assert.Null(valueDb.TypeJsonArrayN);
+                Assert.Null(valueDb.TypeJsonObjectN);
+            }
+
+            var string255 = new string('a', 255);
             var string10K = new string('a', 10000);
 
             var byte255 = new byte[255];
@@ -287,100 +292,110 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
             {
                 if (i < 255)
                 {
-                    byte255[i] = (byte) 'a';
+                    byte255[i] = (byte)'a';
                 }
 
-                byte10K[i] = (byte) 'a';
+                byte10K[i] = (byte)'a';
             }
 
-            var jsonArray = new List<string> {"test"};
-            var jsonObject = new Dictionary<string, string> {{"test", "test"}};
+            var jsonArray = new List<string> { "test" };
+            var jsonObject = new Dictionary<string, string> { { "test", "test" } };
+            var vector = Enumerable.Range(0, 384).Select(x => x / 3.0f).ToArray();
 
             // test each data type with a valid value
-	        DataTypesVariable newValueMem() => new DataTypesVariable
-	        {
-	            // string not null
-	            TypeString = string10K,
-	            TypeString255 = string255, // should be truncated by DBMS
-	            // string null
-	            TypeStringN = string10K,
-	            TypeString255N = string255, // should be truncated by DBMS
+            DataTypesVariable newValueMem() => new DataTypesVariable
+            {
+                // string not null
+                TypeString = string10K,
+                TypeString255 = string255, // should be truncated by DBMS
+                                           // string null
+                TypeStringN = string10K,
+                TypeString255N = string255, // should be truncated by DBMS
 
-	            // binary not null
-	            TypeByteArray = byte10K,
-	            TypeByteArray255 = byte255, // should be truncated by DBMS
-	            // binary null
-	            TypeByteArrayN = byte10K,
-	            TypeByteArray255N = byte255, // should be truncated by DBMS
+                // binary not null
+                TypeByteArray = byte10K,
+                TypeByteArray255 = byte255, // should be truncated by DBMS
+                                            // binary null
+                TypeByteArrayN = byte10K,
+                TypeByteArray255N = byte255, // should be truncated by DBMS
 
-	            // json not null
-	            TypeJsonArray = jsonArray,
-	            TypeJsonObject = jsonObject,
-	            // json null
-	            TypeJsonArrayN = jsonArray,
-	            TypeJsonObjectN = jsonObject,
-	        };
+                // vector
+                TypeVectorFloatArray = vector,
+                TypeVectorMemory = vector,
+                TypeVectorReadonlyMemory = vector,
 
-	        void testValue(DataTypesVariable valueDb)
-	        {
-	            // string not null
-	            Assert.Equal(string10K, valueDb.TypeString);
-	            Assert.Equal(string255, valueDb.TypeString255);
-	            // string null
-	            Assert.Equal(string10K, valueDb.TypeStringN);
-	            Assert.Equal(string255, valueDb.TypeString255N);
+                // json not null
+                TypeJsonArray = jsonArray,
+                TypeJsonObject = jsonObject,
+                // json null
+                TypeJsonArrayN = jsonArray,
+                TypeJsonObjectN = jsonObject,
+            };
 
-	            // binary not null
-	            Assert.Equal(byte10K, valueDb.TypeByteArray);
-	            Assert.Equal(byte255, valueDb.TypeByteArray255);
-	            // binary null
-	            Assert.Equal(byte10K, valueDb.TypeByteArrayN);
-	            Assert.Equal(byte255, valueDb.TypeByteArray255N);
+            void testValue(DataTypesVariable valueDb)
+            {
+                // string not null
+                Assert.Equal(string10K, valueDb.TypeString);
+                Assert.Equal(string255, valueDb.TypeString255);
+                // string null
+                Assert.Equal(string10K, valueDb.TypeStringN);
+                Assert.Equal(string255, valueDb.TypeString255N);
 
-	            // json not null
-	            Assert.Equal(jsonArray, valueDb.TypeJsonArray);
-	            Assert.Equal(jsonObject, valueDb.TypeJsonObject);
-	            // json null
-	            Assert.Equal(jsonArray, valueDb.TypeJsonArrayN);
-	            Assert.Equal(jsonObject, valueDb.TypeJsonObjectN);
-	        }
+                // binary not null
+                Assert.Equal(byte10K, valueDb.TypeByteArray);
+                Assert.Equal(byte255, valueDb.TypeByteArray255);
+                // binary null
+                Assert.Equal(byte10K, valueDb.TypeByteArrayN);
+                Assert.Equal(byte255, valueDb.TypeByteArray255N);
 
-	        // create test data objects
-		    var emptyMemAsync = DataTypesVariable.CreateEmpty();
-		    var emptyMemSync = DataTypesVariable.CreateEmpty();
-		    var valueMemAsync = newValueMem();
-		    var valueMemSync = newValueMem();
+                Assert.Equal(vector, valueDb.TypeVectorFloatArray);
+                Assert.Equal(vector, valueDb.TypeVectorMemory);
+                Assert.Equal(vector, valueDb.TypeVectorReadonlyMemory);
 
-		    // save them to the database
-		    using (var scope = new AppDbScope())
-			{
-				var db = scope.AppDb;
-			    db.DataTypesVariable.Add(emptyMemAsync);
-			    db.DataTypesVariable.Add(valueMemAsync);
-			    await db.SaveChangesAsync();
+                // json not null
+                Assert.Equal(jsonArray, valueDb.TypeJsonArray);
+                Assert.Equal(jsonObject, valueDb.TypeJsonObject);
+                // json null
+                Assert.Equal(jsonArray, valueDb.TypeJsonArrayN);
+                Assert.Equal(jsonObject, valueDb.TypeJsonObjectN);
+            }
 
-			    db.DataTypesVariable.Add(emptyMemSync);
-			    db.DataTypesVariable.Add(valueMemSync);
-			    db.SaveChanges();
-		    }
+            // create test data objects
+            var emptyMemAsync = DataTypesVariable.CreateEmpty();
+            var emptyMemSync = DataTypesVariable.CreateEmpty();
+            var valueMemAsync = newValueMem();
+            var valueMemSync = newValueMem();
 
-		    // load them from the database and run tests
-		    using (var scope = new AppDbScope())
-			{
-				var db = scope.AppDb;
-			    // ReSharper disable once AccessToDisposedClosure
-		        async Task<DataTypesVariable> fromDbAsync(DataTypesVariable dt) => await db.DataTypesVariable.FirstOrDefaultAsync(m => m.Id == dt.Id);
+            // save them to the database
+            using (var scope = new AppDbScope())
+            {
+                var db = scope.AppDb;
+                db.DataTypesVariable.Add(emptyMemAsync);
+                db.DataTypesVariable.Add(valueMemAsync);
+                await db.SaveChangesAsync();
 
-		        // ReSharper disable once AccessToDisposedClosure
-		        DataTypesVariable fromDbSync(DataTypesVariable dt) => db.DataTypesVariable.FirstOrDefault(m => m.Id == dt.Id);
+                db.DataTypesVariable.Add(emptyMemSync);
+                db.DataTypesVariable.Add(valueMemSync);
+                db.SaveChanges();
+            }
 
-		        testEmpty(await fromDbAsync(emptyMemAsync));
-			    testEmpty(fromDbSync(emptyMemSync));
-			    testValue(await fromDbAsync(valueMemAsync));
-			    testValue(fromDbSync(valueMemSync));
-		    }
+            // load them from the database and run tests
+            using (var scope = new AppDbScope())
+            {
+                var db = scope.AppDb;
+                // ReSharper disable once AccessToDisposedClosure
+                async Task<DataTypesVariable> fromDbAsync(DataTypesVariable dt) => await db.DataTypesVariable.FirstOrDefaultAsync(m => m.Id == dt.Id);
 
-	    }
+                // ReSharper disable once AccessToDisposedClosure
+                DataTypesVariable fromDbSync(DataTypesVariable dt) => db.DataTypesVariable.FirstOrDefault(m => m.Id == dt.Id);
+
+                testEmpty(await fromDbAsync(emptyMemAsync));
+                testEmpty(fromDbSync(emptyMemSync));
+                testValue(await fromDbAsync(valueMemAsync));
+                testValue(fromDbSync(valueMemSync));
+            }
+
+        }
 
     }
 
