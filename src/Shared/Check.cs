@@ -1,4 +1,4 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -38,7 +38,7 @@ namespace Microsoft.EntityFrameworkCore.Utilities
             {
                 NotEmpty(parameterName, nameof(parameterName));
 
-                throw new ArgumentException(AbstractionsStrings.CollectionArgumentIsEmpty(parameterName));
+                throw new ArgumentException(AbstractionsStrings.CollectionArgumentIsEmpty);
             }
 
             return value;
@@ -54,7 +54,7 @@ namespace Microsoft.EntityFrameworkCore.Utilities
             }
             else if (value.Trim().Length == 0)
             {
-                e = new ArgumentException(AbstractionsStrings.ArgumentIsEmpty(parameterName));
+                e = new ArgumentException(AbstractionsStrings.ArgumentIsEmpty);
             }
 
             if (e != null)
@@ -74,7 +74,7 @@ namespace Microsoft.EntityFrameworkCore.Utilities
             {
                 NotEmpty(parameterName, nameof(parameterName));
 
-                throw new ArgumentException(AbstractionsStrings.ArgumentIsEmpty(parameterName));
+                throw new ArgumentException(AbstractionsStrings.ArgumentIsEmpty);
             }
 
             return value;
@@ -105,7 +105,7 @@ namespace Microsoft.EntityFrameworkCore.Utilities
             {
                 NotEmpty(parameterName, nameof(parameterName));
 
-                throw new ArgumentException(AbstractionsStrings.CollectionArgumentHasEmptyElements(parameterName));
+                throw new ArgumentException(AbstractionsStrings.CollectionArgumentHasEmptyElements);
             }
 
             return value;

@@ -1,8 +1,9 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
@@ -25,6 +26,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             _options = options;
         }
 
+        [Obsolete]
         public override Expression Optimize(
             Expression queryExpression,
             IReadOnlyDictionary<string, object?> parametersValues,
@@ -55,21 +57,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
             // Run the compatibility checks as late in the query pipeline (before the actual SQL translation happens) as reasonable.
             queryExpression = new MySqlCompatibilityExpressionVisitor(_options).Visit(queryExpression);
-
-            return queryExpression;
-        }
-
-        /// <inheritdoc />
-        protected override Expression ProcessSqlNullability(
-            Expression queryExpression,
-            IReadOnlyDictionary<string, object?> parametersValues,
-            out bool canCache)
-        {
-            Check.NotNull(queryExpression, nameof(queryExpression));
-            Check.NotNull(parametersValues, nameof(parametersValues));
-
-            queryExpression = new MySqlSqlNullabilityProcessor(Dependencies, Parameters)
-                .Process(queryExpression, parametersValues, out canCache);
 
             return queryExpression;
         }

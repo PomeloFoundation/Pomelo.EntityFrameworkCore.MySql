@@ -10,19 +10,19 @@
       We also used alpha/beta/silver release types in the past, but they mix poorly with the ones above when orderend according to SemVer2
       rules.
     -->
-    <VersionPrefix>9.0.1</VersionPrefix>
+    <VersionPrefix>10.0.1</VersionPrefix>
     <PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
 
     <!--
-      A string like `.efcore.9.0.0` or `.efcore.9.0.0.preview.1` can be added to the version suffix, to indicate that this release targets
+      A string like `.efcore.10.0.0` or `.efcore.10.0.0.preview.1` can be added to the version suffix, to indicate that this release targets
       a specific EF Core release.
-      This can be useful to distinguish between a release that correlates with a EF Core release (e.g. Pomelo `9.0.0-preview.1` implicitly
-      targets EF Core `9.0.0-preview.1`) and one that doesn't (e.g. Pomelo `9.0.0-preview.2.efcore.9.0.0.preview.1` explicitly targets EF
-      Core `9.0.0-preview.1`).
+      This can be useful to distinguish between a release that correlates with a EF Core release (e.g. Pomelo `10.0.0-preview.1` implicitly
+      targets EF Core `10.0.0-preview.1`) and one that doesn't (e.g. Pomelo `10.0.0-preview.2.efcore.10.0.0.preview.1` explicitly targets EF
+      Core `10.0.0-preview.1`).
       If no EF Core release is explicitly targeted, release version correlation should be assumed.
     -->
-    <TargetedEfCoreVersionPrefix></TargetedEfCoreVersionPrefix> <!-- e.g. `` (empty) or `9.0.0` -->
+    <TargetedEfCoreVersionPrefix></TargetedEfCoreVersionPrefix> <!-- e.g. `` (empty) or `10.0.0` -->
     <TargetedEfCoreVersionPreReleaseLabel></TargetedEfCoreVersionPreReleaseLabel> <!-- e.g. `` (empty) or `preview` -->
     <TargetedEfCoreVersionPreReleaseIteration></TargetedEfCoreVersionPreReleaseIteration> <!-- e.g. `` (empty) or `1` -->
 
