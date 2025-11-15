@@ -33,6 +33,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Scaffolding;
 // TODO: Add more Pomelo specific cases.
 public class CompiledModelMySqlTest : CompiledModelRelationalTestBase
 {
+    public CompiledModelMySqlTest(NonSharedFixture fixture)
+        : base(fixture)
+    {
+    }
+
     protected override void BuildBigModel(ModelBuilder modelBuilder, bool jsonColumns)
     {
         base.BuildBigModel(modelBuilder, jsonColumns);

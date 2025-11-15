@@ -29,15 +29,12 @@ jobs:
       fail-fast: false
       matrix:
         dbVersion:
-          - 8.4.3-mysql
-          - 8.0.40-mysql
-          - 11.6.2-mariadb
-          - 11.5.2-mariadb
-          - 11.4.4-mariadb
-          - 11.3.2-mariadb
-          - 10.11.10-mariadb
-          - 10.6.20-mariadb
-          - 10.5.27-mariadb
+          - 8.4.7-mysql
+          - 8.0.44-mysql
+          - 11.8.5-mariadb
+          - 11.4.9-mariadb
+          - 10.11.15-mariadb
+          - 10.6.24-mariadb
         os:
           - ubuntu-latest
           - windows-latest

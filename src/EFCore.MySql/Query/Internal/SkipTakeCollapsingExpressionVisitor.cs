@@ -15,33 +15,26 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
     {
         private readonly ISqlExpressionFactory _sqlExpressionFactory;
 
-        private IReadOnlyDictionary<string, object?> _parameterValues;
-        private bool _canCache;
+        private ParametersCacheDecorator _parametersDecorator;
 
         public SkipTakeCollapsingExpressionVisitor(ISqlExpressionFactory sqlExpressionFactory)
         {
             Check.NotNull(sqlExpressionFactory, nameof(sqlExpressionFactory));
 
             _sqlExpressionFactory = sqlExpressionFactory;
-            _parameterValues = null!;
+            _parametersDecorator = null!;
         }
 
         public virtual Expression Process(
             Expression selectExpression,
-            IReadOnlyDictionary<string, object?> parametersValues,
-            out bool canCache)
+            ParametersCacheDecorator parametersDecorator)
         {
             Check.NotNull(selectExpression, nameof(selectExpression));
-            Check.NotNull(parametersValues, nameof(parametersValues));
+            Check.NotNull(parametersDecorator, nameof(parametersDecorator));
 
-            _parameterValues = parametersValues;
-            _canCache = true;
+            _parametersDecorator = parametersDecorator;
 
-            var result = Visit(selectExpression);
-
-            canCache = _canCache;
-
-            return result;
+            return Visit(selectExpression);
         }
 
         protected override Expression VisitExtension(Expression extensionExpression)
@@ -74,8 +67,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         when constant.Value is int intValue:
                             return intValue == 0;
                         case SqlParameterExpression parameter:
-                            _canCache = false;
-                            return _parameterValues[parameter.Name] is int value && value == 0;
+                            var parameterValues = _parametersDecorator.GetAndDisableCaching();
+                            return parameterValues[parameter.Name] is int value && value == 0;
 
                         default:
                             return false;

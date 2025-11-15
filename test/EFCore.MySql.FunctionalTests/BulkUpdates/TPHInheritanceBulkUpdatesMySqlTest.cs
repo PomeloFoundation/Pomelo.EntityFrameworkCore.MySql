@@ -161,8 +161,10 @@ WHERE EXISTS (
 
         AssertExecuteUpdateSql(
 """
+@p='Monovia' (Size = 4000)
+
 UPDATE `Countries` AS `c`
-SET `c`.`Name` = 'Monovia'
+SET `c`.`Name` = @p
 WHERE (
     SELECT COUNT(*)
     FROM `Animals` AS `a`
@@ -176,8 +178,10 @@ WHERE (
 
         AssertExecuteUpdateSql(
 """
+@p='Monovia' (Size = 4000)
+
 UPDATE `Countries` AS `c`
-SET `c`.`Name` = 'Monovia'
+SET `c`.`Name` = @p
 WHERE (
     SELECT COUNT(*)
     FROM `Animals` AS `a`
@@ -198,8 +202,10 @@ WHERE (
 
         AssertExecuteUpdateSql(
 """
+@p='Animal' (Size = 4000)
+
 UPDATE `Animals` AS `a`
-SET `a`.`Name` = 'Animal'
+SET `a`.`Name` = @p
 WHERE `a`.`Name` = 'Great spotted kiwi'
 """);
     }
@@ -210,8 +216,10 @@ WHERE `a`.`Name` = 'Great spotted kiwi'
 
         AssertExecuteUpdateSql(
 """
+@p='NewBird' (Size = 4000)
+
 UPDATE `Animals` AS `a`
-SET `a`.`Name` = 'NewBird'
+SET `a`.`Name` = @p
 WHERE `a`.`Discriminator` = 'Kiwi'
 """);
     }
@@ -222,8 +230,10 @@ WHERE `a`.`Discriminator` = 'Kiwi'
 
         AssertExecuteUpdateSql(
 """
+@p='SomeOtherKiwi' (Size = 4000)
+
 UPDATE `Animals` AS `a`
-SET `a`.`Name` = 'SomeOtherKiwi'
+SET `a`.`Name` = @p
 WHERE `a`.`Discriminator` = 'Kiwi'
 """);
     }
@@ -234,8 +244,10 @@ WHERE `a`.`Discriminator` = 'Kiwi'
 
         AssertExecuteUpdateSql(
 """
+@p='0'
+
 UPDATE `Animals` AS `a`
-SET `a`.`FoundOn` = 0
+SET `a`.`FoundOn` = @p
 WHERE `a`.`Discriminator` = 'Kiwi'
 """);
     }
@@ -246,9 +258,12 @@ WHERE `a`.`Discriminator` = 'Kiwi'
 
         AssertExecuteUpdateSql(
 """
+@p='Kiwi' (Size = 4000)
+@p0='0'
+
 UPDATE `Animals` AS `a`
-SET `a`.`FoundOn` = 0,
-    `a`.`Name` = 'Kiwi'
+SET `a`.`Name` = @p,
+    `a`.`FoundOn` = @p0
 WHERE `a`.`Discriminator` = 'Kiwi'
 """);
     }
@@ -259,8 +274,10 @@ WHERE `a`.`Discriminator` = 'Kiwi'
 
         AssertExecuteUpdateSql(
 """
+@p='0'
+
 UPDATE `Drinks` AS `d`
-SET `d`.`SugarGrams` = 0
+SET `d`.`SugarGrams` = @p
 WHERE `d`.`Discriminator` = 1
 """);
     }
@@ -271,8 +288,10 @@ WHERE `d`.`Discriminator` = 1
 
         AssertExecuteUpdateSql(
 """
+@p='0'
+
 UPDATE `Drinks` AS `d`
-SET `d`.`SugarGrams` = 0
+SET `d`.`SugarGrams` = @p
 WHERE `d`.`Discriminator` = 1
 """);
     }

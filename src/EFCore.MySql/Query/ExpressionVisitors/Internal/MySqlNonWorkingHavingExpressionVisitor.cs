@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Pomelo Foundation. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
@@ -138,7 +139,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 if (!_containsAggregateFunctionExpressionVisitor.ProcessUntilSelect(havingExpression))
                 {
                     var subquery = selectExpression.Clone();
-                    subquery.ReplaceProjection([]);
+                    subquery.ReplaceProjection(Array.Empty<Expression>());
 
                     var alias = "having";
                     var havingProjectionExpression = new ProjectionExpression(havingExpression, alias);
