@@ -249,12 +249,30 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             }
         }
 
+        // Single-argument aggregates: generate Name(arg) to match historical SQL shape.
+        // EF Core 9.x base now generates Name((arg)); we keep the old format for backward compatibility.
+        private static readonly HashSet<string> SingleArgAggregateFunctions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "AVG", "MAX", "MIN", "SUM", "COUNT", "BIT_AND", "BIT_OR", "BIT_XOR",
+            "STD", "STDDEV", "STDDEV_POP", "STDDEV_SAMP", "VAR_POP", "VAR_SAMP", "VARIANCE",
+        };
+
         protected override Expression VisitSqlFunction(SqlFunctionExpression sqlFunctionExpression)
         {
             if (sqlFunctionExpression.Name.StartsWith("@@", StringComparison.Ordinal))
             {
                 Sql.Append(sqlFunctionExpression.Name);
 
+                return sqlFunctionExpression;
+            }
+
+            if (SingleArgAggregateFunctions.Contains(sqlFunctionExpression.Name)
+                && sqlFunctionExpression.Arguments.Count == 1)
+            {
+                Sql.Append(sqlFunctionExpression.Name);
+                Sql.Append("(");
+                Visit(sqlFunctionExpression.Arguments[0]);
+                Sql.Append(")");
                 return sqlFunctionExpression;
             }
 

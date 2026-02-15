@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -84,7 +84,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             using (var context = CreateContext())
             {
-                var artistNames = new[]
+                // Use List<string> so Contains binds to Enumerable.Contains; array can bind to
+                // MemoryExtensions.Contains(ReadOnlySpan) and break the expression interpreter.
+                var artistNames = new List<string>
                 {
                     @"Back\slasher's",
                     @"John's Chill Box"
