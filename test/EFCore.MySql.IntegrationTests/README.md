@@ -3,6 +3,8 @@ Integration and Performance Tests
 
 **Configuring the Database**
 
+The integration tests are intended to be run against **MySQL 8.0+** or an equivalent **MariaDB** version (see the main README for tested versions).
+
 1. Configure your MySQL database by opening the `config.json.example` file, specifying the connection string and saving the changed file as `config.json`.
 2. Run the `scripts/rebuild.ps1` PowerShell script on Linux or Windows to rebuild all migrations (for installing PowerShell, see [Install PowerShell on Windows, Linux, and macOS](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell)). Any time you make changes to the database models, run the rebuild script again.
 

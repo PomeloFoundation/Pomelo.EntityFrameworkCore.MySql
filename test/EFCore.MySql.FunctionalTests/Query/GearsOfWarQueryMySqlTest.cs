@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -26,7 +27,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             var dto = MySqlTestHelpers.GetExpectedValue(new DateTimeOffset(599898024001234567, new TimeSpan(1, 30, 0)));
             var start = dto.AddDays(-1);
             var end = dto.AddDays(1);
-            var dates = new[] { dto };
+            // Use List to avoid ReadOnlySpan in expression tree (same as EscapesMySqlTestBase).
+            var dates = new List<DateTimeOffset> { dto };
 
             return AssertQuery(
                 async,
