@@ -1,5 +1,10 @@
 # Pomelo.EntityFrameworkCore.MySql
 
+> **Fork attivo (linea EF Core 10 / .NET 10)**  
+> Repository: [omarbaruzzo/Pomelo.EntityFrameworkCore.MySql](https://github.com/omarbaruzzo/Pomelo.EntityFrameworkCore.MySql)  
+> Upstream: [PomeloFoundation/Pomelo.EntityFrameworkCore.MySql](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql) (ultima linea ufficiale EF 9.x).  
+> Questo fork prosegue la manutenzione per **EF Core 10** dove il provider NuGet ufficiale non è ancora allineato.
+
 [![Build status](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/actions/workflows/build.yml)
 [![Stable release feed for official builds](https://img.shields.io/nuget/v/Pomelo.EntityFrameworkCore.MySql.svg?style=flat-square&label=Stable)](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/) [![Prerelease feed for official builds](https://img.shields.io/nuget/vpre/Pomelo.EntityFrameworkCore.MySql.svg?style=flat-square&label=Prerelease)](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/)
 [![Nightly build feed for release builds](https://img.shields.io/myget/pomelo/vpre/Pomelo.EntityFrameworkCore.MySql.svg?label=Nightly)](https://www.myget.org/feed/pomelo/package/nuget/Pomelo.EntityFrameworkCore.MySql)
@@ -15,6 +20,7 @@ The following versions of MySqlConnector, EF Core, .NET (Core), .NET Standard an
 
 Release | Branch                                                                                           | MySqlConnector     | EF Core | .NET (Core) | .NET Standard | .NET Framework
 --- |--------------------------------------------------------------------------------------------------|--------------------|:-------:|:-----------:| :---: | :---:
+**10.0.0** (fork) | [main](https://github.com/omarbaruzzo/Pomelo.EntityFrameworkCore.MySql/tree/main) | >= 2.5.0           | **10.0.x** | **10.0+** | - | -
 [9.0.0](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/9.0.0) | [main](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/main)       | >= 2.4.0           |  9.0.x  |    8.0+     | - | -
 [8.0.3](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/8.0.3) | [8.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/8.0-maint) | >= 2.3.5           |  8.0.x  |    8.0+     | - | -
 [7.0.0](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/7.0.0) | [7.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/7.0-maint) | >= 2.2.5           |  7.0.x  |    6.0+     | - | -
@@ -49,6 +55,7 @@ Currently tested versions are:
 
 Milestone | Status   | Release Date
 ----------|----------|-------------
+**10.0.0** (fork, EF Core 10) | Released | 2026-05-28
 9.0.0 | Released | 2025-08-17
 8.0.3 | Released | 2025-03-02
 7.0.0 | Released | 2023-01-16

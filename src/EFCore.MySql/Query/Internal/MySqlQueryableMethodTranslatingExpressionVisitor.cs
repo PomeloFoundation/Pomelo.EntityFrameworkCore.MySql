@@ -80,6 +80,7 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
                        && IsJsonEachKeyColumn(subquery, projectedColumn)));
     }
 
+    [Obsolete("EF Core 10: base overload is obsolete.")]
     protected override bool IsValidSelectExpressionForExecuteDelete(
         SelectExpression selectExpression,
         StructuralTypeShaperExpression shaper,

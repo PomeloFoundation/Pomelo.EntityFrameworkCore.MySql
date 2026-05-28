@@ -6,9 +6,9 @@
     <StrongNameKeyId>Pomelo.EntityFrameworkCore.MySql</StrongNameKeyId>
     <PackageTags>pomelo;mysql;mariadb;Entity Framework Core;entity-framework-core;ef;efcore;ef core;orm;sql</PackageTags>
     <Product>Pomelo.EntityFrameworkCore.MySql</Product>
-    <Authors>Laurents Meyer, Caleb Lloyd, Yuko Zheng</Authors>
-    <Company>Pomelo Foundation</Company>
-    <Copyright>Copyright $([System.DateTime]::Now.Year) © Pomelo Foundation</Copyright>
+    <Authors>Omar Baruzzo; Laurents Meyer; Caleb Lloyd; Yuko Zheng</Authors>
+    <Company>Omar Baruzzo (fork maintainer)</Company>
+    <Copyright>Copyright $([System.DateTime]::Now.Year) © Pomelo Foundation; fork maintained by Omar Baruzzo</Copyright>
     <PackageIconUrl>https://avatars3.githubusercontent.com/u/19828814</PackageIconUrl>
     <PackageIcon>icon.png</PackageIcon>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -16,9 +16,9 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/omarbaruzzo/Pomelo.EntityFrameworkCore.MySql</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql</RepositoryUrl>
+    <RepositoryUrl>https://github.com/omarbaruzzo/Pomelo.EntityFrameworkCore.MySql</RepositoryUrl>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -26,10 +26,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PomeloTargetFramework>net8.0</PomeloTargetFramework>
-    <PomeloTestTargetFramework>net9.0</PomeloTestTargetFramework>
-    <EfCoreTargetFramework>net8.0</EfCoreTargetFramework>
-    <EfCoreTestTargetFramework>net9.0</EfCoreTestTargetFramework>
+    <PomeloTargetFramework>net10.0</PomeloTargetFramework>
+    <PomeloTestTargetFramework>net10.0</PomeloTestTargetFramework>
+    <EfCoreTargetFramework>net10.0</EfCoreTargetFramework>
+    <EfCoreTestTargetFramework>net10.0</EfCoreTestTargetFramework>
     <MySqlConnectorTargetFramework>net8.0</MySqlConnectorTargetFramework>
     <MySqlConnectorDependencyInjectionTargetFramework>net8.0</MySqlConnectorDependencyInjectionTargetFramework>
   </PropertyGroup>
