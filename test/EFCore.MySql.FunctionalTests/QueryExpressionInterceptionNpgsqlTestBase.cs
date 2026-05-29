@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Storage.Internal;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests;
 
 public abstract class QueryExpressionInterceptionMySqlTestBase : QueryExpressionInterceptionTestBase
 {

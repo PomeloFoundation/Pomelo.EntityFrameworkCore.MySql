@@ -5,13 +5,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models;
+using Microting.EntityFrameworkCore.MySql.IntegrationTests.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Tests;
 
-namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands
+namespace Microting.EntityFrameworkCore.MySql.IntegrationTests.Commands
 {
 
     public class TestPerformanceCommand : ITestPerformanceCommand
@@ -116,7 +116,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands
                 }
             }
 
-#pragma warning disable EF1003 // ExecuteSqlRaw with concatenated table name (intentional in this perf test).
+#pragma warning disable EF1003
             _db.Database.ExecuteSqlRaw("DELETE FROM `" + _db.Model.FindEntityType(typeof(Blog)).GetTableName() + "`");
 #pragma warning restore EF1003
 

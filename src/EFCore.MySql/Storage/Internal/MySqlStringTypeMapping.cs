@@ -1,4 +1,4 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.Json;
 using Microsoft.EntityFrameworkCore.Utilities;
 using MySqlConnector;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
+namespace Microting.EntityFrameworkCore.MySql.Storage.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used

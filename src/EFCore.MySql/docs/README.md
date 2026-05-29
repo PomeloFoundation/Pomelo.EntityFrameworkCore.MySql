@@ -1,8 +1,12 @@
 ﻿## About
 
-_Pomelo.EntityFrameworkCore.MySql_ is the Entity Framework Core (EF Core) provider for [MySQL](https://www.mysql.com), [MariaDB](https://mariadb.org), [Amazon Aurora](https://aws.amazon.com/rds/aurora), [Azure Database for MySQL](https://azure.microsoft.com/en-us/services/mysql) and other MySQL-compatible databases.
+_Microting.EntityFrameworkCore.MySql_ is the Entity Framework Core (EF Core) provider for [MySQL](https://www.mysql.com), [MariaDB](https://mariadb.org), [Amazon Aurora](https://aws.amazon.com/rds/aurora), [Azure Database for MySQL](https://azure.microsoft.com/en-us/services/mysql) and other MySQL-compatible databases.
 
 It is build on top of [MySqlConnector](https://github.com/mysql-net/MySqlConnector).
+
+## DISCLAIMER!!!
+This is a fast moving version of [Microting.EntityFrameworkCore.MySql](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql) intented to follow .net release cycle closely!
+There are no intentions for this package to implement new features. Feature requests needs to be directed at the originating [Github repository](https://github.com/microting/Microting.EntityFrameworkCore.MySql)
 
 ## How to Use
 
@@ -43,18 +47,20 @@ public class Startup
 ## Related Packages
 
 * JSON support
-  * [Pomelo.EntityFrameworkCore.MySql.Json.Microsoft](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql.Json.Microsoft)
-  * [Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft)
+  * [Microting.EntityFrameworkCore.MySql.Json.Microsoft](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql.Json.Microsoft)
+  * [Microting.EntityFrameworkCore.MySql.Json.Newtonsoft](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql.Json.Newtonsoft)
 * Spatial support
-  * [Pomelo.EntityFrameworkCore.MySql.NetTopologySuite](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql.NetTopologySuite)
+  * [Microting.EntityFrameworkCore.MySql.NetTopologySuite](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql.NetTopologySuite)
 * Other Packages
   * [MySqlConnector](https://www.nuget.org/packages/MySqlConnector)
   * [Microsoft.EntityFrameworkCore](https://www.nuget.org/packages/Microsoft.EntityFrameworkCore)
 
 ## License
 
-_Pomelo.EntityFrameworkCore.MySql_ is released as open source under the [MIT license](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/blob/main/LICENSE).
+_Microting.EntityFrameworkCore.MySql_ is released as open source under the [MIT license](https://github.com/microting/Microting.EntityFrameworkCore.MySql/blob/main/LICENSE).
 
 ## Feedback
 
-Bug reports and contributions are welcome at our [GitHub repository](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql).
+Checkout the originating [Github repository](https://github.com/microting/Microting.EntityFrameworkCore.MySql) before filing any new issues.
+
+Bug reports and contributions are welcome at our [GitHub repository](https://github.com/microting/Microting.EntityFrameworkCore.MySql).

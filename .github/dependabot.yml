@@ -1,0 +1,30 @@
+version: 2
+updates:
+- package-ecosystem: nuget
+  directory: "/src/EFCore.MySql"
+  schedule:
+    interval: daily
+- package-ecosystem: nuget
+  directory: "/src/EFCore.MySql.Microsoft"
+  schedule:
+    interval: daily
+- package-ecosystem: nuget
+  directory: "/src/EFCore.MySql.Newtonsoft"
+  schedule:
+    interval: daily
+- package-ecosystem: nuget
+  directory: "/src/EFCore.MySql.NTS"
+  schedule:
+    interval: daily
+- package-ecosystem: nuget
+  directory: "/test/EFCore.MySql.FunctionalTests"
+  schedule:
+    interval: daily
+- package-ecosystem: nuget
+  directory: "/test/EFCore.MySql.IntegrationTests"
+  schedule:
+    interval: daily
+- package-ecosystem: nuget
+  directory: "/test/EFCore.MySql.Tests"
+  schedule:
+    interval: daily

@@ -1,12 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
-public class AdHocNavigationsQueryMySqlTest(NonSharedFixture fixture) : AdHocNavigationsQueryRelationalTestBase(fixture)
+public class AdHocNavigationsQueryMySqlTest : AdHocNavigationsQueryRelationalTestBase
 {
+    public AdHocNavigationsQueryMySqlTest(NonSharedFixture fixture)
+        : base(fixture)
+    {
+    }
+
     protected override ITestStoreFactory TestStoreFactory
         => MySqlTestStoreFactory.Instance;
 }

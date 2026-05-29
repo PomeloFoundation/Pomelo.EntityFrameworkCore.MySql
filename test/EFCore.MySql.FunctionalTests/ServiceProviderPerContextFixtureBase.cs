@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
 {
     public abstract class ServiceProviderPerContextFixtureBase<TContext> : ServiceProviderFixtureBase, IAsyncLifetime
         where TContext : DbContext

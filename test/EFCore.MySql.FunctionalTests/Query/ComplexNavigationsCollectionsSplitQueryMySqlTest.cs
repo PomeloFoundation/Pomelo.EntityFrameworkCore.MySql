@@ -1,11 +1,11 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class ComplexNavigationsCollectionsSplitQueryMySqlTest : ComplexNavigationsCollectionsSplitQueryRelationalTestBase<ComplexNavigationsQueryMySqlFixture>
     {
@@ -1151,7 +1151,7 @@ ORDER BY `l`.`Id`, `l0`.`Id`
             await base.Lift_projection_mapping_when_pushing_down_subquery(async);
 
         AssertSql(
-            """
+"""
 @p='25'
 
 SELECT `l1`.`Id`, `l3`.`Id`, `l3`.`c`
@@ -1170,8 +1170,8 @@ LEFT JOIN (
 ) AS `l3` ON `l1`.`Id` = `l3`.`OneToMany_Required_Inverse2Id`
 ORDER BY `l1`.`Id`
 """,
-            //
-            """
+                //
+                """
 @p='25'
 
 SELECT `l4`.`Id`, `l5`.`Id`
@@ -1424,7 +1424,7 @@ ORDER BY `l12`.`Id`, `l`.`Id`, `l0`.`Id`, `l1`.`Id`, `l2`.`Id`, `s`.`Id`, `s`.`I
             await base.Take_Select_collection_Take(async);
 
         AssertSql(
-            """
+"""
 @p='1'
 
 SELECT `l`.`Id`, `l`.`Name`
@@ -1432,8 +1432,8 @@ FROM `LevelOne` AS `l`
 ORDER BY `l`.`Id`
 LIMIT @p
 """,
-            //
-            """
+                //
+                """
 @p='1'
 
 SELECT `s`.`Id`, `s`.`Name`, `s`.`Level1Id`, `s`.`Level2Id`, `s`.`Id0`, `s`.`Date`, `s`.`Name0`, `s`.`OneToMany_Optional_Self_Inverse1Id`, `s`.`OneToMany_Required_Self_Inverse1Id`, `s`.`OneToOne_Optional_Self1Id`, `l9`.`Id`
@@ -1463,7 +1463,7 @@ ORDER BY `l9`.`Id`, `s`.`Id`
             await base.Skip_Take_Select_collection_Skip_Take(async);
 
         AssertSql(
-            """
+"""
 @p='1'
 
 SELECT `l`.`Id`, `l`.`Name`
@@ -1471,8 +1471,8 @@ FROM `LevelOne` AS `l`
 ORDER BY `l`.`Id`
 LIMIT @p OFFSET @p
 """,
-            //
-            """
+                //
+                """
 @p='1'
 
 SELECT `s`.`Id`, `s`.`Name`, `s`.`Level1Id`, `s`.`Level2Id`, `s`.`Id0`, `s`.`Date`, `s`.`Name0`, `s`.`OneToMany_Optional_Self_Inverse1Id`, `s`.`OneToMany_Required_Self_Inverse1Id`, `s`.`OneToOne_Optional_Self1Id`, `l9`.`Id`
@@ -1775,7 +1775,7 @@ ORDER BY `l`.`Id`, `l0`.`Id`
             await base.Complex_multi_include_with_order_by_and_paging(async);
 
         AssertSql(
-            """
+"""
 @p1='10'
 @p='0'
 
@@ -1789,8 +1789,8 @@ FROM (
 LEFT JOIN `LevelTwo` AS `l0` ON `l1`.`Id` = `l0`.`Level1_Required_Id`
 ORDER BY `l1`.`Name`, `l1`.`Id`, `l0`.`Id`
 """,
-            //
-            """
+                //
+                """
 @p1='10'
 @p='0'
 
@@ -1805,8 +1805,8 @@ LEFT JOIN `LevelTwo` AS `l0` ON `l1`.`Id` = `l0`.`Level1_Required_Id`
 INNER JOIN `LevelThree` AS `l2` ON `l0`.`Id` = `l2`.`OneToMany_Optional_Inverse3Id`
 ORDER BY `l1`.`Name`, `l1`.`Id`, `l0`.`Id`
 """,
-            //
-            """
+                //
+                """
 @p1='10'
 @p='0'
 
@@ -1828,7 +1828,7 @@ ORDER BY `l1`.`Name`, `l1`.`Id`, `l0`.`Id`
             await base.Complex_multi_include_with_order_by_and_paging_joins_on_correct_key(async);
 
         AssertSql(
-            """
+"""
 @p1='10'
 @p='0'
 
@@ -1843,8 +1843,8 @@ LEFT JOIN `LevelTwo` AS `l0` ON `l1`.`Id` = `l0`.`Level1_Optional_Id`
 LEFT JOIN `LevelTwo` AS `l2` ON `l1`.`Id` = `l2`.`Level1_Required_Id`
 ORDER BY `l1`.`Name`, `l1`.`Id`, `l0`.`Id`, `l2`.`Id`
 """,
-            //
-            """
+                //
+                """
 @p1='10'
 @p='0'
 
@@ -1860,8 +1860,8 @@ LEFT JOIN `LevelTwo` AS `l2` ON `l1`.`Id` = `l2`.`Level1_Required_Id`
 INNER JOIN `LevelThree` AS `l3` ON `l0`.`Id` = `l3`.`OneToMany_Optional_Inverse3Id`
 ORDER BY `l1`.`Name`, `l1`.`Id`, `l0`.`Id`, `l2`.`Id`
 """,
-            //
-            """
+                //
+                """
 @p1='10'
 @p='0'
 
@@ -1884,7 +1884,7 @@ ORDER BY `l1`.`Name`, `l1`.`Id`, `l0`.`Id`, `l2`.`Id`
             await base.Complex_multi_include_with_order_by_and_paging_joins_on_correct_key2(async);
 
         AssertSql(
-            """
+"""
 @p1='10'
 @p='0'
 
@@ -1899,8 +1899,8 @@ LEFT JOIN `LevelTwo` AS `l0` ON `l1`.`Id` = `l0`.`Level1_Optional_Id`
 LEFT JOIN `LevelThree` AS `l2` ON `l0`.`Id` = `l2`.`Level2_Required_Id`
 ORDER BY `l1`.`Name`, `l1`.`Id`, `l0`.`Id`, `l2`.`Id`
 """,
-            //
-            """
+                //
+                """
 @p1='10'
 @p='0'
 
@@ -2584,22 +2584,28 @@ ORDER BY `l`.`Id`, `l0`.`Id`
             {
                 AssertSql(
 """
+@validIds1='L1 01' (Size = 4000)
+@validIds2='L1 02' (Size = 4000)
+
 SELECT CASE
     WHEN `l0`.`Id` IS NULL THEN 0
     ELSE `l0`.`Id`
 END, `l`.`Id`, `l0`.`Id`
 FROM `LevelOne` AS `l`
 LEFT JOIN `LevelTwo` AS `l0` ON `l`.`Id` = `l0`.`Level1_Required_Id`
-WHERE `l`.`Name` IN ('L1 01', 'L1 02')
+WHERE `l`.`Name` IN (@validIds1, @validIds2)
 ORDER BY `l`.`Id`, `l0`.`Id`
 """,
                 //
                 """
+@validIds3='L1 01' (Size = 4000)
+@validIds4='L1 02' (Size = 4000)
+
 SELECT `l1`.`Id`, `l1`.`Level2_Optional_Id`, `l1`.`Level2_Required_Id`, `l1`.`Name`, `l1`.`OneToMany_Optional_Inverse3Id`, `l1`.`OneToMany_Optional_Self_Inverse3Id`, `l1`.`OneToMany_Required_Inverse3Id`, `l1`.`OneToMany_Required_Self_Inverse3Id`, `l1`.`OneToOne_Optional_PK_Inverse3Id`, `l1`.`OneToOne_Optional_Self3Id`, `l`.`Id`, `l0`.`Id`
 FROM `LevelOne` AS `l`
 LEFT JOIN `LevelTwo` AS `l0` ON `l`.`Id` = `l0`.`Level1_Required_Id`
 INNER JOIN `LevelThree` AS `l1` ON `l0`.`Id` = `l1`.`OneToMany_Required_Inverse3Id`
-WHERE `l`.`Name` IN ('L1 01', 'L1 02')
+WHERE `l`.`Name` IN (@validIds3, @validIds4)
 ORDER BY `l`.`Id`, `l0`.`Id`
 """);
             }
@@ -2670,7 +2676,7 @@ ORDER BY `l`.`Id`, `l2`.`OneToMany_Optional_Inverse2Id`, `l2`.`Id`
             await base.Filtered_include_Take_with_another_Take_on_top_level(async);
 
         AssertSql(
-            """
+"""
 @p='5'
 
 SELECT `l`.`Id`, `l`.`Date`, `l`.`Name`, `l`.`OneToMany_Optional_Self_Inverse1Id`, `l`.`OneToMany_Required_Self_Inverse1Id`, `l`.`OneToOne_Optional_Self1Id`
@@ -2678,8 +2684,8 @@ FROM `LevelOne` AS `l`
 ORDER BY `l`.`Id`
 LIMIT @p
 """,
-            //
-            """
+                //
+                """
 @p='5'
 
 SELECT `s`.`Id`, `s`.`Date`, `s`.`Level1_Optional_Id`, `s`.`Level1_Required_Id`, `s`.`Name`, `s`.`OneToMany_Optional_Inverse2Id`, `s`.`OneToMany_Optional_Self_Inverse2Id`, `s`.`OneToMany_Required_Inverse2Id`, `s`.`OneToMany_Required_Self_Inverse2Id`, `s`.`OneToOne_Optional_PK_Inverse2Id`, `s`.`OneToOne_Optional_Self2Id`, `s`.`Id0`, `s`.`Level2_Optional_Id`, `s`.`Level2_Required_Id`, `s`.`Name0`, `s`.`OneToMany_Optional_Inverse3Id`, `s`.`OneToMany_Optional_Self_Inverse3Id`, `s`.`OneToMany_Required_Inverse3Id`, `s`.`OneToMany_Required_Self_Inverse3Id`, `s`.`OneToOne_Optional_PK_Inverse3Id`, `s`.`OneToOne_Optional_Self3Id`, `l3`.`Id`
@@ -2709,7 +2715,7 @@ ORDER BY `l3`.`Id`, `s`.`Name` DESC
             await base.Filtered_include_Skip_Take_with_another_Skip_Take_on_top_level(async);
 
         AssertSql(
-            """
+"""
 @p1='5'
 @p='1'
 
@@ -2718,8 +2724,8 @@ FROM `LevelOne` AS `l`
 ORDER BY `l`.`Id` DESC
 LIMIT @p1 OFFSET @p
 """,
-            //
-            """
+                //
+                """
 @p1='5'
 @p='1'
 
@@ -2861,15 +2867,15 @@ ORDER BY `l10`.`Date`, `s`.`Name`
             await base.Projecting_collection_with_FirstOrDefault(async);
 
         AssertSql(
-            """
+"""
 SELECT `l`.`Id`
 FROM `LevelOne` AS `l`
 WHERE `l`.`Id` = 1
 ORDER BY `l`.`Id`
 LIMIT 1
 """,
-            //
-            """
+                //
+                """
 SELECT `l2`.`Id`, `l2`.`Date`, `l2`.`Level1_Optional_Id`, `l2`.`Level1_Required_Id`, `l2`.`Name`, `l2`.`OneToMany_Optional_Inverse2Id`, `l2`.`OneToMany_Optional_Self_Inverse2Id`, `l2`.`OneToMany_Required_Inverse2Id`, `l2`.`OneToMany_Required_Self_Inverse2Id`, `l2`.`OneToOne_Optional_PK_Inverse2Id`, `l2`.`OneToOne_Optional_Self2Id`, `l3`.`Id`
 FROM (
     SELECT `l`.`Id`

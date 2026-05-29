@@ -1,23 +1,32 @@
 ﻿using System;
-using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands;
-using Microsoft.AspNetCore;
+using System.Linq;
+using Microting.EntityFrameworkCore.MySql.IntegrationTests.Commands;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Tests;
 
-namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
+namespace Microting.EntityFrameworkCore.MySql.IntegrationTests
 {
     public class Program
     {
         public static void Main(string[] args)
         {
-            if (args.Length == 0)
+            if (args.Length == 0 ||
+                args.Any(arg => string.Equals(arg, "--applicationName", StringComparison.OrdinalIgnoreCase)))
             {
-	            BuildWebHost(args).Run();
+                BuildWebApplication(args)
+                    .Run();
             }
             else
             {
+                Console.WriteLine("Args:");
+                for (var i = 0; i < args.Length; i++)
+                {
+                    Console.WriteLine($"{i}: {args[i]}");
+                }
+
                 var serviceCollection = new ServiceCollection();
                 serviceCollection
                     .AddLogging(builder =>
@@ -41,15 +50,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
             }
         }
 
-#pragma warning disable ASPDEPR008 // IWebHost/WebHost obsolete; integration test host retained intentionally.
-        public static IWebHost BuildWebHost(string[] args)
+        private static WebApplication BuildWebApplication(string[] args)
         {
-            return WebHost.CreateDefaultBuilder(args)
-                .UseUrls("http://*:5000")
-                .UseStartup<Startup>()
-                .Build();
-        }
-#pragma warning restore ASPDEPR008
+            var builder = WebApplication.CreateBuilder(args);
+            builder.WebHost
+                .UseUrls("http://*:5000");
+            Startup.ConfigureServices(builder.Services);
 
+            var app = builder.Build();
+            Startup.Configure(app, app.Environment);
+
+            return app;
+        }
     }
 }

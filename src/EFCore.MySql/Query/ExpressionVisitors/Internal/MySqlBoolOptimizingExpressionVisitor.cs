@@ -1,4 +1,4 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -8,13 +8,13 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Utilities;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Microting.EntityFrameworkCore.MySql.Storage.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
+namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
     /// <summary>
     /// "WHERE `boolColumn`" doesn't use available indices, while "WHERE `boolColumn` = TRUE" does.
-    /// See https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1104
+    /// See https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/issues/1104
     /// </summary>
     public class MySqlBoolOptimizingExpressionVisitor : SqlExpressionVisitor
     {

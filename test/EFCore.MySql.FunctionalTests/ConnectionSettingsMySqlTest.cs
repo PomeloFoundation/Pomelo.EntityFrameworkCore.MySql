@@ -3,11 +3,11 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
 {
     public class ConnectionSettingsMySqlTest
     {
@@ -40,11 +40,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 .Where(e => e.GuidValue == new Guid("850368D8-93EA-4023-ACC7-6FA6E4C3B27F"))
                 .ToList();
 
-#pragma warning disable EF1003 // Possible SQL injection vulnerability (intentional in this test).
             var sqlResult = context.SimpleGuidEntities
+#pragma warning disable EF1003
                 .FromSqlRaw("select * from `SimpleGuidEntities` where `GuidValue` = " + sqlEquivalent)
-                .ToList();
 #pragma warning restore EF1003
+                .ToList();
 
             Assert.Single(result);
             Assert.Equal(new Guid("850368D8-93EA-4023-ACC7-6FA6E4C3B27F"), result[0].GuidValue);

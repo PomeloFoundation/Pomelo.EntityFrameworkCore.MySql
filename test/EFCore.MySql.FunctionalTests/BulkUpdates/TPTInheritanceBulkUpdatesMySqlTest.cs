@@ -1,11 +1,11 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
 public class TPTInheritanceBulkUpdatesMySqlTest : TPTInheritanceBulkUpdatesTestBase<TPTInheritanceBulkUpdatesMySqlFixture>
 {
@@ -96,7 +96,7 @@ public class TPTInheritanceBulkUpdatesMySqlTest : TPTInheritanceBulkUpdatesTestB
         await base.Update_where_using_hierarchy(async);
 
         AssertExecuteUpdateSql(
-            """
+"""
 @p='Monovia' (Size = 4000)
 
 UPDATE `Countries` AS `c`
@@ -113,7 +113,7 @@ WHERE (
         await base.Update_where_using_hierarchy_derived(async);
 
         AssertExecuteUpdateSql(
-            """
+"""
 @p='Monovia' (Size = 4000)
 
 UPDATE `Countries` AS `c`
@@ -145,7 +145,7 @@ WHERE (
         await base.Update_base_type(async);
 
         AssertExecuteUpdateSql(
-            """
+"""
 @p='Animal' (Size = 4000)
 
 UPDATE `Animals` AS `a`
@@ -159,7 +159,7 @@ WHERE `a`.`Name` = 'Great spotted kiwi'
         await base.Update_base_type_with_OfType(async);
 
         AssertExecuteUpdateSql(
-            """
+"""
 @p='NewBird' (Size = 4000)
 
 UPDATE `Animals` AS `a`
@@ -174,7 +174,7 @@ WHERE `k`.`Id` IS NOT NULL
         await base.Update_base_property_on_derived_type(async);
 
         AssertExecuteUpdateSql(
-            """
+"""
 @p='SomeOtherKiwi' (Size = 4000)
 
 UPDATE `Animals` AS `a`
@@ -189,7 +189,7 @@ SET `a`.`Name` = @p
         await base.Update_derived_property_on_derived_type(async);
 
         AssertExecuteUpdateSql(
-            """
+"""
 @p='0'
 
 UPDATE `Animals` AS `a`
@@ -204,7 +204,7 @@ SET `k`.`FoundOn` = @p
         await base.Update_with_interface_in_property_expression(async);
 
         AssertExecuteUpdateSql(
-            """
+"""
 @p='0'
 
 UPDATE `Drinks` AS `d`
@@ -218,7 +218,7 @@ SET `c`.`SugarGrams` = @p
         await base.Update_with_interface_in_EF_Property_in_property_expression(async);
 
         AssertExecuteUpdateSql(
-            """
+"""
 @p='0'
 
 UPDATE `Drinks` AS `d`

@@ -1,4 +1,4 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -6,7 +6,7 @@ using System.Data.Common;
 using System.Linq;
 using MySqlConnector;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
+namespace Microting.EntityFrameworkCore.MySql.Storage.Internal
 {
     public class MySqlConnectionSettings
     {

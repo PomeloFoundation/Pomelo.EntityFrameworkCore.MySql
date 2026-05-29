@@ -1,11 +1,11 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
 public class TPCManyToManyQueryMySqlTest : TPCManyToManyQueryRelationalTestBase<TPCManyToManyQueryMySqlFixture>
 {
@@ -89,7 +89,7 @@ WHERE EXISTS (
         await base.Skip_navigation_count_without_predicate(async);
 
         AssertSql(
-            """
+"""
 SELECT `e`.`Id`, `e`.`Name`
 FROM `EntityOnes` AS `e`
 WHERE EXISTS (
@@ -327,7 +327,7 @@ LEFT JOIN (
         await base.Skip_navigation_order_by_single_or_default(async);
 
         AssertSql(
-            """
+"""
 SELECT `s0`.`Id`, `s0`.`Name`
 FROM `EntityOnes` AS `e`
 LEFT JOIN (
@@ -511,7 +511,7 @@ INNER JOIN (
         await base.Select_many_over_skip_navigation_where(async);
 
         AssertSql(
-            """
+"""
 SELECT `s`.`Id`, `s`.`CollectionInverseId`, `s`.`ExtraId`, `s`.`Name`, `s`.`ReferenceInverseId`
 FROM `EntityOnes` AS `e`
 LEFT JOIN (
@@ -1995,7 +1995,7 @@ ORDER BY `e`.`Id`, `s0`.`OneId`, `s0`.`ThreeId`, `s0`.`Id`, `s0`.`OneId0`, `s0`.
         await base.Select_many_over_skip_navigation_where_non_equality(async);
 
         AssertSql(
-            """
+"""
 SELECT `s`.`Id`, `s`.`CollectionInverseId`, `s`.`ExtraId`, `s`.`Name`, `s`.`ReferenceInverseId`
 FROM `EntityOnes` AS `e`
 LEFT JOIN (
@@ -2011,7 +2011,7 @@ LEFT JOIN (
         await base.Contains_on_skip_collection_navigation(async);
 
         AssertSql(
-            """
+"""
 @entity_equality_two_Id='1' (Nullable = true)
 
 SELECT `e`.`Id`, `e`.`Name`
@@ -2179,7 +2179,7 @@ WHERE EXISTS (
         await base.Skip_navigation_count_without_predicate_unidirectional(async);
 
         AssertSql(
-            """
+"""
 SELECT `u`.`Id`, `u`.`Name`
 FROM `UnidirectionalEntityOnes` AS `u`
 WHERE EXISTS (
@@ -2347,7 +2347,7 @@ INNER JOIN (
         await base.Select_many_over_skip_navigation_where_unidirectional(async);
 
         AssertSql(
-            """
+"""
 SELECT `s`.`Id`, `s`.`CollectionInverseId`, `s`.`ExtraId`, `s`.`Name`, `s`.`ReferenceInverseId`
 FROM `UnidirectionalEntityOnes` AS `u`
 LEFT JOIN (
@@ -2740,7 +2740,7 @@ ORDER BY [u].[Id], [t0].[OneId], [t0].[ThreeId], [t0].[Id], [t0].[OneId0], [t0].
         await base.Select_many_over_skip_navigation_where_non_equality_unidirectional(async);
 
         AssertSql(
-            """
+"""
 SELECT `s`.`Id`, `s`.`CollectionInverseId`, `s`.`ExtraId`, `s`.`Name`, `s`.`ReferenceInverseId`
 FROM `UnidirectionalEntityOnes` AS `u`
 LEFT JOIN (
@@ -2756,7 +2756,7 @@ LEFT JOIN (
         await base.Contains_on_skip_collection_navigation_unidirectional(async);
 
         AssertSql(
-            """
+"""
 @entity_equality_two_Id='1' (Nullable = true)
 
 SELECT `u`.`Id`, `u`.`Name`

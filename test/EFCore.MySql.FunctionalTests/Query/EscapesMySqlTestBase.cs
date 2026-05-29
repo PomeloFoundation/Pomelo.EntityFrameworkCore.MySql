@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,12 +7,12 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestModels.MusicStore;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public abstract class EscapesMySqlTestBase<TFixture> : IClassFixture<TFixture>
         where TFixture : EscapesMySqlTestBase<TFixture>.EscapesMySqlFixtureBase, new()
@@ -84,9 +84,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             using (var context = CreateContext())
             {
-                // Use List<string> so Contains binds to Enumerable.Contains; array can bind to
-                // MemoryExtensions.Contains(ReadOnlySpan) and break the expression interpreter.
-                var artistNames = new List<string>
+                var artistNames = new[]
                 {
                     @"Back\slasher's",
                     @"John's Chill Box"

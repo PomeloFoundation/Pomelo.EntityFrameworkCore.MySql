@@ -1,17 +1,20 @@
-﻿using System.Data.Common;
+using System.Data.Common;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
-public class SqlQueryMySqlTest : SqlQueryMySqlTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>
+public class SqlQueryMySqlTest : SqlQueryTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>
 {
     public SqlQueryMySqlTest(NorthwindQueryMySqlFixture<NoopModelCustomizer> fixture, ITestOutputHelper testOutputHelper)
         : base(fixture)
@@ -281,7 +284,7 @@ SELECT * FROM `Employees` WHERE `ReportsTo` = @p0 OR (`ReportsTo` IS NULL AND @p
         var queryString = await base.SqlQueryRaw_queryable_with_parameters_and_closure(async);
 
         AssertSql(
-            """
+"""
 p0='London' (Size = 4000)
 @contactTitle='Sales Representative' (Size = 30)
 
@@ -425,14 +428,14 @@ SELECT * FROM `Customers` WHERE `City` = @city
         await base.SqlQueryRaw_with_dbParameter_mixed(async);
 
         AssertSql(
-            """
+"""
 p0='London' (Size = 4000)
 @title='Sales Representative' (Nullable = false)
 
 SELECT * FROM `Customers` WHERE `City` = @p0 AND `ContactTitle` = @title
 """,
-            //
-            """
+                //
+                """
 @city='London' (Nullable = false)
 p0='Sales Representative' (Size = 4000)
 
@@ -487,7 +490,7 @@ SELECT * FROM `Customers` WHERE `CustomerID` = @somename
         await base.SqlQuery_parameterization_issue_12213(async);
 
         AssertSql(
-            """
+"""
 p0='10300'
 
 SELECT `m`.`OrderID`
@@ -495,8 +498,8 @@ FROM (
     SELECT * FROM `Orders` WHERE `OrderID` >= @p0
 ) AS `m`
 """,
-            //
-            """
+                //
+                """
 @max='10400'
 p0='10300'
 
@@ -511,8 +514,8 @@ WHERE (`m`.`OrderID` <= @max) AND `m`.`OrderID` IN (
     ) AS `m0`
 )
 """,
-            //
-            """
+                //
+                """
 @max='10400'
 p0='10300'
 
@@ -642,7 +645,7 @@ WHERE `m`.`CustomerID` IN (
         await base.SqlQueryRaw_with_dbParameter_mixed_in_subquery(async);
 
         AssertSql(
-            """
+"""
 p0='London' (Size = 4000)
 @title='Sales Representative' (Nullable = false)
 
@@ -657,8 +660,8 @@ WHERE `m`.`CustomerID` IN (
     ) AS `m0`
 )
 """,
-            //
-            """
+                //
+                """
 @city='London' (Nullable = false)
 p0='Sales Representative' (Size = 4000)
 
@@ -672,26 +675,6 @@ WHERE `m`.`CustomerID` IN (
         SELECT * FROM `Customers` WHERE `City` = @city AND `ContactTitle` = @p0
     ) AS `m0`
 )
-""");
-    }
-
-    public override async Task Multiple_occurrences_of_SqlQuery_with_db_parameter_adds_parameter_only_once(bool async)
-    {
-        await base.Multiple_occurrences_of_SqlQuery_with_db_parameter_adds_parameter_only_once(async);
-
-        AssertSql(
-"""
-city='Seattle' (Nullable = false)
-
-SELECT `m`.`Address`, `m`.`City`, `m`.`CompanyName`, `m`.`ContactName`, `m`.`ContactTitle`, `m`.`Country`, `m`.`CustomerID`, `m`.`Fax`, `m`.`Phone`, `m`.`Region`, `m`.`PostalCode`
-FROM (
-    SELECT * FROM `Customers` WHERE `City` = @city
-) AS `m`
-INTERSECT
-SELECT `m0`.`Address`, `m0`.`City`, `m0`.`CompanyName`, `m0`.`ContactName`, `m0`.`ContactTitle`, `m0`.`Country`, `m0`.`CustomerID`, `m0`.`Fax`, `m0`.`Phone`, `m0`.`Region`, `m0`.`PostalCode`
-FROM (
-    SELECT * FROM `Customers` WHERE `City` = @city
-) AS `m0`
 """);
     }
 
@@ -888,16 +871,56 @@ WHERE `m`.`ContactName` LIKE '%z%'
 """);
     }
 
+    public override async Task Multiple_occurrences_of_SqlQuery_with_db_parameter_adds_two_parameters(bool async)
+    {
+        // MySQL/MariaDB doesn't differentiate parameters based on Size attribute alone
+        // Both parameters with the same name and value are treated as identical
+        // So INTERSECT returns results instead of empty set
+        using var context = CreateContext();
+        var city = "Seattle";
+
+        var dbParameter1 = CreateDbParameter("city", city);
+        dbParameter1.Size = 7;
+        var subquery1 = context.Database.SqlQueryRaw<UnmappedCustomer>(
+            NormalizeDelimitersInRawString("SELECT * FROM [Customers] WHERE [City] = {0}"),
+            dbParameter1);
+
+        var dbParameter2 = CreateDbParameter("city", city);
+        dbParameter2.Size = 3;
+        var subquery2 = context.Database.SqlQueryRaw<UnmappedCustomer>(
+            NormalizeDelimitersInRawString("SELECT * FROM [Customers] WHERE [City] = {0}"),
+            dbParameter2);
+
+        var query = subquery1.Intersect(subquery2);
+
+        var actual = async
+            ? await query.ToArrayAsync()
+            : query.ToArray();
+
+        // MySQL treats both parameters as identical, so INTERSECT returns results
+        Assert.Single(actual);
+        Assert.Equal("WHITC", actual[0].CustomerID);
+
+        AssertSql(
+"""
+city='Seattle' (Nullable = false) (Size = 7)
+city0='Seattle' (Nullable = false) (Size = 3)
+
+SELECT `m`.`Address`, `m`.`City`, `m`.`CompanyName`, `m`.`ContactName`, `m`.`ContactTitle`, `m`.`Country`, `m`.`CustomerID`, `m`.`Fax`, `m`.`Phone`, `m`.`Region`, `m`.`PostalCode`
+FROM (
+    SELECT * FROM `Customers` WHERE `City` = @city
+) AS `m`
+INTERSECT
+SELECT `m0`.`Address`, `m0`.`City`, `m0`.`CompanyName`, `m0`.`ContactName`, `m0`.`ContactTitle`, `m0`.`Country`, `m0`.`CustomerID`, `m0`.`Fax`, `m0`.`Phone`, `m0`.`Region`, `m0`.`PostalCode`
+FROM (
+    SELECT * FROM `Customers` WHERE `City` = @city0
+) AS `m0`
+""");
+    }
+
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
         => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
-
-    public override async Task Multiple_occurrences_of_SqlQuery_with_db_parameter_adds_two_parameters(bool async)
-    {
-        await base.Multiple_occurrences_of_SqlQuery_with_db_parameter_adds_two_parameters(async);
-
-        AssertSql();
-    }
 
     protected override DbParameter CreateDbParameter(string name, object value)
         => new MySqlParameter { ParameterName = name, Value = value };

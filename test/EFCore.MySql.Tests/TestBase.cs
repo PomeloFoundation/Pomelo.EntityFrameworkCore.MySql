@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql
+namespace Microting.EntityFrameworkCore.MySql
 {
     public class TestBase<TContext> : IDisposable, IAsyncLifetime
         where TContext : ContextBase, new()
@@ -16,12 +16,10 @@ namespace Pomelo.EntityFrameworkCore.MySql
             TestStore = await MySqlTestStore.CreateInitializedAsync(StoreName);
         }
 
-        public async Task DisposeAsync()
-            => await TestStore.DisposeAsync();
+        public Task DisposeAsync()
+            => Task.CompletedTask;
 
-        public virtual void Dispose()
-        {
-        }
+        public virtual void Dispose() => TestStore.DisposeAsync().AsTask().Wait();
 
         public virtual string StoreName => GetType().Name;
         public virtual MySqlTestStore TestStore { get; private set; }

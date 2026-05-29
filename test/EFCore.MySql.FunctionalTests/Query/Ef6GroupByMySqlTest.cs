@@ -3,11 +3,11 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
 public class Ef6GroupByMySqlTest : Ef6GroupByTestBase<Ef6GroupByMySqlTest.Ef6GroupByMySqlFixture>
 {
@@ -753,7 +753,7 @@ ORDER BY `p1`.`FirstName`, `p3`.`Id`
         await base.Whats_new_2021_sample_7(async);
 
         AssertSql(
-            """
+"""
 @size='11'
 
 SELECT `p0`.`LastName`, `f`.`Size`, (

@@ -1,14 +1,14 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
-using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class NorthwindGroupByQueryMySqlTest : NorthwindGroupByQueryRelationalTestBase<
         NorthwindQueryMySqlFixture<NoopModelCustomizer>>
@@ -134,7 +134,7 @@ ORDER BY `c`.`CustomerID`
             await base.GroupBy_group_Distinct_Select_Distinct_aggregate(async);
 
             AssertSql(
-                """
+"""
 SELECT `o`.`CustomerID` AS `Key`, MAX(`o`.`OrderDate`) AS `Max`
 FROM `Orders` AS `o`
 GROUP BY `o`.`CustomerID`
@@ -1013,7 +1013,7 @@ GROUP BY `o0`.`Key`
             await base.GroupBy_param_Select_Sum_Min_Key_Max_Avg(async);
 
             AssertSql(
-                """
+"""
 @a='2'
 
 SELECT COALESCE(SUM(`o0`.`OrderID`), 0) AS `Sum`, MIN(`o0`.`OrderID`) AS `Min`, `o0`.`Key`, MAX(`o0`.`OrderID`) AS `Max`, AVG(CAST(`o0`.`OrderID` AS double)) AS `Avg`
@@ -1030,7 +1030,7 @@ GROUP BY `o0`.`Key`
             await base.GroupBy_param_with_element_selector_Select_Sum(async);
 
             AssertSql(
-                """
+"""
 @a='2'
 
 SELECT COALESCE(SUM(`o0`.`OrderID`), 0) AS `Sum`
@@ -1047,7 +1047,7 @@ GROUP BY `o0`.`Key`
             await base.GroupBy_param_with_element_selector_Select_Sum2(async);
 
             AssertSql(
-                """
+"""
 @a='2'
 
 SELECT COALESCE(SUM(`o0`.`OrderID`), 0) AS `Sum`
@@ -1064,7 +1064,7 @@ GROUP BY `o0`.`Key`
             await base.GroupBy_param_with_element_selector_Select_Sum3(async);
 
             AssertSql(
-                """
+"""
 @a='2'
 
 SELECT COALESCE(SUM(`o0`.`OrderID`), 0) AS `Sum`
@@ -1081,7 +1081,7 @@ GROUP BY `o0`.`Key`
             await base.GroupBy_param_with_element_selector_Select_Sum_Min_Key_Max_Avg(async);
 
             AssertSql(
-                """
+"""
 @a='2'
 
 SELECT COALESCE(SUM(`o0`.`OrderID`), 0) AS `Sum`, `o0`.`Key`
@@ -1464,7 +1464,7 @@ GROUP BY `o`.`CustomerID`
             await base.OrderBy_Skip_GroupBy_Aggregate(async);
 
             AssertSql(
-                """
+"""
 @p='80'
 
 SELECT AVG(CAST(`o0`.`OrderID` AS double))
@@ -1483,7 +1483,7 @@ GROUP BY `o0`.`CustomerID`
             await base.OrderBy_Take_GroupBy_Aggregate(async);
 
             AssertSql(
-                """
+"""
 @p='500'
 
 SELECT MIN(`o0`.`OrderID`)
@@ -1502,7 +1502,7 @@ GROUP BY `o0`.`CustomerID`
             await base.OrderBy_Skip_Take_GroupBy_Aggregate(async);
 
             AssertSql(
-                """
+"""
 @p1='500'
 @p='80'
 
@@ -1591,7 +1591,7 @@ GROUP BY `o0`.`CustomerID`
             await base.Join_complex_GroupBy_Aggregate(async);
 
             AssertSql(
-                """
+"""
 @p='100'
 @p2='50'
 @p1='10'
@@ -1699,7 +1699,7 @@ GROUP BY `c`.`Country`
             await base.GroupJoin_complex_GroupBy_Aggregate(async);
 
             AssertSql(
-                """
+"""
 @p1='50'
 @p='10'
 @p2='100'
@@ -1757,7 +1757,7 @@ GROUP BY `o0`.`CustomerID`, `p`.`ProductName`
             await base.Union_simple_groupby(async);
 
             AssertSql(
-                """
+"""
 SELECT `u`.`City` AS `Key`, COUNT(*) AS `Total`
 FROM (
     SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
@@ -1919,7 +1919,7 @@ WHERE EXISTS (
             await base.GroupBy_aggregate_Pushdown(async);
 
             AssertSql(
-                """
+"""
 @p='20'
 @p1='4'
 
@@ -1942,7 +1942,7 @@ LIMIT 18446744073709551610 OFFSET @p1
             await base.GroupBy_aggregate_using_grouping_key_Pushdown(async);
 
             AssertSql(
-                """
+"""
 @p='20'
 @p1='4'
 
@@ -1965,7 +1965,7 @@ LIMIT 18446744073709551610 OFFSET @p1
             await base.GroupBy_aggregate_Pushdown_followed_by_projecting_Length(async);
 
             AssertSql(
-                """
+"""
 @p='20'
 @p1='4'
 
@@ -1988,7 +1988,7 @@ LIMIT 18446744073709551610 OFFSET @p1
             await base.GroupBy_aggregate_Pushdown_followed_by_projecting_constant(async);
 
             AssertSql(
-                """
+"""
 @p='20'
 @p1='4'
 
@@ -2420,7 +2420,7 @@ GROUP BY `o`.`OrderID`, `o`.`CustomerID`
             await base.GroupBy_with_order_by_skip_and_another_order_by(async);
 
             AssertSql(
-                """
+"""
 @p='80'
 
 SELECT COALESCE(SUM(`o0`.`OrderID`), 0)
@@ -2562,7 +2562,7 @@ INNER JOIN `Orders` AS `o0` ON ((`o1`.`Key` = `o0`.`CustomerID`) OR (`o1`.`Key` 
             await base.GroupBy_aggregate_from_right_side_of_join(async);
 
             AssertSql(
-                """
+"""
 @p='10'
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `o0`.`Max`
@@ -2614,13 +2614,13 @@ FROM (
 GROUP BY `o0`.`CustomerID`
 """
                     : """
-@__p_0='0'
+@p='0'
 
 SELECT `o0`.`CustomerID` AS `Key`, COUNT(*) AS `Total`
 FROM (
     SELECT `o`.`CustomerID`
     FROM `Orders` AS `o`
-    LIMIT @__p_0 OFFSET @__p_0
+    LIMIT @p OFFSET @p
 ) AS `o0`
 GROUP BY `o0`.`CustomerID`
 """);
@@ -2640,13 +2640,13 @@ GROUP BY `o`.`CustomerID`
 HAVING FALSE
 """
                     : """
-@__p_0='0'
+@p='0'
 
 SELECT `o`.`CustomerID` AS `Key`, COUNT(*) AS `Total`
 FROM `Orders` AS `o`
 WHERE `o`.`OrderID` > 10500
 GROUP BY `o`.`CustomerID`
-LIMIT @__p_0 OFFSET @__p_0
+LIMIT @p OFFSET @p
 """);
         }
 
@@ -2878,7 +2878,7 @@ FROM (
             await base.GroupBy_Select_Distinct_aggregate(async);
 
             AssertSql(
-                """
+"""
 SELECT `o`.`CustomerID` AS `Key`, AVG(DISTINCT (CAST(`o`.`OrderID` AS double))) AS `Average`, COUNT(DISTINCT (`o`.`EmployeeID`)) AS `Count`, COUNT(DISTINCT (`o`.`EmployeeID`)) AS `LongCount`, MAX(`o`.`OrderDate`) AS `Max`, MIN(`o`.`OrderDate`) AS `Min`, COALESCE(SUM(DISTINCT (`o`.`OrderID`)), 0) AS `Sum`
 FROM `Orders` AS `o`
 GROUP BY `o`.`CustomerID`
@@ -3792,16 +3792,12 @@ ORDER BY `o2`.`Key`
             return base.GroupBy_constant_with_where_on_grouping_with_aggregate_operators(async);
         }
 
-        [ConditionalFact]
-        public virtual void Check_all_tests_overridden()
-            => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
-
         public override async Task Final_GroupBy_TagWith(bool async)
         {
             await base.Final_GroupBy_TagWith(async);
 
             AssertSql(
-                """
+"""
 -- foo
 
 SELECT `c`.`City`, `c`.`CustomerID`, `c`.`Address`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
@@ -3809,6 +3805,10 @@ FROM `Customers` AS `c`
 ORDER BY `c`.`City`
 """);
         }
+
+        [ConditionalFact]
+        public virtual void Check_all_tests_overridden()
+            => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);

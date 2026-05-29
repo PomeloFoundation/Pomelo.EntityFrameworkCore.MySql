@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
@@ -8,16 +8,10 @@ using MySqlConnector;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class FromSqlSprocQueryMySqlTest : FromSqlSprocQueryTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>
     {
-
-        [ConditionalTheory(Skip = "MySQL 8 default collation mismatch (utf8mb4_0900_ai_ci) in stored-procedure parameters")]
-        public override async Task From_sql_queryable_stored_procedure_with_parameter_composed_on_client(bool async) => await Task.CompletedTask;
-
-        [ConditionalTheory(Skip = "MySQL 8 default collation mismatch (utf8mb4_0900_ai_ci) in stored-procedure parameters")]
-        public override async Task From_sql_queryable_stored_procedure_with_parameter(bool async) => await Task.CompletedTask;
         public FromSqlSprocQueryMySqlTest(
             NorthwindQueryMySqlFixture<NoopModelCustomizer> fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)

@@ -1,16 +1,22 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
+using System;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Operators;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
-public class OperatorsQueryMySqlTest(NonSharedFixture fixture) : OperatorsQueryTestBase(fixture)
+public class OperatorsQueryMySqlTest : OperatorsQueryTestBase
 {
+    public OperatorsQueryMySqlTest([NotNull] NonSharedFixture fixture)
+        : base(fixture)
+    {
+    }
+
     protected override ITestStoreFactory TestStoreFactory
         => MySqlTestStoreFactory.Instance;
 
@@ -143,8 +149,10 @@ WHERE `o`.`Value` NOT LIKE 'A%' OR (`o`.`Value` IS NULL)
 """);
     }
 
+    // EF Core 10 changed the translation for this test so it no longer throws an exception.
+    // The test now passes for both MySQL and MariaDB.
     public override Task Concat_and_json_scalar(bool async)
-        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Concat_and_json_scalar(async));
+        => base.Concat_and_json_scalar(async);
 
     protected override async Task Seed(OperatorsContext ctx)
     {

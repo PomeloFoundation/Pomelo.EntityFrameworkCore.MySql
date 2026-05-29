@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Pomelo.EntityFrameworkCore.MySql.Internal {
+namespace Microting.EntityFrameworkCore.MySql.Internal {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Pomelo.EntityFrameworkCore.MySql.Properties.MySqlJsonStrings", typeof(MySqlJsonStrings).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microting.EntityFrameworkCore.MySql.Properties.MySqlJsonStrings", typeof(MySqlJsonStrings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

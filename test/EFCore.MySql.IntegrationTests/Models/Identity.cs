@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models
+namespace Microting.EntityFrameworkCore.MySql.IntegrationTests.Models
 {
 	public class AppIdentityUser : IdentityUser
 	{

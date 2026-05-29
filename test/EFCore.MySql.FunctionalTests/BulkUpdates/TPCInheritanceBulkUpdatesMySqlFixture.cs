@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
 public class TPCInheritanceBulkUpdatesMySqlFixture : TPCInheritanceBulkUpdatesFixture
 {

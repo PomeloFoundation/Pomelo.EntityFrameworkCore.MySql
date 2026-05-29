@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class ComplexNavigationsCollectionsSharedTypeQueryMySqlTest : ComplexNavigationsCollectionsSharedTypeQueryRelationalTestBase<
         ComplexNavigationsSharedTypeQueryMySqlTest.ComplexNavigationsSharedTypeQueryMySqlFixture>
@@ -68,7 +68,7 @@ ORDER BY `l`.`Id`, `l1`.`Id`
             await base.Take_Select_collection_Take(async);
 
         AssertSql(
-            """
+"""
 @p='1'
 
 SELECT `l3`.`Id`, `l3`.`Name`, `s`.`Id`, `s`.`Name`, `s`.`Level1Id`, `s`.`Level2Id`, `s`.`Id0`, `s`.`Date`, `s`.`Name0`, `s`.`Id1`
@@ -104,7 +104,7 @@ ORDER BY `l3`.`Id`, `s`.`c`, `s`.`Id1`
             await base.Skip_Take_Select_collection_Skip_Take(async);
 
         AssertSql(
-            """
+"""
 @p='1'
 
 SELECT `l3`.`Id`, `l3`.`Name`, `s`.`Id`, `s`.`Name`, `s`.`Level1Id`, `s`.`Level2Id`, `s`.`Id0`, `s`.`Date`, `s`.`Name0`, `s`.`Id1`

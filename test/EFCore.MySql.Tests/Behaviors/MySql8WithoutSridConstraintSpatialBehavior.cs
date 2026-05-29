@@ -3,12 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Behaviors
+namespace Microting.EntityFrameworkCore.MySql.Behaviors
 {
     [SupportedServerVersionCondition(nameof(ServerVersionSupport.SpatialSetSridFunction))]
     public class MySql8WithoutSridConstraintSpatialBehavior : RawSqlTestWithFixture<MySql8WithoutSridConstraintSpatialBehavior.MySql8WithoutSridConstraintSpatialBehaviorFixture>
@@ -88,7 +88,7 @@ FROM `IceCreamShops`;";
                     var srid = 4326;
                     var factory = NtsGeometryServices.Instance.CreateGeometryFactory(srid);
 
-                    // Add a shop through NTS and Pomelo.
+                    // Add a shop through NTS and Microting.
                     modelBuilder.Entity<IceCreamShop>(
                         entity =>
                         {

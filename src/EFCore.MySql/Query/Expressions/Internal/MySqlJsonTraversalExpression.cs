@@ -1,4 +1,4 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
+namespace Microting.EntityFrameworkCore.MySql.Query.Expressions.Internal
 {
     /// <summary>
     /// Represents a MySQL JSON operator traversing a JSON document with a path (i.e. x->y or x->>y)

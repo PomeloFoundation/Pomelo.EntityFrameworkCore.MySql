@@ -13,7 +13,7 @@ try
   mkdir $targetDirectoryName
 
   $connectionString = (Select-String config.json -Pattern '(?<="ConnectionString":\s*")(.*?)(?=")').Matches.Value
-  $arguments = "ef", "dbcontext", "scaffold", $connectionString, "Pomelo.EntityFrameworkCore.MySql", "--output-dir", $targetDirectoryName
+  $arguments = "ef", "dbcontext", "scaffold", $connectionString, "Microting.EntityFrameworkCore.MySql", "--output-dir", $targetDirectoryName
 
   foreach ($table in $tables)
   {

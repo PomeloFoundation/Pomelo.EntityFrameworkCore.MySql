@@ -1,11 +1,11 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
 public class TPCInheritanceBulkUpdatesMySqlTest : TPCInheritanceBulkUpdatesTestBase<TPCInheritanceBulkUpdatesMySqlFixture>
 {
@@ -126,7 +126,7 @@ WHERE (
         await base.Update_where_using_hierarchy(async);
 
         AssertExecuteUpdateSql(
-            """
+"""
 @p='Monovia' (Size = 4000)
 
 UPDATE `Countries` AS `c`
@@ -149,7 +149,7 @@ WHERE (
         await base.Update_where_using_hierarchy_derived(async);
 
         AssertExecuteUpdateSql(
-            """
+"""
 @p='Monovia' (Size = 4000)
 
 UPDATE `Countries` AS `c`
@@ -205,19 +205,19 @@ FROM `Kiwi` AS `k`
         await base.Update_base_property_on_derived_type(async);
 
         AssertSql(
-            """
+"""
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 """,
-            //
-            """
+                //
+                """
 @p='SomeOtherKiwi' (Size = 4000)
 
 UPDATE `Kiwi` AS `k`
 SET `k`.`Name` = @p
 """,
-            //
-            """
+                //
+                """
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 """);
@@ -228,19 +228,19 @@ FROM `Kiwi` AS `k`
         await base.Update_derived_property_on_derived_type(async);
 
         AssertSql(
-            """
+"""
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 """,
-            //
-            """
+                //
+                """
 @p='0'
 
 UPDATE `Kiwi` AS `k`
 SET `k`.`FoundOn` = @p
 """,
-            //
-            """
+                //
+                """
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 """);
@@ -251,12 +251,12 @@ FROM `Kiwi` AS `k`
         await base.Update_base_and_derived_types(async);
 
         AssertSql(
-            """
+"""
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 """,
-            //
-            """
+                //
+                """
 @p='Kiwi' (Size = 4000)
 @p1='0'
 
@@ -264,8 +264,8 @@ UPDATE `Kiwi` AS `k`
 SET `k`.`Name` = @p,
     `k`.`FoundOn` = @p1
 """,
-            //
-            """
+                //
+                """
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 """);
@@ -276,19 +276,19 @@ FROM `Kiwi` AS `k`
         await base.Update_with_interface_in_property_expression(async);
 
         AssertSql(
-            """
+"""
 SELECT `c`.`Id`, `c`.`SortIndex`, `c`.`CaffeineGrams`, `c`.`CokeCO2`, `c`.`SugarGrams`
 FROM `Coke` AS `c`
 """,
-            //
-            """
+                //
+                """
 @p='0'
 
 UPDATE `Coke` AS `c`
 SET `c`.`SugarGrams` = @p
 """,
-            //
-            """
+                //
+                """
 SELECT `c`.`Id`, `c`.`SortIndex`, `c`.`CaffeineGrams`, `c`.`CokeCO2`, `c`.`SugarGrams`
 FROM `Coke` AS `c`
 """);
@@ -299,19 +299,19 @@ FROM `Coke` AS `c`
         await base.Update_with_interface_in_EF_Property_in_property_expression(async);
 
         AssertSql(
-            """
+"""
 SELECT `c`.`Id`, `c`.`SortIndex`, `c`.`CaffeineGrams`, `c`.`CokeCO2`, `c`.`SugarGrams`
 FROM `Coke` AS `c`
 """,
-            //
-            """
+                //
+                """
 @p='0'
 
 UPDATE `Coke` AS `c`
 SET `c`.`SugarGrams` = @p
 """,
-            //
-            """
+                //
+                """
 SELECT `c`.`Id`, `c`.`SortIndex`, `c`.`CaffeineGrams`, `c`.`CokeCO2`, `c`.`SugarGrams`
 FROM `Coke` AS `c`
 """);

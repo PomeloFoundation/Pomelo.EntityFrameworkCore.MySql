@@ -1,14 +1,14 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Scaffolding;
-using Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Scaffolding.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Storage.Internal;
+using Microting.EntityFrameworkCore.MySql.Json.Newtonsoft.Scaffolding.Internal;
+using Microting.EntityFrameworkCore.MySql.Json.Newtonsoft.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Design.Internal
+namespace Microting.EntityFrameworkCore.MySql.Json.Newtonsoft.Design.Internal
 {
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

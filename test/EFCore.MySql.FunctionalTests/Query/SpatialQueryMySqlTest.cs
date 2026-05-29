@@ -4,14 +4,14 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.SpatialModel;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.Geometries.Utilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
-using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class SpatialQueryMySqlTest : SpatialQueryRelationalTestBase<SpatialQueryMySqlFixture>
     {
@@ -212,7 +212,7 @@ ORDER BY `p1`.`Group`
             await base.Contains(async);
 
             AssertSql(
-                """
+"""
 @point='0x000000000101000000000000000000D03F000000000000D03F' (DbType = Binary)
 
 SELECT `p`.`Id`, ST_Contains(`p`.`Polygon`, @point) AS `Contains`
@@ -269,7 +269,7 @@ FROM `LineStringEntity` AS `l`
             await base.Crosses(async);
 
             AssertSql(
-                """
+"""
 @lineString='0x00000000010200000002000000000000000000E03F000000000000E0BF000000...' (DbType = Binary)
 
 SELECT `l`.`Id`, ST_Crosses(`l`.`LineString`, @lineString) AS `Crosses`
@@ -282,7 +282,7 @@ FROM `LineStringEntity` AS `l`
             await base.Difference(async);
 
             AssertSql(
-                """
+"""
 @polygon='0x0000000001030000000100000004000000000000000000000000000000000000...' (DbType = Binary)
 
 SELECT `p`.`Id`, ST_Difference(`p`.`Polygon`, @polygon) AS `Difference`
@@ -306,7 +306,7 @@ FROM `PointEntity` AS `p`
             await base.Disjoint_with_cast_to_nullable(async);
 
             AssertSql(
-                """
+"""
 @point='0x000000000101000000000000000000F03F000000000000F03F' (DbType = Binary)
 
 SELECT `p`.`Id`, ST_Disjoint(`p`.`Polygon`, @point) AS `Disjoint`
@@ -319,7 +319,7 @@ FROM `PolygonEntity` AS `p`
             await base.Disjoint_with_null_check(async);
 
             AssertSql(
-                """
+"""
 @point='0x000000000101000000000000000000F03F000000000000F03F' (DbType = Binary)
 
 SELECT `p`.`Id`, CASE
@@ -335,11 +335,24 @@ FROM `PolygonEntity` AS `p`
             await base.Distance_with_null_check(async);
 
             AssertSql(
-                """
+                AppConfig.ServerVersion.Supports.SpatialDistanceSphereFunction
+                    ? """
 @point='0x0000000001010000000000000000000000000000000000F03F' (DbType = Binary)
 
 SELECT `p`.`Id`, CASE
     WHEN ST_SRID(`p`.`Point`) = 4326 THEN ST_Distance_Sphere(`p`.`Point`, @point)
+    ELSE ST_Distance(`p`.`Point`, @point)
+END AS `Distance`
+FROM `PointEntity` AS `p`
+"""
+                    : """
+@point='0x0000000001010000000000000000000000000000000000F03F' (DbType = Binary)
+
+SELECT `p`.`Id`, CASE
+    WHEN ST_SRID(`p`.`Point`) = 4326 THEN CASE
+        WHEN (((((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0) = 0.0) AND (((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0) = 0.0)) OR (((POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) = 0.0)) OR (((POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) = 0.0) THEN 0.0
+        ELSE ((2.0 * ATAN(SQRT(((POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) / ((POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)))))) * 6378137.0) * (1.0 + (((6378137.0 - 6356752.3142451793) / 6378137.0) * (((((((3.0 * SQRT(((POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) * ((POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))))) / ATAN(SQRT(((POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) / ((POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)))))) - 1.0) / (2.0 * ((POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))))) * POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2)) * POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2)) - ((((((3.0 * SQRT(((POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) * ((POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))))) / ATAN(SQRT(((POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) / ((POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)))))) + 1.0) / (2.0 * ((POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))))) * POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2)) * POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2)))))
+    END
     ELSE ST_Distance(`p`.`Point`, @point)
 END AS `Distance`
 FROM `PointEntity` AS `p`
@@ -351,11 +364,24 @@ FROM `PointEntity` AS `p`
             await base.Distance_with_cast_to_nullable(async);
 
             AssertSql(
-                """
+                AppConfig.ServerVersion.Supports.SpatialDistanceSphereFunction
+                    ? """
 @point='0x0000000001010000000000000000000000000000000000F03F' (DbType = Binary)
 
 SELECT `p`.`Id`, CASE
     WHEN ST_SRID(`p`.`Point`) = 4326 THEN ST_Distance_Sphere(`p`.`Point`, @point)
+    ELSE ST_Distance(`p`.`Point`, @point)
+END AS `Distance`
+FROM `PointEntity` AS `p`
+"""
+                    : """
+@point='0x0000000001010000000000000000000000000000000000F03F' (DbType = Binary)
+
+SELECT `p`.`Id`, CASE
+    WHEN ST_SRID(`p`.`Point`) = 4326 THEN CASE
+        WHEN (((((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0) = 0.0) AND (((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0) = 0.0)) OR (((POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) = 0.0)) OR (((POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) = 0.0) THEN 0.0
+        ELSE ((2.0 * ATAN(SQRT(((POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) / ((POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)))))) * 6378137.0) * (1.0 + (((6378137.0 - 6356752.3142451793) / 6378137.0) * (((((((3.0 * SQRT(((POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) * ((POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))))) / ATAN(SQRT(((POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) / ((POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)))))) - 1.0) / (2.0 * ((POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))))) * POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2)) * POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2)) - ((((((3.0 * SQRT(((POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) * ((POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))))) / ATAN(SQRT(((POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) / ((POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)))))) + 1.0) / (2.0 * ((POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))))) * POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2)) * POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2)))))
+    END
     ELSE ST_Distance(`p`.`Point`, @point)
 END AS `Distance`
 FROM `PointEntity` AS `p`
@@ -367,11 +393,24 @@ FROM `PointEntity` AS `p`
             await base.Distance_geometry(async);
 
             AssertSql(
-                """
+                AppConfig.ServerVersion.Supports.SpatialDistanceSphereFunction
+                    ? """
 @point='0x0000000001010000000000000000000000000000000000F03F' (DbType = Binary)
 
 SELECT `p`.`Id`, CASE
     WHEN ST_SRID(`p`.`Geometry`) = 4326 THEN ST_Distance_Sphere(`p`.`Geometry`, @point)
+    ELSE ST_Distance(`p`.`Geometry`, @point)
+END AS `Distance`
+FROM `PointEntity` AS `p`
+"""
+                    : """
+@point='0x0000000001010000000000000000000000000000000000F03F' (DbType = Binary)
+
+SELECT `p`.`Id`, CASE
+    WHEN ST_SRID(`p`.`Geometry`) = 4326 THEN CASE
+        WHEN (((((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0) = 0.0) AND (((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0) = 0.0)) OR (((POWER(SIN((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) = 0.0)) OR (((POWER(COS((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) = 0.0) THEN 0.0
+        ELSE ((2.0 * ATAN(SQRT(((POWER(SIN((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) / ((POWER(COS((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)))))) * 6378137.0) * (1.0 + (((6378137.0 - 6356752.3142451793) / 6378137.0) * (((((((3.0 * SQRT(((POWER(SIN((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) * ((POWER(COS((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))))) / ATAN(SQRT(((POWER(SIN((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) / ((POWER(COS((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)))))) - 1.0) / (2.0 * ((POWER(COS((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))))) * POWER(SIN((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2)) * POWER(COS((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2)) - ((((((3.0 * SQRT(((POWER(SIN((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) * ((POWER(COS((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))))) / ATAN(SQRT(((POWER(SIN((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) / ((POWER(COS((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)))))) + 1.0) / (2.0 * ((POWER(SIN((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Geometry`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))))) * POWER(COS((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2)) * POWER(SIN((((ST_Y(`p`.`Geometry`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2)))))
+    END
     ELSE ST_Distance(`p`.`Geometry`, @point)
 END AS `Distance`
 FROM `PointEntity` AS `p`
@@ -499,7 +538,7 @@ FROM `PolygonEntity` AS `p`
             await base.EqualsTopologically(async);
 
             AssertSql(
-                """
+"""
 @point='0x00000000010100000000000000000000000000000000000000' (DbType = Binary)
 
 SELECT `p`.`Id`, ST_Equals(`p`.`Point`, @point) AS `EqualsTopologically`
@@ -573,7 +612,7 @@ FROM `LineStringEntity` AS `l`
             await base.Intersection(async);
 
             AssertSql(
-                """
+"""
 @polygon='0x0000000001030000000100000004000000000000000000000000000000000000...' (DbType = Binary)
 
 SELECT `p`.`Id`, ST_Intersection(`p`.`Polygon`, @polygon) AS `Intersection`
@@ -586,7 +625,7 @@ FROM `PolygonEntity` AS `p`
             await base.Intersects(async);
 
             AssertSql(
-                """
+"""
 @lineString='0x00000000010200000002000000000000000000E03F000000000000E0BF000000...' (DbType = Binary)
 
 SELECT `l`.`Id`, ST_Intersects(`l`.`LineString`, @lineString) AS `Intersects`
@@ -677,12 +716,28 @@ FROM `LineStringEntity` AS `l`
             await base.IsWithinDistance(async);
 
             AssertSql(
-                """
+                AppConfig.ServerVersion.Supports.SpatialDistanceSphereFunction
+                    ? """
 @point='0x0000000001010000000000000000000000000000000000F03F' (DbType = Binary)
 
 SELECT `p`.`Id`, CASE
     WHEN CASE
         WHEN ST_SRID(`p`.`Point`) = 4326 THEN ST_Distance_Sphere(`p`.`Point`, @point)
+        ELSE ST_Distance(`p`.`Point`, @point)
+    END <= 1.0 THEN TRUE
+    ELSE FALSE
+END AS `IsWithinDistance`
+FROM `PointEntity` AS `p`
+"""
+                    : """
+@point='0x0000000001010000000000000000000000000000000000F03F' (DbType = Binary)
+
+SELECT `p`.`Id`, CASE
+    WHEN CASE
+        WHEN ST_SRID(`p`.`Point`) = 4326 THEN CASE
+            WHEN (((((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0) = 0.0) AND (((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0) = 0.0)) OR (((POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) = 0.0)) OR (((POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) = 0.0) THEN 0.0
+            ELSE ((2.0 * ATAN(SQRT(((POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) / ((POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)))))) * 6378137.0) * (1.0 + (((6378137.0 - 6356752.3142451793) / 6378137.0) * (((((((3.0 * SQRT(((POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) * ((POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))))) / ATAN(SQRT(((POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) / ((POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)))))) - 1.0) / (2.0 * ((POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))))) * POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2)) * POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2)) - ((((((3.0 * SQRT(((POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) * ((POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))))) / ATAN(SQRT(((POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))) / ((POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)))))) + 1.0) / (2.0 * ((POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(COS((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2)) + (POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2) * POWER(SIN((((ST_X(`p`.`Point`) * PI()) / 180.0) - ((ST_X(@point) * PI()) / 180.0)) / 2.0), 2))))) * POWER(COS((((ST_Y(`p`.`Point`) * PI()) / 180.0) + ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2)) * POWER(SIN((((ST_Y(`p`.`Point`) * PI()) / 180.0) - ((ST_Y(@point) * PI()) / 180.0)) / 2.0), 2)))))
+        END
         ELSE ST_Distance(`p`.`Point`, @point)
     END <= 1.0 THEN TRUE
     ELSE FALSE
@@ -773,7 +828,7 @@ FROM `PointEntity` AS `p`
             await base.Overlaps(async);
 
             AssertSql(
-                """
+"""
 @polygon='0x0000000001030000000100000004000000000000000000000000000000000000...' (DbType = Binary)
 
 SELECT `p`.`Id`, ST_Overlaps(`p`.`Polygon`, @polygon) AS `Overlaps`
@@ -819,7 +874,7 @@ FROM `LineStringEntity` AS `l`
             await base.SymmetricDifference(async);
 
             AssertSql(
-                """
+"""
 @polygon='0x0000000001030000000100000004000000000000000000000000000000000000...' (DbType = Binary)
 
 SELECT `p`.`Id`, ST_SymDifference(`p`.`Polygon`, @polygon) AS `SymmetricDifference`
@@ -854,7 +909,7 @@ FROM `PointEntity` AS `p`
             await base.Touches(async);
 
             AssertSql(
-                """
+"""
 @polygon='0x00000000010300000001000000040000000000000000000000000000000000F0...' (DbType = Binary)
 
 SELECT `p`.`Id`, ST_Touches(`p`.`Polygon`, @polygon) AS `Touches`
@@ -867,7 +922,7 @@ FROM `PolygonEntity` AS `p`
             await base.Union(async);
 
             AssertSql(
-                """
+"""
 @polygon='0x0000000001030000000100000004000000000000000000000000000000000000...' (DbType = Binary)
 
 SELECT `p`.`Id`, ST_Union(`p`.`Polygon`, @polygon) AS `Union`
@@ -902,7 +957,7 @@ ORDER BY `p1`.`Group`
             await base.Within(async);
 
             AssertSql(
-                """
+"""
 @polygon='0x0000000001030000000100000005000000000000000000F0BF000000000000F0...' (DbType = Binary)
 
 SELECT `p`.`Id`, ST_Within(`p`.`Point`, @polygon) AS `Within`
@@ -985,7 +1040,7 @@ END IS NOT NULL
             await base.Intersects_equal_to_null(async);
 
             AssertSql(
-                """
+"""
 @lineString='0x00000000010200000002000000000000000000E03F000000000000E0BF000000...' (DbType = Binary)
 
 SELECT `l`.`Id`
@@ -1007,7 +1062,7 @@ WHERE ST_Intersects(@lineString, `l`.`LineString`) IS NULL
             await base.Intersects_not_equal_to_null(async);
 
             AssertSql(
-                """
+"""
 @lineString='0x00000000010200000002000000000000000000E03F000000000000E0BF000000...' (DbType = Binary)
 
 SELECT `l`.`Id`

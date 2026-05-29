@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -6,16 +6,17 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
-using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     [SupportedServerVersionCondition(nameof(ServerVersionSupport.Json))]
+    [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonTableImplementationStable))]
     public class JsonMicrosoftDomQueryTest : IClassFixture<JsonMicrosoftDomQueryTest.JsonMicrosoftDomQueryFixture>
     {
         protected JsonMicrosoftDomQueryFixture Fixture { get; }
@@ -77,7 +78,7 @@ WHERE `j`.`CustomerDocument` = '{""Name"":""Test customer"",""Age"":80}'");
 
             Assert.Equal(actual, expected);
             AssertSql(
-                """
+"""
 @p='1'
 
 SELECT `j`.`Id`, `j`.`CustomerDocument`, `j`.`CustomerElement`
@@ -86,14 +87,25 @@ WHERE `j`.`Id` = @p
 LIMIT 1
 """,
                 //
-                """
+                InsertJsonDocument(
+                    // MySQL 8.0.40+ reorders JSON keys alphabetically
+                    mySqlDocument: """
 @expected='{"ID":"00000000-0000-0000-0000-000000000000","Age":25,"Name":"Joe","IsVip":false,"Orders":[{"Price":99.5,"ShippingDate":"2019-10-01","ShippingAddress":"Some address 1"},{"Price":23.1,"ShippingDate":"2019-10-10","ShippingAddress":"Some address 2"}],"Statistics":{"Nested":{"IntArray":[3,4],"SomeProperty":10,"SomeNullableInt":20,"SomeNullableGuid":"d5f2685d-e5c4-47e5-97aa-d0266154eb2d"},"Visits":4,"Purchases":3}}' (Size = 4000)
 
 SELECT `j`.`Id`, `j`.`CustomerDocument`, `j`.`CustomerElement`
 FROM `JsonEntities` AS `j`
 WHERE `j`.`CustomerDocument` = CAST(@expected AS json)
 LIMIT 2
-""");
+""",
+                    // MariaDB preserves original JSON key order
+                    mariaDbDocument: """
+@expected='{"Name":"Joe","Age":25,"ID":"00000000-0000-0000-0000-000000000000","IsVip":false,"Statistics":{"Visits":4,"Purchases":3,"Nested":{"SomeProperty":10,"SomeNullableInt":20,"SomeNullableGuid":"d5f2685d-e5c4-47e5-97aa-d0266154eb2d","IntArray":[3,4]}},"Orders":[{"Price":99.5,"ShippingAddress":"Some address 1","ShippingDate":"2019-10-01"},{"Price":23.1,"ShippingAddress":"Some address 2","ShippingDate":"2019-10-10"}]}' (Size = 4000)
+
+SELECT `j`.`Id`, `j`.`CustomerDocument`, `j`.`CustomerElement`
+FROM `JsonEntities` AS `j`
+WHERE `j`.`CustomerDocument` = @expected
+LIMIT 2
+"""));
         }
 
         [Fact]
@@ -105,7 +117,7 @@ LIMIT 2
 
             Assert.Equal(actual, expected);
             AssertSql(
-                """
+"""
 @p='1'
 
 SELECT `j`.`Id`, `j`.`CustomerDocument`, `j`.`CustomerElement`
@@ -114,14 +126,25 @@ WHERE `j`.`Id` = @p
 LIMIT 1
 """,
                 //
-                """
+                InsertJsonDocument(
+                    // MySQL 8.0.40+ reorders JSON keys alphabetically
+                    mySqlDocument: """
 @expected='{"ID":"00000000-0000-0000-0000-000000000000","Age":25,"Name":"Joe","IsVip":false,"Orders":[{"Price":99.5,"ShippingDate":"2019-10-01","ShippingAddress":"Some address 1"},{"Price":23.1,"ShippingDate":"2019-10-10","ShippingAddress":"Some address 2"}],"Statistics":{"Nested":{"IntArray":[3,4],"SomeProperty":10,"SomeNullableInt":20,"SomeNullableGuid":"d5f2685d-e5c4-47e5-97aa-d0266154eb2d"},"Visits":4,"Purchases":3}}' (Nullable = false) (Size = 4000)
 
 SELECT `j`.`Id`, `j`.`CustomerDocument`, `j`.`CustomerElement`
 FROM `JsonEntities` AS `j`
 WHERE `j`.`CustomerElement` = CAST(@expected AS json)
 LIMIT 2
-""");
+""",
+                    // MariaDB preserves original JSON key order
+                    mariaDbDocument: """
+@expected='{"Name":"Joe","Age":25,"ID":"00000000-0000-0000-0000-000000000000","IsVip":false,"Statistics":{"Visits":4,"Purchases":3,"Nested":{"SomeProperty":10,"SomeNullableInt":20,"SomeNullableGuid":"d5f2685d-e5c4-47e5-97aa-d0266154eb2d","IntArray":[3,4]}},"Orders":[{"Price":99.5,"ShippingAddress":"Some address 1","ShippingDate":"2019-10-01"},{"Price":23.1,"ShippingAddress":"Some address 2","ShippingDate":"2019-10-10"}]}' (Nullable = false) (Size = 4000)
+
+SELECT `j`.`Id`, `j`.`CustomerDocument`, `j`.`CustomerElement`
+FROM `JsonEntities` AS `j`
+WHERE `j`.`CustomerElement` = @expected
+LIMIT 2
+"""));
         }
 
         [Fact]
@@ -261,7 +284,7 @@ LIMIT 2");
 
             Assert.Equal("Joe", x.CustomerElement.GetProperty("Name").GetString());
             AssertSql(
-                """
+"""
 @i='1'
 
 SELECT `j`.`Id`, `j`.`CustomerDocument`, `j`.`CustomerElement`
@@ -341,13 +364,11 @@ LIMIT 2");
 
             Assert.Equal(1, count);
             AssertSql(
-                """
-@element='{"Name":"Joe","Age":-1}' (Nullable = false) (Size = 4000)
+                $@"@element='{{""Name"":""Joe"",""Age"":-1}}' (Nullable = false) (Size = 4000)
 
 SELECT COUNT(*)
 FROM `JsonEntities` AS `j`
-WHERE JSON_OVERLAPS(`j`.`CustomerElement`, CAST(@element AS json))
-""");
+WHERE JSON_OVERLAPS(`j`.`CustomerElement`, {InsertJsonConvert("@element")})");
         }
 
         [ConditionalFact]
@@ -376,13 +397,11 @@ WHERE JSON_OVERLAPS(`j`.`CustomerElement`, '{""Name"": ""Joe"", ""Age"": -1}')")
 
             Assert.Equal(1, count);
             AssertSql(
-                """
-@element='[3,-1]' (Nullable = false) (Size = 4000)
+                $@"@element='[3,-1]' (Nullable = false) (Size = 4000)
 
 SELECT COUNT(*)
 FROM `JsonEntities` AS `j`
-WHERE JSON_OVERLAPS(JSON_EXTRACT(`j`.`CustomerElement`, '$.Statistics.Nested.IntArray'), CAST(@element AS json))
-""");
+WHERE JSON_OVERLAPS(JSON_EXTRACT(`j`.`CustomerElement`, '$.Statistics.Nested.IntArray'), {InsertJsonConvert("@element")})");
         }
 
         [ConditionalFact]
@@ -410,13 +429,11 @@ WHERE JSON_OVERLAPS(JSON_EXTRACT(`j`.`CustomerElement`, '$.Statistics.Nested.Int
 
             Assert.Equal(1, count);
             AssertSql(
-                """
-@element='{"Name":"Joe","Age":25}' (Nullable = false) (Size = 4000)
+                $@"@element='{{""Name"":""Joe"",""Age"":25}}' (Nullable = false) (Size = 4000)
 
 SELECT COUNT(*)
 FROM `JsonEntities` AS `j`
-WHERE JSON_CONTAINS(`j`.`CustomerElement`, CAST(@element AS json))
-""");
+WHERE JSON_CONTAINS(`j`.`CustomerElement`, {InsertJsonConvert("@element")})");
         }
 
         [Fact]

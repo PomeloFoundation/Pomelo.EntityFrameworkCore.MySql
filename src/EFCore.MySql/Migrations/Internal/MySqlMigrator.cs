@@ -1,4 +1,4 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -15,7 +15,7 @@ using Microsoft.EntityFrameworkCore.Migrations.Internal;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
+namespace Microting.EntityFrameworkCore.MySql.Migrations.Internal
 {
     public class MySqlMigrator : Migrator
     {

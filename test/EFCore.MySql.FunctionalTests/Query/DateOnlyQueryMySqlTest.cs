@@ -1,16 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
 public class DateOnlyQueryMySqlTest : DateOnlyQueryMySqlTestBase<DateOnlyQueryMySqlTest.DateOnlyQueryMySqlFixture>
 {
@@ -34,8 +33,8 @@ public class DateOnlyQueryMySqlTest : DateOnlyQueryMySqlTestBase<DateOnlyQueryMy
                 .Where(i => i.BestServedBefore.DayNumber - todayDateTime.DayNumber < 30));
 
         AssertSql(
-            """
-@todayDateTime_DayNumber='739764'
+$"""
+@todayDateTime_DayNumber='{todayDateTime.DayNumber}'
 
 SELECT `i`.`IceCreamId`, `i`.`BestServedBefore`, `i`.`Name`
 FROM `IceCream` AS `i`
@@ -56,7 +55,7 @@ LIMIT 2
                 .Where(i => i.BestServedBefore.DayNumber == matchaExpireDayNumber));
 
         AssertSql(
-            """
+"""
 @matchaExpireDayNumber='839691'
 
 SELECT `i`.`IceCreamId`, `i`.`BestServedBefore`, `i`.`Name`
@@ -78,7 +77,7 @@ LIMIT 2
                 .Where(i => i.BestServedBefore.ToDateTime(new TimeOnly(12, 21, 42)) == matchExpireDateTime));
 
         AssertSql(
-            """
+"""
 @matchExpireDateTime='2299-12-31T12:21:42.0000000' (DbType = DateTime)
 
 SELECT `i`.`IceCreamId`, `i`.`BestServedBefore`, `i`.`Name`
@@ -100,7 +99,7 @@ LIMIT 2
                 .Where(i => i.BestServedBefore.ToDateTime(new TimeOnly()) == matchExpireDateTime));
 
         AssertSql(
-            """
+"""
 @matchExpireDateTime='2299-12-31T00:00:00.0000000' (DbType = DateTime)
 
 SELECT `i`.`IceCreamId`, `i`.`BestServedBefore`, `i`.`Name`
@@ -139,9 +138,9 @@ LIMIT 2");
 
         Assert.Single(result);
 
-        AssertSql(
-            """
-@todayDateOnly='05/29/2026' (DbType = Date)
+                AssertSql(
+$"""
+@todayDateOnly='{todayDateOnly:MM'/'dd'/'yyyy}' (DbType = Date)
 
 SELECT `i`.`IceCreamId`, `i`.`BestServedBefore`, `i`.`Name`
 FROM `IceCream` AS `i`

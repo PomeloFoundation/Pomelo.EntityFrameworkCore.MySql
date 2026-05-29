@@ -1,11 +1,11 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
 public class TPCFiltersInheritanceBulkUpdatesMySqlTest : TPCFiltersInheritanceBulkUpdatesTestBase<
     TPCFiltersInheritanceBulkUpdatesMySqlFixture>
@@ -127,7 +127,7 @@ WHERE (
         await base.Update_where_using_hierarchy(async);
 
         AssertExecuteUpdateSql(
-            """
+"""
 @p='Monovia' (Size = 4000)
 
 UPDATE `Countries` AS `c`
@@ -150,7 +150,7 @@ WHERE (
         await base.Update_where_using_hierarchy_derived(async);
 
         AssertExecuteUpdateSql(
-            """
+"""
 @p='Monovia' (Size = 4000)
 
 UPDATE `Countries` AS `c`
@@ -210,21 +210,21 @@ WHERE `u`.`CountryId` = 1
         await base.Update_base_property_on_derived_type(async);
 
         AssertSql(
-            """
+"""
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 WHERE `k`.`CountryId` = 1
 """,
-            //
-            """
+                //
+                """
 @p='SomeOtherKiwi' (Size = 4000)
 
 UPDATE `Kiwi` AS `k`
 SET `k`.`Name` = @p
 WHERE `k`.`CountryId` = 1
 """,
-            //
-            """
+                //
+                """
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 WHERE `k`.`CountryId` = 1
@@ -236,21 +236,21 @@ WHERE `k`.`CountryId` = 1
         await base.Update_derived_property_on_derived_type(async);
 
         AssertSql(
-            """
+"""
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 WHERE `k`.`CountryId` = 1
 """,
-            //
-            """
+                //
+                """
 @p='0'
 
 UPDATE `Kiwi` AS `k`
 SET `k`.`FoundOn` = @p
 WHERE `k`.`CountryId` = 1
 """,
-            //
-            """
+                //
+                """
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 WHERE `k`.`CountryId` = 1
@@ -262,13 +262,13 @@ WHERE `k`.`CountryId` = 1
         await base.Update_base_and_derived_types(async);
 
         AssertSql(
-            """
+"""
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 WHERE `k`.`CountryId` = 1
 """,
-            //
-            """
+                //
+                """
 @p='Kiwi' (Size = 4000)
 @p1='0'
 
@@ -277,8 +277,8 @@ SET `k`.`Name` = @p,
     `k`.`FoundOn` = @p1
 WHERE `k`.`CountryId` = 1
 """,
-            //
-            """
+                //
+                """
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 WHERE `k`.`CountryId` = 1

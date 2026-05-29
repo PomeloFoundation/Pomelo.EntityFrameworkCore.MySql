@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Newtonsoft.Json;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public abstract class JsonPocoQueryTestBase<TFixture> : IClassFixture<TFixture>
         where TFixture : JsonPocoQueryTestBase<TFixture>.JsonPocoQueryFixtureBase
@@ -63,23 +63,19 @@ WHERE `j`.`Customer` = '{""Name"":""Test customer"",""Age"":80,""ID"":""00000000
 
             Assert.Equal(actual.Name, expected.Name);
             AssertSql(
-                """
-@p='1'
+                @"@p='1'
 
 SELECT `j`.`Id`, `j`.`Customer`, `j`.`ToplevelArray`
 FROM `JsonEntities` AS `j`
 WHERE `j`.`Id` = @p
-LIMIT 1
-""",
+LIMIT 1",
                 //
-                """
-@expected='{"Name":"Joe","Age":25,"ID":"00000000-0000-0000-0000-000000000000","is_vip":false,"Statistics":{"Visits":4,"Purchases":3,"Nested":{"SomeProperty":10,"SomeNullableInt":20,"IntArray":[3,4],"SomeNullableGuid":"d5f2685d-e5c4-47e5-97aa-d0266154eb2d"}},"Orders":[{"Price":99.5,"ShippingAddress":"Some address 1","ShippingDate":"2019-10-01T00:00:00"},{"Price":23.1,"ShippingAddress":"Some address 2","ShippingDate":"2019-10-10T00:00:00"}]}' (Size = 4000)
+                $@"@expected='{{""Name"":""Joe"",""Age"":25,""ID"":""00000000-0000-0000-0000-000000000000"",""is_vip"":false,""Statistics"":{{""Visits"":4,""Purchases"":3,""Nested"":{{""SomeProperty"":10,""SomeNullableInt"":20,""IntArray"":[3,4],""SomeNullableGuid"":""d5f2685d-e5c4-47e5-97aa-d0266154eb2d""}}}},""Orders"":[{{""Price"":99.5,""ShippingAddress"":""Some address 1"",""ShippingDate"":""2019-10-01T00:00:00""}},{{""Price"":23.1,""ShippingAddress"":""Some address 2"",""ShippingDate"":""2019-10-10T00:00:00""}}]}}' (Size = 4000)
 
 SELECT `j`.`Id`, `j`.`Customer`, `j`.`ToplevelArray`
 FROM `JsonEntities` AS `j`
-WHERE `j`.`Customer` = CAST(@expected AS json)
-LIMIT 2
-""");
+WHERE `j`.`Customer` = {InsertJsonConvert("@expected")}
+LIMIT 2");
         }
 
         [Fact]
@@ -246,14 +242,12 @@ LIMIT 2");
 
             Assert.Equal("Joe", x.Customer.Name);
             AssertSql(
-                """
-@i='1'
+                @"@i='1'
 
 SELECT `j`.`Id`, `j`.`Customer`, `j`.`ToplevelArray`
 FROM `JsonEntities` AS `j`
 WHERE JSON_EXTRACT(`j`.`Customer`, CONCAT('$.Statistics.Nested.IntArray[', @i, ']')) = 4
-LIMIT 2
-""");
+LIMIT 2");
         }
 
         [Fact]
@@ -341,13 +335,11 @@ WHERE JSON_UNQUOTE(JSON_QUOTE(JSON_UNQUOTE(JSON_EXTRACT(`j`.`Customer`, '$.Name'
 
             Assert.Equal(1, count);
             AssertSql(
-                """
-@name='Joe' (Size = 4000)
+                $@"@name='Joe' (Size = 4000)
 
 SELECT COUNT(*)
 FROM `JsonEntities` AS `j`
-WHERE JSON_EXTRACT(`j`.`Customer`, '$.Name') = @name
-""");
+WHERE JSON_EXTRACT(`j`.`Customer`, '$.Name') = @name");
         }
 
         [Fact]
@@ -361,13 +353,11 @@ WHERE JSON_EXTRACT(`j`.`Customer`, '$.Name') = @name
 
             Assert.Equal(1, count);
             AssertSql(
-                """
-@name='Joe' (Size = 4000)
+                $@"@name='Joe' (Size = 4000)
 
 SELECT COUNT(*)
 FROM `JsonEntities` AS `j`
-WHERE JSON_UNQUOTE(JSON_EXTRACT(`j`.`Customer`, '$.Name')) = @name
-""");
+WHERE JSON_UNQUOTE(JSON_EXTRACT(`j`.`Customer`, '$.Name')) = @name");
         }
 
         [Fact]
@@ -397,13 +387,11 @@ WHERE JSON_CONTAINS(`j`.`Customer`, '{""Name"": ""Joe"", ""Age"": 25}')");
 
             Assert.Equal(1, count);
             AssertSql(
-                """
-@someJson='{"Name": "Joe", "Age": 25}' (Size = 4000)
+                @"@someJson='{""Name"": ""Joe"", ""Age"": 25}' (Size = 4000)
 
 SELECT COUNT(*)
 FROM `JsonEntities` AS `j`
-WHERE JSON_CONTAINS(`j`.`Customer`, @someJson)
-""");
+WHERE JSON_CONTAINS(`j`.`Customer`, @someJson)");
         }
 
         [Fact]

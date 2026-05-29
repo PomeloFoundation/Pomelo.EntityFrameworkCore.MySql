@@ -1,207 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.GearsOfWarModel;
-using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
-using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
-public class TPCGearsOfWarQueryMySqlTest : TPCGearsOfWarQueryMySqlTestBase<TPCGearsOfWarQueryMySqlFixture>
+public class TPCGearsOfWarQueryMySqlTest : TPCGearsOfWarQueryRelationalTestBase<TPCGearsOfWarQueryMySqlFixture>
 {
     public TPCGearsOfWarQueryMySqlTest(TPCGearsOfWarQueryMySqlFixture fixture, ITestOutputHelper testOutputHelper)
         : base(fixture)
     {
         Fixture.TestSqlLoggerFactory.Clear();
         //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
-    }
-
-    [ConditionalFact]
-    public virtual void Check_all_tests_overridden()
-        => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
-
-    public override async Task Conditional_Navigation_With_Trivial_Member_Access(bool async)
-    {
-        await base.Conditional_Navigation_With_Trivial_Member_Access(async);
-
-        AssertSql(
-            """
-SELECT `u`.`Nickname`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`
-    FROM `Officers` AS `o`
-) AS `u`
-LEFT JOIN `Cities` AS `c` ON `u`.`AssignedCityName` = `c`.`Name`
-INNER JOIN `Cities` AS `c0` ON `u`.`CityOfBirthName` = `c0`.`Name`
-WHERE CASE
-    WHEN `c`.`Name` IS NOT NULL THEN `c`.`Name`
-    ELSE `c0`.`Name`
-END <> 'Ephyra'
-""");
-    }
-
-    public override async Task Conditional_Navigation_With_Member_Access_On_Same_Type(bool async)
-    {
-        await base.Conditional_Navigation_With_Member_Access_On_Same_Type(async);
-
-        AssertSql(
-            """
-SELECT `u`.`Nickname`, `u`.`FullName`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`
-    FROM `Officers` AS `o`
-) AS `u`
-LEFT JOIN `Cities` AS `c` ON `u`.`AssignedCityName` = `c`.`Name`
-INNER JOIN `Cities` AS `c0` ON `u`.`CityOfBirthName` = `c0`.`Name`
-WHERE CASE
-    WHEN `c`.`Name` IS NOT NULL THEN `c`.`Nation`
-    ELSE `c0`.`Nation`
-END = 'Tyrus'
-""");
-    }
-
-    public override async Task Conditional_Navigation_With_Member_Access_On_Related_Types(bool async)
-    {
-        await base.Conditional_Navigation_With_Member_Access_On_Related_Types(async);
-
-        AssertSql(
-            """
-SELECT `l`.`Name`
-FROM `LocustHordes` AS `l`
-LEFT JOIN (
-    SELECT `l0`.`Name`, `l0`.`ThreatLevel`
-    FROM `LocustLeaders` AS `l0`
-    UNION ALL
-    SELECT `l1`.`Name`, `l1`.`ThreatLevel`
-    FROM `LocustCommanders` AS `l1`
-) AS `u` ON `l`.`DeputyCommanderName` = `u`.`Name`
-LEFT JOIN `LocustCommanders` AS `l2` ON `l`.`CommanderName` = `l2`.`Name`
-WHERE CASE
-    WHEN `u`.`Name` IS NOT NULL THEN `u`.`ThreatLevel`
-    ELSE `l2`.`ThreatLevel`
-END = 4
-""");
-    }
-
-    public override async Task Correlated_collections_on_RightJoin_with_predicate(bool async)
-    {
-        await base.Correlated_collections_on_RightJoin_with_predicate(async);
-
-        AssertSql(
-            """
-SELECT `u`.`Nickname`, `u`.`SquadId`, `t`.`Id`, `w`.`Name`, `w`.`Id`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`FullName`, `g`.`HasSoulPatch`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`FullName`, `o`.`HasSoulPatch`
-    FROM `Officers` AS `o`
-) AS `u`
-RIGHT JOIN `Tags` AS `t` ON `u`.`Nickname` = `t`.`GearNickName`
-LEFT JOIN `Weapons` AS `w` ON `u`.`FullName` = `w`.`OwnerFullName`
-WHERE `u`.`HasSoulPatch` = FALSE
-ORDER BY `u`.`Nickname`, `u`.`SquadId`, `t`.`Id`
-""");
-    }
-
-    public override async Task DefaultIfEmpty_top_level_over_column_with_nullable_value_type(bool async)
-    {
-        await base.DefaultIfEmpty_top_level_over_column_with_nullable_value_type(async);
-
-        AssertSql(
-            """
-SELECT `m0`.`Rating`
-FROM (
-    SELECT 1
-) AS `e`
-LEFT JOIN (
-    SELECT `m`.`Rating`
-    FROM `Missions` AS `m`
-    WHERE `m`.`Id` = -1
-) AS `m0` ON TRUE
-""");
-    }
-
-    public override async Task DefaultIfEmpty_top_level_over_arbitrary_expression_with_nullable_value_type(bool async)
-    {
-        await base.DefaultIfEmpty_top_level_over_arbitrary_expression_with_nullable_value_type(async);
-
-        AssertSql(
-            """
-SELECT `m0`.`c`
-FROM (
-    SELECT 1
-) AS `e`
-LEFT JOIN (
-    SELECT `m`.`Rating` + 2.0 AS `c`
-    FROM `Missions` AS `m`
-    WHERE `m`.`Id` = -1
-) AS `m0` ON TRUE
-""");
-    }
-
-    public override async Task DefaultIfEmpty_top_level_over_arbitrary_expression_with_non_nullable_value_type(bool async)
-    {
-        await base.DefaultIfEmpty_top_level_over_arbitrary_expression_with_non_nullable_value_type(async);
-
-        AssertSql(
-            """
-SELECT COALESCE(`m0`.`c`, 0)
-FROM (
-    SELECT 1
-) AS `e`
-LEFT JOIN (
-    SELECT `m`.`Id` + 2 AS `c`
-    FROM `Missions` AS `m`
-    WHERE `m`.`Id` = -1
-) AS `m0` ON TRUE
-""");
-    }
-
-    public override async Task Coalesce_with_non_root_evaluatable_Convert(bool async)
-    {
-        await base.Coalesce_with_non_root_evaluatable_Convert(async);
-
-        AssertSql(
-            """
-@rank='1' (Nullable = true)
-
-SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-    FROM `Officers` AS `o`
-) AS `u`
-WHERE @rank = `u`.`Rank`
-""");
-    }
-
-    public override async Task Project_equality_with_value_converted_property(bool async)
-    {
-        await base.Project_equality_with_value_converted_property(async);
-
-        AssertSql(
-            """
-SELECT `m`.`Difficulty` = 'Unknown'
-FROM `Missions` AS `m`
-""");
     }
 
     public override async Task Entity_equality_empty(bool async)
@@ -515,6 +332,17 @@ FROM `Tags` AS `t`
 """,
                 //
                 """
+@tags1='b39a6fba-9026-4d69-828e-fd7068673e57'
+@tags2='70534e05-782c-4052-8720-c2c54481ce5f'
+@tags3='a8ad98f9-e023-4e2a-9a70-c2728455bd34'
+@tags4='df36f493-463f-4123-83f9-6b135deeb7ba'
+@tags5='34c8d86e-a4ac-4be5-827f-584dda348a07'
+@tags6='a7be028a-0cf2-448f-ab55-ce8bc5d8cf69'
+@tags7='a7be028a-0cf2-448f-ab55-ce8bc5d8cf69'
+@tags8='a7be028a-0cf2-448f-ab55-ce8bc5d8cf69'
+@tags9='a7be028a-0cf2-448f-ab55-ce8bc5d8cf69'
+@tags10='a7be028a-0cf2-448f-ab55-ce8bc5d8cf69'
+
 SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`, `t`.`Id`, `t`.`GearNickName`, `t`.`GearSquadId`, `t`.`IssueDate`, `t`.`Note`
 FROM (
     SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
@@ -524,7 +352,7 @@ FROM (
     FROM `Officers` AS `o`
 ) AS `u`
 LEFT JOIN `Tags` AS `t` ON (`u`.`Nickname` = `t`.`GearNickName`) AND (`u`.`SquadId` = `t`.`GearSquadId`)
-WHERE `t`.`Id` IS NOT NULL AND `t`.`Id` IN ('b39a6fba-9026-4d69-828e-fd7068673e57', '70534e05-782c-4052-8720-c2c54481ce5f', 'a8ad98f9-e023-4e2a-9a70-c2728455bd34', 'df36f493-463f-4123-83f9-6b135deeb7ba', '34c8d86e-a4ac-4be5-827f-584dda348a07', 'a7be028a-0cf2-448f-ab55-ce8bc5d8cf69')
+WHERE `t`.`Id` IS NOT NULL AND `t`.`Id` IN (@tags1, @tags2, @tags3, @tags4, @tags5, @tags6, @tags7, @tags8, @tags9, @tags10)
 """);
         }
     }
@@ -570,6 +398,17 @@ FROM `Tags` AS `t`
 """,
                 //
                 """
+@tags1='b39a6fba-9026-4d69-828e-fd7068673e57'
+@tags2='70534e05-782c-4052-8720-c2c54481ce5f'
+@tags3='a8ad98f9-e023-4e2a-9a70-c2728455bd34'
+@tags4='df36f493-463f-4123-83f9-6b135deeb7ba'
+@tags5='34c8d86e-a4ac-4be5-827f-584dda348a07'
+@tags6='a7be028a-0cf2-448f-ab55-ce8bc5d8cf69'
+@tags7='a7be028a-0cf2-448f-ab55-ce8bc5d8cf69'
+@tags8='a7be028a-0cf2-448f-ab55-ce8bc5d8cf69'
+@tags9='a7be028a-0cf2-448f-ab55-ce8bc5d8cf69'
+@tags10='a7be028a-0cf2-448f-ab55-ce8bc5d8cf69'
+
 SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`, `t`.`Id`, `t`.`GearNickName`, `t`.`GearSquadId`, `t`.`IssueDate`, `t`.`Note`
 FROM (
     SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
@@ -580,7 +419,7 @@ FROM (
 ) AS `u`
 INNER JOIN `Cities` AS `c` ON `u`.`CityOfBirthName` = `c`.`Name`
 LEFT JOIN `Tags` AS `t` ON (`u`.`Nickname` = `t`.`GearNickName`) AND (`u`.`SquadId` = `t`.`GearSquadId`)
-WHERE `c`.`Location` IS NOT NULL AND `t`.`Id` IN ('b39a6fba-9026-4d69-828e-fd7068673e57', '70534e05-782c-4052-8720-c2c54481ce5f', 'a8ad98f9-e023-4e2a-9a70-c2728455bd34', 'df36f493-463f-4123-83f9-6b135deeb7ba', '34c8d86e-a4ac-4be5-827f-584dda348a07', 'a7be028a-0cf2-448f-ab55-ce8bc5d8cf69')
+WHERE `c`.`Location` IS NOT NULL AND `t`.`Id` IN (@tags1, @tags2, @tags3, @tags4, @tags5, @tags6, @tags7, @tags8, @tags9, @tags10)
 """);
         }
     }
@@ -625,6 +464,17 @@ FROM `Tags` AS `t`
 """,
                 //
                 """
+@tags1='b39a6fba-9026-4d69-828e-fd7068673e57'
+@tags2='70534e05-782c-4052-8720-c2c54481ce5f'
+@tags3='a8ad98f9-e023-4e2a-9a70-c2728455bd34'
+@tags4='df36f493-463f-4123-83f9-6b135deeb7ba'
+@tags5='34c8d86e-a4ac-4be5-827f-584dda348a07'
+@tags6='a7be028a-0cf2-448f-ab55-ce8bc5d8cf69'
+@tags7='a7be028a-0cf2-448f-ab55-ce8bc5d8cf69'
+@tags8='a7be028a-0cf2-448f-ab55-ce8bc5d8cf69'
+@tags9='a7be028a-0cf2-448f-ab55-ce8bc5d8cf69'
+@tags10='a7be028a-0cf2-448f-ab55-ce8bc5d8cf69'
+
 SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
 FROM (
     SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
@@ -634,7 +484,7 @@ FROM (
     FROM `Officers` AS `o`
 ) AS `u`
 LEFT JOIN `Tags` AS `t` ON (`u`.`Nickname` = `t`.`GearNickName`) AND (`u`.`SquadId` = `t`.`GearSquadId`)
-WHERE `t`.`Id` IS NOT NULL AND `t`.`Id` IN ('b39a6fba-9026-4d69-828e-fd7068673e57', '70534e05-782c-4052-8720-c2c54481ce5f', 'a8ad98f9-e023-4e2a-9a70-c2728455bd34', 'df36f493-463f-4123-83f9-6b135deeb7ba', '34c8d86e-a4ac-4be5-827f-584dda348a07', 'a7be028a-0cf2-448f-ab55-ce8bc5d8cf69')
+WHERE `t`.`Id` IS NOT NULL AND `t`.`Id` IN (@tags1, @tags2, @tags3, @tags4, @tags5, @tags6, @tags7, @tags8, @tags9, @tags10)
 """);
         }
     }
@@ -766,582 +616,6 @@ ORDER BY `c`.`Name`, `w`.`Id`
 """);
     }
 
-    public override async Task Where_enum(bool async)
-    {
-        await base.Where_enum(async);
-
-        AssertSql(
-"""
-SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-    FROM `Officers` AS `o`
-) AS `u`
-WHERE `u`.`Rank` = 4
-""");
-    }
-
-    public override async Task Where_nullable_enum_with_constant(bool async)
-    {
-        await base.Where_nullable_enum_with_constant(async);
-
-        AssertSql(
-"""
-SELECT `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`
-FROM `Weapons` AS `w`
-WHERE `w`.`AmmunitionType` = 1
-""");
-    }
-
-    public override async Task Where_nullable_enum_with_null_constant(bool async)
-    {
-        await base.Where_nullable_enum_with_null_constant(async);
-
-        AssertSql(
-"""
-SELECT `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`
-FROM `Weapons` AS `w`
-WHERE `w`.`AmmunitionType` IS NULL
-""");
-    }
-
-    public override async Task Where_nullable_enum_with_non_nullable_parameter(bool async)
-    {
-        await base.Where_nullable_enum_with_non_nullable_parameter(async);
-
-        AssertSql(
-            """
-@ammunitionType='1'
-
-SELECT `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`
-FROM `Weapons` AS `w`
-WHERE `w`.`AmmunitionType` = @ammunitionType
-""");
-    }
-
-    public override async Task Where_nullable_enum_with_nullable_parameter(bool async)
-    {
-        await base.Where_nullable_enum_with_nullable_parameter(async);
-
-        AssertSql(
-            """
-@ammunitionType='1' (Nullable = true)
-
-SELECT `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`
-FROM `Weapons` AS `w`
-WHERE `w`.`AmmunitionType` = @ammunitionType
-""",
-            //
-            """
-SELECT `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`
-FROM `Weapons` AS `w`
-WHERE `w`.`AmmunitionType` IS NULL
-""");
-    }
-
-    public override async Task Where_bitwise_and_enum(bool async)
-    {
-        await base.Where_bitwise_and_enum(async);
-
-        AssertSql(
-"""
-SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-    FROM `Officers` AS `o`
-) AS `u`
-WHERE CAST(`u`.`Rank` & 2 AS signed) > 0
-""",
-                //
-                """
-SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-    FROM `Officers` AS `o`
-) AS `u`
-WHERE CAST(`u`.`Rank` & 2 AS signed) = 2
-""");
-    }
-
-    public override async Task Where_bitwise_and_integral(bool async)
-    {
-        await base.Where_bitwise_and_integral(async);
-
-        AssertSql(
-"""
-SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-    FROM `Officers` AS `o`
-) AS `u`
-WHERE CAST(`u`.`Rank` & 1 AS signed) = 1
-""",
-                //
-                """
-SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-    FROM `Officers` AS `o`
-) AS `u`
-WHERE CAST(CAST(`u`.`Rank` AS signed) & 1 AS signed) = 1
-""",
-                //
-                """
-SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-    FROM `Officers` AS `o`
-) AS `u`
-WHERE CAST(CAST(`u`.`Rank` AS signed) & 1 AS signed) = 1
-""");
-    }
-
-    public override async Task Where_bitwise_and_nullable_enum_with_constant(bool async)
-    {
-        await base.Where_bitwise_and_nullable_enum_with_constant(async);
-
-        AssertSql(
-"""
-SELECT `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`
-FROM `Weapons` AS `w`
-WHERE CAST(`w`.`AmmunitionType` & 1 AS signed) > 0
-""");
-    }
-
-    public override async Task Where_bitwise_and_nullable_enum_with_null_constant(bool async)
-    {
-        await base.Where_bitwise_and_nullable_enum_with_null_constant(async);
-
-        AssertSql(
-"""
-SELECT `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`
-FROM `Weapons` AS `w`
-WHERE CAST(`w`.`AmmunitionType` & NULL AS signed) > 0
-""");
-    }
-
-    public override async Task Where_bitwise_and_nullable_enum_with_non_nullable_parameter(bool async)
-    {
-        await base.Where_bitwise_and_nullable_enum_with_non_nullable_parameter(async);
-
-        AssertSql(
-            """
-@ammunitionType='1'
-
-SELECT `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`
-FROM `Weapons` AS `w`
-WHERE CAST(`w`.`AmmunitionType` & @ammunitionType AS signed) > 0
-""");
-    }
-
-    public override async Task Where_bitwise_and_nullable_enum_with_nullable_parameter(bool async)
-    {
-        await base.Where_bitwise_and_nullable_enum_with_nullable_parameter(async);
-
-        AssertSql(
-            """
-@ammunitionType='1' (Nullable = true)
-
-SELECT `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`
-FROM `Weapons` AS `w`
-WHERE CAST(`w`.`AmmunitionType` & @ammunitionType AS signed) > 0
-""",
-            //
-            """
-SELECT `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`
-FROM `Weapons` AS `w`
-WHERE CAST(`w`.`AmmunitionType` & NULL AS signed) > 0
-""");
-    }
-
-    public override async Task Where_bitwise_or_enum(bool async)
-    {
-        await base.Where_bitwise_or_enum(async);
-
-        AssertSql(
-"""
-SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-    FROM `Officers` AS `o`
-) AS `u`
-WHERE CAST(`u`.`Rank` | 2 AS signed) > 0
-""");
-    }
-
-    public override async Task Bitwise_projects_values_in_select(bool async)
-    {
-        await base.Bitwise_projects_values_in_select(async);
-
-        AssertSql(
-"""
-SELECT CAST(`u`.`Rank` & 2 AS signed) = 2 AS `BitwiseTrue`, CAST(`u`.`Rank` & 2 AS signed) = 4 AS `BitwiseFalse`, CAST(`u`.`Rank` & 2 AS signed) AS `BitwiseValue`
-FROM (
-    SELECT `g`.`Rank`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Rank`
-    FROM `Officers` AS `o`
-) AS `u`
-WHERE CAST(`u`.`Rank` & 2 AS signed) = 2
-LIMIT 1
-""");
-    }
-
-    public override async Task Where_enum_has_flag(bool async)
-    {
-        await base.Where_enum_has_flag(async);
-
-        AssertSql(
-"""
-SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-    FROM `Officers` AS `o`
-) AS `u`
-WHERE CAST(`u`.`Rank` & 2 AS signed) = 2
-""",
-                //
-                """
-SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-    FROM `Officers` AS `o`
-) AS `u`
-WHERE CAST(`u`.`Rank` & 18 AS signed) = 18
-""",
-                //
-                """
-SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-    FROM `Officers` AS `o`
-) AS `u`
-WHERE CAST(`u`.`Rank` & 1 AS signed) = 1
-""",
-                //
-                """
-SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-    FROM `Officers` AS `o`
-) AS `u`
-WHERE CAST(`u`.`Rank` & 1 AS signed) = 1
-""",
-                //
-                """
-SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-    FROM `Officers` AS `o`
-) AS `u`
-WHERE CAST(2 & `u`.`Rank` AS signed) = `u`.`Rank`
-""");
-    }
-
-    public override async Task Where_enum_has_flag_subquery(bool async)
-    {
-        await base.Where_enum_has_flag_subquery(async);
-
-        AssertSql(
-"""
-SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-    FROM `Officers` AS `o`
-) AS `u`
-WHERE CAST(`u`.`Rank` & COALESCE((
-    SELECT `u0`.`Rank`
-    FROM (
-        SELECT `g0`.`Nickname`, `g0`.`SquadId`, `g0`.`Rank`
-        FROM `Gears` AS `g0`
-        UNION ALL
-        SELECT `o0`.`Nickname`, `o0`.`SquadId`, `o0`.`Rank`
-        FROM `Officers` AS `o0`
-    ) AS `u0`
-    ORDER BY `u0`.`Nickname`, `u0`.`SquadId`
-    LIMIT 1), 0) AS signed) = COALESCE((
-    SELECT `u0`.`Rank`
-    FROM (
-        SELECT `g0`.`Nickname`, `g0`.`SquadId`, `g0`.`Rank`
-        FROM `Gears` AS `g0`
-        UNION ALL
-        SELECT `o0`.`Nickname`, `o0`.`SquadId`, `o0`.`Rank`
-        FROM `Officers` AS `o0`
-    ) AS `u0`
-    ORDER BY `u0`.`Nickname`, `u0`.`SquadId`
-    LIMIT 1), 0)
-""",
-                //
-                """
-SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-    FROM `Officers` AS `o`
-) AS `u`
-WHERE CAST(2 & COALESCE((
-    SELECT `u0`.`Rank`
-    FROM (
-        SELECT `g0`.`Nickname`, `g0`.`SquadId`, `g0`.`Rank`
-        FROM `Gears` AS `g0`
-        UNION ALL
-        SELECT `o0`.`Nickname`, `o0`.`SquadId`, `o0`.`Rank`
-        FROM `Officers` AS `o0`
-    ) AS `u0`
-    ORDER BY `u0`.`Nickname`, `u0`.`SquadId`
-    LIMIT 1), 0) AS signed) = COALESCE((
-    SELECT `u0`.`Rank`
-    FROM (
-        SELECT `g0`.`Nickname`, `g0`.`SquadId`, `g0`.`Rank`
-        FROM `Gears` AS `g0`
-        UNION ALL
-        SELECT `o0`.`Nickname`, `o0`.`SquadId`, `o0`.`Rank`
-        FROM `Officers` AS `o0`
-    ) AS `u0`
-    ORDER BY `u0`.`Nickname`, `u0`.`SquadId`
-    LIMIT 1), 0)
-""");
-    }
-
-    public override async Task Where_enum_has_flag_subquery_with_pushdown(bool async)
-    {
-        await base.Where_enum_has_flag_subquery_with_pushdown(async);
-
-        AssertSql(
-"""
-SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-    FROM `Officers` AS `o`
-) AS `u`
-WHERE (CAST(`u`.`Rank` & (
-    SELECT `u0`.`Rank`
-    FROM (
-        SELECT `g0`.`Nickname`, `g0`.`SquadId`, `g0`.`Rank`
-        FROM `Gears` AS `g0`
-        UNION ALL
-        SELECT `o0`.`Nickname`, `o0`.`SquadId`, `o0`.`Rank`
-        FROM `Officers` AS `o0`
-    ) AS `u0`
-    ORDER BY `u0`.`Nickname`, `u0`.`SquadId`
-    LIMIT 1) AS signed) = (
-    SELECT `u0`.`Rank`
-    FROM (
-        SELECT `g0`.`Nickname`, `g0`.`SquadId`, `g0`.`Rank`
-        FROM `Gears` AS `g0`
-        UNION ALL
-        SELECT `o0`.`Nickname`, `o0`.`SquadId`, `o0`.`Rank`
-        FROM `Officers` AS `o0`
-    ) AS `u0`
-    ORDER BY `u0`.`Nickname`, `u0`.`SquadId`
-    LIMIT 1)) OR (
-    SELECT `u0`.`Rank`
-    FROM (
-        SELECT `g0`.`Nickname`, `g0`.`SquadId`, `g0`.`Rank`
-        FROM `Gears` AS `g0`
-        UNION ALL
-        SELECT `o0`.`Nickname`, `o0`.`SquadId`, `o0`.`Rank`
-        FROM `Officers` AS `o0`
-    ) AS `u0`
-    ORDER BY `u0`.`Nickname`, `u0`.`SquadId`
-    LIMIT 1) IS NULL
-""",
-                //
-                """
-SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-    FROM `Officers` AS `o`
-) AS `u`
-WHERE (CAST(2 & (
-    SELECT `u0`.`Rank`
-    FROM (
-        SELECT `g0`.`Nickname`, `g0`.`SquadId`, `g0`.`Rank`
-        FROM `Gears` AS `g0`
-        UNION ALL
-        SELECT `o0`.`Nickname`, `o0`.`SquadId`, `o0`.`Rank`
-        FROM `Officers` AS `o0`
-    ) AS `u0`
-    ORDER BY `u0`.`Nickname`, `u0`.`SquadId`
-    LIMIT 1) AS signed) = (
-    SELECT `u0`.`Rank`
-    FROM (
-        SELECT `g0`.`Nickname`, `g0`.`SquadId`, `g0`.`Rank`
-        FROM `Gears` AS `g0`
-        UNION ALL
-        SELECT `o0`.`Nickname`, `o0`.`SquadId`, `o0`.`Rank`
-        FROM `Officers` AS `o0`
-    ) AS `u0`
-    ORDER BY `u0`.`Nickname`, `u0`.`SquadId`
-    LIMIT 1)) OR (
-    SELECT `u0`.`Rank`
-    FROM (
-        SELECT `g0`.`Nickname`, `g0`.`SquadId`, `g0`.`Rank`
-        FROM `Gears` AS `g0`
-        UNION ALL
-        SELECT `o0`.`Nickname`, `o0`.`SquadId`, `o0`.`Rank`
-        FROM `Officers` AS `o0`
-    ) AS `u0`
-    ORDER BY `u0`.`Nickname`, `u0`.`SquadId`
-    LIMIT 1) IS NULL
-""");
-    }
-
-    public override async Task Where_enum_has_flag_subquery_client_eval(bool async)
-    {
-        await base.Where_enum_has_flag_subquery_client_eval(async);
-
-        AssertSql(
-"""
-SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-    FROM `Officers` AS `o`
-) AS `u`
-WHERE (CAST(`u`.`Rank` & (
-    SELECT `u0`.`Rank`
-    FROM (
-        SELECT `g0`.`Nickname`, `g0`.`SquadId`, `g0`.`Rank`
-        FROM `Gears` AS `g0`
-        UNION ALL
-        SELECT `o0`.`Nickname`, `o0`.`SquadId`, `o0`.`Rank`
-        FROM `Officers` AS `o0`
-    ) AS `u0`
-    ORDER BY `u0`.`Nickname`, `u0`.`SquadId`
-    LIMIT 1) AS signed) = (
-    SELECT `u0`.`Rank`
-    FROM (
-        SELECT `g0`.`Nickname`, `g0`.`SquadId`, `g0`.`Rank`
-        FROM `Gears` AS `g0`
-        UNION ALL
-        SELECT `o0`.`Nickname`, `o0`.`SquadId`, `o0`.`Rank`
-        FROM `Officers` AS `o0`
-    ) AS `u0`
-    ORDER BY `u0`.`Nickname`, `u0`.`SquadId`
-    LIMIT 1)) OR (
-    SELECT `u0`.`Rank`
-    FROM (
-        SELECT `g0`.`Nickname`, `g0`.`SquadId`, `g0`.`Rank`
-        FROM `Gears` AS `g0`
-        UNION ALL
-        SELECT `o0`.`Nickname`, `o0`.`SquadId`, `o0`.`Rank`
-        FROM `Officers` AS `o0`
-    ) AS `u0`
-    ORDER BY `u0`.`Nickname`, `u0`.`SquadId`
-    LIMIT 1) IS NULL
-""");
-    }
-
-    public override async Task Where_enum_has_flag_with_non_nullable_parameter(bool async)
-    {
-        await base.Where_enum_has_flag_with_non_nullable_parameter(async);
-
-        AssertSql(
-            """
-@parameter='2'
-
-SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-    FROM `Officers` AS `o`
-) AS `u`
-WHERE CAST(`u`.`Rank` & @parameter AS signed) = @parameter
-""");
-    }
-
-    public override async Task Where_has_flag_with_nullable_parameter(bool async)
-    {
-        await base.Where_has_flag_with_nullable_parameter(async);
-
-        AssertSql(
-            """
-@parameter='2' (Nullable = true)
-
-SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-    FROM `Officers` AS `o`
-) AS `u`
-WHERE CAST(`u`.`Rank` & @parameter AS signed) = @parameter
-""");
-    }
-
-    public override async Task Select_enum_has_flag(bool async)
-    {
-        await base.Select_enum_has_flag(async);
-
-        AssertSql(
-"""
-SELECT CAST(`u`.`Rank` & 2 AS signed) = 2 AS `hasFlagTrue`, CAST(`u`.`Rank` & 4 AS signed) = 4 AS `hasFlagFalse`
-FROM (
-    SELECT `g`.`Rank`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Rank`
-    FROM `Officers` AS `o`
-) AS `u`
-WHERE CAST(`u`.`Rank` & 2 AS signed) = 2
-LIMIT 1
-""");
-    }
-
     public override async Task Where_count_subquery_without_collision(bool async)
     {
         await base.Where_count_subquery_without_collision(async);
@@ -1401,15 +675,15 @@ WHERE `w`.`IsAutomatic` = TRUE
         await base.Select_comparison_with_null(async);
 
         AssertSql(
-            """
+"""
 @ammunitionType='1' (Nullable = true)
 
 SELECT `w`.`Id`, (`w`.`AmmunitionType` = @ammunitionType) AND `w`.`AmmunitionType` IS NOT NULL AS `Cartridge`
 FROM `Weapons` AS `w`
 WHERE `w`.`AmmunitionType` = @ammunitionType
 """,
-            //
-            """
+                //
+                """
 SELECT `w`.`Id`, `w`.`AmmunitionType` IS NULL AS `Cartridge`
 FROM `Weapons` AS `w`
 WHERE `w`.`AmmunitionType` IS NULL
@@ -1421,26 +695,26 @@ WHERE `w`.`AmmunitionType` IS NULL
         await base.Select_null_parameter(async);
 
         AssertSql(
-            """
+"""
 @ammunitionType='1' (Nullable = true)
 
 SELECT `w`.`Id`, @ammunitionType AS `AmmoType`
 FROM `Weapons` AS `w`
 """,
-            //
-            """
+                //
+                """
 SELECT `w`.`Id`, NULL AS `AmmoType`
 FROM `Weapons` AS `w`
 """,
-            //
-            """
+                //
+                """
 @ammunitionType='2' (Nullable = true)
 
 SELECT `w`.`Id`, @ammunitionType AS `AmmoType`
 FROM `Weapons` AS `w`
 """,
-            //
-            """
+                //
+                """
 SELECT `w`.`Id`, NULL AS `AmmoType`
 FROM `Weapons` AS `w`
 """);
@@ -2455,7 +1729,7 @@ ORDER BY `u`.`Nickname`
         await base.Where_subquery_distinct_singleordefault_boolean2(async);
 
         AssertSql(
-            """
+"""
 SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
 FROM (
     SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
@@ -3138,7 +2412,7 @@ WHERE 'Unknown' = `c`.`Location`
         await base.Non_unicode_parameter_is_used_for_non_unicode_column(async);
 
         AssertSql(
-            """
+"""
 @value='Unknown' (Size = 4000)
 
 SELECT `c`.`Name`, `c`.`Location`, `c`.`Nation`
@@ -3170,9 +2444,13 @@ WHERE EXISTS (
         {
             AssertSql(
 """
+@cities1='Unknown' (Size = 4000)
+@cities2='Jacinto's location' (Size = 4000)
+@cities3='Ephyra's location' (Size = 4000)
+
 SELECT `c`.`Name`, `c`.`Location`, `c`.`Nation`
 FROM `Cities` AS `c`
-WHERE `c`.`Location` IN ('Unknown', 'Jacinto''s location', 'Ephyra''s location')
+WHERE `c`.`Location` IN (@cities1, @cities2, @cities3)
 """);
         }
     }
@@ -4013,235 +3291,6 @@ LEFT JOIN `Weapons` AS `w` ON `w`.`SynergyWithId` IS NOT NULL
 """);
     }
 
-    public override async Task Where_datetimeoffset_now(bool async)
-    {
-        await base.Where_datetimeoffset_now(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE `m`.`Timeline` <> UTC_TIMESTAMP(6)
-""");
-    }
-
-    public override async Task Where_datetimeoffset_utcnow(bool async)
-    {
-        await base.Where_datetimeoffset_utcnow(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE `m`.`Timeline` <> UTC_TIMESTAMP(6)
-""");
-    }
-
-    public override async Task Where_datetimeoffset_date_component(bool async)
-    {
-        await base.Where_datetimeoffset_date_component(async);
-
-        AssertSql(
-            """
-@Date='0001-01-01T00:00:00.0000000' (DbType = DateTime)
-
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE CONVERT(`m`.`Timeline`, date) > @Date
-""");
-    }
-
-    public override async Task Where_datetimeoffset_year_component(bool async)
-    {
-        await base.Where_datetimeoffset_year_component(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE EXTRACT(year FROM `m`.`Timeline`) = 2
-""");
-    }
-
-    public override async Task Where_datetimeoffset_month_component(bool async)
-    {
-        await base.Where_datetimeoffset_month_component(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE EXTRACT(month FROM `m`.`Timeline`) = 1
-""");
-    }
-
-    public override async Task Where_datetimeoffset_dayofyear_component(bool async)
-    {
-        await base.Where_datetimeoffset_dayofyear_component(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE DAYOFYEAR(`m`.`Timeline`) = 2
-""");
-    }
-
-    public override async Task Where_datetimeoffset_day_component(bool async)
-    {
-        await base.Where_datetimeoffset_day_component(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE EXTRACT(day FROM `m`.`Timeline`) = 2
-""");
-    }
-
-    public override async Task Where_datetimeoffset_hour_component(bool async)
-    {
-        await AssertQuery(
-            async,
-            ss => from m in ss.Set<Mission>()
-                where m.Timeline.Hour == /* 10 */ 8
-                select m);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE EXTRACT(hour FROM `m`.`Timeline`) = 8
-""");
-    }
-
-    public override async Task Where_datetimeoffset_minute_component(bool async)
-    {
-        await base.Where_datetimeoffset_minute_component(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE EXTRACT(minute FROM `m`.`Timeline`) = 0
-""");
-    }
-
-    public override async Task Where_datetimeoffset_second_component(bool async)
-    {
-        await base.Where_datetimeoffset_second_component(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE EXTRACT(second FROM `m`.`Timeline`) = 0
-""");
-    }
-
-    public override async Task Where_datetimeoffset_millisecond_component(bool async)
-    {
-        await base.Where_datetimeoffset_millisecond_component(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE (EXTRACT(microsecond FROM `m`.`Timeline`)) DIV (1000) = 0
-""");
-    }
-
-    public override async Task DateTimeOffset_DateAdd_AddMonths(bool async)
-    {
-        await base.DateTimeOffset_DateAdd_AddMonths(async);
-
-        AssertSql(
-"""
-SELECT DATE_ADD(`m`.`Timeline`, INTERVAL CAST(1 AS signed) month)
-FROM `Missions` AS `m`
-""");
-    }
-
-    public override async Task DateTimeOffset_DateAdd_AddDays(bool async)
-    {
-        await base.DateTimeOffset_DateAdd_AddDays(async);
-
-        AssertSql(
-"""
-SELECT DATE_ADD(`m`.`Timeline`, INTERVAL CAST(1.0 AS signed) day)
-FROM `Missions` AS `m`
-""");
-    }
-
-    public override async Task DateTimeOffset_DateAdd_AddHours(bool async)
-    {
-        await base.DateTimeOffset_DateAdd_AddHours(async);
-
-        AssertSql(
-"""
-SELECT DATE_ADD(`m`.`Timeline`, INTERVAL CAST(1.0 AS signed) hour)
-FROM `Missions` AS `m`
-""");
-    }
-
-    public override async Task DateTimeOffset_DateAdd_AddMinutes(bool async)
-    {
-        await base.DateTimeOffset_DateAdd_AddMinutes(async);
-
-        AssertSql(
-"""
-SELECT DATE_ADD(`m`.`Timeline`, INTERVAL CAST(1.0 AS signed) minute)
-FROM `Missions` AS `m`
-""");
-    }
-
-    public override async Task DateTimeOffset_DateAdd_AddSeconds(bool async)
-    {
-        await base.DateTimeOffset_DateAdd_AddSeconds(async);
-
-        AssertSql(
-"""
-SELECT DATE_ADD(`m`.`Timeline`, INTERVAL CAST(1.0 AS signed) second)
-FROM `Missions` AS `m`
-""");
-    }
-
-    public override async Task DateTimeOffset_DateAdd_AddMilliseconds(bool async)
-    {
-        await base.DateTimeOffset_DateAdd_AddMilliseconds(async);
-
-        AssertSql(
-"""
-SELECT DATE_ADD(`m`.`Timeline`, INTERVAL 1000 * CAST(300.0 AS signed) microsecond)
-FROM `Missions` AS `m`
-""");
-    }
-
-    public override async Task Where_datetimeoffset_milliseconds_parameter_and_constant(bool async)
-    {
-        var dateTimeOffset = MySqlTestHelpers.GetExpectedValue(new DateTimeOffset(599898024001234567, new TimeSpan(1, 30, 0)));
-
-        // Literal where clause
-        var p = Expression.Parameter(typeof(Mission), "i");
-        var dynamicWhere = Expression.Lambda<Func<Mission, bool>>(
-            Expression.Equal(
-                Expression.Property(p, "Timeline"),
-                Expression.Constant(dateTimeOffset)
-            ), p);
-
-        await AssertCount(
-            async,
-            ss => ss.Set<Mission>().Where(dynamicWhere),
-            ss => ss.Set<Mission>().Where(m => m.Timeline == dateTimeOffset));
-
-        AssertSql(
-"""
-SELECT COUNT(*)
-FROM `Missions` AS `m`
-WHERE `m`.`Timeline` = TIMESTAMP '1902-01-02 08:30:00.123456'
-""");
-    }
-
     public override async Task Orderby_added_for_client_side_GroupJoin_composite_dependent_to_principal_LOJ_when_incomplete_key_is_used(
         bool async)
     {
@@ -4411,9 +3460,13 @@ WHERE `t`.`Id` IN (
         {
             AssertSql(
 """
+@ids1='df36f493-463f-4123-83f9-6b135deeb7ba'
+@ids2='23cbcf9b-ce14-45cf-aafa-2c2667ebfdd3'
+@ids3='ab1b82d7-88db-42bd-a132-7eef9aa68af4'
+
 SELECT `t`.`Id`, `t`.`GearNickName`, `t`.`GearSquadId`, `t`.`IssueDate`, `t`.`Note`
 FROM `Tags` AS `t`
-WHERE `t`.`Id` IN ('df36f493-463f-4123-83f9-6b135deeb7ba', '23cbcf9b-ce14-45cf-aafa-2c2667ebfdd3', 'ab1b82d7-88db-42bd-a132-7eef9aa68af4')
+WHERE `t`.`Id` IN (@ids1, @ids2, @ids3)
 """);
         }
     }
@@ -4654,7 +3707,7 @@ ORDER BY `u`.`FullName`
         await base.Subquery_with_result_operator_is_not_lifted(async);
 
         AssertSql(
-            """
+"""
 @p='2'
 
 SELECT `u0`.`FullName`
@@ -4680,7 +3733,7 @@ ORDER BY `u0`.`Rank`
         await base.Skip_with_orderby_followed_by_orderBy_is_pushed_down(async);
 
         AssertSql(
-            """
+"""
 @p='1'
 
 SELECT `u0`.`FullName`
@@ -4814,7 +3867,7 @@ ORDER BY `l`.`Name`
         await base.Member_access_on_derived_materialized_entity_using_cast(async);
 
         AssertSql(
-            """
+"""
 SELECT `l`.`Id`, `l`.`CapitalName`, `l`.`Name`, `l`.`ServerAddress`, `l`.`CommanderName`, `l`.`DeputyCommanderName`, `l`.`Eradicated`
 FROM `LocustHordes` AS `l`
 ORDER BY `l`.`Name`
@@ -4863,7 +3916,7 @@ ORDER BY `l`.`Name`
         await base.Navigation_access_on_derived_materialized_entity_using_cast(async);
 
         AssertSql(
-            """
+"""
 SELECT `l`.`Id`, `l`.`CapitalName`, `l`.`Name`, `l`.`ServerAddress`, `l`.`CommanderName`, `l`.`DeputyCommanderName`, `l`.`Eradicated`, `l0`.`ThreatLevel` AS `Threat`
 FROM `LocustHordes` AS `l`
 LEFT JOIN `LocustCommanders` AS `l0` ON `l`.`CommanderName` = `l0`.`Name`
@@ -4942,7 +3995,7 @@ ORDER BY `u`.`Name`
         await base.Include_on_derived_entity_using_OfType(async);
 
         AssertSql(
-            """
+"""
 SELECT `l`.`Id`, `l`.`CapitalName`, `l`.`Name`, `l`.`ServerAddress`, `l`.`CommanderName`, `l`.`DeputyCommanderName`, `l`.`Eradicated`, `l0`.`Name`, `l0`.`LocustHordeId`, `l0`.`ThreatLevel`, `l0`.`ThreatLevelByte`, `l0`.`ThreatLevelNullableByte`, `l0`.`DefeatedByNickname`, `l0`.`DefeatedBySquadId`, `l0`.`HighCommandId`, `u`.`Name`, `u`.`LocustHordeId`, `u`.`ThreatLevel`, `u`.`ThreatLevelByte`, `u`.`ThreatLevelNullableByte`, `u`.`DefeatedByNickname`, `u`.`DefeatedBySquadId`, `u`.`HighCommandId`, `u`.`Discriminator`
 FROM `LocustHordes` AS `l`
 LEFT JOIN `LocustCommanders` AS `l0` ON `l`.`CommanderName` = `l0`.`Name`
@@ -5091,6 +4144,8 @@ WHERE (`t`.`SquadId` < 2) AND EXISTS (
         {
         AssertSql(
 """
+@cities1='Ephyra' (Size = 255)
+
 SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
 FROM (
     SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
@@ -5100,7 +4155,7 @@ FROM (
     FROM `Officers` AS `o`
 ) AS `u`
 LEFT JOIN `Cities` AS `c` ON `u`.`AssignedCityName` = `c`.`Name`
-WHERE (`u`.`SquadId` < 2) AND (`c`.`Name` IS NULL OR (`c`.`Name` = 'Ephyra'))
+WHERE (`u`.`SquadId` < 2) AND (`c`.`Name` IS NULL OR (`c`.`Name` = @cities1))
 """);
         }
     }
@@ -5511,7 +4566,7 @@ ORDER BY `t`.`Id`, `u`.`Nickname`, `u`.`SquadId`
         await base.ThenInclude_collection_on_derived_after_derived_reference(async);
 
         AssertSql(
-            """
+"""
 SELECT `l`.`Id`, `l`.`CapitalName`, `l`.`Name`, `l`.`ServerAddress`, `l`.`CommanderName`, `l`.`DeputyCommanderName`, `l`.`Eradicated`, `l0`.`Name`, `l0`.`LocustHordeId`, `l0`.`ThreatLevel`, `l0`.`ThreatLevelByte`, `l0`.`ThreatLevelNullableByte`, `l0`.`DefeatedByNickname`, `l0`.`DefeatedBySquadId`, `l0`.`HighCommandId`, `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`, `u0`.`Nickname`, `u0`.`SquadId`, `u0`.`AssignedCityName`, `u0`.`CityOfBirthName`, `u0`.`FullName`, `u0`.`HasSoulPatch`, `u0`.`LeaderNickname`, `u0`.`LeaderSquadId`, `u0`.`Rank`, `u0`.`Discriminator`
 FROM `LocustHordes` AS `l`
 LEFT JOIN `LocustCommanders` AS `l0` ON `l`.`CommanderName` = `l0`.`Name`
@@ -5573,7 +4628,7 @@ ORDER BY `u`.`Nickname`, `u`.`SquadId`, `s`.`Nickname`, `s`.`SquadId`, `s`.`Nick
         await base.ThenInclude_reference_on_derived_after_derived_collection(async);
 
         AssertSql(
-            """
+"""
 SELECT `l`.`Id`, `l`.`CapitalName`, `l`.`Name`, `l`.`ServerAddress`, `l`.`CommanderName`, `l`.`DeputyCommanderName`, `l`.`Eradicated`, `s`.`Name`, `s`.`LocustHordeId`, `s`.`ThreatLevel`, `s`.`ThreatLevelByte`, `s`.`ThreatLevelNullableByte`, `s`.`DefeatedByNickname`, `s`.`DefeatedBySquadId`, `s`.`HighCommandId`, `s`.`Discriminator`, `s`.`Nickname`, `s`.`SquadId`, `s`.`AssignedCityName`, `s`.`CityOfBirthName`, `s`.`FullName`, `s`.`HasSoulPatch`, `s`.`LeaderNickname`, `s`.`LeaderSquadId`, `s`.`Rank`, `s`.`Discriminator0`
 FROM `LocustHordes` AS `l`
 LEFT JOIN (
@@ -5602,7 +4657,7 @@ ORDER BY `l`.`Id`, `s`.`Name`, `s`.`Nickname`
         await base.Multiple_derived_included_on_one_method(async);
 
         AssertSql(
-            """
+"""
 SELECT `l`.`Id`, `l`.`CapitalName`, `l`.`Name`, `l`.`ServerAddress`, `l`.`CommanderName`, `l`.`DeputyCommanderName`, `l`.`Eradicated`, `l0`.`Name`, `l0`.`LocustHordeId`, `l0`.`ThreatLevel`, `l0`.`ThreatLevelByte`, `l0`.`ThreatLevelNullableByte`, `l0`.`DefeatedByNickname`, `l0`.`DefeatedBySquadId`, `l0`.`HighCommandId`, `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`, `u0`.`Nickname`, `u0`.`SquadId`, `u0`.`AssignedCityName`, `u0`.`CityOfBirthName`, `u0`.`FullName`, `u0`.`HasSoulPatch`, `u0`.`LeaderNickname`, `u0`.`LeaderSquadId`, `u0`.`Rank`, `u0`.`Discriminator`
 FROM `LocustHordes` AS `l`
 LEFT JOIN `LocustCommanders` AS `l0` ON `l`.`CommanderName` = `l0`.`Name`
@@ -7114,7 +6169,7 @@ ORDER BY `u0`.`FullName` DESC, `u0`.`Nickname`, `u0`.`SquadId`, `w`.`Name`
         await base.Null_semantics_on_nullable_bool_from_inner_join_subquery_is_fully_applied(async);
 
         AssertSql(
-            """
+"""
 SELECT `l2`.`Id`, `l2`.`CapitalName`, `l2`.`Name`, `l2`.`ServerAddress`, `l2`.`CommanderName`, `l2`.`DeputyCommanderName`, `l2`.`Eradicated`
 FROM (
     SELECT `l`.`Name`
@@ -7137,7 +6192,7 @@ WHERE (`l2`.`Eradicated` <> TRUE) OR (`l2`.`Eradicated` IS NULL)
         await base.Null_semantics_on_nullable_bool_from_left_join_subquery_is_fully_applied(async);
 
         AssertSql(
-            """
+"""
 SELECT `l2`.`Id`, `l2`.`CapitalName`, `l2`.`Name`, `l2`.`ServerAddress`, `l2`.`CommanderName`, `l2`.`DeputyCommanderName`, `l2`.`Eradicated`
 FROM (
     SELECT `l`.`Name`
@@ -7160,7 +6215,7 @@ WHERE (`l2`.`Eradicated` <> TRUE) OR (`l2`.`Eradicated` IS NULL)
         await base.Include_on_derived_type_with_order_by_and_paging(async);
 
         AssertSql(
-            """
+"""
 @p='10'
 
 SELECT `s`.`Name`, `s`.`LocustHordeId`, `s`.`ThreatLevel`, `s`.`ThreatLevelByte`, `s`.`ThreatLevelNullableByte`, `s`.`DefeatedByNickname`, `s`.`DefeatedBySquadId`, `s`.`HighCommandId`, `s`.`Discriminator`, `s`.`Nickname`, `s`.`SquadId`, `s`.`AssignedCityName`, `s`.`CityOfBirthName`, `s`.`FullName`, `s`.`HasSoulPatch`, `s`.`LeaderNickname`, `s`.`LeaderSquadId`, `s`.`Rank`, `s`.`Discriminator0` AS `Discriminator`, `s`.`Id`, `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`
@@ -8281,7 +7336,7 @@ WHERE `u`.`HasSoulPatch` = TRUE
         await base.Select_subquery_distinct_singleordefault_boolean2(async);
 
         AssertSql(
-            """
+"""
 SELECT COALESCE((
     SELECT `w`.`IsAutomatic`
     FROM `Weapons` AS `w`
@@ -8355,7 +7410,7 @@ WHERE `u`.`HasSoulPatch` = TRUE
         await base.Select_subquery_distinct_singleordefault_boolean_empty2(async);
 
         AssertSql(
-            """
+"""
 SELECT COALESCE((
     SELECT `w`.`IsAutomatic`
     FROM `Weapons` AS `w`
@@ -8613,17 +7668,6 @@ FROM (
 ) AS `u`
 CROSS JOIN `Missions` AS `m`
 ORDER BY `u`.`Nickname`, `m`.`Id`
-""");
-    }
-
-    public override async Task Time_of_day_datetimeoffset(bool async)
-    {
-        await base.Time_of_day_datetimeoffset(async);
-
-        AssertSql(
-"""
-SELECT CAST(`m`.`Timeline` AS time(6))
-FROM `Missions` AS `m`
 """);
     }
 
@@ -8910,7 +7954,7 @@ ORDER BY `s`.`Id`, `s0`.`Nickname`, `s0`.`SquadId`
         await base.OrderBy_same_expression_containing_IsNull_correctly_deduplicates_the_ordering(async);
 
         AssertSql(
-            """
+"""
 SELECT CASE
     WHEN `u`.`LeaderNickname` IS NOT NULL THEN CHAR_LENGTH(`u`.`Nickname`) = 5
 END
@@ -9086,25 +8130,6 @@ WHERE (SUBSTRING(`t`.`Note`, 0 + 1, CHAR_LENGTH(`s`.`Name`)) = `t`.`GearNickName
 """);
     }
 
-    public override async Task Filter_with_new_Guid(bool async)
-    {
-        await base.Filter_with_new_Guid(async);
-
-        AssertSql(
-"""
-SELECT `t`.`Id`, `t`.`GearNickName`, `t`.`GearSquadId`, `t`.`IssueDate`, `t`.`Note`
-FROM `Tags` AS `t`
-WHERE `t`.`Id` = 'df36f493-463f-4123-83f9-6b135deeb7ba'
-""");
-    }
-
-    public override async Task Filter_with_new_Guid_closure(bool async)
-    {
-        await base.Filter_with_new_Guid_closure(async);
-
-        AssertSql();
-    }
-
     public override async Task OfTypeNav1(bool async)
     {
         await base.OfTypeNav1(async);
@@ -9190,7 +8215,7 @@ WHERE (`c`.`Name` <> 'Foo') OR `c`.`Name` IS NULL
         await base.Nav_rewrite_with_convert2(async);
 
         AssertSql(
-            """
+"""
 SELECT `l`.`Id`, `l`.`CapitalName`, `l`.`Name`, `l`.`ServerAddress`, `l`.`CommanderName`, `l`.`DeputyCommanderName`, `l`.`Eradicated`
 FROM `LocustHordes` AS `l`
 LEFT JOIN `Cities` AS `c` ON `l`.`CapitalName` = `c`.`Name`
@@ -9204,7 +8229,7 @@ WHERE ((`c`.`Name` <> 'Foo') OR `c`.`Name` IS NULL) AND ((`l0`.`Name` <> 'Bar') 
         await base.Nav_rewrite_with_convert3(async);
 
         AssertSql(
-            """
+"""
 SELECT `l`.`Id`, `l`.`CapitalName`, `l`.`Name`, `l`.`ServerAddress`, `l`.`CommanderName`, `l`.`DeputyCommanderName`, `l`.`Eradicated`
 FROM `LocustHordes` AS `l`
 LEFT JOIN `Cities` AS `c` ON `l`.`CapitalName` = `c`.`Name`
@@ -9271,7 +8296,7 @@ ORDER BY (
         await base.Anonymous_projection_take_followed_by_projecting_single_element_from_collection_navigation(async);
 
         AssertSql(
-            """
+"""
 @p='25'
 
 SELECT `w1`.`Id`, `w1`.`AmmunitionType`, `w1`.`IsAutomatic`, `w1`.`Name`, `w1`.`OwnerFullName`, `w1`.`SynergyWithId`
@@ -9324,8 +8349,7 @@ WHERE (
         var dto = MySqlTestHelpers.GetExpectedValue(new DateTimeOffset(599898024001234567, new TimeSpan(1, 30, 0)));
         var start = dto.AddDays(-1);
         var end = dto.AddDays(1);
-        // Use List to avoid ReadOnlySpan in expression tree (same as GearsOfWarQueryMySqlTest).
-        var dates = new List<DateTimeOffset> { dto };
+        var dates = new[] { dto };
 
         await AssertQuery(
             async,
@@ -9354,12 +8378,13 @@ WHERE ((@__start_0 <= CONVERT(`m`.`Timeline`, date)) AND (`m`.`Timeline` < @__en
         {
             AssertSql(
 """
-@__start_0='1902-01-01T08:30:00.1234560+00:00'
-@__end_1='1902-01-03T08:30:00.1234560+00:00'
+@start='1902-01-01T08:30:00.1234560+00:00'
+@end='1902-01-03T08:30:00.1234560+00:00'
+@dates1='1902-01-02T08:30:00.1234560+00:00'
 
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
+SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
 FROM `Missions` AS `m`
-WHERE ((@__start_0 <= CONVERT(`m`.`Timeline`, date)) AND (`m`.`Timeline` < @__end_1)) AND (`m`.`Timeline` = TIMESTAMP '1902-01-02 08:30:00.123456')
+WHERE ((@start <= CONVERT(`m`.`Timeline`, date)) AND (`m`.`Timeline` < @end)) AND (`m`.`Timeline` = @dates1)
 """);
         }
     }
@@ -9528,7 +8553,7 @@ ORDER BY `t`.`Id`, `u`.`Nickname`
         await base.SelectMany_Where_DefaultIfEmpty_with_navigation_in_the_collection_selector(async);
 
         AssertSql(
-            """
+"""
 @isAutomatic='True'
 
 SELECT `u`.`Nickname`, `u`.`FullName`, `w0`.`Id` IS NOT NULL AS `Collection`
@@ -9600,7 +8625,7 @@ INNER JOIN (
         await base.Navigation_based_on_complex_expression1(async);
 
         AssertSql(
-            """
+"""
 SELECT `l`.`Id`, `l`.`CapitalName`, `l`.`Name`, `l`.`ServerAddress`, `l`.`CommanderName`, `l`.`DeputyCommanderName`, `l`.`Eradicated`
 FROM `LocustHordes` AS `l`
 LEFT JOIN `LocustCommanders` AS `l0` ON `l`.`CommanderName` = `l0`.`Name`
@@ -9613,7 +8638,7 @@ WHERE `l0`.`Name` IS NOT NULL
         await base.Navigation_based_on_complex_expression2(async);
 
         AssertSql(
-            """
+"""
 SELECT `l`.`Id`, `l`.`CapitalName`, `l`.`Name`, `l`.`ServerAddress`, `l`.`CommanderName`, `l`.`DeputyCommanderName`, `l`.`Eradicated`
 FROM `LocustHordes` AS `l`
 LEFT JOIN `LocustCommanders` AS `l0` ON `l`.`CommanderName` = `l0`.`Name`
@@ -9832,7 +8857,7 @@ WHERE EXISTS (
         await base.Query_reusing_parameter_doesnt_declare_duplicate_parameter(async);
 
         AssertSql(
-            """
+"""
 @prm_Inner_Nickname='Marcus' (Size = 255)
 
 SELECT `u0`.`Nickname`, `u0`.`SquadId`, `u0`.`AssignedCityName`, `u0`.`CityOfBirthName`, `u0`.`FullName`, `u0`.`HasSoulPatch`, `u0`.`LeaderNickname`, `u0`.`LeaderSquadId`, `u0`.`Rank`, `u0`.`Discriminator`
@@ -9856,7 +8881,7 @@ ORDER BY `u0`.`FullName`
         await base.Query_reusing_parameter_with_inner_query_doesnt_declare_duplicate_parameter(async);
 
         AssertSql(
-            """
+"""
 @squadId='1'
 
 SELECT `u1`.`Nickname`, `u1`.`SquadId`, `u1`.`AssignedCityName`, `u1`.`CityOfBirthName`, `u1`.`FullName`, `u1`.`HasSoulPatch`, `u1`.`LeaderNickname`, `u1`.`LeaderSquadId`, `u1`.`Rank`, `u1`.`Discriminator`
@@ -9900,7 +8925,7 @@ ORDER BY `u1`.`FullName`
         await base.Query_reusing_parameter_with_inner_query_expression_doesnt_declare_duplicate_parameter(async);
 
         AssertSql(
-            """
+"""
 @gearId='1'
 
 SELECT `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`
@@ -9923,7 +8948,7 @@ WHERE EXISTS (
         await base.Query_reusing_parameter_doesnt_declare_duplicate_parameter_complex(async);
 
         AssertSql(
-            """
+"""
 @entity_equality_prm_Inner_Squad_Id='1' (Nullable = true)
 
 SELECT `s1`.`Nickname`, `s1`.`SquadId`, `s1`.`AssignedCityName`, `s1`.`CityOfBirthName`, `s1`.`FullName`, `s1`.`HasSoulPatch`, `s1`.`LeaderNickname`, `s1`.`LeaderSquadId`, `s1`.`Rank`, `s1`.`Discriminator`
@@ -10166,7 +9191,7 @@ FROM (
         await base.Select_null_parameter_is_not_null(async);
 
         AssertSql(
-            """
+"""
 @p='False'
 
 SELECT @p
@@ -10185,7 +9210,7 @@ FROM (
         await base.Where_null_parameter_is_not_null(async);
 
         AssertSql(
-            """
+"""
 @p='False'
 
 SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
@@ -10264,7 +9289,7 @@ FROM (
         await base.Where_with_enum_flags_parameter(async);
 
         AssertSql(
-            """
+"""
 @rank='1' (Nullable = true)
 
 SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
@@ -10277,8 +9302,8 @@ FROM (
 ) AS `u`
 WHERE CAST(`u`.`Rank` & @rank AS signed) = @rank
 """,
-            //
-            """
+                //
+                """
 SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
 FROM (
     SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
@@ -10288,8 +9313,8 @@ FROM (
     FROM `Officers` AS `o`
 ) AS `u`
 """,
-            //
-            """
+                //
+                """
 @rank='2' (Nullable = true)
 
 SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
@@ -10302,8 +9327,8 @@ FROM (
 ) AS `u`
 WHERE CAST(`u`.`Rank` | @rank AS signed) <> @rank
 """,
-            //
-            """
+                //
+                """
 SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
 FROM (
     SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
@@ -10362,7 +9387,7 @@ WHERE (`c`.`Name` = (
         await base.Bitwise_operation_with_non_null_parameter_optimizes_null_checks(async);
 
         AssertSql(
-            """
+"""
 @ranks='134'
 
 SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
@@ -10375,8 +9400,8 @@ FROM (
 ) AS `u`
 WHERE CAST(`u`.`Rank` & @ranks AS signed) <> 0
 """,
-            //
-            """
+                //
+                """
 @ranks='134'
 
 SELECT CAST(`u`.`Rank` | @ranks AS signed) = @ranks
@@ -10388,8 +9413,8 @@ FROM (
     FROM `Officers` AS `o`
 ) AS `u`
 """,
-            //
-            """
+                //
+                """
 @ranks='134'
 
 SELECT CAST(`u`.`Rank` | CAST(`u`.`Rank` | CAST(@ranks | CAST(`u`.`Rank` | @ranks AS signed) AS signed) AS signed) AS signed) = @ranks
@@ -10408,38 +9433,38 @@ FROM (
         await base.Bitwise_operation_with_null_arguments(async);
 
         AssertSql(
-            """
+"""
 SELECT `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`
 FROM `Weapons` AS `w`
 WHERE `w`.`AmmunitionType` IS NULL
 """,
-            //
-            """
+                //
+                """
 SELECT `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`
 FROM `Weapons` AS `w`
 WHERE `w`.`AmmunitionType` IS NULL
 """,
-            //
-            """
+                //
+                """
 SELECT `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`
 FROM `Weapons` AS `w`
 WHERE `w`.`AmmunitionType` IS NULL
 """,
-            //
-            """
+                //
+                """
 SELECT `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`
 FROM `Weapons` AS `w`
 """,
-            //
-            """
+                //
+                """
 @prm='2' (Nullable = true)
 
 SELECT `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`
 FROM `Weapons` AS `w`
 WHERE (CAST(`w`.`AmmunitionType` & @prm AS signed) <> 0) OR `w`.`AmmunitionType` IS NULL
 """,
-            //
-            """
+                //
+                """
 @prm='1' (Nullable = true)
 
 SELECT `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`
@@ -10453,7 +9478,7 @@ WHERE CAST(`w`.`AmmunitionType` & @prm AS signed) = @prm
         await base.Logical_operation_with_non_null_parameter_optimizes_null_checks(async);
 
         AssertSql(
-            """
+"""
 @prm='True'
 
 SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
@@ -10466,8 +9491,8 @@ FROM (
 ) AS `u`
 WHERE `u`.`HasSoulPatch` <> @prm
 """,
-            //
-            """
+                //
+                """
 @prm='False'
 
 SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
@@ -10498,7 +9523,7 @@ FROM `Officers` AS `o`
         await base.Join_inner_source_custom_projection_followed_by_filter(async);
 
         AssertSql(
-            """
+"""
 SELECT CASE
     WHEN `l1`.`Name` = 'Locust' THEN TRUE
 END AS `IsEradicated`, `l1`.`CommanderName`, `l1`.`Name`
@@ -10515,72 +9540,6 @@ WHERE (CASE
 END <> TRUE) OR (CASE
     WHEN `l1`.`Name` = 'Locust' THEN TRUE
 END IS NULL)
-""");
-    }
-
-    public override async Task Byte_array_contains_literal(bool async)
-    {
-        await base.Byte_array_contains_literal(async);
-
-        AssertSql(
-"""
-SELECT `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`
-FROM `Squads` AS `s`
-WHERE LOCATE(0x01, `s`.`Banner`) > 0
-""");
-    }
-
-    public override async Task Byte_array_filter_by_length_literal(bool async)
-    {
-        await base.Byte_array_filter_by_length_literal(async);
-
-        AssertSql(
-"""
-SELECT `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`
-FROM `Squads` AS `s`
-WHERE LENGTH(`s`.`Banner`) = 2
-""");
-    }
-
-    public override async Task Byte_array_filter_by_length_parameter(bool async)
-    {
-        await base.Byte_array_filter_by_length_parameter(async);
-
-        AssertSql(
-            """
-@p='2'
-
-SELECT `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`
-FROM `Squads` AS `s`
-WHERE LENGTH(`s`.`Banner`) = @p
-""");
-    }
-
-    public override void Byte_array_filter_by_length_parameter_compiled()
-    {
-        base.Byte_array_filter_by_length_parameter_compiled();
-
-        AssertSql(
-            """
-@byteArrayParam='0x2A80' (Size = 8000)
-
-SELECT COUNT(*)
-FROM `Squads` AS `s`
-WHERE LENGTH(`s`.`Banner`) = LENGTH(@byteArrayParam)
-""");
-    }
-
-    public override async Task Byte_array_contains_parameter(bool async)
-    {
-        await base.Byte_array_contains_parameter(async);
-
-        AssertSql(
-            """
-@someByte='1'
-
-SELECT `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`
-FROM `Squads` AS `s`
-WHERE LOCATE(UNHEX(HEX(@someByte)), `s`.`Banner`) > 0
 """);
     }
 
@@ -10601,7 +9560,7 @@ WHERE LENGTH(`s`.`Banner5`) = 5
         await base.Conditional_expression_with_test_being_simplified_to_constant_simple(isAsync);
 
         AssertSql(
-            """
+"""
 @prm='True'
 
 SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
@@ -10624,7 +9583,7 @@ END
         await base.Conditional_expression_with_test_being_simplified_to_constant_complex(isAsync);
 
         AssertSql(
-            """
+"""
 @prm='True'
 @prm2='Marcus' Lancer' (Size = 4000)
 
@@ -10665,7 +9624,7 @@ ORDER BY `w0`.`IsAutomatic`
         await base.DateTimeOffset_Date_returns_datetime(async);
 
         AssertSql(
-            """
+"""
 @dateTimeOffset_Date='0002-03-01T00:00:00.0000000' (DbType = DateTime)
 
 SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
@@ -10722,20 +9681,6 @@ FROM (
     SELECT `o`.`Nickname`
     FROM `Officers` AS `o`
 ) AS `u`
-""");
-    }
-
-    public override async Task Byte_array_filter_by_SequenceEqual(bool isAsync)
-    {
-        await base.Byte_array_filter_by_SequenceEqual(isAsync);
-
-        AssertSql(
-            """
-@byteArrayParam='0x0405060708' (Size = 5)
-
-SELECT `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`
-FROM `Squads` AS `s`
-WHERE `s`.`Banner5` = @byteArrayParam
 """);
     }
 
@@ -10799,98 +9744,6 @@ FROM (
     FROM `LocustCommanders` AS `l0`
 ) AS `u`
 WHERE CAST(`u`.`ThreatLevel` AS signed) <= (5 + CAST(`u`.`ThreatLevel` AS signed))
-""");
-    }
-
-    public override async Task TimeSpan_Hours(bool async)
-    {
-        await base.TimeSpan_Hours(async);
-
-        AssertSql(
-"""
-SELECT EXTRACT(hour FROM `m`.`Duration`)
-FROM `Missions` AS `m`
-""");
-    }
-
-    public override async Task TimeSpan_Minutes(bool async)
-    {
-        await base.TimeSpan_Minutes(async);
-
-        AssertSql(
-"""
-SELECT EXTRACT(minute FROM `m`.`Duration`)
-FROM `Missions` AS `m`
-""");
-    }
-
-    public override async Task TimeSpan_Seconds(bool async)
-    {
-        await base.TimeSpan_Seconds(async);
-
-        AssertSql(
-"""
-SELECT EXTRACT(second FROM `m`.`Duration`)
-FROM `Missions` AS `m`
-""");
-    }
-
-    public override async Task TimeSpan_Milliseconds(bool async)
-    {
-        await base.TimeSpan_Milliseconds(async);
-
-        AssertSql(
-"""
-SELECT (EXTRACT(microsecond FROM `m`.`Duration`)) DIV (1000)
-FROM `Missions` AS `m`
-""");
-    }
-
-    public override async Task Where_TimeSpan_Hours(bool async)
-    {
-        await base.Where_TimeSpan_Hours(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE EXTRACT(hour FROM `m`.`Duration`) = 1
-""");
-    }
-
-    public override async Task Where_TimeSpan_Minutes(bool async)
-    {
-        await base.Where_TimeSpan_Minutes(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE EXTRACT(minute FROM `m`.`Duration`) = 2
-""");
-    }
-
-    public override async Task Where_TimeSpan_Seconds(bool async)
-    {
-        await base.Where_TimeSpan_Seconds(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE EXTRACT(second FROM `m`.`Duration`) = 3
-""");
-    }
-
-    public override async Task Where_TimeSpan_Milliseconds(bool async)
-    {
-        await base.Where_TimeSpan_Milliseconds(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE (EXTRACT(microsecond FROM `m`.`Duration`)) DIV (1000) = 456
 """);
     }
 
@@ -10996,25 +9849,6 @@ WHERE EXISTS (
         FROM `LocustCommanders` AS `l2`
     ) AS `u0`
     WHERE `u0`.`ThreatLevelNullableByte` IS NULL)
-""");
-    }
-
-    public override async Task Contains_on_byte_array_property_using_byte_column(bool async)
-    {
-        await base.Contains_on_byte_array_property_using_byte_column(async);
-
-        AssertSql(
-"""
-SELECT `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`, `u`.`Name`, `u`.`LocustHordeId`, `u`.`ThreatLevel`, `u`.`ThreatLevelByte`, `u`.`ThreatLevelNullableByte`, `u`.`DefeatedByNickname`, `u`.`DefeatedBySquadId`, `u`.`HighCommandId`, `u`.`Discriminator`
-FROM `Squads` AS `s`
-CROSS JOIN (
-    SELECT `l`.`Name`, `l`.`LocustHordeId`, `l`.`ThreatLevel`, `l`.`ThreatLevelByte`, `l`.`ThreatLevelNullableByte`, NULL AS `DefeatedByNickname`, NULL AS `DefeatedBySquadId`, NULL AS `HighCommandId`, 'LocustLeader' AS `Discriminator`
-    FROM `LocustLeaders` AS `l`
-    UNION ALL
-    SELECT `l0`.`Name`, `l0`.`LocustHordeId`, `l0`.`ThreatLevel`, `l0`.`ThreatLevelByte`, `l0`.`ThreatLevelNullableByte`, `l0`.`DefeatedByNickname`, `l0`.`DefeatedBySquadId`, `l0`.`HighCommandId`, 'LocustCommander' AS `Discriminator`
-    FROM `LocustCommanders` AS `l0`
-) AS `u`
-WHERE LOCATE(UNHEX(HEX(`u`.`ThreatLevelByte`)), `s`.`Banner`) > 0
 """);
     }
 
@@ -11167,7 +10001,7 @@ JOIN LATERAL (
         await base.Enum_closure_typed_as_underlying_type_generates_correct_parameter_type(async);
 
         AssertSql(
-            """
+"""
 @prm='1' (Nullable = true)
 
 SELECT `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`
@@ -11181,7 +10015,7 @@ WHERE @prm = `w`.`AmmunitionType`
         await base.Enum_flags_closure_typed_as_underlying_type_generates_correct_parameter_type(async);
 
         AssertSql(
-            """
+"""
 @prm='133'
 
 SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
@@ -11201,7 +10035,7 @@ WHERE CAST(@prm & `u`.`Rank` AS signed) = `u`.`Rank`
         await base.Enum_flags_closure_typed_as_different_type_generates_correct_parameter_type(async);
 
         AssertSql(
-            """
+"""
 @prm='5'
 
 SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
@@ -11221,7 +10055,7 @@ WHERE CAST(@prm & CAST(`u`.`Rank` AS signed) AS signed) = CAST(`u`.`Rank` AS sig
         await base.Constant_enum_with_same_underlying_value_as_previously_parameterized_int(async);
 
         AssertSql(
-            """
+"""
 @p='1'
 
 SELECT CAST(`u`.`Rank` & 1 AS signed)
@@ -11261,10 +10095,12 @@ WHERE `w0`.`Id` IS NOT NULL AND EXISTS (
         {
             AssertSql(
 """
+@types1='1'
+
 SELECT `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`
 FROM `Weapons` AS `w`
 LEFT JOIN `Weapons` AS `w0` ON `w`.`SynergyWithId` = `w0`.`Id`
-WHERE `w0`.`Id` IS NOT NULL AND (`w0`.`AmmunitionType` IS NULL OR (`w0`.`AmmunitionType` = 1))
+WHERE `w0`.`Id` IS NOT NULL AND (`w0`.`AmmunitionType` IS NULL OR (`w0`.`AmmunitionType` = @types1))
 """);
         }
     }
@@ -11604,30 +10440,6 @@ LEFT JOIN (
     WHERE `w0`.`row` <= 10
 ) AS `w1` ON `u`.`FullName` = `w1`.`OwnerFullName`
 ORDER BY `u`.`Nickname`, `u`.`SquadId`, `c`.`Name`
-""");
-    }
-
-    public override async Task First_on_byte_array(bool async)
-    {
-        await base.First_on_byte_array(async);
-
-        AssertSql(
-"""
-SELECT `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`
-FROM `Squads` AS `s`
-WHERE ASCII(`s`.`Banner`) = 2
-""");
-    }
-
-    public override async Task Array_access_on_byte_array(bool async)
-    {
-        await base.Array_access_on_byte_array(async);
-
-        AssertSql(
-"""
-SELECT `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`
-FROM `Squads` AS `s`
-WHERE ASCII(SUBSTRING(`s`.`Banner5`, 2 + 1, 1)) = 6
 """);
     }
 
@@ -12018,210 +10830,6 @@ END, `t`.`Note`
 """);
     }
 
-    public override async Task Where_DateOnly_Year(bool async)
-    {
-        await base.Where_DateOnly_Year(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE EXTRACT(year FROM `m`.`Date`) = 1990
-""");
-    }
-
-    public override async Task Where_DateOnly_Month(bool async)
-    {
-        await base.Where_DateOnly_Month(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE EXTRACT(month FROM `m`.`Date`) = 11
-""");
-    }
-
-    public override async Task Where_DateOnly_Day(bool async)
-    {
-        await base.Where_DateOnly_Day(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE EXTRACT(day FROM `m`.`Date`) = 10
-""");
-    }
-
-    public override async Task Where_DateOnly_DayOfYear(bool async)
-    {
-        await base.Where_DateOnly_DayOfYear(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE DAYOFYEAR(`m`.`Date`) = 314
-""");
-    }
-
-    public override async Task Where_DateOnly_DayOfWeek(bool async)
-    {
-        await base.Where_DateOnly_DayOfWeek(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE (DAYOFWEEK(`m`.`Date`) - 1) = 6
-""");
-    }
-
-    public override async Task Where_DateOnly_AddYears(bool async)
-    {
-        await base.Where_DateOnly_AddYears(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE DATE_ADD(`m`.`Date`, INTERVAL CAST(3 AS signed) year) = DATE '1993-11-10'
-""");
-    }
-
-    public override async Task Where_DateOnly_AddMonths(bool async)
-    {
-        await base.Where_DateOnly_AddMonths(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE DATE_ADD(`m`.`Date`, INTERVAL CAST(3 AS signed) month) = DATE '1991-02-10'
-""");
-    }
-
-    public override async Task Where_DateOnly_AddDays(bool async)
-    {
-        await base.Where_DateOnly_AddDays(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE DATE_ADD(`m`.`Date`, INTERVAL CAST(3 AS signed) day) = DATE '1990-11-13'
-""");
-    }
-
-    public override async Task Where_TimeOnly_Hour(bool async)
-    {
-        await base.Where_TimeOnly_Hour(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE EXTRACT(hour FROM `m`.`Time`) = 10
-""");
-    }
-
-    public override async Task Where_TimeOnly_Minute(bool async)
-    {
-        await base.Where_TimeOnly_Minute(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE EXTRACT(minute FROM `m`.`Time`) = 15
-""");
-    }
-
-    public override async Task Where_TimeOnly_Second(bool async)
-    {
-        await base.Where_TimeOnly_Second(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE EXTRACT(second FROM `m`.`Time`) = 50
-""");
-    }
-
-    public override async Task Where_TimeOnly_Millisecond(bool async)
-    {
-        await base.Where_TimeOnly_Millisecond(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE (EXTRACT(microsecond FROM `m`.`Time`)) DIV (1000) = 500
-""");
-    }
-
-    public override async Task Where_TimeOnly_AddHours(bool async)
-    {
-        await base.Where_TimeOnly_AddHours(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE DATE_ADD(`m`.`Time`, INTERVAL CAST(3.0 AS signed) hour) = TIME '13:15:50.5'
-""");
-    }
-
-    public override async Task Where_TimeOnly_AddMinutes(bool async)
-    {
-        await base.Where_TimeOnly_AddMinutes(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE DATE_ADD(`m`.`Time`, INTERVAL CAST(3.0 AS signed) minute) = TIME '10:18:50.5'
-""");
-    }
-
-    public override async Task Where_TimeOnly_Add_TimeSpan(bool async)
-    {
-        await base.Where_TimeOnly_Add_TimeSpan(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE (`m`.`Time` + TIME '03:00:00') = TIME '13:15:50.5'
-""");
-    }
-
-    public override async Task Where_TimeOnly_IsBetween(bool async)
-    {
-        await base.Where_TimeOnly_IsBetween(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE (`m`.`Time` >= TIME '10:00:00') & (`m`.`Time` < TIME '11:00:00')
-""");
-    }
-
-    public override async Task Where_TimeOnly_subtract_TimeOnly(bool async)
-    {
-        await base.Where_TimeOnly_subtract_TimeOnly(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE (`m`.`Time` - TIME '10:00:00') = TIME '00:15:50.5'
-""");
-    }
-
     public override async Task Project_navigation_defined_on_base_from_entity_with_inheritance_using_soft_cast(bool async)
     {
         await base.Project_navigation_defined_on_base_from_entity_with_inheritance_using_soft_cast(async);
@@ -12247,7 +10855,7 @@ LEFT JOIN `Squads` AS `s` ON `u`.`SquadId` = `s`.`Id`
         await base.Project_navigation_defined_on_derived_from_entity_with_inheritance_using_soft_cast(async);
 
         AssertSql(
-            """
+"""
 SELECT `u`.`Name`, `u`.`LocustHordeId`, `u`.`ThreatLevel`, `u`.`ThreatLevelByte`, `u`.`ThreatLevelNullableByte`, `u`.`DefeatedByNickname`, `u`.`DefeatedBySquadId`, `u`.`HighCommandId`, `u`.`Discriminator`, `u0`.`Nickname`, `u0`.`SquadId`, `u0`.`AssignedCityName`, `u0`.`CityOfBirthName`, `u0`.`FullName`, `u0`.`HasSoulPatch`, `u0`.`LeaderNickname`, `u0`.`LeaderSquadId`, `u0`.`Rank`, `u0`.`Discriminator`, `u0`.`Nickname` IS NULL OR (`u0`.`SquadId` IS NULL) AS `IsNull`, `l1`.`Id`, `l1`.`CapitalName`, `l1`.`Name`, `l1`.`ServerAddress`, `l1`.`CommanderName`, `l1`.`DeputyCommanderName`, `l1`.`Eradicated`, `l1`.`Id` IS NULL AS `IsNull`, `l2`.`Id`, `l2`.`IsOperational`, `l2`.`Name`, `l2`.`Id` IS NULL AS `IsNull`
 FROM (
     SELECT `l`.`Name`, `l`.`LocustHordeId`, `l`.`ThreatLevel`, `l`.`ThreatLevelByte`, `l`.`ThreatLevelNullableByte`, NULL AS `DefeatedByNickname`, NULL AS `DefeatedBySquadId`, NULL AS `HighCommandId`, 'LocustLeader' AS `Discriminator`
@@ -12273,7 +10881,7 @@ LEFT JOIN `LocustHighCommands` AS `l2` ON `u`.`HighCommandId` = `l2`.`Id`
         await base.Join_entity_with_itself_grouped_by_key_followed_by_include_skip_take(async);
 
         AssertSql(
-            """
+"""
 @p1='10'
 @p='0'
 
@@ -12336,6 +10944,9 @@ WHERE (`t`.`HasSoulPatch` = TRUE) AND `t`.`HasSoulPatch` IN (
         {
         AssertSql(
 """
+@values1='False'
+@values2='True'
+
 SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
 FROM (
     SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
@@ -12344,7 +10955,7 @@ FROM (
     SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
     FROM `Officers` AS `o`
 ) AS `u`
-WHERE (`u`.`HasSoulPatch` = TRUE) AND `u`.`HasSoulPatch` IN (FALSE, TRUE)
+WHERE (`u`.`HasSoulPatch` = TRUE) AND `u`.`HasSoulPatch` IN (@values1, @values2)
 """);
         }
     }
@@ -12378,6 +10989,9 @@ WHERE (`t`.`HasSoulPatch` = TRUE) AND `t`.`HasSoulPatch` IN (
         {
         AssertSql(
 """
+@values1='False'
+@values2='True'
+
 SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
 FROM (
     SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
@@ -12386,7 +11000,7 @@ FROM (
     SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
     FROM `Officers` AS `o`
 ) AS `u`
-WHERE (`u`.`HasSoulPatch` = TRUE) AND `u`.`HasSoulPatch` IN (FALSE, TRUE)
+WHERE (`u`.`HasSoulPatch` = TRUE) AND `u`.`HasSoulPatch` IN (@values1, @values2)
 """);
         }
     }
@@ -12396,7 +11010,7 @@ WHERE (`u`.`HasSoulPatch` = TRUE) AND `u`.`HasSoulPatch` IN (FALSE, TRUE)
         await base.Parameter_used_multiple_times_take_appropriate_inferred_type_mapping(async);
 
         AssertSql(
-            """
+"""
 @place='Ephyra's location' (Size = 4000)
 
 SELECT `c`.`Name`, `c`.`Location`, `c`.`Nation`
@@ -12410,7 +11024,7 @@ WHERE ((`c`.`Nation` = @place) OR (`c`.`Location` = @place)) OR (`c`.`Location` 
         await base.Enum_matching_take_value_gets_different_type_mapping(async);
 
         AssertSql(
-            """
+"""
 @value='1'
 @p='1'
 
@@ -12432,7 +11046,7 @@ LIMIT @p
         await base.SelectMany_Where_DefaultIfEmpty_with_navigation_in_the_collection_selector_order_comparison(async);
 
         AssertSql(
-            """
+"""
 @prm='1'
 
 SELECT `u`.`Nickname`, `u`.`FullName`, `w0`.`Id` IS NOT NULL AS `Collection`
@@ -12476,17 +11090,6 @@ LEFT JOIN (
     WHERE `w1`.`row` <= 1
 ) AS `w2` ON `u`.`FullName` = `w2`.`OwnerFullName`
 ORDER BY `u`.`Nickname`, `u`.`SquadId`, `s`.`Id`
-""");
-    }
-
-    public override async Task DateTimeOffset_DateAdd_AddYears(bool async)
-    {
-        await base.DateTimeOffset_DateAdd_AddYears(async);
-
-        AssertSql(
-"""
-SELECT DATE_ADD(`m`.`Timeline`, INTERVAL CAST(1 AS signed) year)
-FROM `Missions` AS `m`
 """);
     }
 
@@ -12559,7 +11162,7 @@ WHERE `w`.`AmmunitionType` = 1
         await base.SelectMany_Where_DefaultIfEmpty_with_navigation_in_the_collection_selector_not_equal(async);
 
         AssertSql(
-            """
+"""
 @isAutomatic='True'
 
 SELECT `u`.`Nickname`, `u`.`FullName`, `w0`.`Id` IS NOT NULL AS `Collection`
@@ -12611,7 +11214,7 @@ FROM `Officers` AS `o`
         await base.Comparison_with_value_converted_subclass(async);
 
         AssertSql(
-            """
+"""
 SELECT `l`.`Id`, `l`.`CapitalName`, `l`.`Name`, `l`.`ServerAddress`, `l`.`CommanderName`, `l`.`DeputyCommanderName`, `l`.`Eradicated`
 FROM `LocustHordes` AS `l`
 WHERE `l`.`ServerAddress` = CAST('127.0.0.1' AS char)
@@ -12687,17 +11290,6 @@ WHERE `m`.`CodeName` = 'Operation Foobar'
 """);
     }
 
-    public override async Task ToString_guid_property_projection(bool async)
-    {
-        await base.ToString_guid_property_projection(async);
-
-        AssertSql(
-"""
-SELECT `t`.`GearNickName` AS `A`, CAST(`t`.`Id` AS char) AS `B`
-FROM `Tags` AS `t`
-""");
-    }
-
     public override async Task Correlated_collection_with_distinct_not_projecting_identifier_column(bool async)
     {
         await base.Correlated_collection_with_distinct_not_projecting_identifier_column(async);
@@ -12726,7 +11318,7 @@ ORDER BY `u`.`Nickname`, `u`.`SquadId`, `w0`.`Name`
         await base.Include_after_Select_throws(async);
 
         AssertSql(
-            """
+"""
 SELECT `l`.`Id`, `l`.`CapitalName`, `l`.`Name`, `l`.`ServerAddress`, `l`.`CommanderName`, `l`.`DeputyCommanderName`, `l`.`Eradicated`, `c`.`Name`, `c`.`Location`, `c`.`Nation`
 FROM `LocustHordes` AS `l`
 LEFT JOIN `Cities` AS `c` ON `l`.`CapitalName` = `c`.`Name`
@@ -12825,7 +11417,7 @@ ORDER BY `u`.`Nickname`, `u`.`SquadId`
         await base.Project_derivied_entity_with_convert_to_parent(async);
 
         AssertSql(
-            """
+"""
 SELECT `l`.`Id`, `l`.`CapitalName`, `l`.`Name`, `l`.`ServerAddress`, `l`.`CommanderName`, `l`.`DeputyCommanderName`, `l`.`Eradicated`
 FROM `LocustHordes` AS `l`
 """);
@@ -12970,7 +11562,7 @@ FROM `Weapons` AS `w`
         await base.Include_on_derived_entity_with_cast(async);
 
         AssertSql(
-            """
+"""
 SELECT `l`.`Id`, `l`.`CapitalName`, `l`.`Name`, `l`.`ServerAddress`, `l`.`CommanderName`, `l`.`DeputyCommanderName`, `l`.`Eradicated`, `c`.`Name`, `c`.`Location`, `c`.`Nation`
 FROM `LocustHordes` AS `l`
 LEFT JOIN `Cities` AS `c` ON `l`.`CapitalName` = `c`.`Name`
@@ -13461,7 +12053,7 @@ FROM `Weapons` AS `w`
         await base.ElementAt_basic_with_OrderBy(async);
 
         AssertSql(
-            """
+"""
 @p='0'
 
 SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
@@ -13482,7 +12074,7 @@ LIMIT 1 OFFSET @p
         await base.ElementAtOrDefault_basic_with_OrderBy(async);
 
         AssertSql(
-            """
+"""
 @p='1'
 
 SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
@@ -13503,7 +12095,7 @@ LIMIT 1 OFFSET @p
         await base.ElementAtOrDefault_basic_with_OrderBy_parameter(async);
 
         AssertSql(
-            """
+"""
 @p='2'
 
 SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
@@ -13558,60 +12150,6 @@ WHERE NOT EXISTS (
 """
 SELECT `s`.`Id`, ASCII(SUBSTRING(`s`.`Banner`, 0 + 1, 1)), `s`.`Name`
 FROM `Squads` AS `s`
-""");
-    }
-
-    public override async Task DateTimeOffset_to_unix_time_milliseconds(bool async)
-    {
-        await base.DateTimeOffset_to_unix_time_milliseconds(async);
-
-        AssertSql(
-            """
-@unixEpochMilliseconds='0'
-
-SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`, `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`, `s1`.`SquadId`, `s1`.`MissionId`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-    FROM `Officers` AS `o`
-) AS `u`
-INNER JOIN `Squads` AS `s` ON `u`.`SquadId` = `s`.`Id`
-LEFT JOIN `SquadMissions` AS `s1` ON `s`.`Id` = `s1`.`SquadId`
-WHERE NOT EXISTS (
-    SELECT 1
-    FROM `SquadMissions` AS `s0`
-    INNER JOIN `Missions` AS `m` ON `s0`.`MissionId` = `m`.`Id`
-    WHERE (`s`.`Id` = `s0`.`SquadId`) AND (@unixEpochMilliseconds = (TIMESTAMPDIFF(microsecond, TIMESTAMP '1970-01-01 00:00:00', `m`.`Timeline`)) DIV (1000)))
-ORDER BY `u`.`Nickname`, `u`.`SquadId`, `s`.`Id`, `s1`.`SquadId`
-""");
-    }
-
-    public override async Task DateTimeOffset_to_unix_time_seconds(bool async)
-    {
-        await base.DateTimeOffset_to_unix_time_seconds(async);
-
-        AssertSql(
-            """
-@unixEpochSeconds='0'
-
-SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`, `s`.`Id`, `s`.`Banner`, `s`.`Banner5`, `s`.`InternalNumber`, `s`.`Name`, `s1`.`SquadId`, `s1`.`MissionId`
-FROM (
-    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
-    FROM `Officers` AS `o`
-) AS `u`
-INNER JOIN `Squads` AS `s` ON `u`.`SquadId` = `s`.`Id`
-LEFT JOIN `SquadMissions` AS `s1` ON `s`.`Id` = `s1`.`SquadId`
-WHERE NOT EXISTS (
-    SELECT 1
-    FROM `SquadMissions` AS `s0`
-    INNER JOIN `Missions` AS `m` ON `s0`.`MissionId` = `m`.`Id`
-    WHERE (`s`.`Id` = `s0`.`SquadId`) AND (@unixEpochSeconds = TIMESTAMPDIFF(second, TIMESTAMP '1970-01-01 00:00:00', `m`.`Timeline`)))
-ORDER BY `u`.`Nickname`, `u`.`SquadId`, `s`.`Id`, `s1`.`SquadId`
 """);
     }
 
@@ -13718,21 +12256,24 @@ WHERE NOT EXISTS (
 
         AssertSql(
 """
-SELECT `t`.`Nickname`, `t`.`SquadId`, `t`.`AssignedCityName`, `t`.`CityOfBirthName`, `t`.`FullName`, `t`.`HasSoulPatch`, `t`.`LeaderNickname`, `t`.`LeaderSquadId`, `t`.`Rank`, `t`.`Discriminator`
+@numbers1='1'
+@numbers2='-1'
+
+SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
 FROM (
     SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
     FROM `Gears` AS `g`
     UNION ALL
     SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
     FROM `Officers` AS `o`
-) AS `t`
+) AS `u`
 WHERE CASE
     WHEN EXISTS (
         SELECT 1
         FROM `Weapons` AS `w`
-        WHERE `t`.`FullName` = `w`.`OwnerFullName`) THEN 1
+        WHERE `u`.`FullName` = `w`.`OwnerFullName`) THEN 1
     ELSE 0
-END IN (1, -1)
+END IN (@numbers1, @numbers2)
 """);
     }
 
@@ -13742,20 +12283,23 @@ END IN (1, -1)
 
         AssertSql(
 """
-SELECT `t`.`Nickname`, `t`.`SquadId`, `t`.`AssignedCityName`, `t`.`CityOfBirthName`, `t`.`FullName`, `t`.`HasSoulPatch`, `t`.`LeaderNickname`, `t`.`LeaderSquadId`, `t`.`Rank`, `t`.`Discriminator`
+@weapons1='Marcus' Lancer' (Size = 4000)
+@weapons2='Dom's Gnasher' (Size = 4000)
+
+SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
 FROM (
     SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
     FROM `Gears` AS `g`
     UNION ALL
     SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
     FROM `Officers` AS `o`
-) AS `t`
+) AS `u`
 WHERE (
     SELECT `w`.`Name`
     FROM `Weapons` AS `w`
-    WHERE `t`.`FullName` = `w`.`OwnerFullName`
+    WHERE `u`.`FullName` = `w`.`OwnerFullName`
     ORDER BY `w`.`Id`
-    LIMIT 1) IN ('Marcus'' Lancer', 'Dom''s Gnasher')
+    LIMIT 1) IN (@weapons1, @weapons2)
 """);
     }
 
@@ -13763,7 +12307,36 @@ WHERE (
     {
         await base.Subquery_inside_Take_argument(async);
 
-        AssertSql("");
+        var rowSql = AppConfig.ServerVersion.Supports.ValuesWithRows ? "ROW" : string.Empty;
+
+        AssertSql(
+$"""
+@numbers1='0'
+@numbers2='1'
+@numbers3='2'
+
+SELECT `u`.`Nickname`, `u`.`SquadId`, `w1`.`Id`, `w1`.`AmmunitionType`, `w1`.`IsAutomatic`, `w1`.`Name`, `w1`.`OwnerFullName`, `w1`.`SynergyWithId`
+FROM (
+    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`FullName`
+    FROM `Gears` AS `g`
+    UNION ALL
+    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`FullName`
+    FROM `Officers` AS `o`
+) AS `u`
+LEFT JOIN (
+    SELECT `w0`.`Id`, `w0`.`AmmunitionType`, `w0`.`IsAutomatic`, `w0`.`Name`, `w0`.`OwnerFullName`, `w0`.`SynergyWithId`
+    FROM (
+        SELECT `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`, ROW_NUMBER() OVER(PARTITION BY `w`.`OwnerFullName` ORDER BY `w`.`Id`) AS `row`
+        FROM `Weapons` AS `w`
+    ) AS `w0`
+    WHERE `w0`.`row` <= COALESCE((
+        SELECT `n`.`Value`
+        FROM (SELECT @numbers1 AS `Value` UNION ALL VALUES {rowSql}(@numbers2), {rowSql}(@numbers3)) AS `n`
+        ORDER BY `n`.`Value`
+        LIMIT 1 OFFSET 1), 0)
+) AS `w1` ON `u`.`FullName` = `w1`.`OwnerFullName`
+ORDER BY `u`.`Nickname`, `u`.`SquadId`, `w1`.`OwnerFullName`, `w1`.`Id`
+""");
     }
 
     public override async Task Nav_expansion_inside_Skip_correlated_to_source(bool async)
@@ -14009,7 +12582,40 @@ LEFT JOIN `LocustHighCommands` AS `l1` ON `u`.`HighCommandId` = `l1`.`Id`
     {
         await base.Nested_contains_with_enum(async);
 
-        AssertSql("");
+        AssertSql(
+"""
+@ranks1='1'
+@key='5f221fb9-66f4-442a-92c9-d97ed5989cc7'
+@keys1='0a47bcb7-a1cb-4345-8944-c58f82d6aac7'
+@keys2='5f221fb9-66f4-442a-92c9-d97ed5989cc7'
+
+SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
+FROM (
+    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
+    FROM `Gears` AS `g`
+    UNION ALL
+    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
+    FROM `Officers` AS `o`
+) AS `u`
+WHERE CASE
+    WHEN `u`.`Rank` = @ranks1 THEN @key
+    ELSE @key
+END IN (@keys1, @keys2)
+""",
+                //
+                """
+@ammoTypes1='1'
+@key='5f221fb9-66f4-442a-92c9-d97ed5989cc7'
+@keys1='0a47bcb7-a1cb-4345-8944-c58f82d6aac7'
+@keys2='5f221fb9-66f4-442a-92c9-d97ed5989cc7'
+
+SELECT `w`.`Id`, `w`.`AmmunitionType`, `w`.`IsAutomatic`, `w`.`Name`, `w`.`OwnerFullName`, `w`.`SynergyWithId`
+FROM `Weapons` AS `w`
+WHERE CASE
+    WHEN `w`.`AmmunitionType` = @ammoTypes1 THEN @key
+    ELSE @key
+END IN (@keys1, @keys2)
+""");
     }
 
     public override async Task ToString_boolean_computed_nullable(bool async)
@@ -14038,123 +12644,191 @@ FROM `LocustHordes` AS `l`
 """);
     }
 
-    public override async Task Where_TimeOnly_FromDateTime_compared_to_property(bool async)
-    {
-        await base.Where_TimeOnly_FromDateTime_compared_to_property(async);
-
-        AssertSql(
-"""
-SELECT `t`.`Id` AS `TagId`, `m`.`Id` AS `MissionId`
-FROM `Tags` AS `t`
-CROSS JOIN `Missions` AS `m`
-WHERE TIME(`t`.`IssueDate`) = `m`.`Time`
-""");
-    }
-
-    public override async Task Where_TimeOnly_FromDateTime_compared_to_parameter(bool async)
-    {
-        await base.Where_TimeOnly_FromDateTime_compared_to_parameter(async);
-
-        AssertSql(
-            """
-@time='02:00' (DbType = Time)
-
-SELECT `t`.`Id`, `t`.`GearNickName`, `t`.`GearSquadId`, `t`.`IssueDate`, `t`.`Note`
-FROM `Tags` AS `t`
-LEFT JOIN (
-    SELECT `g`.`Nickname`, `g`.`SquadId`
-    FROM `Gears` AS `g`
-    UNION ALL
-    SELECT `o`.`Nickname`, `o`.`SquadId`
-    FROM `Officers` AS `o`
-) AS `u` ON (`t`.`GearNickName` = `u`.`Nickname`) AND (`t`.`GearSquadId` = `u`.`SquadId`)
-WHERE (`u`.`Nickname` IS NOT NULL AND (`u`.`SquadId` IS NOT NULL)) AND (TIME(DATE_ADD(`t`.`IssueDate`, INTERVAL CAST(CAST(`u`.`SquadId` AS double) AS signed) hour)) = @time)
-""");
-    }
-
-    public override async Task Where_TimeOnly_FromDateTime_compared_to_constant(bool async)
-    {
-        await base.Where_TimeOnly_FromDateTime_compared_to_constant(async);
-
-        AssertSql(
-"""
-SELECT `t`.`Id`, `t`.`GearNickName`, `t`.`GearSquadId`, `t`.`IssueDate`, `t`.`Note`
-FROM `Tags` AS `t`
-WHERE TIME(DATE_ADD(`t`.`IssueDate`, INTERVAL CAST(CAST(CHAR_LENGTH(`t`.`Note`) AS double) AS signed) hour)) > TIME '09:00:00'
-""");
-    }
-
-    public override async Task Where_TimeOnly_FromTimeSpan_compared_to_property(bool async)
-    {
-        await base.Where_TimeOnly_FromTimeSpan_compared_to_property(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE `m`.`Duration` < `m`.`Time`
-""");
-    }
-
-    public override async Task Where_TimeOnly_FromTimeSpan_compared_to_parameter(bool async)
-    {
-        await base.Where_TimeOnly_FromTimeSpan_compared_to_parameter(async);
-
-        AssertSql(
-            """
-@time='01:02' (DbType = Time)
-
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-WHERE `m`.`Duration` = @time
-""");
-    }
-
-    public override async Task Order_by_TimeOnly_FromTimeSpan(bool async)
-    {
-        await base.Order_by_TimeOnly_FromTimeSpan(async);
-
-        AssertSql(
-"""
-SELECT `m`.`Id`, `m`.`CodeName`, `m`.`Date`, `m`.`Difficulty`, `m`.`Duration`, `m`.`Rating`, `m`.`Time`, `m`.`Timeline`
-FROM `Missions` AS `m`
-ORDER BY `m`.`Duration`
-""");
-    }
-
-    public override async Task Where_DateOnly_FromDateTime_compared_to_property(bool async)
-    {
-        await base.Where_DateOnly_FromDateTime_compared_to_property(async);
-
-        AssertSql(
-"""
-SELECT `t`.`Id` AS `TagId`, `m`.`Id` AS `MissionId`
-FROM `Tags` AS `t`
-CROSS JOIN `Missions` AS `m`
-WHERE DATE(`t`.`IssueDate`) > `m`.`Date`
-""");
-    }
-
-    public override async Task Where_DateOnly_FromDateTime_compared_to_constant_and_parameter(bool async)
-    {
-        await base.Where_DateOnly_FromDateTime_compared_to_constant_and_parameter(async);
-
-        AssertSql(
-            """
-@prm='10/11/0002' (DbType = Date)
-
-SELECT `t`.`Id`, `t`.`GearNickName`, `t`.`GearSquadId`, `t`.`IssueDate`, `t`.`Note`
-FROM `Tags` AS `t`
-WHERE DATE(`t`.`IssueDate`) IN (@prm, DATE '0015-03-07')
-""");
-    }
-
     // TODO: Implement once TimeSpan is translated as ticks instead of TIME.
     public override async Task Non_string_concat_uses_appropriate_type_mapping(bool async)
     {
         var exception = await Assert.ThrowsAsync<InvalidCastException>(() => base.Non_string_concat_uses_appropriate_type_mapping(async));
         Assert.Equal("Unable to cast object of type 'System.Decimal' to type 'System.TimeSpan'.", exception.Message);
     }
+
+    public override async Task Conditional_Navigation_With_Trivial_Member_Access(bool async)
+    {
+        await base.Conditional_Navigation_With_Trivial_Member_Access(async);
+
+        AssertSql(
+"""
+SELECT `u`.`Nickname`
+FROM (
+    SELECT `g`.`Nickname`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`
+    FROM `Gears` AS `g`
+    UNION ALL
+    SELECT `o`.`Nickname`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`
+    FROM `Officers` AS `o`
+) AS `u`
+LEFT JOIN `Cities` AS `c` ON `u`.`AssignedCityName` = `c`.`Name`
+INNER JOIN `Cities` AS `c0` ON `u`.`CityOfBirthName` = `c0`.`Name`
+WHERE CASE
+    WHEN `c`.`Name` IS NOT NULL THEN `c`.`Name`
+    ELSE `c0`.`Name`
+END <> 'Ephyra'
+""");
+    }
+
+    public override async Task Conditional_Navigation_With_Member_Access_On_Same_Type(bool async)
+    {
+        await base.Conditional_Navigation_With_Member_Access_On_Same_Type(async);
+
+        AssertSql(
+"""
+SELECT `u`.`Nickname`, `u`.`FullName`
+FROM (
+    SELECT `g`.`Nickname`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`
+    FROM `Gears` AS `g`
+    UNION ALL
+    SELECT `o`.`Nickname`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`
+    FROM `Officers` AS `o`
+) AS `u`
+LEFT JOIN `Cities` AS `c` ON `u`.`AssignedCityName` = `c`.`Name`
+INNER JOIN `Cities` AS `c0` ON `u`.`CityOfBirthName` = `c0`.`Name`
+WHERE CASE
+    WHEN `c`.`Name` IS NOT NULL THEN `c`.`Nation`
+    ELSE `c0`.`Nation`
+END = 'Tyrus'
+""");
+    }
+
+    public override async Task Conditional_Navigation_With_Member_Access_On_Related_Types(bool async)
+    {
+        await base.Conditional_Navigation_With_Member_Access_On_Related_Types(async);
+
+        AssertSql(
+"""
+SELECT `l`.`Name`
+FROM `LocustHordes` AS `l`
+LEFT JOIN (
+    SELECT `l0`.`Name`, `l0`.`ThreatLevel`
+    FROM `LocustLeaders` AS `l0`
+    UNION ALL
+    SELECT `l1`.`Name`, `l1`.`ThreatLevel`
+    FROM `LocustCommanders` AS `l1`
+) AS `u` ON `l`.`DeputyCommanderName` = `u`.`Name`
+LEFT JOIN `LocustCommanders` AS `l2` ON `l`.`CommanderName` = `l2`.`Name`
+WHERE CASE
+    WHEN `u`.`Name` IS NOT NULL THEN `u`.`ThreatLevel`
+    ELSE `l2`.`ThreatLevel`
+END = 4
+""");
+    }
+
+    public override async Task Correlated_collections_on_RightJoin_with_predicate(bool async)
+    {
+        await base.Correlated_collections_on_RightJoin_with_predicate(async);
+
+        AssertSql(
+"""
+SELECT `u`.`Nickname`, `u`.`SquadId`, `t`.`Id`, `w`.`Name`, `w`.`Id`
+FROM (
+    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`FullName`, `g`.`HasSoulPatch`
+    FROM `Gears` AS `g`
+    UNION ALL
+    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`FullName`, `o`.`HasSoulPatch`
+    FROM `Officers` AS `o`
+) AS `u`
+RIGHT JOIN `Tags` AS `t` ON `u`.`Nickname` = `t`.`GearNickName`
+LEFT JOIN `Weapons` AS `w` ON `u`.`FullName` = `w`.`OwnerFullName`
+WHERE `u`.`HasSoulPatch` = FALSE
+ORDER BY `u`.`Nickname`, `u`.`SquadId`, `t`.`Id`
+""");
+    }
+
+    public override async Task Coalesce_with_non_root_evaluatable_Convert(bool async)
+    {
+        await base.Coalesce_with_non_root_evaluatable_Convert(async);
+
+        AssertSql(
+"""
+@rank='1' (Nullable = true)
+
+SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
+FROM (
+    SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, 'Gear' AS `Discriminator`
+    FROM `Gears` AS `g`
+    UNION ALL
+    SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
+    FROM `Officers` AS `o`
+) AS `u`
+WHERE @rank = `u`.`Rank`
+""");
+    }
+
+    public override async Task Project_equality_with_value_converted_property(bool async)
+    {
+        await base.Project_equality_with_value_converted_property(async);
+
+        AssertSql(
+"""
+SELECT `m`.`Difficulty` = 'Unknown'
+FROM `Missions` AS `m`
+""");
+    }
+
+    public override async Task DefaultIfEmpty_top_level_over_column_with_nullable_value_type(bool async)
+    {
+        await base.DefaultIfEmpty_top_level_over_column_with_nullable_value_type(async);
+
+        AssertSql(
+"""
+SELECT `m0`.`Rating`
+FROM (
+    SELECT 1
+) AS `e`
+LEFT JOIN (
+    SELECT `m`.`Rating`
+    FROM `Missions` AS `m`
+    WHERE `m`.`Id` = -1
+) AS `m0` ON TRUE
+""");
+    }
+
+    public override async Task DefaultIfEmpty_top_level_over_arbitrary_expression_with_nullable_value_type(bool async)
+    {
+        await base.DefaultIfEmpty_top_level_over_arbitrary_expression_with_nullable_value_type(async);
+
+        AssertSql(
+"""
+SELECT `m0`.`c`
+FROM (
+    SELECT 1
+) AS `e`
+LEFT JOIN (
+    SELECT `m`.`Rating` + 2.0 AS `c`
+    FROM `Missions` AS `m`
+    WHERE `m`.`Id` = -1
+) AS `m0` ON TRUE
+""");
+    }
+
+    public override async Task DefaultIfEmpty_top_level_over_arbitrary_expression_with_non_nullable_value_type(bool async)
+    {
+        await base.DefaultIfEmpty_top_level_over_arbitrary_expression_with_non_nullable_value_type(async);
+
+        AssertSql(
+"""
+SELECT COALESCE(`m0`.`c`, 0)
+FROM (
+    SELECT 1
+) AS `e`
+LEFT JOIN (
+    SELECT `m`.`Id` + 2 AS `c`
+    FROM `Missions` AS `m`
+    WHERE `m`.`Id` = -1
+) AS `m0` ON TRUE
+""");
+    }
+
+    [ConditionalFact]
+    public virtual void Check_all_tests_overridden()
+        => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 
     private void AssertSql(params string[] expected)
         => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);

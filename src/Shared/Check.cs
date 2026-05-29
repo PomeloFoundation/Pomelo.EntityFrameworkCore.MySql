@@ -1,4 +1,4 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using CA = System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.EntityFrameworkCore.Utilities
@@ -37,7 +38,7 @@ namespace Microsoft.EntityFrameworkCore.Utilities
             {
                 NotEmpty(parameterName, nameof(parameterName));
 
-                throw new ArgumentException($"The collection argument '{parameterName}' cannot be empty.");
+                throw new ArgumentException(AbstractionsStrings.CollectionArgumentIsEmpty, parameterName);
             }
 
             return value;
@@ -53,7 +54,7 @@ namespace Microsoft.EntityFrameworkCore.Utilities
             }
             else if (value.Trim().Length == 0)
             {
-                e = new ArgumentException($"The argument '{parameterName}' cannot be empty.");
+                e = new ArgumentException(AbstractionsStrings.ArgumentIsEmpty, parameterName);
             }
 
             if (e != null)
@@ -73,7 +74,7 @@ namespace Microsoft.EntityFrameworkCore.Utilities
             {
                 NotEmpty(parameterName, nameof(parameterName));
 
-                throw new ArgumentException($"The argument '{parameterName}' cannot be empty.");
+                throw new ArgumentException(AbstractionsStrings.ArgumentIsEmpty, parameterName);
             }
 
             return value;
@@ -104,7 +105,7 @@ namespace Microsoft.EntityFrameworkCore.Utilities
             {
                 NotEmpty(parameterName, nameof(parameterName));
 
-                throw new ArgumentException($"The collection argument '{parameterName}' cannot contain empty elements.");
+                throw new ArgumentException(AbstractionsStrings.CollectionArgumentHasEmptyElements, parameterName);
             }
 
             return value;

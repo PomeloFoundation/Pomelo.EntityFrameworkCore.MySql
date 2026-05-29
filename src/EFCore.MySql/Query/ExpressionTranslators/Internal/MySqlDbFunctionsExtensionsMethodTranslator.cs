@@ -1,4 +1,4 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -10,10 +10,10 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
-using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Utilities;
+using Microting.EntityFrameworkCore.MySql.Query.Internal;
+using Microting.EntityFrameworkCore.MySql.Utilities;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
+namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used

@@ -1,17 +1,17 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Scaffolding.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
+namespace Microting.EntityFrameworkCore.MySql.Storage.Internal
 {
     // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
     public class MySqlTypeMappingSource : RelationalTypeMappingSource
@@ -87,8 +87,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
         // guid
         private GuidTypeMapping _guid;
 
-        // JSON default mapping
+        // JSON default mapping for regular JSON columns mapped to string
         private MySqlJsonTypeMapping<string> _jsonDefaultString;
+        // JSON mapping for complex types (types mapped with .ToJson())
+        private MySqlStructuralJsonTypeMapping _jsonStructural;
 
         // Scaffolding type mappings
         private readonly MySqlCodeGenerationMemberAccessTypeMapping _codeGenerationMemberAccess = MySqlCodeGenerationMemberAccessTypeMapping.Default;
@@ -135,6 +137,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 : null;
 
             _jsonDefaultString = new MySqlJsonTypeMapping<string>("json", null, null, _options.NoBackslashEscapes, _options.ReplaceLineBreaksWithCharFunction);
+            _jsonStructural = new MySqlStructuralJsonTypeMapping("json");
 
             _storeTypeMappings
                 = new Dictionary<string, RelationalTypeMapping[]>(StringComparer.OrdinalIgnoreCase)
@@ -201,6 +204,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     { "time",                      new RelationalTypeMapping[] { _timeTimeOnly, _timeTimeSpan } },
                     { "datetime",                  new RelationalTypeMapping[] { _dateTime, _dateTimeOffset } },
                     { "timestamp",                 new RelationalTypeMapping[] { _timeStamp, _timeStampOffset } },
+
+                    // json - for complex types mapped with .ToJson()
+                    // This supports both MySQL 5.7.8+ (native JSON) and MariaDB 10.2.4+ (JSON as LONGTEXT alias)
+                    { "json",                      new[] { _jsonDefaultString } },
                 };
 
             _clrTypeMappings
@@ -305,6 +312,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             var storeTypeName = mappingInfo.StoreTypeName;
             var storeTypeNameBase = mappingInfo.StoreTypeNameBase;
 
+            // Special case for JSON columns: EF Core passes JsonTypePlaceholder as the CLR type
+            // when creating JSON columns for complex types/collections. Return our structural JSON mapping.
+            // This MUST be checked first, before any store type lookups, similar to SQL Server's implementation.
+            if (clrType?.Name == "JsonTypePlaceholder")
+            {
+                return _jsonStructural;
+            }
+
             if (storeTypeName != null)
             {
                 // First look for the fully qualified store type name.
@@ -315,6 +330,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     // mapping as the default.
                     // If a CLR type was provided, look for a mapping between the store and CLR types. If none is found,
                     // fail immediately.
+                    
                     return clrType == null
                         ? mappings[0]
                         : mappings.FirstOrDefault(m => m.ClrType == clrType);
@@ -330,9 +346,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                             ?.WithTypeMappingInfo(in mappingInfo);
                 }
 
-                if (storeTypeName.Equals("json", StringComparison.OrdinalIgnoreCase) &&
-                    (clrType == null || clrType == typeof(string) || clrType == typeof(MySqlJsonString)))
+                // Handle JSON store type for any CLR type
+                // This is needed for complex collections mapped with .ToJson() in EF Core 10+
+                // Works for both MySQL (native JSON type) and MariaDB (JSON alias for LONGTEXT)
+                if (storeTypeName.Equals("json", StringComparison.OrdinalIgnoreCase))
                 {
+                    // Return JSON mapping for any CLR type since JSON can serialize any object
+                    // The "json" store type works for both:
+                    // - MySQL 5.7.8+: Creates native JSON column with binary storage
+                    // - MariaDB 10.2.4+: Creates LONGTEXT column with JSON validation constraint
                     return _jsonDefaultString;
                 }
 

@@ -1,11 +1,11 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
 public class TPCFiltersInheritanceQueryMySqlTest : TPCFiltersInheritanceQueryTestBase<TPCFiltersInheritanceQueryMySqlFixture>
 {
@@ -200,13 +200,13 @@ WHERE `e`.`CountryId` = 1
         await base.Can_use_IgnoreQueryFilters_and_GetDatabaseValues(async);
 
         AssertSql(
-            """
+"""
 SELECT `e`.`Id`, `e`.`CountryId`, `e`.`Name`, `e`.`Species`, `e`.`EagleId`, `e`.`IsFlightless`, `e`.`Group`
 FROM `Eagle` AS `e`
 LIMIT 2
 """,
-            //
-            """
+                //
+                """
 @p='2'
 
 SELECT `e`.`Id`, `e`.`CountryId`, `e`.`Name`, `e`.`Species`, `e`.`EagleId`, `e`.`IsFlightless`, `e`.`Group`

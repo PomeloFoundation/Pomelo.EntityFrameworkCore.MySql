@@ -1,4 +1,4 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
+namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 
 /// <summary>
 ///     An expression that represents a MySQL JSON_TABLE() function call in a SQL tree.
@@ -97,7 +97,7 @@ public class MySqlJsonTableExpression : TableValuedFunctionExpression
                         if (visitedPath is null)
                         {
                             visitedPath = new PathSegment[Path.Count];
-                            for (var j = 0; j < i; i++)
+                            for (var j = 0; j < i; j++)
                             {
                                 visitedPath[j] = Path[j];
                             }

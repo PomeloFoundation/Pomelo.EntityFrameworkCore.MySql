@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Tests;
 
-namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models
+namespace Microting.EntityFrameworkCore.MySql.IntegrationTests.Models
 {
     public static class GeneratedContactMeta
     {

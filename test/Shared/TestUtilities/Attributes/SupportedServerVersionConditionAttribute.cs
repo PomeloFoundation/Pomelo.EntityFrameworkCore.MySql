@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes
+namespace Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes
 {
     /// <summary>
     /// Use the `propertiesOrVersions` constructor parameter, for OR conditions.

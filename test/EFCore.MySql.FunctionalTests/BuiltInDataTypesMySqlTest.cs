@@ -6,7 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -14,13 +14,13 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
-using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
 {
     [SupportedServerVersionCondition(nameof(ServerVersionSupport.Json))]
     public class BuiltInDataTypesMySqlTest :
@@ -129,11 +129,11 @@ WHERE `m`.`TimeSpanAsTime` = TIME '00:01:02'",
 
                 Assert.Empty(results);
                 Assert.Equal(
-                    @"@__timeSpan_0='02:01:00' (Nullable = true)
+                    @"@timeSpan='02:01:00' (Nullable = true)
 
 SELECT `m`.`Int`
 FROM `MappedNullableDataTypes` AS `m`
-WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
+WHERE `m`.`TimeSpanAsTime` = @timeSpan",
                     Sql,
                     ignoreLineEndingDifferences: true);
             }
@@ -930,7 +930,7 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
                 AssertEqualIfMapped(entityType, -1234567890.01M, () => dt.TestNullableDecimal);
                 AssertEqualIfMapped(entityType, DateTime.Parse("01/01/2000 12:34:56").ToUniversalTime(), () => dt.TestNullableDateTime);
                 AssertEqualIfMapped(
-                    entityType, new DateTimeOffset(DateTime.Parse("01/01/2000 12:34:56"), TimeSpan.FromHours(-8.0)).ToUniversalTime(), // adjusted for Pomelo's translation
+                    entityType, new DateTimeOffset(DateTime.Parse("01/01/2000 12:34:56"), TimeSpan.FromHours(-8.0)).ToUniversalTime(), // adjusted for Microting's translation
                     () => dt.TestNullableDateTimeOffset);
                 AssertEqualIfMapped(entityType, new TimeSpan(0, 10, 9, 8, 7), () => dt.TestNullableTimeSpan);
                 AssertEqualIfMapped(entityType, -1.234F, () => dt.TestNullableSingle);

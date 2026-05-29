@@ -1,14 +1,14 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Query.Internal;
+using Microting.EntityFrameworkCore.MySql.Storage.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
+namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
     public class MySqlJsonParameterExpressionVisitor : ExpressionVisitor
     {
@@ -39,10 +39,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 // MariaDB defines the JSON datatype just as a synonym for LONGTEXT.
                 if (!_options.ServerVersion.Supports.JsonDataTypeEmulation)
                 {
+                    // Use the found type mapping, or fall back to the parameter's existing type mapping if FindMapping returns null
+                    var targetTypeMapping = typeMapping ?? sqlParameterExpression.TypeMapping;
+                    
                     return _sqlExpressionFactory.Convert(
                         sqlParameterExpression,
-                        typeMapping.ClrType, // will be typeof(string) when `sqlParameterExpression.Type`
-                        typeMapping);        // is typeof(MySqlJsonString)
+                        targetTypeMapping.ClrType, // will be typeof(string) when `sqlParameterExpression.Type`
+                        targetTypeMapping);         // is typeof(MySqlJsonString)
                 }
             }
 

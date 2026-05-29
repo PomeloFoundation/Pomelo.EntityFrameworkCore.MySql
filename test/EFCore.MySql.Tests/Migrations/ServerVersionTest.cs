@@ -1,10 +1,10 @@
 using System;
 using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Storage;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Migrations
+namespace Microting.EntityFrameworkCore.MySql.Migrations
 {
     public class ServerVersionTest
     {

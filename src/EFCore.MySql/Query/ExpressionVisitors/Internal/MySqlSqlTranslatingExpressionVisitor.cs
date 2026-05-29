@@ -1,4 +1,4 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -14,13 +14,13 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Microting.EntityFrameworkCore.MySql.Internal;
+using Microting.EntityFrameworkCore.MySql.Query.Expressions.Internal;
+using Microting.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
+using Microting.EntityFrameworkCore.MySql.Query.Internal;
+using Microting.EntityFrameworkCore.MySql.Storage.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
+namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
     public class MySqlSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExpressionVisitor
     {
@@ -70,17 +70,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             var defaultExpression = Visit(bipolarExpression.DefaultExpression) ?? QueryCompilationContext.NotTranslatedExpression;
             var alternativeExpression = Visit(bipolarExpression.AlternativeExpression) ?? QueryCompilationContext.NotTranslatedExpression;
 
-            return defaultExpression != QueryCompilationContext.NotTranslatedExpression
-                // ? alternativeExpression != QueryCompilationContext.NotTranslatedExpression
-                //     // ? new MySqlBipolarSqlExpression(
-                //     //     (SqlExpression)defaultExpression,
-                //     //     (SqlExpression)alternativeExpression)
-                //     ? QueryCompilationContext.NotTranslatedExpression
-                //     : (SqlExpression)defaultExpression
-                ? (SqlExpression)defaultExpression
-                : alternativeExpression != QueryCompilationContext.NotTranslatedExpression
-                    ? (SqlExpression)alternativeExpression
-                    : QueryCompilationContext.NotTranslatedExpression;
+            // Check if the expressions are SqlExpression before casting to avoid InvalidCastException
+            // with EF Core 10's StructuralTypeReferenceExpression
+            if (defaultExpression != QueryCompilationContext.NotTranslatedExpression && defaultExpression is SqlExpression)
+            {
+                return defaultExpression;
+            }
+            
+            if (alternativeExpression != QueryCompilationContext.NotTranslatedExpression && alternativeExpression is SqlExpression)
+            {
+                return alternativeExpression;
+            }
+            
+            return QueryCompilationContext.NotTranslatedExpression;
         }
 
         /// <inheritdoc />
@@ -166,7 +168,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             //     TimeOnly = TimeOnly + TimeSpan
             //
             // TODO: Add support for DateTime and DateTimeOffset.
-            // To support DateTime and DateTimeOffset in Pomelo, we need propert TimeSpan support (representing MICROSECONDS or Ticks stored
+            // To support DateTime and DateTimeOffset in Microting, we need propert TimeSpan support (representing MICROSECONDS or Ticks stored
             // as BIGINT, not just a simple mapping to TIME, which is very limited in its range).
             // if (binaryExpression.NodeType == ExpressionType.Add &&
             //     Visit(binaryExpression.Left) is SqlExpression addLeftVisited &&
@@ -212,7 +214,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             //     TimeSpan = DateOnly - DateOnly
             //
             // TODO: Add support for DateTime and DateTimeOffset.
-            // To support DateTime and DateTimeOffset in Pomelo, we need propert TimeSpan support (representing MICROSECONDS or Ticks stored
+            // To support DateTime and DateTimeOffset in Microting, we need propert TimeSpan support (representing MICROSECONDS or Ticks stored
             // as BIGINT, not just a simple mapping to TIME, which is very limited in its range).
             if (binaryExpression.NodeType == ExpressionType.Subtract &&
                 Visit(binaryExpression.Left) is SqlExpression subtractLeftVisited &&
@@ -423,20 +425,30 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         }
 
         public override SqlExpression GenerateGreatest(IReadOnlyList<SqlExpression> expressions, Type resultType)
-            => _sqlExpressionFactory.NullableFunction(
+        {
+            var typeMapping = expressions.FirstOrDefault()?.TypeMapping 
+                ?? _sqlExpressionFactory.FindMapping(resultType, null);
+            
+            return _sqlExpressionFactory.NullableFunction(
                 "GREATEST",
                 expressions,
                 resultType,
-                Microsoft.EntityFrameworkCore.Query.ExpressionExtensions.InferTypeMapping(expressions.ToArray()),
-                onlyNullWhenAnyNullPropagatingArgumentIsNull: true);
+                typeMapping,
+                true);
+        }
 
         public override SqlExpression GenerateLeast(IReadOnlyList<SqlExpression> expressions, Type resultType)
-            => _sqlExpressionFactory.NullableFunction(
+        {
+            var typeMapping = expressions.FirstOrDefault()?.TypeMapping 
+                ?? _sqlExpressionFactory.FindMapping(resultType, null);
+            
+            return _sqlExpressionFactory.NullableFunction(
                 "LEAST",
                 expressions,
                 resultType,
-                Microsoft.EntityFrameworkCore.Query.ExpressionExtensions.InferTypeMapping(expressions.ToArray()),
-                onlyNullWhenAnyNullPropagatingArgumentIsNull: true);
+                typeMapping,
+                true);
+        }
 
         #region Copied from RelationalSqlTranslatingExpressionVisitor
 

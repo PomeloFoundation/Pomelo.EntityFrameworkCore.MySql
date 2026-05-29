@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class NorthwindQueryFiltersQueryMySqlTest : NorthwindQueryFiltersQueryTestBase<
         NorthwindQueryMySqlFixture<NorthwindQueryFiltersCustomizer>>
@@ -21,7 +21,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             await base.Count_query(async);
 
         AssertSql(
-            """
+"""
 @ef_filter__TenantPrefix='B' (Size = 40)
 
 SELECT COUNT(*)

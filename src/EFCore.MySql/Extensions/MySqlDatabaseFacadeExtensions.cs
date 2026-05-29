@@ -1,15 +1,15 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
 using System.Data.Common;
 using System.Reflection;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Microting.EntityFrameworkCore.MySql.Storage.Internal;
 
 //ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore

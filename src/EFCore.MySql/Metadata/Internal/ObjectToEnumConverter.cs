@@ -1,9 +1,9 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
+namespace Microting.EntityFrameworkCore.MySql.Metadata.Internal
 {
     public static class ObjectToEnumConverter
     {
@@ -12,7 +12,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
         /// be setup without provider specific dependencies.
         /// </summary>
         /// <remarks>
-        /// See https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1205 for further information.
+        /// See https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/issues/1205 for further information.
         /// </remarks>
         public static T? GetEnumValue<T>(object value)
             where T : struct

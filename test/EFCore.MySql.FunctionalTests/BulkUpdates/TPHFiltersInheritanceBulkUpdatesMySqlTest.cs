@@ -3,13 +3,13 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
-using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
 public class TPHFiltersInheritanceBulkUpdatesMySqlTest : FiltersInheritanceBulkUpdatesTestBase<
     TPHFiltersInheritanceBulkUpdatesMySqlFixture>
@@ -94,8 +94,7 @@ WHERE (
 
     public override async Task Delete_GroupBy_Where_Select_First_3(bool async)
     {
-        if (AppConfig.ServerVersion.Type == ServerType.MariaDb &&
-            AppConfig.ServerVersion.Version >= new Version(11, 1))
+        if (AppConfig.ServerVersion.Supports.DeleteWithSelfReferencingSubquery)
         {
             await base.Delete_GroupBy_Where_Select_First_3(async);
 
@@ -118,7 +117,7 @@ WHERE (`a`.`CountryId` = 1) AND `a`.`Id` IN (
         }
         else
         {
-            // Not supported by MySQL:
+            // Not supported by MySQL and older MariaDB versions:
             //     Error Code: 1093. You can't specify target table 'c' for update in FROM clause
             await Assert.ThrowsAsync<MySqlException>(
                 () => base.Delete_GroupBy_Where_Select_First_3(async));
@@ -137,7 +136,7 @@ WHERE (`a`.`CountryId` = 1) AND `a`.`Id` IN (
         await base.Update_where_using_hierarchy(async);
 
         AssertExecuteUpdateSql(
-            """
+"""
 @p='Monovia' (Size = 4000)
 
 UPDATE `Countries` AS `c`
@@ -154,7 +153,7 @@ WHERE (
         await base.Update_where_using_hierarchy_derived(async);
 
         AssertExecuteUpdateSql(
-            """
+"""
 @p='Monovia' (Size = 4000)
 
 UPDATE `Countries` AS `c`
@@ -171,7 +170,7 @@ WHERE (
         await base.Update_base_type(async);
 
         AssertExecuteUpdateSql(
-            """
+"""
 @p='Animal' (Size = 4000)
 
 UPDATE `Animals` AS `a`
@@ -185,7 +184,7 @@ WHERE (`a`.`CountryId` = 1) AND (`a`.`Name` = 'Great spotted kiwi')
         await base.Update_base_type_with_OfType(async);
 
         AssertExecuteUpdateSql(
-            """
+"""
 @p='NewBird' (Size = 4000)
 
 UPDATE `Animals` AS `a`
@@ -199,7 +198,7 @@ WHERE (`a`.`CountryId` = 1) AND (`a`.`Discriminator` = 'Kiwi')
         await base.Update_base_property_on_derived_type(async);
 
         AssertExecuteUpdateSql(
-            """
+"""
 @p='SomeOtherKiwi' (Size = 4000)
 
 UPDATE `Animals` AS `a`
@@ -213,7 +212,7 @@ WHERE (`a`.`Discriminator` = 'Kiwi') AND (`a`.`CountryId` = 1)
         await base.Update_derived_property_on_derived_type(async);
 
         AssertExecuteUpdateSql(
-            """
+"""
 @p='0'
 
 UPDATE `Animals` AS `a`
@@ -227,7 +226,7 @@ WHERE (`a`.`Discriminator` = 'Kiwi') AND (`a`.`CountryId` = 1)
         await base.Update_base_and_derived_types(async);
 
         AssertExecuteUpdateSql(
-            """
+"""
 @p='Kiwi' (Size = 4000)
 @p1='0'
 

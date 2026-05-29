@@ -1,25 +1,22 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
-using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public partial class NorthwindSelectQueryMySqlTest : NorthwindSelectQueryRelationalTestBase<
         NorthwindQueryMySqlFixture<NoopModelCustomizer>>
     {
-
-        [ConditionalTheory(Skip = "EF Core 10 emits an expression (e.g. LEAST) in LIMIT; MySQL only allows literals/parameters")]
-        public override async Task Select_with_multiple_Take(bool async) => await Task.CompletedTask;
         public NorthwindSelectQueryMySqlTest(
             NorthwindQueryMySqlFixture<NoopModelCustomizer> fixture,
             ITestOutputHelper testOutputHelper)
@@ -182,7 +179,8 @@ ORDER BY `t`.`OrderDate`, `t`.`CustomerID`
             }
             else
             {
-                Assert.Contains("Primitive collections support has not been enabled.", message);
+                // EF Core 10 changed the error message
+                Assert.Contains("Unable to translate a collection subquery", message);
             }
 
             AssertSql();

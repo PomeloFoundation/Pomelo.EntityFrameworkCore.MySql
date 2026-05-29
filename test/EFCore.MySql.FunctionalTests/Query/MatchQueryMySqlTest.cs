@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class MatchQueryMySqlTest : MatchQueryMySqlTestBase<MatchQueryMySqlTest.MatchQueryMySqlFixture>
     {
@@ -288,7 +288,7 @@ WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*' IN BOOLEAN MODE) > 0.0"
             Assert.Equal(3, count);
 
             AssertSql(
-                """
+"""
 @searchMode='2'
 
 SELECT COUNT(*)
@@ -319,7 +319,7 @@ WHERE ((@searchMode = 0) AND (MATCH (`h`.`Name`) AGAINST ('First*') > 0.0)) OR (
             Assert.Equal(5, count);
 
             AssertSql(
-                """
+"""
 @searchMode='2'
 
 SELECT COUNT(*)
@@ -376,7 +376,7 @@ WHERE MATCH (`h`.`Name`) AGAINST ('+First +Herb' IN BOOLEAN MODE) > 0.0");
             Assert.Equal(3, count);
 
             AssertSql(
-                """
+"""
 @minScore='0.2'
 
 SELECT COUNT(*)

@@ -11,9 +11,9 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Tests;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {
     public class MySqlTestStore : RelationalTestStore
     {
@@ -70,10 +70,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             _useConnectionString = useConnectionString;
             _noBackslashEscapes = noBackslashEscapes;
 
-            if (useConnectionString)
-            {
-                _connectionString = CreateConnectionString(name, _noBackslashEscapes, guidFormat);
-            }
+            _connectionString = CreateConnectionString(name, _noBackslashEscapes, guidFormat);
 
             ServerVersion = new Lazy<ServerVersion>(() => Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect((MySqlConnection)Connection));
             DatabaseCharSet = databaseCharSet ?? "utf8mb4";
@@ -102,16 +99,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         private static int GetCommandTimeout() => AppConfig.Config.GetValue("Data:CommandTimeout", DefaultCommandTimeout);
 
         public override DbContextOptionsBuilder AddProviderOptions(DbContextOptionsBuilder builder)
-            => _useConnectionString
+            => (_useConnectionString || UseConnectionString)
                 ? builder.UseMySql(_connectionString, AppConfig.ServerVersion, x => AddOptions(x, _noBackslashEscapes))
                 : builder.UseMySql(Connection, AppConfig.ServerVersion, x => AddOptions(x, _noBackslashEscapes));
 
         public static MySqlDbContextOptionsBuilder AddOptions(MySqlDbContextOptionsBuilder builder)
         {
             return builder
-                // Our UseMySql() methods explicitly set UseParameterizedCollectionMode(Constant) as the default, which is not the
+                // Our UseMySql() methods explicitly set TranslateParameterizedCollectionsToConstants() as the default, which is not the
                 // default that the EF Core tests expect.
-                .UseParameterizedCollectionMode(ParameterTranslationMode.Parameter)
+                .UseParameterizedCollectionMode(ParameterTranslationMode.MultipleParameters)
                 .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
                 .CommandTimeout(GetCommandTimeout())
                 .ExecutionStrategy(d => new TestMySqlRetryingExecutionStrategy(d));

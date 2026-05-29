@@ -338,6 +338,4 @@ ASALocalRun/
 
 # Local History for Visual Studio
 .localhistory/
-
-#VSCode
-.vscode/
+.claude

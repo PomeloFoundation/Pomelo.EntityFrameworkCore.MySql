@@ -1,4 +1,4 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -8,11 +8,11 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Storage.ValueConversion.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage.ValueComparison.Internal;
+using Microting.EntityFrameworkCore.MySql.Json.Microsoft.Storage.ValueConversion.Internal;
+using Microting.EntityFrameworkCore.MySql.Storage.Internal;
+using Microting.EntityFrameworkCore.MySql.Storage.ValueComparison.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Storage.ValueComparison.Internal
+namespace Microting.EntityFrameworkCore.MySql.Json.Microsoft.Storage.ValueComparison.Internal
 {
     public static class MySqlJsonMicrosoftValueComparer
     {

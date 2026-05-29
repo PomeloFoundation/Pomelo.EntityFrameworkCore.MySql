@@ -6,21 +6,15 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.DebugServices;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.DebugServices;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     // We use our custom fixture here, to inject a custom debug services.
     public class NorthwindSplitIncludeNoTrackingQueryMySqlTest : NorthwindSplitIncludeNoTrackingQueryTestBase<NorthwindSplitIncludeNoTrackingQueryMySqlTest.NorthwindSplitIncludeNoTrackingQueryMySqlFixture>
     {
-
-        [ConditionalTheory(Skip = "EF Core 10 emits an expression (e.g. LEAST) in LIMIT; MySQL only allows literals/parameters")]
-        public override async Task Multi_level_includes_are_applied_with_skip_take(bool async) => await Task.CompletedTask;
-
-        [ConditionalTheory(Skip = "EF Core 10 emits an expression (e.g. LEAST) in LIMIT; MySQL only allows literals/parameters")]
-        public override async Task Multi_level_includes_are_applied_with_take(bool async) => await Task.CompletedTask;
         public NorthwindSplitIncludeNoTrackingQueryMySqlTest(NorthwindSplitIncludeNoTrackingQueryMySqlFixture fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
         {

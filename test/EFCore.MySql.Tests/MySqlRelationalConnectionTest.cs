@@ -15,15 +15,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
-using Pomelo.EntityFrameworkCore.MySql.TestUtilities.FakeProvider;
+using Microting.EntityFrameworkCore.MySql.Diagnostics.Internal;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Internal;
+using Microting.EntityFrameworkCore.MySql.Storage.Internal;
+using Microting.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.TestUtilities.FakeProvider;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql;
+namespace Microting.EntityFrameworkCore.MySql;
 
 public class MySqlRelationalConnectionTest
 {
@@ -95,7 +95,7 @@ public class MySqlRelationalConnectionTest
         var context = scope.ServiceProvider.GetRequiredService<FakeDbContext>();
 
         Assert.Equal(
-            "The connection string of a connection used by Pomelo.EntityFrameworkCore.MySql must contain \"AllowUserVariables=True;UseAffectedRows=False\".",
+            "The connection string of a connection used by Microting.EntityFrameworkCore.MySql must contain \"AllowUserVariables=True;UseAffectedRows=False\".",
             Assert.Throws<InvalidOperationException>(
                     () => (MySqlRelationalConnection)context.GetService<IRelationalConnection>()!)
                 .Message);
@@ -150,7 +150,7 @@ public class MySqlRelationalConnectionTest
         var context = scope.ServiceProvider.GetRequiredService<FakeDbContext>();
 
         Assert.Equal(
-            "The connection string of a connection used by Pomelo.EntityFrameworkCore.MySql must contain \"AllowUserVariables=True;UseAffectedRows=False\".",
+            "The connection string of a connection used by Microting.EntityFrameworkCore.MySql must contain \"AllowUserVariables=True;UseAffectedRows=False\".",
             Assert.Throws<InvalidOperationException>(
                     () => (MySqlRelationalConnection)context.GetService<IRelationalConnection>()!)
                 .Message);
@@ -301,18 +301,21 @@ public class MySqlRelationalConnectionTest
         var singletonOptions = new MySqlOptions();
         singletonOptions.Initialize(options);
 
+        var exceptionDetector = new ExceptionDetector();
+        var loggingOptions = new LoggingOptions();
+        
         return new MySqlRelationalConnection(
             new RelationalConnectionDependencies(
                 options,
                 new DiagnosticsLogger<DbLoggerCategory.Database.Transaction>(
                     new LoggerFactory(),
-                    new LoggingOptions(),
+                    loggingOptions,
                     new DiagnosticListener("FakeDiagnosticListener"),
                     new MySqlLoggingDefinitions(),
                     new NullDbContextLogger()),
                 new RelationalConnectionDiagnosticsLogger(
                     new LoggerFactory(),
-                    new LoggingOptions(),
+                    loggingOptions,
                     new DiagnosticListener("FakeDiagnosticListener"),
                     new MySqlLoggingDefinitions(),
                     new NullDbContextLogger(),
@@ -329,9 +332,9 @@ public class MySqlRelationalConnectionTest
                             TestServiceFactory.Instance.Create<TypeMappingSourceDependencies>(),
                             TestServiceFactory.Instance.Create<RelationalTypeMappingSourceDependencies>(),
                             singletonOptions),
-                        new ExceptionDetector(),
-                        new LoggingOptions())),
-                new ExceptionDetector()),
+                        exceptionDetector,
+                        loggingOptions)),
+                exceptionDetector),
             new MySqlConnectionStringOptionsValidator(),
             singletonOptions);
     }

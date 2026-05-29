@@ -7,15 +7,12 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests;
 
-// Disabled via internal access. EF Core 10 requires complex-type collections (e.g. Pub.Activities) to be mapped to a
-// JSON column via ToJson(); the Pomelo MySQL provider does not implement EF JSON mapping
-// (MySqlModelValidator throws Ef7CoreJsonMappingNotSupported), so the shared model cannot be built.
-internal class ComplexTypesTrackingMySqlTest : ComplexTypesTrackingTestBase<ComplexTypesTrackingMySqlTest.MySqlFixture>
+public class ComplexTypesTrackingMySqlTest : ComplexTypesTrackingTestBase<ComplexTypesTrackingMySqlTest.MySqlFixture>
 {
     public ComplexTypesTrackingMySqlTest(MySqlFixture fixture, ITestOutputHelper testOutputHelper)
         : base(fixture)
@@ -38,6 +35,51 @@ internal class ComplexTypesTrackingMySqlTest : ComplexTypesTrackingTestBase<Comp
         protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
         {
             base.OnModelCreating(modelBuilder, context);
+
+            // Complex collections must be mapped to JSON columns in EF Core 10+
+            modelBuilder.Entity<PubWithCollections>(b =>
+            {
+                b.ComplexCollection(
+                    e => e.Activities, b => b.ToJson());
+            });
+
+            modelBuilder.Entity<PubWithRecordCollections>(b =>
+            {
+                b.ComplexCollection(
+                    e => e.Activities, b => b.ToJson());
+            });
+
+            modelBuilder.Entity<PubWithArrayCollections>(b =>
+            {
+                b.ComplexCollection(
+                    e => e.Activities, b => b.ToJson());
+            });
+
+            modelBuilder.Entity<PubWithRecordArrayCollections>(b =>
+            {
+                b.ComplexCollection(
+                    e => e.Activities, b => b.ToJson());
+            });
+
+            modelBuilder.Entity<PubWithPropertyBagCollections>(b =>
+            {
+                b.ComplexCollection(
+                    e => e.Activities, b => b.ToJson());
+            });
+
+            // Field-based entities are only configured when not using proxies
+            // (proxies require virtual properties)
+            modelBuilder.Entity<FieldPubWithCollections>(b =>
+            {
+                b.ComplexCollection(
+                    e => e.Activities, b => b.ToJson());
+            });
+
+            modelBuilder.Entity<FieldPubWithRecordCollections>(b =>
+            {
+                b.ComplexCollection(
+                    e => e.Activities, b => b.ToJson());
+            });
 
             // modelBuilder.Entity<Pub>(
             //     b =>

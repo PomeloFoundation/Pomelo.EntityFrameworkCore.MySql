@@ -1,4 +1,4 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 #nullable enable
@@ -9,37 +9,32 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Utilities;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
+namespace Microting.EntityFrameworkCore.MySql.Query.Internal
 {
     public class SkipTakeCollapsingExpressionVisitor : ExpressionVisitor
     {
         private readonly ISqlExpressionFactory _sqlExpressionFactory;
 
-        private IReadOnlyDictionary<string, object?> _parameterValues;
-        private bool _canCache;
+        private ParametersCacheDecorator _parametersDecorator;
 
         public SkipTakeCollapsingExpressionVisitor(ISqlExpressionFactory sqlExpressionFactory)
         {
             Check.NotNull(sqlExpressionFactory, nameof(sqlExpressionFactory));
 
             _sqlExpressionFactory = sqlExpressionFactory;
-            _parameterValues = null!;
+            _parametersDecorator = null!;
         }
 
         public virtual Expression Process(
             Expression selectExpression,
-            IReadOnlyDictionary<string, object?> parametersValues,
-            out bool canCache)
+            ParametersCacheDecorator parametersDecorator)
         {
             Check.NotNull(selectExpression, nameof(selectExpression));
-            Check.NotNull(parametersValues, nameof(parametersValues));
+            Check.NotNull(parametersDecorator, nameof(parametersDecorator));
 
-            _parameterValues = parametersValues;
-            _canCache = true;
+            _parametersDecorator = parametersDecorator;
 
             var result = Visit(selectExpression);
-
-            canCache = _canCache;
 
             return result;
         }
@@ -74,8 +69,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         when constant.Value is int intValue:
                             return intValue == 0;
                         case SqlParameterExpression parameter:
-                            _canCache = false;
-                            return _parameterValues[parameter.Name] is int value && value == 0;
+                            var parameterValues = _parametersDecorator.GetAndDisableCaching();
+                            return parameterValues[parameter.Name] is int value && value == 0;
 
                         default:
                             return false;

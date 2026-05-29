@@ -2,15 +2,23 @@
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Microsoft.EntityFrameworkCore.ModelBuilding;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Query.Associations;
+using Microsoft.EntityFrameworkCore.Query.Associations.ComplexJson;
+using Microsoft.EntityFrameworkCore.Query.Associations.ComplexProperties;
+using Microsoft.EntityFrameworkCore.Query.Associations.ComplexTableSplitting;
+using Microsoft.EntityFrameworkCore.Query.Associations.Navigations;
+using Microsoft.EntityFrameworkCore.Query.Associations.OwnedJson;
+using Microsoft.EntityFrameworkCore.Query.Associations.OwnedNavigations;
+using Microsoft.EntityFrameworkCore.Query.Associations.OwnedTableSplitting;
 using Microsoft.EntityFrameworkCore.Query.Translations;
+using Microsoft.EntityFrameworkCore.Query.Translations.Operators;
 using Microsoft.EntityFrameworkCore.Query.Translations.Temporal;
 using Microsoft.EntityFrameworkCore.Types;
 using Microsoft.EntityFrameworkCore.Update;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
 {
     public class MySqlComplianceTest : RelationalComplianceTestBase
     {
@@ -44,125 +52,139 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             typeof(AdHocPrecompiledQueryRelationalTestBase),
             typeof(PrecompiledQueryRelationalTestBase),
             typeof(PrecompiledSqlPregenerationQueryRelationalTestBase),
+            
+            // TODO: 10.0.2 - AdHocComplexTypeQueryRelationalTestBase requires NonSharedFixture infrastructure
+            typeof(AdHocComplexTypeQueryRelationalTestBase),
 
             // TODO: Reenable LoggingMySqlTest once its issue has been fixed in EF Core upstream.
             typeof(LoggingTestBase),
             typeof(LoggingRelationalTestBase<,>),
 
             // We have our own JSON support for now
-            typeof(AdHocJsonQueryTestBase),
+            // AdHocJsonQueryTestBase and AdHocJsonQueryRelationalTestBase are now enabled (public class)
+            // JsonTypesRelationalTestBase is now enabled (public class JsonTypesRelationalMySqlTest)
             typeof(JsonQueryRelationalTestBase<>),
             typeof(JsonQueryTestBase<>),
-            typeof(JsonTypesRelationalTestBase),
             typeof(JsonTypesTestBase),
             typeof(JsonUpdateTestBase<>),
             typeof(OptionalDependentQueryTestBase<>),
 
-            // TODO: 10.0 - New EF Core 10 test bases that are not yet ported to the MySQL provider.
-            // The translation coverage is currently still provided by the existing NorthwindFunctions/Northwind* query
-            // test classes; these dedicated Query.Translations.* base classes should be implemented in a follow-up.
+            // TODO: 10.0 - Type tests
+            typeof(TypeTestBase<,>),
+            typeof(RelationalTypeTestBase<,>),
+
+            // TODO: 10.0 - Translation tests
             typeof(ByteArrayTranslationsTestBase<>),
             typeof(EnumTranslationsTestBase<>),
             typeof(GuidTranslationsTestBase<>),
             typeof(MathTranslationsTestBase<>),
             typeof(MiscellaneousTranslationsTestBase<>),
             typeof(StringTranslationsTestBase<>),
+            typeof(MiscellaneousTranslationsRelationalTestBase<>),
+            typeof(StringTranslationsRelationalTestBase<>),
+
+            // TODO: 10.0 - Temporal translation tests
             typeof(DateOnlyTranslationsTestBase<>),
             typeof(DateTimeOffsetTranslationsTestBase<>),
             typeof(DateTimeTranslationsTestBase<>),
-            typeof(TypeTestBase<,>),
+            typeof(TimeOnlyTranslationsTestBase<>),
+            typeof(TimeSpanTranslationsTestBase<>),
 
-            // EF Core 10 introduced complex-type collection tracking/property-value scenarios that require mapping
-            // complex-type collections to JSON (ToJson). The MySQL provider intentionally does not implement EF Core's
-            // JSON mapping yet (see the "We have our own JSON support for now" entries above), so these bases cannot be
-            // satisfied at the moment.
-            typeof(ComplexTypesTrackingTestBase<>),
-            typeof(PropertyValuesTestBase<>),
-            typeof(ComplexTypeBulkUpdatesRelationalTestBase<>),
+            // TODO: 10.0 - Operator translation tests
+            typeof(ArithmeticOperatorTranslationsTestBase<>),
+            typeof(BitwiseOperatorTranslationsTestBase<>),
+            typeof(ComparisonOperatorTranslationsTestBase<>),
+            typeof(LogicalOperatorTranslationsTestBase<>),
+            typeof(MiscellaneousOperatorTranslationsTestBase<>),
 
-            // TODO: 10.0 - EF Core 10 reorganized/added a large set of test base classes (the Query.Associations.*
-            // suite, Query.Translations.Operators/Temporal additions, relational variants, etc.). They are not yet ported
-            // to the MySQL provider; existing coverage is still provided by the pre-existing query/update test classes.
-            typeof(Microsoft.EntityFrameworkCore.Query.Translations.Temporal.TimeOnlyTranslationsTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Translations.Temporal.TimeSpanTranslationsTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Translations.Operators.ArithmeticOperatorTranslationsTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Translations.Operators.BitwiseOperatorTranslationsTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Translations.Operators.ComparisonOperatorTranslationsTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Translations.Operators.LogicalOperatorTranslationsTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Translations.Operators.MiscellaneousOperatorTranslationsTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.AssociationsBulkUpdateTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.AssociationsCollectionTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.AssociationsMiscellaneousTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.AssociationsPrimitiveCollectionTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.AssociationsProjectionTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.AssociationsSetOperationsTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.AssociationsStructuralEqualityTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.OwnedNavigations.OwnedNavigationsCollectionTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.OwnedNavigations.OwnedNavigationsMiscellaneousTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.OwnedNavigations.OwnedNavigationsPrimitiveCollectionTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.OwnedNavigations.OwnedNavigationsProjectionTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.OwnedNavigations.OwnedNavigationsSetOperationsTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.OwnedNavigations.OwnedNavigationsStructuralEqualityTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.Navigations.NavigationsCollectionTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.Navigations.NavigationsIncludeTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.Navigations.NavigationsMiscellaneousTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.Navigations.NavigationsPrimitiveCollectionTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.Navigations.NavigationsProjectionTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.Navigations.NavigationsSetOperationsTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.Navigations.NavigationsStructuralEqualityTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.ComplexProperties.ComplexPropertiesBulkUpdateTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.ComplexProperties.ComplexPropertiesCollectionTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.ComplexProperties.ComplexPropertiesMiscellaneousTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.ComplexProperties.ComplexPropertiesPrimitiveCollectionTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.ComplexProperties.ComplexPropertiesProjectionTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.ComplexProperties.ComplexPropertiesSetOperationsTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.ComplexProperties.ComplexPropertiesStructuralEqualityTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.ModelBuilding.ModelBuilderTest.ComplexCollectionTestBase),
-            typeof(Microsoft.EntityFrameworkCore.ComplexTypesTrackingRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.LazyLoadProxyRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.PropertyValuesRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Update.ComplexCollectionJsonUpdateTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Types.RelationalTypeTestBase<,>),
-            typeof(Microsoft.EntityFrameworkCore.Query.AdHocComplexTypeQueryRelationalTestBase),
-            typeof(Microsoft.EntityFrameworkCore.Query.AdHocJsonQueryRelationalTestBase),
-            typeof(Microsoft.EntityFrameworkCore.Query.Translations.MiscellaneousTranslationsRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Translations.StringTranslationsRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.OwnedTableSplitting.OwnedTableSplittingMiscellaneousRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.OwnedTableSplitting.OwnedTableSplittingPrimitiveCollectionRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.OwnedTableSplitting.OwnedTableSplittingProjectionRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.OwnedTableSplitting.OwnedTableSplittingStructuralEqualityRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.OwnedNavigations.OwnedNavigationsCollectionRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.OwnedNavigations.OwnedNavigationsMiscellaneousRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.OwnedNavigations.OwnedNavigationsPrimitiveCollectionRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.OwnedNavigations.OwnedNavigationsProjectionRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.OwnedNavigations.OwnedNavigationsSetOperationsRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.OwnedNavigations.OwnedNavigationsStructuralEqualityRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.OwnedJson.OwnedJsonBulkUpdateRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.OwnedJson.OwnedJsonCollectionRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.OwnedJson.OwnedJsonMiscellaneousRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.OwnedJson.OwnedJsonPrimitiveCollectionRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.OwnedJson.OwnedJsonProjectionRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.OwnedJson.OwnedJsonStructuralEqualityRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.Navigations.NavigationsCollectionRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.Navigations.NavigationsIncludeRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.Navigations.NavigationsMiscellaneousRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.Navigations.NavigationsPrimitiveCollectionRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.Navigations.NavigationsProjectionRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.Navigations.NavigationsSetOperationsRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.Navigations.NavigationsStructuralEqualityRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.ComplexTableSplitting.ComplexTableSplittingBulkUpdateRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.ComplexTableSplitting.ComplexTableSplittingMiscellaneousRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.ComplexTableSplitting.ComplexTableSplittingPrimitiveCollectionRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.ComplexTableSplitting.ComplexTableSplittingProjectionRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.ComplexTableSplitting.ComplexTableSplittingStructuralEqualityRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.ComplexJson.ComplexJsonBulkUpdateRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.ComplexJson.ComplexJsonCollectionRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.ComplexJson.ComplexJsonMiscellaneousRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.ComplexJson.ComplexJsonPrimitiveCollectionRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.ComplexJson.ComplexJsonProjectionRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.ComplexJson.ComplexJsonSetOperationsRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.Query.Associations.ComplexJson.ComplexJsonStructuralEqualityRelationalTestBase<>),
-            typeof(Microsoft.EntityFrameworkCore.ModelBuilding.RelationalModelBuilderTest.RelationalComplexCollectionTestBase),
+            // TODO: 10.0 - Association tests
+            typeof(AssociationsBulkUpdateTestBase<>),
+            typeof(AssociationsCollectionTestBase<>),
+            typeof(AssociationsMiscellaneousTestBase<>),
+            typeof(AssociationsPrimitiveCollectionTestBase<>),
+            typeof(AssociationsProjectionTestBase<>),
+            typeof(AssociationsSetOperationsTestBase<>),
+            typeof(AssociationsStructuralEqualityTestBase<>),
+
+            // TODO: 10.0 - Owned navigation tests
+            typeof(OwnedNavigationsCollectionTestBase<>),
+            typeof(OwnedNavigationsMiscellaneousTestBase<>),
+            typeof(OwnedNavigationsPrimitiveCollectionTestBase<>),
+            typeof(OwnedNavigationsProjectionTestBase<>),
+            typeof(OwnedNavigationsSetOperationsTestBase<>),
+            typeof(OwnedNavigationsStructuralEqualityTestBase<>),
+            typeof(OwnedNavigationsCollectionRelationalTestBase<>),
+            typeof(OwnedNavigationsMiscellaneousRelationalTestBase<>),
+            typeof(OwnedNavigationsPrimitiveCollectionRelationalTestBase<>),
+            typeof(OwnedNavigationsProjectionRelationalTestBase<>),
+            typeof(OwnedNavigationsSetOperationsRelationalTestBase<>),
+            typeof(OwnedNavigationsStructuralEqualityRelationalTestBase<>),
+
+            // TODO: 10.0 - Navigation tests
+            typeof(NavigationsCollectionTestBase<>),
+            typeof(NavigationsIncludeTestBase<>),
+            typeof(NavigationsMiscellaneousTestBase<>),
+            typeof(NavigationsPrimitiveCollectionTestBase<>),
+            typeof(NavigationsProjectionTestBase<>),
+            typeof(NavigationsSetOperationsTestBase<>),
+            typeof(NavigationsStructuralEqualityTestBase<>),
+            typeof(NavigationsCollectionRelationalTestBase<>),
+            typeof(NavigationsIncludeRelationalTestBase<>),
+            typeof(NavigationsMiscellaneousRelationalTestBase<>),
+            typeof(NavigationsPrimitiveCollectionRelationalTestBase<>),
+            typeof(NavigationsProjectionRelationalTestBase<>),
+            typeof(NavigationsSetOperationsRelationalTestBase<>),
+            typeof(NavigationsStructuralEqualityRelationalTestBase<>),
+
+            // TODO: 10.0 - Association tests
+            typeof(AssociationsBulkUpdateTestBase<>),
+            typeof(AssociationsCollectionTestBase<>),
+            typeof(AssociationsMiscellaneousTestBase<>),
+            typeof(AssociationsPrimitiveCollectionTestBase<>),
+            typeof(AssociationsProjectionTestBase<>),
+            typeof(AssociationsSetOperationsTestBase<>),
+            typeof(AssociationsStructuralEqualityTestBase<>),
+            typeof(ComplexTypesTrackingRelationalTestBase<>),
+            typeof(LazyLoadProxyRelationalTestBase<>),
+            typeof(PropertyValuesRelationalTestBase<>),
+
+            // TODO: 10.0 - Update tests
+            typeof(ComplexCollectionJsonUpdateTestBase<>),
+
+            // TODO: 10.0 - Owned table splitting tests
+            typeof(OwnedTableSplittingMiscellaneousRelationalTestBase<>),
+            typeof(OwnedTableSplittingPrimitiveCollectionRelationalTestBase<>),
+            typeof(OwnedTableSplittingProjectionRelationalTestBase<>),
+            typeof(OwnedTableSplittingStructuralEqualityRelationalTestBase<>),
+
+            // TODO: 10.0 - Owned JSON tests
+            typeof(OwnedJsonBulkUpdateRelationalTestBase<>),
+            typeof(OwnedJsonCollectionRelationalTestBase<>),
+            typeof(OwnedJsonMiscellaneousRelationalTestBase<>),
+            typeof(OwnedJsonPrimitiveCollectionRelationalTestBase<>),
+            typeof(OwnedJsonProjectionRelationalTestBase<>),
+            typeof(OwnedJsonStructuralEqualityRelationalTestBase<>),
+
+            // TODO: 10.0 - Complex table splitting tests
+            typeof(ComplexTableSplittingBulkUpdateRelationalTestBase<>),
+            typeof(ComplexTableSplittingMiscellaneousRelationalTestBase<>),
+            typeof(ComplexTableSplittingPrimitiveCollectionRelationalTestBase<>),
+            typeof(ComplexTableSplittingProjectionRelationalTestBase<>),
+            typeof(ComplexTableSplittingStructuralEqualityRelationalTestBase<>),
+
+            // TODO: 10.0 - Complex properties tests
+            typeof(ComplexPropertiesBulkUpdateTestBase<>),
+            typeof(ComplexPropertiesCollectionTestBase<>),
+            typeof(ComplexPropertiesMiscellaneousTestBase<>),
+            typeof(ComplexPropertiesPrimitiveCollectionTestBase<>),
+            typeof(ComplexPropertiesProjectionTestBase<>),
+            typeof(ComplexPropertiesSetOperationsTestBase<>),
+            typeof(ComplexPropertiesStructuralEqualityTestBase<>),
+
+            // BadDataJsonDeserialization test is now enabled (public class)
+
+            // Complex JSON tests are now supported for MySQL 5.7.8+ and MariaDB 10.2.4+
+            // These tests should use [SupportedServerVersionCondition("Json")] to skip on older versions
         };
 
         protected override Assembly TargetAssembly { get; } = typeof(MySqlComplianceTest).Assembly;

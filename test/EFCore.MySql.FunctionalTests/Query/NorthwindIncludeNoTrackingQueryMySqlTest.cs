@@ -8,16 +8,10 @@ using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class NorthwindIncludeNoTrackingQueryMySqlTest : NorthwindIncludeNoTrackingQueryTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>
     {
-
-        [ConditionalTheory(Skip = "EF Core 10 emits an expression (e.g. LEAST) in LIMIT; MySQL only allows literals/parameters")]
-        public override async Task Multi_level_includes_are_applied_with_skip_take(bool async) => await Task.CompletedTask;
-
-        [ConditionalTheory(Skip = "EF Core 10 emits an expression (e.g. LEAST) in LIMIT; MySQL only allows literals/parameters")]
-        public override async Task Multi_level_includes_are_applied_with_take(bool async) => await Task.CompletedTask;
         // ReSharper disable once UnusedParameter.Local
         public NorthwindIncludeNoTrackingQueryMySqlTest(NorthwindQueryMySqlFixture<NoopModelCustomizer> fixture)
             : base(fixture)

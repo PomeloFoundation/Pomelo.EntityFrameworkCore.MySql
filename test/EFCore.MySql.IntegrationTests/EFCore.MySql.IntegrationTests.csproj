@@ -1,15 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>$(PomeloTestTargetFramework)</TargetFramework>
-    <AssemblyName>Pomelo.EntityFrameworkCore.MySql.IntegrationTests</AssemblyName>
-    <StartupObject>Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Program</StartupObject>
+    <TargetFramework>$(MicrotingTestTargetFramework)</TargetFramework>
+    <AssemblyName>Microting.EntityFrameworkCore.MySql.IntegrationTests</AssemblyName>
+    <StartupObject>Microting.EntityFrameworkCore.MySql.IntegrationTests.Program</StartupObject>
     <OutputType>Exe</OutputType>
-    <PackageId>Pomelo.EntityFrameworkCore.MySql.IntegrationTests</PackageId>
+    <PackageId>Microting.EntityFrameworkCore.MySql.IntegrationTests</PackageId>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
     <ThreadPoolMinThreads>64</ThreadPoolMinThreads>
-    <RootNamespace>Pomelo.EntityFrameworkCore.MySql.IntegrationTests</RootNamespace>
+    <RootNamespace>Microting.EntityFrameworkCore.MySql.IntegrationTests</RootNamespace>
+    <NoWarn>$(NoWarn);NU1903</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -22,6 +23,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
     <PackageReference Include="Newtonsoft.Json" />

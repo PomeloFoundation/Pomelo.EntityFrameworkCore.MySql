@@ -1,14 +1,15 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 #nullable enable
 
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal;
+using Microsoft.EntityFrameworkCore.Utilities;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
+namespace Microting.EntityFrameworkCore.MySql.Query.Internal
 {
     public class MySqlParameterBasedSqlProcessor : RelationalParameterBasedSqlProcessor
     {
@@ -27,12 +28,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         {
             queryExpression = base.Process(queryExpression, parametersDecorator);
 
-            var parameterValues = parametersDecorator.GetAndDisableCaching();
-
             if (_options.ServerVersion.Supports.MySqlBugLimit0Offset0ExistsWorkaround)
             {
                 queryExpression = new SkipTakeCollapsingExpressionVisitor(Dependencies.SqlExpressionFactory)
-                    .Process(queryExpression, parameterValues, out _);
+                    .Process(queryExpression, parametersDecorator);
             }
 
             if (_options.IndexOptimizedBooleanColumns)
@@ -44,7 +43,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             queryExpression = new MySqlParameterInliningExpressionVisitor(
                 Dependencies.TypeMappingSource,
                 Dependencies.SqlExpressionFactory,
-                _options).Process(queryExpression, parameterValues, out _);
+                _options).Process(queryExpression, parametersDecorator);
 
             // Run the compatibility checks as late in the query pipeline (before the actual SQL translation happens) as reasonable.
             queryExpression = new MySqlCompatibilityExpressionVisitor(_options).Visit(queryExpression);
@@ -53,10 +52,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         }
 
         /// <inheritdoc />
-        protected override Expression ProcessSqlNullability(
-            Expression queryExpression,
-            ParametersCacheDecorator parametersDecorator)
-            => new MySqlSqlNullabilityProcessor(Dependencies, Parameters)
-                .Process(queryExpression, parametersDecorator);
+        protected override Expression ProcessSqlNullability(Expression selectExpression, ParametersCacheDecorator parametersDecorator)
+            => new MySqlSqlNullabilityProcessor(Dependencies, Parameters).Process(selectExpression, parametersDecorator);
     }
 }

@@ -1,11 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests;
 
-public class MaterializationInterceptionMySqlTest(NonSharedFixture fixture) : MaterializationInterceptionTestBase<MaterializationInterceptionMySqlTest.MySqlLibraryContext>(fixture)
+public class MaterializationInterceptionMySqlTest : MaterializationInterceptionTestBase<MaterializationInterceptionMySqlTest.MySqlLibraryContext>
 {
+    public MaterializationInterceptionMySqlTest([NotNull] NonSharedFixture fixture)
+        : base(fixture)
+    {
+    }
+
     public class MySqlLibraryContext : LibraryContext
     {
         public MySqlLibraryContext(DbContextOptions options)

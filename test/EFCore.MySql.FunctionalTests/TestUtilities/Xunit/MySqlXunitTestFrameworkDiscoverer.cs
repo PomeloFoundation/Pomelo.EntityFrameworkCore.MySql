@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
-using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
+using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
 {
     public class MySqlXunitTestFrameworkDiscoverer : XunitTestFrameworkDiscoverer
     {

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.DebugServices;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.DebugServices;
 
 public class DebugRelationalDataReader : RelationalDataReader
 {

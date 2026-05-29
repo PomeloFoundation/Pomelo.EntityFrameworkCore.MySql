@@ -1,18 +1,18 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.ComplexNavigationsModel;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class ComplexNavigationsSharedTypeQueryMySqlTest : ComplexNavigationsSharedTypeQueryRelationalTestBase<
         ComplexNavigationsSharedTypeQueryMySqlTest.ComplexNavigationsSharedTypeQueryMySqlFixture>
@@ -47,7 +47,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     .Take(1));
 
         AssertSql(
-            """
+"""
 @p='1'
 
 SELECT `l1`.`Name`
@@ -103,7 +103,7 @@ LIMIT @p
                 });
 
             AssertSql(
-                """
+"""
 @p='2'
 
 SELECT `l6`.`Id`, `s`.`Id`, `s`.`Id0`, `s`.`Id1`, `s`.`Result`, `s`.`Id2`, `s`.`Id3`, `s`.`Id4`

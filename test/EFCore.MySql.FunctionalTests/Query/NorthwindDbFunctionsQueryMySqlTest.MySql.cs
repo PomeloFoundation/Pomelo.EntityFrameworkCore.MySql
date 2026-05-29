@@ -3,7 +3,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public partial class NorthwindDbFunctionsQueryMySqlTest
     {
@@ -340,7 +340,7 @@ WHERE UNHEX(HEX(`o`.`CustomerID`)) = 'VINET'");
             Assert.Equal(degrees, office.OfficeRoofAngleDegrees);
 
             AssertSql(
-                """
+"""
 @radians='1.5707963267948966'
 
 SELECT `c`.`CustomerID`, DEGREES(@radians) AS `OfficeRoofAngleDegrees`
@@ -365,7 +365,7 @@ LIMIT 1
             Assert.Equal(radians, office.OfficeRoofAngleRadians);
 
             AssertSql(
-                """
+"""
 @degrees='90'
 
 SELECT `c`.`CustomerID`, RADIANS(@degrees) AS `OfficeRoofAngleRadians`

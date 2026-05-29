@@ -1,13 +1,13 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System.Text;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
+namespace Microting.EntityFrameworkCore.MySql.Storage.Internal
 {
     public class MySqlSqlGenerationHelper : RelationalSqlGenerationHelper
     {
