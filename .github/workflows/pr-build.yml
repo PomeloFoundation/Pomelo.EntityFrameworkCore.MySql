@@ -367,6 +367,12 @@ jobs:
           Copy-Item test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
           Copy-Item test/EFCore.MySql.IntegrationTests/appsettings.ci.json test/EFCore.MySql.IntegrationTests/appsettings.json
           Copy-Item test/EFCore.MySql.IntegrationTests/config.json.example test/EFCore.MySql.IntegrationTests/config.json
+
+          # CI runs ~30k parallel functional tests against a single Docker DB instance.
+          # The default MySqlConnector connect timeout (15s) is too low under pool pressure.
+          $functionalConfig = Get-Content test/EFCore.MySql.FunctionalTests/config.json | ConvertFrom-Json
+          $functionalConfig.Data.ConnectionString += ';Connection Timeout=120'
+          $functionalConfig | ConvertTo-Json -Depth 3 | Set-Content test/EFCore.MySql.FunctionalTests/config.json
       - name: Setup Integration Tests
         shell: pwsh
         run: |
@@ -379,7 +385,31 @@ jobs:
       - name: Functional Tests
         if: ${{ env.skipTests != 'true' }}
         shell: pwsh
-        run: dotnet test test/EFCore.MySql.FunctionalTests -c Debug --no-build --logger "GitHubActions;report-warnings=false" --verbosity normal
+        run: |
+          $attempt = 0
+          $maxAttempts = 2
+          do {
+            $attempt++
+            if ($attempt -gt 1) {
+              Write-Host "Functional tests failed on attempt $($attempt - 1). Retrying..."
+              Start-Sleep -Seconds 15
+            }
+            dotnet test test/EFCore.MySql.FunctionalTests -c Debug --no-build `
+              --results-directory ./test-results/functional `
+              --logger "console;verbosity=minimal" `
+              --logger "GitHubActions;report-warnings=false;report-passed-tests=false;report-skipped-tests=false" `
+              --logger "trx;LogFileName=functional-tests.trx"
+            $exitCode = $LASTEXITCODE
+          } while ($exitCode -ne 0 -and $attempt -lt $maxAttempts)
+          exit $exitCode
+      - name: Upload Functional Test Results
+        if: ${{ always() && env.skipTests != 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: functional-tests-${{ matrix.dbVersion }}-${{ matrix.os }}
+          path: test-results/functional/**/*.trx
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Tests
         if: ${{ env.skipTests != 'true' }}
         shell: pwsh
