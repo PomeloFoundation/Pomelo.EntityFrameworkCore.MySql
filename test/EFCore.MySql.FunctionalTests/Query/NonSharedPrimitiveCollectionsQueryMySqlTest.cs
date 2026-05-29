@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
-public class NonSharedPrimitiveCollectionsQueryMySqlTest : NonSharedPrimitiveCollectionsQueryRelationalTestBase
+public class NonSharedPrimitiveCollectionsQueryMySqlTest(NonSharedFixture fixture) : NonSharedPrimitiveCollectionsQueryRelationalTestBase(fixture)
 {
     #region Support for specific element types
 
@@ -479,85 +479,64 @@ LIMIT 2
 
     #endregion Type mapping inference
 
-    public override async Task Parameter_collection_Count_with_column_predicate_with_default_constants()
+    public override async Task Parameter_collection_Count_with_column_predicate_with_default_mode(ParameterTranslationMode mode)
+        => await base.Parameter_collection_Count_with_column_predicate_with_default_mode(mode);
+
+    public override async Task Parameter_collection_Contains_with_default_mode(ParameterTranslationMode mode)
+        => await base.Parameter_collection_Contains_with_default_mode(mode);
+
+    public override async Task Parameter_collection_Count_with_column_predicate_with_default_mode_EF_Constant(ParameterTranslationMode mode)
+        => await base.Parameter_collection_Count_with_column_predicate_with_default_mode_EF_Constant(mode);
+
+    public override async Task Parameter_collection_Contains_with_default_mode_EF_Constant(ParameterTranslationMode mode)
+        => await base.Parameter_collection_Contains_with_default_mode_EF_Constant(mode);
+
+    public override async Task Parameter_collection_Count_with_column_predicate_with_default_mode_EF_Parameter(ParameterTranslationMode mode)
+        => await base.Parameter_collection_Count_with_column_predicate_with_default_mode_EF_Parameter(mode);
+
+    public override async Task Parameter_collection_Contains_with_default_mode_EF_Parameter(ParameterTranslationMode mode)
+        => await base.Parameter_collection_Contains_with_default_mode_EF_Parameter(mode);
+
+    public override async Task Parameter_collection_Count_with_column_predicate_with_default_mode_EF_MultipleParameters(ParameterTranslationMode mode)
+        => await base.Parameter_collection_Count_with_column_predicate_with_default_mode_EF_MultipleParameters(mode);
+
+    public override async Task Parameter_collection_Contains_with_default_mode_EF_MultipleParameters(ParameterTranslationMode mode)
+        => await base.Parameter_collection_Contains_with_default_mode_EF_MultipleParameters(mode);
+
+    [ConditionalFact]
+    public virtual void Check_all_tests_overridden()
+        => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
+
+    public override async Task Parameter_collection_Contains_parameter_bucketization()
     {
-        await base.Parameter_collection_Count_with_column_predicate_with_default_constants();
+        await base.Parameter_collection_Contains_parameter_bucketization();
 
         AssertSql(
-$"""
+            """
+@ints1='2'
+@ints2='999'
+@ints3='2'
+@ints4='2'
+@ints5='2'
+@ints6='2'
+@ints7='2'
+@ints8='2'
+@ints9='2'
+@ints10='2'
+@ints11='2'
+@ints12='2'
+@ints13='2'
+@ints14='2'
+@ints15='2'
+@ints16='2'
+@ints17='2'
+@ints18='2'
+@ints19='2'
+@ints20='2'
+
 SELECT `t`.`Id`
 FROM `TestEntity` AS `t`
-WHERE (
-    SELECT COUNT(*)
-    FROM (SELECT 2 AS `Value` UNION ALL VALUES {(AppConfig.ServerVersion.Supports.ValuesWithRows ? "ROW" : string.Empty)}(999)) AS `i`
-    WHERE `i`.`Value` > `t`.`Id`) = 1
-""");
-    }
-
-    public override async Task Parameter_collection_of_ints_Contains_int_with_default_constants()
-    {
-        await base.Parameter_collection_of_ints_Contains_int_with_default_constants();
-
-        AssertSql(
-"""
-SELECT `t`.`Id`
-FROM `TestEntity` AS `t`
-WHERE `t`.`Id` IN (2, 999)
-""");
-    }
-
-    public override async Task Parameter_collection_Count_with_column_predicate_with_default_constants_EF_Parameter()
-    {
-        await base.Parameter_collection_Count_with_column_predicate_with_default_constants_EF_Parameter();
-
-        AssertSql();
-    }
-
-    public override async Task Parameter_collection_of_ints_Contains_int_with_default_constants_EF_Parameter()
-    {
-        await base.Parameter_collection_of_ints_Contains_int_with_default_constants_EF_Parameter();
-
-        AssertSql();
-    }
-
-    public override async Task Parameter_collection_Count_with_column_predicate_with_default_parameters()
-    {
-        await base.Parameter_collection_Count_with_column_predicate_with_default_parameters();
-
-        AssertSql();
-    }
-
-    public override async Task Parameter_collection_of_ints_Contains_int_with_default_parameters()
-    {
-        await base.Parameter_collection_of_ints_Contains_int_with_default_parameters();
-
-        AssertSql();
-    }
-
-    public override async Task Parameter_collection_Count_with_column_predicate_with_default_parameters_EF_Constant()
-    {
-        await base.Parameter_collection_Count_with_column_predicate_with_default_parameters_EF_Constant();
-
-        AssertSql(
-$"""
-SELECT `t`.`Id`
-FROM `TestEntity` AS `t`
-WHERE (
-    SELECT COUNT(*)
-    FROM (SELECT 2 AS `Value` UNION ALL VALUES {(AppConfig.ServerVersion.Supports.ValuesWithRows ? "ROW" : string.Empty)}(999)) AS `i`
-    WHERE `i`.`Value` > `t`.`Id`) = 1
-""");
-    }
-
-    public override async Task Parameter_collection_of_ints_Contains_int_with_default_parameters_EF_Constant()
-    {
-        await base.Parameter_collection_of_ints_Contains_int_with_default_parameters_EF_Constant();
-
-        AssertSql(
-"""
-SELECT `t`.`Id`
-FROM `TestEntity` AS `t`
-WHERE `t`.`Id` IN (2, 999)
+WHERE `t`.`Id` IN (@ints1, @ints2, @ints3, @ints4, @ints5, @ints6, @ints7, @ints8, @ints9, @ints10, @ints11, @ints12, @ints13, @ints14, @ints15, @ints16, @ints17, @ints18, @ints19, @ints20)
 """);
     }
 
@@ -566,26 +545,24 @@ WHERE `t`.`Id` IN (2, 999)
         await base.Project_collection_from_entity_type_with_owned();
 
         AssertSql(
-"""
+            """
 SELECT `t`.`Ints`
 FROM `TestEntityWithOwned` AS `t`
 """);
     }
 
-    [ConditionalFact]
-    public virtual void Check_all_tests_overridden()
-        => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
-
-    protected override DbContextOptionsBuilder SetTranslateParameterizedCollectionsToConstants(DbContextOptionsBuilder optionsBuilder)
+    public override async Task Subquery_over_primitive_collection_on_inheritance_derived_type()
     {
-        new MySqlDbContextOptionsBuilder(optionsBuilder).TranslateParameterizedCollectionsToConstants();
+        await base.Subquery_over_primitive_collection_on_inheritance_derived_type();
 
-        return optionsBuilder;
+        AssertSql();
     }
 
-    protected override DbContextOptionsBuilder SetTranslateParameterizedCollectionsToParameters(DbContextOptionsBuilder optionsBuilder)
+    protected override DbContextOptionsBuilder SetParameterizedCollectionMode(
+        DbContextOptionsBuilder optionsBuilder,
+        ParameterTranslationMode parameterizedCollectionMode)
     {
-        new MySqlDbContextOptionsBuilder(optionsBuilder).TranslateParameterizedCollectionsToParameters();
+        new MySqlDbContextOptionsBuilder(optionsBuilder).UseParameterizedCollectionMode(parameterizedCollectionMode);
 
         return optionsBuilder;
     }

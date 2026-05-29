@@ -20,9 +20,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
         }
 
-        public override void Can_generate_migration_from_initial_database_to_initial()
+        public override async Task Can_generate_migration_from_initial_database_to_initial()
         {
-            base.Can_generate_migration_from_initial_database_to_initial();
+            await base.Can_generate_migration_from_initial_database_to_initial();
 
             Assert.Equal(
                 @"CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
@@ -36,9 +36,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 ignoreLineEndingDifferences: true);
         }
 
-        public override void Can_generate_no_migration_script()
+        public override async Task Can_generate_no_migration_script()
         {
-            base.Can_generate_no_migration_script();
+            await base.Can_generate_no_migration_script();
 
             Assert.Equal(
                 @"CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (

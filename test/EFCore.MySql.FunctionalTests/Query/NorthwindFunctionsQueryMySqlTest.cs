@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public partial class NorthwindFunctionsQueryMySqlTest : NorthwindFunctionsQueryRelationalTestBase<
+    public partial class NorthwindFunctionsQueryMySqlTest : NorthwindFunctionsQueryMySqlTestBase<
         CaseSensitiveNorthwindQueryMySqlFixture<NoopModelCustomizer>>
     {
         public NorthwindFunctionsQueryMySqlTest(
@@ -18,6 +18,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             ClearLog();
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
+        }
+
+        public override async Task Client_evaluation_of_uncorrelated_method_call(bool async)
+        {
+            await base.Client_evaluation_of_uncorrelated_method_call(async);
+
+            AssertSql(
+                """
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`UnitPrice` < 7.0) AND (10 < `o`.`ProductID`)
+""");
         }
 
         [ConditionalTheory]
@@ -235,11 +247,13 @@ WHERE SUBSTRING(`c`.`CustomerID`, 1 + 1, CHAR_LENGTH(`c`.`CustomerID`)) = 'LFKI'
             await base.Substring_with_one_arg_with_closure(async);
 
             AssertSql(
-                @"@__start_0='2'
+                """
+@start='2'
 
 SELECT `c`.`ContactName`
 FROM `Customers` AS `c`
-WHERE SUBSTRING(`c`.`CustomerID`, @__start_0 + 1, CHAR_LENGTH(`c`.`CustomerID`)) = 'FKI'");
+WHERE SUBSTRING(`c`.`CustomerID`, @start + 1, CHAR_LENGTH(`c`.`CustomerID`)) = 'FKI'
+""");
         }
 
         [ConditionalTheory]
@@ -281,11 +295,13 @@ WHERE `c`.`CustomerID` = 'ALFKI'");
             await base.Substring_with_two_args_with_closure(async);
 
             AssertSql(
-                @"@__start_0='2'
+                """
+@start='2'
 
-SELECT SUBSTRING(`c`.`ContactName`, @__start_0 + 1, 3)
+SELECT SUBSTRING(`c`.`ContactName`, @start + 1, 3)
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` = 'ALFKI'");
+WHERE `c`.`CustomerID` = 'ALFKI'
+""");
         }
 
         [ConditionalTheory]
@@ -528,12 +544,12 @@ WHERE `c`.`ContactName` LIKE '%     %'");
             await base.String_Contains_parameter_with_whitespace(async);
 
         AssertSql(
-"""
-@__pattern_0_contains='%     %' (Size = 30)
+            """
+@pattern='     ' (Size = 30)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` LIKE @__pattern_0_contains
+WHERE `c`.`ContactName` IS NOT NULL AND ((LOCATE(@pattern, `c`.`ContactName`) > 0) OR (@pattern LIKE ''))
 """);
         }
 
@@ -853,11 +869,13 @@ WHERE `c`.`CustomerID` = 'ANATR'");
             await base.Static_equals_nullable_datetime_compared_to_non_nullable(async);
 
             AssertSql(
-                @"@__arg_0='1996-07-04T00:00:00.0000000' (DbType = DateTime)
+                """
+@arg='1996-07-04T00:00:00.0000000' (DbType = DateTime)
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE `o`.`OrderDate` = @__arg_0");
+WHERE `o`.`OrderDate` = @arg
+""");
         }
 
         public override async Task Static_equals_int_compared_to_long(bool async)
@@ -992,52 +1010,52 @@ WHERE `c`.`CustomerID` >= 'AROUT'
             await base.String_compare_with_parameter(async);
 
             AssertSql(
-"""
-@__customer_CustomerID_0='AROUT' (Size = 5) (DbType = StringFixedLength)
+                """
+@customer_CustomerID='AROUT' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` > @__customer_CustomerID_0
+WHERE `c`.`CustomerID` > @customer_CustomerID
 """,
                 //
-"""
-@__customer_CustomerID_0='AROUT' (Size = 5) (DbType = StringFixedLength)
+                """
+@customer_CustomerID='AROUT' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` < @__customer_CustomerID_0
+WHERE `c`.`CustomerID` < @customer_CustomerID
 """,
                 //
-"""
-@__customer_CustomerID_0='AROUT' (Size = 5) (DbType = StringFixedLength)
+                """
+@customer_CustomerID='AROUT' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` <= @__customer_CustomerID_0
+WHERE `c`.`CustomerID` <= @customer_CustomerID
 """,
                 //
-"""
-@__customer_CustomerID_0='AROUT' (Size = 5) (DbType = StringFixedLength)
+                """
+@customer_CustomerID='AROUT' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` <= @__customer_CustomerID_0
+WHERE `c`.`CustomerID` <= @customer_CustomerID
 """,
                 //
-"""
-@__customer_CustomerID_0='AROUT' (Size = 5) (DbType = StringFixedLength)
+                """
+@customer_CustomerID='AROUT' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` >= @__customer_CustomerID_0
+WHERE `c`.`CustomerID` >= @customer_CustomerID
 """,
                 //
-"""
-@__customer_CustomerID_0='AROUT' (Size = 5) (DbType = StringFixedLength)
+                """
+@customer_CustomerID='AROUT' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` >= @__customer_CustomerID_0
+WHERE `c`.`CustomerID` >= @customer_CustomerID
 """);
         }
 
@@ -1204,52 +1222,52 @@ WHERE `c`.`CustomerID` >= 'AROUT'
             await base.String_compare_to_with_parameter(async);
 
             AssertSql(
-"""
-@__customer_CustomerID_0='AROUT' (Size = 5) (DbType = StringFixedLength)
+                """
+@customer_CustomerID='AROUT' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` > @__customer_CustomerID_0
+WHERE `c`.`CustomerID` > @customer_CustomerID
 """,
                 //
-"""
-@__customer_CustomerID_0='AROUT' (Size = 5) (DbType = StringFixedLength)
+                """
+@customer_CustomerID='AROUT' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` < @__customer_CustomerID_0
+WHERE `c`.`CustomerID` < @customer_CustomerID
 """,
                 //
-"""
-@__customer_CustomerID_0='AROUT' (Size = 5) (DbType = StringFixedLength)
+                """
+@customer_CustomerID='AROUT' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` <= @__customer_CustomerID_0
+WHERE `c`.`CustomerID` <= @customer_CustomerID
 """,
                 //
-"""
-@__customer_CustomerID_0='AROUT' (Size = 5) (DbType = StringFixedLength)
+                """
+@customer_CustomerID='AROUT' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` <= @__customer_CustomerID_0
+WHERE `c`.`CustomerID` <= @customer_CustomerID
 """,
                 //
-"""
-@__customer_CustomerID_0='AROUT' (Size = 5) (DbType = StringFixedLength)
+                """
+@customer_CustomerID='AROUT' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` >= @__customer_CustomerID_0
+WHERE `c`.`CustomerID` >= @customer_CustomerID
 """,
                 //
-"""
-@__customer_CustomerID_0='AROUT' (Size = 5) (DbType = StringFixedLength)
+                """
+@customer_CustomerID='AROUT' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` >= @__customer_CustomerID_0
+WHERE `c`.`CustomerID` >= @customer_CustomerID
 """);
         }
 
@@ -1344,41 +1362,53 @@ WHERE (`c`.`ContactTitle` = 'Owner') AND ((`c`.`Country` <> 'USA') OR `c`.`Count
             await base.DateTime_Compare_to_simple_zero(async, compareTo);
 
             AssertSql(
-                @"@__myDatetime_0='1998-05-04T00:00:00.0000000' (DbType = DateTime)
+                """
+@myDatetime='1998-05-04T00:00:00.0000000' (DbType = DateTime)
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE `o`.`OrderDate` = @__myDatetime_0",
+WHERE `o`.`OrderDate` = @myDatetime
+""",
                 //
-                @"@__myDatetime_0='1998-05-04T00:00:00.0000000' (DbType = DateTime)
+                """
+@myDatetime='1998-05-04T00:00:00.0000000' (DbType = DateTime)
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`OrderDate` <> @__myDatetime_0) OR `o`.`OrderDate` IS NULL",
+WHERE (`o`.`OrderDate` <> @myDatetime) OR `o`.`OrderDate` IS NULL
+""",
                 //
-                @"@__myDatetime_0='1998-05-04T00:00:00.0000000' (DbType = DateTime)
+                """
+@myDatetime='1998-05-04T00:00:00.0000000' (DbType = DateTime)
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE `o`.`OrderDate` > @__myDatetime_0",
+WHERE `o`.`OrderDate` > @myDatetime
+""",
                 //
-                @"@__myDatetime_0='1998-05-04T00:00:00.0000000' (DbType = DateTime)
+                """
+@myDatetime='1998-05-04T00:00:00.0000000' (DbType = DateTime)
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE `o`.`OrderDate` <= @__myDatetime_0",
+WHERE `o`.`OrderDate` <= @myDatetime
+""",
                 //
-                @"@__myDatetime_0='1998-05-04T00:00:00.0000000' (DbType = DateTime)
+                """
+@myDatetime='1998-05-04T00:00:00.0000000' (DbType = DateTime)
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE `o`.`OrderDate` > @__myDatetime_0",
+WHERE `o`.`OrderDate` > @myDatetime
+""",
                 //
-                @"@__myDatetime_0='1998-05-04T00:00:00.0000000' (DbType = DateTime)
+                """
+@myDatetime='1998-05-04T00:00:00.0000000' (DbType = DateTime)
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE `o`.`OrderDate` <= @__myDatetime_0");
+WHERE `o`.`OrderDate` <= @myDatetime
+""");
         }
 
         public override async Task TimeSpan_Compare_to_simple_zero(bool async, bool compareTo)
@@ -1386,41 +1416,53 @@ WHERE `o`.`OrderDate` <= @__myDatetime_0");
             await base.TimeSpan_Compare_to_simple_zero(async, compareTo);
 
             AssertSql(
-                @"@__myDatetime_0='1998-05-04T00:00:00.0000000' (DbType = DateTime)
+                """
+@myDatetime='1998-05-04T00:00:00.0000000' (DbType = DateTime)
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE `o`.`OrderDate` = @__myDatetime_0",
+WHERE `o`.`OrderDate` = @myDatetime
+""",
                 //
-                @"@__myDatetime_0='1998-05-04T00:00:00.0000000' (DbType = DateTime)
+                """
+@myDatetime='1998-05-04T00:00:00.0000000' (DbType = DateTime)
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE (`o`.`OrderDate` <> @__myDatetime_0) OR `o`.`OrderDate` IS NULL",
+WHERE (`o`.`OrderDate` <> @myDatetime) OR `o`.`OrderDate` IS NULL
+""",
                 //
-                @"@__myDatetime_0='1998-05-04T00:00:00.0000000' (DbType = DateTime)
+                """
+@myDatetime='1998-05-04T00:00:00.0000000' (DbType = DateTime)
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE `o`.`OrderDate` > @__myDatetime_0",
+WHERE `o`.`OrderDate` > @myDatetime
+""",
                 //
-                @"@__myDatetime_0='1998-05-04T00:00:00.0000000' (DbType = DateTime)
+                """
+@myDatetime='1998-05-04T00:00:00.0000000' (DbType = DateTime)
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE `o`.`OrderDate` <= @__myDatetime_0",
+WHERE `o`.`OrderDate` <= @myDatetime
+""",
                 //
-                @"@__myDatetime_0='1998-05-04T00:00:00.0000000' (DbType = DateTime)
+                """
+@myDatetime='1998-05-04T00:00:00.0000000' (DbType = DateTime)
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE `o`.`OrderDate` > @__myDatetime_0",
+WHERE `o`.`OrderDate` > @myDatetime
+""",
                 //
-                @"@__myDatetime_0='1998-05-04T00:00:00.0000000' (DbType = DateTime)
+                """
+@myDatetime='1998-05-04T00:00:00.0000000' (DbType = DateTime)
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE `o`.`OrderDate` <= @__myDatetime_0");
+WHERE `o`.`OrderDate` <= @myDatetime
+""");
         }
 
         public override async Task Int_Compare_to_simple_zero(bool async)
@@ -1428,41 +1470,53 @@ WHERE `o`.`OrderDate` <= @__myDatetime_0");
             await base.Int_Compare_to_simple_zero(async);
 
             AssertSql(
-                @"@__orderId_0='10250'
+                """
+@orderId='10250'
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE `o`.`OrderID` = @__orderId_0",
+WHERE `o`.`OrderID` = @orderId
+""",
                 //
-                @"@__orderId_0='10250'
+                """
+@orderId='10250'
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE `o`.`OrderID` <> @__orderId_0",
+WHERE `o`.`OrderID` <> @orderId
+""",
                 //
-                @"@__orderId_0='10250'
+                """
+@orderId='10250'
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE `o`.`OrderID` > @__orderId_0",
+WHERE `o`.`OrderID` > @orderId
+""",
                 //
-                @"@__orderId_0='10250'
+                """
+@orderId='10250'
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE `o`.`OrderID` <= @__orderId_0",
+WHERE `o`.`OrderID` <= @orderId
+""",
                 //
-                @"@__orderId_0='10250'
+                """
+@orderId='10250'
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE `o`.`OrderID` > @__orderId_0",
+WHERE `o`.`OrderID` > @orderId
+""",
                 //
-                @"@__orderId_0='10250'
+                """
+@orderId='10250'
 
 SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
 FROM `Orders` AS `o`
-WHERE `o`.`OrderID` <= @__orderId_0");
+WHERE `o`.`OrderID` <= @orderId
+""");
         }
 
         public override async Task Convert_ToBoolean(bool async)
@@ -1978,12 +2032,12 @@ WHERE (`o`.`CustomerID` = 'ALFKI') AND ((CAST(`o`.`OrderDate` AS char) LIKE '%19
             await base.String_StartsWith_Parameter(async);
 
         AssertSql(
-"""
-@__pattern_0_startswith='M%' (Size = 30)
+            """
+@pattern='M' (Size = 30)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` LIKE @__pattern_0_startswith
+WHERE `c`.`ContactName` IS NOT NULL AND (LEFT(`c`.`ContactName`, CHAR_LENGTH(@pattern)) = @pattern)
 """);
         }
 
@@ -1992,12 +2046,12 @@ WHERE `c`.`ContactName` LIKE @__pattern_0_startswith
             await base.String_EndsWith_Parameter(async);
 
         AssertSql(
-"""
-@__pattern_0_endswith='%b' (Size = 30)
+            """
+@pattern='b' (Size = 30)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE `c`.`ContactName` LIKE @__pattern_0_endswith
+WHERE `c`.`ContactName` IS NOT NULL AND (RIGHT(`c`.`ContactName`, CHAR_LENGTH(@pattern)) = @pattern)
 """);
         }
 
@@ -2503,12 +2557,12 @@ WHERE (LOCATE('a', `c`.`ContactName`) - 1) = 1
             await base.Indexof_with_one_parameter_arg(async);
 
             AssertSql(
-"""
-@__pattern_0='a' (Size = 4000)
+                """
+@pattern='a' (Size = 4000)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LOCATE(@__pattern_0, `c`.`ContactName`) - 1) = 1
+WHERE (LOCATE(@pattern, `c`.`ContactName`) - 1) = 1
 """);
         }
 
@@ -2529,12 +2583,12 @@ WHERE (LOCATE('a', `c`.`ContactName`, 3) - 1) = 4
             await base.Indexof_with_parameter_starting_position(async);
 
             AssertSql(
-"""
-@__start_0='2'
+                """
+@start='2'
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LOCATE('a', `c`.`ContactName`, @__start_0 + 1) - 1) = 4
+WHERE (LOCATE('a', `c`.`ContactName`, @start + 1) - 1) = 4
 """);
         }
 
@@ -2574,47 +2628,29 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (DATE(`o`.`OrderDate`) = DATE '1996-09-16'
 """);
         }
 
-        public override async Task String_StartsWith_with_StringComparison_Ordinal(bool async)
-        {
-            await base.String_StartsWith_with_StringComparison_Ordinal(async);
+        public override Task String_StartsWith_with_StringComparison_Ordinal(bool async)
+            // EF Core 10: these StringComparison overloads are no longer translated by the provider.
+            => AssertTranslationFailed(() => base.String_StartsWith_with_StringComparison_Ordinal(async));
 
-            AssertSql();
-        }
+        public override Task String_StartsWith_with_StringComparison_OrdinalIgnoreCase(bool async)
+            // EF Core 10: these StringComparison overloads are no longer translated by the provider.
+            => AssertTranslationFailed(() => base.String_StartsWith_with_StringComparison_OrdinalIgnoreCase(async));
 
-        public override async Task String_StartsWith_with_StringComparison_OrdinalIgnoreCase(bool async)
-        {
-            await base.String_StartsWith_with_StringComparison_OrdinalIgnoreCase(async);
+        public override Task String_EndsWith_with_StringComparison_Ordinal(bool async)
+            // EF Core 10: these StringComparison overloads are no longer translated by the provider.
+            => AssertTranslationFailed(() => base.String_EndsWith_with_StringComparison_Ordinal(async));
 
-            AssertSql();
-        }
+        public override Task String_EndsWith_with_StringComparison_OrdinalIgnoreCase(bool async)
+            // EF Core 10: these StringComparison overloads are no longer translated by the provider.
+            => AssertTranslationFailed(() => base.String_EndsWith_with_StringComparison_OrdinalIgnoreCase(async));
 
-        public override async Task String_EndsWith_with_StringComparison_Ordinal(bool async)
-        {
-            await base.String_EndsWith_with_StringComparison_Ordinal(async);
+        public override Task String_Contains_with_StringComparison_Ordinal(bool async)
+            // EF Core 10: these StringComparison overloads are no longer translated by the provider.
+            => AssertTranslationFailed(() => base.String_Contains_with_StringComparison_Ordinal(async));
 
-            AssertSql();
-        }
-
-        public override async Task String_EndsWith_with_StringComparison_OrdinalIgnoreCase(bool async)
-        {
-            await base.String_EndsWith_with_StringComparison_OrdinalIgnoreCase(async);
-
-            AssertSql();
-        }
-
-        public override async Task String_Contains_with_StringComparison_Ordinal(bool async)
-        {
-            await base.String_Contains_with_StringComparison_Ordinal(async);
-
-            AssertSql();
-        }
-
-        public override async Task String_Contains_with_StringComparison_OrdinalIgnoreCase(bool async)
-        {
-            await base.String_Contains_with_StringComparison_OrdinalIgnoreCase(async);
-
-            AssertSql();
-        }
+        public override Task String_Contains_with_StringComparison_OrdinalIgnoreCase(bool async)
+            // EF Core 10: these StringComparison overloads are no longer translated by the provider.
+            => AssertTranslationFailed(() => base.String_Contains_with_StringComparison_OrdinalIgnoreCase(async));
 
         public override async Task String_StartsWith_with_StringComparison_unsupported(bool async)
         {
@@ -2676,12 +2712,12 @@ FROM `Customers` AS `c`
             await base.String_Join_non_aggregate(async);
 
             AssertSql(
-"""
-@__foo_0='foo' (Size = 4000)
+                """
+@foo='foo' (Size = 4000)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE CONCAT_WS('|', `c`.`CompanyName`, @__foo_0, '', 'bar') = 'Around the Horn|foo||bar'
+WHERE CONCAT_WS('|', `c`.`CompanyName`, @foo, '', 'bar') = 'Around the Horn|foo||bar'
 """);
         }
 

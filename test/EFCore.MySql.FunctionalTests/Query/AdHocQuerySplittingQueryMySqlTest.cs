@@ -8,7 +8,7 @@ using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
-public class AdHocQuerySplittingQueryMySqlTest : AdHocQuerySplittingQueryTestBase
+public class AdHocQuerySplittingQueryMySqlTest(NonSharedFixture fixture) : AdHocQuerySplittingQueryTestBase(fixture)
 {
     protected override DbContextOptionsBuilder SetQuerySplittingBehavior(
         DbContextOptionsBuilder optionsBuilder,

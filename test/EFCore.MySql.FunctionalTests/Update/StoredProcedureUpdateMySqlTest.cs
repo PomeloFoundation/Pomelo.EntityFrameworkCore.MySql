@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Update;
 
-public class StoredProcedureUpdateMySqlTest : StoredProcedureUpdateTestBase
+public class StoredProcedureUpdateMySqlTest(NonSharedFixture fixture) : StoredProcedureUpdateTestBase(fixture)
 {
     public override async Task Insert_with_output_parameter(bool async)
     {

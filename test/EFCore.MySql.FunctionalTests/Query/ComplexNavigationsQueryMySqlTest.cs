@@ -41,13 +41,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     .Take(1));
 
             AssertSql(
-                @"@__p_0='1'
+                """
+@p='1'
 
 SELECT `l0`.`Name`
 FROM `LevelOne` AS `l`
 INNER JOIN `LevelTwo` AS `l0` ON `l`.`Id` = `l0`.`OneToMany_Optional_Inverse2Id`
 ORDER BY `l0`.`Name`
-LIMIT @__p_0");
+LIMIT @p
+""");
         }
 
         public override async Task GroupJoin_client_method_in_OrderBy(bool async)

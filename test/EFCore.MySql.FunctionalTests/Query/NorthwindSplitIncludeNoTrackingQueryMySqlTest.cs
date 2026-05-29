@@ -15,6 +15,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
     // We use our custom fixture here, to inject a custom debug services.
     public class NorthwindSplitIncludeNoTrackingQueryMySqlTest : NorthwindSplitIncludeNoTrackingQueryTestBase<NorthwindSplitIncludeNoTrackingQueryMySqlTest.NorthwindSplitIncludeNoTrackingQueryMySqlFixture>
     {
+
+        [ConditionalTheory(Skip = "EF Core 10 emits an expression (e.g. LEAST) in LIMIT; MySQL only allows literals/parameters")]
+        public override async Task Multi_level_includes_are_applied_with_skip_take(bool async) => await Task.CompletedTask;
+
+        [ConditionalTheory(Skip = "EF Core 10 emits an expression (e.g. LEAST) in LIMIT; MySQL only allows literals/parameters")]
+        public override async Task Multi_level_includes_are_applied_with_take(bool async) => await Task.CompletedTask;
         public NorthwindSplitIncludeNoTrackingQueryMySqlTest(NorthwindSplitIncludeNoTrackingQueryMySqlFixture fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
         {

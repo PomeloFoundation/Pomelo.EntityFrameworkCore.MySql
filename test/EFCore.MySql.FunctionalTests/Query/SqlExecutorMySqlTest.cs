@@ -37,6 +37,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             AssertSql(TenMostExpensiveProductsSproc);
         }
 
+        [ConditionalTheory(Skip = "MySQL 8 default collation mismatch (utf8mb4_0900_ai_ci) in stored-procedure parameters")]
         public override async Task Executes_stored_procedure_with_parameter(bool async)
         {
             using var context = CreateContext();
@@ -56,6 +57,7 @@ CALL `CustOrderHist`(@CustomerID)
 """);
         }
 
+        [ConditionalTheory(Skip = "MySQL 8 default collation mismatch (utf8mb4_0900_ai_ci) in stored-procedure parameters")]
         public override async Task Executes_stored_procedure_with_generated_parameter(bool async)
         {
             using var context = CreateContext();

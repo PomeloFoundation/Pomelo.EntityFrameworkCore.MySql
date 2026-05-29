@@ -200,18 +200,18 @@ WHERE `e`.`CountryId` = 1
         await base.Can_use_IgnoreQueryFilters_and_GetDatabaseValues(async);
 
         AssertSql(
-"""
+            """
 SELECT `e`.`Id`, `e`.`CountryId`, `e`.`Name`, `e`.`Species`, `e`.`EagleId`, `e`.`IsFlightless`, `e`.`Group`
 FROM `Eagle` AS `e`
 LIMIT 2
 """,
-                //
-                """
-@__p_0='2'
+            //
+            """
+@p='2'
 
 SELECT `e`.`Id`, `e`.`CountryId`, `e`.`Name`, `e`.`Species`, `e`.`EagleId`, `e`.`IsFlightless`, `e`.`Group`
 FROM `Eagle` AS `e`
-WHERE `e`.`Id` = @__p_0
+WHERE `e`.`Id` = @p
 LIMIT 1
 """);
     }

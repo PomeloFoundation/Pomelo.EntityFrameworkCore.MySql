@@ -2043,6 +2043,7 @@ SELECT ROW_COUNT();
 """);
         }
 
+        [ConditionalFact(Skip = "Provider does not implement EF Core JSON (ToJson) mapping")]
         public override async Task Create_table_with_complex_type_with_required_properties_on_derived_entity_in_TPH()
         {
             await base.Create_table_with_complex_type_with_required_properties_on_derived_entity_in_TPH();
@@ -2178,33 +2179,41 @@ ALTER TABLE `Customers` ADD `Numbers` longtext CHARACTER SET utf8mb4 NOT NULL DE
 
         #region ToJson
 
+        [ConditionalFact(Skip = "Provider does not implement EF Core JSON (ToJson) mapping")]
         public override Task Create_table_with_json_column()
             => Assert.ThrowsAsync<NullReferenceException>(() => base.Create_table_with_json_column());
 
         public override Task Create_table_with_json_column_explicit_json_column_names()
             => Assert.ThrowsAsync<NullReferenceException>(() => base.Create_table_with_json_column_explicit_json_column_names());
 
+        [ConditionalFact(Skip = "Provider does not implement EF Core JSON (ToJson) mapping")]
         public override Task Rename_table_with_json_column()
             => Assert.ThrowsAsync<NullReferenceException>(() => base.Rename_table_with_json_column());
 
+        [ConditionalFact(Skip = "Provider does not implement EF Core JSON (ToJson) mapping")]
         public override Task Add_json_columns_to_existing_table()
             => Assert.ThrowsAsync<NullReferenceException>(() => base.Add_json_columns_to_existing_table());
 
+        [ConditionalFact(Skip = "Provider does not implement EF Core JSON (ToJson) mapping")]
         public override Task Convert_json_entities_to_regular_owned()
             => Assert.ThrowsAsync<NullReferenceException>(() => base.Convert_json_entities_to_regular_owned());
 
         public override Task Convert_regular_owned_entities_to_json()
             => Assert.ThrowsAsync<NullReferenceException>(() => base.Convert_regular_owned_entities_to_json());
 
+        [ConditionalFact(Skip = "Provider does not implement EF Core JSON (ToJson) mapping")]
         public override Task Convert_string_column_to_a_json_column_containing_reference()
             => Assert.ThrowsAsync<NullReferenceException>(() => base.Convert_string_column_to_a_json_column_containing_reference());
 
+        [ConditionalFact(Skip = "Provider does not implement EF Core JSON (ToJson) mapping")]
         public override Task Convert_string_column_to_a_json_column_containing_required_reference()
             => Assert.ThrowsAsync<NullReferenceException>(() => base.Convert_string_column_to_a_json_column_containing_required_reference());
 
+        [ConditionalFact(Skip = "Provider does not implement EF Core JSON (ToJson) mapping")]
         public override Task Convert_string_column_to_a_json_column_containing_collection()
             => Assert.ThrowsAsync<NullReferenceException>(() => base.Convert_string_column_to_a_json_column_containing_collection());
 
+        [ConditionalFact(Skip = "Provider does not implement EF Core JSON (ToJson) mapping")]
         public override Task Drop_json_columns_from_existing_table()
             => Assert.ThrowsAsync<NullReferenceException>(() => base.Drop_json_columns_from_existing_table());
 
@@ -2213,9 +2222,82 @@ ALTER TABLE `Customers` ADD `Numbers` longtext CHARACTER SET utf8mb4 NOT NULL DE
 
         #endregion ToJson
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "Provider does not implement EF Core JSON (ToJson) mapping")]
         public virtual void Check_all_tests_overridden()
             => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
+
+        public override async Task Create_table_with_complex_properties_mapped_to_json()
+        {
+            await base.Create_table_with_complex_properties_mapped_to_json();
+
+            AssertSql();
+        }
+
+        [ConditionalFact(Skip = "Provider does not implement EF Core JSON (ToJson) mapping")]
+        public override async Task Create_table_with_complex_properties_with_nested_collection_mapped_to_json()
+        {
+            await base.Create_table_with_complex_properties_with_nested_collection_mapped_to_json();
+
+            AssertSql();
+        }
+
+        [ConditionalFact(Skip = "Provider does not implement EF Core JSON (ToJson) mapping")]
+        public override async Task Create_table_with_optional_complex_type_with_required_properties()
+        {
+            await base.Create_table_with_optional_complex_type_with_required_properties();
+
+            AssertSql();
+        }
+
+        public override async Task Multiop_drop_table_and_create_the_same_table_in_one_migration()
+        {
+            await base.Multiop_drop_table_and_create_the_same_table_in_one_migration();
+
+            AssertSql(
+                """
+DROP TABLE `Customers`;
+""",
+                //
+                """
+CREATE TABLE `Customers` (
+    `Id` int NOT NULL AUTO_INCREMENT,
+    `Name` longtext CHARACTER SET utf8mb4 NULL,
+    CONSTRAINT `PK_Customers` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+""");
+        }
+
+        public override async Task Multiop_create_table_and_drop_it_in_one_migration()
+        {
+            await base.Multiop_create_table_and_drop_it_in_one_migration();
+
+            AssertSql(
+                """
+CREATE TABLE `Customers` (
+    `Id` int NOT NULL AUTO_INCREMENT,
+    `Name` longtext CHARACTER SET utf8mb4 NULL,
+    CONSTRAINT `PK_Customers` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+""",
+                //
+                """
+DROP TABLE `Customers`;
+""");
+        }
+
+        public override async Task Multiop_rename_table_and_drop()
+        {
+            await base.Multiop_rename_table_and_drop();
+
+            AssertSql();
+        }
+
+        public override async Task Multiop_rename_table_and_create_new_table_with_the_old_name()
+        {
+            await base.Multiop_rename_table_and_create_new_table_with_the_old_name();
+
+            AssertSql();
+        }
 
         // The constraint name for a primary key is always PRIMARY in MySQL.
         protected override bool AssertConstraintNames

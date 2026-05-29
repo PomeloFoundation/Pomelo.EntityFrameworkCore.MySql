@@ -9,8 +9,9 @@ public class DebugRelationalCommand : RelationalCommand
     public DebugRelationalCommand(
         [NotNull] RelationalCommandBuilderDependencies dependencies,
         [NotNull] string commandText,
+        [NotNull] string logCommandText,
         [NotNull] IReadOnlyList<IRelationalParameter> parameters)
-        : base(dependencies, commandText, parameters)
+        : base(dependencies, commandText, logCommandText, parameters)
     {
     }
 

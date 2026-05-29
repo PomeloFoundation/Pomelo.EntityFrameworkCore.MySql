@@ -116,7 +116,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands
                 }
             }
 
+#pragma warning disable EF1003 // ExecuteSqlRaw with concatenated table name (intentional in this perf test).
             _db.Database.ExecuteSqlRaw("DELETE FROM `" + _db.Model.FindEntityType(typeof(Blog)).GetTableName() + "`");
+#pragma warning restore EF1003
 
             PerfTest(insert1, "Insert 1", iterations, concurrency, ops).GetAwaiter().GetResult();
             var insertCount = _db.Blogs.Count();

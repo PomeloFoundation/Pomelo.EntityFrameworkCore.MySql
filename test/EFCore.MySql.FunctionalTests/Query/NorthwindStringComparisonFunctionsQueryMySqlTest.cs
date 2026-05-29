@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -44,14 +44,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             // When the comparison parameter is not a constant, we have to use a case
             // statement
             AssertSql(
-                $@"@__comparison_0='{comparison:D}'
+                $"""
+@comparison='{(int)comparison}'
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE CASE
-    WHEN @__comparison_0 IN (4, 0, 2) THEN `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin
+    WHEN @comparison IN (4, 0, 2) THEN `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin
     ELSE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin
-END");
+END
+""");
         }
 
         [ConditionalTheory]
@@ -161,14 +163,16 @@ WHERE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE ut
             // When the comparison parameter is not a constant, we have to use a case
             // statement
             AssertSql(
-                $@"@__comparison_0='{comparison:D}'
+                $"""
+@comparison='{(int)comparison}'
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE CASE
-    WHEN @__comparison_0 IN (4, 0, 2) THEN `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin
+    WHEN @comparison IN (4, 0, 2) THEN `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin
     ELSE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin
-END");
+END
+""");
         }
 
         [ConditionalTheory]
@@ -278,14 +282,16 @@ WHERE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE ut
             // When the comparison parameter is not a constant, we have to use a case
             // statement
             AssertSql(
-                $@"@__comparison_0='{comparison:D}'
+                $"""
+@comparison='{(int)comparison}'
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE CASE
-    WHEN @__comparison_0 IN (4, 0, 2) THEN `c`.`CustomerID` LIKE CONVERT('%nto%' USING utf8mb4) COLLATE utf8mb4_bin
+    WHEN @comparison IN (4, 0, 2) THEN `c`.`CustomerID` LIKE CONVERT('%nto%' USING utf8mb4) COLLATE utf8mb4_bin
     ELSE LCASE(`c`.`CustomerID`) LIKE CONVERT(LCASE('%nto%') USING utf8mb4) COLLATE utf8mb4_bin
-END");
+END
+""");
         }
 
         [ConditionalTheory]
@@ -398,14 +404,16 @@ WHERE LCASE(`c`.`CustomerID`) LIKE CONVERT(LCASE('%nto%') USING utf8mb4) COLLATE
             // When the comparison parameter is not a constant, we have to use a case
             // statement
             AssertSql(
-                $@"@__comparison_0='{comparison:D}'
+                $"""
+@comparison='{(int)comparison}'
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE CASE
-    WHEN @__comparison_0 IN (4, 0, 2) THEN `c`.`CustomerID` LIKE CONVERT('anto' USING utf8mb4) COLLATE utf8mb4_bin
+    WHEN @comparison IN (4, 0, 2) THEN `c`.`CustomerID` LIKE CONVERT('anto' USING utf8mb4) COLLATE utf8mb4_bin
     ELSE LCASE(`c`.`CustomerID`) LIKE CONVERT(LCASE('anto%') USING utf8mb4) COLLATE utf8mb4_bin
-END");
+END
+""");
         }
 
         [ConditionalTheory]
@@ -516,14 +524,16 @@ WHERE LCASE(LCASE(`c`.`CustomerID`)) LIKE CONVERT(LCASE('anto%') USING utf8mb4) 
                 assertEmpty: expected == 0);
 
             AssertSql(
-                $@"@__comparison_0='{comparison:D}'
+                $"""
+@comparison='{(int)comparison}'
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE CASE
-    WHEN @__comparison_0 IN (4, 0, 2) THEN `c`.`CustomerID` LIKE CONVERT('%nton' USING utf8mb4) COLLATE utf8mb4_bin
+    WHEN @comparison IN (4, 0, 2) THEN `c`.`CustomerID` LIKE CONVERT('%nton' USING utf8mb4) COLLATE utf8mb4_bin
     ELSE LCASE(`c`.`CustomerID`) LIKE CONVERT(LCASE('%nton') USING utf8mb4) COLLATE utf8mb4_bin
-END");
+END
+""");
         }
 
         [ConditionalTheory]
@@ -635,14 +645,17 @@ WHERE LCASE(`c`.`CustomerID`) LIKE CONVERT(LCASE('%nton') USING utf8mb4) COLLATE
 
             // When the comparison parameter is not a constant, we have to use a case
             // statement
-            AssertSql($"@__comparison_0='{comparison:D}'" + @"
+            AssertSql(
+                $"""
+@comparison='{(int)comparison}'
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE CASE
-    WHEN @__comparison_0 IN (4, 0, 2) THEN LOCATE(CONVERT('nt' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`CustomerID`) - 1
+    WHEN @comparison IN (4, 0, 2) THEN LOCATE(CONVERT('nt' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`CustomerID`) - 1
     ELSE LOCATE(CONVERT(LCASE('nt') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`)) - 1
-END = 1");
+END = 1
+""");
         }
 
         [ConditionalTheory]
@@ -672,11 +685,13 @@ WHERE (LOCATE(CONVERT(LCASE('nt') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.
                 assertEmpty: expected == 0);
 
             AssertSql(
-     @$"@__startIndex_0='{startIndex}'
+                $"""
+@startIndex='{startIndex}'
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
-WHERE (LOCATE(CONVERT(LCASE('nt') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`), @__startIndex_0 + 1) - 1) = 1");
+WHERE (LOCATE(CONVERT(LCASE('nt') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`), @startIndex + 1) - 1) = 1
+""");
         }
 
         [ConditionalTheory]

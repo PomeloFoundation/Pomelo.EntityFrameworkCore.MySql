@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public class TPTGearsOfWarQueryMySqlTest : TPTGearsOfWarQueryRelationalTestBase<TPTGearsOfWarQueryMySqlFixture>
+    public class TPTGearsOfWarQueryMySqlTest : TPTGearsOfWarQueryMySqlTestBase<TPTGearsOfWarQueryMySqlFixture>
     {
 #pragma warning disable IDE0060 // Remove unused parameter
         public TPTGearsOfWarQueryMySqlTest(TPTGearsOfWarQueryMySqlFixture fixture, ITestOutputHelper testOutputHelper)
@@ -233,7 +233,6 @@ WHERE `m`.`Timeline` > (UTC_TIMESTAMP() - @__timeSpan_0)
         }
 
         [ConditionalTheory(Skip = "Another LATERAL JOIN bug in MySQL. Grouping leads to unexpected result set.")]
-        [MemberData(nameof(IsAsyncData))]
         public override Task Correlated_collection_with_groupby_with_complex_grouping_key_not_projecting_identifier_column_with_group_aggregate_in_final_projection(bool async)
         {
             return base.Correlated_collection_with_groupby_with_complex_grouping_key_not_projecting_identifier_column_with_group_aggregate_in_final_projection(async);
@@ -244,8 +243,8 @@ WHERE `m`.`Timeline` > (UTC_TIMESTAMP() - @__timeSpan_0)
             await base.DateTimeOffset_to_unix_time_milliseconds(async);
 
         AssertSql(
-"""
-@__unixEpochMilliseconds_0='0'
+            """
+@unixEpochMilliseconds='0'
 
 SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, CASE
     WHEN `o`.`Nickname` IS NOT NULL THEN 'Officer'
@@ -258,7 +257,7 @@ WHERE NOT EXISTS (
     SELECT 1
     FROM `SquadMissions` AS `s0`
     INNER JOIN `Missions` AS `m` ON `s0`.`MissionId` = `m`.`Id`
-    WHERE (`s`.`Id` = `s0`.`SquadId`) AND (@__unixEpochMilliseconds_0 = (TIMESTAMPDIFF(microsecond, TIMESTAMP '1970-01-01 00:00:00', `m`.`Timeline`)) DIV (1000)))
+    WHERE (`s`.`Id` = `s0`.`SquadId`) AND (@unixEpochMilliseconds = (TIMESTAMPDIFF(microsecond, TIMESTAMP '1970-01-01 00:00:00', `m`.`Timeline`)) DIV (1000)))
 ORDER BY `g`.`Nickname`, `g`.`SquadId`, `s`.`Id`, `s1`.`SquadId`
 """);
         }
@@ -268,8 +267,8 @@ ORDER BY `g`.`Nickname`, `g`.`SquadId`, `s`.`Id`, `s1`.`SquadId`
             await base.DateTimeOffset_to_unix_time_seconds(async);
 
             AssertSql(
-"""
-@__unixEpochSeconds_0='0'
+                """
+@unixEpochSeconds='0'
 
 SELECT `g`.`Nickname`, `g`.`SquadId`, `g`.`AssignedCityName`, `g`.`CityOfBirthName`, `g`.`FullName`, `g`.`HasSoulPatch`, `g`.`LeaderNickname`, `g`.`LeaderSquadId`, `g`.`Rank`, CASE
     WHEN `o`.`Nickname` IS NOT NULL THEN 'Officer'
@@ -282,7 +281,7 @@ WHERE NOT EXISTS (
     SELECT 1
     FROM `SquadMissions` AS `s0`
     INNER JOIN `Missions` AS `m` ON `s0`.`MissionId` = `m`.`Id`
-    WHERE (`s`.`Id` = `s0`.`SquadId`) AND (@__unixEpochSeconds_0 = TIMESTAMPDIFF(second, TIMESTAMP '1970-01-01 00:00:00', `m`.`Timeline`)))
+    WHERE (`s`.`Id` = `s0`.`SquadId`) AND (@unixEpochSeconds = TIMESTAMPDIFF(second, TIMESTAMP '1970-01-01 00:00:00', `m`.`Timeline`)))
 ORDER BY `g`.`Nickname`, `g`.`SquadId`, `s`.`Id`, `s1`.`SquadId`
 """);
         }

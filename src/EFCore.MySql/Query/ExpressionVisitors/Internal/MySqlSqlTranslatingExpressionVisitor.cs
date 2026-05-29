@@ -427,14 +427,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 "GREATEST",
                 expressions,
                 resultType,
-                true);
+                Microsoft.EntityFrameworkCore.Query.ExpressionExtensions.InferTypeMapping(expressions.ToArray()),
+                onlyNullWhenAnyNullPropagatingArgumentIsNull: true);
 
         public override SqlExpression GenerateLeast(IReadOnlyList<SqlExpression> expressions, Type resultType)
             => _sqlExpressionFactory.NullableFunction(
                 "LEAST",
                 expressions,
                 resultType,
-                true);
+                Microsoft.EntityFrameworkCore.Query.ExpressionExtensions.InferTypeMapping(expressions.ToArray()),
+                onlyNullWhenAnyNullPropagatingArgumentIsNull: true);
 
         #region Copied from RelationalSqlTranslatingExpressionVisitor
 

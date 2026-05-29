@@ -16,10 +16,12 @@ namespace Pomelo.EntityFrameworkCore.MySql
             TestStore = await MySqlTestStore.CreateInitializedAsync(StoreName);
         }
 
-        public Task DisposeAsync()
-            => Task.CompletedTask;
+        public async Task DisposeAsync()
+            => await TestStore.DisposeAsync();
 
-        public virtual void Dispose() => TestStore.Dispose();
+        public virtual void Dispose()
+        {
+        }
 
         public virtual string StoreName => GetType().Name;
         public virtual MySqlTestStore TestStore { get; private set; }

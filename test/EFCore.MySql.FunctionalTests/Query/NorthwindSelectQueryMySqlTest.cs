@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -17,6 +17,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
     public partial class NorthwindSelectQueryMySqlTest : NorthwindSelectQueryRelationalTestBase<
         NorthwindQueryMySqlFixture<NoopModelCustomizer>>
     {
+
+        [ConditionalTheory(Skip = "EF Core 10 emits an expression (e.g. LEAST) in LIMIT; MySQL only allows literals/parameters")]
+        public override async Task Select_with_multiple_Take(bool async) => await Task.CompletedTask;
         public NorthwindSelectQueryMySqlTest(
             NorthwindQueryMySqlFixture<NoopModelCustomizer> fixture,
             ITestOutputHelper testOutputHelper)

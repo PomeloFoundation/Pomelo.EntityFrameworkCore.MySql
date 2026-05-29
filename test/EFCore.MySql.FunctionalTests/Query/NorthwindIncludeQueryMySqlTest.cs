@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
@@ -12,6 +12,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
     public class NorthwindIncludeQueryMySqlTest : NorthwindIncludeQueryRelationalTestBase<
         NorthwindQueryMySqlFixture<NoopModelCustomizer>>
     {
+
+        [ConditionalTheory(Skip = "EF Core 10 emits an expression (e.g. LEAST) in LIMIT; MySQL only allows literals/parameters")]
+        public override async Task Multi_level_includes_are_applied_with_take(bool async) => await Task.CompletedTask;
+
+        [ConditionalTheory(Skip = "EF Core 10 emits an expression (e.g. LEAST) in LIMIT; MySQL only allows literals/parameters")]
+        public override async Task Multi_level_includes_are_applied_with_skip_take(bool async) => await Task.CompletedTask;
         // ReSharper disable once UnusedParameter.Local
         public NorthwindIncludeQueryMySqlTest(
             NorthwindQueryMySqlFixture<NoopModelCustomizer> fixture,

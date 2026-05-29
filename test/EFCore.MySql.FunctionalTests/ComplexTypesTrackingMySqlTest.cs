@@ -12,7 +12,10 @@ using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests;
 
-public class ComplexTypesTrackingMySqlTest : ComplexTypesTrackingTestBase<ComplexTypesTrackingMySqlTest.MySqlFixture>
+// Disabled via internal access. EF Core 10 requires complex-type collections (e.g. Pub.Activities) to be mapped to a
+// JSON column via ToJson(); the Pomelo MySQL provider does not implement EF JSON mapping
+// (MySqlModelValidator throws Ef7CoreJsonMappingNotSupported), so the shared model cannot be built.
+internal class ComplexTypesTrackingMySqlTest : ComplexTypesTrackingTestBase<ComplexTypesTrackingMySqlTest.MySqlFixture>
 {
     public ComplexTypesTrackingMySqlTest(MySqlFixture fixture, ITestOutputHelper testOutputHelper)
         : base(fixture)

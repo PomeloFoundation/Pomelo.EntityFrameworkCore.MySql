@@ -1,4 +1,5 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
@@ -9,7 +10,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
 public class EntitySplittingQueryMySqlTest : EntitySplittingQueryTestBase
 {
-    public EntitySplittingQueryMySqlTest(ITestOutputHelper testOutputHelper)
+    public EntitySplittingQueryMySqlTest(NonSharedFixture fixture, ITestOutputHelper testOutputHelper)
+        : base(fixture)
     {
         // Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
     }
@@ -17,6 +19,18 @@ public class EntitySplittingQueryMySqlTest : EntitySplittingQueryTestBase
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
         => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
+
+    public override async Task Compare_split_entity_to_null(bool async)
+    {
+        await base.Compare_split_entity_to_null(async);
+
+        AssertSql(
+            """
+SELECT `e`.`Id`, `e`.`EntityThreeId`, `e`.`IntValue1`, `e`.`IntValue2`, `s`.`IntValue3`, `e`.`IntValue4`, `e`.`StringValue1`, `e`.`StringValue2`, `e`.`StringValue3`, `e`.`StringValue4`
+FROM `EntityOne` AS `e`
+INNER JOIN `SplitEntityOnePart` AS `s` ON `e`.`Id` = `s`.`Id`
+""");
+    }
 
     public override async Task Can_query_entity_which_is_split_in_two(bool async)
     {

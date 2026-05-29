@@ -59,12 +59,11 @@ namespace Pomelo.EntityFrameworkCore.MySql
             SetupDatabase();
         }
 
-        public Task DisposeAsync()
-            => Task.CompletedTask;
+        public async Task DisposeAsync()
+            => await TestStore.DisposeAsync();
 
         protected override void Dispose(bool disposing)
         {
-            TestStore.Dispose();
             base.Dispose(disposing);
         }
 
