@@ -1,4 +1,4 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -19,13 +19,13 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.Logging;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Update.Internal;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Internal;
+using Microting.EntityFrameworkCore.MySql.Metadata.Internal;
+using Microting.EntityFrameworkCore.MySql.Storage.Internal;
+using Microting.EntityFrameworkCore.MySql.Update.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Migrations
+namespace Microting.EntityFrameworkCore.MySql.Migrations
 {
     // CHECK: Can we increase the usage of the new model over the old one, or are we done here?
     /// <summary>
@@ -1500,7 +1500,7 @@ DEALLOCATE PREPARE __pomelo_SqlExprExecute;
             // However, this is technically an inaccuracy, and leads to incompatible FK -> PK mappings in MySQL 8.4.
             // We will therefore reverse that behavior to leaving the key order unchanged again.
             // This will lead to two issues:
-            //     - Migrations that upgrade vom Pomelo < 9.0 to Pomelo 9.0 will not include this change automatically, because the model
+            //     - Migrations that upgrade vom Microting < 9.0 to Microting 9.0 will not include this change automatically, because the model
             //       never changed (we only made the change (before and now) here in MySqlMigrationsSqlGenerator).
             //     - There now needs to be an index for those cases, that contains the AUTO_INCREMENT column as its first column.
 

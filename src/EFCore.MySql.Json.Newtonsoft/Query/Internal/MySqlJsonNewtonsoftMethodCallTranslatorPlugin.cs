@@ -1,13 +1,13 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
-using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
+using Microting.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
+using Microting.EntityFrameworkCore.MySql.Query.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Query.Internal
+namespace Microting.EntityFrameworkCore.MySql.Json.Newtonsoft.Query.Internal
 {
     public class MySqlJsonNewtonsoftMethodCallTranslatorPlugin : IMethodCallTranslatorPlugin
     {

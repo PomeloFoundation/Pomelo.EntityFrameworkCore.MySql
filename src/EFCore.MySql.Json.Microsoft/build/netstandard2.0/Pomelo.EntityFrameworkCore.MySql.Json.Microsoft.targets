@@ -32,8 +32,8 @@
           Outputs="$(EFCoreMySqlJsonMicrosoftFile)">
     <ItemGroup>
       <EFCoreMySqlJsonMicrosoftServices Include="Microsoft.EntityFrameworkCore.Design.DesignTimeServicesReferenceAttribute">
-        <_Parameter1>Pomelo.EntityFrameworkCore.MySql.Json.Microsoft.Design.Internal.MySqlJsonMicrosoftDesignTimeServices, Pomelo.EntityFrameworkCore.MySql.Json.Microsoft</_Parameter1>
-        <_Parameter2>Pomelo.EntityFrameworkCore.MySql.Json.Microsoft</_Parameter2>
+        <_Parameter1>Microting.EntityFrameworkCore.MySql.Json.Microsoft.Design.Internal.MySqlJsonMicrosoftDesignTimeServices, Microting.EntityFrameworkCore.MySql.Json.Microsoft</_Parameter1>
+        <_Parameter2>Microting.EntityFrameworkCore.MySql.Json.Microsoft</_Parameter2>
       </EFCoreMySqlJsonMicrosoftServices>
     </ItemGroup>
     <WriteCodeFragment AssemblyAttributes="@(EFCoreMySqlJsonMicrosoftServices)"

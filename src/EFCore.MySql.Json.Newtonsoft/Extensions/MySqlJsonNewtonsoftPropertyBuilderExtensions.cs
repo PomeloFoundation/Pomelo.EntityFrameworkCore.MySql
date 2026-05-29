@@ -1,10 +1,10 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Utilities;
-using Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Extensions;
+using Microting.EntityFrameworkCore.MySql.Json.Newtonsoft.Extensions;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore

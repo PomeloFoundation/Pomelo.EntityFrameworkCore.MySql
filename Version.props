@@ -10,15 +10,15 @@
       We also used alpha/beta/silver release types in the past, but they mix poorly with the ones above when orderend according to SemVer2
       rules.
     -->
-    <VersionPrefix>9.0.1</VersionPrefix>
-    <PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>
-    <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
+    <VersionPrefix>10.0.8</VersionPrefix>
+    <PreReleaseVersionLabel></PreReleaseVersionLabel>
+    <PreReleaseVersionIteration></PreReleaseVersionIteration>
 
     <!--
       A string like `.efcore.9.0.0` or `.efcore.9.0.0.preview.1` can be added to the version suffix, to indicate that this release targets
       a specific EF Core release.
-      This can be useful to distinguish between a release that correlates with a EF Core release (e.g. Pomelo `9.0.0-preview.1` implicitly
-      targets EF Core `9.0.0-preview.1`) and one that doesn't (e.g. Pomelo `9.0.0-preview.2.efcore.9.0.0.preview.1` explicitly targets EF
+      This can be useful to distinguish between a release that correlates with a EF Core release (e.g. Microting `9.0.0-preview.1` implicitly
+      targets EF Core `9.0.0-preview.1`) and one that doesn't (e.g. Microting `9.0.0-preview.2.efcore.9.0.0.preview.1` explicitly targets EF
       Core `9.0.0-preview.1`).
       If no EF Core release is explicitly targeted, release version correlation should be assumed.
     -->
@@ -77,12 +77,12 @@
     <Message Importance="high" Text="VersionSuffix: $(VersionSuffix)" />
   </Target>
 
-  <Target Name="EnsureVersionProperties" BeforeTargets="CoreBuild">
+  <!--<Target Name="EnsureVersionProperties" BeforeTargets="CoreBuild">
     <Error Condition="'$(Version)' == '' And '$(VersionPrefix)' == ''" Text="The 'VersionPrefix' property needs to be set." />
     <Error Condition="'$(Version)' == '' And '$(VersionSuffix)' == '' And '$(PreReleaseVersionLabel)' == ''" Text="The 'PreReleaseVersionLabel' property needs to be set." />
     <Error Condition="'$(Version)' == '' And '$(VersionSuffix)' == '' And '$(PreReleaseVersionIteration)' == ''" Text="The 'PreReleaseVersionIteration' property needs to be set." />
     <Error Condition="'$(OfficialVersion)' != '' And '$(OfficialVersion)' != '$(Version)' And '$(OfficialVersion)-' != '$(VersionPrefix)-$(VersionSuffix)' And '$(OfficialVersion)' != '$(VersionPrefix)-$(VersionSuffix)'" Text="The 'OfficialVersion' property needs to be identical to the 'Version' property, 'VersionPrefix' property (if the 'VersionSuffix' property is empty) or to a combination of the 'VersionPrefix' and 'VersionSuffix' properties." />
-  </Target>
+  </Target>-->
 
   <!-- TODO: Take a look at this. -->
   <PropertyGroup>

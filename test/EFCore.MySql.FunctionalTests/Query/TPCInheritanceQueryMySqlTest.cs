@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
 public class TPCInheritanceQueryMySqlTest : TPCInheritanceQueryTestBase<TPCInheritanceQueryMySqlFixture>
 {

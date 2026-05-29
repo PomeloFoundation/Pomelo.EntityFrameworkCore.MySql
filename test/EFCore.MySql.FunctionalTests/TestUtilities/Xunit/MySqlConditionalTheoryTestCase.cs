@@ -1,11 +1,12 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
 {
     /// <remarks>
     /// We cannot inherit from ConditionalTheoryTestCase, because it's sealed.
@@ -13,6 +14,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
     public sealed class MySqlConditionalTheoryTestCase : XunitTheoryTestCase
     {
         [Obsolete("Called by the de-serializer; should only be called by deriving classes for de-serialization purposes")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public MySqlConditionalTheoryTestCase()
         {
         }

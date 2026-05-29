@@ -1,11 +1,11 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
 using System.Data.Common;
 using MySqlConnector;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+namespace Microting.EntityFrameworkCore.MySql.Storage.Internal;
 
 public class MySqlConnectionStringOptionsValidator : IMySqlConnectionStringOptionsValidator
 {
@@ -78,7 +78,7 @@ public class MySqlConnectionStringOptionsValidator : IMySqlConnectionStringOptio
 
     public virtual void ThrowException(Exception innerException = null)
         => throw new InvalidOperationException(
-            @"The connection string of a connection used by Pomelo.EntityFrameworkCore.MySql must contain ""AllowUserVariables=True;UseAffectedRows=False"".",
+            @"The connection string of a connection used by Microting.EntityFrameworkCore.MySql must contain ""AllowUserVariables=True;UseAffectedRows=False"".",
             innerException);
 
     protected virtual bool ValidateMandatoryOptions(MySqlConnectionStringBuilder csb)

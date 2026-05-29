@@ -1,4 +1,4 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -13,11 +13,11 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Internal;
+using Microting.EntityFrameworkCore.MySql.Query.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
+namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 {
     public class MySqlStringComparisonMethodTranslator : MySqlQueryCompilationContextMethodTranslator
     {
@@ -437,7 +437,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             // However, this might not be the case, if the pattern is constant after all (e.g. `LCASE('fo%o')`), in
             // which case, `something LIKE CONCAT(REPLACE(REPLACE(LCASE('fo%o'), '%', '\\%'), '_', '\\_'), '%')` should
             // be faster than `LEFT(something, CHAR_LENGTH('fo%o')) = LCASE('fo%o')`.
-            // See https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/996#issuecomment-607733553
+            // See https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/issues/996#issuecomment-607733553
 
             // The prefix is non-constant, we use LEFT/RIGHT to extract the substring and compare.
             return _sqlExpressionFactory.AndAlso(
@@ -525,7 +525,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             StartsEndsWithContains methodType)
         {
             if (pattern is SqlParameterExpression patternParameter &&
-                patternParameter.Name.StartsWith(QueryCompilationContext.QueryParameterPrefix, StringComparison.Ordinal))
+                patternParameter.Name.StartsWith("@", StringComparison.Ordinal))
             {
                 // The pattern is a parameter, register a runtime parameter that will contain the rewritten LIKE pattern, where
                 // all special characters have been escaped.
@@ -718,7 +718,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             QueryContext queryContext,
             string baseParameterName,
             StartsEndsWithContains methodType)
-            => queryContext.ParameterValues[baseParameterName] switch
+            => queryContext.Parameters[baseParameterName] switch
             {
                 null => null,
 

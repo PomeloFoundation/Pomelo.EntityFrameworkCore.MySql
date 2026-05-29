@@ -8,7 +8,7 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Internal
+namespace Microting.EntityFrameworkCore.MySql.Internal
 {
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -19,7 +19,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
     public static class MySqlStrings
     {
         private static readonly ResourceManager _resourceManager
-            = new ResourceManager("Pomelo.EntityFrameworkCore.MySql.Properties.MySqlStrings", typeof(MySqlStrings).GetTypeInfo().Assembly);
+            = new ResourceManager("Microting.EntityFrameworkCore.MySql.Properties.MySqlStrings", typeof(MySqlStrings).GetTypeInfo().Assembly);
 
         /// <summary>
         ///     Using two distinct data sources within a service provider is not supported, and Entity Framework is not building its own internal service provider. Either allow Entity Framework to build the service provider by removing the call to '{useInternalServiceProvider}', or ensure that the same data source is used for all uses of a given service provider passed to '{useInternalServiceProvider}'.
@@ -178,7 +178,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
                 entityType, sproc);
 
         /// <summary>
-        ///     The EF Core 7.0 JSON support isn't currently implemented. Instead, there is support for a more extensive implementation. See https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql for more information on how to map JSON.
+        ///     The EF Core 7.0 JSON support isn't currently implemented. Instead, there is support for a more extensive implementation. See https://github.com/microting/Pomelo.EntityFrameworkCore.MySql for more information on how to map JSON.
         /// </summary>
         public static string Ef7CoreJsonMappingNotSupported
             => GetString("Ef7CoreJsonMappingNotSupported");
@@ -196,7 +196,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
     }
 }
 
-namespace Pomelo.EntityFrameworkCore.MySql.Internal
+namespace Microting.EntityFrameworkCore.MySql.Internal
 {
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -207,7 +207,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
     public static class MySqlResources
     {
         private static readonly ResourceManager _resourceManager
-            = new ResourceManager("Pomelo.EntityFrameworkCore.MySql.Properties.MySqlStrings", typeof(MySqlResources).GetTypeInfo().Assembly);
+            = new ResourceManager("Microting.EntityFrameworkCore.MySql.Properties.MySqlStrings", typeof(MySqlResources).GetTypeInfo().Assembly);
 
         /// <summary>
         ///     No type was specified for the decimal column '{property}' on entity type '{entityType}'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values using 'ForHasColumnType()'.

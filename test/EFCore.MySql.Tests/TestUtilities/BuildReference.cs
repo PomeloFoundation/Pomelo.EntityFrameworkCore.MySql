@@ -8,7 +8,7 @@ using IOPath = System.IO.Path;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyModel;
 
-namespace Pomelo.EntityFrameworkCore.TestUtilities
+namespace Microting.EntityFrameworkCore.TestUtilities
 {
     public class BuildReference
     {

@@ -6,12 +6,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
-using Pomelo.EntityFrameworkCore.MySql.IntegrationTests;
-using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models;
+using Microting.EntityFrameworkCore.MySql.IntegrationTests;
+using Microting.EntityFrameworkCore.MySql.IntegrationTests.Models;
 using System;
 using System.Collections.Generic;
 
-namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
+namespace Microting.EntityFrameworkCore.MySql.IntegrationTests.Migrations
 {
     [DbContext(typeof(AppDb))]
     partial class AppDbModelSnapshot : ModelSnapshot
@@ -137,7 +137,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.AppIdentityUser", b =>
+            modelBuilder.Entity("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.AppIdentityUser", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
@@ -187,7 +187,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
-            modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.Blog", b =>
+            modelBuilder.Entity("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.Blog", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -199,7 +199,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                     b.ToTable("Blogs");
                 });
 
-            modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.BlogPost", b =>
+            modelBuilder.Entity("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.BlogPost", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -217,7 +217,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                     b.ToTable("BlogPost");
                 });
 
-            modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.CrmAdmin", b =>
+            modelBuilder.Entity("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.CrmAdmin", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -233,7 +233,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                     b.ToTable("CrmAdmins");
                 });
 
-            modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.CrmAdminMenu", b =>
+            modelBuilder.Entity("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.CrmAdminMenu", b =>
                 {
                     b.Property<int>("AdminId");
 
@@ -246,7 +246,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                     b.ToTable("CrmAdminMenu");
                 });
 
-            modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.CrmAdminRole", b =>
+            modelBuilder.Entity("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.CrmAdminRole", b =>
                 {
                     b.Property<int>("AdminId");
 
@@ -259,7 +259,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                     b.ToTable("CrmAdminRole");
                 });
 
-            modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.CrmMenu", b =>
+            modelBuilder.Entity("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.CrmMenu", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -271,7 +271,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                     b.ToTable("CrmMenus");
                 });
 
-            modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.CrmRole", b =>
+            modelBuilder.Entity("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.CrmRole", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -283,7 +283,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                     b.ToTable("CrmRoles");
                 });
 
-            modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.DataTypesSimple", b =>
+            modelBuilder.Entity("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.DataTypesSimple", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -369,7 +369,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                     b.ToTable("DataTypesSimple");
                 });
 
-            modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.DataTypesVariable", b =>
+            modelBuilder.Entity("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.DataTypesVariable", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -413,7 +413,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                     b.ToTable("DataTypesVariable");
                 });
 
-            modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.GeneratedContact", b =>
+            modelBuilder.Entity("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.GeneratedContact", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd();
@@ -446,7 +446,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                     b.ToTable("GeneratedContacts");
                 });
 
-            modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.GeneratedTime", b =>
+            modelBuilder.Entity("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.GeneratedTime", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -516,7 +516,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                     b.ToTable("GeneratedTime");
                 });
 
-            modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.Person", b =>
+            modelBuilder.Entity("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.Person", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -540,7 +540,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                     b.HasDiscriminator<string>("Discriminator").HasValue("Person");
                 });
 
-            modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.PersonFamily", b =>
+            modelBuilder.Entity("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.PersonFamily", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -552,9 +552,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                     b.ToTable("PeopleFamilies");
                 });
 
-            modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.PersonKid", b =>
+            modelBuilder.Entity("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.PersonKid", b =>
                 {
-                    b.HasBaseType("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.Person");
+                    b.HasBaseType("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.Person");
 
                     b.Property<int>("Grade");
 
@@ -565,9 +565,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                     b.HasDiscriminator().HasValue("PersonKid");
                 });
 
-            modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.PersonParent", b =>
+            modelBuilder.Entity("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.PersonParent", b =>
                 {
-                    b.HasBaseType("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.Person");
+                    b.HasBaseType("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.Person");
 
                     b.Property<string>("Occupation");
 
@@ -576,9 +576,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                     b.HasDiscriminator().HasValue("PersonParent");
                 });
 
-            modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.PersonTeacher", b =>
+            modelBuilder.Entity("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.PersonTeacher", b =>
                 {
-                    b.HasBaseType("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.Person");
+                    b.HasBaseType("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.Person");
 
                     b.HasDiscriminator().HasValue("PersonTeacher");
                 });
@@ -593,7 +593,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.AppIdentityUser")
+                    b.HasOne("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.AppIdentityUser")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -601,7 +601,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.AppIdentityUser")
+                    b.HasOne("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.AppIdentityUser")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -614,7 +614,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.AppIdentityUser")
+                    b.HasOne("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.AppIdentityUser")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -622,56 +622,56 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.AppIdentityUser")
+                    b.HasOne("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.AppIdentityUser")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.BlogPost", b =>
+            modelBuilder.Entity("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.BlogPost", b =>
                 {
-                    b.HasOne("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.Blog", "Blog")
+                    b.HasOne("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.Blog", "Blog")
                         .WithMany("Posts")
                         .HasForeignKey("BlogId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.CrmAdminMenu", b =>
+            modelBuilder.Entity("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.CrmAdminMenu", b =>
                 {
-                    b.HasOne("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.CrmAdmin", "Admin")
+                    b.HasOne("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.CrmAdmin", "Admin")
                         .WithMany("AdminMenus")
                         .HasForeignKey("AdminId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.CrmMenu", "Menu")
+                    b.HasOne("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.CrmMenu", "Menu")
                         .WithMany("AdminMenus")
                         .HasForeignKey("MenuId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.CrmAdminRole", b =>
+            modelBuilder.Entity("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.CrmAdminRole", b =>
                 {
-                    b.HasOne("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.CrmAdmin", "Admin")
+                    b.HasOne("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.CrmAdmin", "Admin")
                         .WithMany("AdminRoles")
                         .HasForeignKey("AdminId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.CrmRole", "Role")
+                    b.HasOne("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.CrmRole", "Role")
                         .WithMany("AdminRoles")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.Person", b =>
+            modelBuilder.Entity("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.Person", b =>
                 {
-                    b.HasOne("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.PersonFamily", "Family")
+                    b.HasOne("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.PersonFamily", "Family")
                         .WithMany("Members")
                         .HasForeignKey("FamilyId");
                 });
 
-            modelBuilder.Entity("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.PersonKid", b =>
+            modelBuilder.Entity("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.PersonKid", b =>
                 {
-                    b.HasOne("Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Models.PersonTeacher", "Teacher")
+                    b.HasOne("Microting.EntityFrameworkCore.MySql.FunctionalTests.Models.PersonTeacher", "Teacher")
                         .WithMany("Students")
                         .HasForeignKey("TeacherId")
                         .OnDelete(DeleteBehavior.Restrict);

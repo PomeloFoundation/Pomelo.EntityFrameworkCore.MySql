@@ -1,4 +1,4 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
+namespace Microting.EntityFrameworkCore.MySql.Query.Internal
 {
     public class MySqlEvaluatableExpressionFilter : RelationalEvaluatableExpressionFilter
     {

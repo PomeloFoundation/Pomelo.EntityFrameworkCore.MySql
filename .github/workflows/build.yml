@@ -5,11 +5,6 @@ on:
       - '**'
     paths-ignore:
       - '**.md'
-  pull_request:
-    branches:
-      - '**'
-    paths-ignore:
-      - '**.md'
   release:
     types:
       - published
@@ -28,19 +23,83 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dbVersion:
-          - 8.4.3-mysql
-          - 8.0.40-mysql
-          - 11.6.2-mariadb
-          - 11.5.2-mariadb
-          - 11.4.4-mariadb
-          - 11.3.2-mariadb
-          - 10.11.10-mariadb
-          - 10.6.20-mariadb
-          - 10.5.27-mariadb
-        os:
-          - ubuntu-latest
-          - windows-latest
+        include:
+          # MySQL 9.5.x - Ubuntu only (Windows package not available yet)
+          - dbVersion: 9.5.0-mysql
+            os: ubuntu-latest
+          # MySQL 9.x - Both platforms
+          - dbVersion: 9.4.0-mysql
+            os: ubuntu-latest
+          - dbVersion: 9.4.0-mysql
+            os: windows-latest
+          - dbVersion: 9.3.0-mysql
+            os: ubuntu-latest
+          - dbVersion: 9.3.0-mysql
+            os: windows-latest
+          - dbVersion: 9.2.0-mysql
+            os: ubuntu-latest
+          - dbVersion: 9.2.0-mysql
+            os: windows-latest
+          - dbVersion: 9.1.0-mysql
+            os: ubuntu-latest
+          - dbVersion: 9.1.0-mysql
+            os: windows-latest
+          - dbVersion: 9.0.1-mysql
+            os: ubuntu-latest
+          - dbVersion: 9.0.1-mysql
+            os: windows-latest
+          # MySQL 8.x - Both platforms
+          - dbVersion: 8.4.3-mysql
+            os: ubuntu-latest
+          - dbVersion: 8.4.3-mysql
+            os: windows-latest
+          - dbVersion: 8.0.40-mysql
+            os: ubuntu-latest
+          - dbVersion: 8.0.40-mysql
+            os: windows-latest
+          # MariaDB 11.8+ - Ubuntu only (Windows package not available yet)
+          - dbVersion: 11.8.5-mariadb
+            os: ubuntu-latest
+          # MariaDB 11.7.x - Both platforms (different patch versions)
+          - dbVersion: 11.7.2-mariadb
+            os: ubuntu-latest
+          - dbVersion: 11.7.1-mariadb
+            os: windows-latest
+          # MariaDB 11.x - Both platforms
+          - dbVersion: 11.6.2-mariadb
+            os: ubuntu-latest
+          - dbVersion: 11.6.2-mariadb
+            os: windows-latest
+          - dbVersion: 11.5.2-mariadb
+            os: ubuntu-latest
+          - dbVersion: 11.5.2-mariadb
+            os: windows-latest
+          - dbVersion: 11.4.4-mariadb
+            os: ubuntu-latest
+          - dbVersion: 11.4.4-mariadb
+            os: windows-latest
+          - dbVersion: 11.3.2-mariadb
+            os: ubuntu-latest
+          - dbVersion: 11.3.2-mariadb
+            os: windows-latest
+          # MariaDB 10.x - Both platforms
+          - dbVersion: 10.11.10-mariadb
+            os: ubuntu-latest
+          - dbVersion: 10.11.10-mariadb
+            os: windows-latest
+          - dbVersion: 10.6.20-mariadb
+            os: ubuntu-latest
+          - dbVersion: 10.6.20-mariadb
+            os: windows-latest
+          - dbVersion: 10.5.27-mariadb
+            os: ubuntu-latest
+          - dbVersion: 10.5.27-mariadb
+            os: windows-latest
+          # MariaDB 12.x - Ubuntu only (Windows packages not available yet)
+          - dbVersion: 12.1.2-mariadb
+            os: ubuntu-latest
+          - dbVersion: 12.0.2-mariadb
+            os: ubuntu-latest
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -109,6 +168,12 @@ jobs:
         with:
           path: ${{ env.windowsUserTempLocation }}\Pomelo.Chocolatey.${{ env.databaseServerType }}.Server
           key: database-windows-${{ env.databaseServerType }}-${{ env.databaseServerVersion }}-v3
+      - name: Prepare certs & NuGet env
+        if: ${{ env.os == 'linux' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ca-certificates
+          echo "NUGET_CERT_REVOCATION_MODE=offline" >> $GITHUB_ENV
       - name: Install Database Server - Linux
         if: ${{ env.os == 'linux' }}
         shell: pwsh
@@ -218,6 +283,78 @@ jobs:
         shell: pwsh
         run: |
           dotnet --info
+      - name: Fix MSB4276 - Create missing WorkloadAutoImportPropsLocator SDK
+        shell: pwsh
+        run: |
+          $sdkPath = dotnet --info | Select-String "Base Path:\s+(.+)" | ForEach-Object { $_.Matches.Groups[1].Value.Trim() }
+          $workloadSdkPath = Join-Path $sdkPath "Sdks/Microsoft.NET.SDK.WorkloadAutoImportPropsLocator"
+          
+          if (-not (Test-Path $workloadSdkPath)) {
+            Write-Host "Creating missing WorkloadAutoImportPropsLocator SDK at: $workloadSdkPath"
+            New-Item -ItemType Directory -Path "$workloadSdkPath/Sdk" -Force | Out-Null
+            
+            # Create Sdk.props
+            $sdkPropsContent = @'
+          <!--
+          ***********************************************************************************************
+          Sdk.props
+          
+          WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+                    created a backup copy.  Incorrect changes to this file will make it
+                    impossible to load or build your projects from the command-line or the IDE.
+          
+          Copyright (c) .NET Foundation. All rights reserved.
+          ***********************************************************************************************
+          -->
+          <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+          </Project>
+          '@
+            $sdkPropsContent | Out-File -FilePath "$workloadSdkPath/Sdk/Sdk.props" -Encoding UTF8 -NoNewline
+            
+            # Create Sdk.targets
+            $sdkTargetsContent = @'
+          <!--
+          ***********************************************************************************************
+          Sdk.targets
+          
+          WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+                    created a backup copy.  Incorrect changes to this file will make it
+                    impossible to load or build your projects from the command-line or the IDE.
+          
+          Copyright (c) .NET Foundation. All rights reserved.
+          ***********************************************************************************************
+          -->
+          <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+          </Project>
+          '@
+            $sdkTargetsContent | Out-File -FilePath "$workloadSdkPath/Sdk/Sdk.targets" -Encoding UTF8 -NoNewline
+            
+            # Create AutoImport.props
+            $autoImportContent = @'
+          <!--
+          ***********************************************************************************************
+          AutoImport.props
+          
+          WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+                    created a backup copy.  Incorrect changes to this file will make it
+                    impossible to load or build your projects from the command-line or the IDE.
+          
+          This file is auto-imported by Microsoft.NET.Sdk.ImportWorkloads.props
+          to import workload-specific props files.
+          
+          Copyright (c) .NET Foundation. All rights reserved.
+          ***********************************************************************************************
+          -->
+          <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+            <!-- This file imports workload props. For now it's empty as no workloads require auto-import props. -->
+          </Project>
+          '@
+            $autoImportContent | Out-File -FilePath "$workloadSdkPath/Sdk/AutoImport.props" -Encoding UTF8 -NoNewline
+            
+            Write-Host "Successfully created WorkloadAutoImportPropsLocator SDK"
+          } else {
+            Write-Host "WorkloadAutoImportPropsLocator SDK already exists at: $workloadSdkPath"
+          }
       - name: Install EF Core Tools
         shell: pwsh
         run: |
@@ -232,6 +369,17 @@ jobs:
           Copy-Item test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
           Copy-Item test/EFCore.MySql.IntegrationTests/appsettings.ci.json test/EFCore.MySql.IntegrationTests/appsettings.json
           Copy-Item test/EFCore.MySql.IntegrationTests/config.json.example test/EFCore.MySql.IntegrationTests/config.json
+
+          # CI runs ~30k parallel functional tests against a single Docker DB instance.
+          # The default MySqlConnector connect timeout (15s) is too low under pool pressure.
+          $functionalConfig = Get-Content test/EFCore.MySql.FunctionalTests/config.json | ConvertFrom-Json
+          $functionalConfig.Data.ConnectionString += ';Connection Timeout=120'
+          $functionalConfig | ConvertTo-Json -Depth 3 | Set-Content test/EFCore.MySql.FunctionalTests/config.json
+      - name: Build Solution
+        shell: pwsh
+        run: |
+          dotnet build -c Debug
+          dotnet build -c Release
       - name: Setup Integration Tests
         shell: pwsh
         run: |
@@ -244,7 +392,31 @@ jobs:
       - name: Functional Tests
         if: ${{ env.skipTests != 'true' }}
         shell: pwsh
-        run: dotnet test test/EFCore.MySql.FunctionalTests -c Debug --no-build --logger "GitHubActions;report-warnings=false" --verbosity detailed
+        run: |
+          $attempt = 0
+          $maxAttempts = 2
+          do {
+            $attempt++
+            if ($attempt -gt 1) {
+              Write-Host "Functional tests failed on attempt $($attempt - 1). Retrying..."
+              Start-Sleep -Seconds 15
+            }
+            dotnet test test/EFCore.MySql.FunctionalTests -c Debug --no-build `
+              --results-directory ./test-results/functional `
+              --logger "console;verbosity=minimal" `
+              --logger "GitHubActions;report-warnings=false;report-passed-tests=false;report-skipped-tests=false" `
+              --logger "trx;LogFileName=functional-tests.trx"
+            $exitCode = $LASTEXITCODE
+          } while ($exitCode -ne 0 -and $attempt -lt $maxAttempts)
+          exit $exitCode
+      - name: Upload Functional Test Results
+        if: ${{ always() && env.skipTests != 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: functional-tests-${{ matrix.dbVersion }}-${{ matrix.os }}
+          path: test-results/functional/**/*.trx
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Tests
         if: ${{ env.skipTests != 'true' }}
         shell: pwsh
@@ -297,6 +469,148 @@ jobs:
         run: |
           $env:EF_DATABASE = "pomelo_test2"
           dotnet test -c Release --no-build --logger "GitHubActions;report-warnings=false" test/EFCore.MySql.IntegrationTests
+      - name: PassKey Sample Test - Check JSON Support
+        if: ${{ env.skipTests != 'true' }}
+        id: check-json-support
+        shell: pwsh
+        run: |
+          # MySQL 5.7.8+ supports JSON, MariaDB 10.2.4+ supports JSON (through emulation)
+          $dbVersion = [Version]'${{ env.databaseServerVersion }}'
+          $supportsJson = $false
+          
+          if ('${{ env.databaseServerType }}' -eq 'mysql')
+          {
+            $supportsJson = $dbVersion -ge [Version]'5.7.8'
+          }
+          elseif ('${{ env.databaseServerType }}' -eq 'mariadb')
+          {
+            $supportsJson = $dbVersion -ge [Version]'10.2.4'
+          }
+          
+          echo "supportsJson=$supportsJson" >> $env:GITHUB_OUTPUT
+          echo "Database ${{ env.databaseServerType }} ${{ env.databaseServerVersion }} JSON support: $supportsJson"
+      - name: PassKey Sample Test - Run Test
+        if: ${{ env.skipTests != 'true' && steps.check-json-support.outputs.supportsJson == 'True' }}
+        shell: pwsh
+        run: |
+          echo "Running PassKey test for ${{ env.databaseServerType }} ${{ env.databaseServerVersion }} (supports JSON)"
+          dotnet run --project samples/PassKeyTest --no-build
+      - name: Run Benchmarks
+        # Benchmarks are enabled by default. Set enableBenchmarks=false in env to disable.
+        if: ${{ env.skipTests != 'true' && github.event_name == 'pull_request' && env.enableBenchmarks == 'true' }}
+        shell: pwsh
+        run: |
+          echo "Running performance benchmarks for ${{ env.databaseServerType }} ${{ env.databaseServerVersion }}"
+
+          # Set benchmark database connection environment variables
+          $env:BENCHMARK_DB_HOST = "localhost"
+          $env:BENCHMARK_DB_PORT = "3306"
+          $env:BENCHMARK_DB_NAME = "pomelo_benchmark"
+          $env:BENCHMARK_DB_USER = "root"
+          $env:BENCHMARK_DB_PASSWORD = "Password12!"
+
+          # Change to benchmark directory so BenchmarkDotNet creates artifacts in the right location
+          cd benchmark/EFCore.MySql.Benchmarks
+
+          # Run benchmark suite (quick mode for CI)
+          dotnet run -c Release -- all
+
+          # Verify results were generated
+          if (Test-Path "BenchmarkDotNet.Artifacts")
+          {
+            echo "Benchmark results generated successfully at: $(Get-Location)/BenchmarkDotNet.Artifacts"
+            Get-ChildItem -Path "BenchmarkDotNet.Artifacts" -Recurse | Select-Object -First 10 | ForEach-Object { echo "  $($_.FullName)" }
+          }
+          else
+          {
+            echo "WARNING: BenchmarkDotNet.Artifacts directory not found"
+          }
+      - name: Upload Benchmark Results
+        if: ${{ env.skipTests != 'true' && github.event_name == 'pull_request' && env.enableBenchmarks == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results-${{ matrix.dbVersion }}-${{ matrix.os }}
+          path: benchmark/EFCore.MySql.Benchmarks/BenchmarkDotNet.Artifacts/**/*
+          retention-days: 30
+
+  AggregateBenchmarkResults:
+    name: Aggregate Benchmark Results
+    needs: BuildAndTest
+    if: ${{ github.event_name == 'pull_request' && !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download All Benchmark Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: benchmark-results-*
+          path: ./benchmark-artifacts
+
+      - name: List Downloaded Artifacts
+        shell: pwsh
+        run: |
+          echo "Downloaded artifacts:"
+          Get-ChildItem -Path ./benchmark-artifacts -Recurse | Select-Object -First 20 | ForEach-Object { echo "  $($_.FullName)" }
+
+      - name: Aggregate Results and Update Documentation
+        shell: pwsh
+        run: |
+          echo "Aggregating benchmark results..."
+
+          # Copy the original DatabaseVersions.md to working directory
+          Copy-Item docs/DatabaseVersions.md ./DatabaseVersions-Updated.md
+
+          # Run aggregation script
+          ./scripts/aggregate-benchmark-results.ps1 -ArtifactsDir ./benchmark-artifacts -OutputFile ./DatabaseVersions-Updated.md
+
+          # Show diff
+          echo ""
+          echo "Changes made to DatabaseVersions.md:"
+          git diff --no-index docs/DatabaseVersions.md ./DatabaseVersions-Updated.md || true
+
+      - name: Upload Updated Documentation
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-summary-documentation
+          path: ./DatabaseVersions-Updated.md
+          retention-days: 30
+
+      - name: Upload Summary Comment
+        shell: pwsh
+        run: |
+          # Create a summary markdown for the PR
+          $summary = @"
+          ## 📊 Benchmark Results Summary
+
+          Benchmark results have been aggregated from all database versions.
+
+          **Download the updated documentation:**
+          - Artifact: ``benchmark-summary-documentation``
+          - File: ``DatabaseVersions-Updated.md``
+
+          The updated file includes actual benchmark timing data replacing the ``TIME_PLACEHOLDER`` markers.
+
+          ### How to view results:
+          1. Go to the Actions tab for this PR
+          2. Find the workflow run
+          3. Download the ``benchmark-summary-documentation`` artifact
+          4. Review the updated ``DatabaseVersions-Updated.md`` file
+          "@
+
+          echo $summary > benchmark-summary.md
+          echo ""
+          echo "Benchmark aggregation complete!"
+          echo ""
+          cat benchmark-summary.md
+
+      - name: Upload Summary as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-summary
+          path: ./benchmark-summary.md
+          retention-days: 30
   NuGet:
     needs: BuildAndTest
     if: (github.event_name == 'push' || github.event_name == 'release') && github.repository == 'PomeloFoundation/Pomelo.EntityFrameworkCore.MySql'

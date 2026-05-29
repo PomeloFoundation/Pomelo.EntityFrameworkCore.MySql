@@ -2,11 +2,11 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class NorthwindJoinQueryMySqlTest : NorthwindJoinQueryRelationalTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>
     {
@@ -58,20 +58,10 @@ ORDER BY `c`.`CustomerID`, `t0`.`OrderID0`, `t0`.`OrderID`");
         }
 
         // https://github.com/npgsql/efcore.pg/issues/2759
-        // public override Task Join_local_collection_int_closure_is_cached_correctly(bool async)
-        //     => Assert.ThrowsAsync<InvalidOperationException>(() => base.Join_local_collection_int_closure_is_cached_correctly(async));
-        public override async Task Join_local_collection_int_closure_is_cached_correctly(bool async)
-        {
-            if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
-            {
-                await base.Join_local_collection_int_closure_is_cached_correctly(async);
-            }
-            else
-            {
-                await Assert.ThrowsAsync<InvalidOperationException>(()
-                    => base.Join_local_collection_int_closure_is_cached_correctly(async));
-            }
-        }
+        // EF Core 10 changed the translation for this test so it no longer requires primitive collections support.
+        // The test now passes for both MySQL and MariaDB without needing JsonTable/primitive collections.
+        public override Task Join_local_collection_int_closure_is_cached_correctly(bool async)
+            => base.Join_local_collection_int_closure_is_cached_correctly(async);
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);

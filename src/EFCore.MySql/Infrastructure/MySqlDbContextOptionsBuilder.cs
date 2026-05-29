@@ -1,10 +1,10 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -124,7 +124,7 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
             => WithOption(e => e.WithStringComparisonTranslations(enable));
 
         /// <summary>
-        ///     Configures the context to translate using primitive collections. At the time of the Pomelo 8.0.0 release, MySQL Server can
+        ///     Configures the context to translate using primitive collections. At the time of the Microting 8.0.0 release, MySQL Server can
         ///     crash when using primitive collections with JSON and MariaDB support is incomplete. Support and translations in regards to
         ///     this option can change at any time in the future. This optin is disabled by default. Enabled at your own risk.
         /// </summary>

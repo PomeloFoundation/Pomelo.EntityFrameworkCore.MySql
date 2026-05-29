@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using System;
 using System.Collections.Generic;
 
-namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Migrations
+namespace Microting.EntityFrameworkCore.MySql.IntegrationTests.Migrations
 {
     public partial class Initial : Migration
     {

@@ -1,11 +1,11 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
 public class TPCFiltersInheritanceBulkUpdatesMySqlTest : TPCFiltersInheritanceBulkUpdatesTestBase<
     TPCFiltersInheritanceBulkUpdatesMySqlFixture>
@@ -128,8 +128,10 @@ WHERE (
 
         AssertExecuteUpdateSql(
 """
+@p='Monovia' (Size = 4000)
+
 UPDATE `Countries` AS `c`
-SET `c`.`Name` = 'Monovia'
+SET `c`.`Name` = @p
 WHERE (
     SELECT COUNT(*)
     FROM (
@@ -149,8 +151,10 @@ WHERE (
 
         AssertExecuteUpdateSql(
 """
+@p='Monovia' (Size = 4000)
+
 UPDATE `Countries` AS `c`
-SET `c`.`Name` = 'Monovia'
+SET `c`.`Name` = @p
 WHERE (
     SELECT COUNT(*)
     FROM (
@@ -213,8 +217,10 @@ WHERE `k`.`CountryId` = 1
 """,
                 //
                 """
+@p='SomeOtherKiwi' (Size = 4000)
+
 UPDATE `Kiwi` AS `k`
-SET `k`.`Name` = 'SomeOtherKiwi'
+SET `k`.`Name` = @p
 WHERE `k`.`CountryId` = 1
 """,
                 //
@@ -237,8 +243,10 @@ WHERE `k`.`CountryId` = 1
 """,
                 //
                 """
+@p='0'
+
 UPDATE `Kiwi` AS `k`
-SET `k`.`FoundOn` = 0
+SET `k`.`FoundOn` = @p
 WHERE `k`.`CountryId` = 1
 """,
                 //
@@ -261,9 +269,12 @@ WHERE `k`.`CountryId` = 1
 """,
                 //
                 """
+@p='Kiwi' (Size = 4000)
+@p1='0'
+
 UPDATE `Kiwi` AS `k`
-SET `k`.`FoundOn` = 0,
-    `k`.`Name` = 'Kiwi'
+SET `k`.`Name` = @p,
+    `k`.`FoundOn` = @p1
 WHERE `k`.`CountryId` = 1
 """,
                 //

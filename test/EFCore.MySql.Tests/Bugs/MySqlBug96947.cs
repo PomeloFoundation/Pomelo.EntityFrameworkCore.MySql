@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Bugs
+namespace Microting.EntityFrameworkCore.MySql.Bugs
 {
     public class MySqlBug96947 : RawSqlTestWithFixture<MySqlBug96947.FixtureClass>
     {

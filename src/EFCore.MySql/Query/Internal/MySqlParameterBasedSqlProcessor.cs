@@ -1,16 +1,15 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 #nullable enable
 
-using System.Collections.Generic;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Utilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
+namespace Microting.EntityFrameworkCore.MySql.Query.Internal
 {
     public class MySqlParameterBasedSqlProcessor : RelationalParameterBasedSqlProcessor
     {
@@ -25,19 +24,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             _options = options;
         }
 
-        public override Expression Optimize(
-            Expression queryExpression,
-            IReadOnlyDictionary<string, object?> parametersValues,
-            out bool canCache)
+        public override Expression Process(Expression queryExpression, ParametersCacheDecorator parametersDecorator)
         {
-            queryExpression = base.Optimize(queryExpression, parametersValues, out canCache);
+            queryExpression = base.Process(queryExpression, parametersDecorator);
 
             if (_options.ServerVersion.Supports.MySqlBugLimit0Offset0ExistsWorkaround)
             {
                 queryExpression = new SkipTakeCollapsingExpressionVisitor(Dependencies.SqlExpressionFactory)
-                    .Process(queryExpression, parametersValues, out var canCache2);
-
-                canCache &= canCache2;
+                    .Process(queryExpression, parametersDecorator);
             }
 
             if (_options.IndexOptimizedBooleanColumns)
@@ -49,9 +43,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             queryExpression = new MySqlParameterInliningExpressionVisitor(
                 Dependencies.TypeMappingSource,
                 Dependencies.SqlExpressionFactory,
-                _options).Process(queryExpression, parametersValues, out var canCache3);
-
-            canCache &= canCache3;
+                _options).Process(queryExpression, parametersDecorator);
 
             // Run the compatibility checks as late in the query pipeline (before the actual SQL translation happens) as reasonable.
             queryExpression = new MySqlCompatibilityExpressionVisitor(_options).Visit(queryExpression);
@@ -60,18 +52,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         }
 
         /// <inheritdoc />
-        protected override Expression ProcessSqlNullability(
-            Expression queryExpression,
-            IReadOnlyDictionary<string, object?> parametersValues,
-            out bool canCache)
-        {
-            Check.NotNull(queryExpression, nameof(queryExpression));
-            Check.NotNull(parametersValues, nameof(parametersValues));
-
-            queryExpression = new MySqlSqlNullabilityProcessor(Dependencies, Parameters)
-                .Process(queryExpression, parametersValues, out canCache);
-
-            return queryExpression;
-        }
+        protected override Expression ProcessSqlNullability(Expression selectExpression, ParametersCacheDecorator parametersDecorator)
+            => new MySqlSqlNullabilityProcessor(Dependencies, Parameters).Process(selectExpression, parametersDecorator);
     }
 }

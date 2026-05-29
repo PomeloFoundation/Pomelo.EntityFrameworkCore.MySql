@@ -4,7 +4,7 @@ using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
 {
     public class MySqlTestCollectionOrderer : ITestCollectionOrderer
     {

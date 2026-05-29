@@ -1,7 +1,9 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
@@ -14,14 +16,14 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal;
+namespace Microting.EntityFrameworkCore.MySql.Query.Internal;
 
 public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQueryableMethodTranslatingExpressionVisitor
 {
-    private const string Issue1792SkipWithParameterFlagName = "Pomelo.EntityFrameworkCore.MySql.Issue1792.SkipWithParameter";
+    private const string Issue1792SkipWithParameterFlagName = "Microting.EntityFrameworkCore.MySql.Issue1792.SkipWithParameter";
 
     private static readonly bool _mySql8EngineCrashWhenUsingJsonTableWithPrimitiveCollectionInParametersSkip
         = AppContext.TryGetSwitch(Issue1792SkipWithParameterFlagName, out var enabled) && enabled;
@@ -50,6 +52,7 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
     {
         _sqlExpressionFactory = parentVisitor._sqlExpressionFactory;
         _typeMappingSource = parentVisitor._typeMappingSource;
+        _sqlAliasManager = parentVisitor._sqlAliasManager;
         _options = parentVisitor._options;
     }
 
@@ -80,39 +83,16 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
                        && IsJsonEachKeyColumn(subquery, projectedColumn)));
     }
 
-    protected override bool IsValidSelectExpressionForExecuteDelete(
-        SelectExpression selectExpression,
-        StructuralTypeShaperExpression shaper,
-        [NotNullWhen(true)] out TableExpression tableExpression)
-    {
-        if (selectExpression.Offset == null
-            && selectExpression.GroupBy.Count == 0
-            && selectExpression.Having == null
-            && (selectExpression.Tables.Count == 1 || selectExpression.Orderings.Count == 0))
-        {
-            TableExpressionBase table;
-            if (selectExpression.Tables.Count == 1)
-            {
-                table = selectExpression.Tables[0];
-            }
-            else
-            {
-                var projectionBindingExpression = (ProjectionBindingExpression)shaper.ValueBufferExpression;
-                var entityProjectionExpression = (StructuralTypeProjectionExpression)selectExpression.GetProjection(projectionBindingExpression);
-                var column = entityProjectionExpression.BindProperty(shaper.StructuralType.GetProperties().First());
-                table = selectExpression.GetTable(column).UnwrapJoin();
-            }
-
-            if (table is TableExpression te)
-            {
-                tableExpression = te;
-                return true;
-            }
-        }
-
-        tableExpression = null;
-        return false;
-    }
+    protected override bool IsValidSelectExpressionForExecuteDelete(SelectExpression selectExpression)
+        => selectExpression is
+           {
+               Offset: null,
+               GroupBy: [],
+               Having: null
+           } &&
+           (selectExpression.Tables.Count == 1 || (selectExpression.Orderings.Count == 0 && selectExpression.Limit is null)) &&
+           selectExpression.Tables[0] is TableExpression &&
+           selectExpression.Tables.Skip(1).All(t => t is InnerJoinExpression);
 
     protected override bool IsValidSelectExpressionForExecuteUpdate(
         SelectExpression selectExpression,
@@ -244,10 +224,141 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
         return base.TranslateElementAtOrDefault(source, index, returnDefault);
     }
 
-    // TODO: Implement for EF Core 7 JSON support.
     protected override ShapedQueryExpression TransformJsonQueryToTable(JsonQueryExpression jsonQueryExpression)
     {
-        return base.TransformJsonQueryToTable(jsonQueryExpression);
+        // Calculate the table alias for the JSON_TABLE function based on the last named path segment
+        // (or the JSON column name if there are none)
+        var lastNamedPathSegmentPropertyName = jsonQueryExpression.Path.LastOrDefault(ps => ps.PropertyName is not null).PropertyName;
+        var tableAlias = _sqlAliasManager.GenerateTableAlias(
+            lastNamedPathSegmentPropertyName ?? jsonQueryExpression.JsonColumn.Name);
+
+        var jsonTypeMapping = jsonQueryExpression.JsonColumn.TypeMapping!;
+
+        // We now add all of the projected entity's properties and navigations into the JSON_TABLE's COLUMNS clause
+        var columnInfos = new List<MySqlJsonTableExpression.ColumnInfo>();
+
+        // We're only interested in properties which actually exist in the JSON, filter out uninteresting shadow keys
+        foreach (var property in jsonQueryExpression.StructuralType.GetPropertiesInHierarchy())
+        {
+            if (property.GetJsonPropertyName() is string jsonPropertyName)
+            {
+                columnInfos.Add(
+                    new MySqlJsonTableExpression.ColumnInfo(
+                        Name: jsonPropertyName,
+                        TypeMapping: property.GetRelationalTypeMapping(),
+                        // Path for JSON_TABLE COLUMNS: each row is already an array element, so access properties directly
+                        Path: [new PathSegment(jsonPropertyName)],
+                        AsJson: false));
+            }
+        }
+
+        // Add navigations to owned entities mapped to JSON
+        switch (jsonQueryExpression.StructuralType)
+        {
+            case IEntityType entityType:
+                foreach (var navigation in entityType.GetNavigationsInHierarchy()
+                    .Where(n => n.ForeignKey.IsOwnership
+                        && n.TargetEntityType.IsMappedToJson()
+                        && n.ForeignKey.PrincipalToDependent == n))
+                {
+                    var jsonNavigationName = navigation.TargetEntityType.GetJsonPropertyName();
+                    Check.DebugAssert(jsonNavigationName is not null, $"No JSON property name for navigation {navigation.Name}");
+
+                    columnInfos.Add(
+                        new MySqlJsonTableExpression.ColumnInfo(
+                            Name: jsonNavigationName,
+                            TypeMapping: jsonTypeMapping,
+                            Path: [new PathSegment(jsonNavigationName)],
+                            AsJson: true));
+                }
+                break;
+
+            case IComplexType complexType:
+                foreach (var complexProperty in complexType.GetComplexProperties())
+                {
+                    var jsonPropertyName = complexProperty.ComplexType.GetJsonPropertyName();
+                    Check.DebugAssert(jsonPropertyName is not null, $"No JSON property name for complex property {complexProperty.Name}");
+
+                    columnInfos.Add(
+                        new MySqlJsonTableExpression.ColumnInfo(
+                            Name: jsonPropertyName,
+                            TypeMapping: jsonTypeMapping,
+                            Path: [new PathSegment(jsonPropertyName)],
+                            AsJson: true));
+                }
+                break;
+
+            default:
+                throw new UnreachableException();
+        }
+
+        // json_to_recordset in Npgsql uses JsonScalarExpression which PostgreSQL handles properly.
+        // However, MySQL's JsonScalarExpression translates to JSON_VALUE which extracts scalar values
+        // and strips JSON structure. For JSON_TABLE, we need the raw JSON fragment.
+        // Use JSON_EXTRACT explicitly to get the nested JSON array/object.
+        
+        SqlExpression jsonSource;
+        if (jsonQueryExpression.Path.Count > 0)
+        {
+            // Build the JSON path for extraction
+            var pathBuilder = new System.Text.StringBuilder("$");
+            foreach (var segment in jsonQueryExpression.Path)
+            {
+                if (segment.PropertyName is not null)
+                {
+                    pathBuilder.Append('.').Append(segment.PropertyName);
+                }
+                else if (segment.ArrayIndex is SqlConstantExpression { Value: int index })
+                {
+                    pathBuilder.Append('[').Append(index).Append(']');
+                }
+            }
+
+            // Use JSON_EXTRACT to get the nested JSON document with structure intact
+            jsonSource = _sqlExpressionFactory.Function(
+                "JSON_EXTRACT",
+                [jsonQueryExpression.JsonColumn, _sqlExpressionFactory.Constant(pathBuilder.ToString())],
+                nullable: true,
+                argumentsPropagateNullability: [true, true],
+                typeof(string),
+                jsonTypeMapping);
+        }
+        else
+        {
+            // No path - use the JSON column directly
+            jsonSource = jsonQueryExpression.JsonColumn;
+        }
+
+        // Construct the JSON_TABLE expression with column definitions
+        var jsonTableExpression = new MySqlJsonTableExpression(
+            tableAlias,
+            jsonSource,
+            // Path to iterate over array elements: $[*]
+            [new PathSegment(_sqlExpressionFactory.Constant("*", RelationalTypeMapping.NullMapping))],
+            [.. columnInfos]);
+
+        // MySQL JSON_TABLE returns a 'key' column for array ordering (similar to PostgreSQL's ordinality)
+        var keyColumnTypeMapping = _typeMappingSource.FindMapping(typeof(int))!;
+
+#pragma warning disable EF1001 // Internal EF Core API usage.
+        // Use CreateSelect helper method (from base class) to create the SelectExpression
+        var selectExpression = CreateSelect(
+            jsonQueryExpression,
+            jsonTableExpression,
+            "key",
+            typeof(int),
+            keyColumnTypeMapping);
+#pragma warning restore EF1001 // Internal EF Core API usage.
+
+        return new ShapedQueryExpression(
+            selectExpression,
+            new RelationalStructuralTypeShaperExpression(
+                jsonQueryExpression.StructuralType,
+                new ProjectionBindingExpression(
+                    selectExpression,
+                    new ProjectionMember(),
+                    typeof(ValueBuffer)),
+                false));
     }
 
     protected override ShapedQueryExpression TranslatePrimitiveCollection(SqlExpression sqlExpression, IProperty property, string tableAlias)

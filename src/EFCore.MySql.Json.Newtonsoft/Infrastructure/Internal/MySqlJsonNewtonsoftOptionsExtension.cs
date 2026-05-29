@@ -1,14 +1,14 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Storage.Internal;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Json.Newtonsoft.Storage.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Infrastructure.Internal
+namespace Microting.EntityFrameworkCore.MySql.Json.Newtonsoft.Infrastructure.Internal
 {
     public class MySqlJsonNewtonsoftOptionsExtension : MySqlJsonOptionsExtension
     {

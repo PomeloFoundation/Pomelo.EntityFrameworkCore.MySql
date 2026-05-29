@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>JSON support using Newtonsoft.Json (JSON.NET) for Pomelo's MySQL provider for Entity Framework Core.</Description>
-    <TargetFramework>$(PomeloTargetFramework)</TargetFramework>
-    <AssemblyName>Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft</AssemblyName>
-    <RootNamespace>Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft</RootNamespace>
+    <Description>JSON support using Newtonsoft.Json (JSON.NET) for Microting's MySQL provider for Entity Framework Core.</Description>
+    <TargetFramework>$(MicrotingTargetFramework)</TargetFramework>
+    <PackageId>Microting.EntityFrameworkCore.MySql.Json.Newtonsoft</PackageId>
+    <AssemblyName>Microting.EntityFrameworkCore.MySql.Json.Newtonsoft</AssemblyName>
+    <RootNamespace>Microting.EntityFrameworkCore.MySql.Json.Newtonsoft</RootNamespace>
     <IsPackable>true</IsPackable>
     <PackageTags>$(PackageTags);json;newtonsoft.json;json.net;newtonsoft</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -21,6 +22,14 @@
   <!-- CHECK: What is this doing? -->
   <ItemGroup>
     <None Include="build\**\*">
+      <Pack>True</Pack>
+      <PackagePath>build</PackagePath>
+    </None>
+    <None Update="build\netstandard2.0\Microting.EntityFrameworkCore.MySql.Json.Newtonsoft.targets">
+      <Pack>True</Pack>
+      <PackagePath>build</PackagePath>
+    </None>
+    <None Update="build\Microting.EntityFrameworkCore.MySql.Json.Newtonsoft.targets">
       <Pack>True</Pack>
       <PackagePath>build</PackagePath>
     </None>

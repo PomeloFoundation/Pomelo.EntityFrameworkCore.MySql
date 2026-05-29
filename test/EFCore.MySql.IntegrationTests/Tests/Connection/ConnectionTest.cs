@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
-using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models;
+using Microting.EntityFrameworkCore.MySql.IntegrationTests.Models;
 using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Connection
+namespace Microting.EntityFrameworkCore.MySql.IntegrationTests.Tests.Connection
 {
     public class ConnectionTest
     {

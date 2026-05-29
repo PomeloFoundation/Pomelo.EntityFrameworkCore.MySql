@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class CompositeKeysSplitQueryMySqlTest : CompositeKeysSplitQueryRelationalTestBase<CompositeKeysQueryMySqlFixture>
     {

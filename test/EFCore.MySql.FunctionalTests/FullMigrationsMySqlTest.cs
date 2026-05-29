@@ -7,10 +7,10 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
 {
     /// <summary>
     /// Based on the MigrationsInfrastructureTestBase implementation.
@@ -50,7 +50,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                     toMigration: "00000000000002_MigrationPrimaryKeyChange2"));
 
             // TODO: 9.0
-            // Pomelo helper stored procedure statements should be inside the transaction scope.
+            // Microting helper stored procedure statements should be inside the transaction scope.
             Assert.Equal(
 """
 CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
@@ -69,6 +69,9 @@ CREATE TABLE `Table1` (
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('00000000000001_MigrationPrimaryKeyChange1', '7.0.0-test');
 
+COMMIT;
+
+START TRANSACTION;
 DROP PROCEDURE IF EXISTS `POMELO_BEFORE_DROP_PRIMARY_KEY`;
 CREATE PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255))
 BEGIN
@@ -311,6 +314,9 @@ DELIMITER ;
 CALL MigrationsScript();
 DROP PROCEDURE MigrationsScript;
 
+COMMIT;
+
+START TRANSACTION;
 DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
 CREATE PROCEDURE MigrationsScript()
@@ -401,6 +407,9 @@ CREATE TABLE `IceCreams` (
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('00000000000001_Migration1', '7.0.0-test');
 
+COMMIT;
+
+START TRANSACTION;
 DROP PROCEDURE IF EXISTS `POMELO_BEFORE_DROP_PRIMARY_KEY`;
 CREATE PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255))
 BEGIN
@@ -547,6 +556,9 @@ CREATE TABLE `FooBar` (
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('00000000000001_MigrationDropPrimaryKeyWithRecreatingForeignKeys1', '7.0.0-test');
 
+COMMIT;
+
+START TRANSACTION;
 DROP PROCEDURE IF EXISTS `POMELO_BEFORE_DROP_PRIMARY_KEY`;
 DELIMITER //
 CREATE PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255))

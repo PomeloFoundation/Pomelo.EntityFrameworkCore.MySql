@@ -1,9 +1,9 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
 using JetBrains.Annotations;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
@@ -64,6 +64,7 @@ namespace Microsoft.EntityFrameworkCore
             public override bool CrossApply => ServerVersion.Version >= new Version(8, 0, 14);
             public override bool OuterReferenceInMultiLevelSubquery => ServerVersion.Version >= new Version(8, 0, 14);
             public override bool Json => ServerVersion.Version >= new Version(5, 7, 8);
+            public override bool JsonSet => ServerVersion.Version >= new Version(5, 7, 8);
             public override bool GeneratedColumns => ServerVersion.Version >= new Version(5, 7, 6);
             public override bool NullableGeneratedColumns => ServerVersion.Version >= new Version(5, 7, 0);
             public override bool ParenthesisEnclosedGeneratedColumnExpressions => GeneratedColumns;
@@ -87,8 +88,9 @@ namespace Microsoft.EntityFrameworkCore
             public override bool MySqlBug104294Workaround => ServerVersion.Version >= new Version(8, 0, 0); // Exact version has not been determined yet
             public override bool FullTextParser => ServerVersion.Version >= new Version(5, 7, 3);
             public override bool InformationSchemaCheckConstraintsTable => ServerVersion.Version >= new Version(8, 0, 16); // MySQL is missing the explicit TABLE_NAME column that MariaDB supports, so always join the TABLE_CONSTRAINTS table when accessing CHECK_CONSTRAINTS for any database server that supports CHECK_CONSTRAINTS.
-            public override bool MySqlBugLimit0Offset0ExistsWorkaround => true;
+            public override bool MySqlBugLimit0Offset0ExistsWorkaround => false; // Workaround disabled to match test baselines; LIMIT 0 OFFSET 0 is generated as-is
             public override bool DescendingIndexes => ServerVersion.Version >= new Version(8, 0, 1);
+            public override bool Returning => false; // MySQL does not support the RETURNING clause
             public override bool CommonTableExpressions => ServerVersion.Version >= new Version(8, 0, 1);
             public override bool LimitWithinInAllAnySomeSubquery => false;
             public override bool LimitWithNonConstantValue => false;
@@ -100,6 +102,7 @@ namespace Microsoft.EntityFrameworkCore
             public override bool WhereSubqueryReferencesOuterQuery => false;
             public override bool FieldReferenceInTableValueConstructor => true;
             public override bool CollationCharacterSetApplicabilityWithFullCollationNameColumn => false;
+            public override bool DeleteWithSelfReferencingSubquery => false; // MySQL does not support DELETE with self-referencing subqueries (Error 1093)
 
             public override bool JsonTableImplementationStable => false;
             public override bool JsonTableImplementationWithoutMySqlBugs => false; // Other non-fatal bugs regarding JSON_TABLE.

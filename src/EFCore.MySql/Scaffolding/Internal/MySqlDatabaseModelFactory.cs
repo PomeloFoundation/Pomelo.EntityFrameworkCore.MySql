@@ -1,4 +1,4 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -19,13 +19,13 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.Extensions;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Microting.EntityFrameworkCore.MySql.Extensions;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Internal;
+using Microting.EntityFrameworkCore.MySql.Metadata.Internal;
+using Microting.EntityFrameworkCore.MySql.Storage.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal
+namespace Microting.EntityFrameworkCore.MySql.Scaffolding.Internal
 {
     public class MySqlDatabaseModelFactory : DatabaseModelFactory
     {
@@ -549,7 +549,7 @@ ORDER BY
         /// <summary>
         /// MariaDB 10.2.7+ implements default values differently from MySQL, to support their own default expression
         /// syntax. We convert their column values to MySQL compatible syntax here.
-        /// See https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/994#issuecomment-568271740
+        /// See https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/issues/994#issuecomment-568271740
         /// for tables with differences.
         /// </summary>
         protected virtual string ConvertDefaultValueFromMariaDbToMySql([NotNull] string defaultValue, out bool isDefaultValueExpression)

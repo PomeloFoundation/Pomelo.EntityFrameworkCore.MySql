@@ -1,4 +1,4 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -13,11 +13,11 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Query.Expressions.Internal;
+using Microting.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
+namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -330,7 +330,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
             // EF uses unary Equal and NotEqual to represent is-null checking.
             // These need to be surrounded with parenthesis in various cases (e.g. where TRUE = x IS NOT NULL).
-            // See https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1309
+            // See https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/issues/1309
             requiresBrackets = RequiresBrackets(sqlBinaryExpression.Right) ||
                                !requiresBrackets &&
                                sqlBinaryExpression.Right is SqlUnaryExpression sqlUnaryExpression &&
@@ -477,6 +477,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             var path = jsonScalarExpression.Path;
             if (path.Count == 0)
             {
+                // For empty paths (selecting the entire JSON column), just visit the JSON expression
+                // This handles complex JSON types where we're projecting the whole column
+                Visit(jsonScalarExpression.Json);
                 return jsonScalarExpression;
             }
 
@@ -509,6 +512,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             // {
                 castStoreType = GetCastStoreType(jsonScalarExpression.TypeMapping);
             // }
+
+            // MariaDB does not support CAST(... AS json), so skip the CAST entirely when JsonDataTypeEmulation is enabled.
+            // MariaDB stores JSON as LONGTEXT, so no explicit cast is needed - the data is already in a compatible text format.
+            // This prevents SQL syntax errors like "near 'json) IS NULL'" on MariaDB while maintaining correct NULL comparison semantics.
+            if (castStoreType == "json" && _options?.ServerVersion?.Supports?.JsonDataTypeEmulation == true)
+            {
+                castStoreType = null;
+            }
 
             if (castStoreType is not null)
             {
@@ -715,9 +726,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                                          operandUnary.OperatorType == ExpressionType.Convert &&
                                          castMapping.Equals(GetCastStoreType(operandUnary.TypeMapping), StringComparison.OrdinalIgnoreCase);
 
-            if (castMapping == "json" && !_options.ServerVersion.Supports.JsonDataTypeEmulation ||
-                !castMapping.Equals(sqlUnaryExpression.Operand.TypeMapping.StoreType, StringComparison.OrdinalIgnoreCase) &&
-                !sameInnerCastStoreType)
+            // MariaDB does not support CAST(... AS json) syntax, so skip the conversion entirely when JsonDataTypeEmulation is enabled.
+            // MariaDB stores JSON as LONGTEXT, so no explicit cast is needed - comparisons work correctly without it.
+            // This avoids SQL syntax errors on MariaDB while maintaining correct NULL and equality comparison semantics.
+            if (castMapping == "json" && _options?.ServerVersion?.Supports?.JsonDataTypeEmulation == true)
+            {
+                // For MariaDB with JsonDataTypeEmulation, skip the CAST by returning early
+                Visit(sqlUnaryExpression.Operand);
+                return sqlUnaryExpression;
+            }
+
+            if ((castMapping == "json" && !_options.ServerVersion.Supports.JsonDataTypeEmulation ||
+                 !castMapping.Equals(sqlUnaryExpression.Operand.TypeMapping.StoreType, StringComparison.OrdinalIgnoreCase) &&
+                 !sameInnerCastStoreType))
             {
                 var useDecimalToDoubleWorkaround = false;
 
@@ -990,14 +1011,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                         else
                         {
                             Sql.Append("', ");
-
-                            Visit(
-                                new SqlUnaryExpression(
-                                    ExpressionType.Convert,
-                                    arrayIndex,
-                                    typeof(string),
-                                    _typeMappingSource.GetMapping(typeof(string))));
-
+                            Visit(arrayIndex);
                             Sql.Append(", '");
                         }
 
@@ -1022,6 +1036,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
         {
             // MySQL supports CTE (WITH) expressions within subqueries, as well as others,
             // so we allow any raw SQL to be composed over.
+        }
+
+        protected override Expression VisitSelect(SelectExpression selectExpression)
+        {
+            return base.VisitSelect(selectExpression);
         }
     }
 }

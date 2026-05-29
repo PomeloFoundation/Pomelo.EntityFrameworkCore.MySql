@@ -9,12 +9,12 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 using Newtonsoft.Json.Linq;
-using Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Microting.EntityFrameworkCore.MySql.Query.Expressions.Internal;
+using Microting.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal;
+using Microting.EntityFrameworkCore.MySql.Query.Internal;
+using Microting.EntityFrameworkCore.MySql.Storage.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Query.Internal
+namespace Microting.EntityFrameworkCore.MySql.Json.Newtonsoft.Query.Internal
 {
     public class MySqlJsonNewtonsoftDomTranslator : IMemberTranslator, IMethodCallTranslator
     {
