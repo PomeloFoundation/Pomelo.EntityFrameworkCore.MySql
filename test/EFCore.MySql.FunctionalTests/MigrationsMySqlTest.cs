@@ -2048,7 +2048,7 @@ SELECT ROW_COUNT();
             await base.Create_table_with_complex_type_with_required_properties_on_derived_entity_in_TPH();
 
             AssertSql(
-"""
+                """
 CREATE TABLE `Contacts` (
     `Id` int NOT NULL AUTO_INCREMENT,
     `Discriminator` varchar(8) CHARACTER SET utf8mb4 NOT NULL,
@@ -2057,6 +2057,9 @@ CREATE TABLE `Contacts` (
     `MyComplex_Prop` longtext NULL,
     `MyComplex_MyNestedComplex_Bar` datetime(6) NULL,
     `MyComplex_MyNestedComplex_Foo` int NULL,
+    `MyComplex_Nested_Bar` datetime(6) NULL,
+    `MyComplex_Nested_Foo` int NULL,
+    `NestedCollection` json NULL,
     CONSTRAINT `PK_Contacts` PRIMARY KEY (`Id`)
 ) CHARACTER SET=utf8mb4;
 """);
@@ -2178,40 +2181,321 @@ ALTER TABLE `Customers` ADD `Numbers` longtext CHARACTER SET utf8mb4 NOT NULL DE
 
         #region ToJson
 
-        public override Task Create_table_with_json_column()
-            => Assert.ThrowsAsync<NullReferenceException>(() => base.Create_table_with_json_column());
+        public override async Task Create_table_with_json_column()
+        {
+            await base.Create_table_with_json_column();
 
-        public override Task Create_table_with_json_column_explicit_json_column_names()
-            => Assert.ThrowsAsync<NullReferenceException>(() => base.Create_table_with_json_column_explicit_json_column_names());
+            AssertSql(
+                """
+CREATE TABLE `Entity` (
+    `Id` int NOT NULL AUTO_INCREMENT,
+    `Name` longtext CHARACTER SET utf8mb4 NULL,
+    `OwnedCollection` json NULL,
+    `OwnedReference` json NULL,
+    `OwnedRequiredReference` json NOT NULL,
+    CONSTRAINT `PK_Entity` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+""");
+        }
 
-        public override Task Rename_table_with_json_column()
-            => Assert.ThrowsAsync<NullReferenceException>(() => base.Rename_table_with_json_column());
+        public override async Task Create_table_with_json_column_explicit_json_column_names()
+        {
+            await base.Create_table_with_json_column_explicit_json_column_names();
 
-        public override Task Add_json_columns_to_existing_table()
-            => Assert.ThrowsAsync<NullReferenceException>(() => base.Add_json_columns_to_existing_table());
+            AssertSql(
+                """
+CREATE TABLE `Entity` (
+    `Id` int NOT NULL AUTO_INCREMENT,
+    `Name` longtext CHARACTER SET utf8mb4 NULL,
+    `json_collection` json NULL,
+    `json_reference` json NULL,
+    CONSTRAINT `PK_Entity` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+""");
+        }
 
-        public override Task Convert_json_entities_to_regular_owned()
-            => Assert.ThrowsAsync<NullReferenceException>(() => base.Convert_json_entities_to_regular_owned());
+        [ConditionalFact(Skip = "For this to work, either MySqlMigrator needs to be involved, or the primary key related stored procedures need to be handled by MySqlMigrationsSqlGenerator instead. The later is probably the way to go. We should move the primary key related stored procedures to its own service, so ti can be potentially be customized by users.")]
+        public override async Task Rename_table_with_json_column()
+        {
+            await base.Rename_table_with_json_column();
 
-        public override Task Convert_regular_owned_entities_to_json()
-            => Assert.ThrowsAsync<NullReferenceException>(() => base.Convert_regular_owned_entities_to_json());
+            AssertSql();
+        }
 
-        public override Task Convert_string_column_to_a_json_column_containing_reference()
-            => Assert.ThrowsAsync<NullReferenceException>(() => base.Convert_string_column_to_a_json_column_containing_reference());
+        public override async Task Add_json_columns_to_existing_table()
+        {
+            await base.Add_json_columns_to_existing_table();
 
-        public override Task Convert_string_column_to_a_json_column_containing_required_reference()
-            => Assert.ThrowsAsync<NullReferenceException>(() => base.Convert_string_column_to_a_json_column_containing_required_reference());
+            AssertSql(
+                """
+ALTER TABLE `Entity` ADD `OwnedCollection` json NULL;
+""",
+                //
+                """
+ALTER TABLE `Entity` ADD `OwnedReference` json NULL;
+""",
+                //
+                """
+ALTER TABLE `Entity` ADD `OwnedRequiredReference` json NOT NULL DEFAULT ('{}');
+""");
+        }
 
-        public override Task Convert_string_column_to_a_json_column_containing_collection()
-            => Assert.ThrowsAsync<NullReferenceException>(() => base.Convert_string_column_to_a_json_column_containing_collection());
+        public override async Task Convert_json_entities_to_regular_owned()
+        {
+            await base.Convert_json_entities_to_regular_owned();
 
-        public override Task Drop_json_columns_from_existing_table()
-            => Assert.ThrowsAsync<NullReferenceException>(() => base.Drop_json_columns_from_existing_table());
+            AssertSql(
+                """
+ALTER TABLE `Entity` DROP COLUMN `OwnedCollection`;
+""",
+                //
+                """
+ALTER TABLE `Entity` DROP COLUMN `OwnedReference`;
+""",
+                //
+                """
+ALTER TABLE `Entity` ADD `OwnedReference_Date` datetime(6) NULL;
+""",
+                //
+                """
+ALTER TABLE `Entity` ADD `OwnedReference_NestedReference_Number` int NULL;
+""",
+                //
+                """
+CREATE TABLE `Entity_NestedCollection` (
+    `OwnedEntityId` int NOT NULL,
+    `Id` int NOT NULL AUTO_INCREMENT,
+    `Number2` int NOT NULL,
+    CONSTRAINT `PK_Entity_NestedCollection` PRIMARY KEY (`OwnedEntityId`, `Id`),
+    UNIQUE (`Id`),
+    CONSTRAINT `FK_Entity_NestedCollection_Entity_OwnedEntityId` FOREIGN KEY (`OwnedEntityId`) REFERENCES `Entity` (`Id`) ON DELETE CASCADE
+) CHARACTER SET=utf8mb4;
+""",
+                //
+                """
+CREATE TABLE `Entity_OwnedCollection` (
+    `EntityId` int NOT NULL,
+    `Id` int NOT NULL AUTO_INCREMENT,
+    `Date2` datetime(6) NOT NULL,
+    `NestedReference2_Number3` int NULL,
+    CONSTRAINT `PK_Entity_OwnedCollection` PRIMARY KEY (`EntityId`, `Id`),
+    UNIQUE (`Id`),
+    CONSTRAINT `FK_Entity_OwnedCollection_Entity_EntityId` FOREIGN KEY (`EntityId`) REFERENCES `Entity` (`Id`) ON DELETE CASCADE
+) CHARACTER SET=utf8mb4;
+""",
+                //
+                """
+CREATE TABLE `Entity_OwnedCollection_NestedCollection2` (
+    `Owned2EntityId` int NOT NULL,
+    `Owned2Id` int NOT NULL,
+    `Id` int NOT NULL AUTO_INCREMENT,
+    `Number4` int NOT NULL,
+    CONSTRAINT `PK_Entity_OwnedCollection_NestedCollection2` PRIMARY KEY (`Owned2EntityId`, `Owned2Id`, `Id`),
+    UNIQUE (`Id`),
+    CONSTRAINT `FK_Entity_OwnedCollection_NestedCollection2_Entity_OwnedCollect~` FOREIGN KEY (`Owned2EntityId`, `Owned2Id`) REFERENCES `Entity_OwnedCollection` (`EntityId`, `Id`) ON DELETE CASCADE
+) CHARACTER SET=utf8mb4;
+""");
+        }
 
-        public override Task Rename_json_column()
-            => Assert.ThrowsAsync<NullReferenceException>(() => base.Rename_json_column());
+        public override async Task Convert_regular_owned_entities_to_json()
+        {
+            await base.Convert_regular_owned_entities_to_json();
+
+            AssertSql(
+                """
+DROP TABLE `Entity_NestedCollection`;
+""",
+                //
+                """
+DROP TABLE `Entity_OwnedCollection_NestedCollection2`;
+""",
+                //
+                """
+DROP TABLE `Entity_OwnedCollection`;
+""",
+                //
+                """
+ALTER TABLE `Entity` DROP COLUMN `OwnedReference_Date`;
+""",
+                //
+                """
+ALTER TABLE `Entity` DROP COLUMN `OwnedReference_NestedReference_Number`;
+""",
+                //
+                """
+ALTER TABLE `Entity` ADD `OwnedCollection` json NULL;
+""",
+                //
+                """
+ALTER TABLE `Entity` ADD `OwnedReference` json NULL;
+""");
+        }
+
+        [ConditionalFact(Skip = "Converting a string column to a JSON complex/collection column with data is not yet supported by the provider's JSON mapping.")]
+        public override async Task Convert_string_column_to_a_json_column_containing_reference()
+        {
+            await base.Convert_string_column_to_a_json_column_containing_reference();
+
+            AssertSql();
+        }
+
+        public override async Task Convert_string_column_to_a_json_column_containing_required_reference()
+        {
+            await base.Convert_string_column_to_a_json_column_containing_required_reference();
+
+            AssertSql(
+                """
+ALTER TABLE `Entity` MODIFY COLUMN `Name` json NOT NULL DEFAULT ('{}');
+""");
+        }
+
+        [ConditionalFact(Skip = "Converting a string column to a JSON complex/collection column with data is not yet supported by the provider's JSON mapping.")]
+        public override async Task Convert_string_column_to_a_json_column_containing_collection()
+        {
+            await base.Convert_string_column_to_a_json_column_containing_collection();
+
+            AssertSql();
+        }
+
+        public override async Task Drop_json_columns_from_existing_table()
+        {
+            await base.Drop_json_columns_from_existing_table();
+
+            AssertSql(
+                """
+ALTER TABLE `Entity` DROP COLUMN `OwnedCollection`;
+""",
+                //
+                """
+ALTER TABLE `Entity` DROP COLUMN `OwnedReference`;
+""");
+        }
+
+        public override async Task Rename_json_column()
+        {
+            await base.Rename_json_column();
+
+            AssertSql(
+                """
+ALTER TABLE `Entity` RENAME COLUMN `json_reference` TO `new_json_reference`;
+""",
+                //
+                """
+ALTER TABLE `Entity` RENAME COLUMN `json_collection` TO `new_json_collection`;
+""");
+        }
+
+        public override async Task Create_table_with_complex_properties_mapped_to_json()
+        {
+            await base.Create_table_with_complex_properties_mapped_to_json();
+
+            AssertSql(
+                """
+CREATE TABLE `Entity` (
+    `Id` int NOT NULL AUTO_INCREMENT,
+    `Name` longtext CHARACTER SET utf8mb4 NULL,
+    `ComplexCollectionJSON` json NULL,
+    `ComplexReferenceJSON` json NULL,
+    CONSTRAINT `PK_Entity` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+""");
+        }
+
+        public override async Task Create_table_with_complex_properties_with_nested_collection_mapped_to_json()
+        {
+            await base.Create_table_with_complex_properties_with_nested_collection_mapped_to_json();
+
+            AssertSql(
+                """
+CREATE TABLE `Entity` (
+    `Id` int NOT NULL AUTO_INCREMENT,
+    `Name` longtext CHARACTER SET utf8mb4 NULL,
+    `ComplexReference_Date` datetime(6) NULL,
+    `ComplexReference_Value` longtext NULL,
+    `ComplexCollectionJSON` json NULL,
+    `ComplexReferenceJSON` json NULL,
+    CONSTRAINT `PK_Entity` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+""");
+        }
+
+        public override async Task Create_table_with_optional_complex_type_with_required_properties()
+        {
+            await base.Create_table_with_optional_complex_type_with_required_properties();
+
+            AssertSql(
+                """
+CREATE TABLE `Suppliers` (
+    `Id` int NOT NULL AUTO_INCREMENT,
+    `Number` int NOT NULL,
+    `MyComplex_Prop` longtext NULL,
+    `MyComplex_MyNestedComplex_Bar` datetime(6) NULL,
+    `MyComplex_MyNestedComplex_Foo` int NULL,
+    `MyComplex_Nested_Bar` datetime(6) NULL,
+    `MyComplex_Nested_Foo` int NULL,
+    `NestedCollection` json NULL,
+    CONSTRAINT `PK_Suppliers` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+""");
+        }
 
         #endregion ToJson
+
+        #region Multi-operation migrations
+
+        public override async Task Multiop_drop_table_and_create_the_same_table_in_one_migration()
+        {
+            await base.Multiop_drop_table_and_create_the_same_table_in_one_migration();
+
+            AssertSql(
+                """
+DROP TABLE `Customers`;
+""",
+                //
+                """
+CREATE TABLE `Customers` (
+    `Id` int NOT NULL AUTO_INCREMENT,
+    `Name` longtext CHARACTER SET utf8mb4 NULL,
+    CONSTRAINT `PK_Customers` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+""");
+        }
+
+        public override async Task Multiop_create_table_and_drop_it_in_one_migration()
+        {
+            await base.Multiop_create_table_and_drop_it_in_one_migration();
+
+            AssertSql(
+                """
+CREATE TABLE `Customers` (
+    `Id` int NOT NULL AUTO_INCREMENT,
+    `Name` longtext CHARACTER SET utf8mb4 NULL,
+    CONSTRAINT `PK_Customers` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+""",
+                //
+                """
+DROP TABLE `Customers`;
+""");
+        }
+
+        [ConditionalFact(Skip = "For this to work, either MySqlMigrator needs to be involved, or the primary key related stored procedures need to be handled by MySqlMigrationsSqlGenerator instead. The later is probably the way to go. We should move the primary key related stored procedures to its own service, so ti can be potentially be customized by users.")]
+        public override async Task Multiop_rename_table_and_drop()
+        {
+            await base.Multiop_rename_table_and_drop();
+
+            AssertSql();
+        }
+
+        [ConditionalFact(Skip = "For this to work, either MySqlMigrator needs to be involved, or the primary key related stored procedures need to be handled by MySqlMigrationsSqlGenerator instead. The later is probably the way to go. We should move the primary key related stored procedures to its own service, so ti can be potentially be customized by users.")]
+        public override async Task Multiop_rename_table_and_create_new_table_with_the_old_name()
+        {
+            await base.Multiop_rename_table_and_create_new_table_with_the_old_name();
+
+            AssertSql();
+        }
+
+        #endregion Multi-operation migrations
 
         [ConditionalFact]
         public virtual void Check_all_tests_overridden()

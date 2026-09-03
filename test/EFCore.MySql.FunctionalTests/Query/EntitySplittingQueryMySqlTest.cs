@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
@@ -7,13 +8,8 @@ using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
-public class EntitySplittingQueryMySqlTest : EntitySplittingQueryTestBase
+public class EntitySplittingQueryMySqlTest(NonSharedFixture fixture) : EntitySplittingQueryTestBase(fixture)
 {
-    public EntitySplittingQueryMySqlTest(ITestOutputHelper testOutputHelper)
-    {
-        // Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
-    }
-
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
         => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());

@@ -12,25 +12,20 @@ using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests;
 
-public class ComplexTypesTrackingMySqlTest : ComplexTypesTrackingTestBase<ComplexTypesTrackingMySqlTest.MySqlFixture>
+public class ComplexTypesTrackingMySqlTest : ComplexTypesTrackingRelationalTestBase<ComplexTypesTrackingMySqlTest.MySqlFixture>
 {
     public ComplexTypesTrackingMySqlTest(MySqlFixture fixture, ITestOutputHelper testOutputHelper)
-        : base(fixture)
+        : base(fixture, testOutputHelper)
     {
-        fixture.TestSqlLoggerFactory.Clear();
-        fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
     }
 
     protected override void UseTransaction(DatabaseFacade facade, IDbContextTransaction transaction)
         => facade.UseTransaction(transaction.GetDbTransaction());
 
-    public class MySqlFixture : FixtureBase
+    public class MySqlFixture : RelationalFixtureBase
     {
         protected override ITestStoreFactory TestStoreFactory
             => MySqlTestStoreFactory.Instance;
-
-        public TestSqlLoggerFactory TestSqlLoggerFactory
-            => (TestSqlLoggerFactory)ListLoggerFactory;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
         {

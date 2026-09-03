@@ -69,11 +69,13 @@ WHERE `a`.`Name` = 'Back\slasher''s'");
             await base.Where_query_escapes_parameter(async);
 
             AssertSql(
-                @"@__artistName_0='Back\slasher's' (Size = 4000)
+                """
+@artistName='Back\slasher's' (Size = 4000)
 
 SELECT `a`.`ArtistId`, `a`.`Name`
 FROM `Artists` AS `a`
-WHERE `a`.`Name` = @__artistName_0");
+WHERE `a`.`Name` = @artistName
+""");
         }
 
         [ConditionalTheory]

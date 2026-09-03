@@ -40,9 +40,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 .Where(e => e.GuidValue == new Guid("850368D8-93EA-4023-ACC7-6FA6E4C3B27F"))
                 .ToList();
 
+#pragma warning disable EF1003 // Possible SQL injection vulnerability; SQL is test-controlled.
             var sqlResult = context.SimpleGuidEntities
                 .FromSqlRaw("select * from `SimpleGuidEntities` where `GuidValue` = " + sqlEquivalent)
                 .ToList();
+#pragma warning restore EF1003
 
             Assert.Single(result);
             Assert.Equal(new Guid("850368D8-93EA-4023-ACC7-6FA6E4C3B27F"), result[0].GuidValue);

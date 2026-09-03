@@ -28,5 +28,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 ParameterName = name,
                 Value = value
             };
-    }
+    
+        [ConditionalTheory(Skip = "Reusing the same DbParameter instance across multiple FromSql occurrences behaves differently with MySqlConnector.")]
+        [MemberData(nameof(IsAsyncData))]
+        public override Task Multiple_occurrences_of_FromSql_with_db_parameter_adds_two_parameters(bool async)
+            => Task.CompletedTask;
+
+}
 }

@@ -524,8 +524,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             RelationalTypeMapping stringTypeMapping,
             StartsEndsWithContains methodType)
         {
-            if (pattern is SqlParameterExpression patternParameter &&
-                patternParameter.Name.StartsWith(QueryCompilationContext.QueryParameterPrefix, StringComparison.Ordinal))
+            if (pattern is SqlParameterExpression patternParameter)
             {
                 // The pattern is a parameter, register a runtime parameter that will contain the rewritten LIKE pattern, where
                 // all special characters have been escaped.
@@ -533,13 +532,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     Expression.Call(
                         _escapeLikePatternParameterMethod,
                         QueryCompilationContext.QueryContextParameter,
-                        Expression.Constant(patternParameter.Name),
+                        Expression.Constant(patternParameter.InvariantName),
                         Expression.Constant(methodType)),
                     QueryCompilationContext.QueryContextParameter);
 
                 var escapedPatternParameter =
                     queryCompilationContext.RegisterRuntimeParameter(
-                        $"{patternParameter.Name}_{methodType.ToString().ToLower(CultureInfo.InvariantCulture)}",
+                        $"{patternParameter.InvariantName}_{methodType.ToString().ToLower(CultureInfo.InvariantCulture)}",
                         lambda);
 
                 return _sqlExpressionFactory.Like(
@@ -718,7 +717,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             QueryContext queryContext,
             string baseParameterName,
             StartsEndsWithContains methodType)
-            => queryContext.ParameterValues[baseParameterName] switch
+            => queryContext.Parameters[baseParameterName] switch
             {
                 null => null,
 

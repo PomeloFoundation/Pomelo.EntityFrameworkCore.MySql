@@ -68,15 +68,15 @@ ORDER BY `l`.`Id`, `l1`.`Id`
             await base.Take_Select_collection_Take(async);
 
         AssertSql(
-"""
-@__p_0='1'
+            """
+@p='1'
 
 SELECT `l3`.`Id`, `l3`.`Name`, `s`.`Id`, `s`.`Name`, `s`.`Level1Id`, `s`.`Level2Id`, `s`.`Id0`, `s`.`Date`, `s`.`Name0`, `s`.`Id1`
 FROM (
     SELECT `l`.`Id`, `l`.`Name`
     FROM `Level1` AS `l`
     ORDER BY `l`.`Id`
-    LIMIT @__p_0
+    LIMIT @p
 ) AS `l3`
 LEFT JOIN LATERAL (
     SELECT CASE
@@ -104,15 +104,15 @@ ORDER BY `l3`.`Id`, `s`.`c`, `s`.`Id1`
             await base.Skip_Take_Select_collection_Skip_Take(async);
 
         AssertSql(
-"""
-@__p_0='1'
+            """
+@p='1'
 
 SELECT `l3`.`Id`, `l3`.`Name`, `s`.`Id`, `s`.`Name`, `s`.`Level1Id`, `s`.`Level2Id`, `s`.`Id0`, `s`.`Date`, `s`.`Name0`, `s`.`Id1`
 FROM (
     SELECT `l`.`Id`, `l`.`Name`
     FROM `Level1` AS `l`
     ORDER BY `l`.`Id`
-    LIMIT @__p_0 OFFSET @__p_0
+    LIMIT @p OFFSET @p
 ) AS `l3`
 LEFT JOIN LATERAL (
     SELECT CASE

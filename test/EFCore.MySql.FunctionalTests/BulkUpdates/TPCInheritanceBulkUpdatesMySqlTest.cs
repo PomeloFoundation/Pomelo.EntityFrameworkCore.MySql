@@ -126,9 +126,11 @@ WHERE (
         await base.Update_where_using_hierarchy(async);
 
         AssertExecuteUpdateSql(
-"""
+            """
+@p='Monovia' (Size = 4000)
+
 UPDATE `Countries` AS `c`
-SET `c`.`Name` = 'Monovia'
+SET `c`.`Name` = @p
 WHERE (
     SELECT COUNT(*)
     FROM (
@@ -147,9 +149,11 @@ WHERE (
         await base.Update_where_using_hierarchy_derived(async);
 
         AssertExecuteUpdateSql(
-"""
+            """
+@p='Monovia' (Size = 4000)
+
 UPDATE `Countries` AS `c`
-SET `c`.`Name` = 'Monovia'
+SET `c`.`Name` = @p
 WHERE (
     SELECT COUNT(*)
     FROM (
@@ -201,17 +205,19 @@ FROM `Kiwi` AS `k`
         await base.Update_base_property_on_derived_type(async);
 
         AssertSql(
-"""
+            """
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 """,
-                //
-                """
+            //
+            """
+@p='SomeOtherKiwi' (Size = 4000)
+
 UPDATE `Kiwi` AS `k`
-SET `k`.`Name` = 'SomeOtherKiwi'
+SET `k`.`Name` = @p
 """,
-                //
-                """
+            //
+            """
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 """);
@@ -222,17 +228,19 @@ FROM `Kiwi` AS `k`
         await base.Update_derived_property_on_derived_type(async);
 
         AssertSql(
-"""
+            """
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 """,
-                //
-                """
+            //
+            """
+@p='0'
+
 UPDATE `Kiwi` AS `k`
-SET `k`.`FoundOn` = 0
+SET `k`.`FoundOn` = @p
 """,
-                //
-                """
+            //
+            """
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 """);
@@ -243,18 +251,21 @@ FROM `Kiwi` AS `k`
         await base.Update_base_and_derived_types(async);
 
         AssertSql(
-"""
+            """
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 """,
-                //
-                """
+            //
+            """
+@p='Kiwi' (Size = 4000)
+@p0='0'
+
 UPDATE `Kiwi` AS `k`
-SET `k`.`FoundOn` = 0,
-    `k`.`Name` = 'Kiwi'
+SET `k`.`Name` = @p,
+    `k`.`FoundOn` = @p0
 """,
-                //
-                """
+            //
+            """
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 """);
@@ -265,17 +276,19 @@ FROM `Kiwi` AS `k`
         await base.Update_with_interface_in_property_expression(async);
 
         AssertSql(
-"""
+            """
 SELECT `c`.`Id`, `c`.`SortIndex`, `c`.`CaffeineGrams`, `c`.`CokeCO2`, `c`.`SugarGrams`
 FROM `Coke` AS `c`
 """,
-                //
-                """
+            //
+            """
+@p='0'
+
 UPDATE `Coke` AS `c`
-SET `c`.`SugarGrams` = 0
+SET `c`.`SugarGrams` = @p
 """,
-                //
-                """
+            //
+            """
 SELECT `c`.`Id`, `c`.`SortIndex`, `c`.`CaffeineGrams`, `c`.`CokeCO2`, `c`.`SugarGrams`
 FROM `Coke` AS `c`
 """);
@@ -286,17 +299,19 @@ FROM `Coke` AS `c`
         await base.Update_with_interface_in_EF_Property_in_property_expression(async);
 
         AssertSql(
-"""
+            """
 SELECT `c`.`Id`, `c`.`SortIndex`, `c`.`CaffeineGrams`, `c`.`CokeCO2`, `c`.`SugarGrams`
 FROM `Coke` AS `c`
 """,
-                //
-                """
+            //
+            """
+@p='0'
+
 UPDATE `Coke` AS `c`
-SET `c`.`SugarGrams` = 0
+SET `c`.`SugarGrams` = @p
 """,
-                //
-                """
+            //
+            """
 SELECT `c`.`Id`, `c`.`SortIndex`, `c`.`CaffeineGrams`, `c`.`CokeCO2`, `c`.`SugarGrams`
 FROM `Coke` AS `c`
 """);

@@ -10,9 +10,9 @@
       We also used alpha/beta/silver release types in the past, but they mix poorly with the ones above when orderend according to SemVer2
       rules.
     -->
-    <VersionPrefix>9.0.1</VersionPrefix>
-    <PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>
-    <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
+    <VersionPrefix>10.0.0</VersionPrefix>
+    <PreReleaseVersionLabel>rtm</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration>3</PreReleaseVersionIteration>
 
     <!--
       A string like `.efcore.9.0.0` or `.efcore.9.0.0.preview.1` can be added to the version suffix, to indicate that this release targets

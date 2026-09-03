@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public class OwnedEntityQueryMySqlTest : OwnedEntityQueryRelationalTestBase
+    public class OwnedEntityQueryMySqlTest(NonSharedFixture fixture) : OwnedEntityQueryRelationalTestBase(fixture)
     {
         protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
 

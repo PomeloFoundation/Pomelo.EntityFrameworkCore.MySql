@@ -15,30 +15,30 @@ using Xunit;
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
 // Disabled via internal access. The EF Core 7.0 JSON support isn't currently implemented.
-internal class AdHocJsonQueryMySqlTest : AdHocJsonQueryTestBase
+internal class AdHocJsonQueryMySqlTest(NonSharedFixture fixture) : AdHocJsonQueryRelationalTestBase(fixture)
 {
     protected override ITestStoreFactory TestStoreFactory
         => MySqlTestStoreFactory.Instance;
 
     protected override async Task Seed29219(DbContext ctx)
     {
-        var entity1 = new MyEntity29219
+        var entity1 = new Context29219.MyEntity
         {
             Id = 1,
-            Reference = new MyJsonEntity29219 { NonNullableScalar = 10, NullableScalar = 11 },
+            Reference = new Context29219.MyJsonEntity { NonNullableScalar = 10, NullableScalar = 11 },
             Collection =
             [
-                new MyJsonEntity29219 { NonNullableScalar = 100, NullableScalar = 101 },
-                new MyJsonEntity29219 { NonNullableScalar = 200, NullableScalar = 201 },
-                new MyJsonEntity29219 { NonNullableScalar = 300, NullableScalar = null }
+                new Context29219.MyJsonEntity { NonNullableScalar = 100, NullableScalar = 101 },
+                new Context29219.MyJsonEntity { NonNullableScalar = 200, NullableScalar = 201 },
+                new Context29219.MyJsonEntity { NonNullableScalar = 300, NullableScalar = null }
             ]
         };
 
-        var entity2 = new MyEntity29219
+        var entity2 = new Context29219.MyEntity
         {
             Id = 2,
-            Reference = new MyJsonEntity29219 { NonNullableScalar = 20, NullableScalar = null },
-            Collection = [new MyJsonEntity29219 { NonNullableScalar = 1001, NullableScalar = null }]
+            Reference = new Context29219.MyJsonEntity { NonNullableScalar = 20, NullableScalar = null },
+            Collection = [new Context29219.MyJsonEntity { NonNullableScalar = 1001, NullableScalar = null }]
         };
 
         ctx.AddRange(entity1, entity2);
@@ -97,52 +97,6 @@ INSERT INTO `Reviews` (`Rounds`, `Id`)
 VALUES(N'[{"RoundNumber":11,"SubRounds":[{"SubRoundNumber":111},{"SubRoundNumber":112}]}]', 1)
 """);
 
-    protected override Task SeedArrayOfPrimitives(DbContext ctx)
-    {
-        var entity1 = new MyEntityArrayOfPrimitives
-        {
-            Id = 1,
-            Reference = new MyJsonEntityArrayOfPrimitives
-            {
-                IntArray = [1, 2, 3],
-                ListOfString =
-                [
-                    "Foo",
-                    "Bar",
-                    "Baz"
-                ]
-            },
-            Collection =
-            [
-                new MyJsonEntityArrayOfPrimitives { IntArray = [111, 112, 113], ListOfString = ["Foo11", "Bar11"] },
-                new MyJsonEntityArrayOfPrimitives { IntArray = [211, 212, 213], ListOfString = ["Foo12", "Bar12"] }
-            ]
-        };
-
-        var entity2 = new MyEntityArrayOfPrimitives
-        {
-            Id = 2,
-            Reference = new MyJsonEntityArrayOfPrimitives
-            {
-                IntArray = [10, 20, 30],
-                ListOfString =
-                [
-                    "A",
-                    "B",
-                    "C"
-                ]
-            },
-            Collection =
-            [
-                new MyJsonEntityArrayOfPrimitives { IntArray = [110, 120, 130], ListOfString = ["A1", "Z1"] },
-                new MyJsonEntityArrayOfPrimitives { IntArray = [210, 220, 230], ListOfString = ["A2", "Z2"] }
-            ]
-        };
-
-        ctx.AddRange(entity1, entity2);
-        return ctx.SaveChangesAsync();
-    }
-
     protected override Task SeedJunkInJson(DbContext ctx)
         => ctx.Database.ExecuteSqlAsync(
             $$$$"""
@@ -192,6 +146,107 @@ INSERT INTO `Entities` (`Json`, `Id`)
 VALUES(
 N'{"Collection":[{"Bar":21,"Foo":"c21"},{"Bar":22,"Foo":"c22"}]}',
 2)
+""");
+    }
+
+    protected override async Task SeedBadJsonProperties(ContextBadJsonProperties ctx)
+    {
+        await ctx.Database.ExecuteSqlAsync(
+            $$"""
+INSERT INTO `Entities` (`Id`, `Scenario`, `OptionalReference`, `RequiredReference`, `Collection`)
+VALUES(
+1,
+'baseline',
+'{"NestedOptional": { "Text":"or no" }, "NestedRequired": { "Text":"or nr" }, "NestedCollection": [ { "Text":"or nc 1" }, { "Text":"or nc 2" } ] }',
+'{"NestedOptional": { "Text":"rr no" }, "NestedRequired": { "Text":"rr nr" }, "NestedCollection": [ { "Text":"rr nc 1" }, { "Text":"rr nc 2" } ] }',
+'[
+{"NestedOptional": { "Text":"c 1 no" }, "NestedRequired": { "Text":"c 1 nr" }, "NestedCollection": [ { "Text":"c 1 nc 1" }, { "Text":"c 1 nc 2" } ] },
+{"NestedOptional": { "Text":"c 2 no" }, "NestedRequired": { "Text":"c 2 nr" }, "NestedCollection": [ { "Text":"c 2 nc 1" }, { "Text":"c 2 nc 2" } ] }
+]')
+""");
+
+        await ctx.Database.ExecuteSqlAsync(
+            $$"""
+INSERT INTO `Entities` (`Id`, `Scenario`, `OptionalReference`, `RequiredReference`, `Collection`)
+VALUES(
+2,
+'duplicated navigations',
+'{"NestedOptional": { "Text":"or no" }, "NestedOptional": { "Text":"or no dupnav" }, "NestedRequired": { "Text":"or nr" }, "NestedCollection": [ { "Text":"or nc 1" }, { "Text":"or nc 2" } ], "NestedCollection": [ { "Text":"or nc 1 dupnav" }, { "Text":"or nc 2 dupnav" } ], "NestedRequired": { "Text":"or nr dupnav" } }',
+'{"NestedOptional": { "Text":"rr no" }, "NestedOptional": { "Text":"rr no dupnav" }, "NestedRequired": { "Text":"rr nr" }, "NestedCollection": [ { "Text":"rr nc 1" }, { "Text":"rr nc 2" } ], "NestedCollection": [ { "Text":"rr nc 1 dupnav" }, { "Text":"rr nc 2 dupnav" } ], "NestedRequired": { "Text":"rr nr dupnav" } }',
+'[
+{"NestedOptional": { "Text":"c 1 no" }, "NestedOptional": { "Text":"c 1 no dupnav" }, "NestedRequired": { "Text":"c 1 nr" }, "NestedCollection": [ { "Text":"c 1 nc 1" }, { "Text":"c 1 nc 2" } ], "NestedCollection": [ { "Text":"c 1 nc 1 dupnav" }, { "Text":"c 1 nc 2 dupnav" } ], "NestedRequired": { "Text":"c 1 nr dupnav" } },
+{"NestedOptional": { "Text":"c 2 no" }, "NestedOptional": { "Text":"c 2 no dupnav" }, "NestedRequired": { "Text":"c 2 nr" }, "NestedCollection": [ { "Text":"c 2 nc 1" }, { "Text":"c 2 nc 2" } ], "NestedCollection": [ { "Text":"c 2 nc 1 dupnav" }, { "Text":"c 2 nc 2 dupnav" } ], "NestedRequired": { "Text":"c 2 nr dupnav" } }
+]')
+""");
+
+        await ctx.Database.ExecuteSqlAsync(
+            $$"""
+INSERT INTO `Entities` (`Id`, `Scenario`, `OptionalReference`, `RequiredReference`, `Collection`)
+VALUES(
+3,
+'duplicated scalars',
+'{"NestedOptional": { "Text":"or no", "Text":"or no dupprop" }, "NestedRequired": { "Text":"or nr", "Text":"or nr dupprop" }, "NestedCollection": [ { "Text":"or nc 1", "Text":"or nc 1 dupprop" }, { "Text":"or nc 2", "Text":"or nc 2 dupprop" } ] }',
+'{"NestedOptional": { "Text":"rr no", "Text":"rr no dupprop" }, "NestedRequired": { "Text":"rr nr", "Text":"rr nr dupprop" }, "NestedCollection": [ { "Text":"rr nc 1", "Text":"rr nc 1 dupprop" }, { "Text":"rr nc 2", "Text":"rr nc 2 dupprop" } ] }',
+'[
+{"NestedOptional": { "Text":"c 1 no", "Text":"c 1 no dupprop" }, "NestedRequired": { "Text":"c 1 nr", "Text":"c 1 nr dupprop" }, "NestedCollection": [ { "Text":"c 1 nc 1", "Text":"c 1 nc 1 dupprop" }, { "Text":"c 1 nc 2", "Text":"c 1 nc 2 dupprop" } ] },
+{"NestedOptional": { "Text":"c 2 no", "Text":"c 2 no dupprop" }, "NestedRequired": { "Text":"c 2 nr", "Text":"c 2 nr dupprop" }, "NestedCollection": [ { "Text":"c 2 nc 1", "Text":"c 2 nc 1 dupprop" }, { "Text":"c 2 nc 2", "Text":"c 2 nc 2 dupprop" } ] }
+]')
+""");
+
+        await ctx.Database.ExecuteSqlAsync(
+            $$"""
+INSERT INTO `Entities` (`Id`, `Scenario`, `OptionalReference`, `RequiredReference`, `Collection`)
+VALUES(
+4,
+'empty navigation property names',
+'{"": { "Text":"or no" }, "": { "Text":"or nr" }, "": [ { "Text":"or nc 1" }, { "Text":"or nc 2" } ] }',
+'{"": { "Text":"rr no" }, "": { "Text":"rr nr" }, "": [ { "Text":"rr nc 1" }, { "Text":"rr nc 2" } ] }',
+'[
+{"": { "Text":"c 1 no" }, "": { "Text":"c 1 nr" }, "": [ { "Text":"c 1 nc 1" }, { "Text":"c 1 nc 2" } ] },
+{"": { "Text":"c 2 no" }, "": { "Text":"c 2 nr" }, "": [ { "Text":"c 2 nc 1" }, { "Text":"c 2 nc 2" } ] }
+]')
+""");
+
+        await ctx.Database.ExecuteSqlAsync(
+            $$"""
+INSERT INTO `Entities` (`Id`, `Scenario`, `OptionalReference`, `RequiredReference`, `Collection`)
+VALUES(
+5,
+'empty scalar property names',
+'{"NestedOptional": { "":"or no" }, "NestedRequired": { "":"or nr" }, "NestedCollection": [ { "":"or nc 1" }, { "":"or nc 2" } ] }',
+'{"NestedOptional": { "":"rr no" }, "NestedRequired": { "":"rr nr" }, "NestedCollection": [ { "":"rr nc 1" }, { "":"rr nc 2" } ] }',
+'[
+{"NestedOptional": { "":"c 1 no" }, "NestedRequired": { "":"c 1 nr" }, "NestedCollection": [ { "":"c 1 nc 1" }, { "":"c 1 nc 2" } ] },
+{"NestedOptional": { "":"c 2 no" }, "NestedRequired": { "":"c 2 nr" }, "NestedCollection": [ { "":"c 2 nc 1" }, { "":"c 2 nc 2" } ] }
+]')
+""");
+
+        await ctx.Database.ExecuteSqlAsync(
+            $$"""
+INSERT INTO `Entities` (`Id`, `Scenario`, `OptionalReference`, `RequiredReference`, `Collection`)
+VALUES(
+10,
+'null navigation property names',
+'{null: { "Text":"or no" }, null: { "Text":"or nr" }, null: [ { "Text":"or nc 1" }, { "Text":"or nc 2" } ] }',
+'{null: { "Text":"rr no" }, null: { "Text":"rr nr" }, null: [ { "Text":"rr nc 1" }, { "Text":"rr nc 2" } ] }',
+'[
+{null: { "Text":"c 1 no" }, null: { "Text":"c 1 nr" }, null: [ { "Text":"c 1 nc 1" }, { "Text":"c 1 nc 2" } ] },
+{null: { "Text":"c 2 no" }, null: { "Text":"c 2 nr" }, null: [ { "Text":"c 2 nc 1" }, { "Text":"c 2 nc 2" } ] }
+]')
+""");
+
+        await ctx.Database.ExecuteSqlAsync(
+            $$"""
+INSERT INTO `Entities` (`Id`, `Scenario`, `OptionalReference`, `RequiredReference`, `Collection`)
+VALUES(
+11,
+'null scalar property names',
+'{"NestedOptional": { null:"or no", "Text":"or no nonnull" }, "NestedRequired": { null:"or nr", "Text":"or nr nonnull" }, "NestedCollection": [ { null:"or nc 1", "Text":"or nc 1 nonnull" }, { null:"or nc 2", "Text":"or nc 2 nonnull" } ] }',
+'{"NestedOptional": { null:"rr no", "Text":"rr no nonnull" }, "NestedRequired": { null:"rr nr", "Text":"rr nr nonnull" }, "NestedCollection": [ { null:"rr nc 1", "Text":"rr nc 1 nonnull" }, { null:"rr nc 2", "Text":"rr nc 2 nonnull" } ] }',
+'[
+{"NestedOptional": { null:"c 1 no", "Text":"c 1 no nonnull" }, "NestedRequired": { null:"c 1 nr", "Text":"c 1 nr nonnull" }, "NestedCollection": [ { null:"c 1 nc 1", "Text":"c 1 nc 1 nonnull" }, { null:"c 1 nc 2", "Text":"c 1 nc 2 nonnull" } ] },
+{"NestedOptional": { null:"c 2 no", "Text":"c 2 no nonnull" }, "NestedRequired": { null:"c 2 nr", "Text":"c 2 nr nonnull" }, "NestedCollection": [ { null:"c 2 nc 1", "Text":"c 2 nc 1 nonnull" }, { null:"c 2 nc 2", "Text":"c 2 nc 2 nonnull" } ] }
+]')
 """);
     }
 

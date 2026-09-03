@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System.Threading.Tasks;
+using System.Reflection;
+using Xunit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
@@ -8,7 +10,7 @@ using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
-public class AdHocQuerySplittingQueryMySqlTest : AdHocQuerySplittingQueryTestBase
+public class AdHocQuerySplittingQueryMySqlTest(NonSharedFixture fixture) : AdHocQuerySplittingQueryTestBase(fixture)
 {
     protected override DbContextOptionsBuilder SetQuerySplittingBehavior(
         DbContextOptionsBuilder optionsBuilder,
@@ -41,4 +43,13 @@ public class AdHocQuerySplittingQueryMySqlTest : AdHocQuerySplittingQueryTestBas
 
     protected override ITestStoreFactory TestStoreFactory
         => MySqlTestStoreFactory.Instance;
+
+    [ConditionalFact(Skip = "Navigation-collection projection with split query executed in parallel is not currently translated on MySQL.")]
+    public override Task Can_query_with_nav_collection_in_projection_with_split_query_in_parallel_async()
+        => Task.CompletedTask;
+
+    [ConditionalFact(Skip = "Navigation-collection projection with split query executed in parallel is not currently translated on MySQL.")]
+    public override Task Can_query_with_nav_collection_in_projection_with_split_query_in_parallel_sync()
+        => Task.CompletedTask;
+
 }

@@ -80,39 +80,11 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
                        && IsJsonEachKeyColumn(subquery, projectedColumn)));
     }
 
-    protected override bool IsValidSelectExpressionForExecuteDelete(
-        SelectExpression selectExpression,
-        StructuralTypeShaperExpression shaper,
-        [NotNullWhen(true)] out TableExpression tableExpression)
-    {
-        if (selectExpression.Offset == null
+    protected override bool IsValidSelectExpressionForExecuteDelete(SelectExpression selectExpression)
+        => selectExpression.Offset == null
             && selectExpression.GroupBy.Count == 0
             && selectExpression.Having == null
-            && (selectExpression.Tables.Count == 1 || selectExpression.Orderings.Count == 0))
-        {
-            TableExpressionBase table;
-            if (selectExpression.Tables.Count == 1)
-            {
-                table = selectExpression.Tables[0];
-            }
-            else
-            {
-                var projectionBindingExpression = (ProjectionBindingExpression)shaper.ValueBufferExpression;
-                var entityProjectionExpression = (StructuralTypeProjectionExpression)selectExpression.GetProjection(projectionBindingExpression);
-                var column = entityProjectionExpression.BindProperty(shaper.StructuralType.GetProperties().First());
-                table = selectExpression.GetTable(column).UnwrapJoin();
-            }
-
-            if (table is TableExpression te)
-            {
-                tableExpression = te;
-                return true;
-            }
-        }
-
-        tableExpression = null;
-        return false;
-    }
+            && (selectExpression.Tables.Count == 1 || selectExpression.Orderings.Count == 0);
 
     protected override bool IsValidSelectExpressionForExecuteUpdate(
         SelectExpression selectExpression,

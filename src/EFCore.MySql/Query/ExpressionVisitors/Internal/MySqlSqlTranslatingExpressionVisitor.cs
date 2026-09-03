@@ -427,6 +427,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 "GREATEST",
                 expressions,
                 resultType,
+                Microsoft.EntityFrameworkCore.Query.ExpressionExtensions.InferTypeMapping(expressions),
                 true);
 
         public override SqlExpression GenerateLeast(IReadOnlyList<SqlExpression> expressions, Type resultType)
@@ -434,6 +435,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 "LEAST",
                 expressions,
                 resultType,
+                Microsoft.EntityFrameworkCore.Query.ExpressionExtensions.InferTypeMapping(expressions),
                 true);
 
         #region Copied from RelationalSqlTranslatingExpressionVisitor

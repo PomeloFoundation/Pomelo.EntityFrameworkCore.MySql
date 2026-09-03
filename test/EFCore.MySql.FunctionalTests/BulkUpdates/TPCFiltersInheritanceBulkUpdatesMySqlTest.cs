@@ -127,9 +127,11 @@ WHERE (
         await base.Update_where_using_hierarchy(async);
 
         AssertExecuteUpdateSql(
-"""
+            """
+@p='Monovia' (Size = 4000)
+
 UPDATE `Countries` AS `c`
-SET `c`.`Name` = 'Monovia'
+SET `c`.`Name` = @p
 WHERE (
     SELECT COUNT(*)
     FROM (
@@ -148,9 +150,11 @@ WHERE (
         await base.Update_where_using_hierarchy_derived(async);
 
         AssertExecuteUpdateSql(
-"""
+            """
+@p='Monovia' (Size = 4000)
+
 UPDATE `Countries` AS `c`
-SET `c`.`Name` = 'Monovia'
+SET `c`.`Name` = @p
 WHERE (
     SELECT COUNT(*)
     FROM (
@@ -206,19 +210,21 @@ WHERE `u`.`CountryId` = 1
         await base.Update_base_property_on_derived_type(async);
 
         AssertSql(
-"""
+            """
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 WHERE `k`.`CountryId` = 1
 """,
-                //
-                """
+            //
+            """
+@p='SomeOtherKiwi' (Size = 4000)
+
 UPDATE `Kiwi` AS `k`
-SET `k`.`Name` = 'SomeOtherKiwi'
+SET `k`.`Name` = @p
 WHERE `k`.`CountryId` = 1
 """,
-                //
-                """
+            //
+            """
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 WHERE `k`.`CountryId` = 1
@@ -230,19 +236,21 @@ WHERE `k`.`CountryId` = 1
         await base.Update_derived_property_on_derived_type(async);
 
         AssertSql(
-"""
+            """
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 WHERE `k`.`CountryId` = 1
 """,
-                //
-                """
+            //
+            """
+@p='0'
+
 UPDATE `Kiwi` AS `k`
-SET `k`.`FoundOn` = 0
+SET `k`.`FoundOn` = @p
 WHERE `k`.`CountryId` = 1
 """,
-                //
-                """
+            //
+            """
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 WHERE `k`.`CountryId` = 1
@@ -254,20 +262,23 @@ WHERE `k`.`CountryId` = 1
         await base.Update_base_and_derived_types(async);
 
         AssertSql(
-"""
+            """
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 WHERE `k`.`CountryId` = 1
 """,
-                //
-                """
+            //
+            """
+@p='Kiwi' (Size = 4000)
+@p0='0'
+
 UPDATE `Kiwi` AS `k`
-SET `k`.`FoundOn` = 0,
-    `k`.`Name` = 'Kiwi'
+SET `k`.`Name` = @p,
+    `k`.`FoundOn` = @p0
 WHERE `k`.`CountryId` = 1
 """,
-                //
-                """
+            //
+            """
 SELECT `k`.`Id`, `k`.`CountryId`, `k`.`Name`, `k`.`Species`, `k`.`EagleId`, `k`.`IsFlightless`, `k`.`FoundOn`
 FROM `Kiwi` AS `k`
 WHERE `k`.`CountryId` = 1

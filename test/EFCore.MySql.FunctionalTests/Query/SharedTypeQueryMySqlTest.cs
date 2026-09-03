@@ -3,12 +3,13 @@
 
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
-    public class SharedTypeQueryMySqlTest : SharedTypeQueryRelationalTestBase
+    public class SharedTypeQueryMySqlTest(NonSharedFixture fixture) : SharedTypeQueryRelationalTestBase(fixture)
     {
         protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
 

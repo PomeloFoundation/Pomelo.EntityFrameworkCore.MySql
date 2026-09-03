@@ -15,7 +15,8 @@ The following versions of MySqlConnector, EF Core, .NET (Core), .NET Standard an
 
 Release | Branch                                                                                           | MySqlConnector     | EF Core | .NET (Core) | .NET Standard | .NET Framework
 --- |--------------------------------------------------------------------------------------------------|--------------------|:-------:|:-----------:| :---: | :---:
-[9.0.0](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/9.0.0) | [main](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/main)       | >= 2.4.0           |  9.0.x  |    8.0+     | - | -
+[10.0.0](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/10.0.0) | [main](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/main)       | >= 2.4.0           | 10.0.x  |    10.0+    | - | -
+[9.0.0](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/9.0.0) | [9.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/9.0-maint)       | >= 2.4.0           |  9.0.x  |    8.0+     | - | -
 [8.0.3](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/8.0.3) | [8.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/8.0-maint) | >= 2.3.5           |  8.0.x  |    8.0+     | - | -
 [7.0.0](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/7.0.0) | [7.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/7.0-maint) | >= 2.2.5           |  7.0.x  |    6.0+     | - | -
 [6.0.3](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/6.0.3) | [6.0-maint](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/tree/6.0-maint) | >= 2.1.2           |  6.0.x  |    6.0+     | - | -
@@ -49,6 +50,7 @@ Currently tested versions are:
 
 Milestone | Status   | Release Date
 ----------|----------|-------------
+10.0.0 | In Progress | -
 9.0.0 | Released | 2025-08-17
 8.0.3 | Released | 2025-03-02
 7.0.0 | Released | 2023-01-16
@@ -95,7 +97,7 @@ All `.pdb` files use Source Link.
 Ensure that your `.csproj` file contains the following reference:
 
 ```xml
-<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
+<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="10.0.0" />
 ```
 
 ### 2. Services Configuration

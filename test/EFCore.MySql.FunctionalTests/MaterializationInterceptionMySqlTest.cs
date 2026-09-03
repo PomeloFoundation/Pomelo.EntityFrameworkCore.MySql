@@ -4,7 +4,8 @@ using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests;
 
-public class MaterializationInterceptionMySqlTest : MaterializationInterceptionTestBase<MaterializationInterceptionMySqlTest.MySqlLibraryContext>
+public class MaterializationInterceptionMySqlTest(NonSharedFixture fixture)
+    : MaterializationInterceptionTestBase<MaterializationInterceptionMySqlTest.MySqlLibraryContext>(fixture)
 {
     public class MySqlLibraryContext : LibraryContext
     {

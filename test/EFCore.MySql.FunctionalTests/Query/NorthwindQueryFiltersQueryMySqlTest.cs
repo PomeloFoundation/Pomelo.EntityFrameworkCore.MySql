@@ -21,12 +21,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             await base.Count_query(async);
 
         AssertSql(
-"""
-@__ef_filter__TenantPrefix_0_startswith='B%' (Size = 40)
+            """
+@ef_filter__TenantPrefix_startswith='B%' (Size = 40)
 
 SELECT COUNT(*)
 FROM `Customers` AS `c`
-WHERE `c`.`CompanyName` LIKE @__ef_filter__TenantPrefix_0_startswith
+WHERE `c`.`CompanyName` LIKE @ef_filter__TenantPrefix_startswith
 """);
         }
 

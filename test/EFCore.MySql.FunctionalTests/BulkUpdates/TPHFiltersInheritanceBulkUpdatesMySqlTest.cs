@@ -137,9 +137,11 @@ WHERE (`a`.`CountryId` = 1) AND `a`.`Id` IN (
         await base.Update_where_using_hierarchy(async);
 
         AssertExecuteUpdateSql(
-"""
+            """
+@p='Monovia' (Size = 4000)
+
 UPDATE `Countries` AS `c`
-SET `c`.`Name` = 'Monovia'
+SET `c`.`Name` = @p
 WHERE (
     SELECT COUNT(*)
     FROM `Animals` AS `a`
@@ -152,9 +154,11 @@ WHERE (
         await base.Update_where_using_hierarchy_derived(async);
 
         AssertExecuteUpdateSql(
-"""
+            """
+@p='Monovia' (Size = 4000)
+
 UPDATE `Countries` AS `c`
-SET `c`.`Name` = 'Monovia'
+SET `c`.`Name` = @p
 WHERE (
     SELECT COUNT(*)
     FROM `Animals` AS `a`
@@ -167,9 +171,11 @@ WHERE (
         await base.Update_base_type(async);
 
         AssertExecuteUpdateSql(
-"""
+            """
+@p='Animal' (Size = 4000)
+
 UPDATE `Animals` AS `a`
-SET `a`.`Name` = 'Animal'
+SET `a`.`Name` = @p
 WHERE (`a`.`CountryId` = 1) AND (`a`.`Name` = 'Great spotted kiwi')
 """);
     }
@@ -179,9 +185,11 @@ WHERE (`a`.`CountryId` = 1) AND (`a`.`Name` = 'Great spotted kiwi')
         await base.Update_base_type_with_OfType(async);
 
         AssertExecuteUpdateSql(
-"""
+            """
+@p='NewBird' (Size = 4000)
+
 UPDATE `Animals` AS `a`
-SET `a`.`Name` = 'NewBird'
+SET `a`.`Name` = @p
 WHERE (`a`.`CountryId` = 1) AND (`a`.`Discriminator` = 'Kiwi')
 """);
     }
@@ -191,9 +199,11 @@ WHERE (`a`.`CountryId` = 1) AND (`a`.`Discriminator` = 'Kiwi')
         await base.Update_base_property_on_derived_type(async);
 
         AssertExecuteUpdateSql(
-"""
+            """
+@p='SomeOtherKiwi' (Size = 4000)
+
 UPDATE `Animals` AS `a`
-SET `a`.`Name` = 'SomeOtherKiwi'
+SET `a`.`Name` = @p
 WHERE (`a`.`Discriminator` = 'Kiwi') AND (`a`.`CountryId` = 1)
 """);
     }
@@ -203,9 +213,11 @@ WHERE (`a`.`Discriminator` = 'Kiwi') AND (`a`.`CountryId` = 1)
         await base.Update_derived_property_on_derived_type(async);
 
         AssertExecuteUpdateSql(
-"""
+            """
+@p='0'
+
 UPDATE `Animals` AS `a`
-SET `a`.`FoundOn` = 0
+SET `a`.`FoundOn` = @p
 WHERE (`a`.`Discriminator` = 'Kiwi') AND (`a`.`CountryId` = 1)
 """);
     }
@@ -215,10 +227,13 @@ WHERE (`a`.`Discriminator` = 'Kiwi') AND (`a`.`CountryId` = 1)
         await base.Update_base_and_derived_types(async);
 
         AssertExecuteUpdateSql(
-"""
+            """
+@p='Kiwi' (Size = 4000)
+@p0='0'
+
 UPDATE `Animals` AS `a`
-SET `a`.`FoundOn` = 0,
-    `a`.`Name` = 'Kiwi'
+SET `a`.`Name` = @p,
+    `a`.`FoundOn` = @p0
 WHERE (`a`.`Discriminator` = 'Kiwi') AND (`a`.`CountryId` = 1)
 """);
     }

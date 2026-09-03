@@ -14,7 +14,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
         {
             if (args.Length == 0)
             {
+#pragma warning disable ASPDEPR008 // IWebHost/WebHost are obsolete; this integration-test harness still uses the legacy host.
 	            BuildWebHost(args).Run();
+#pragma warning restore ASPDEPR008
             }
             else
             {
@@ -41,6 +43,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
             }
         }
 
+#pragma warning disable ASPDEPR008 // IWebHost/WebHost are obsolete; this integration-test harness still uses the legacy host.
         public static IWebHost BuildWebHost(string[] args)
         {
             return WebHost.CreateDefaultBuilder(args)
@@ -48,6 +51,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
                 .UseStartup<Startup>()
                 .Build();
         }
+#pragma warning restore ASPDEPR008
 
     }
 }

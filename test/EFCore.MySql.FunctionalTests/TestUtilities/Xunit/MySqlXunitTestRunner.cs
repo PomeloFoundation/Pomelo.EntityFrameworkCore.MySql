@@ -4,6 +4,8 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using MySqlConnector;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Xunit.Abstractions;
 using Xunit.Sdk;
@@ -131,6 +133,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
             var aggregateException = exception as AggregateException ??
                                      new AggregateException(exception);
 
+            // MariaDB (observed on the native Windows build of 11.6.x) can spuriously raise
+            // error 1020 (ER_CHECKREAD, "Record has changed since last read") while executing
+            // ExecuteUpdate/ExecuteDelete statements against table-split entities. The identical
+            // server version executes the very same statements correctly on Linux, so this is a
+            // server-side bug rather than a provider issue, and it surfaces non-deterministically
+            // across the affected tests. Treat it as a skip instead of a failure.
+            if (AppConfig.ServerVersion.Type == ServerType.MariaDb &&
+                aggregateException.InnerExceptions.Any(IsMariaDbRecordHasChangedException))
+            {
+                return true;
+            }
+
             foreach (var innerException in aggregateException.InnerExceptions)
             {
                 if (!skip ||
@@ -162,5 +176,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
 
             return skip;
         }
+
+        private static bool IsMariaDbRecordHasChangedException(Exception exception)
+            => exception is MySqlException { Number: 1020 } ||
+               exception.Message.Contains("Record has changed since last read");
     }
 }

@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.BulkUpdates;
+using Microsoft.EntityFrameworkCore.Query.Associations.ComplexTableSplitting;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
@@ -7,322 +7,518 @@ using Xunit.Abstractions;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
-public class ComplexTypeBulkUpdatesMySqlTest : ComplexTypeBulkUpdatesRelationalTestBase<
-    ComplexTypeBulkUpdatesMySqlTest.ComplexTypeBulkUpdatesMySqlFixture>
+public class ComplexTypeBulkUpdatesMySqlTest(
+    ComplexTypeBulkUpdatesMySqlTest.ComplexTableSplittingMySqlFixture fixture,
+    ITestOutputHelper testOutputHelper)
+    : ComplexTableSplittingBulkUpdateRelationalTestBase<ComplexTypeBulkUpdatesMySqlTest.ComplexTableSplittingMySqlFixture>(fixture, testOutputHelper)
 {
-    public ComplexTypeBulkUpdatesMySqlTest(ComplexTypeBulkUpdatesMySqlFixture fixture, ITestOutputHelper testOutputHelper)
-        : base(fixture, testOutputHelper)
-    {
-    }
+    #region Delete
 
-    public override async Task Delete_entity_type_with_complex_type(bool async)
+    public override async Task Delete_entity_with_associations()
     {
-        await base.Delete_entity_type_with_complex_type(async);
+        await base.Delete_entity_with_associations();
 
         AssertSql(
-"""
-DELETE `c`
-FROM `Customer` AS `c`
-WHERE `c`.`Name` = 'Monty Elias'
+            """
+@deletableEntity_Name='?' (Size = 4000)
+
+DELETE `r`
+FROM `RootEntity` AS `r`
+WHERE `r`.`Name` = @deletableEntity_Name
 """);
     }
 
-    public override async Task Delete_complex_type(bool async)
+    public override async Task Delete_required_associate()
     {
-        await base.Delete_complex_type(async);
+        await base.Delete_required_associate();
 
         AssertSql();
     }
 
-    public override async Task Update_property_inside_complex_type(bool async)
+    public override async Task Delete_optional_associate()
     {
-        await base.Update_property_inside_complex_type(async);
+        await base.Delete_optional_associate();
+
+        AssertSql();
+    }
+
+    #endregion Delete
+
+    #region Update properties
+
+    public override async Task Update_property_inside_associate()
+    {
+        await base.Update_property_inside_associate();
 
         AssertExecuteUpdateSql(
-"""
-UPDATE `Customer` AS `c`
-SET `c`.`ShippingAddress_ZipCode` = 12345
-WHERE `c`.`ShippingAddress_ZipCode` = 7728
+            """
+@p='?' (Size = 4000)
+
+UPDATE `RootEntity` AS `r`
+SET `r`.`RequiredAssociate_String` = @p
 """);
     }
 
-    public override async Task Update_property_inside_nested_complex_type(bool async)
+    public override async Task Update_property_inside_associate_with_special_chars()
     {
-        await base.Update_property_inside_nested_complex_type(async);
+        await base.Update_property_inside_associate_with_special_chars();
 
         AssertExecuteUpdateSql(
-"""
-UPDATE `Customer` AS `c`
-SET `c`.`ShippingAddress_Country_FullName` = 'United States Modified'
-WHERE `c`.`ShippingAddress_Country_Code` = 'US'
+            """
+UPDATE `RootEntity` AS `r`
+SET `r`.`RequiredAssociate_String` = '{ Some other/JSON:like text though it [isn''t]: ממש ממש לאéèéè }'
+WHERE `r`.`RequiredAssociate_String` = '{ this may/look:like JSON but it [isn''t]: ממש ממש לאéèéè }'
 """);
     }
 
-    public override async Task Update_multiple_properties_inside_multiple_complex_types_and_on_entity_type(bool async)
+    public override async Task Update_property_inside_nested_associate()
     {
-        await base.Update_multiple_properties_inside_multiple_complex_types_and_on_entity_type(async);
+        await base.Update_property_inside_nested_associate();
 
         AssertExecuteUpdateSql(
-"""
-UPDATE `Customer` AS `c`
-SET `c`.`BillingAddress_ZipCode` = 54321,
-    `c`.`ShippingAddress_ZipCode` = `c`.`BillingAddress_ZipCode`,
-    `c`.`Name` = CONCAT(`c`.`Name`, 'Modified')
-WHERE `c`.`ShippingAddress_ZipCode` = 7728
+            """
+@p='?' (Size = 4000)
+
+UPDATE `RootEntity` AS `r`
+SET `r`.`RequiredAssociate_RequiredNestedAssociate_String` = @p
 """);
     }
 
-    public override async Task Update_projected_complex_type(bool async)
+    public override async Task Update_property_on_projected_associate()
     {
-        await base.Update_projected_complex_type(async);
+        await base.Update_property_on_projected_associate();
 
         AssertExecuteUpdateSql(
-"""
-UPDATE `Customer` AS `c`
-SET `c`.`ShippingAddress_ZipCode` = 12345
+            """
+@p='?' (Size = 4000)
+
+UPDATE `RootEntity` AS `r`
+SET `r`.`RequiredAssociate_String` = @p
 """);
     }
 
-    public override async Task Update_multiple_projected_complex_types_via_anonymous_type(bool async)
+    public override async Task Update_property_on_projected_associate_with_OrderBy_Skip()
     {
-        await base.Update_multiple_projected_complex_types_via_anonymous_type(async);
-
-        AssertExecuteUpdateSql(
-"""
-UPDATE `Customer` AS `c`
-SET `c`.`BillingAddress_ZipCode` = 54321,
-    `c`.`ShippingAddress_ZipCode` = `c`.`BillingAddress_ZipCode`
-""");
-    }
-
-    public override async Task Update_projected_complex_type_via_OrderBy_Skip(bool async)
-    {
-        await base.Update_projected_complex_type_via_OrderBy_Skip(async);
+        await base.Update_property_on_projected_associate_with_OrderBy_Skip();
 
         AssertExecuteUpdateSql();
     }
 
-    public override async Task Update_complex_type_to_parameter(bool async)
+    public override async Task Update_associate_with_null_required_property()
     {
-        await base.Update_complex_type_to_parameter(async);
+        await base.Update_associate_with_null_required_property();
 
-        AssertSql(
-"""
-SELECT `c`.`Id`, `c`.`Name`, `c`.`BillingAddress_AddressLine1`, `c`.`BillingAddress_AddressLine2`, `c`.`BillingAddress_Tags`, `c`.`BillingAddress_ZipCode`, `c`.`BillingAddress_Country_Code`, `c`.`BillingAddress_Country_FullName`, `c`.`ShippingAddress_AddressLine1`, `c`.`ShippingAddress_AddressLine2`, `c`.`ShippingAddress_Tags`, `c`.`ShippingAddress_ZipCode`, `c`.`ShippingAddress_Country_Code`, `c`.`ShippingAddress_Country_FullName`
-FROM `Customer` AS `c`
-""",
-                //
-                """
-@__complex_type_newAddress_0_AddressLine1='New AddressLine1' (Size = 4000)
-@__complex_type_newAddress_0_AddressLine2='New AddressLine2' (Size = 4000)
-@__complex_type_newAddress_0_Tags='["new_tag1","new_tag2"]' (Size = 4000)
-@__complex_type_newAddress_0_ZipCode='99999' (Nullable = true)
-@__complex_type_newAddress_0_Code='FR' (Size = 4000)
-@__complex_type_newAddress_0_FullName='France' (Size = 4000)
+        AssertExecuteUpdateSql();
+    }
 
-UPDATE `Customer` AS `c`
-SET `c`.`ShippingAddress_AddressLine1` = @__complex_type_newAddress_0_AddressLine1,
-    `c`.`ShippingAddress_AddressLine2` = @__complex_type_newAddress_0_AddressLine2,
-    `c`.`ShippingAddress_Tags` = @__complex_type_newAddress_0_Tags,
-    `c`.`ShippingAddress_ZipCode` = @__complex_type_newAddress_0_ZipCode,
-    `c`.`ShippingAddress_Country_Code` = @__complex_type_newAddress_0_Code,
-    `c`.`ShippingAddress_Country_FullName` = @__complex_type_newAddress_0_FullName
-""",
-                //
-                """
-SELECT `c`.`Id`, `c`.`Name`, `c`.`BillingAddress_AddressLine1`, `c`.`BillingAddress_AddressLine2`, `c`.`BillingAddress_Tags`, `c`.`BillingAddress_ZipCode`, `c`.`BillingAddress_Country_Code`, `c`.`BillingAddress_Country_FullName`, `c`.`ShippingAddress_AddressLine1`, `c`.`ShippingAddress_AddressLine2`, `c`.`ShippingAddress_Tags`, `c`.`ShippingAddress_ZipCode`, `c`.`ShippingAddress_Country_Code`, `c`.`ShippingAddress_Country_FullName`
-FROM `Customer` AS `c`
+    #endregion Update properties
+
+    #region Update association
+
+    public override async Task Update_associate_to_parameter()
+    {
+        await base.Update_associate_to_parameter();
+
+        AssertExecuteUpdateSql(
+            """
+@complex_type_p_Id='?' (DbType = Int32)
+@complex_type_p_Int='?' (DbType = Int32)
+@complex_type_p_Ints='?' (Size = 4000)
+@complex_type_p_Name='?' (Size = 4000)
+@complex_type_p_String='?' (Size = 4000)
+@complex_type_p_RequiredNestedAssociate_Id='?' (DbType = Int32)
+@complex_type_p_RequiredNestedAssociate_Int='?' (DbType = Int32)
+@complex_type_p_RequiredNestedAssociate_Ints='?' (Size = 4000)
+@complex_type_p_RequiredNestedAssociate_Name='?' (Size = 4000)
+@complex_type_p_RequiredNestedAssociate_String='?' (Size = 4000)
+
+UPDATE `RootEntity` AS `r`
+SET `r`.`RequiredAssociate_Id` = @complex_type_p_Id,
+    `r`.`RequiredAssociate_Int` = @complex_type_p_Int,
+    `r`.`RequiredAssociate_Ints` = @complex_type_p_Ints,
+    `r`.`RequiredAssociate_Name` = @complex_type_p_Name,
+    `r`.`RequiredAssociate_String` = @complex_type_p_String,
+    `r`.`RequiredAssociate_OptionalNestedAssociate_Id` = NULL,
+    `r`.`RequiredAssociate_OptionalNestedAssociate_Int` = NULL,
+    `r`.`RequiredAssociate_OptionalNestedAssociate_Ints` = NULL,
+    `r`.`RequiredAssociate_OptionalNestedAssociate_Name` = NULL,
+    `r`.`RequiredAssociate_OptionalNestedAssociate_String` = NULL,
+    `r`.`RequiredAssociate_RequiredNestedAssociate_Id` = @complex_type_p_RequiredNestedAssociate_Id,
+    `r`.`RequiredAssociate_RequiredNestedAssociate_Int` = @complex_type_p_RequiredNestedAssociate_Int,
+    `r`.`RequiredAssociate_RequiredNestedAssociate_Ints` = @complex_type_p_RequiredNestedAssociate_Ints,
+    `r`.`RequiredAssociate_RequiredNestedAssociate_Name` = @complex_type_p_RequiredNestedAssociate_Name,
+    `r`.`RequiredAssociate_RequiredNestedAssociate_String` = @complex_type_p_RequiredNestedAssociate_String
 """);
     }
 
-    public override async Task Update_nested_complex_type_to_parameter(bool async)
+    public override async Task Update_nested_associate_to_parameter()
     {
-        await base.Update_nested_complex_type_to_parameter(async);
+        await base.Update_nested_associate_to_parameter();
 
-        AssertSql(
-"""
-SELECT `c`.`Id`, `c`.`Name`, `c`.`BillingAddress_AddressLine1`, `c`.`BillingAddress_AddressLine2`, `c`.`BillingAddress_Tags`, `c`.`BillingAddress_ZipCode`, `c`.`BillingAddress_Country_Code`, `c`.`BillingAddress_Country_FullName`, `c`.`ShippingAddress_AddressLine1`, `c`.`ShippingAddress_AddressLine2`, `c`.`ShippingAddress_Tags`, `c`.`ShippingAddress_ZipCode`, `c`.`ShippingAddress_Country_Code`, `c`.`ShippingAddress_Country_FullName`
-FROM `Customer` AS `c`
-""",
-                //
-                """
-@__complex_type_newCountry_0_Code='FR' (Size = 4000)
-@__complex_type_newCountry_0_FullName='France' (Size = 4000)
+        AssertExecuteUpdateSql(
+            """
+@complex_type_p_Id='?' (DbType = Int32)
+@complex_type_p_Int='?' (DbType = Int32)
+@complex_type_p_Ints='?' (Size = 4000)
+@complex_type_p_Name='?' (Size = 4000)
+@complex_type_p_String='?' (Size = 4000)
 
-UPDATE `Customer` AS `c`
-SET `c`.`ShippingAddress_Country_Code` = @__complex_type_newCountry_0_Code,
-    `c`.`ShippingAddress_Country_FullName` = @__complex_type_newCountry_0_FullName
-""",
-                //
-                """
-SELECT `c`.`Id`, `c`.`Name`, `c`.`BillingAddress_AddressLine1`, `c`.`BillingAddress_AddressLine2`, `c`.`BillingAddress_Tags`, `c`.`BillingAddress_ZipCode`, `c`.`BillingAddress_Country_Code`, `c`.`BillingAddress_Country_FullName`, `c`.`ShippingAddress_AddressLine1`, `c`.`ShippingAddress_AddressLine2`, `c`.`ShippingAddress_Tags`, `c`.`ShippingAddress_ZipCode`, `c`.`ShippingAddress_Country_Code`, `c`.`ShippingAddress_Country_FullName`
-FROM `Customer` AS `c`
+UPDATE `RootEntity` AS `r`
+SET `r`.`RequiredAssociate_RequiredNestedAssociate_Id` = @complex_type_p_Id,
+    `r`.`RequiredAssociate_RequiredNestedAssociate_Int` = @complex_type_p_Int,
+    `r`.`RequiredAssociate_RequiredNestedAssociate_Ints` = @complex_type_p_Ints,
+    `r`.`RequiredAssociate_RequiredNestedAssociate_Name` = @complex_type_p_Name,
+    `r`.`RequiredAssociate_RequiredNestedAssociate_String` = @complex_type_p_String
 """);
     }
 
-    public override async Task Update_complex_type_to_another_database_complex_type(bool async)
+    public override async Task Update_associate_to_another_associate()
     {
-        await base.Update_complex_type_to_another_database_complex_type(async);
+        await base.Update_associate_to_another_associate();
 
-        AssertSql(
-"""
-SELECT `c`.`Id`, `c`.`Name`, `c`.`BillingAddress_AddressLine1`, `c`.`BillingAddress_AddressLine2`, `c`.`BillingAddress_Tags`, `c`.`BillingAddress_ZipCode`, `c`.`BillingAddress_Country_Code`, `c`.`BillingAddress_Country_FullName`, `c`.`ShippingAddress_AddressLine1`, `c`.`ShippingAddress_AddressLine2`, `c`.`ShippingAddress_Tags`, `c`.`ShippingAddress_ZipCode`, `c`.`ShippingAddress_Country_Code`, `c`.`ShippingAddress_Country_FullName`
-FROM `Customer` AS `c`
-""",
-                //
-                """
-UPDATE `Customer` AS `c`
-SET `c`.`ShippingAddress_AddressLine1` = `c`.`BillingAddress_AddressLine1`,
-    `c`.`ShippingAddress_AddressLine2` = `c`.`BillingAddress_AddressLine2`,
-    `c`.`ShippingAddress_Tags` = `c`.`BillingAddress_Tags`,
-    `c`.`ShippingAddress_ZipCode` = `c`.`BillingAddress_ZipCode`,
-    `c`.`ShippingAddress_Country_Code` = `c`.`ShippingAddress_Country_Code`,
-    `c`.`ShippingAddress_Country_FullName` = `c`.`ShippingAddress_Country_FullName`
-""",
-                //
-                """
-SELECT `c`.`Id`, `c`.`Name`, `c`.`BillingAddress_AddressLine1`, `c`.`BillingAddress_AddressLine2`, `c`.`BillingAddress_Tags`, `c`.`BillingAddress_ZipCode`, `c`.`BillingAddress_Country_Code`, `c`.`BillingAddress_Country_FullName`, `c`.`ShippingAddress_AddressLine1`, `c`.`ShippingAddress_AddressLine2`, `c`.`ShippingAddress_Tags`, `c`.`ShippingAddress_ZipCode`, `c`.`ShippingAddress_Country_Code`, `c`.`ShippingAddress_Country_FullName`
-FROM `Customer` AS `c`
+        AssertExecuteUpdateSql(
+            """
+UPDATE `RootEntity` AS `r`
+SET `r`.`OptionalAssociate_Id` = `r`.`RequiredAssociate_Id`,
+    `r`.`OptionalAssociate_Int` = `r`.`RequiredAssociate_Int`,
+    `r`.`OptionalAssociate_Ints` = `r`.`RequiredAssociate_Ints`,
+    `r`.`OptionalAssociate_Name` = `r`.`RequiredAssociate_Name`,
+    `r`.`OptionalAssociate_String` = `r`.`RequiredAssociate_String`,
+    `r`.`OptionalAssociate_OptionalNestedAssociate_Id` = `r`.`OptionalAssociate_OptionalNestedAssociate_Id`,
+    `r`.`OptionalAssociate_OptionalNestedAssociate_Int` = `r`.`OptionalAssociate_OptionalNestedAssociate_Int`,
+    `r`.`OptionalAssociate_OptionalNestedAssociate_Ints` = `r`.`OptionalAssociate_OptionalNestedAssociate_Ints`,
+    `r`.`OptionalAssociate_OptionalNestedAssociate_Name` = `r`.`OptionalAssociate_OptionalNestedAssociate_Name`,
+    `r`.`OptionalAssociate_OptionalNestedAssociate_String` = `r`.`OptionalAssociate_OptionalNestedAssociate_String`,
+    `r`.`OptionalAssociate_RequiredNestedAssociate_Id` = `r`.`OptionalAssociate_RequiredNestedAssociate_Id`,
+    `r`.`OptionalAssociate_RequiredNestedAssociate_Int` = `r`.`OptionalAssociate_RequiredNestedAssociate_Int`,
+    `r`.`OptionalAssociate_RequiredNestedAssociate_Ints` = `r`.`OptionalAssociate_RequiredNestedAssociate_Ints`,
+    `r`.`OptionalAssociate_RequiredNestedAssociate_Name` = `r`.`OptionalAssociate_RequiredNestedAssociate_Name`,
+    `r`.`OptionalAssociate_RequiredNestedAssociate_String` = `r`.`OptionalAssociate_RequiredNestedAssociate_String`
 """);
     }
 
-    public override async Task Update_complex_type_to_inline_without_lambda(bool async)
+    public override async Task Update_nested_associate_to_another_nested_associate()
     {
-        await base.Update_complex_type_to_inline_without_lambda(async);
+        await base.Update_nested_associate_to_another_nested_associate();
 
-        AssertSql(
-"""
-SELECT `c`.`Id`, `c`.`Name`, `c`.`BillingAddress_AddressLine1`, `c`.`BillingAddress_AddressLine2`, `c`.`BillingAddress_Tags`, `c`.`BillingAddress_ZipCode`, `c`.`BillingAddress_Country_Code`, `c`.`BillingAddress_Country_FullName`, `c`.`ShippingAddress_AddressLine1`, `c`.`ShippingAddress_AddressLine2`, `c`.`ShippingAddress_Tags`, `c`.`ShippingAddress_ZipCode`, `c`.`ShippingAddress_Country_Code`, `c`.`ShippingAddress_Country_FullName`
-FROM `Customer` AS `c`
-""",
-                //
-                """
-UPDATE `Customer` AS `c`
-SET `c`.`ShippingAddress_AddressLine1` = 'New AddressLine1',
-    `c`.`ShippingAddress_AddressLine2` = 'New AddressLine2',
-    `c`.`ShippingAddress_Tags` = '["new_tag1","new_tag2"]',
-    `c`.`ShippingAddress_ZipCode` = 99999,
-    `c`.`ShippingAddress_Country_Code` = 'FR',
-    `c`.`ShippingAddress_Country_FullName` = 'France'
-""",
-                //
-                """
-SELECT `c`.`Id`, `c`.`Name`, `c`.`BillingAddress_AddressLine1`, `c`.`BillingAddress_AddressLine2`, `c`.`BillingAddress_Tags`, `c`.`BillingAddress_ZipCode`, `c`.`BillingAddress_Country_Code`, `c`.`BillingAddress_Country_FullName`, `c`.`ShippingAddress_AddressLine1`, `c`.`ShippingAddress_AddressLine2`, `c`.`ShippingAddress_Tags`, `c`.`ShippingAddress_ZipCode`, `c`.`ShippingAddress_Country_Code`, `c`.`ShippingAddress_Country_FullName`
-FROM `Customer` AS `c`
+        AssertExecuteUpdateSql(
+            """
+UPDATE `RootEntity` AS `r`
+SET `r`.`RequiredAssociate_OptionalNestedAssociate_Id` = `r`.`RequiredAssociate_RequiredNestedAssociate_Id`,
+    `r`.`RequiredAssociate_OptionalNestedAssociate_Int` = `r`.`RequiredAssociate_RequiredNestedAssociate_Int`,
+    `r`.`RequiredAssociate_OptionalNestedAssociate_Ints` = `r`.`RequiredAssociate_RequiredNestedAssociate_Ints`,
+    `r`.`RequiredAssociate_OptionalNestedAssociate_Name` = `r`.`RequiredAssociate_RequiredNestedAssociate_Name`,
+    `r`.`RequiredAssociate_OptionalNestedAssociate_String` = `r`.`RequiredAssociate_RequiredNestedAssociate_String`
 """);
     }
 
-    public override async Task Update_complex_type_to_inline_with_lambda(bool async)
+    public override async Task Update_associate_to_inline()
     {
-        await base.Update_complex_type_to_inline_with_lambda(async);
+        await base.Update_associate_to_inline();
 
-        AssertSql(
-"""
-SELECT `c`.`Id`, `c`.`Name`, `c`.`BillingAddress_AddressLine1`, `c`.`BillingAddress_AddressLine2`, `c`.`BillingAddress_Tags`, `c`.`BillingAddress_ZipCode`, `c`.`BillingAddress_Country_Code`, `c`.`BillingAddress_Country_FullName`, `c`.`ShippingAddress_AddressLine1`, `c`.`ShippingAddress_AddressLine2`, `c`.`ShippingAddress_Tags`, `c`.`ShippingAddress_ZipCode`, `c`.`ShippingAddress_Country_Code`, `c`.`ShippingAddress_Country_FullName`
-FROM `Customer` AS `c`
-""",
-                //
-                """
-UPDATE `Customer` AS `c`
-SET `c`.`ShippingAddress_AddressLine1` = 'New AddressLine1',
-    `c`.`ShippingAddress_AddressLine2` = 'New AddressLine2',
-    `c`.`ShippingAddress_Tags` = '["new_tag1","new_tag2"]',
-    `c`.`ShippingAddress_ZipCode` = 99999,
-    `c`.`ShippingAddress_Country_Code` = 'FR',
-    `c`.`ShippingAddress_Country_FullName` = 'France'
-""",
-                //
-                """
-SELECT `c`.`Id`, `c`.`Name`, `c`.`BillingAddress_AddressLine1`, `c`.`BillingAddress_AddressLine2`, `c`.`BillingAddress_Tags`, `c`.`BillingAddress_ZipCode`, `c`.`BillingAddress_Country_Code`, `c`.`BillingAddress_Country_FullName`, `c`.`ShippingAddress_AddressLine1`, `c`.`ShippingAddress_AddressLine2`, `c`.`ShippingAddress_Tags`, `c`.`ShippingAddress_ZipCode`, `c`.`ShippingAddress_Country_Code`, `c`.`ShippingAddress_Country_FullName`
-FROM `Customer` AS `c`
+        AssertExecuteUpdateSql(
+            """
+@complex_type_p_Id='?' (DbType = Int32)
+@complex_type_p_Int='?' (DbType = Int32)
+@complex_type_p_Ints='?' (Size = 4000)
+@complex_type_p_Name='?' (Size = 4000)
+@complex_type_p_String='?' (Size = 4000)
+@complex_type_p_RequiredNestedAssociate_Id='?' (DbType = Int32)
+@complex_type_p_RequiredNestedAssociate_Int='?' (DbType = Int32)
+@complex_type_p_RequiredNestedAssociate_Ints='?' (Size = 4000)
+@complex_type_p_RequiredNestedAssociate_Name='?' (Size = 4000)
+@complex_type_p_RequiredNestedAssociate_String='?' (Size = 4000)
+
+UPDATE `RootEntity` AS `r`
+SET `r`.`RequiredAssociate_Id` = @complex_type_p_Id,
+    `r`.`RequiredAssociate_Int` = @complex_type_p_Int,
+    `r`.`RequiredAssociate_Ints` = @complex_type_p_Ints,
+    `r`.`RequiredAssociate_Name` = @complex_type_p_Name,
+    `r`.`RequiredAssociate_String` = @complex_type_p_String,
+    `r`.`RequiredAssociate_OptionalNestedAssociate_Id` = NULL,
+    `r`.`RequiredAssociate_OptionalNestedAssociate_Int` = NULL,
+    `r`.`RequiredAssociate_OptionalNestedAssociate_Ints` = NULL,
+    `r`.`RequiredAssociate_OptionalNestedAssociate_Name` = NULL,
+    `r`.`RequiredAssociate_OptionalNestedAssociate_String` = NULL,
+    `r`.`RequiredAssociate_RequiredNestedAssociate_Id` = @complex_type_p_RequiredNestedAssociate_Id,
+    `r`.`RequiredAssociate_RequiredNestedAssociate_Int` = @complex_type_p_RequiredNestedAssociate_Int,
+    `r`.`RequiredAssociate_RequiredNestedAssociate_Ints` = @complex_type_p_RequiredNestedAssociate_Ints,
+    `r`.`RequiredAssociate_RequiredNestedAssociate_Name` = @complex_type_p_RequiredNestedAssociate_Name,
+    `r`.`RequiredAssociate_RequiredNestedAssociate_String` = @complex_type_p_RequiredNestedAssociate_String
 """);
     }
 
-    public override async Task Update_complex_type_to_another_database_complex_type_with_subquery(bool async)
+    public override async Task Update_associate_to_inline_with_lambda()
     {
-        await base.Update_complex_type_to_another_database_complex_type_with_subquery(async);
+        await base.Update_associate_to_inline_with_lambda();
 
-        AssertSql(
-"""
-@__p_0='1'
-
-SELECT `c`.`Id`, `c`.`Name`, `c`.`BillingAddress_AddressLine1`, `c`.`BillingAddress_AddressLine2`, `c`.`BillingAddress_Tags`, `c`.`BillingAddress_ZipCode`, `c`.`BillingAddress_Country_Code`, `c`.`BillingAddress_Country_FullName`, `c`.`ShippingAddress_AddressLine1`, `c`.`ShippingAddress_AddressLine2`, `c`.`ShippingAddress_Tags`, `c`.`ShippingAddress_ZipCode`, `c`.`ShippingAddress_Country_Code`, `c`.`ShippingAddress_Country_FullName`
-FROM `Customer` AS `c`
-ORDER BY `c`.`Id`
-LIMIT 18446744073709551610 OFFSET @__p_0
-""",
-                //
-                """
-@__p_0='1'
-
-UPDATE `Customer` AS `c0`
-INNER JOIN (
-    SELECT `c`.`Id`, `c`.`BillingAddress_AddressLine1`, `c`.`BillingAddress_AddressLine2`, `c`.`BillingAddress_Tags`, `c`.`BillingAddress_ZipCode`, `c`.`ShippingAddress_Country_Code`, `c`.`ShippingAddress_Country_FullName`
-    FROM `Customer` AS `c`
-    ORDER BY `c`.`Id`
-    LIMIT 18446744073709551610 OFFSET @__p_0
-) AS `c1` ON `c0`.`Id` = `c1`.`Id`
-SET `c0`.`ShippingAddress_AddressLine1` = `c1`.`BillingAddress_AddressLine1`,
-    `c0`.`ShippingAddress_AddressLine2` = `c1`.`BillingAddress_AddressLine2`,
-    `c0`.`ShippingAddress_Tags` = `c1`.`BillingAddress_Tags`,
-    `c0`.`ShippingAddress_ZipCode` = `c1`.`BillingAddress_ZipCode`,
-    `c0`.`ShippingAddress_Country_Code` = `c1`.`ShippingAddress_Country_Code`,
-    `c0`.`ShippingAddress_Country_FullName` = `c1`.`ShippingAddress_Country_FullName`
-""",
-                //
-                """
-@__p_0='1'
-
-SELECT `c`.`Id`, `c`.`Name`, `c`.`BillingAddress_AddressLine1`, `c`.`BillingAddress_AddressLine2`, `c`.`BillingAddress_Tags`, `c`.`BillingAddress_ZipCode`, `c`.`BillingAddress_Country_Code`, `c`.`BillingAddress_Country_FullName`, `c`.`ShippingAddress_AddressLine1`, `c`.`ShippingAddress_AddressLine2`, `c`.`ShippingAddress_Tags`, `c`.`ShippingAddress_ZipCode`, `c`.`ShippingAddress_Country_Code`, `c`.`ShippingAddress_Country_FullName`
-FROM `Customer` AS `c`
-ORDER BY `c`.`Id`
-LIMIT 18446744073709551610 OFFSET @__p_0
+        AssertExecuteUpdateSql(
+            """
+UPDATE `RootEntity` AS `r`
+SET `r`.`RequiredAssociate_Id` = 1000,
+    `r`.`RequiredAssociate_Int` = 70,
+    `r`.`RequiredAssociate_Ints` = '[1,2,4]',
+    `r`.`RequiredAssociate_Name` = 'Updated associate name',
+    `r`.`RequiredAssociate_String` = 'Updated associate string',
+    `r`.`RequiredAssociate_OptionalNestedAssociate_Id` = NULL,
+    `r`.`RequiredAssociate_OptionalNestedAssociate_Int` = NULL,
+    `r`.`RequiredAssociate_OptionalNestedAssociate_Ints` = NULL,
+    `r`.`RequiredAssociate_OptionalNestedAssociate_Name` = NULL,
+    `r`.`RequiredAssociate_OptionalNestedAssociate_String` = NULL,
+    `r`.`RequiredAssociate_RequiredNestedAssociate_Id` = 1000,
+    `r`.`RequiredAssociate_RequiredNestedAssociate_Int` = 80,
+    `r`.`RequiredAssociate_RequiredNestedAssociate_Ints` = '[1,2,4]',
+    `r`.`RequiredAssociate_RequiredNestedAssociate_Name` = 'Updated nested name',
+    `r`.`RequiredAssociate_RequiredNestedAssociate_String` = 'Updated nested string'
 """);
     }
 
-    public override async Task Update_collection_inside_complex_type(bool async)
+    public override async Task Update_nested_associate_to_inline_with_lambda()
     {
-        await base.Update_collection_inside_complex_type(async);
+        await base.Update_nested_associate_to_inline_with_lambda();
 
-        AssertSql(
-"""
-SELECT `c`.`Id`, `c`.`Name`, `c`.`BillingAddress_AddressLine1`, `c`.`BillingAddress_AddressLine2`, `c`.`BillingAddress_Tags`, `c`.`BillingAddress_ZipCode`, `c`.`BillingAddress_Country_Code`, `c`.`BillingAddress_Country_FullName`, `c`.`ShippingAddress_AddressLine1`, `c`.`ShippingAddress_AddressLine2`, `c`.`ShippingAddress_Tags`, `c`.`ShippingAddress_ZipCode`, `c`.`ShippingAddress_Country_Code`, `c`.`ShippingAddress_Country_FullName`
-FROM `Customer` AS `c`
-""",
-                //
-                """
-UPDATE `Customer` AS `c`
-SET `c`.`ShippingAddress_Tags` = '["new_tag1","new_tag2"]'
-""",
-                //
-                """
-SELECT `c`.`Id`, `c`.`Name`, `c`.`BillingAddress_AddressLine1`, `c`.`BillingAddress_AddressLine2`, `c`.`BillingAddress_Tags`, `c`.`BillingAddress_ZipCode`, `c`.`BillingAddress_Country_Code`, `c`.`BillingAddress_Country_FullName`, `c`.`ShippingAddress_AddressLine1`, `c`.`ShippingAddress_AddressLine2`, `c`.`ShippingAddress_Tags`, `c`.`ShippingAddress_ZipCode`, `c`.`ShippingAddress_Country_Code`, `c`.`ShippingAddress_Country_FullName`
-FROM `Customer` AS `c`
+        AssertExecuteUpdateSql(
+            """
+UPDATE `RootEntity` AS `r`
+SET `r`.`RequiredAssociate_RequiredNestedAssociate_Id` = 1000,
+    `r`.`RequiredAssociate_RequiredNestedAssociate_Int` = 80,
+    `r`.`RequiredAssociate_RequiredNestedAssociate_Ints` = '[1,2,4]',
+    `r`.`RequiredAssociate_RequiredNestedAssociate_Name` = 'Updated nested name',
+    `r`.`RequiredAssociate_RequiredNestedAssociate_String` = 'Updated nested string'
 """);
     }
+
+    public override async Task Update_associate_to_null()
+    {
+        await base.Update_associate_to_null();
+
+        AssertExecuteUpdateSql(
+            """
+UPDATE `RootEntity` AS `r`
+SET `r`.`OptionalAssociate_Id` = NULL,
+    `r`.`OptionalAssociate_Int` = NULL,
+    `r`.`OptionalAssociate_Ints` = NULL,
+    `r`.`OptionalAssociate_Name` = NULL,
+    `r`.`OptionalAssociate_String` = NULL,
+    `r`.`OptionalAssociate_OptionalNestedAssociate_Id` = NULL,
+    `r`.`OptionalAssociate_OptionalNestedAssociate_Int` = NULL,
+    `r`.`OptionalAssociate_OptionalNestedAssociate_Ints` = NULL,
+    `r`.`OptionalAssociate_OptionalNestedAssociate_Name` = NULL,
+    `r`.`OptionalAssociate_OptionalNestedAssociate_String` = NULL,
+    `r`.`OptionalAssociate_RequiredNestedAssociate_Id` = NULL,
+    `r`.`OptionalAssociate_RequiredNestedAssociate_Int` = NULL,
+    `r`.`OptionalAssociate_RequiredNestedAssociate_Ints` = NULL,
+    `r`.`OptionalAssociate_RequiredNestedAssociate_Name` = NULL,
+    `r`.`OptionalAssociate_RequiredNestedAssociate_String` = NULL
+""");
+    }
+
+    public override async Task Update_associate_to_null_with_lambda()
+    {
+        await base.Update_associate_to_null_with_lambda();
+
+        AssertExecuteUpdateSql(
+            """
+UPDATE `RootEntity` AS `r`
+SET `r`.`OptionalAssociate_Id` = NULL,
+    `r`.`OptionalAssociate_Int` = NULL,
+    `r`.`OptionalAssociate_Ints` = NULL,
+    `r`.`OptionalAssociate_Name` = NULL,
+    `r`.`OptionalAssociate_String` = NULL,
+    `r`.`OptionalAssociate_OptionalNestedAssociate_Id` = NULL,
+    `r`.`OptionalAssociate_OptionalNestedAssociate_Int` = NULL,
+    `r`.`OptionalAssociate_OptionalNestedAssociate_Ints` = NULL,
+    `r`.`OptionalAssociate_OptionalNestedAssociate_Name` = NULL,
+    `r`.`OptionalAssociate_OptionalNestedAssociate_String` = NULL,
+    `r`.`OptionalAssociate_RequiredNestedAssociate_Id` = NULL,
+    `r`.`OptionalAssociate_RequiredNestedAssociate_Int` = NULL,
+    `r`.`OptionalAssociate_RequiredNestedAssociate_Ints` = NULL,
+    `r`.`OptionalAssociate_RequiredNestedAssociate_Name` = NULL,
+    `r`.`OptionalAssociate_RequiredNestedAssociate_String` = NULL
+""");
+    }
+
+    public override async Task Update_associate_to_null_parameter()
+    {
+        await base.Update_associate_to_null_parameter();
+
+        AssertExecuteUpdateSql(
+            """
+UPDATE `RootEntity` AS `r`
+SET `r`.`OptionalAssociate_Id` = NULL,
+    `r`.`OptionalAssociate_Int` = NULL,
+    `r`.`OptionalAssociate_Ints` = NULL,
+    `r`.`OptionalAssociate_Name` = NULL,
+    `r`.`OptionalAssociate_String` = NULL,
+    `r`.`OptionalAssociate_OptionalNestedAssociate_Id` = NULL,
+    `r`.`OptionalAssociate_OptionalNestedAssociate_Int` = NULL,
+    `r`.`OptionalAssociate_OptionalNestedAssociate_Ints` = NULL,
+    `r`.`OptionalAssociate_OptionalNestedAssociate_Name` = NULL,
+    `r`.`OptionalAssociate_OptionalNestedAssociate_String` = NULL,
+    `r`.`OptionalAssociate_RequiredNestedAssociate_Id` = NULL,
+    `r`.`OptionalAssociate_RequiredNestedAssociate_Int` = NULL,
+    `r`.`OptionalAssociate_RequiredNestedAssociate_Ints` = NULL,
+    `r`.`OptionalAssociate_RequiredNestedAssociate_Name` = NULL,
+    `r`.`OptionalAssociate_RequiredNestedAssociate_String` = NULL
+""");
+    }
+
+    public override async Task Update_required_nested_associate_to_null()
+    {
+        await base.Update_required_nested_associate_to_null();
+
+        AssertExecuteUpdateSql();
+    }
+
+    #endregion Update association
+
+    #region Update collection
+
+    public override async Task Update_collection_to_parameter()
+    {
+        await base.Update_collection_to_parameter();
+
+        AssertExecuteUpdateSql();
+    }
+
+    public override async Task Update_nested_collection_to_parameter()
+    {
+        await base.Update_nested_collection_to_parameter();
+
+        AssertExecuteUpdateSql();
+    }
+
+    public override async Task Update_nested_collection_to_inline_with_lambda()
+    {
+        await base.Update_nested_collection_to_inline_with_lambda();
+
+        AssertExecuteUpdateSql();
+    }
+
+    public override async Task Update_collection_referencing_the_original_collection()
+    {
+        await base.Update_collection_referencing_the_original_collection();
+
+        AssertExecuteUpdateSql();
+    }
+
+    public override async Task Update_nested_collection_to_another_nested_collection()
+    {
+        await base.Update_nested_collection_to_another_nested_collection();
+
+        AssertExecuteUpdateSql();
+    }
+
+    public override async Task Update_inside_structural_collection()
+    {
+        await base.Update_inside_structural_collection();
+
+        AssertExecuteUpdateSql();
+    }
+
+    #endregion Update collection
+
+    #region Update primitive collection
+
+    public override async Task Update_primitive_collection_to_constant()
+    {
+        await base.Update_primitive_collection_to_constant();
+
+        AssertExecuteUpdateSql(
+            """
+UPDATE `RootEntity` AS `r`
+SET `r`.`RequiredAssociate_Ints` = '[1,2,4]'
+""");
+    }
+
+    public override async Task Update_primitive_collection_to_parameter()
+    {
+        await base.Update_primitive_collection_to_parameter();
+
+        AssertExecuteUpdateSql(
+            """
+@ints='?' (Size = 4000)
+
+UPDATE `RootEntity` AS `r`
+SET `r`.`RequiredAssociate_Ints` = @ints
+""");
+    }
+
+    public override async Task Update_primitive_collection_to_another_collection()
+    {
+        await base.Update_primitive_collection_to_another_collection();
+
+        AssertExecuteUpdateSql(
+            """
+UPDATE `RootEntity` AS `r`
+SET `r`.`RequiredAssociate_OptionalNestedAssociate_Ints` = `r`.`RequiredAssociate_RequiredNestedAssociate_Ints`
+""");
+    }
+
+    public override async Task Update_inside_primitive_collection()
+    {
+        await base.Update_inside_primitive_collection();
+
+        AssertExecuteUpdateSql();
+    }
+
+    #endregion Update primitive collection
+
+    #region Multiple updates
+
+    public override async Task Update_multiple_properties_inside_same_associate()
+    {
+        await base.Update_multiple_properties_inside_same_associate();
+
+        AssertExecuteUpdateSql(
+            """
+@p='?' (Size = 4000)
+@p0='?' (DbType = Int32)
+
+UPDATE `RootEntity` AS `r`
+SET `r`.`RequiredAssociate_String` = @p,
+    `r`.`RequiredAssociate_Int` = @p0
+""");
+    }
+
+    public override async Task Update_multiple_properties_inside_associates_and_on_entity_type()
+    {
+        await base.Update_multiple_properties_inside_associates_and_on_entity_type();
+
+        AssertExecuteUpdateSql(
+            """
+@p='?' (Size = 4000)
+
+UPDATE `RootEntity` AS `r`
+SET `r`.`Name` = CONCAT(`r`.`Name`, 'Modified'),
+    `r`.`RequiredAssociate_String` = `r`.`OptionalAssociate_String`,
+    `r`.`OptionalAssociate_RequiredNestedAssociate_String` = @p
+WHERE `r`.`OptionalAssociate_Id` IS NOT NULL
+""");
+    }
+
+    public override async Task Update_multiple_projected_associates_via_anonymous_type()
+    {
+        await base.Update_multiple_projected_associates_via_anonymous_type();
+
+        AssertExecuteUpdateSql(
+            """
+@p='?' (Size = 4000)
+
+UPDATE `RootEntity` AS `r`
+SET `r`.`RequiredAssociate_String` = `r`.`OptionalAssociate_String`,
+    `r`.`OptionalAssociate_String` = @p
+WHERE `r`.`OptionalAssociate_Id` IS NOT NULL
+""");
+    }
+
+    #endregion Multiple updates
 
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
-    {
-        MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
-    }
+        => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 
-    private void AssertExecuteUpdateSql(params string[] expected)
-    {
-        Fixture.TestSqlLoggerFactory.AssertBaseline(expected, forUpdate: true);
-    }
-
-    private void AssertSql(params string[] expected)
-    {
-        Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
-    }
-
-    protected void ClearLog()
-    {
-        Fixture.TestSqlLoggerFactory.Clear();
-    }
-
-    public class ComplexTypeBulkUpdatesMySqlFixture : ComplexTypeBulkUpdatesRelationalFixtureBase
+    public class ComplexTableSplittingMySqlFixture : ComplexTableSplittingRelationalFixtureBase
     {
         protected override ITestStoreFactory TestStoreFactory
             => MySqlTestStoreFactory.Instance;
