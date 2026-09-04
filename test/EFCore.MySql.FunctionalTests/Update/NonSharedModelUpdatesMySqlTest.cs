@@ -1,4 +1,6 @@
 using System.Threading.Tasks;
+using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.EntityFrameworkCore.Update;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
@@ -8,6 +10,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Update;
 
 public class NonSharedModelUpdatesMySqlTest : NonSharedModelUpdatesTestBase
 {
+    public NonSharedModelUpdatesMySqlTest([NotNull] NonSharedFixture fixture)
+        : base(fixture)
+    {
+    }
+
     public override async Task Principal_and_dependent_roundtrips_with_cycle_breaking(bool async)
     {
         await base.Principal_and_dependent_roundtrips_with_cycle_breaking(async);

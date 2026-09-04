@@ -7,8 +7,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests;
 
 public class EntitySplittingMySqlTest : EntitySplittingTestBase
 {
-    public EntitySplittingMySqlTest(ITestOutputHelper testOutputHelper)
-        : base(testOutputHelper)
+    public EntitySplittingMySqlTest(NonSharedFixture fixture, ITestOutputHelper testOutputHelper)
+        : base(fixture, testOutputHelper)
     {
     }
 

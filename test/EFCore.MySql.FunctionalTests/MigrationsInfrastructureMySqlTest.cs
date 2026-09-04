@@ -1,5 +1,11 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
@@ -20,9 +26,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         {
         }
 
-        public override void Can_generate_migration_from_initial_database_to_initial()
+        public override async Task Can_generate_migration_from_initial_database_to_initial()
         {
-            base.Can_generate_migration_from_initial_database_to_initial();
+            await base.Can_generate_migration_from_initial_database_to_initial();
 
             Assert.Equal(
                 @"CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
@@ -36,9 +42,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                 ignoreLineEndingDifferences: true);
         }
 
-        public override void Can_generate_no_migration_script()
+        public override async Task Can_generate_no_migration_script()
         {
-            base.Can_generate_no_migration_script();
+            await base.Can_generate_no_migration_script();
 
             Assert.Equal(
                 @"CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
@@ -110,23 +116,41 @@ CREATE TABLE `Table1` (
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('00000000000001_Migration1', '7.0.0-test');
 
+COMMIT;
+
+START TRANSACTION;
 ALTER TABLE `Table1` RENAME COLUMN `Foo` TO `Bar`;
 
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('00000000000002_Migration2', '7.0.0-test');
 
+COMMIT;
+
+START TRANSACTION;
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('00000000000003_Migration3', '7.0.0-test');
 
+COMMIT;
+
+START TRANSACTION;
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('00000000000004_Migration4', '7.0.0-test');
 
+COMMIT;
+
+START TRANSACTION;
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('00000000000005_Migration5', '7.0.0-test');
 
+COMMIT;
+
+START TRANSACTION;
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('00000000000006_Migration6', '7.0.0-test');
 
+COMMIT;
+
+START TRANSACTION;
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('00000000000007_Migration7', '7.0.0-test');
 
@@ -136,23 +160,41 @@ START TRANSACTION;
 DELETE FROM `__EFMigrationsHistory`
 WHERE `MigrationId` = '00000000000007_Migration7';
 
+COMMIT;
+
+START TRANSACTION;
 DELETE FROM `__EFMigrationsHistory`
 WHERE `MigrationId` = '00000000000006_Migration6';
 
+COMMIT;
+
+START TRANSACTION;
 DELETE FROM `__EFMigrationsHistory`
 WHERE `MigrationId` = '00000000000005_Migration5';
 
+COMMIT;
+
+START TRANSACTION;
 DELETE FROM `__EFMigrationsHistory`
 WHERE `MigrationId` = '00000000000004_Migration4';
 
+COMMIT;
+
+START TRANSACTION;
 DELETE FROM `__EFMigrationsHistory`
 WHERE `MigrationId` = '00000000000003_Migration3';
 
+COMMIT;
+
+START TRANSACTION;
 ALTER TABLE `Table1` RENAME COLUMN `Bar` TO `Foo`;
 
 DELETE FROM `__EFMigrationsHistory`
 WHERE `MigrationId` = '00000000000002_Migration2';
 
+COMMIT;
+
+START TRANSACTION;
 DROP TABLE `Table1`;
 
 DELETE FROM `__EFMigrationsHistory`
@@ -343,6 +385,9 @@ DELIMITER ;
 CALL MigrationsScript();
 DROP PROCEDURE MigrationsScript;
 
+COMMIT;
+
+START TRANSACTION;
 DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
 CREATE PROCEDURE MigrationsScript()
@@ -467,6 +512,36 @@ DROP PROCEDURE MigrationsScript;
             base.Can_get_active_provider();
 
             Assert.Equal("Pomelo.EntityFrameworkCore.MySql", ActiveProvider);
+        }
+
+        // EF Core 10's base test has a bug: it calls `db.Database.BeginTransactionAsync()` without `await`,
+        // which creates a race condition when the connection isn't hot (e.g., after a parallel migration test
+        // saturates the connection pool). We override with the correct `await`.
+        public override async Task Can_apply_two_migrations_in_transaction_async()
+        {
+            using var db = Fixture.CreateContext();
+            await db.Database.EnsureDeletedAsync();
+            await GiveMeSomeTimeAsync(db);
+            await db.GetService<IRelationalDatabaseCreator>().CreateAsync();
+
+            var strategy = db.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
+            {
+                await using var transaction = await db.Database.BeginTransactionAsync();
+                var migrator = db.GetService<IMigrator>();
+                await migrator.MigrateAsync("Migration1");
+                await migrator.MigrateAsync("Migration2");
+
+                var history = db.GetService<IHistoryRepository>();
+                Assert.Collection(
+                    await history.GetAppliedMigrationsAsync(),
+                    x => Assert.Equal("00000000000001_Migration1", x.MigrationId),
+                    x => Assert.Equal("00000000000002_Migration2", x.MigrationId));
+            });
+
+            Assert.Equal(
+                LogLevel.Warning,
+                Fixture.TestSqlLoggerFactory.Log.First(l => l.Id == RelationalEventId.MigrationsUserTransactionWarning).Level);
         }
 
         [ConditionalFact(Skip = "TODO: Implement")]

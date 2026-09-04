@@ -319,8 +319,12 @@ namespace Microsoft.EntityFrameworkCore
                                ? ServerType.MariaDb
                                : ServerType.MySql);
 
+                // MariaDB historically prefixes its version with "5.5.5-" for compatibility (e.g. "5.5.5-10.5.3-MariaDB").
+                // In that case, the real version is the second match. For newer MariaDB versions that don't use the
+                // prefix (e.g. "11.8.6-MariaDB-5ubuntu0.1"), the first match is correct.
                 var version = type == ServerType.MariaDb &&
-                              semanticVersion.Count > 1
+                              semanticVersion.Count > 1 &&
+                              semanticVersion[0].Value == "5.5.5"
                     ? Version.Parse(semanticVersion[1].Value)
                     : Version.Parse(semanticVersion[0].Value);
 

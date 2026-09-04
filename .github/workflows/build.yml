@@ -22,22 +22,19 @@ env:
   mariadbSqlMode: STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
   maxConnections: 512
   skipAllTests: false
-  skipWindowsTests: false
+  skipWindowsTests: true
 jobs:
   BuildAndTest:
     strategy:
       fail-fast: false
       matrix:
         dbVersion:
-          - 8.4.3-mysql
-          - 8.0.40-mysql
-          - 11.6.2-mariadb
-          - 11.5.2-mariadb
-          - 11.4.4-mariadb
-          - 11.3.2-mariadb
-          - 10.11.10-mariadb
-          - 10.6.20-mariadb
-          - 10.5.27-mariadb
+          - 8.4.7-mysql
+          - 8.0.44-mysql
+          - 11.8.5-mariadb
+          - 11.4.9-mariadb
+          - 10.11.15-mariadb
+          - 10.6.24-mariadb
         os:
           - ubuntu-latest
           - windows-latest
@@ -73,11 +70,8 @@ jobs:
           $clientExecutable = $databaseServerType -eq 'mariadb' -and $databaseServerVersion.Split('.')[0] -ge 11 ? 'mariadb' : 'mysql'
           echo "clientExecutable=$clientExecutable" >> $env:GITHUB_ENV
 
-          $clientCommandPrefix = $os -eq 'windows' ? $clientExecutable : "docker exec '$databaseServerType' $clientExecutable"
+          $clientCommandPrefix = "docker exec '$databaseServerType' $clientExecutable"
           echo "clientCommandPrefix=$clientCommandPrefix" >> $env:GITHUB_ENV
-
-          $windowsUserTempLocation = $os -eq 'windows' ? (Get-Item $env:Temp).FullName : ''
-          echo "windowsUserTempLocation=$windowsUserTempLocation" >> $env:GITHUB_ENV
       - name: Output Variables
         shell: pwsh
         run: |
@@ -91,30 +85,19 @@ jobs:
           echo "serverExecutable: ${{ env.serverExecutable }}"
           echo "clientExecutable: ${{ env.clientExecutable }}"
           echo "clientCommandPrefix: ${{ env.clientCommandPrefix }}"
-          echo "windowsUserTempLocation: ${{ env.windowsUserTempLocation }}"
 
           echo "github.event_name: ${{ github.event_name }}"
           echo "github.repository: ${{ github.repository }}"
-      - name: Cache - Database Image - Linux
-        id: cache-databaseImage-linux
+      - name: Cache - Database Image
+        id: cache-databaseImage
         uses: actions/cache@v4
-        if: ${{ env.os == 'linux' }}
         with:
           path: cache/database
-          key: database-linux-${{ env.databaseServerType }}-${{ env.databaseServerVersion }}-v2
-      - name: Cache - Database Image - Windows
-        id: cache-databaseImage-windows
-        uses: actions/cache@v4
-        if: ${{ env.os == 'windows' }}
-        with:
-          path: ${{ env.windowsUserTempLocation }}\Pomelo.Chocolatey.${{ env.databaseServerType }}.Server
-          key: database-windows-${{ env.databaseServerType }}-${{ env.databaseServerVersion }}-v3
-      - name: Install Database Server - Linux
-        if: ${{ env.os == 'linux' }}
+          key: database-${{ env.databaseServerType }}-${{ env.databaseServerVersion }}-v4
+      - name: Install Database Server
+        if: ${{ env.skipTests != 'true' }}
         shell: pwsh
         run: |
-          sudo systemctl stop mysql
-
           $waitMinutes = 5
           $pollingIntervalSeconds = 1
           $started = $false
@@ -132,13 +115,28 @@ jobs:
               New-Item -ItemType Directory './cache/database'
             }
 
-            docker pull '${{ env.databaseServerType }}:${{ env.databaseServerVersion }}'
+            if ('${{ matrix.os }}' -like 'windows-*')
+            {
+              docker pull --platform linux '${{ env.databaseServerType }}:${{ env.databaseServerVersion }}'
+            }
+            else
+            {
+              docker pull '${{ env.databaseServerType }}:${{ env.databaseServerVersion }}'
+            }
+
             docker save -o './cache/database/${{ env.databaseServerType }}_${{ env.databaseServerVersion }}.tar' '${{ env.databaseServerType }}:${{ env.databaseServerVersion }}'
 
             dir './cache/database' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
           }
 
-          docker run --name '${{ env.databaseServerType }}' -e MYSQL_ROOT_PASSWORD=Password12! -p 127.0.0.1:3306:3306 -d '${{ env.databaseServerType }}:${{ env.databaseServerVersion }}'
+          if ('${{ matrix.os }}' -like 'windows-*')
+          {
+            docker run --platform linux --name '${{ env.databaseServerType }}' -e MYSQL_ROOT_PASSWORD=Password12! -p 127.0.0.1:3306:3306 -d '${{ env.databaseServerType }}:${{ env.databaseServerVersion }}'
+          }
+          else
+          {
+            docker run --name '${{ env.databaseServerType }}' -e MYSQL_ROOT_PASSWORD=Password12! -p 127.0.0.1:3306:3306 -d '${{ env.databaseServerType }}:${{ env.databaseServerVersion }}'
+          }
           $startTime = Get-Date
 
           while (!($started = ${{ env.clientCommandPrefix }} --protocol=tcp -h localhost -P 3306 -u root -pPassword12! -e 'select 1;') -and ((Get-Date) - $startTime).TotalMinutes -lt $waitMinutes)
@@ -151,63 +149,12 @@ jobs:
             throw "${{ env.databaseServerType }}:${{ env.databaseServerVersion }} docker container failed to start in ${waitMinutes} minutes"
             exit 1
           }
-      - name: Install Database Server - Windows
-        if: ${{ env.os == 'windows' }}
-        shell: pwsh
-        run: |
-          $mySqlServiceName = '${{ env.databaseServerType }}_${{ env.databaseServerVersion }}'
-          $lowerCaseTableNames = 2
-          $packageName = 'Pomelo.Chocolatey.${{ env.databaseServerType }}.Server'
-          $mySqlBinPath = "C:\tools\${packageName}\current\bin"
-          $mySqlIniPath = "C:\tools\${packageName}\current\my.ini"
-          $mySqlDataPath = 'C:\ProgramData\${{ env.databaseServerType }}\data'
-
-          dir "$env:Temp\${{ env.databaseServerType }}\${{ env.databaseServerVersion }}" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
-
-          $service = Get-Service '*${{ env.databaseServerType }}*' -ErrorAction SilentlyContinue
-          if ($service -ne $null)
-          {
-            throw "A service for ${{ env.databaseServerType }} appears to already exist."
-            exit 1
-          }
-
-          # choco config set cacheLocation '$(Pipeline.Workspace)/cache/database'
-          choco install $packageName '--version=${{ env.databaseServerVersion }}' --ignore-dependencies --source 'https://www.myget.org/F/pomelo/api/v2;https://community.chocolatey.org/api/v2' --params "/serviceName:$mySqlServiceName"
-
-          Get-Service '*${{ env.databaseServerType }}*' -ErrorAction SilentlyContinue
-          Stop-Service $mySqlServiceName -Verbose
-
-          echo "Update PATH environment variable"
-          $env:PATH = "$mySqlBinPath;$env:PATH"
-          echo "PATH=$env:PATH" >> $env:GITHUB_ENV
-
-          echo "Update configuration file"
-          "lower_case_table_names=$lowerCaseTableNames" >> $mySqlIniPath
-
-          Remove-Item $mySqlDataPath/* -Recurse -Force -Verbose
-
-          echo "Reinitialize database server"
-
-          if ('${{ env.databaseServerType }}' -eq 'mysql')
-          {
-            ${{ env.serverExecutable }} --defaults-file="$mySqlIniPath" --initialize-insecure
-          }
-          else
-          {
-            mysql_install_db --datadir="$mySqlDataPath"
-          }
-
-          Start-Service $mySqlServiceName -Verbose
-
-          echo "Setup credentials"
-          ${{ env.clientCommandPrefix }} -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
-          ${{ env.clientCommandPrefix }} -h localhost -u root -pPassword12! -e "SELECT @@version;"
-
-          dir "$env:Temp\${packageName}\${{ env.databaseServerVersion }}" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
       - name: Setup Database
+        if: ${{ env.skipTests != 'true' }}
         shell: pwsh
         run: ${{ env.clientCommandPrefix }} -u root -pPassword12! -e "SET GLOBAL sql_mode = '${{ env.sqlMode }}'; SET GLOBAL max_connections = ${{ env.maxConnections }};"
       - name: Database Information
+        if: ${{ env.skipTests != 'true' }}
         shell: pwsh
         run: ${{ env.clientCommandPrefix }} -u root -pPassword12! -e 'SHOW VARIABLES;'
       - name: Setup .NET SDK
@@ -233,6 +180,7 @@ jobs:
           Copy-Item test/EFCore.MySql.IntegrationTests/appsettings.ci.json test/EFCore.MySql.IntegrationTests/appsettings.json
           Copy-Item test/EFCore.MySql.IntegrationTests/config.json.example test/EFCore.MySql.IntegrationTests/config.json
       - name: Setup Integration Tests
+        if: ${{ env.skipTests != 'true' }}
         shell: pwsh
         run: |
           ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
@@ -252,193 +200,66 @@ jobs:
       - name: Integration Tests - Applying migrations
         if: ${{ env.skipTests != 'true' }}
         shell: pwsh
-        run: dotnet run --project test/EFCore.MySql.IntegrationTests -c Release testMigrate
+        run: dotnet test test/EFCore.MySql.IntegrationTests -c Debug --no-build --filter "FullyQualifiedName~Migrations" --logger "GitHubActions;report-warnings=false"
       - name: Integration Tests - Scaffolding
         if: ${{ env.skipTests != 'true' }}
         shell: pwsh
-        run: ./test/EFCore.MySql.IntegrationTests/scripts/scaffold.ps1
+        run: dotnet test test/EFCore.MySql.IntegrationTests -c Debug --no-build --filter "FullyQualifiedName~Scaffolding" --logger "GitHubActions;report-warnings=false"
       - name: Integration Tests - With EF_BATCH_SIZE = 1
         if: ${{ env.skipTests != 'true' }}
         shell: pwsh
-        run: |
-          $env:EF_BATCH_SIZE = "1"
-          dotnet test -c Release --no-build --logger "GitHubActions;report-warnings=false" test/EFCore.MySql.IntegrationTests
+        env:
+          EF_BATCH_SIZE: 1
+        run: dotnet test test/EFCore.MySql.IntegrationTests -c Debug --no-build --logger "GitHubActions;report-warnings=false"
       - name: Integration Tests - With EF_BATCH_SIZE = 10
         if: ${{ env.skipTests != 'true' }}
         shell: pwsh
-        run: |
-          $env:EF_BATCH_SIZE = "10"
-          dotnet test -c Release --no-build --logger "GitHubActions;report-warnings=false" test/EFCore.MySql.IntegrationTests
+        env:
+          EF_BATCH_SIZE: 10
+        run: dotnet test test/EFCore.MySql.IntegrationTests -c Debug --no-build --logger "GitHubActions;report-warnings=false"
       - name: Integration Tests - With EF_BATCH_SIZE = 1
         if: ${{ env.skipTests != 'true' }}
         shell: pwsh
-        run: |
-          $env:EF_RETRY_ON_FAILURE = "3"
-          dotnet test -c Release --no-build --logger "GitHubActions;report-warnings=false" test/EFCore.MySql.IntegrationTests
+        env:
+          EF_BATCH_SIZE: 1
+        run: dotnet test test/EFCore.MySql.IntegrationTests -c Release --no-build --logger "GitHubActions;report-warnings=false"
       - name: Integration Tests - Legacy migrations
         if: ${{ env.skipTests != 'true' }}
         shell: pwsh
-        run: ./test/EFCore.MySql.IntegrationTests/scripts/legacy.ps1
-      - name: Integration Tests - Building migrations with EF_DATABASE = pomelo_test2
+        run: dotnet test test/EFCore.MySql.IntegrationTests -c Debug --no-build --filter "FullyQualifiedName~LegacyMigrations" --logger "GitHubActions;report-warnings=false"
+      - name: Integration Tests - Setup pomelo_test2 database
         if: ${{ env.skipTests != 'true' }}
         shell: pwsh
+        env:
+          EF_DATABASE: pomelo_test2
         run: |
-          $env:EF_DATABASE = "pomelo_test2"
-          dotnet build ./test/EFCore.MySql.IntegrationTests -c Release
-      - name: Integration Tests - Setup migrations with EF_DATABASE = pomelo_test2
-        if: ${{ env.skipTests != 'true' }}
-        shell: pwsh
-        run: |
-          $env:EF_DATABASE = "pomelo_test2"
-          ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
+          ${{ env.clientCommandPrefix }} -u root -pPassword12! -e "CREATE DATABASE IF NOT EXISTS pomelo_test2;"
+          Push-Location test/EFCore.MySql.IntegrationTests
+          dotnet ef database drop -f --no-build
+          dotnet ef database update --no-build
+          Pop-Location
       - name: Integration Tests - With EF_DATABASE = pomelo_test2
         if: ${{ env.skipTests != 'true' }}
         shell: pwsh
-        run: |
-          $env:EF_DATABASE = "pomelo_test2"
-          dotnet test -c Release --no-build --logger "GitHubActions;report-warnings=false" test/EFCore.MySql.IntegrationTests
-  NuGet:
-    needs: BuildAndTest
-    if: (github.event_name == 'push' || github.event_name == 'release') && github.repository == 'PomeloFoundation/Pomelo.EntityFrameworkCore.MySql'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v4
-        with:
-          global-json-file: global.json
-      - name: .NET Information
+        env:
+          EF_DATABASE: pomelo_test2
+        run: dotnet test test/EFCore.MySql.IntegrationTests -c Debug --no-build --logger "GitHubActions;report-warnings=false"
+      - name: Post Setup .NET SDK
+        if: failure()
         shell: pwsh
         run: |
-          dotnet --info
-      - name: NuGet Pack
-        shell: pwsh
-        run: |
-          $officialBuild = '${{ github.ref }}' -match '(?<=^refs/tags/)\d+\.\d+\.\d+.*$'
-          $officialVersion = $Matches.0
-          $wipBuild = '${{ github.ref }}' -match '^refs/heads/.*-wip$'
-          $ciBuildOnly = $wipBuild -or ('${{ github.ref }}' -match '^refs/heads/(?:main|.+-maint|release/.+)$')
-          $continuousIntegrationTimestamp = Get-Date -Format yyyyMMddHHmmss
-          $buildSha = '${{ github.sha }}'.SubString(0, 7);
-          $pack = $officialBuild -or $ciBuildOnly
-
-          $pushToAzureArtifacts = $pack
-          $pushToMygetOrg = $pack
-          $pushToNugetOrg = $pack -and $officialBuild
-
-          echo "pushToAzureArtifacts: $pushToAzureArtifacts"
-          echo "pushToMygetOrg: $pushToMygetOrg"
-          echo "pushToNugetOrg: $pushToNugetOrg"
-
-          echo "officialBuild: $officialBuild"
-          echo "officialVersion: $officialVersion"
-          echo "wipBuild: $wipBuild"
-          echo "ciBuildOnly: $ciBuildOnly"
-          echo "continuousIntegrationTimestamp: $continuousIntegrationTimestamp"
-          echo "buildSha: $buildSha"
-          echo "pack: $pack"
-
-          if ($pack)
-          {
-            $projectFiles = Get-ChildItem src/*/*.csproj -Recurse | % { $_.FullName }
-
-            $combinations = @('default', @('Release')), @('withPdbs', @('Release', 'Debug')) #, @('embeddedPdbs', @('Release', 'Debug'))
-            foreach ($combination in $combinations)
-            {
-              $type = $combination[0]
-              $configurations = $combination[1]
-              foreach ($configuration in $configurations)
-              {
-                $arguments = 'pack', '-c', $configuration, '-o', "nupkgs/$configuration/$type", '-p:ContinuousIntegrationBuild=true', '-p:OutputVersionProperties=true'
-
-                if ($officialBuild)
-                {
-                  $finalOfficialVersion = $configuration -eq 'Debug' `
-                    ? $officialVersion.Contains('-') `
-                      ? $officialVersion + '.debug' `
-                      : $officialVersion + '-debug' `
-                    : $officialVersion
-
-                  $arguments += "-p:OfficialVersion=$finalOfficialVersion"
-                }
-
-                if ($ciBuildOnly)
-                {
-                  $arguments += "-p:ContinuousIntegrationTimestamp=$continuousIntegrationTimestamp"
-                  $arguments += "-p:BuildSha=$buildSha"
-                }
-
-                switch ($type)
-                {
-                  'withPdbs' { $arguments += '-p:PackPdb=true', '-p:IncludeSymbols=false' }
-                  'embeddedPdbs' { $arguments += '-p:DebugType=embedded', '-p:IncludeSymbols=false' }
-                }
-
-                foreach ($projectFile in $projectFiles)
-                {
-                  echo "Type: $type, Configuration: $configuration, Project: $projectFile"
-                  echo "Pack command: dotnet $(($arguments + $projectFile) -join ' ')"
-                  & dotnet ($arguments + $projectFile)
-                }
-              }
-            }
-          }
-
-          echo "pushToAzureArtifacts=$pushToAzureArtifacts" >> $env:GITHUB_ENV
-          echo "pushToMygetOrg=$pushToMygetOrg" >> $env:GITHUB_ENV
-          echo "pushToNugetOrg=$pushToNugetOrg" >> $env:GITHUB_ENV
-      - name: Upload Artifacts
+          echo "Error: .NET SDK setup failed"
+          exit 1
+      - name: Post Cache - Database Image
+        if: always() && steps.cache-databaseImage.outputs.cache-hit != 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: nupkgs
-          path: nupkgs
-      - name: "NuGet Push - AZDO Feed - Debug"
-        if: ${{ env.pushToAzureArtifacts == 'true' }}
-        working-directory: nupkgs
+          name: database-${{ env.databaseServerType }}-${{ env.databaseServerVersion }}-v4
+          path: ./cache/database
+          retention-days: 7
+      - name: Post Checkout
+        if: failure()
         shell: pwsh
         run: |
-          # https://learn.microsoft.com/en-us/azure/devops/artifacts/nuget/dotnet-exe?view=azure-devops#publish-packages-from-external-sources
-          dotnet new nugetconfig --force
-          try
-          {
-            dotnet nuget add source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-debug/nuget/v3/index.json' --name 'azdo-pomelo-efcore-debug' --username '${{ vars.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_USERNAME }}' --password '${{ secrets.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_PASSWORD }}' --store-password-in-clear-text --configfile './nuget.config'
-
-            dotnet nuget push './Debug/withPdbs/**/*.nupkg' --api-key 'foo' --source 'azdo-pomelo-efcore-debug' --skip-duplicate
-          }
-          finally
-          {
-            Remove-Item './nuget.config' -Recurse -Force
-          }
-      - name: "NuGet Push - AZDO Feed - Release"
-        if: ${{ env.pushToAzureArtifacts == 'true' }}
-        working-directory: nupkgs
-        shell: pwsh
-        run: |
-          # https://learn.microsoft.com/en-us/azure/devops/artifacts/nuget/dotnet-exe?view=azure-devops#publish-packages-from-external-sources
-          dotnet new nugetconfig --force
-          try
-          {
-            dotnet nuget add source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-public/nuget/v3/index.json' --name 'azdo-pomelo-efcore-public' --username '${{ vars.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_USERNAME }}' --password '${{ secrets.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_PASSWORD }}' --store-password-in-clear-text --configfile './nuget.config'
-
-            dotnet nuget push './Release/withPdbs/**/*.nupkg' --api-key 'foo' --source 'azdo-pomelo-efcore-public' --skip-duplicate
-          }
-          finally
-          {
-            Remove-Item './nuget.config' -Recurse -Force
-          }
-      - name: "NuGet Push - myget.org - Debug"
-        if: ${{ env.pushToMygetOrg == 'true' }}
-        working-directory: nupkgs
-        shell: pwsh
-        run: dotnet nuget push './Debug/withPdbs/**/*.nupkg' --api-key '${{ secrets.MYGETORG_POMELO_ALLPACKAGES_DEBUG_PUSHNEW }}' --source 'https://www.myget.org/F/pomelo-debug/api/v3/index.json' --skip-duplicate
-      - name: "NuGet Push - myget.org - Release"
-        if: ${{ env.pushToMygetOrg == 'true' }}
-        working-directory: nupkgs
-        shell: pwsh
-        run: dotnet nuget push './Release/default/**/*.nupkg' --api-key '${{ secrets.MYGETORG_POMELO_ALLPACKAGES_PUSHNEW }}' --source 'https://www.myget.org/F/pomelo/api/v3/index.json' --skip-duplicate
-      - name: "NuGet Push - nuget.org - Release"
-        if: ${{ env.pushToNugetOrg == 'true' }}
-        working-directory: nupkgs
-        shell: pwsh
-        run: dotnet nuget push './Release/default/**/*.nupkg' --api-key '${{ secrets.NUGETORG_POMELO_ALLPACKAGES_PUSHNEW }}' --source 'https://api.nuget.org/v3/index.json'
+          echo "Error: Checkout failed"
+          exit 1

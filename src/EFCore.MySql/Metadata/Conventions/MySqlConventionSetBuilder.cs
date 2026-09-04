@@ -2,8 +2,8 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using JetBrains.Annotations;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
 
@@ -43,6 +43,10 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
             conventionSet.EntityTypeAddedConventions.Add(new TableCollationAttributeConvention(Dependencies));
             conventionSet.PropertyAddedConventions.Add(new ColumnCharSetAttributeConvention(Dependencies));
             conventionSet.PropertyAddedConventions.Add(new ColumnCollationAttributeConvention(Dependencies));
+
+            // JSON structural mapping (.ToJson()) support for EF Core 10
+            conventionSet.ComplexPropertyAddedConventions.Add(new MySqlJsonColumnConvention(Dependencies, RelationalDependencies));
+            conventionSet.ComplexPropertyAnnotationChangedConventions.Add(new MySqlJsonColumnConvention(Dependencies, RelationalDependencies));
 
             var valueGenerationConvention = new MySqlValueGenerationConvention(Dependencies, RelationalDependencies);
             ReplaceConvention(conventionSet.EntityTypeBaseTypeChangedConventions, valueGenerationConvention);

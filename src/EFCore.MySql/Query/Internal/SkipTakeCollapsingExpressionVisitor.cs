@@ -4,6 +4,7 @@
 #nullable enable
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
@@ -15,33 +16,26 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
     {
         private readonly ISqlExpressionFactory _sqlExpressionFactory;
 
-        private IReadOnlyDictionary<string, object?> _parameterValues;
-        private bool _canCache;
+        private ParametersCacheDecorator _parametersDecorator;
 
         public SkipTakeCollapsingExpressionVisitor(ISqlExpressionFactory sqlExpressionFactory)
         {
             Check.NotNull(sqlExpressionFactory, nameof(sqlExpressionFactory));
 
             _sqlExpressionFactory = sqlExpressionFactory;
-            _parameterValues = null!;
+            _parametersDecorator = null!;
         }
 
         public virtual Expression Process(
             Expression selectExpression,
-            IReadOnlyDictionary<string, object?> parametersValues,
-            out bool canCache)
+            ParametersCacheDecorator parametersDecorator)
         {
             Check.NotNull(selectExpression, nameof(selectExpression));
-            Check.NotNull(parametersValues, nameof(parametersValues));
+            Check.NotNull(parametersDecorator, nameof(parametersDecorator));
 
-            _parameterValues = parametersValues;
-            _canCache = true;
+            _parametersDecorator = parametersDecorator;
 
-            var result = Visit(selectExpression);
-
-            canCache = _canCache;
-
-            return result;
+            return Visit(selectExpression);
         }
 
         protected override Expression VisitExtension(Expression extensionExpression)
@@ -66,6 +60,25 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         limit: null);
                 }
 
+                // MySQL/MariaDB do not support function expressions (e.g. LEAST/GREATEST) in LIMIT/OFFSET clauses.
+                // Evaluate them client-side and replace with a constant.
+                var newLimit = TryEvaluateForLimitOffset(selectExpression.Limit);
+                var newOffset = TryEvaluateForLimitOffset(selectExpression.Offset);
+
+                if (newLimit != selectExpression.Limit || newOffset != selectExpression.Offset)
+                {
+                    return base.VisitExtension(
+                        selectExpression.Update(
+                            selectExpression.Tables,
+                            selectExpression.Predicate,
+                            selectExpression.GroupBy,
+                            selectExpression.Having,
+                            selectExpression.Projection,
+                            selectExpression.Orderings,
+                            newOffset,
+                            newLimit));
+                }
+
                 bool IsZero(SqlExpression? sqlExpression)
                 {
                     switch (sqlExpression)
@@ -74,8 +87,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         when constant.Value is int intValue:
                             return intValue == 0;
                         case SqlParameterExpression parameter:
-                            _canCache = false;
-                            return _parameterValues[parameter.Name] is int value && value == 0;
+                            var parameterValues = _parametersDecorator.GetAndDisableCaching();
+                            return parameterValues[parameter.Name] is int value && value == 0;
 
                         default:
                             return false;
@@ -84,6 +97,69 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             }
 
             return base.VisitExtension(extensionExpression);
+        }
+
+        /// <summary>
+        /// MySQL/MariaDB do not support arbitrary expressions (functions like LEAST/GREATEST) in LIMIT/OFFSET.
+        /// If the expression is a function call (not a simple constant or parameter), evaluate it client-side
+        /// using the current parameter values and return a constant.
+        /// </summary>
+        private SqlExpression? TryEvaluateForLimitOffset(SqlExpression? sqlExpression)
+        {
+            if (sqlExpression is null)
+            {
+                return null;
+            }
+
+            // Constants and simple parameters are fine as-is in LIMIT/OFFSET.
+            if (sqlExpression is SqlConstantExpression or SqlParameterExpression)
+            {
+                return sqlExpression;
+            }
+
+            // For complex expressions (e.g. LEAST(@p, 1)), try to evaluate client-side.
+            var value = EvaluateExpression(sqlExpression);
+            if (value is not null)
+            {
+                return _sqlExpressionFactory.Constant(value, sqlExpression.TypeMapping);
+            }
+
+            return sqlExpression;
+        }
+
+        private object? EvaluateExpression(SqlExpression sqlExpression)
+        {
+            try
+            {
+                return sqlExpression switch
+                {
+                    SqlConstantExpression c => c.Value,
+                    SqlParameterExpression p => _parametersDecorator.GetAndDisableCaching()[p.Name],
+                    SqlFunctionExpression f => EvaluateFunction(f),
+                    _ => null,
+                };
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private object? EvaluateFunction(SqlFunctionExpression function)
+        {
+            if (function.Arguments is null)
+            {
+                return null;
+            }
+
+            var args = function.Arguments.Select(EvaluateExpression).ToArray();
+
+            return function.Name switch
+            {
+                "LEAST" => args.Where(a => a is not null).Min(),
+                "GREATEST" => args.Where(a => a is not null).Max(),
+                _ => null,
+            };
         }
     }
 }

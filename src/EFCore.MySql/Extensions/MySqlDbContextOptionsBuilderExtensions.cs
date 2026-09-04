@@ -3,12 +3,12 @@
 
 using System;
 using System.Data.Common;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore
@@ -62,7 +62,7 @@ namespace Microsoft.EntityFrameworkCore
             ConfigureWarnings(optionsBuilder);
 
             var mySqlDbContextOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder)
-                .TranslateParameterizedCollectionsToConstants();
+                .UseParameterizedCollectionMode(ParameterTranslationMode.Constant);
 
             mySqlOptionsAction?.Invoke(mySqlDbContextOptionsBuilder);
 
@@ -108,7 +108,7 @@ namespace Microsoft.EntityFrameworkCore
             ConfigureWarnings(optionsBuilder);
 
             var mySqlDbContextOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder)
-                .TranslateParameterizedCollectionsToConstants();
+                .UseParameterizedCollectionMode(ParameterTranslationMode.Constant);
 
             mySqlOptionsAction?.Invoke(mySqlDbContextOptionsBuilder);
 
@@ -158,7 +158,7 @@ namespace Microsoft.EntityFrameworkCore
             ConfigureWarnings(optionsBuilder);
 
             var mySqlDbContextOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder)
-                .TranslateParameterizedCollectionsToConstants();
+                .UseParameterizedCollectionMode(ParameterTranslationMode.Constant);
 
             mySqlOptionsAction?.Invoke(mySqlDbContextOptionsBuilder);
 
@@ -205,7 +205,7 @@ namespace Microsoft.EntityFrameworkCore
             ConfigureWarnings(optionsBuilder);
 
             var mySqlDbContextOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder)
-                .TranslateParameterizedCollectionsToConstants();
+                .UseParameterizedCollectionMode(ParameterTranslationMode.Constant);
 
             mySqlOptionsAction?.Invoke(mySqlDbContextOptionsBuilder);
 

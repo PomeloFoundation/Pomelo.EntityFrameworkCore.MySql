@@ -102,8 +102,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         private static int GetCommandTimeout() => AppConfig.Config.GetValue("Data:CommandTimeout", DefaultCommandTimeout);
 
         public override DbContextOptionsBuilder AddProviderOptions(DbContextOptionsBuilder builder)
-            => _useConnectionString
-                ? builder.UseMySql(_connectionString, AppConfig.ServerVersion, x => AddOptions(x, _noBackslashEscapes))
+            => (_useConnectionString || UseConnectionString)
+                ? builder.UseMySql(_connectionString ?? CreateConnectionString(Name, _noBackslashEscapes), AppConfig.ServerVersion, x => AddOptions(x, _noBackslashEscapes))
                 : builder.UseMySql(Connection, AppConfig.ServerVersion, x => AddOptions(x, _noBackslashEscapes));
 
         public static MySqlDbContextOptionsBuilder AddOptions(MySqlDbContextOptionsBuilder builder)
@@ -111,7 +111,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             return builder
                 // Our UseMySql() methods explicitly set TranslateParameterizedCollectionsToConstants() as the default, which is not the
                 // default that the EF Core tests expect.
-                .TranslateParameterizedCollectionsToParameters()
+                .UseParameterizedCollectionMode(ParameterTranslationMode.MultipleParameters)
                 .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
                 .CommandTimeout(GetCommandTimeout())
                 .ExecutionStrategy(d => new TestMySqlRetryingExecutionStrategy(d));
@@ -148,7 +148,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 {
                     await using (var context = createContext())
                     {
-                        await context.Database.EnsureCreatedResilientlyAsync();
+                        await ExecuteWithTransientRetryAsync(() => context.Database.EnsureCreatedResilientlyAsync());
 
                         if (seed != null)
                         {
@@ -159,10 +159,74 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             }
         }
 
+        // CI runners occasionally kill/reset connections under parallel test load (e.g. "Couldn't connect to server",
+        // "Connect Timeout expired", "Got timeout reading communication packets"). Retry those transient errors a
+        // couple of times before failing the test.
+        private const int TransientErrorRetryCount = 3;
+        private static readonly TimeSpan TransientErrorRetryDelay = TimeSpan.FromSeconds(2);
+
+        private static void OpenWithTransientRetry(DbConnection connection)
+        {
+            for (var attempt = 1; ; attempt++)
+            {
+                try
+                {
+                    connection.Open();
+                    return;
+                }
+                catch (MySqlException e) when (attempt < TransientErrorRetryCount && IsTransientError(e))
+                {
+                    System.Threading.Thread.Sleep(TransientErrorRetryDelay);
+                }
+            }
+        }
+
+        private static async Task OpenWithTransientRetryAsync(DbConnection connection)
+        {
+            for (var attempt = 1; ; attempt++)
+            {
+                try
+                {
+                    await connection.OpenAsync();
+                    return;
+                }
+                catch (MySqlException e) when (attempt < TransientErrorRetryCount && IsTransientError(e))
+                {
+                    await Task.Delay(TransientErrorRetryDelay);
+                }
+            }
+        }
+
+        private static async Task ExecuteWithTransientRetryAsync(Func<Task> execute)
+        {
+            for (var attempt = 1; ; attempt++)
+            {
+                try
+                {
+                    await execute();
+                    return;
+                }
+                catch (MySqlException e) when (attempt < TransientErrorRetryCount && IsTransientError(e))
+                {
+                    await Task.Delay(TransientErrorRetryDelay);
+                }
+            }
+        }
+
+        // MySqlConnector only classifies a handful of error codes as transient. Connection-level failures during
+        // the handshake (e.g. "Got timeout reading communication packets", which carries no error number) are not
+        // among them, but under CI parallel load they are just as transient as the rest.
+        private static bool IsTransientError(MySqlException e)
+            => e.IsTransient
+                || e.Message.Contains("Got timeout reading communication packets", StringComparison.Ordinal)
+                || e.Message.Contains("Got an error reading communication packets", StringComparison.Ordinal)
+                || e.Message.Contains("Connect Timeout expired", StringComparison.Ordinal)
+                || e.Message.Contains("Couldn't connect to server", StringComparison.Ordinal);
+
         private async Task<bool> CreateDatabaseAsync(Func<DbContext, Task> clean)
         {
             await using var master = new MySqlConnection(CreateAdminConnectionString());
-            await master.OpenAsync();
+            await OpenWithTransientRetryAsync(master);
 
             string databaseSetupSql;
             if (await DatabaseExistsAsync(Name))
@@ -275,7 +339,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 connection.Close();
             }
 
-            connection.Open();
+            OpenWithTransientRetry(connection);
 
             try
             {
@@ -316,7 +380,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 await connection.CloseAsync();
             }
 
-            await connection.OpenAsync();
+            await OpenWithTransientRetryAsync(connection);
 
             try
             {

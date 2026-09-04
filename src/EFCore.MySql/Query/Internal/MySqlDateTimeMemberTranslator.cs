@@ -50,6 +50,37 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             {
                 var memberName = member.Name;
 
+                // Microsecond needs special handling (modulo, not division).
+                if (memberName == nameof(DateTime.Microsecond))
+                {
+                    // .NET Microsecond is the microsecond-within-millisecond (0-999).
+                    // MySQL EXTRACT(MICROSECOND FROM ...) returns 0-999999 (full sub-second microseconds).
+                    var extract = _sqlExpressionFactory.NullableFunction(
+                        "EXTRACT",
+                        new[]
+                        {
+                            _sqlExpressionFactory.ComplexFunctionArgument(
+                                new []
+                                {
+                                    _sqlExpressionFactory.Fragment("MICROSECOND FROM"),
+                                    instance
+                                },
+                                " ",
+                                typeof(string))
+                        },
+                        returnType,
+                        false);
+
+                    return _sqlExpressionFactory.Modulo(extract, _sqlExpressionFactory.Constant(1000));
+                }
+
+                // MySQL stores at most microsecond precision (6 fractional digits).
+                // .NET Nanosecond (0-900 in steps of 100) is always 0 in MySQL.
+                if (memberName == nameof(DateTime.Nanosecond))
+                {
+                    return _sqlExpressionFactory.Constant(0, returnType);
+                }
+
                 if (_datePartMapping.TryGetValue(memberName, out var datePart))
                 {
                     var extract = _sqlExpressionFactory.NullableFunction(
@@ -97,7 +128,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                             false);
 
                     case nameof(DateTime.TimeOfDay):
-                        return _sqlExpressionFactory.Convert(instance, returnType);
+                        // Use CAST(... AS time(6)) to preserve sub-second precision.
+                        return _sqlExpressionFactory.NullableFunction(
+                            "CAST",
+                            new[]
+                            {
+                                _sqlExpressionFactory.ComplexFunctionArgument(
+                                    new[] { instance, _sqlExpressionFactory.Fragment("AS time(6)") },
+                                    " ",
+                                    typeof(string))
+                            },
+                            returnType,
+                            false);
 
                     case nameof(DateTime.Now):
                         return _sqlExpressionFactory.NonNullableFunction(
@@ -105,7 +147,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                                 ? "UTC_TIMESTAMP"
                                 : "CURRENT_TIMESTAMP",
                             _mySqlOptions.ServerVersion.Supports.DateTime6 ?
-                                new [] { _sqlExpressionFactory.Constant(6)} :
+                                new[] { _sqlExpressionFactory.Constant(6) } :
                                 Array.Empty<SqlExpression>(),
                             returnType);
 
@@ -113,7 +155,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         return _sqlExpressionFactory.NonNullableFunction(
                             "UTC_TIMESTAMP",
                             _mySqlOptions.ServerVersion.Supports.DateTime6 ?
-                                new [] { _sqlExpressionFactory.Constant(6)} :
+                                new[] { _sqlExpressionFactory.Constant(6) } :
                                 ArraySegment<SqlExpression>.Empty,
                             returnType);
 

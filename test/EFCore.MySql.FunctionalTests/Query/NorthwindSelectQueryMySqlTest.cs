@@ -169,20 +169,12 @@ ORDER BY `t`.`OrderDate`, `t`.`CustomerID`
         public override async Task Correlated_collection_after_distinct_with_complex_projection_not_containing_original_identifier(bool async)
         {
             // Identifier set for Distinct. Issue #24440.
+            // In EF Core 10, the message is always InsufficientInformationToIdentifyElementOfCollectionJoin.
             var message = (await Assert.ThrowsAsync<InvalidOperationException>(
                     () => base.Correlated_collection_after_distinct_with_complex_projection_not_containing_original_identifier(async)))
                 .Message;
 
-            if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
-            {
-                Assert.Equal(RelationalStrings.InsufficientInformationToIdentifyElementOfCollectionJoin, message);
-            }
-            else
-            {
-                Assert.Contains("Primitive collections support has not been enabled.", message);
-            }
-
-            AssertSql();
+            Assert.Equal(RelationalStrings.InsufficientInformationToIdentifyElementOfCollectionJoin, message);
         }
 
         public override async Task SelectMany_with_collection_being_correlated_subquery_which_references_non_mapped_properties_from_inner_and_outer_entity(bool async)

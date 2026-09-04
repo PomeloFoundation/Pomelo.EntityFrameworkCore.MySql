@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql
 {
-    public class TestBase<TContext> : IDisposable, IAsyncLifetime
+    public class TestBase<TContext> : IAsyncDisposable, IAsyncLifetime
         where TContext : ContextBase, new()
     {
         public async Task InitializeAsync()
@@ -16,10 +16,10 @@ namespace Pomelo.EntityFrameworkCore.MySql
             TestStore = await MySqlTestStore.CreateInitializedAsync(StoreName);
         }
 
-        public Task DisposeAsync()
-            => Task.CompletedTask;
+        async Task IAsyncLifetime.DisposeAsync()
+            => await DisposeAsync();
 
-        public virtual void Dispose() => TestStore.Dispose();
+        public virtual ValueTask DisposeAsync() => TestStore.DisposeAsync();
 
         public virtual string StoreName => GetType().Name;
         public virtual MySqlTestStore TestStore { get; private set; }

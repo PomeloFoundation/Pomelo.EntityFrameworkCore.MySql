@@ -92,15 +92,20 @@ WHERE FALSE
 """,
                 //
                 """
+@ef_filter__TenantIds1='1'
+
 SELECT `l`.`Id`, `l`.`Tenant`
 FROM `ListFilter` AS `l`
-WHERE `l`.`Tenant` = 1
+WHERE `l`.`Tenant` = @ef_filter__TenantIds1
 """,
                 //
                 """
+@ef_filter__TenantIds1='2'
+@ef_filter__TenantIds2='3'
+
 SELECT `l`.`Id`, `l`.`Tenant`
 FROM `ListFilter` AS `l`
-WHERE `l`.`Tenant` IN (2, 3)
+WHERE `l`.`Tenant` IN (@ef_filter__TenantIds1, @ef_filter__TenantIds2)
 """);
             }
         }

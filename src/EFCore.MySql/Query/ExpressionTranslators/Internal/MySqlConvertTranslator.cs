@@ -21,7 +21,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         private readonly ISqlExpressionFactory _sqlExpressionFactory;
 
         private static readonly MethodInfo[] _supportedMethods
-            = new []
+            = new[]
                 {
                     nameof(Convert.ToBoolean),
                     nameof(Convert.ToByte),

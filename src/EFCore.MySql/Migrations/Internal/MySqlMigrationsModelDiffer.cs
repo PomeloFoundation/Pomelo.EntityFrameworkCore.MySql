@@ -218,7 +218,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
                 if (operation is not AlterColumnOperation alterColumnOperation ||
                     alterColumnOperation.OldColumn[MySqlAnnotationNames.CharSet] is not string oldColumnCharSet ||
                     alterColumnOperation[MySqlAnnotationNames.CharSet] is not string newColumnCharSet ||
-                    oldColumnCharSet != newColumnCharSet||
+                    oldColumnCharSet != newColumnCharSet ||
                     alterColumnOperation.ColumnType is not string newColumnType ||
                     alterColumnOperation.OldColumn.ColumnType is not string oldColumnType ||
                     newColumnType == oldColumnType ||

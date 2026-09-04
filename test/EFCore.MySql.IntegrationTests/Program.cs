@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Linq;
 using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands;
-using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -12,12 +13,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
     {
         public static void Main(string[] args)
         {
-            if (args.Length == 0)
+            if (args.Length == 0 ||
+                args.Any(arg => string.Equals(arg, "--applicationName", StringComparison.OrdinalIgnoreCase)))
             {
-	            BuildWebHost(args).Run();
+                BuildWebApplication(args)
+                    .Run();
             }
             else
             {
+                Console.WriteLine("Args:");
+                for (var i = 0; i < args.Length; i++)
+                {
+                    Console.WriteLine($"{i}: {args[i]}");
+                }
+
                 var serviceCollection = new ServiceCollection();
                 serviceCollection
                     .AddLogging(builder =>
@@ -41,13 +50,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
             }
         }
 
-        public static IWebHost BuildWebHost(string[] args)
+        private static WebApplication BuildWebApplication(string[] args)
         {
-            return WebHost.CreateDefaultBuilder(args)
-                .UseUrls("http://*:5000")
-                .UseStartup<Startup>()
-                .Build();
-        }
+            var builder = WebApplication.CreateBuilder(args);
+            builder.WebHost
+                .UseUrls("http://*:5000");
+            Startup.ConfigureServices(builder.Services);
 
+            var app = builder.Build();
+            Startup.Configure(app, app.Environment);
+
+            return app;
+        }
     }
 }

@@ -69,17 +69,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 nameof(MySqlJsonDbFunctionsExtensions.JsonType)
                     => _sqlExpressionFactory.NullableFunction(
                         "JSON_TYPE",
-                        new[] {Json(args[0])},
+                        new[] { Json(args[0]) },
                         typeof(string)),
                 nameof(MySqlJsonDbFunctionsExtensions.JsonQuote)
                     => _sqlExpressionFactory.NullableFunction(
                         "JSON_QUOTE",
-                        new[] {args[0]},
+                        new[] { args[0] },
                         method.ReturnType),
                 nameof(MySqlJsonDbFunctionsExtensions.JsonUnquote)
                     => _sqlExpressionFactory.NullableFunction(
                         "JSON_UNQUOTE",
-                        new[] {args[0]},
+                        new[] { args[0] },
                         method.ReturnType),
                 nameof(MySqlJsonDbFunctionsExtensions.JsonExtract)
                     => _sqlExpressionFactory.NullableFunction(
@@ -99,13 +99,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     => _sqlExpressionFactory.NullableFunction(
                         "JSON_CONTAINS",
                         args.Length >= 3
-                            ? new[] {Json(args[0]), args[1], args[2]}
-                            : new[] {Json(args[0]), args[1]},
+                            ? new[] { Json(args[0]), args[1], args[2] }
+                            : new[] { Json(args[0]), args[1] },
                         typeof(bool)),
                 nameof(MySqlJsonDbFunctionsExtensions.JsonContainsPath)
                     => _sqlExpressionFactory.NullableFunction(
                         "JSON_CONTAINS_PATH",
-                        new[] {Json(args[0]), _sqlExpressionFactory.Constant("one"), args[1]},
+                        new[] { Json(args[0]), _sqlExpressionFactory.Constant("one"), args[1] },
                         typeof(bool)),
                 nameof(MySqlJsonDbFunctionsExtensions.JsonContainsPathAny)
                     => _sqlExpressionFactory.NullableFunction(

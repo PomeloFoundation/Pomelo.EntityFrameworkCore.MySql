@@ -164,6 +164,40 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             var table = StoreObjectIdentifier.Table(column.Table.Name, column.Table.Schema);
             var properties = column.PropertyMappings.Select(m => m.Property).ToArray();
 
+            // Detect JSON container columns (complex properties mapped with .ToJson()).
+            // These are columns that have no traditional property mappings — they are
+            // the parent column holding the entire JSON document.
+            if (column.PropertyMappings.Count == 0)
+            {
+                // Look for complex properties whose container column name matches this column
+                var entityTypes = column.Table.EntityTypeMappings
+                    .Select(m => m.TypeBase as IEntityType)
+                    .Where(e => e != null);
+
+                foreach (var entityType in entityTypes)
+                {
+                    var found = false;
+                    foreach (var complexProperty in entityType.GetComplexProperties())
+                    {
+                        var containerColumnName = complexProperty.ComplexType.GetContainerColumnName();
+                        if (containerColumnName == column.Name && complexProperty.GetJsonPropertyName() != null)
+                        {
+                            // This is a JSON container column — set the column type to "json"
+                            yield return new Annotation(
+                                RelationalAnnotationNames.ColumnType,
+                                "json");
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (found)
+                    {
+                        yield break;
+                    }
+                }
+            }
+
             if (column.PropertyMappings.Where(
                     m => (m.TableMapping.IsSharedTablePrincipal ?? true) &&
                          m.TableMapping.TypeBase == m.Property.DeclaringType)
@@ -406,7 +440,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
         {
             return properties.Select(p => p.GetCharSet()).FirstOrDefault(s => s is not null) ??
                    properties.Select(
-                           p => p.FindTypeMapping() is MySqlStringTypeMapping {IsNationalChar: false}
+                           p => p.FindTypeMapping() is MySqlStringTypeMapping { IsNationalChar: false }
                                // An explicitly defined collation on the current property level takes precedence over an inherited charset.
                                ? p.DeclaringType is IEntityType entityType &&
                                  GetActualEntityTypeCharSet(entityType, currentLevel) is string charSet &&
@@ -436,10 +470,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
                 ? properties.Select(p => p.GetMySqlLegacyCollation()).FirstOrDefault(c => c is not null) ??
                   properties.Select(
                           // An explicitly defined charset on the current property level takes precedence over an inherited collation.
-                          p => (p.FindTypeMapping() is MySqlStringTypeMapping {IsNationalChar: false} &&
+                          p => (p.FindTypeMapping() is MySqlStringTypeMapping { IsNationalChar: false } &&
                                 p.DeclaringType is IEntityType entityType
                                    ? GetActualEntityTypeCollation(entityType, currentLevel)
-                                   : p.FindTypeMapping() is MySqlGuidTypeMapping {IsCharBasedStoreType: true}
+                                   : p.FindTypeMapping() is MySqlGuidTypeMapping { IsCharBasedStoreType: true }
                                        ? p.DeclaringType.Model.GetActualGuidCollation(_options.DefaultGuidCollation)
                                        : null) is string collation &&
                                (p.GetCharSet() is not string charSet ||

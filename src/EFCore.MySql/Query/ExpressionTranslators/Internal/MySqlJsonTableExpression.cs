@@ -97,7 +97,7 @@ public class MySqlJsonTableExpression : TableValuedFunctionExpression
                         if (visitedPath is null)
                         {
                             visitedPath = new PathSegment[Path.Count];
-                            for (var j = 0; j < i; i++)
+                            for (var j = 0; j < i; j++)
                             {
                                 visitedPath[j] = Path[j];
                             }

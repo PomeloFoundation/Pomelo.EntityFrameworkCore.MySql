@@ -37,7 +37,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             // It would be nice to have access to a public and currently non-existing
             // MySqlConnectionStringOption.TreatTinyAsBoolean.HasValue() method, so we can safely find out, whether
             // TreatTinyAsBoolean has been explicitly set or not.
-            var treatTinyAsBooleanKeys = new[] {"Treat Tiny As Boolean", "TreatTinyAsBoolean"};
+            var treatTinyAsBooleanKeys = new[] { "Treat Tiny As Boolean", "TreatTinyAsBoolean" };
             TreatTinyAsBoolean = treatTinyAsBooleanKeys.Any(k => csb.ContainsKey(k))
                 ? (bool?)csb.TreatTinyAsBoolean
                 : null;

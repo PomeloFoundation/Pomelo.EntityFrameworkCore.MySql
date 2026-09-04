@@ -22,22 +22,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
     public class MySqlStringComparisonMethodTranslator : MySqlQueryCompilationContextMethodTranslator
     {
         private static readonly MethodInfo _equalsMethodInfo
-            = typeof(string).GetRuntimeMethod(nameof(string.Equals), new[] {typeof(string), typeof(StringComparison)});
+            = typeof(string).GetRuntimeMethod(nameof(string.Equals), new[] { typeof(string), typeof(StringComparison) });
 
         private static readonly MethodInfo _staticEqualsMethodInfo
-            = typeof(string).GetRuntimeMethod(nameof(string.Equals), new[] {typeof(string), typeof(string), typeof(StringComparison)});
+            = typeof(string).GetRuntimeMethod(nameof(string.Equals), new[] { typeof(string), typeof(string), typeof(StringComparison) });
 
         private static readonly MethodInfo _startsWithMethodInfo
-            = typeof(string).GetRuntimeMethod(nameof(string.StartsWith), new[] {typeof(string), typeof(StringComparison)});
+            = typeof(string).GetRuntimeMethod(nameof(string.StartsWith), new[] { typeof(string), typeof(StringComparison) });
 
         private static readonly MethodInfo _endsWithMethodInfo
-            = typeof(string).GetRuntimeMethod(nameof(string.EndsWith), new[] {typeof(string), typeof(StringComparison)});
+            = typeof(string).GetRuntimeMethod(nameof(string.EndsWith), new[] { typeof(string), typeof(StringComparison) });
 
         private static readonly MethodInfo _containsMethodInfo
-            = typeof(string).GetRuntimeMethod(nameof(string.Contains), new[] {typeof(string), typeof(StringComparison)});
+            = typeof(string).GetRuntimeMethod(nameof(string.Contains), new[] { typeof(string), typeof(StringComparison) });
 
         private static readonly MethodInfo _indexOfMethodInfo
-            = typeof(string).GetRuntimeMethod(nameof(string.IndexOf), new[] {typeof(string), typeof(StringComparison)});
+            = typeof(string).GetRuntimeMethod(nameof(string.IndexOf), new[] { typeof(string), typeof(StringComparison) });
 
         private static readonly MethodInfo _indexOfMethodInfoWithStartIndexArg
             = typeof(string).GetRuntimeMethod(nameof(string.IndexOf), new[] { typeof(string), typeof(int), typeof(StringComparison) });
@@ -89,9 +89,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             IReadOnlyList<SqlExpression> arguments,
             QueryCompilationContext queryCompilationContext)
         {
-            if(_options.StringComparisonTranslations)
+            if (_options.StringComparisonTranslations)
             {
-                if(instance != null)
+                if (instance != null)
                 {
                     if (Equals(method, _equalsMethodInfo))
                     {
@@ -524,8 +524,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             RelationalTypeMapping stringTypeMapping,
             StartsEndsWithContains methodType)
         {
-            if (pattern is SqlParameterExpression patternParameter &&
-                patternParameter.Name.StartsWith(QueryCompilationContext.QueryParameterPrefix, StringComparison.Ordinal))
+            if (pattern is SqlParameterExpression patternParameter)
             {
                 // The pattern is a parameter, register a runtime parameter that will contain the rewritten LIKE pattern, where
                 // all special characters have been escaped.
@@ -666,7 +665,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         private SqlExpression LCase(SqlExpression value)
             => _sqlExpressionFactory.NullableFunction(
                 "LCASE",
-                new[] {value},
+                new[] { value },
                 value.Type);
 
         private SqlExpression Utf8Bin(SqlExpression value)
@@ -679,7 +678,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         private SqlExpression CharLength(SqlExpression value)
             => _sqlExpressionFactory.NullableFunction(
                 "CHAR_LENGTH",
-                new[] {value},
+                new[] { value },
                 typeof(int));
 
         private SqlExpression Locate(SqlExpression sub, SqlExpression str, SqlExpression startIndex = null)
@@ -687,7 +686,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             var args = startIndex switch
             {
                 null => new SqlExpression[] { sub, str },
-                SqlConstantExpression { Value:int idx } => new SqlExpression[] { sub, str, _sqlExpressionFactory.Constant(idx + 1) },
+                SqlConstantExpression { Value: int idx } => new SqlExpression[] { sub, str, _sqlExpressionFactory.Constant(idx + 1) },
                 _ => new SqlExpression[] { sub, str, _sqlExpressionFactory.Add(startIndex, _sqlExpressionFactory.Constant(1)) }
             };
             return _sqlExpressionFactory.NullableFunction("LOCATE", args, typeof(int));
@@ -718,7 +717,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             QueryContext queryContext,
             string baseParameterName,
             StartsEndsWithContains methodType)
-            => queryContext.ParameterValues[baseParameterName] switch
+            => queryContext.Parameters[baseParameterName] switch
             {
                 null => null,
 

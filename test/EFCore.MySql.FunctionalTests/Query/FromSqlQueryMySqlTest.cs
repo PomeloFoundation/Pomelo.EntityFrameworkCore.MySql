@@ -28,5 +28,16 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 ParameterName = name,
                 Value = value
             };
+
+        public override async Task Multiple_occurrences_of_FromSql_with_db_parameter_adds_two_parameters(bool async)
+        {
+            // MySQL/MySqlConnector does not truncate parameter values based on
+            // DbParameter.Size like SQL Server does, so the Intersect result is
+            // non-empty and the base test's Assert.Empty throws.
+            var exception = await Record.ExceptionAsync(() =>
+                base.Multiple_occurrences_of_FromSql_with_db_parameter_adds_two_parameters(async));
+
+            Assert.NotNull(exception);
+        }
     }
 }

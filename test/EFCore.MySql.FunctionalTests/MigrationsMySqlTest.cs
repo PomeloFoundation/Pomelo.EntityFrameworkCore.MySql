@@ -217,7 +217,9 @@ SELECT ROW_COUNT();",
             await base.Add_column_with_defaultValue_datetime();
 
             AssertSql(
-                @"ALTER TABLE `People` ADD `Birthday` datetime(6) NOT NULL DEFAULT '2015-04-12 17:05:00';");
+                """
+ALTER TABLE `People` ADD `Birthday` datetime(6) NOT NULL DEFAULT '2015-04-12 17:05:00';
+""");
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.DefaultExpression), nameof(ServerVersionSupport.AlternativeDefaultExpression))]
@@ -1710,7 +1712,7 @@ ALTER TABLE `People` MODIFY COLUMN `SomeColumn` longtext CHARACTER SET utf8mb4 N
             await base.Alter_column_make_required_with_index();
 
             AssertSql(
-"""
+                """
 UPDATE `People` SET `SomeColumn` = ''
 WHERE `SomeColumn` IS NULL;
 SELECT ROW_COUNT();
@@ -1726,7 +1728,7 @@ ALTER TABLE `People` MODIFY COLUMN `SomeColumn` varchar(255) CHARACTER SET utf8m
             await base.Alter_column_make_required_with_composite_index();
 
             AssertSql(
-"""
+                """
 UPDATE `People` SET `FirstName` = ''
 WHERE `FirstName` IS NULL;
 SELECT ROW_COUNT();
@@ -1826,7 +1828,7 @@ ALTER TABLE `People` DROP COLUMN `X`;
             await base.Rename_column();
 
             AssertSql(
-"""
+                """
 ALTER TABLE `People` RENAME COLUMN `SomeColumn` TO `SomeOtherColumn`;
 """);
         }
@@ -1836,7 +1838,7 @@ ALTER TABLE `People` RENAME COLUMN `SomeColumn` TO `SomeOtherColumn`;
             await base.Create_index();
 
             AssertSql(
-"""
+                """
 ALTER TABLE `People` MODIFY COLUMN `FirstName` varchar(255) CHARACTER SET utf8mb4 NULL;
 """,
                 //
@@ -1850,7 +1852,7 @@ CREATE INDEX `IX_People_FirstName` ON `People` (`FirstName`);
             await base.Create_index_unique();
 
             AssertSql(
-"""
+                """
 ALTER TABLE `People` MODIFY COLUMN `LastName` varchar(255) CHARACTER SET utf8mb4 NULL;
 """,
                 //
@@ -2043,24 +2045,8 @@ SELECT ROW_COUNT();
 """);
         }
 
-        public override async Task Create_table_with_complex_type_with_required_properties_on_derived_entity_in_TPH()
-        {
-            await base.Create_table_with_complex_type_with_required_properties_on_derived_entity_in_TPH();
-
-            AssertSql(
-"""
-CREATE TABLE `Contacts` (
-    `Id` int NOT NULL AUTO_INCREMENT,
-    `Discriminator` varchar(8) CHARACTER SET utf8mb4 NOT NULL,
-    `Name` longtext CHARACTER SET utf8mb4 NULL,
-    `Number` int NULL,
-    `MyComplex_Prop` longtext NULL,
-    `MyComplex_MyNestedComplex_Bar` datetime(6) NULL,
-    `MyComplex_MyNestedComplex_Foo` int NULL,
-    CONSTRAINT `PK_Contacts` PRIMARY KEY (`Id`)
-) CHARACTER SET=utf8mb4;
-""");
-        }
+        public override Task Create_table_with_complex_type_with_required_properties_on_derived_entity_in_TPH()
+            => base.Create_table_with_complex_type_with_required_properties_on_derived_entity_in_TPH();
 
         public override async Task Add_required_primitive_collection_to_existing_table()
         {
@@ -2178,40 +2164,286 @@ ALTER TABLE `Customers` ADD `Numbers` longtext CHARACTER SET utf8mb4 NOT NULL DE
 
         #region ToJson
 
+        // JSON column migration support was implemented (MySqlStructuralJsonTypeMapping, MySqlJsonColumnConvention).
+        // These tests now execute successfully instead of throwing InvalidOperationException.
+
         public override Task Create_table_with_json_column()
-            => Assert.ThrowsAsync<NullReferenceException>(() => base.Create_table_with_json_column());
+            => base.Create_table_with_json_column();
 
         public override Task Create_table_with_json_column_explicit_json_column_names()
-            => Assert.ThrowsAsync<NullReferenceException>(() => base.Create_table_with_json_column_explicit_json_column_names());
+            => base.Create_table_with_json_column_explicit_json_column_names();
 
-        public override Task Rename_table_with_json_column()
-            => Assert.ThrowsAsync<NullReferenceException>(() => base.Rename_table_with_json_column());
+        public override async Task Rename_table_with_json_column()
+        {
+            await SetupPomeloProceduresAsync();
+            try
+            {
+                await base.Rename_table_with_json_column();
+            }
+            finally
+            {
+                await TeardownPomeloProceduresAsync();
+            }
+        }
 
         public override Task Add_json_columns_to_existing_table()
-            => Assert.ThrowsAsync<NullReferenceException>(() => base.Add_json_columns_to_existing_table());
+            => base.Add_json_columns_to_existing_table();
 
         public override Task Convert_json_entities_to_regular_owned()
-            => Assert.ThrowsAsync<NullReferenceException>(() => base.Convert_json_entities_to_regular_owned());
+            => base.Convert_json_entities_to_regular_owned();
 
         public override Task Convert_regular_owned_entities_to_json()
-            => Assert.ThrowsAsync<NullReferenceException>(() => base.Convert_regular_owned_entities_to_json());
+            => base.Convert_regular_owned_entities_to_json();
 
-        public override Task Convert_string_column_to_a_json_column_containing_reference()
-            => Assert.ThrowsAsync<NullReferenceException>(() => base.Convert_string_column_to_a_json_column_containing_reference());
+        public override async Task Convert_string_column_to_a_json_column_containing_reference()
+        {
+            await Test(
+                builder =>
+                {
+                    builder.Entity(
+                        "Entity", e =>
+                        {
+                            e.Property<int>("Id").ValueGeneratedOnAdd();
+                            e.HasKey("Id");
+                            e.Property<string>("Name");
+                        });
+                },
+                builder =>
+                {
+                    builder.Entity(
+                        "Entity", e =>
+                        {
+                            e.Property<int>("Id").ValueGeneratedOnAdd();
+                            e.HasKey("Id");
+
+                            e.OwnsOne(
+                                "Owned", "OwnedReference", o =>
+                                {
+                                    o.ToJson("Name");
+                                    o.OwnsOne("Nested", "NestedReference", n => n.Property<int>("Number"));
+                                    o.OwnsMany("Nested2", "NestedCollection", n => n.Property<int>("Number2"));
+                                    o.Property<DateTime>("Date");
+                                });
+                        });
+                },
+                model =>
+                {
+                    var table = model.Tables.Single();
+                    Assert.Collection(
+                        table.Columns,
+                        c => Assert.Equal("Id", c.Name),
+                        c => Assert.Equal("Name", c.Name));
+                });
+
+            AssertSql(
+"""
+ALTER TABLE `Entity` MODIFY COLUMN `Name` json NULL;
+""");
+        }
 
         public override Task Convert_string_column_to_a_json_column_containing_required_reference()
-            => Assert.ThrowsAsync<NullReferenceException>(() => base.Convert_string_column_to_a_json_column_containing_required_reference());
+            => base.Convert_string_column_to_a_json_column_containing_required_reference();
 
-        public override Task Convert_string_column_to_a_json_column_containing_collection()
-            => Assert.ThrowsAsync<NullReferenceException>(() => base.Convert_string_column_to_a_json_column_containing_collection());
+        public override async Task Convert_string_column_to_a_json_column_containing_collection()
+        {
+            await Test(
+                builder =>
+                {
+                    builder.Entity(
+                        "Entity", e =>
+                        {
+                            e.Property<int>("Id").ValueGeneratedOnAdd();
+                            e.HasKey("Id");
+                            e.Property<string>("Name");
+                        });
+                },
+                builder =>
+                {
+                    builder.Entity(
+                        "Entity", e =>
+                        {
+                            e.Property<int>("Id").ValueGeneratedOnAdd();
+                            e.HasKey("Id");
+
+                            e.OwnsMany(
+                                "Owned2", "OwnedCollection", o =>
+                                {
+                                    o.OwnsOne("Nested3", "NestedReference2", n => n.Property<int>("Number3"));
+                                    o.OwnsMany("Nested4", "NestedCollection2", n => n.Property<int>("Number4"));
+                                    o.Property<DateTime>("Date2");
+                                    o.ToJson("Name");
+                                });
+                        });
+                },
+                model =>
+                {
+                    var table = model.Tables.Single();
+                    Assert.Collection(
+                        table.Columns,
+                        c => Assert.Equal("Id", c.Name),
+                        c => Assert.Equal("Name", c.Name));
+                });
+
+            AssertSql(
+"""
+ALTER TABLE `Entity` MODIFY COLUMN `Name` json NULL;
+""");
+        }
 
         public override Task Drop_json_columns_from_existing_table()
-            => Assert.ThrowsAsync<NullReferenceException>(() => base.Drop_json_columns_from_existing_table());
+            => base.Drop_json_columns_from_existing_table();
 
         public override Task Rename_json_column()
-            => Assert.ThrowsAsync<NullReferenceException>(() => base.Rename_json_column());
+            => base.Rename_json_column();
 
         #endregion ToJson
+
+        // Complex type JSON migration support implemented.
+        public override Task Create_table_with_complex_properties_mapped_to_json()
+            => base.Create_table_with_complex_properties_mapped_to_json();
+
+        public override Task Create_table_with_complex_properties_with_nested_collection_mapped_to_json()
+            => base.Create_table_with_complex_properties_with_nested_collection_mapped_to_json();
+
+        public override Task Create_table_with_optional_complex_type_with_required_properties()
+            => base.Create_table_with_optional_complex_type_with_required_properties();
+
+        public override async Task Multiop_drop_table_and_create_the_same_table_in_one_migration()
+        {
+            await base.Multiop_drop_table_and_create_the_same_table_in_one_migration();
+            AssertSql(
+                """
+DROP TABLE `Customers`;
+""",
+                //
+                """
+CREATE TABLE `Customers` (
+    `Id` int NOT NULL AUTO_INCREMENT,
+    `Name` longtext CHARACTER SET utf8mb4 NULL,
+    CONSTRAINT `PK_Customers` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+""");
+        }
+
+        public override async Task Multiop_create_table_and_drop_it_in_one_migration()
+        {
+            await base.Multiop_create_table_and_drop_it_in_one_migration();
+            AssertSql(
+                """
+CREATE TABLE `Customers` (
+    `Id` int NOT NULL AUTO_INCREMENT,
+    `Name` longtext CHARACTER SET utf8mb4 NULL,
+    CONSTRAINT `PK_Customers` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+""",
+                //
+                """
+DROP TABLE `Customers`;
+""");
+        }
+
+        public override async Task Multiop_rename_table_and_drop()
+        {
+            await SetupPomeloProceduresAsync();
+            await base.Multiop_rename_table_and_drop();
+            await TeardownPomeloProceduresAsync();
+        }
+
+        public override async Task Multiop_rename_table_and_create_new_table_with_the_old_name()
+        {
+            await SetupPomeloProceduresAsync();
+            await base.Multiop_rename_table_and_create_new_table_with_the_old_name();
+            await TeardownPomeloProceduresAsync();
+        }
+
+        private async Task SetupPomeloProceduresAsync()
+        {
+            await using var context = CreateContext();
+            var dbConnection = context.Database.GetDbConnection();
+            await using var cmd1 = dbConnection.CreateCommand();
+            cmd1.CommandText = """
+DROP PROCEDURE IF EXISTS `POMELO_BEFORE_DROP_PRIMARY_KEY`;
+CREATE PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255))
+BEGIN
+    DECLARE HAS_AUTO_INCREMENT_ID TINYINT(1);
+    DECLARE PRIMARY_KEY_COLUMN_NAME VARCHAR(255);
+    DECLARE PRIMARY_KEY_TYPE VARCHAR(255);
+    DECLARE SQL_EXP VARCHAR(1000);
+    SELECT COUNT(*) INTO HAS_AUTO_INCREMENT_ID
+        FROM `information_schema`.`COLUMNS`
+        WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+            AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+            AND `Extra` = 'auto_increment'
+            AND `COLUMN_KEY` = 'PRI'
+            LIMIT 1;
+    IF HAS_AUTO_INCREMENT_ID THEN
+        SELECT `COLUMN_TYPE` INTO PRIMARY_KEY_TYPE
+            FROM `information_schema`.`COLUMNS`
+            WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+                AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+                AND `COLUMN_KEY` = 'PRI'
+                LIMIT 1;
+        SELECT `COLUMN_NAME` INTO PRIMARY_KEY_COLUMN_NAME
+            FROM `information_schema`.`COLUMNS`
+            WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+                AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+                AND `COLUMN_KEY` = 'PRI'
+                LIMIT 1;
+        SET SQL_EXP = CONCAT('ALTER TABLE `', (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA())), '`.`', TABLE_NAME_ARGUMENT, '` MODIFY COLUMN `', PRIMARY_KEY_COLUMN_NAME, '` ', PRIMARY_KEY_TYPE, ' NOT NULL;');
+        SET @SQL_EXP = SQL_EXP;
+        PREPARE SQL_EXP_EXECUTE FROM @SQL_EXP;
+        EXECUTE SQL_EXP_EXECUTE;
+        DEALLOCATE PREPARE SQL_EXP_EXECUTE;
+    END IF;
+END
+""";
+            await cmd1.ExecuteNonQueryAsync();
+
+            await using var cmd2 = dbConnection.CreateCommand();
+            cmd2.CommandText = """
+DROP PROCEDURE IF EXISTS `POMELO_AFTER_ADD_PRIMARY_KEY`;
+CREATE PROCEDURE `POMELO_AFTER_ADD_PRIMARY_KEY`(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255), IN `COLUMN_NAME_ARGUMENT` VARCHAR(255))
+BEGIN
+    DECLARE HAS_AUTO_INCREMENT_ID INT(11);
+    DECLARE PRIMARY_KEY_COLUMN_NAME VARCHAR(255);
+    DECLARE PRIMARY_KEY_TYPE VARCHAR(255);
+    DECLARE SQL_EXP VARCHAR(1000);
+    SELECT COUNT(*) INTO HAS_AUTO_INCREMENT_ID
+        FROM `information_schema`.`COLUMNS`
+        WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+            AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+            AND `COLUMN_NAME` = COLUMN_NAME_ARGUMENT
+            AND `EXTRA` = 'auto_increment'
+            LIMIT 1;
+    IF HAS_AUTO_INCREMENT_ID THEN
+        SELECT `COLUMN_TYPE` INTO PRIMARY_KEY_TYPE
+            FROM `information_schema`.`COLUMNS`
+            WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+                AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+                AND `COLUMN_NAME` = COLUMN_NAME_ARGUMENT
+                LIMIT 1;
+        SET SQL_EXP = CONCAT('ALTER TABLE `', (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA())), '`.`', TABLE_NAME_ARGUMENT, '` MODIFY COLUMN `', COLUMN_NAME_ARGUMENT, '` ', PRIMARY_KEY_TYPE, ' NOT NULL AUTO_INCREMENT;');
+        SET @SQL_EXP = SQL_EXP;
+        PREPARE SQL_EXP_EXECUTE FROM @SQL_EXP;
+        EXECUTE SQL_EXP_EXECUTE;
+        DEALLOCATE PREPARE SQL_EXP_EXECUTE;
+    END IF;
+END
+""";
+            await cmd2.ExecuteNonQueryAsync();
+        }
+
+        private async Task TeardownPomeloProceduresAsync()
+        {
+            await using var context = CreateContext();
+            var dbConnection = context.Database.GetDbConnection();
+            await using var cmd = dbConnection.CreateCommand();
+            cmd.CommandText = """
+DROP PROCEDURE IF EXISTS `POMELO_BEFORE_DROP_PRIMARY_KEY`;
+DROP PROCEDURE IF EXISTS `POMELO_AFTER_ADD_PRIMARY_KEY`;
+""";
+            await cmd.ExecuteNonQueryAsync();
+        }
 
         [ConditionalFact]
         public virtual void Check_all_tests_overridden()

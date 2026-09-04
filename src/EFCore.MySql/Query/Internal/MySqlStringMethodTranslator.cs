@@ -23,8 +23,12 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
 
         private static readonly MethodInfo _indexOfMethodInfo
             = typeof(string).GetRuntimeMethod(nameof(string.IndexOf), new[] { typeof(string) });
+        private static readonly MethodInfo _indexOfCharMethodInfo
+            = typeof(string).GetRuntimeMethod(nameof(string.IndexOf), new[] { typeof(char) });
         private static readonly MethodInfo _indexOfMethodInfoWithOneArg
             = typeof(string).GetRuntimeMethod(nameof(string.IndexOf), new[] { typeof(string), typeof(int) });
+        private static readonly MethodInfo _indexOfCharMethodInfoWithOneArg
+            = typeof(string).GetRuntimeMethod(nameof(string.IndexOf), new[] { typeof(char), typeof(int) });
         private static readonly MethodInfo _replaceMethodInfo
             = typeof(string).GetRuntimeMethod(nameof(string.Replace), new[] { typeof(string), typeof(string) });
         private static readonly MethodInfo _toLowerMethodInfo
@@ -148,7 +152,20 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     .MakeIndexOfExpression(instance, arguments[0]);
             }
 
-            if(_indexOfMethodInfoWithOneArg.Equals(method))
+            if (_indexOfCharMethodInfo?.Equals(method) == true)
+            {
+                // IndexOf(char) — translate as LOCATE of a single-char string
+                return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory, _queryCompilationContextResolver, _options)
+                    .MakeIndexOfExpression(instance, arguments[0]);
+            }
+
+            if (_indexOfMethodInfoWithOneArg.Equals(method))
+            {
+                return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory, _queryCompilationContextResolver, _options)
+                    .MakeIndexOfExpression(instance, arguments[0], startIndex: arguments[1]);
+            }
+
+            if (_indexOfCharMethodInfoWithOneArg?.Equals(method) == true)
             {
                 return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory, _queryCompilationContextResolver, _options)
                     .MakeIndexOfExpression(instance, arguments[0], startIndex: arguments[1]);
@@ -421,7 +438,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 // Some call signature variants can never reach this code, because they will be directly called and thus only their result
                 // is translated.
                 var concatArguments = arguments[0] is MySqlComplexFunctionArgumentExpression mySqlComplexFunctionArgumentExpression
-                    ? new SqlExpression[] {mySqlComplexFunctionArgumentExpression}
+                    ? new SqlExpression[] { mySqlComplexFunctionArgumentExpression }
                     : arguments.Select(
                             e => e switch
                             {
@@ -525,15 +542,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 {
                     sqlArguments.Add(_sqlExpressionFactory.Constant(singleChar));
                 }
-                else if (constantValue is char[] charArray && charArray.Length <= 1)
+                else if (constantValue is char[] charArray && charArray.Length == 1)
                 {
-                    if (charArray.Length == 1)
-                    {
-                        sqlArguments.Add(_sqlExpressionFactory.Constant(charArray[0]));
-                    }
+                    sqlArguments.Add(_sqlExpressionFactory.Constant(charArray[0]));
                 }
                 else
                 {
+                    // MySQL TRIM does not support trimming multiple different characters at once
+                    // (unlike PostgreSQL's btrim/ltrim/rtrim). Fall back to client evaluation.
                     return null;
                 }
             }

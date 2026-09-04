@@ -94,7 +94,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         instance.Type,
                         instance.TypeMapping,
                         true,
-                        new[] {true, false});
+                        new[] { true, false });
             }
 
             if (method.DeclaringType == typeof(DateTimeOffset) &&

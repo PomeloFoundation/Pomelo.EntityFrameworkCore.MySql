@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal;
 
@@ -49,7 +49,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
 
             for (var i = 0; i < argumentParts.Length; i++)
             {
-                argumentParts[i] = (SqlExpression) visitor.Visit(ArgumentParts[i]);
+                argumentParts[i] = (SqlExpression)visitor.Visit(ArgumentParts[i]);
             }
 
             return Update(argumentParts, Delimiter);

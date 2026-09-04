@@ -61,7 +61,8 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="index"> The index. </param>
         /// <returns> The name of the full text parser. </returns>
-        [CanBeNull] public static string FullTextParser([NotNull] this IIndex index)
+        [CanBeNull]
+        public static string FullTextParser([NotNull] this IIndex index)
             => (index is RuntimeIndex)
                 ? throw new InvalidOperationException(CoreStrings.RuntimeModelMissingData)
                 : (string)index[MySqlAnnotationNames.FullTextParser];

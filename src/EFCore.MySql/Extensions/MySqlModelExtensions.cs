@@ -305,7 +305,7 @@ namespace Microsoft.EntityFrameworkCore
             => model.GetGuidCollation() switch
             {
                 null => defaultCollation,
-                {Length: <= 0} => null,
+                { Length: <= 0 } => null,
                 var c => c
             };
 

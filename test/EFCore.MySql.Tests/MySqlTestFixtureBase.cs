@@ -9,18 +9,19 @@ using Xunit;
 
 namespace Pomelo.EntityFrameworkCore.MySql
 {
-    public abstract class MySqlTestFixtureBase : IDisposable
+    public abstract class MySqlTestFixtureBase : IAsyncDisposable
     {
         public abstract void SetupDatabase();
         public abstract DbContext CreateDefaultDbContext();
 
-        protected virtual void Dispose(bool disposing)
+        protected virtual ValueTask DisposeAsync(bool disposing)
         {
+            return ValueTask.CompletedTask;
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            Dispose(true);
+            await DisposeAsync(true);
             GC.SuppressFinalize(this);
         }
     }
@@ -59,13 +60,15 @@ namespace Pomelo.EntityFrameworkCore.MySql
             SetupDatabase();
         }
 
-        public Task DisposeAsync()
-            => Task.CompletedTask;
-
-        protected override void Dispose(bool disposing)
+        async Task IAsyncLifetime.DisposeAsync()
         {
-            TestStore.Dispose();
-            base.Dispose(disposing);
+            await DisposeAsync(true);
+        }
+
+        protected override async ValueTask DisposeAsync(bool disposing)
+        {
+            await TestStore.DisposeAsync();
+            await base.DisposeAsync(disposing);
         }
 
         protected virtual string StoreName

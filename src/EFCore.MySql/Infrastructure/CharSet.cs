@@ -50,7 +50,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
                 return false;
             }
 
-            return Equals((CharSet) obj);
+            return Equals((CharSet)obj);
         }
 
         public override int GetHashCode()

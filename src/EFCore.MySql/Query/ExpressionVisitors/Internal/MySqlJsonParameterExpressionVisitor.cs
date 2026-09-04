@@ -39,10 +39,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 // MariaDB defines the JSON datatype just as a synonym for LONGTEXT.
                 if (!_options.ServerVersion.Supports.JsonDataTypeEmulation)
                 {
+                    // Use the found type mapping, or fall back to the parameter's existing type mapping if FindMapping returns null.
+                    var targetTypeMapping = typeMapping ?? sqlParameterExpression.TypeMapping;
+
                     return _sqlExpressionFactory.Convert(
                         sqlParameterExpression,
-                        typeMapping.ClrType, // will be typeof(string) when `sqlParameterExpression.Type`
-                        typeMapping);        // is typeof(MySqlJsonString)
+                        targetTypeMapping.ClrType, // will be typeof(string) when `sqlParameterExpression.Type`
+                        targetTypeMapping);        // is typeof(MySqlJsonString)
                 }
             }
 

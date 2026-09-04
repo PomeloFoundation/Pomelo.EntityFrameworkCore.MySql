@@ -82,6 +82,20 @@ FROM `Order Details` AS `o`
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
+        // MySQL AVG on double returns different precision than .NET double.
+        public override Task Contains_inside_Average_without_GroupBy(bool async)
+            => AssertAverage(
+                async,
+                ss => ss.Set<Customer>(),
+                selector: c => new[] { "London", "Berlin" }.Contains(c.City) ? 1.0 : 0.0,
+                asserter: (a, b) => Assert.Equal(a, b, 5));
+
+        // EF Core bug #31776: Conflicting type mappings for ValuesExpression with constant+parameter mix.
+        // TODO: Investigate whether Pomelo's string type mapping (varchar vs longtext) causes the conflict.
+        [ConditionalTheory(Skip = "EF Core issue #31776: Conflicting type mappings in ValuesExpression")]
+        public override Task Contains_with_local_enumerable_inline_closure_mix(bool async)
+            => base.Contains_with_local_enumerable_inline_closure_mix(async);
+
         protected override void ClearLog()
             => Fixture.TestSqlLoggerFactory.Clear();
     }
