@@ -83,7 +83,7 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
     protected override bool IsValidSelectExpressionForExecuteDelete(
         SelectExpression selectExpression,
         StructuralTypeShaperExpression shaper,
-        [NotNullWhen(true)] out TableExpression tableExpression)
+        out TableExpression tableExpression)
     {
         if (selectExpression.Offset == null
             && selectExpression.GroupBy.Count == 0

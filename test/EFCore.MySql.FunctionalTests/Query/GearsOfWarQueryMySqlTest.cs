@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -31,7 +32,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             return AssertQuery(
                 async,
                 ss => ss.Set<Mission>().Where(
-                    m => start <= m.Timeline.Date && m.Timeline < end && dates.Contains(m.Timeline)));
+                    m => start <= m.Timeline.Date && m.Timeline < end && ((IEnumerable<DateTimeOffset>)dates).Contains(m.Timeline)));
         }
 
         public override Task Where_datetimeoffset_milliseconds_parameter_and_constant(bool async)

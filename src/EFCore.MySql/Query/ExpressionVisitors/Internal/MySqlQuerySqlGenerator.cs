@@ -249,6 +249,39 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             }
         }
 
+        /// <summary>
+        ///     Supports FOR UPDATE / FOR SHARE via query tags.
+        ///     Tags are only inspected (never removed) to preserve expression
+        ///     tree immutability. A local variable is used instead of an
+        ///     instance field to avoid concurrency issues if the generator
+        ///     instance is reused.
+        /// </summary>
+        private const string ForUpdateTag = "__efcore_for_update__";
+        private const string ForShareTag = "__efcore_for_share__";
+        private const string ForUpdateNowaitTag = "__efcore_for_update_nowait__";
+        private const string ForUpdateSkipLockedTag = "__efcore_for_update_skiplocked__";
+
+        protected override Expression VisitSelect(SelectExpression selectExpression)
+        {
+            // Detect lock tag — do NOT modify the expression tree (no Tags.Remove).
+            string lockClause = null;
+            if (selectExpression.Tags.Contains(ForUpdateTag))
+                lockClause = " FOR UPDATE";
+            else if (selectExpression.Tags.Contains(ForUpdateNowaitTag))
+                lockClause = " FOR UPDATE NOWAIT";
+            else if (selectExpression.Tags.Contains(ForUpdateSkipLockedTag))
+                lockClause = " FOR UPDATE SKIP LOCKED";
+            else if (selectExpression.Tags.Contains(ForShareTag))
+                lockClause = " FOR SHARE";
+
+            var result = base.VisitSelect(selectExpression);
+
+            if (lockClause != null)
+                Sql.Append(lockClause);
+
+            return result;
+        }
+
         protected override Expression VisitSqlFunction(SqlFunctionExpression sqlFunctionExpression)
         {
             if (sqlFunctionExpression.Name.StartsWith("@@", StringComparison.Ordinal))
