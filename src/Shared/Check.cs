@@ -38,7 +38,7 @@ namespace Microsoft.EntityFrameworkCore.Utilities
             {
                 NotEmpty(parameterName, nameof(parameterName));
 
-                throw new ArgumentException(AbstractionsStrings.CollectionArgumentIsEmpty(parameterName));
+                throw new ArgumentException($"The collection argument '{parameterName}' must contain at least one element.");
             }
 
             return value;
@@ -54,7 +54,7 @@ namespace Microsoft.EntityFrameworkCore.Utilities
             }
             else if (value.Trim().Length == 0)
             {
-                e = new ArgumentException(AbstractionsStrings.ArgumentIsEmpty(parameterName));
+                e = new ArgumentException($"The string argument '{parameterName}' cannot be empty.");
             }
 
             if (e != null)
@@ -74,7 +74,7 @@ namespace Microsoft.EntityFrameworkCore.Utilities
             {
                 NotEmpty(parameterName, nameof(parameterName));
 
-                throw new ArgumentException(AbstractionsStrings.ArgumentIsEmpty(parameterName));
+                throw new ArgumentException($"The string argument '{parameterName}' cannot be empty.");
             }
 
             return value;
@@ -105,7 +105,7 @@ namespace Microsoft.EntityFrameworkCore.Utilities
             {
                 NotEmpty(parameterName, nameof(parameterName));
 
-                throw new ArgumentException(AbstractionsStrings.CollectionArgumentHasEmptyElements(parameterName));
+                throw new ArgumentException($"The collection argument '{parameterName}' must not contain empty elements.");
             }
 
             return value;

@@ -41,7 +41,7 @@ namespace QueryBaselineUpdater
                                                  @"\.[^.]+$",
                                                  string.Empty),
                                              @"\.",
-                                             @"\"),
+                                             Path.DirectorySeparatorChar.ToString()),
                                          "^.*$",
                                          "$0.cs")),
                                  int.Parse(match.Groups["Line"].Value),
@@ -57,6 +57,14 @@ namespace QueryBaselineUpdater
                                  .ToArray()))
             {
                 var filePath = file.First().File;
+
+                // Generic test base classes (e.g. `JsonStringQueryTestBase`1`) and other files that cannot be
+                // resolved to a source file are skipped instead of aborting the whole run.
+                if (!File.Exists(filePath))
+                {
+                    notFound.Add(filePath);
+                    continue;
+                }
 
                 // If we didn't find the chunk in the original file, it is possible that the test class is partial and that the chunk exists
                 // in a separate file that has the name `<ClassName>.MySql.cs`.

@@ -90,7 +90,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     @"John's Chill Box"
                 };
 
-                var query = context.Artists.Where(a => artistNames.Contains(a.Name));
+                var query = context.Artists.Where(a => ((IEnumerable<string>)artistNames).Contains(a.Name));
 
                 var artists = async
                     ? await query.ToListAsync()

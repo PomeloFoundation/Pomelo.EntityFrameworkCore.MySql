@@ -113,6 +113,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 typeMappedArguments.Add(ApplyDefaultTypeMapping(argument));
             }
 
+            // EF Core 10's RelationalTypeMappingPostprocessor requires every SQL tree expression to
+            // have a type mapping assigned, so fall back to looking one up for the return type.
+            typeMapping ??= Dependencies.TypeMappingSource.FindMapping(returnType);
+
             return new SqlFunctionExpression(
                 name,
                 typeMappedArguments,
@@ -149,6 +153,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             {
                 typeMappedArguments.Add(ApplyDefaultTypeMapping(argument));
             }
+
+            // EF Core 10's RelationalTypeMappingPostprocessor requires every SQL tree expression to
+            // have a type mapping assigned, so fall back to looking one up for the return type.
+            typeMapping ??= Dependencies.TypeMappingSource.FindMapping(returnType);
 
             return new SqlFunctionExpression(
                 name,
