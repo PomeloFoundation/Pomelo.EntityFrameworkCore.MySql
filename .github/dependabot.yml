@@ -1,15 +1,19 @@
 version: 2
 updates:
 - package-ecosystem: nuget
+  directory: "/"
+  schedule:
+    interval: daily
+- package-ecosystem: nuget
   directory: "/src/EFCore.MySql"
   schedule:
     interval: daily
 - package-ecosystem: nuget
-  directory: "/src/EFCore.MySql.Microsoft"
+  directory: "/src/EFCore.MySql.Json.Microsoft"
   schedule:
     interval: daily
 - package-ecosystem: nuget
-  directory: "/src/EFCore.MySql.Newtonsoft"
+  directory: "/src/EFCore.MySql.Json.Newtonsoft"
   schedule:
     interval: daily
 - package-ecosystem: nuget
@@ -26,5 +30,17 @@ updates:
     interval: daily
 - package-ecosystem: nuget
   directory: "/test/EFCore.MySql.Tests"
+  schedule:
+    interval: daily
+- package-ecosystem: nuget
+  directory: "/benchmark/EFCore.MySql.Benchmarks"
+  schedule:
+    interval: daily
+- package-ecosystem: nuget
+  directory: "/samples/PassKeyTest"
+  schedule:
+    interval: daily
+- package-ecosystem: nuget
+  directory: "/tools/QueryBaselineUpdater"
   schedule:
     interval: daily
