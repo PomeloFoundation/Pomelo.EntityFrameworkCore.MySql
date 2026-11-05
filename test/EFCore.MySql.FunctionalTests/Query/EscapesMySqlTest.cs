@@ -1,11 +1,11 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class EscapesMySqlTest : EscapesMySqlTestBase<EscapesMySqlTest.EscapesMySqlFixture>
     {
@@ -68,11 +68,13 @@ WHERE `a`.`Name` = 'Back\\slasher''s'");
             await base.Where_query_escapes_parameter(async);
 
             AssertSql(
-                @"@__artistName_0='Back\slasher's' (Size = 4000)
+"""
+@artistName='Back\slasher's' (Size = 4000)
 
 SELECT `a`.`ArtistId`, `a`.`Name`
 FROM `Artists` AS `a`
-WHERE `a`.`Name` = @__artistName_0");
+WHERE `a`.`Name` = @artistName
+""");
         }
 
         [ConditionalTheory]
@@ -99,9 +101,12 @@ WHERE `a`.`Name` IN (
             {
                  AssertSql(
 """
+@artistNames1='Back\slasher's' (Size = 4000)
+@artistNames2='John's Chill Box' (Size = 4000)
+
 SELECT `a`.`ArtistId`, `a`.`Name`
 FROM `Artists` AS `a`
-WHERE `a`.`Name` IN ('Back\\slasher''s', 'John''s Chill Box')
+WHERE `a`.`Name` IN (@artistNames1, @artistNames2)
 """);
             }
         }

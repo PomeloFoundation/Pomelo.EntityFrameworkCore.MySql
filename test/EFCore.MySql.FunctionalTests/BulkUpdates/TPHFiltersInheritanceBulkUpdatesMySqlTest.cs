@@ -3,13 +3,13 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
-using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
 public class TPHFiltersInheritanceBulkUpdatesMySqlTest : FiltersInheritanceBulkUpdatesTestBase<
     TPHFiltersInheritanceBulkUpdatesMySqlFixture>
@@ -94,8 +94,7 @@ WHERE (
 
     public override async Task Delete_GroupBy_Where_Select_First_3(bool async)
     {
-        if (AppConfig.ServerVersion.Type == ServerType.MariaDb &&
-            AppConfig.ServerVersion.Version >= new Version(11, 1))
+        if (AppConfig.ServerVersion.Supports.DeleteWithSelfReferencingSubquery)
         {
             await base.Delete_GroupBy_Where_Select_First_3(async);
 
@@ -118,7 +117,7 @@ WHERE (`a`.`CountryId` = 1) AND `a`.`Id` IN (
         }
         else
         {
-            // Not supported by MySQL:
+            // Not supported by MySQL and older MariaDB versions:
             //     Error Code: 1093. You can't specify target table 'c' for update in FROM clause
             await Assert.ThrowsAsync<MySqlException>(
                 () => base.Delete_GroupBy_Where_Select_First_3(async));
@@ -138,8 +137,10 @@ WHERE (`a`.`CountryId` = 1) AND `a`.`Id` IN (
 
         AssertExecuteUpdateSql(
 """
+@p='Monovia' (Size = 4000)
+
 UPDATE `Countries` AS `c`
-SET `c`.`Name` = 'Monovia'
+SET `c`.`Name` = @p
 WHERE (
     SELECT COUNT(*)
     FROM `Animals` AS `a`
@@ -153,8 +154,10 @@ WHERE (
 
         AssertExecuteUpdateSql(
 """
+@p='Monovia' (Size = 4000)
+
 UPDATE `Countries` AS `c`
-SET `c`.`Name` = 'Monovia'
+SET `c`.`Name` = @p
 WHERE (
     SELECT COUNT(*)
     FROM `Animals` AS `a`
@@ -168,8 +171,10 @@ WHERE (
 
         AssertExecuteUpdateSql(
 """
+@p='Animal' (Size = 4000)
+
 UPDATE `Animals` AS `a`
-SET `a`.`Name` = 'Animal'
+SET `a`.`Name` = @p
 WHERE (`a`.`CountryId` = 1) AND (`a`.`Name` = 'Great spotted kiwi')
 """);
     }
@@ -180,8 +185,10 @@ WHERE (`a`.`CountryId` = 1) AND (`a`.`Name` = 'Great spotted kiwi')
 
         AssertExecuteUpdateSql(
 """
+@p='NewBird' (Size = 4000)
+
 UPDATE `Animals` AS `a`
-SET `a`.`Name` = 'NewBird'
+SET `a`.`Name` = @p
 WHERE (`a`.`CountryId` = 1) AND (`a`.`Discriminator` = 'Kiwi')
 """);
     }
@@ -192,8 +199,10 @@ WHERE (`a`.`CountryId` = 1) AND (`a`.`Discriminator` = 'Kiwi')
 
         AssertExecuteUpdateSql(
 """
+@p='SomeOtherKiwi' (Size = 4000)
+
 UPDATE `Animals` AS `a`
-SET `a`.`Name` = 'SomeOtherKiwi'
+SET `a`.`Name` = @p
 WHERE (`a`.`Discriminator` = 'Kiwi') AND (`a`.`CountryId` = 1)
 """);
     }
@@ -204,8 +213,10 @@ WHERE (`a`.`Discriminator` = 'Kiwi') AND (`a`.`CountryId` = 1)
 
         AssertExecuteUpdateSql(
 """
+@p='0'
+
 UPDATE `Animals` AS `a`
-SET `a`.`FoundOn` = 0
+SET `a`.`FoundOn` = @p
 WHERE (`a`.`Discriminator` = 'Kiwi') AND (`a`.`CountryId` = 1)
 """);
     }
@@ -216,9 +227,12 @@ WHERE (`a`.`Discriminator` = 'Kiwi') AND (`a`.`CountryId` = 1)
 
         AssertExecuteUpdateSql(
 """
+@p='Kiwi' (Size = 4000)
+@p1='0'
+
 UPDATE `Animals` AS `a`
-SET `a`.`FoundOn` = 0,
-    `a`.`Name` = 'Kiwi'
+SET `a`.`Name` = @p,
+    `a`.`FoundOn` = @p1
 WHERE (`a`.`Discriminator` = 'Kiwi') AND (`a`.`CountryId` = 1)
 """);
     }

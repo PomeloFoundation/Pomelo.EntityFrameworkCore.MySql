@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore.ModelBuilding;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.ModelBuilding;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.ModelBuilding;
 
 public class MySqlModelBuilderTestBase : RelationalModelBuilderTest
 {
@@ -30,6 +30,9 @@ public class MySqlModelBuilderTestBase : RelationalModelBuilderTest
 
     public abstract class MySqlOwnedTypes(MySqlModelBuilderFixture fixture)
         : RelationalOwnedTypesTestBase(fixture), IClassFixture<MySqlModelBuilderFixture>;
+
+    public abstract class MySqlComplexCollection(MySqlModelBuilderFixture fixture)
+        : RelationalComplexCollectionTestBase(fixture), IClassFixture<MySqlModelBuilderFixture>;
 
     public class MySqlModelBuilderFixture : RelationalModelBuilderFixture
     {

@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class NorthwindAggregateOperatorsQueryMySqlTest : NorthwindAggregateOperatorsQueryRelationalTestBase<
         NorthwindQueryMySqlFixture<NoopModelCustomizer>>
@@ -78,6 +78,23 @@ FROM `Order Details` AS `o`
 
             AssertSql();
         }
+
+        public override async Task Contains_with_local_enumerable_inline_closure_mix(bool async)
+        {
+            // Issue #31776
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                async () =>
+                    await base.Contains_with_local_enumerable_inline_closure_mix(async));
+
+            AssertSql();
+        }
+
+        public override Task Contains_inside_Average_without_GroupBy(bool async)
+            => AssertAverage(
+                async,
+                ss => ss.Set<OrderDetail>().Where(od => od.OrderID == 10250),
+                selector: od => od.UnitPrice,
+                asserter: (a, b) => Assert.Equal(a, b, 6)); // added floating point precision tolerance
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);

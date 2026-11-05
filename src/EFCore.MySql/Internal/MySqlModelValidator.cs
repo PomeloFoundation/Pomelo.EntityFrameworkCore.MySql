@@ -1,4 +1,4 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Internal
+namespace Microting.EntityFrameworkCore.MySql.Internal
 {
     /// <summary>
     ///     <para>
@@ -45,13 +45,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
             IModel model,
             IDiagnosticsLogger<DbLoggerCategory.Model.Validation> logger)
         {
-            foreach (var entityType in model.GetEntityTypes())
-            {
-                if (entityType.IsMappedToJson())
-                {
-                    throw new InvalidOperationException(MySqlStrings.Ef7CoreJsonMappingNotSupported);
-                }
-            }
+            // EF Core 10+ requires JSON column support for complex collections.
+            // MySQL 5.7.8+ and MariaDB 10.2.4+ support JSON columns.
+            // Let the base implementation handle standard JSON validation.
+            base.ValidateJsonEntities(model, logger);
         }
 
         /// <inheritdoc />

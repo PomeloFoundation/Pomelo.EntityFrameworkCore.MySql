@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class QueryFilterFuncletizationMySqlTest
         : QueryFilterFuncletizationTestBase<QueryFilterFuncletizationMySqlTest.QueryFilterFuncletizationMySqlFixture>
@@ -92,15 +92,20 @@ WHERE FALSE
 """,
                 //
                 """
+@ef_filter__TenantIds1='1'
+
 SELECT `l`.`Id`, `l`.`Tenant`
 FROM `ListFilter` AS `l`
-WHERE `l`.`Tenant` = 1
+WHERE `l`.`Tenant` = @ef_filter__TenantIds1
 """,
                 //
                 """
+@ef_filter__TenantIds1='2'
+@ef_filter__TenantIds2='3'
+
 SELECT `l`.`Id`, `l`.`Tenant`
 FROM `ListFilter` AS `l`
-WHERE `l`.`Tenant` IN (2, 3)
+WHERE `l`.`Tenant` IN (@ef_filter__TenantIds1, @ef_filter__TenantIds2)
 """);
             }
         }

@@ -1,13 +1,13 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
-using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
+using Microting.EntityFrameworkCore.MySql.Scaffolding.Internal;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Design.Internal;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Design.Internal
+namespace Microting.EntityFrameworkCore.MySql.Design.Internal
 {
     public class MySqlDesignTimeServices : IDesignTimeServices
     {

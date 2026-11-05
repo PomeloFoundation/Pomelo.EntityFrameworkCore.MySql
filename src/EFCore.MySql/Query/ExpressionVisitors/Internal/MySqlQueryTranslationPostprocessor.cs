@@ -1,12 +1,12 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Query.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
+namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
     public class MySqlQueryTranslationPostprocessor : RelationalQueryTranslationPostprocessor
     {
@@ -33,6 +33,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
             // Changes `SelectExpression.IsMutable` from `true` to `false`.
             query = base.Process(query);
+
+            // Must run before the HAVING post-processing below, which would otherwise alias the correlated HAVING predicates.
+            query = new MySqlApplyToJoinExpressionVisitor(_options).Process(query);
 
             query = mySqlHavingExpressionVisitor.Process(query, usePrePostprocessorMode: false);
 

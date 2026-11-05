@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -11,13 +11,13 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Diagnostics.Internal;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
 //ReSharper disable once CheckNamespace
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {
     public class MySqlTestHelpers : RelationalTestHelpers
     {

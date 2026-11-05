@@ -1,10 +1,14 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Text;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -13,7 +17,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MySqlConnector;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
+namespace Microting.EntityFrameworkCore.MySql.Storage.Internal
 {
     public class MySqlJsonTypeMapping<T> : MySqlJsonTypeMapping
     {
@@ -57,6 +61,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
     public abstract class MySqlJsonTypeMapping : MySqlStringTypeMapping, IMySqlCSharpRuntimeAnnotationTypeMappingCodeGenerator
     {
+        protected static readonly MethodInfo _getString
+            = typeof(DbDataReader).GetRuntimeMethod(nameof(DbDataReader.GetString), new[] { typeof(int) });
+
         public MySqlJsonTypeMapping(
             [NotNull] string storeType,
             [NotNull] Type clrType,
@@ -116,6 +123,28 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             {
                 parameter.Value = (string)mySqlJsonString;
             }
+        }
+
+        /// <summary>
+        /// Returns the method to be used for reading JSON values from the database.
+        /// MySQL stores JSON as strings, so we use GetString instead of the default GetFieldValue&lt;T&gt;.
+        /// </summary>
+        public override MethodInfo GetDataReaderMethod()
+        {
+            // Console.WriteLine($"[DEBUG] MySqlJsonTypeMapping.GetDataReaderMethod() called - ClrType: {ClrType.Name} - returning DbDataReader.GetString");
+            return _getString;
+        }
+
+        /// <summary>
+        /// Customizes the data reader expression for JSON types.
+        /// This is only used for regular JSON columns mapped to string properties.
+        /// Complex JSON types use MySqlStructuralJsonTypeMapping instead.
+        /// </summary>
+        public override Expression CustomizeDataReaderExpression(Expression expression)
+        {
+            // Console.WriteLine($"[DEBUG] MySqlJsonTypeMapping.CustomizeDataReaderExpression() called - ClrType: {ClrType.Name} - no conversion");
+            // For regular JSON columns, no conversion needed - just return the string
+            return base.CustomizeDataReaderExpression(expression);
         }
 
         void IMySqlCSharpRuntimeAnnotationTypeMappingCodeGenerator.Create(

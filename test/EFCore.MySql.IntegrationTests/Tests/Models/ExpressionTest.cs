@@ -2,11 +2,11 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models;
+using Microting.EntityFrameworkCore.MySql.IntegrationTests.Models;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
+namespace Microting.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
 {
 
     public class ExpressionTest : IDisposable
@@ -326,10 +326,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
             var result = await _db.DataTypesVariable.Select(m =>
                 new {
                     m.Id,
-                    Replaced = m.TypeString.Replace("Entity", "Pomelo.Entity")
+                    Replaced = m.TypeString.Replace("Entity", "Microting.Entity")
                 }).FirstOrDefaultAsync(m => m.Id == _variable.Id);
 
-            Assert.Equal("Pomelo.EntityFramework", result.Replaced);
+            Assert.Equal("Microting.EntityFramework", result.Replaced);
         }
 
         [Fact]

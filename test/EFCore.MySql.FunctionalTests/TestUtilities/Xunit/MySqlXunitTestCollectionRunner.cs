@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit;
 
 public class MySqlXunitTestCollectionRunner : XunitTestCollectionRunner
 {

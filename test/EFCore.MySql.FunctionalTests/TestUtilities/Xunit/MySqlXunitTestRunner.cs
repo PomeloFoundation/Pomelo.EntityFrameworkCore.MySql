@@ -4,11 +4,11 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Tests;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
 {
     public class MySqlXunitTestRunner : XunitTestRunner
     {

@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Reflection;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
-using Pomelo.EntityFrameworkCore.MySql.Diagnostics.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Diagnostics.Internal;
+using Microting.EntityFrameworkCore.MySql.Tests;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
 {
     // TODO: Reenable once this issue has been fixed in EF Core upstream.
     // Skip because LoggingTestBase uses the wrong order:
@@ -27,7 +27,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         protected override TestLogger CreateTestLogger()
             => new TestLogger<MySqlLoggingDefinitions>();
 
-        protected override string ProviderName => "Pomelo.EntityFrameworkCore.MySql";
+        protected override string ProviderName => "Microting.EntityFrameworkCore.MySql";
 
         protected override string ProviderVersion => typeof(MySqlOptionsExtension).Assembly
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()

@@ -5,7 +5,7 @@ using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Migrations
+namespace Microting.EntityFrameworkCore.MySql.Migrations
 {
     public sealed class MySqlMigrationTest : TestBase<MySqlMigrationTest.Context>
     {

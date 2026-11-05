@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
 {
     public class MySqlConditionalTheoryDiscoverer : ConditionalTheoryDiscoverer
     {

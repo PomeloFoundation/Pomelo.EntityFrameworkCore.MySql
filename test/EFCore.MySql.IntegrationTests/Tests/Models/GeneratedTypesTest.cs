@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models;
+using Microting.EntityFrameworkCore.MySql.IntegrationTests.Models;
 using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
+using Microting.EntityFrameworkCore.MySql.Storage;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
+namespace Microting.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
 {
 	public class GeneratedTypesTest
 	{

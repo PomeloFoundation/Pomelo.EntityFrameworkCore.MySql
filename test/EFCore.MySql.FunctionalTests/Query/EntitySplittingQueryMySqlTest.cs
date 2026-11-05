@@ -1,15 +1,17 @@
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
 public class EntitySplittingQueryMySqlTest : EntitySplittingQueryTestBase
 {
-    public EntitySplittingQueryMySqlTest(ITestOutputHelper testOutputHelper)
+    public EntitySplittingQueryMySqlTest(NonSharedFixture fixture, ITestOutputHelper testOutputHelper)
+        : base(fixture)
     {
         // Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
     }
@@ -782,6 +784,18 @@ ORDER BY `u`.`Id`, `s0`.`MiddleEntityId`
         await base.Tpc_entity_owning_a_split_collection_on_leaf(async);
 
         AssertSql();
+    }
+
+    public override async Task Compare_split_entity_to_null(bool async)
+    {
+        await base.Compare_split_entity_to_null(async);
+
+        AssertSql(
+"""
+SELECT `e`.`Id`, `e`.`EntityThreeId`, `e`.`IntValue1`, `e`.`IntValue2`, `s`.`IntValue3`, `e`.`IntValue4`, `e`.`StringValue1`, `e`.`StringValue2`, `e`.`StringValue3`, `e`.`StringValue4`
+FROM `EntityOne` AS `e`
+INNER JOIN `SplitEntityOnePart` AS `s` ON `e`.`Id` = `s`.`Id`
+""");
     }
 
     protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;

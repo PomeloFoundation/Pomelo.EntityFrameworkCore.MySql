@@ -2,14 +2,20 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class SharedTypeQueryMySqlTest : SharedTypeQueryRelationalTestBase
     {
+        public SharedTypeQueryMySqlTest(NonSharedFixture fixture)
+            : base(fixture)
+        {
+        }
+
         protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
 
         public override async Task Can_use_shared_type_entity_type_in_query_filter(bool async)

@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql
+namespace Microting.EntityFrameworkCore.MySql
 {
     public abstract class MySqlTestFixtureBase : IDisposable
     {
@@ -64,7 +64,7 @@ namespace Pomelo.EntityFrameworkCore.MySql
 
         protected override void Dispose(bool disposing)
         {
-            TestStore.Dispose();
+            TestStore.DisposeAsync().AsTask().Wait();
             base.Dispose(disposing);
         }
 

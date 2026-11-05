@@ -22,17 +22,22 @@ using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using NetTopologySuite.Geometries;
 using NetTopologySuite;
-using Pomelo.EntityFrameworkCore.MySql.Design.Internal;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
+using Microting.EntityFrameworkCore.MySql.Design.Internal;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Internal;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Scaffolding;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Scaffolding;
 
-// TODO: Add more Pomelo specific cases.
+// TODO: Add more Microting specific cases.
 public class CompiledModelMySqlTest : CompiledModelRelationalTestBase
 {
+    public CompiledModelMySqlTest(NonSharedFixture fixture)
+        : base(fixture)
+    {
+    }
+
     protected override void BuildBigModel(ModelBuilder modelBuilder, bool jsonColumns)
     {
         base.BuildBigModel(modelBuilder, jsonColumns);
@@ -329,12 +334,13 @@ public class CompiledModelMySqlTest : CompiledModelRelationalTestBase
             });
     }
 
-    public override async Task BigModel_with_JSON_columns()
-    {
-        Assert.Equal(
-            MySqlStrings.Ef7CoreJsonMappingNotSupported,
-            (await Assert.ThrowsAsync<InvalidOperationException>(() => base.BigModel_with_JSON_columns())).Message);
-    }
+    // JSON columns are now supported in EF Core 10
+    // public override async Task BigModel_with_JSON_columns()
+    // {
+    //     Assert.Equal(
+    //         MySqlStrings.Ef7CoreJsonMappingNotSupported,
+    //         (await Assert.ThrowsAsync<InvalidOperationException>(() => base.BigModel_with_JSON_columns())).Message);
+    // }
 
     // TODO: 9.0
     // Check, if we can make this work.
@@ -364,8 +370,8 @@ public class CompiledModelMySqlTest : CompiledModelRelationalTestBase
     protected override BuildSource AddReferences(BuildSource build, [CallerFilePath] string filePath = "")
     {
         base.AddReferences(build);
-        build.References.Add(BuildReference.ByName("Pomelo.EntityFrameworkCore.MySql"));
-        build.References.Add(BuildReference.ByName("Pomelo.EntityFrameworkCore.MySql.NetTopologySuite"));
+        build.References.Add(BuildReference.ByName("Microting.EntityFrameworkCore.MySql"));
+        build.References.Add(BuildReference.ByName("Microting.EntityFrameworkCore.MySql.NetTopologySuite"));
         build.References.Add(BuildReference.ByName("NetTopologySuite"));
         return build;
     }

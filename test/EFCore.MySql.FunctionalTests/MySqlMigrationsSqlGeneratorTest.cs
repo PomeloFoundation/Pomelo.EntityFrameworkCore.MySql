@@ -12,15 +12,15 @@ using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
-using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Internal;
+using Microting.EntityFrameworkCore.MySql.Metadata.Internal;
+using Microting.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
 {
     public partial class MySqlMigrationsSqlGeneratorTest : MigrationsSqlGeneratorTestBase
     {
@@ -704,6 +704,31 @@ ALTER DATABASE COLLATE latin1_swedish_ci;" + EOL,
 
             Assert.Equal(
                 $"ALTER TABLE `Person` ADD `Name` {columnType}{expectedCharSetName} NULL;" + EOL,
+                Sql);
+        }
+
+        [ConditionalTheory]
+        [InlineData("vector(312)")]
+        [InlineData("uuid")]
+        [InlineData("inet6")]
+        public virtual void AddColumnOperation_with_charset_and_collation_on_non_character_store_type(string storeType)
+        {
+            // Non-character based store types do not support the `CHARACTER SET` and `COLLATE` column attributes and
+            // will throw an error, if they are applied to them.
+            Generate(
+                new AddColumnOperation
+                {
+                    Table = "People",
+                    Name = "Embedding",
+                    ClrType = typeof(string),
+                    ColumnType = storeType,
+                    IsNullable = false,
+                    Collation = "utf8mb4_bin",
+                    [MySqlAnnotationNames.CharSet] = "utf8mb4",
+                });
+
+            Assert.Equal(
+                $"ALTER TABLE `People` ADD `Embedding` {storeType} NOT NULL;" + EOL,
                 Sql);
         }
 

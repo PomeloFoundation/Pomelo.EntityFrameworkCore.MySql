@@ -1,0 +1,596 @@
+name: Version release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+      - 'v*.*.*-*'
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  mysqlCurrentSqlMode: ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+  mysqlLegacySqlMode: ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+  # Currently no ONLY_FULL_GROUP_BY, see #1167:
+  mariadbSqlMode: STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+  maxConnections: 512
+  skipAllTests: false
+  skipWindowsTests: false
+jobs:
+  BuildAndTest:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # MySQL 9.5.x - Ubuntu only (Windows package not available yet)
+          - dbVersion: 9.5.0-mysql
+            os: ubuntu-latest
+          # MySQL 9.x - Both platforms
+          - dbVersion: 9.4.0-mysql
+            os: ubuntu-latest
+          - dbVersion: 9.4.0-mysql
+            os: windows-latest
+          - dbVersion: 9.3.0-mysql
+            os: ubuntu-latest
+          - dbVersion: 9.3.0-mysql
+            os: windows-latest
+          - dbVersion: 9.2.0-mysql
+            os: ubuntu-latest
+          - dbVersion: 9.2.0-mysql
+            os: windows-latest
+          - dbVersion: 9.1.0-mysql
+            os: ubuntu-latest
+          - dbVersion: 9.1.0-mysql
+            os: windows-latest
+          - dbVersion: 9.0.1-mysql
+            os: ubuntu-latest
+          - dbVersion: 9.0.1-mysql
+            os: windows-latest
+          # MySQL 8.x - Both platforms
+          - dbVersion: 8.4.3-mysql
+            os: ubuntu-latest
+          - dbVersion: 8.4.3-mysql
+            os: windows-latest
+          - dbVersion: 8.0.40-mysql
+            os: ubuntu-latest
+          - dbVersion: 8.0.40-mysql
+            os: windows-latest
+          # MariaDB 11.8+ - Ubuntu only (Windows package not available yet)
+          - dbVersion: 11.8.5-mariadb
+            os: ubuntu-latest
+          # MariaDB 11.7.x - Both platforms (different patch versions)
+          - dbVersion: 11.7.2-mariadb
+            os: ubuntu-latest
+          - dbVersion: 11.7.1-mariadb
+            os: windows-latest
+          # MariaDB 11.x - Both platforms
+          - dbVersion: 11.6.2-mariadb
+            os: ubuntu-latest
+          - dbVersion: 11.6.2-mariadb
+            os: windows-latest
+          - dbVersion: 11.5.2-mariadb
+            os: ubuntu-latest
+          - dbVersion: 11.5.2-mariadb
+            os: windows-latest
+          - dbVersion: 11.4.4-mariadb
+            os: ubuntu-latest
+          - dbVersion: 11.4.4-mariadb
+            os: windows-latest
+          - dbVersion: 11.3.2-mariadb
+            os: ubuntu-latest
+          - dbVersion: 11.3.2-mariadb
+            os: windows-latest
+          # MariaDB 10.x - Both platforms
+          - dbVersion: 10.11.10-mariadb
+            os: ubuntu-latest
+          - dbVersion: 10.11.10-mariadb
+            os: windows-latest
+          - dbVersion: 10.6.20-mariadb
+            os: ubuntu-latest
+          - dbVersion: 10.6.20-mariadb
+            os: windows-latest
+          - dbVersion: 10.5.27-mariadb
+            os: ubuntu-latest
+          - dbVersion: 10.5.27-mariadb
+            os: windows-latest
+          # MariaDB 12.x - Ubuntu only (Windows packages not available yet)
+          - dbVersion: 12.1.2-mariadb
+            os: ubuntu-latest
+          - dbVersion: 12.0.2-mariadb
+            os: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set additional variables
+        shell: pwsh
+        run: |
+          $os = '${{ matrix.os }}'.Split('-')[0] -eq 'windows' ? 'windows' : 'linux'
+          echo "os=$os" >> $env:GITHUB_ENV
+
+          $dbVersionParts = '${{ matrix.dbVersion }}'.Split('-')
+
+          $databaseServerType = $dbVersionParts[1]
+          echo "databaseServerType=$databaseServerType" >> $env:GITHUB_ENV
+
+          $databaseServerVersion = $dbVersionParts[0]
+          echo "databaseServerVersion=$databaseServerVersion" >> $env:GITHUB_ENV
+
+          # The parenthesis around the right OR argument are mandatory for the expression to work correctly, because in PowerShell, AND and OR
+          # operators have the SAME precedence.
+          $skipTests = '${{ env.skipAllTests }}' -eq 'true' -or ($os -eq 'windows' -and '${{ env.skipWindowsTests }}' -eq 'true')
+          echo "skipTests=$skipTests" >> $env:GITHUB_ENV
+
+          $sqlMode = $databaseServerType -eq 'mariadb' ? '${{ env.mariadbSqlMode }}' : $databaseServerType -eq 'mysql' -and $databaseServerVersion.Split('.')[0] -lt 8 ? '${{ env.mysqlLegacySqlMode }}' : '${{ env.mysqlCurrentSqlMode }}'
+          echo "sqlMode=$sqlMode" >> $env:GITHUB_ENV
+
+          $serverExecutable = $databaseServerType -eq 'mariadb' -and $databaseServerVersion.Split('.')[0] -ge 11 ? 'mariadbd' : 'mysqld'
+          echo "serverExecutable=$serverExecutable" >> $env:GITHUB_ENV
+
+          $clientExecutable = $databaseServerType -eq 'mariadb' -and $databaseServerVersion.Split('.')[0] -ge 11 ? 'mariadb' : 'mysql'
+          echo "clientExecutable=$clientExecutable" >> $env:GITHUB_ENV
+
+          $clientCommandPrefix = $os -eq 'windows' ? $clientExecutable : "docker exec '$databaseServerType' $clientExecutable"
+          echo "clientCommandPrefix=$clientCommandPrefix" >> $env:GITHUB_ENV
+
+          $windowsUserTempLocation = $os -eq 'windows' ? (Get-Item $env:Temp).FullName : ''
+          echo "windowsUserTempLocation=$windowsUserTempLocation" >> $env:GITHUB_ENV
+      - name: Output Variables
+        shell: pwsh
+        run: |
+          echo "os: ${{ env.os }}"
+          echo "databaseServerType: ${{ env.databaseServerType }}"
+          echo "databaseServerVersion: ${{ env.databaseServerVersion }}"
+          echo "sqlMode: ${{ env.sqlMode }}"
+          echo "skipTests: ${{ env.skipTests }}"
+          echo "skipAllTests: ${{ env.skipAllTests }}"
+          echo "skipWindowsTests: ${{ env.skipWindowsTests }}"
+          echo "serverExecutable: ${{ env.serverExecutable }}"
+          echo "clientExecutable: ${{ env.clientExecutable }}"
+          echo "clientCommandPrefix: ${{ env.clientCommandPrefix }}"
+          echo "windowsUserTempLocation: ${{ env.windowsUserTempLocation }}"
+
+          echo "github.event_name: ${{ github.event_name }}"
+          echo "github.repository: ${{ github.repository }}"
+      - name: Prepare certs & NuGet env
+        if: ${{ env.os == 'linux' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ca-certificates
+          echo "NUGET_CERT_REVOCATION_MODE=offline" >> $GITHUB_ENV
+      - name: Install Database Server - Linux
+        if: ${{ env.os == 'linux' }}
+        shell: pwsh
+        run: |
+          sudo systemctl stop mysql
+
+          $waitMinutes = 5
+          $pollingIntervalSeconds = 1
+          $started = $false
+
+          dir './cache/database' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
+
+          if (Test-Path -PathType Leaf './cache/database/${{ env.databaseServerType }}_${{ env.databaseServerVersion }}.tar')
+          {
+            docker load --input './cache/database/${{ env.databaseServerType }}_${{ env.databaseServerVersion }}.tar'
+          }
+          else
+          {
+            if (-not (Test-Path -PathType Container './cache/database'))
+            {
+              New-Item -ItemType Directory './cache/database'
+            }
+
+            docker pull '${{ env.databaseServerType }}:${{ env.databaseServerVersion }}'
+            docker save -o './cache/database/${{ env.databaseServerType }}_${{ env.databaseServerVersion }}.tar' '${{ env.databaseServerType }}:${{ env.databaseServerVersion }}'
+
+            dir './cache/database' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
+          }
+
+          docker run --name '${{ env.databaseServerType }}' -e MYSQL_ROOT_PASSWORD=Password12! -p 127.0.0.1:3306:3306 -d '${{ env.databaseServerType }}:${{ env.databaseServerVersion }}'
+          $startTime = Get-Date
+
+          while (!($started = ${{ env.clientCommandPrefix }} --protocol=tcp -h localhost -P 3306 -u root -pPassword12! -e 'select 1;') -and ((Get-Date) - $startTime).TotalMinutes -lt $waitMinutes)
+          {
+            Start-Sleep -Seconds $pollingIntervalSeconds
+          }
+
+          if (!$started)
+          {
+            throw "${{ env.databaseServerType }}:${{ env.databaseServerVersion }} docker container failed to start in ${waitMinutes} minutes"
+            exit 1
+          }
+      - name: Install Database Server - Windows
+        if: ${{ env.os == 'windows' }}
+        shell: pwsh
+        run: |
+          $mySqlServiceName = '${{ env.databaseServerType }}_${{ env.databaseServerVersion }}'
+          $lowerCaseTableNames = 2
+          $packageName = 'Pomelo.Chocolatey.${{ env.databaseServerType }}.Server'
+          $mySqlBinPath = "C:\tools\${packageName}\current\bin"
+          $mySqlIniPath = "C:\tools\${packageName}\current\my.ini"
+          $mySqlDataPath = 'C:\ProgramData\${{ env.databaseServerType }}\data'
+
+          dir "$env:Temp\${{ env.databaseServerType }}\${{ env.databaseServerVersion }}" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
+
+          $service = Get-Service '*${{ env.databaseServerType }}*' -ErrorAction SilentlyContinue
+          if ($service -ne $null)
+          {
+            throw "A service for ${{ env.databaseServerType }} appears to already exist."
+            exit 1
+          }
+
+          # choco config set cacheLocation '$(Pipeline.Workspace)/cache/database'
+          choco install $packageName '--version=${{ env.databaseServerVersion }}' --ignore-dependencies --source 'https://www.myget.org/F/pomelo/api/v2;https://community.chocolatey.org/api/v2' --params "/serviceName:$mySqlServiceName"
+
+          Get-Service '*${{ env.databaseServerType }}*' -ErrorAction SilentlyContinue
+          Stop-Service $mySqlServiceName -Verbose
+
+          echo "Update PATH environment variable"
+          $env:PATH = "$mySqlBinPath;$env:PATH"
+          echo "PATH=$env:PATH" >> $env:GITHUB_ENV
+
+          echo "Update configuration file"
+          "lower_case_table_names=$lowerCaseTableNames" >> $mySqlIniPath
+
+          Remove-Item $mySqlDataPath/* -Recurse -Force -Verbose
+
+          echo "Reinitialize database server"
+
+          if ('${{ env.databaseServerType }}' -eq 'mysql')
+          {
+            ${{ env.serverExecutable }} --defaults-file="$mySqlIniPath" --initialize-insecure
+          }
+          else
+          {
+            mysql_install_db --datadir="$mySqlDataPath"
+          }
+
+          Start-Service $mySqlServiceName -Verbose
+
+          echo "Setup credentials"
+          ${{ env.clientCommandPrefix }} -h localhost -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Password12!';"
+          ${{ env.clientCommandPrefix }} -h localhost -u root -pPassword12! -e "SELECT @@version;"
+
+          dir "$env:Temp\${packageName}\${{ env.databaseServerVersion }}" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
+      - name: Setup Database
+        shell: pwsh
+        run: ${{ env.clientCommandPrefix }} -u root -pPassword12! -e "SET GLOBAL sql_mode = '${{ env.sqlMode }}'; SET GLOBAL max_connections = ${{ env.maxConnections }};"
+      - name: Database Information
+        shell: pwsh
+        run: ${{ env.clientCommandPrefix }} -u root -pPassword12! -e 'SHOW VARIABLES;'
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: .NET Information
+        shell: pwsh
+        run: |
+          dotnet --info
+      - name: Fix MSB4276 - Create missing WorkloadAutoImportPropsLocator SDK
+        shell: pwsh
+        run: |
+          $sdkPath = dotnet --info | Select-String "Base Path:\s+(.+)" | ForEach-Object { $_.Matches.Groups[1].Value.Trim() }
+          $workloadSdkPath = Join-Path $sdkPath "Sdks/Microsoft.NET.SDK.WorkloadAutoImportPropsLocator"
+          
+          if (-not (Test-Path $workloadSdkPath)) {
+            Write-Host "Creating missing WorkloadAutoImportPropsLocator SDK at: $workloadSdkPath"
+            New-Item -ItemType Directory -Path "$workloadSdkPath/Sdk" -Force | Out-Null
+            
+            # Create Sdk.props
+            $sdkPropsContent = @'
+          <!--
+          ***********************************************************************************************
+          Sdk.props
+          
+          WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+                    created a backup copy.  Incorrect changes to this file will make it
+                    impossible to load or build your projects from the command-line or the IDE.
+          
+          Copyright (c) .NET Foundation. All rights reserved.
+          ***********************************************************************************************
+          -->
+          <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+          </Project>
+          '@
+            $sdkPropsContent | Out-File -FilePath "$workloadSdkPath/Sdk/Sdk.props" -Encoding UTF8 -NoNewline
+            
+            # Create Sdk.targets
+            $sdkTargetsContent = @'
+          <!--
+          ***********************************************************************************************
+          Sdk.targets
+          
+          WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+                    created a backup copy.  Incorrect changes to this file will make it
+                    impossible to load or build your projects from the command-line or the IDE.
+          
+          Copyright (c) .NET Foundation. All rights reserved.
+          ***********************************************************************************************
+          -->
+          <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+          </Project>
+          '@
+            $sdkTargetsContent | Out-File -FilePath "$workloadSdkPath/Sdk/Sdk.targets" -Encoding UTF8 -NoNewline
+            
+            # Create AutoImport.props
+            $autoImportContent = @'
+          <!--
+          ***********************************************************************************************
+          AutoImport.props
+          
+          WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+                    created a backup copy.  Incorrect changes to this file will make it
+                    impossible to load or build your projects from the command-line or the IDE.
+          
+          This file is auto-imported by Microsoft.NET.Sdk.ImportWorkloads.props
+          to import workload-specific props files.
+          
+          Copyright (c) .NET Foundation. All rights reserved.
+          ***********************************************************************************************
+          -->
+          <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+            <!-- This file imports workload props. For now it's empty as no workloads require auto-import props. -->
+          </Project>
+          '@
+            $autoImportContent | Out-File -FilePath "$workloadSdkPath/Sdk/AutoImport.props" -Encoding UTF8 -NoNewline
+            
+            Write-Host "Successfully created WorkloadAutoImportPropsLocator SDK"
+          } else {
+            Write-Host "WorkloadAutoImportPropsLocator SDK already exists at: $workloadSdkPath"
+          }
+      - name: Install EF Core Tools
+        shell: pwsh
+        run: |
+          dotnet tool restore
+          dotnet ef --version
+      - name: Restore dependencies
+        shell: pwsh
+        run: dotnet restore
+      - name: Setup Solution
+        shell: pwsh
+        run: |
+          Copy-Item test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
+          Copy-Item test/EFCore.MySql.IntegrationTests/appsettings.ci.json test/EFCore.MySql.IntegrationTests/appsettings.json
+          Copy-Item test/EFCore.MySql.IntegrationTests/config.json.example test/EFCore.MySql.IntegrationTests/config.json
+      - name: Setup Integration Tests
+        shell: pwsh
+        run: |
+          ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
+      - name: Build Solution
+        shell: pwsh
+        run: |
+          dotnet build -c Debug
+          dotnet build -c Release
+      - name: Functional Tests
+        if: ${{ env.skipTests != 'true' }}
+        shell: pwsh
+        run: dotnet test test/EFCore.MySql.FunctionalTests -c Debug --no-build --logger "GitHubActions;report-warnings=false" --verbosity detailed
+      - name: Tests
+        if: ${{ env.skipTests != 'true' }}
+        shell: pwsh
+        run: dotnet test --logger "GitHubActions;report-warnings=false" test/EFCore.MySql.Tests
+      - name: Integration Tests - Applying migrations
+        if: ${{ env.skipTests != 'true' }}
+        shell: pwsh
+        run: dotnet run --project test/EFCore.MySql.IntegrationTests -c Release testMigrate
+      - name: Integration Tests - Scaffolding
+        if: ${{ env.skipTests != 'true' }}
+        shell: pwsh
+        run: ./test/EFCore.MySql.IntegrationTests/scripts/scaffold.ps1
+      - name: Integration Tests - With EF_BATCH_SIZE = 1
+        if: ${{ env.skipTests != 'true' }}
+        shell: pwsh
+        run: |
+          $env:EF_BATCH_SIZE = "1"
+          dotnet test -c Release --no-build --logger "GitHubActions;report-warnings=false" test/EFCore.MySql.IntegrationTests
+      - name: Integration Tests - With EF_BATCH_SIZE = 10
+        if: ${{ env.skipTests != 'true' }}
+        shell: pwsh
+        run: |
+          $env:EF_BATCH_SIZE = "10"
+          dotnet test -c Release --no-build --logger "GitHubActions;report-warnings=false" test/EFCore.MySql.IntegrationTests
+      - name: Integration Tests - With EF_BATCH_SIZE = 1
+        if: ${{ env.skipTests != 'true' }}
+        shell: pwsh
+        run: |
+          $env:EF_RETRY_ON_FAILURE = "3"
+          dotnet test -c Release --no-build --logger "GitHubActions;report-warnings=false" test/EFCore.MySql.IntegrationTests
+      - name: Integration Tests - Legacy migrations
+        if: ${{ env.skipTests != 'true' }}
+        shell: pwsh
+        run: ./test/EFCore.MySql.IntegrationTests/scripts/legacy.ps1
+      - name: Integration Tests - Building migrations with EF_DATABASE = pomelo_test2
+        if: ${{ env.skipTests != 'true' }}
+        shell: pwsh
+        run: |
+          $env:EF_DATABASE = "pomelo_test2"
+          dotnet build ./test/EFCore.MySql.IntegrationTests -c Release
+      - name: Integration Tests - Setup migrations with EF_DATABASE = pomelo_test2
+        if: ${{ env.skipTests != 'true' }}
+        shell: pwsh
+        run: |
+          $env:EF_DATABASE = "pomelo_test2"
+          ./test/EFCore.MySql.IntegrationTests/scripts/rebuild.ps1
+      - name: Integration Tests - With EF_DATABASE = pomelo_test2
+        if: ${{ env.skipTests != 'true' }}
+        shell: pwsh
+        run: |
+          $env:EF_DATABASE = "pomelo_test2"
+          dotnet test -c Release --no-build --logger "GitHubActions;report-warnings=false" test/EFCore.MySql.IntegrationTests
+      - name: PassKey Sample Test - Check JSON Support
+        if: ${{ env.skipTests != 'true' }}
+        id: check-json-support
+        shell: pwsh
+        run: |
+          # MySQL 5.7.8+ supports JSON, MariaDB 10.2.4+ supports JSON (through emulation)
+          $dbVersion = [Version]'${{ env.databaseServerVersion }}'
+          $supportsJson = $false
+
+          if ('${{ env.databaseServerType }}' -eq 'mysql')
+          {
+            $supportsJson = $dbVersion -ge [Version]'5.7.8'
+          }
+          elseif ('${{ env.databaseServerType }}' -eq 'mariadb')
+          {
+            $supportsJson = $dbVersion -ge [Version]'10.2.4'
+          }
+
+          echo "supportsJson=$supportsJson" >> $env:GITHUB_OUTPUT
+          echo "Database ${{ env.databaseServerType }} ${{ env.databaseServerVersion }} JSON support: $supportsJson"
+      - name: PassKey Sample Test - Run Test
+        if: ${{ env.skipTests != 'true' && steps.check-json-support.outputs.supportsJson == 'True' }}
+        shell: pwsh
+        run: |
+          echo "Running PassKey test for ${{ env.databaseServerType }} ${{ env.databaseServerVersion }} (supports JSON)"
+          dotnet run --project samples/PassKeyTest --no-build
+  NuGet:
+    needs: BuildAndTest
+    if: github.repository == 'Microting/Pomelo.EntityFrameworkCore.MySql'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: .NET Information
+        shell: pwsh
+        run: |
+          dotnet --info
+      - name: Fix MSB4276 - Create missing WorkloadAutoImportPropsLocator SDK
+        shell: pwsh
+        run: |
+          $sdkPath = dotnet --info | Select-String "Base Path:\s+(.+)" | ForEach-Object { $_.Matches.Groups[1].Value.Trim() }
+          $workloadSdkPath = Join-Path $sdkPath "Sdks/Microsoft.NET.SDK.WorkloadAutoImportPropsLocator"
+          
+          if (-not (Test-Path $workloadSdkPath)) {
+            Write-Host "Creating missing WorkloadAutoImportPropsLocator SDK at: $workloadSdkPath"
+            New-Item -ItemType Directory -Path "$workloadSdkPath/Sdk" -Force | Out-Null
+            
+            # Create Sdk.props
+            $sdkPropsContent = @'
+          <!--
+          ***********************************************************************************************
+          Sdk.props
+          
+          WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+                    created a backup copy.  Incorrect changes to this file will make it
+                    impossible to load or build your projects from the command-line or the IDE.
+          
+          Copyright (c) .NET Foundation. All rights reserved.
+          ***********************************************************************************************
+          -->
+          <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+          </Project>
+          '@
+            $sdkPropsContent | Out-File -FilePath "$workloadSdkPath/Sdk/Sdk.props" -Encoding UTF8 -NoNewline
+            
+            # Create Sdk.targets
+            $sdkTargetsContent = @'
+          <!--
+          ***********************************************************************************************
+          Sdk.targets
+          
+          WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+                    created a backup copy.  Incorrect changes to this file will make it
+                    impossible to load or build your projects from the command-line or the IDE.
+          
+          Copyright (c) .NET Foundation. All rights reserved.
+          ***********************************************************************************************
+          -->
+          <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+          </Project>
+          '@
+            $sdkTargetsContent | Out-File -FilePath "$workloadSdkPath/Sdk/Sdk.targets" -Encoding UTF8 -NoNewline
+            
+            # Create AutoImport.props
+            $autoImportContent = @'
+          <!--
+          ***********************************************************************************************
+          AutoImport.props
+          
+          WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+                    created a backup copy.  Incorrect changes to this file will make it
+                    impossible to load or build your projects from the command-line or the IDE.
+          
+          This file is auto-imported by Microsoft.NET.Sdk.ImportWorkloads.props
+          to import workload-specific props files.
+          
+          Copyright (c) .NET Foundation. All rights reserved.
+          ***********************************************************************************************
+          -->
+          <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+            <!-- This file imports workload props. For now it's empty as no workloads require auto-import props. -->
+          </Project>
+          '@
+            $autoImportContent | Out-File -FilePath "$workloadSdkPath/Sdk/AutoImport.props" -Encoding UTF8 -NoNewline
+            
+            Write-Host "Successfully created WorkloadAutoImportPropsLocator SDK"
+          } else {
+            Write-Host "WorkloadAutoImportPropsLocator SDK already exists at: $workloadSdkPath"
+          }
+      - name: Get the version
+        id: get_version
+        run: echo "VERSION=$(echo $GITHUB_REF | cut -d / -f 3 | cut -d 'v' -f 2)" >> $GITHUB_OUTPUT
+      - name: NuGet Pack
+        shell: pwsh
+        run: |
+          $officialVersion = '${{ steps.get_version.outputs.VERSION }}'
+          $continuousIntegrationTimestamp = Get-Date -Format yyyyMMddHHmmss
+          $buildSha = '${{ github.sha }}'.SubString(0, 7);
+
+          echo "officialVersion: $officialVersion"
+          echo "continuousIntegrationTimestamp: $continuousIntegrationTimestamp"
+          echo "buildSha: $buildSha"
+
+          $projectFiles = Get-ChildItem src/*/*.csproj -Recurse | % { $_.FullName }
+
+          $combinations = @('default', @('Release')), @('withPdbs', @('Release')) #, @('embeddedPdbs', @('Release'))
+          foreach ($combination in $combinations)
+          {
+            $type = $combination[0]
+            $configurations = $combination[1]
+            foreach ($configuration in $configurations)
+            {
+              $arguments = 'pack', '-c', $configuration, '-o', "nupkgs/$configuration/$type", '-p:ContinuousIntegrationBuild=true', '-p:OutputVersionProperties=true'
+
+              $finalOfficialVersion = $configuration -eq 'Debug' `
+                ? $officialVersion.Contains('-') `
+                  ? $officialVersion + '.debug' `
+                  : $officialVersion + '-debug' `
+                : $officialVersion
+
+              $arguments += "-p:OfficialVersion=$officialVersion"
+
+              switch ($type)
+              {
+                'withPdbs' { $arguments += '-p:PackPdb=true', '-p:IncludeSymbols=false' }
+                'embeddedPdbs' { $arguments += '-p:DebugType=embedded', '-p:IncludeSymbols=false' }
+              }
+
+              foreach ($projectFile in $projectFiles)
+              {
+                echo "Type: $type, Configuration: $configuration, Project: $projectFile"
+                echo "Pack command: dotnet $(($arguments + $projectFile) -join ' ')"
+                & dotnet ($arguments + $projectFile)
+              }
+            }
+          }
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nupkgs
+          path: nupkgs
+      - name: NuGet login (OIDC trusted publishing)
+        uses: NuGet/login@v1
+        id: nuget-login
+        with:
+          user: microtingas
+      - name: "NuGet Push - nuget.org - Release"
+        working-directory: nupkgs
+        shell: pwsh
+        run: dotnet nuget push './Release/default/**/*.nupkg' -k '${{ steps.nuget-login.outputs.NUGET_API_KEY }}' -s 'https://api.nuget.org/v3/index.json' 

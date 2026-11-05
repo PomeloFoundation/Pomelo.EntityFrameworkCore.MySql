@@ -1,5 +1,5 @@
 /* The database objects need to be case-sensitive, to make the tests run as expected!
-   See https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/996#issuecomment-568563374 */
+   See https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/issues/996#issuecomment-568563374 */
 
 drop procedure if exists `Employee Sales by Country`;
 /* GO */

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql
+namespace Microting.EntityFrameworkCore.MySql
 {
     public class RawSqlTestWithFixture<TFixture> : TestWithFixture<TFixture>
         where TFixture : MySqlTestFixtureBase

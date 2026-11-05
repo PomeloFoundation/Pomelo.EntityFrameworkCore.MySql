@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands{
+namespace Microting.EntityFrameworkCore.MySql.IntegrationTests.Commands{
 
     public class TestPerformanceRunner : ITestPerformanceRunner
     {

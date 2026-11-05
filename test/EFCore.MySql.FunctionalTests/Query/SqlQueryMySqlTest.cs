@@ -1,15 +1,18 @@
 using System.Data.Common;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
 public class SqlQueryMySqlTest : SqlQueryTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>
 {
@@ -283,13 +286,13 @@ SELECT * FROM `Employees` WHERE `ReportsTo` = @p0 OR (`ReportsTo` IS NULL AND @p
         AssertSql(
 """
 p0='London' (Size = 4000)
-@__contactTitle_1='Sales Representative' (Size = 30)
+@contactTitle='Sales Representative' (Size = 30)
 
 SELECT `m`.`Address`, `m`.`City`, `m`.`CompanyName`, `m`.`ContactName`, `m`.`ContactTitle`, `m`.`Country`, `m`.`CustomerID`, `m`.`Fax`, `m`.`Phone`, `m`.`Region`, `m`.`PostalCode`
 FROM (
     SELECT * FROM `Customers` WHERE `City` = @p0
 ) AS `m`
-WHERE `m`.`ContactTitle` = @__contactTitle_1
+WHERE `m`.`ContactTitle` = @contactTitle
 """);
 
         return null;
@@ -434,9 +437,9 @@ SELECT * FROM `Customers` WHERE `City` = @p0 AND `ContactTitle` = @title
                 //
                 """
 @city='London' (Nullable = false)
-p1='Sales Representative' (Size = 4000)
+p0='Sales Representative' (Size = 4000)
 
-SELECT * FROM `Customers` WHERE `City` = @city AND `ContactTitle` = @p1
+SELECT * FROM `Customers` WHERE `City` = @city AND `ContactTitle` = @p0
 """);
     }
 
@@ -497,14 +500,14 @@ FROM (
 """,
                 //
                 """
-@__max_1='10400'
+@max='10400'
 p0='10300'
 
 SELECT `m`.`OrderID`
 FROM (
     SELECT * FROM `Orders`
 ) AS `m`
-WHERE (`m`.`OrderID` <= @__max_1) AND `m`.`OrderID` IN (
+WHERE (`m`.`OrderID` <= @max) AND `m`.`OrderID` IN (
     SELECT `m0`.`OrderID`
     FROM (
         SELECT * FROM `Orders` WHERE `OrderID` >= @p0
@@ -513,14 +516,14 @@ WHERE (`m`.`OrderID` <= @__max_1) AND `m`.`OrderID` IN (
 """,
                 //
                 """
-@__max_1='10400'
+@max='10400'
 p0='10300'
 
 SELECT `m`.`OrderID`
 FROM (
     SELECT * FROM `Orders`
 ) AS `m`
-WHERE (`m`.`OrderID` <= @__max_1) AND `m`.`OrderID` IN (
+WHERE (`m`.`OrderID` <= @max) AND `m`.`OrderID` IN (
     SELECT `m0`.`OrderID`
     FROM (
         SELECT * FROM `Orders` WHERE `OrderID` >= @p0
@@ -660,7 +663,7 @@ WHERE `m`.`CustomerID` IN (
                 //
                 """
 @city='London' (Nullable = false)
-p1='Sales Representative' (Size = 4000)
+p0='Sales Representative' (Size = 4000)
 
 SELECT `m`.`CustomerID`, `m`.`EmployeeID`, `m`.`Freight`, `m`.`OrderDate`, `m`.`OrderID`, `m`.`RequiredDate`, `m`.`ShipAddress`, `m`.`ShipCity`, `m`.`ShipCountry`, `m`.`ShipName`, `m`.`ShipPostalCode`, `m`.`ShipRegion`, `m`.`ShipVia`, `m`.`ShippedDate`
 FROM (
@@ -669,29 +672,9 @@ FROM (
 WHERE `m`.`CustomerID` IN (
     SELECT `m0`.`CustomerID`
     FROM (
-        SELECT * FROM `Customers` WHERE `City` = @city AND `ContactTitle` = @p1
+        SELECT * FROM `Customers` WHERE `City` = @city AND `ContactTitle` = @p0
     ) AS `m0`
 )
-""");
-    }
-
-    public override async Task Multiple_occurrences_of_SqlQuery_with_db_parameter_adds_parameter_only_once(bool async)
-    {
-        await base.Multiple_occurrences_of_SqlQuery_with_db_parameter_adds_parameter_only_once(async);
-
-        AssertSql(
-"""
-city='Seattle' (Nullable = false)
-
-SELECT `m`.`Address`, `m`.`City`, `m`.`CompanyName`, `m`.`ContactName`, `m`.`ContactTitle`, `m`.`Country`, `m`.`CustomerID`, `m`.`Fax`, `m`.`Phone`, `m`.`Region`, `m`.`PostalCode`
-FROM (
-    SELECT * FROM `Customers` WHERE `City` = @city
-) AS `m`
-INTERSECT
-SELECT `m0`.`Address`, `m0`.`City`, `m0`.`CompanyName`, `m0`.`ContactName`, `m0`.`ContactTitle`, `m0`.`Country`, `m0`.`CustomerID`, `m0`.`Fax`, `m0`.`Phone`, `m0`.`Region`, `m0`.`PostalCode`
-FROM (
-    SELECT * FROM `Customers` WHERE `City` = @city
-) AS `m0`
 """);
     }
 
@@ -885,6 +868,53 @@ FROM (
     SELECT * FROM `Customers2`
 ) AS `m`
 WHERE `m`.`ContactName` LIKE '%z%'
+""");
+    }
+
+    public override async Task Multiple_occurrences_of_SqlQuery_with_db_parameter_adds_two_parameters(bool async)
+    {
+        // MySQL/MariaDB doesn't differentiate parameters based on Size attribute alone
+        // Both parameters with the same name and value are treated as identical
+        // So INTERSECT returns results instead of empty set
+        using var context = CreateContext();
+        var city = "Seattle";
+
+        var dbParameter1 = CreateDbParameter("city", city);
+        dbParameter1.Size = 7;
+        var subquery1 = context.Database.SqlQueryRaw<UnmappedCustomer>(
+            NormalizeDelimitersInRawString("SELECT * FROM [Customers] WHERE [City] = {0}"),
+            dbParameter1);
+
+        var dbParameter2 = CreateDbParameter("city", city);
+        dbParameter2.Size = 3;
+        var subquery2 = context.Database.SqlQueryRaw<UnmappedCustomer>(
+            NormalizeDelimitersInRawString("SELECT * FROM [Customers] WHERE [City] = {0}"),
+            dbParameter2);
+
+        var query = subquery1.Intersect(subquery2);
+
+        var actual = async
+            ? await query.ToArrayAsync()
+            : query.ToArray();
+
+        // MySQL treats both parameters as identical, so INTERSECT returns results
+        Assert.Single(actual);
+        Assert.Equal("WHITC", actual[0].CustomerID);
+
+        AssertSql(
+"""
+city='Seattle' (Nullable = false) (Size = 7)
+city0='Seattle' (Nullable = false) (Size = 3)
+
+SELECT `m`.`Address`, `m`.`City`, `m`.`CompanyName`, `m`.`ContactName`, `m`.`ContactTitle`, `m`.`Country`, `m`.`CustomerID`, `m`.`Fax`, `m`.`Phone`, `m`.`Region`, `m`.`PostalCode`
+FROM (
+    SELECT * FROM `Customers` WHERE `City` = @city
+) AS `m`
+INTERSECT
+SELECT `m0`.`Address`, `m0`.`City`, `m0`.`CompanyName`, `m0`.`ContactName`, `m0`.`ContactTitle`, `m0`.`Country`, `m0`.`CustomerID`, `m0`.`Fax`, `m0`.`Phone`, `m0`.`Region`, `m0`.`PostalCode`
+FROM (
+    SELECT * FROM `Customers` WHERE `City` = @city0
+) AS `m0`
 """);
     }
 

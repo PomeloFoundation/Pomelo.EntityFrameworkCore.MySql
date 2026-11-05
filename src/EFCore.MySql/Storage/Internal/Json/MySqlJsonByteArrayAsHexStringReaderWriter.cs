@@ -1,4 +1,4 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore.Storage.Json;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal.Json;
+namespace Microting.EntityFrameworkCore.MySql.Storage.Internal.Json;
 
 public sealed class MySqlJsonByteArrayAsHexStringReaderWriter : JsonValueReaderWriter<byte[]>
 {

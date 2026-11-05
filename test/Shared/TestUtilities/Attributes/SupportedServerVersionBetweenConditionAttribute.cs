@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes
+namespace Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
     public class SupportedServerVersionBetweenConditionAttribute : Attribute, ITestCondition

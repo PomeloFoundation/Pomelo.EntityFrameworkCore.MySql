@@ -1,15 +1,15 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
 
-namespace Pomelo.EntityFrameworkCore.MySql.ValueGeneration.Internal
+namespace Microting.EntityFrameworkCore.MySql.ValueGeneration.Internal
 {
     public class MySqlValueGeneratorSelector : RelationalValueGeneratorSelector
     {

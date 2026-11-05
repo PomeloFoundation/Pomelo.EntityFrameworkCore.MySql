@@ -1,4 +1,4 @@
-namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands
+namespace Microting.EntityFrameworkCore.MySql.IntegrationTests.Commands
 {
 
     public interface ICommandRunner
