@@ -34,6 +34,9 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             // Changes `SelectExpression.IsMutable` from `true` to `false`.
             query = base.Process(query);
 
+            // Must run before the HAVING post-processing below, which would otherwise alias the correlated HAVING predicates.
+            query = new MySqlApplyToJoinExpressionVisitor(_options).Process(query);
+
             query = mySqlHavingExpressionVisitor.Process(query, usePrePostprocessorMode: false);
 
             query = new MySqlJsonParameterExpressionVisitor(_sqlExpressionFactory, _options).Visit(query);
