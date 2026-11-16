@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -37,6 +38,37 @@ public class AdHocMiscellaneousQueryMySqlTest : AdHocMiscellaneousQueryRelationa
     [Fact(Skip = "The base test asserts an EF Core specific 'requires the SQL APPLY' translation failure that does not apply to MySQL or MariaDB.")]
     public override Task Correlated_SelectMany_DefaultIfEmpty_whole_object()
         => Task.CompletedTask;
+
+    public override async Task Plain_inner_no_aggregate_LeftJoin_whole_object()
+    {
+        var contextFactory = await InitializeNonSharedTest<Context30915>(seed: Seed30915);
+        using var context = contextFactory.CreateDbContext();
+
+        var categories = context.Requests.Select(r => new { r.PickupStatusId, Count = 1 });
+        var query = context.Statuses
+            .LeftJoin(categories, s => s.PickupStatusId, c => c.PickupStatusId, (s, countInfo) => new { s.PickupStatusId, countInfo })
+            .OrderBy(e => e.PickupStatusId);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => query.ToListAsync());
+    }
+
+    public override async Task RightJoin_whole_object_outer_nullable()
+    {
+        var contextFactory = await InitializeNonSharedTest<Context30915>(seed: Seed30915);
+        using var context = contextFactory.CreateDbContext();
+
+        var categories = context.Requests
+            .GroupBy(r => r.PickupStatusId, (k, els) => new { pickupStatusId = k, Count = els.Count() });
+        var query = categories
+            .RightJoin(
+                context.Statuses,
+                c => c.pickupStatusId,
+                s => s.PickupStatusId,
+                (countInfo, s) => new { s.PickupStatusId, countInfo })
+            .OrderBy(e => e.PickupStatusId);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => query.ToListAsync());
+    }
 
     protected override Task Seed2951(Context2951 context)
         => context.Database.ExecuteSqlRawAsync(

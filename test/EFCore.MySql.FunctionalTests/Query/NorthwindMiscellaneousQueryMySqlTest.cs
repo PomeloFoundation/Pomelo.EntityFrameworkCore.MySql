@@ -6614,7 +6614,9 @@ ORDER BY `c`.`CustomerID`
 
     public override async Task Non_nullable_property_through_optional_navigation(bool async)
     {
-        await base.Non_nullable_property_through_optional_navigation(async);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => AssertQuery(
+            async,
+            ss => ss.Set<Customer>().Select(e => new { e.Region!.Length })));
 
         AssertSql(
             """
