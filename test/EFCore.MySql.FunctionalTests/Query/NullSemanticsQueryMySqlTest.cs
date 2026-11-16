@@ -36,7 +36,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
             }
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Compare_left_bool_parameter_with_right_nullable_hasvalue(bool async)
         {

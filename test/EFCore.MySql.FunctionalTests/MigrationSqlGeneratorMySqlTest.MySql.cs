@@ -11,7 +11,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
 {
     public partial class MySqlMigrationsSqlGeneratorTest : MigrationsSqlGeneratorTestBase
     {
-        [ConditionalFact]
+        [Fact]
         public virtual void DropUniqueConstraintOperation()
         {
             Generate(
@@ -25,7 +25,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
             AssertSql(@"ALTER TABLE `Cars` DROP KEY `AK_Cars_LicensePlateNumber`;");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void MySqlDropUniqueConstraintAndRecreateForeignKeysOperation_temporarily_drops_foreign_keys()
         {
             // A foreign key might reuse the alternate key for its own purposes and prohibit its deletion,
@@ -49,7 +49,7 @@ ALTER TABLE `Cars` DROP KEY `AK_Cars_LicensePlateNumber`;
 ALTER TABLE `Cars` ADD CONSTRAINT `FK_Cars_LicensePlates_LicensePlateNumber` FOREIGN KEY (`LicensePlateNumber`) REFERENCES `LicensePlates` (`LicensePlateNumber`) ON DELETE CASCADE;");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void DropPrimaryKeyOperation()
         {
             Generate(
@@ -65,7 +65,7 @@ ALTER TABLE `Cars` ADD CONSTRAINT `FK_Cars_LicensePlates_LicensePlateNumber` FOR
 ALTER TABLE `Cars` DROP PRIMARY KEY;");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void MySqlDropPrimaryKeyAndRecreateForeignKeysOperation_temporarily_drops_foreign_keys()
         {
             // A foreign key might reuse the primary key for its own purposes and prohibit its deletion,
@@ -90,7 +90,7 @@ ALTER TABLE `Cars` DROP PRIMARY KEY;
 ALTER TABLE `Cars` ADD CONSTRAINT `FK_Cars_LicensePlates_LicensePlateNumber` FOREIGN KEY (`LicensePlateNumber`) REFERENCES `LicensePlates` (`LicensePlateNumber`) ON DELETE CASCADE;");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void CreateTable_uses_srid()
         {
             Generate(
@@ -118,7 +118,7 @@ ALTER TABLE `Cars` ADD CONSTRAINT `FK_Cars_LicensePlates_LicensePlateNumber` FOR
                 ignoreLineEndingDifferences: true);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void CreateTable_uses_srid_geometry_derived()
         {
             Generate(
@@ -146,7 +146,7 @@ ALTER TABLE `Cars` ADD CONSTRAINT `FK_Cars_LicensePlates_LicensePlateNumber` FOR
                 ignoreLineEndingDifferences: true);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void CreateTable_with_SchemaNameTranslator()
         {
             Generate(
@@ -182,7 +182,7 @@ ALTER TABLE `Cars` ADD CONSTRAINT `FK_Cars_LicensePlates_LicensePlateNumber` FOR
                 ignoreLineEndingDifferences: true);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void CreateTable_with_ValueGenerationStrategy_int_value()
         {
             Generate(

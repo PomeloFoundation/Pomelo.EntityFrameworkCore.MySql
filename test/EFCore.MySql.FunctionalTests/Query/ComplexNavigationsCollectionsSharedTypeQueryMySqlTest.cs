@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -68,7 +68,7 @@ ORDER BY `l`.`Id`, `l1`.`Id`
             await base.Take_Select_collection_Take(async);
 
         AssertSql(
-"""
+            """
 @p='1'
 
 SELECT `l3`.`Id`, `l3`.`Name`, `s`.`Id`, `s`.`Name`, `s`.`Level1Id`, `s`.`Level2Id`, `s`.`Id0`, `s`.`Date`, `s`.`Name0`, `s`.`Id1`
@@ -95,7 +95,7 @@ LEFT JOIN LATERAL (
     ) AS `l2`
     INNER JOIN `Level1` AS `l1` ON `l2`.`Level1_Required_Id` = `l1`.`Id`
 ) AS `s` ON TRUE
-ORDER BY `l3`.`Id`, `s`.`c`, `s`.`Id1`
+ORDER BY `l3`.`Id`, `s`.`c`
 """);
         }
 
@@ -104,7 +104,7 @@ ORDER BY `l3`.`Id`, `s`.`c`, `s`.`Id1`
             await base.Skip_Take_Select_collection_Skip_Take(async);
 
         AssertSql(
-"""
+            """
 @p='1'
 
 SELECT `l3`.`Id`, `l3`.`Name`, `s`.`Id`, `s`.`Name`, `s`.`Level1Id`, `s`.`Level2Id`, `s`.`Id0`, `s`.`Date`, `s`.`Name0`, `s`.`Id1`
@@ -131,7 +131,7 @@ LEFT JOIN LATERAL (
     ) AS `l2`
     INNER JOIN `Level1` AS `l1` ON `l2`.`Level1_Required_Id` = `l1`.`Id`
 ) AS `s` ON TRUE
-ORDER BY `l3`.`Id`, `s`.`c`, `s`.`Id1`
+ORDER BY `l3`.`Id`, `s`.`c`
 """);
         }
 
@@ -227,7 +227,7 @@ ORDER BY `l2`.`Date`, `s`.`Name`, `s`.`Id`
             await base.Skip_Take_on_grouping_element_with_reference_include(async);
 
         AssertSql(
-"""
+            """
 SELECT `l4`.`Date`, `s`.`Id`, `s`.`Date`, `s`.`Name`, `s`.`Id0`, `s`.`OneToOne_Required_PK_Date`, `s`.`Level1_Optional_Id`, `s`.`Level1_Required_Id`, `s`.`Level2_Name`, `s`.`OneToMany_Optional_Inverse2Id`, `s`.`OneToMany_Required_Inverse2Id`, `s`.`OneToOne_Optional_PK_Inverse2Id`
 FROM (
     SELECT `l`.`Date`
@@ -249,7 +249,7 @@ LEFT JOIN LATERAL (
         WHERE (`l1`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`l1`.`Level1_Required_Id` IS NOT NULL)) AND `l1`.`OneToMany_Required_Inverse2Id` IS NOT NULL
     ) AS `l3` ON `l2`.`Id` = `l3`.`Level1_Optional_Id`
 ) AS `s` ON TRUE
-ORDER BY `l4`.`Date`, `s`.`Name`, `s`.`Id`
+ORDER BY `l4`.`Date`, `s`.`Name`
 """);
         }
 

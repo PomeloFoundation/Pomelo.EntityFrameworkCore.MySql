@@ -328,7 +328,7 @@ namespace Microting.EntityFrameworkCore.MySql
             Assert.Equal("mysql", mySqlOptions.ServerVersion.TypeIdentifier);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [InlineData(false)]
         [InlineData(true)]
         public async Task UseMySql_with_ServerVersion_AutoDetect_connection_string(bool async)
@@ -350,7 +350,7 @@ namespace Microting.EntityFrameworkCore.MySql
             Assert.Equal(serverVersion.TypeIdentifier, mySqlOptions.ServerVersion.TypeIdentifier);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [InlineData(false)]
         [InlineData(true)]
         public async Task UseMySql_with_ServerVersion_AutoDetect_connection_closed(bool async)
@@ -373,7 +373,7 @@ namespace Microting.EntityFrameworkCore.MySql
             Assert.Equal(serverVersion.TypeIdentifier, mySqlOptions.ServerVersion.TypeIdentifier);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [InlineData(false)]
         [InlineData(true)]
         public async Task UseMySql_with_ServerVersion_AutoDetect_connection_opened(bool async)
@@ -406,7 +406,7 @@ namespace Microting.EntityFrameworkCore.MySql
             Assert.Equal(serverVersion.TypeIdentifier, mySqlOptions.ServerVersion.TypeIdentifier);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [InlineData(false)]
         [InlineData(true)]
         public async Task UseMySql_with_ServerVersion_AutoDetect_datasource(bool async)
@@ -456,7 +456,7 @@ namespace Microting.EntityFrameworkCore.MySql
             Assert.Equal(MySqlBooleanType.Bit1, mySqlOptions.DefaultDataTypeMappings.ClrBoolean);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [InlineData(false)]
         [InlineData(true)]
         public void Service_collection_extension_method_can_configure_provider_options(bool nullConnectionString)

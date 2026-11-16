@@ -146,7 +146,7 @@ namespace Microting.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
 				Assert.Equal(pta.Count, ptaSize);
 
 				// mr. hat has no students, but he is in mr. garrison's family
-				Assert.Equal(0, hat.Students.Count);
+				Assert.Empty(hat.Students);
 				Assert.Contains(hat, garrison.Family.Members);
 			}
 		}

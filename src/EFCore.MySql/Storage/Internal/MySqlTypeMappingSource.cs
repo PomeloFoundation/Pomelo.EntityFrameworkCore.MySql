@@ -62,10 +62,10 @@ namespace Microting.EntityFrameworkCore.MySql.Storage.Internal
 
         // DateTime
         private readonly MySqlYearTypeMapping _year = MySqlYearTypeMapping.Default;
-        private readonly MySqlDateTypeMapping _dateDateOnly = MySqlDateTypeMapping.Default;
-        private readonly MySqlDateTypeMapping _dateDateTime = new MySqlDateTypeMapping("date", typeof(DateTime));
-        private readonly MySqlTimeTypeMapping _timeTimeOnly = MySqlTimeTypeMapping.Default;
-        private readonly MySqlTimeTypeMapping _timeTimeSpan = new MySqlTimeTypeMapping("time", typeof(TimeSpan));
+        private readonly MySqlDateOnlyTypeMapping _dateDateOnly = MySqlDateOnlyTypeMapping.Default;
+        private readonly MySqlDateAsDateTimeTypeMapping _dateDateTime = MySqlDateAsDateTimeTypeMapping.Default;
+        private readonly MySqlTimeOnlyTypeMapping _timeTimeOnly = MySqlTimeOnlyTypeMapping.Default;
+        private readonly MySqlTimeAsTimeSpanTypeMapping _timeTimeSpan = MySqlTimeAsTimeSpanTypeMapping.Default;
         private readonly MySqlDateTimeTypeMapping _dateTime = MySqlDateTimeTypeMapping.Default;
         private readonly MySqlDateTimeTypeMapping _timeStamp = new MySqlDateTimeTypeMapping("timestamp");
         private readonly MySqlDateTimeOffsetTypeMapping _dateTimeOffset = MySqlDateTimeOffsetTypeMapping.Default;

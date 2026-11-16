@@ -10,7 +10,6 @@ using Microting.EntityFrameworkCore.MySql.Infrastructure;
 using Microting.EntityFrameworkCore.MySql.Tests;
 using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -26,7 +25,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        [ConditionalTheory]
+        [Theory]
         public override async Task Select_datetime_year_component(bool async)
         {
             await base.Select_datetime_year_component(async);
@@ -36,7 +35,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 FROM `Orders` AS `o`");
         }
 
-        [ConditionalTheory]
+        [Theory]
         public override async Task Select_datetime_month_component(bool async)
         {
             await base.Select_datetime_month_component(async);
@@ -48,7 +47,7 @@ FROM `Orders` AS `o`
 """);
         }
 
-        [ConditionalTheory]
+        [Theory]
         public override async Task Select_datetime_day_of_year_component(bool async)
         {
             await base.Select_datetime_day_of_year_component(async);
@@ -58,7 +57,7 @@ FROM `Orders` AS `o`
 FROM `Orders` AS `o`");
         }
 
-        [ConditionalTheory]
+        [Theory]
         public override async Task Select_datetime_day_component(bool async)
         {
             await base.Select_datetime_day_component(async);
@@ -68,7 +67,7 @@ FROM `Orders` AS `o`");
 FROM `Orders` AS `o`");
         }
 
-        [ConditionalTheory]
+        [Theory]
         public override async Task Select_datetime_hour_component(bool async)
         {
             await base.Select_datetime_hour_component(async);
@@ -78,7 +77,7 @@ FROM `Orders` AS `o`");
 FROM `Orders` AS `o`");
         }
 
-        [ConditionalTheory]
+        [Theory]
         public override async Task Select_datetime_minute_component(bool async)
         {
             await base.Select_datetime_minute_component(async);
@@ -88,7 +87,7 @@ FROM `Orders` AS `o`");
 FROM `Orders` AS `o`");
         }
 
-        [ConditionalTheory]
+        [Theory]
         public override async Task Select_datetime_second_component(bool async)
         {
             await base.Select_datetime_second_component(async);
@@ -98,7 +97,7 @@ FROM `Orders` AS `o`");
 FROM `Orders` AS `o`");
         }
 
-        [ConditionalTheory]
+        [Theory]
         public override async Task Select_datetime_millisecond_component(bool async)
         {
             await base.Select_datetime_millisecond_component(async);
@@ -114,24 +113,22 @@ FROM `Orders` AS `o`");
             await base.Correlated_collection_after_distinct_not_containing_original_identifier(async);
 
             AssertSql(
-"""
-SELECT `t`.`OrderDate`, `t`.`CustomerID`, `t0`.`Outer1`, `t0`.`Outer2`, `t0`.`Inner`, `t0`.`OrderDate`
+                """
+@filteredOrderIds1='10248'
+@filteredOrderIds2='10249'
+@filteredOrderIds3='10250'
+
+SELECT `o0`.`OrderDate`, `o0`.`CustomerID`, `o2`.`Outer1`, `o2`.`Outer2`, `o2`.`Inner`, `o2`.`OrderDate`
 FROM (
     SELECT DISTINCT `o`.`OrderDate`, `o`.`CustomerID`
     FROM `Orders` AS `o`
-) AS `t`
+) AS `o0`
 LEFT JOIN LATERAL (
-    SELECT `t`.`OrderDate` AS `Outer1`, `t`.`CustomerID` AS `Outer2`, `o0`.`OrderID` AS `Inner`, `o0`.`OrderDate`
-    FROM `Orders` AS `o0`
-    WHERE ((`o0`.`CustomerID` = `t`.`CustomerID`) OR (`o0`.`CustomerID` IS NULL AND (`t`.`CustomerID` IS NULL))) AND `o0`.`OrderID` IN (
-        SELECT `f`.`value`
-        FROM JSON_TABLE('[10248,10249,10250]', '$[*]' COLUMNS (
-            `key` FOR ORDINALITY,
-            `value` int PATH '$[0]'
-        )) AS `f`
-    )
-) AS `t0` ON TRUE
-ORDER BY `t`.`OrderDate`, `t`.`CustomerID`
+    SELECT `o0`.`OrderDate` AS `Outer1`, `o0`.`CustomerID` AS `Outer2`, `o1`.`OrderID` AS `Inner`, `o1`.`OrderDate`
+    FROM `Orders` AS `o1`
+    WHERE ((`o1`.`CustomerID` = `o0`.`CustomerID`) OR (`o1`.`CustomerID` IS NULL AND (`o0`.`CustomerID` IS NULL))) AND `o1`.`OrderID` IN (@filteredOrderIds1, @filteredOrderIds2, @filteredOrderIds3)
+) AS `o2` ON TRUE
+ORDER BY `o0`.`OrderDate`, `o0`.`CustomerID`
 """);
         }
 
@@ -141,28 +138,26 @@ ORDER BY `t`.`OrderDate`, `t`.`CustomerID`
             await base.Correlated_collection_after_groupby_with_complex_projection_not_containing_original_identifier(async);
 
             AssertSql(
-"""
-                SELECT `t0`.`CustomerID`, `t0`.`Complex`, `t1`.`Outer`, `t1`.`Inner`, `t1`.`OrderDate`
-                FROM (
-                    SELECT `t`.`CustomerID`, `t`.`Complex`
-                    FROM (
-                        SELECT `o`.`CustomerID`, EXTRACT(month FROM `o`.`OrderDate`) AS `Complex`
-                        FROM `Orders` AS `o`
-                    ) AS `t`
-                    GROUP BY `t`.`CustomerID`, `t`.`Complex`
-                ) AS `t0`
-                LEFT JOIN LATERAL (
-                    SELECT `t0`.`CustomerID` AS `Outer`, `o0`.`OrderID` AS `Inner`, `o0`.`OrderDate`
-                    FROM `Orders` AS `o0`
-                    WHERE ((`o0`.`CustomerID` = `t0`.`CustomerID`) OR (`o0`.`CustomerID` IS NULL AND (`t0`.`CustomerID` IS NULL))) AND `o0`.`OrderID` IN (
-                        SELECT `f`.`value`
-                        FROM JSON_TABLE('[10248,10249,10250]', '$[*]' COLUMNS (
-                            `key` FOR ORDINALITY,
-                            `value` int PATH '$[0]'
-                        )) AS `f`
-                    )
-                ) AS `t1` ON TRUE
-                ORDER BY `t0`.`CustomerID`, `t0`.`Complex`
+                """
+@filteredOrderIds1='10248'
+@filteredOrderIds2='10249'
+@filteredOrderIds3='10250'
+
+SELECT `o2`.`CustomerID`, `o2`.`Complex`, `o3`.`Outer`, `o3`.`Inner`, `o3`.`OrderDate`
+FROM (
+    SELECT `o0`.`CustomerID`, `o0`.`Complex`
+    FROM (
+        SELECT `o`.`CustomerID`, EXTRACT(month FROM `o`.`OrderDate`) AS `Complex`
+        FROM `Orders` AS `o`
+    ) AS `o0`
+    GROUP BY `o0`.`CustomerID`, `o0`.`Complex`
+) AS `o2`
+LEFT JOIN LATERAL (
+    SELECT `o2`.`CustomerID` AS `Outer`, `o1`.`OrderID` AS `Inner`, `o1`.`OrderDate`
+    FROM `Orders` AS `o1`
+    WHERE ((`o1`.`CustomerID` = `o2`.`CustomerID`) OR (`o1`.`CustomerID` IS NULL AND (`o2`.`CustomerID` IS NULL))) AND `o1`.`OrderID` IN (@filteredOrderIds1, @filteredOrderIds2, @filteredOrderIds3)
+) AS `o3` ON TRUE
+ORDER BY `o2`.`CustomerID`, `o2`.`Complex`
 """);
         }
 
@@ -196,43 +191,43 @@ ORDER BY `t`.`OrderDate`, `t`.`CustomerID`
             AssertSql();
         }
 
-        [ConditionalTheory(Skip = "issue #573")]
+        [Theory(Skip = "issue #573")]
         public override Task Project_single_element_from_collection_with_OrderBy_Take_and_FirstOrDefault(bool async)
         {
             return base.Project_single_element_from_collection_with_OrderBy_Take_and_FirstOrDefault(async);
         }
 
-        [ConditionalTheory(Skip = "issue #573")]
+        [Theory(Skip = "issue #573")]
         public override Task Project_single_element_from_collection_with_OrderBy_Take_and_FirstOrDefault_with_parameter(bool async)
         {
             return base.Project_single_element_from_collection_with_OrderBy_Take_and_FirstOrDefault_with_parameter(async);
         }
 
-        [ConditionalTheory(Skip = "issue #573")]
+        [Theory(Skip = "issue #573")]
         public override Task Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault(bool async)
         {
             return base.Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault(async);
         }
 
-        [ConditionalTheory(Skip = "issue #573")]
+        [Theory(Skip = "issue #573")]
         public override Task Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault_followed_by_projection_of_length_property(bool async)
         {
             return base.Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault_followed_by_projection_of_length_property(async);
         }
 
-        [ConditionalTheory(Skip = "issue #573")]
+        [Theory(Skip = "issue #573")]
         public override Task Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault_2(bool async)
         {
             return base.Project_single_element_from_collection_with_multiple_OrderBys_Take_and_FirstOrDefault_2(async);
         }
 
-        [ConditionalTheory(Skip = "issue #573")]
+        [Theory(Skip = "issue #573")]
         public override Task Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault(bool async)
         {
             return base.Project_single_element_from_collection_with_OrderBy_over_navigation_Take_and_FirstOrDefault(async);
         }
 
-        [ConditionalTheory(Skip = "Leads to a different result set in CI on Linux with MySQL 8.0.17. TODO: Needs investigation!")]
+        [Theory(Skip = "Leads to a different result set in CI on Linux with MySQL 8.0.17. TODO: Needs investigation!")]
         public override Task SelectMany_correlated_with_outer_2(bool async)
         {
             return base.SelectMany_correlated_with_outer_2(async);
@@ -240,7 +235,7 @@ ORDER BY `t`.`OrderDate`, `t`.`CustomerID`
 
         // TODO:
         // [SupportedServerVersionCondition(ServerVersion.CrossApplySupportKey)ey)]
-        [ConditionalTheory(Skip = "Leads to a different result set in CI on Linux with MySQL 8.0.17. TODO: Needs investigation!")]
+        [Theory(Skip = "Leads to a different result set in CI on Linux with MySQL 8.0.17. TODO: Needs investigation!")]
         public override Task SelectMany_correlated_with_outer_4(bool async)
         {
             return base.SelectMany_correlated_with_outer_4(async);
@@ -258,19 +253,19 @@ ORDER BY `t`.`OrderDate`, `t`.`CustomerID`
             return base.Project_single_element_from_collection_with_OrderBy_Take_and_SingleOrDefault(async);
         }
 
-        [ConditionalTheory]
+        [Theory]
         public override Task Member_binding_after_ctor_arguments_fails_with_client_eval(bool async)
         {
             return AssertTranslationFailed(() => base.Member_binding_after_ctor_arguments_fails_with_client_eval(async));
         }
 
-        [ConditionalTheory(Skip = "TODO: Seems to be a MySQL bug. Needs to be verified and reported, if not already.")]
+        [Theory(Skip = "TODO: Seems to be a MySQL bug. Needs to be verified and reported, if not already.")]
         public override Task Take_on_top_level_and_on_collection_projection_with_outer_apply(bool async)
         {
             return base.Take_on_top_level_and_on_collection_projection_with_outer_apply(async);
         }
 
-        [ConditionalTheory(Skip = "Needs proper TimeSpan support, with a wider range than the current TIME mapping can provide.")]
+        [Theory(Skip = "Needs proper TimeSpan support, with a wider range than the current TIME mapping can provide.")]
         public override Task Projection_containing_DateTime_subtraction(bool async)
         {
             return base.Projection_containing_DateTime_subtraction(async);

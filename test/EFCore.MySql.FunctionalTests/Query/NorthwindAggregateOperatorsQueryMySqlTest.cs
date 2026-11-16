@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -21,6 +21,31 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
+        public override Task Min_no_data_subquery(bool async)
+            => Assert.ThrowsAsync<InvalidOperationException>(() => AssertQueryScalar(
+                async,
+                ss => ss.Set<Customer>().Select(c => c.Orders.Where(o => o.OrderID == -1).Min(o => o.OrderID))));
+
+        public override Task Max_no_data_subquery(bool async)
+            => Assert.ThrowsAsync<InvalidOperationException>(() => AssertQueryScalar(
+                async,
+                ss => ss.Set<Customer>().Select(c => c.Orders.Where(o => o.OrderID == -1).Max(o => o.OrderID))));
+
+        public override Task MinBy_no_data_subquery_value_type(bool async)
+            => Assert.ThrowsAsync<InvalidOperationException>(() => AssertQuery(
+                async,
+                ss => ss.Set<Customer>().Select(c => c.Orders.Where(o => o.OrderID == -1).Select(o => o.OrderID).MinBy(o => o))));
+
+        public override Task MaxBy_no_data_subquery_value_type(bool async)
+            => Assert.ThrowsAsync<InvalidOperationException>(() => AssertQuery(
+                async,
+                ss => ss.Set<Customer>().Select(c => c.Orders.Where(o => o.OrderID == -1).Select(o => o.OrderID).MaxBy(o => o))));
+
+        public override Task Average_no_data_subquery(bool async)
+            => Assert.ThrowsAsync<InvalidOperationException>(() => AssertQueryScalar(
+                async,
+                ss => ss.Set<Customer>().Select(c => c.Orders.Where(o => o.OrderID == -1).Average(o => o.OrderID))));
+
         public override Task Average_over_max_subquery(bool async)
             => AssertAverage(
                 async,
@@ -34,6 +59,14 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
                 ss => ss.Set<Customer>().OrderBy(c => c.CustomerID).Take(3),
                 selector: c => (decimal)c.Orders.Average(o => 5 + o.OrderDetails.Average(od => od.ProductID)),
                 asserter: (a, b) => Assert.Equal(a, b, 12)); // added flouting point precision tolerance
+
+        // The base test does MinBy(c => c.Orders.Sum(o => o.OrderID)) over all customers. Northwind contains two
+        // customers with no orders at all (FISSA and PARIS), so both tie on a sum of 0 and which one MinBy returns is
+        // arbitrary. The expected result is produced in memory, where the first match wins; MariaDB happens to return
+        // the other one. The tie makes the test inherently server-dependent, so only run it on MySQL.
+        [SupportedServerVersionCondition("0.0.0-mysql", Skip = "Result is ambiguous: two Northwind customers have no orders, so they tie for the minimum.")]
+        public override Task MinBy_over_subquery(bool async)
+            => base.MinBy_over_subquery(async);
 
         public override async Task Type_casting_inside_sum(bool async)
         {

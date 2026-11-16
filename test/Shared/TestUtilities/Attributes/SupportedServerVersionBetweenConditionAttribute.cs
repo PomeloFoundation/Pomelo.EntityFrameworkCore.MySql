@@ -1,12 +1,15 @@
-﻿using System;
-using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.TestUtilities.Xunit;
 
 namespace Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes
 {
+    /// <remarks>
+    /// When the condition is not met, the test (or test class) gets the `category=failing` trait, which the test runner
+    /// is configured to exclude. See <see cref="MySqlTestTrait"/>.
+    /// </remarks>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
-    public class SupportedServerVersionBetweenConditionAttribute : Attribute, ITestCondition
+    public class SupportedServerVersionBetweenConditionAttribute : Attribute, global::Xunit.v3.ITraitAttribute
     {
         public ServerVersion MinVersionInclusive { get; }
         public ServerVersion MaxVersionExclusive { get; }
@@ -17,7 +20,7 @@ namespace Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes
             MaxVersionExclusive = ServerVersion.Parse(maxVersionExclusive);
         }
 
-        public virtual ValueTask<bool> IsMetAsync()
+        public virtual bool IsMet()
         {
             var currentVersion = AppConfig.ServerVersion;
             var isMet = currentVersion.Type == MinVersionInclusive.Type &&
@@ -27,21 +30,20 @@ namespace Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes
                         currentVersion.TypeIdentifier == MaxVersionExclusive.TypeIdentifier &&
                         currentVersion.Version < MaxVersionExclusive.Version;
 
-            if (Invert)
-            {
-                isMet = !isMet;
-            }
-
-            if (!isMet && string.IsNullOrEmpty(Skip))
-            {
-                Skip = $"The test is not supported on server version {currentVersion}.";
-            }
-
-            return new ValueTask<bool>(isMet);
+            return Invert
+                ? !isMet
+                : isMet;
         }
 
-        public virtual string SkipReason => Skip;
+        public virtual IReadOnlyCollection<KeyValuePair<string, string>> GetTraits()
+            => MySqlTestTrait.ForCondition(IsMet());
+
+        /// <summary>
+        /// An optional reason, documenting why the test is being excluded. Not evaluated by the test runner, which
+        /// filters on the `category=failing` trait instead.
+        /// </summary>
         public virtual string Skip { get; set; }
+
         public virtual bool Invert { get; set; }
     }
 }

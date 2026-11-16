@@ -11,7 +11,6 @@ using Microting.EntityFrameworkCore.MySql.Infrastructure;
 using Microting.EntityFrameworkCore.MySql.Tests;
 using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -50,7 +49,11 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 
                  var order2 = customer["Orders"][1];
 
-                 Assert.Equal(23.1m, order2["Price"].Value<decimal>());
+                 // Newtonsoft parses JSON numbers as doubles. Since .NET 11, converting a double
+                 // to decimal keeps the exact binary value instead of rounding to 15 significant
+                 // digits, so 23.1 now converts to 23.100000000000001421085471520. 99.5 above is
+                 // unaffected because it is exactly representable in binary floating point.
+                 Assert.Equal(23.1, order2["Price"].Value<double>());
                  Assert.Equal("Some address 2", order2["ShippingAddress"].Value<string>());
                  Assert.Equal(new DateTime(2019, 10, 10), order2["ShippingDate"].Value<DateTime>());
              }
@@ -381,7 +384,7 @@ LIMIT 2");
 
         #region Functions
 
-        [ConditionalFact]
+        [Fact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonOverlaps))]
         public void JsonOverlaps_with_json_element()
         {
@@ -399,7 +402,7 @@ FROM `JsonEntities` AS `j`
 WHERE JSON_OVERLAPS(`j`.`CustomerJToken`, {InsertJsonConvert("@element")})");
         }
 
-        [ConditionalFact]
+        [Fact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonOverlaps))]
         public void JsonOverlaps_with_string()
         {
@@ -414,7 +417,7 @@ FROM `JsonEntities` AS `j`
 WHERE JSON_OVERLAPS(`j`.`CustomerJToken`, '{""Name"": ""Joe"", ""Age"": -1}')");
         }
 
-        [ConditionalFact]
+        [Fact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonOverlaps))]
         public void JsonOverlaps_using_JsonExtract_with_json_element()
         {
@@ -432,7 +435,7 @@ FROM `JsonEntities` AS `j`
 WHERE JSON_OVERLAPS(JSON_EXTRACT(`j`.`CustomerJToken`, '$.Statistics.Nested.IntArray'), {InsertJsonConvert("@element")})");
         }
 
-        [ConditionalFact]
+        [Fact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.JsonOverlaps))]
         public void JsonOverlaps_using_JsonExtract_with_json_string()
         {

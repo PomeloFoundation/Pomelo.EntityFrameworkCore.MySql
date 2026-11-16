@@ -7,7 +7,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public partial class NorthwindDbFunctionsQueryMySqlTest
     {
-        [ConditionalFact]
+        [Fact]
         public virtual void DateDiff_Year()
         {
             using (var context = CreateContext())
@@ -24,7 +24,7 @@ WHERE TIMESTAMPDIFF(YEAR, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void DateDiff_Quarter()
         {
             using (var context = CreateContext())
@@ -41,7 +41,7 @@ WHERE TIMESTAMPDIFF(QUARTER, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void DateDiff_Week()
         {
             using (var context = CreateContext())
@@ -58,7 +58,7 @@ WHERE TIMESTAMPDIFF(WEEK, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void DateDiff_Month()
         {
             using (var context = CreateContext())
@@ -75,7 +75,7 @@ WHERE TIMESTAMPDIFF(MONTH, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void DateDiff_Day()
         {
             using (var context = CreateContext())
@@ -92,7 +92,7 @@ WHERE TIMESTAMPDIFF(DAY, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void DateDiff_Hour()
         {
             using (var context = CreateContext())
@@ -109,7 +109,7 @@ WHERE TIMESTAMPDIFF(HOUR, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void DateDiff_Minute()
         {
             using (var context = CreateContext())
@@ -126,7 +126,7 @@ WHERE TIMESTAMPDIFF(MINUTE, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void DateDiff_Second()
         {
             using (var context = CreateContext())
@@ -143,7 +143,7 @@ WHERE TIMESTAMPDIFF(SECOND, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void DateDiff_Millisecond()
         {
             using (var context = CreateContext())
@@ -160,7 +160,7 @@ WHERE (TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(6), DATE_ADD(CURRENT_TIMESTA
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void DateDiff_Microsecond()
         {
             using (var context = CreateContext())
@@ -177,7 +177,7 @@ WHERE TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(6), DATE_ADD(CURRENT_TIMESTAM
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void DateDiff_Tick()
         {
             using (var context = CreateContext())
@@ -194,7 +194,7 @@ WHERE (TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(6), DATE_ADD(CURRENT_TIMESTA
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void DateDiff_Nanosecond()
         {
             using (var context = CreateContext())
@@ -211,7 +211,7 @@ WHERE (TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(6), DATE_ADD(CURRENT_TIMESTA
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Like_Int_literal()
         {
             using (var context = CreateContext())
@@ -227,7 +227,7 @@ WHERE `o`.`OrderID` LIKE '%M%'");
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Like_DateTime_literal()
         {
             using (var context = CreateContext())
@@ -243,7 +243,7 @@ WHERE `o`.`OrderDate` LIKE '%M%'");
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Like_Uint_literal()
         {
             using (var context = CreateContext())
@@ -259,7 +259,7 @@ WHERE `o`.`EmployeeID` LIKE '%M%'");
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Like_Short_literal()
         {
             using (var context = CreateContext())
@@ -275,7 +275,7 @@ WHERE `o`.`Quantity` LIKE '%M%'");
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Like_Int_literal_with_escape()
         {
             using (var context = CreateContext())
@@ -291,7 +291,7 @@ WHERE `o`.`OrderID` LIKE '!%' ESCAPE '!'");
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Hex()
         {
             using (var context = CreateContext())
@@ -308,7 +308,7 @@ WHERE HEX(`o`.`CustomerID`) = '56494E4554'");
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Unhex()
         {
             using (var context = CreateContext())
@@ -325,7 +325,7 @@ WHERE UNHEX(HEX(`o`.`CustomerID`)) = 'VINET'");
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Degrees()
         {
             var degrees = 90.0;
@@ -350,7 +350,7 @@ LIMIT 1
 """);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Radians()
         {
             var degrees = 90.0;
@@ -375,7 +375,7 @@ LIMIT 1
 """);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Contains_with_escape_char()
         {
             using var context = CreateContext();
@@ -391,7 +391,7 @@ WHERE REPLACE(`c`.`CompanyName`, '/', '\\') LIKE '%\\\\%'
 """);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Contains_with_wild_char()
         {
             using var context = CreateContext();
@@ -407,7 +407,7 @@ WHERE REPLACE(`c`.`CompanyName`, '/', '%') LIKE '%\\%%'
 """);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void StartsWith_with_escape_char()
         {
             using var context = CreateContext();
@@ -423,7 +423,7 @@ WHERE REPLACE(`c`.`CompanyName`, 'A', '\\') LIKE '\\\\%'
 """);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void StartsWith_with_wild_char()
         {
             using var context = CreateContext();
@@ -439,7 +439,7 @@ WHERE REPLACE(`c`.`CompanyName`, 'A', '%') LIKE '\\%%'
 """);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void EndsWith_with_escape_char()
         {
             using var context = CreateContext();
@@ -455,7 +455,7 @@ WHERE REPLACE(`c`.`CompanyName`, 'a', '\\') LIKE '%\\\\'
 """);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void EndsWith_with_wild_char()
         {
             using var context = CreateContext();

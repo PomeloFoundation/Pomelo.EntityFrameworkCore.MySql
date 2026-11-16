@@ -23,7 +23,7 @@ public class MySqlJsonTableExpression : TableValuedFunctionExpression
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public virtual SqlExpression JsonExpression
-        => Arguments[0];
+        => (SqlExpression)Arguments[0];
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -115,8 +115,8 @@ public class MySqlJsonTableExpression : TableValuedFunctionExpression
         return Update(visitedJsonExpression, visitedPath ?? Path, ColumnInfos);
     }
 
-    public override TableValuedFunctionExpression Update(IReadOnlyList<SqlExpression> arguments)
-        => Update(arguments[0], Path, ColumnInfos);
+    public override TableValuedFunctionExpression Update(IReadOnlyList<Expression> arguments)
+        => Update((SqlExpression)arguments[0], Path, ColumnInfos);
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

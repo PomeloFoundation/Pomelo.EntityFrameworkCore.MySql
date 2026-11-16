@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microting.EntityFrameworkCore.MySql.Infrastructure;
 using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -20,13 +19,13 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        [ConditionalTheory(Skip = "Issue #573")]
+        [Theory(Skip = "Issue #573")]
         public override Task Where_subquery_on_navigation(bool async)
         {
             return base.Where_subquery_on_navigation(async);
         }
 
-        [ConditionalTheory(Skip = "Issue #573")]
+        [Theory(Skip = "Issue #573")]
         public override Task Where_subquery_on_navigation2(bool async)
         {
             return base.Where_subquery_on_navigation2(async);

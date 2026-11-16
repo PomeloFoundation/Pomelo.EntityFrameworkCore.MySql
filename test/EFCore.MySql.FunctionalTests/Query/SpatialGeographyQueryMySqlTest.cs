@@ -13,7 +13,6 @@ using NetTopologySuite;
 using NetTopologySuite.Geometries;
 using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -27,7 +26,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Distance()
         {
             const double expectedGreatCircleDistance = 8117916.968066435; // result of ST_Distance_Sphere() for SRID 4326
@@ -44,7 +43,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
             Assert.True(deviation < 0.01);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void IsWithinDistance()
         {
             const double expectedGreatCircleDistance = 8117916.968066435 + 100_000; // +100 km
@@ -61,7 +60,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
             Assert.Equal("Berlin", cities[0].Name);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void SpatialDistancePlanar()
         {
             const double expectedPlanarDistance = 135.82593753560775; // result of ST_Distance() for SRID 0
@@ -81,7 +80,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
             Assert.True(deviation < 0.01);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void SpatialDistanceSphere_Native()
         {
             const double expectedGreatCircleDistance = 8117916.968066435; // result of ST_Distance_Sphere() for SRID 4326
@@ -103,7 +102,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
             Assert.True(deviation < 0.01);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void SpatialDistanceSphere_Andoyer()
         {
             const double expectedGreatCircleDistance = 8117916.968066435; // result of ST_Distance_Sphere() for SRID 4326
@@ -123,7 +122,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
             Assert.True(deviation < 0.01);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void SpatialDistanceSphere_Haversine()
         {
             const double expectedGreatCircleDistance = 8117916.968066435; // result of ST_Distance_Sphere() for SRID 4326
@@ -203,7 +202,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
         }
 
         // TODO: Inherit from SpatialQueryRelationalFixture.
-        public class SpatialGeographyQueryMySqlFixture : SharedStoreFixtureBase<SpatialGeographyContext>, IQueryFixtureBase, ITestSqlLoggerFactory
+        public class SpatialGeographyQueryMySqlFixture : QueryFixtureBase<SpatialGeographyContext>, ITestSqlLoggerFactory
         {
             private GeometryFactory _geometryFactory;
 
@@ -251,22 +250,22 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
             protected override Task SeedAsync(SpatialGeographyContext context)
                 => SpatialGeographyContext.SeedAsync(context, GeometryFactory);
 
-            public Func<DbContext> GetContextCreator()
+            public override Func<DbContext> GetContextCreator()
                 => CreateContext;
 
             // CHECK: Unused?
-            public ISetSource GetExpectedData()
+            public override ISetSource GetExpectedData()
                 => new SpatialGeographyData(_geometryFactory);
 
             // CHECK: Unused?
-            public IReadOnlyDictionary<Type, object> EntitySorters
+            public override IReadOnlyDictionary<Type, object> EntitySorters
                 => new Dictionary<Type, Func<object, object>>
                 {
                     { typeof(SpatialGeographyContext.City), e => ((SpatialGeographyContext.City)e)?.CityId },
                 }.ToDictionary(e => e.Key, e => (object)e.Value);
 
             // CHECK: Unused?
-            public IReadOnlyDictionary<Type, object> EntityAsserters
+            public override IReadOnlyDictionary<Type, object> EntityAsserters
                 => new Dictionary<Type, Action<object, object>>
                 {
                     {

@@ -15,7 +15,7 @@ namespace Microting.EntityFrameworkCore.MySql.Metadata
 {
     public class MySqlAnnotationProviderTest
     {
-        [ConditionalTheory]
+        [Theory]
         [InlineData(null, true)]
         [InlineData("varchar(255)", true)]
         [InlineData("longtext", true)]
@@ -51,7 +51,7 @@ namespace Microting.EntityFrameworkCore.MySql.Metadata
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public void Column_collation_is_not_inherited_by_non_character_based_store_types()
         {
             var column = GetColumn(

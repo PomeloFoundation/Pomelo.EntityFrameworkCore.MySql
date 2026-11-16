@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
 using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
@@ -17,7 +16,7 @@ public class NorthwindSqlQueryMySqlTest : NorthwindSqlQueryTestBase<NorthwindQue
         Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual void Check_all_tests_overridden()
         => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 
@@ -53,12 +52,12 @@ WHERE `o`.`OrderID` IN (
         await base.SqlQuery_composed_Join(async);
 
         AssertSql(
-"""
-SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, CAST(`s`.`Value` AS signed) AS `p`
+            """
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, `s`.`Value` AS `p`
 FROM `Orders` AS `o`
 INNER JOIN (
     SELECT `ProductID` AS `Value` FROM `Products`
-) AS `s` ON `o`.`OrderID` = CAST(`s`.`Value` AS signed)
+) AS `s` ON `o`.`OrderID` = `s`.`Value`
 """);
     }
 

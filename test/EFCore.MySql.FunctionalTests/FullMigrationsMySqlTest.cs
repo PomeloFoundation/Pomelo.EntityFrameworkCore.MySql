@@ -30,7 +30,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
         protected virtual void SetSql(string value)
             => Sql = value.Replace(ProductInfo.GetVersion(), "7.0.0-test");
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Can_create_stored_procedure_script_without_custom_delimiter_statements()
         {
             using var db = Fixture.CreateContext<FullInfrastructureMigrationsFixture.MigrationPrimaryKeyChangeContext>(
@@ -167,7 +167,7 @@ COMMIT;
                 ignoreLineEndingDifferences: true);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Can_generate_idempotent_up_scripts_with_primary_key_related_stored_procedures()
         {
             using var db = Fixture.CreateContext<FullInfrastructureMigrationsFixture.MigrationPrimaryKeyChangeContext>();
@@ -374,7 +374,7 @@ DROP PROCEDURE `POMELO_AFTER_ADD_PRIMARY_KEY`;
                 ignoreLineEndingDifferences: true);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Alter_column_change_primary_key_will_not_try_to_declare_default_value_in_sql()
         {
             using var db = Fixture.CreateContext<FullInfrastructureMigrationsFixture.MigrationPrimaryKeyChangeFromStringToIntContext>(
@@ -504,7 +504,7 @@ COMMIT;
                 ignoreLineEndingDifferences: true);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Drop_primary_key_with_recreating_foreign_keys()
         {
             using var db = Fixture.CreateContext<FullInfrastructureMigrationsFixture.MigrationDropPrimaryKeyWithRecreatingForeignKeysContext>();

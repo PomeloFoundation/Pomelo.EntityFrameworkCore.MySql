@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -21,7 +20,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
         /// Needs explicit ordering of views to work consistently with MySQL and MariaDB.
         /// But since CustomerViewModel is private, we can't even override the test case properly.
         /// </summary>
-        [ConditionalTheory(Skip = "Needs explicit ordering of views to work consistently with MySQL and MariaDB.")]
+        [Theory(Skip = "Needs explicit ordering of views to work consistently with MySQL and MariaDB.")]
         public override async Task SelectMany_with_client_eval_with_constructor(bool async)
         {
             // await AssertQuery(
@@ -62,6 +61,30 @@ ORDER BY `c`.`CustomerID`, `t0`.`OrderID0`, `t0`.`OrderID`");
         // The test now passes for both MySQL and MariaDB without needing JsonTable/primitive collections.
         public override Task Join_local_collection_int_closure_is_cached_correctly(bool async)
             => base.Join_local_collection_int_closure_is_cached_correctly(async);
+
+        // Neither MySQL nor MariaDB support FULL JOIN, so the provider rejects it during translation.
+        public override Task FullJoin(bool async)
+            => AssertTranslationFailed(() => base.FullJoin(async));
+
+        public override Task FullJoin_with_unmatched_rows_on_both_sides(bool async)
+            => AssertTranslationFailed(() => base.FullJoin_with_unmatched_rows_on_both_sides(async));
+
+        /// <summary>
+        /// The base test joins an `int` column against the characters of a string and expects no matches, because
+        /// LINQ to Objects compares the `int` against the character's numeric code point. MySQL and MariaDB instead
+        /// coerce the string operands to numbers, so `EmployeeID` actually matches the '1' and '2' elements.
+        /// </summary>
+        [Theory(Skip = "MySQL and MariaDB implicitly coerce strings to numbers when comparing them against a numeric column, so this query returns rows where LINQ to Objects returns none.")]
+        public override Task Join_local_string_closure_is_cached_correctly(bool async)
+            => base.Join_local_string_closure_is_cached_correctly(async);
+
+        /// <summary>
+        /// The base test expects joining an `int` column against a `byte[]` to fail translation. MySQL and MariaDB
+        /// translate the byte elements as numeric values, so the query is translated successfully.
+        /// </summary>
+        [Theory(Skip = "MySQL and MariaDB translate a join between a numeric column and byte[] elements, while the base test expects translation to fail.")]
+        public override Task Join_local_bytes_closure_is_cached_correctly(bool async)
+            => base.Join_local_bytes_closure_is_cached_correctly(async);
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);

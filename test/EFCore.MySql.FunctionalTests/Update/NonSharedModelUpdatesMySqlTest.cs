@@ -178,12 +178,12 @@ SELECT ROW_COUNT();
     // back after INSERT. The only mechanism that can do that on MySQL/MariaDB is INSERT ... RETURNING;
     // the LAST_INSERT_ID() fallback only works for AUTO_INCREMENT integer keys, so it matched 0 rows and
     // threw DbUpdateConcurrencyException. RETURNING requires MariaDB 10.5+ (MySQL has no RETURNING at all).
-    [ConditionalFact]
+    [Fact]
     [SupportedServerVersionCondition("Returning")]
     public async Task Insert_reads_back_database_generated_key_in_composite_key()
     {
-        var contextFactory = await InitializeAsync<DownloadContext>();
-        await using var context = contextFactory.CreateContext();
+        var contextFactory = await InitializeNonSharedTest<DownloadContext>();
+        await using var context = contextFactory.CreateDbContext();
 
         var download = new Download { UserId = 1, Version = 1 };
         context.Add(download);
@@ -233,6 +233,6 @@ SELECT ROW_COUNT();
     private void AssertSql(params string[] expected)
         => TestSqlLoggerFactory.AssertBaseline(expected);
 
-    protected override ITestStoreFactory TestStoreFactory
+    protected override ITestStoreFactory NonSharedTestStoreFactory
         => MySqlTestStoreFactory.Instance;
 }

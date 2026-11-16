@@ -17,22 +17,22 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
         {
             base.Top_level_projection_track_entities_before_passing_to_client_method();
 
-            Assert.Equal(
-"""
-SELECT `p`.`Id`, `p`.`AlternateId`, `p`.`Discriminator`, `p`.`Culture_Rating1`, `p`.`Culture_Species1`, `p`.`Culture_Subspecies1`, `p`.`Culture_Validation1`, `p`.`Culture_License_Charge`, `p`.`Culture_License_Title`, `p`.`Culture_License_Tag_Text`, `p`.`Culture_License_Tog_Text`, `p`.`Culture_Manufacturer_Name`, `p`.`Culture_Manufacturer_Rating`, `p`.`Culture_Manufacturer_Tag_Text`, `p`.`Culture_Manufacturer_Tog_Text`, `p`.`Milk_Rating1`, `p`.`Milk_Species1`, `p`.`Milk_Subspecies1`, `p`.`Milk_Validation1`, `p`.`Milk_License_Charge`, `p`.`Milk_License_Title`, `p`.`Milk_License_Tag_Text`, `p`.`Milk_License_Tog_Text`, `p`.`Milk_Manufacturer_Name`, `p`.`Milk_Manufacturer_Rating`, `p`.`Milk_Manufacturer_Tag_Text`, `p`.`Milk_Manufacturer_Tog_Text`, `p`.`Culture_Rating`, `p`.`Culture_Species`, `p`.`Culture_Subspecies`, `p`.`Culture_Validation`, `p`.`Milk_Rating`, `p`.`Milk_Species`, `p`.`Milk_Subspecies`, `p`.`Milk_Validation`
+            AssertSql(
+                """
+SELECT `p`.`Id`, `p`.`AlternateId`, `p`.`Discriminator`, `p`.`Father_Culture_Rating`, `p`.`Father_Culture_Species`, `p`.`Father_Culture_Subspecies`, `p`.`Father_Culture_Validation`, `p`.`Father_Culture_License_Charge`, `p`.`Father_Culture_License_Title`, `p`.`Father_Culture_License_Tag_Text`, `p`.`Father_Culture_License_Tog_Text`, `p`.`Father_Culture_Manufacturer_Name`, `p`.`Father_Culture_Manufacturer_Rating`, `p`.`Father_Culture_Manufacturer_Tag_Text`, `p`.`Father_Culture_Manufacturer_Tog_Text`, `p`.`Father_Milk_Rating`, `p`.`Father_Milk_Species`, `p`.`Father_Milk_Subspecies`, `p`.`Father_Milk_Validation`, `p`.`Father_Milk_License_Charge`, `p`.`Father_Milk_License_Title`, `p`.`Father_Milk_License_Tag_Text`, `p`.`Father_Milk_License_Tog_Text`, `p`.`Father_Milk_Manufacturer_Name`, `p`.`Father_Milk_Manufacturer_Rating`, `p`.`Father_Milk_Manufacturer_Tag_Text`, `p`.`Father_Milk_Manufacturer_Tog_Text`, `p`.`Culture_Rating`, `p`.`Culture_Species`, `p`.`Culture_Subspecies`, `p`.`Culture_Validation`, `p`.`Culture_License_Charge`, `p`.`Culture_License_Title`, `p`.`Culture_License_Tag_Text`, `p`.`Culture_License_Tog_Text`, `p`.`Culture_Manufacturer_Name`, `p`.`Culture_Manufacturer_Rating`, `p`.`Culture_Manufacturer_Tag_Text`, `p`.`Culture_Manufacturer_Tog_Text`, `p`.`Milk_Rating`, `p`.`Milk_Species`, `p`.`Milk_Subspecies`, `p`.`Milk_Validation`, `p`.`Milk_License_Charge`, `p`.`Milk_License_Title`, `p`.`Milk_License_Tag_Text`, `p`.`Milk_License_Tog_Text`, `p`.`Milk_Manufacturer_Name`, `p`.`Milk_Manufacturer_Rating`, `p`.`Milk_Manufacturer_Tag_Text`, `p`.`Milk_Manufacturer_Tog_Text`
 FROM `Parent` AS `p`
 ORDER BY `p`.`Id`
 LIMIT 1
-
+""",
+                //
+                """
 @p='707' (Nullable = true)
 
 SELECT `s`.`Id`, `s`.`ParentId`, `s`.`Culture_Rating`, `s`.`Culture_Species`, `s`.`Culture_Subspecies`, `s`.`Culture_Validation`, `s`.`Culture_License_Charge`, `s`.`Culture_License_Title`, `s`.`Culture_License_Tag_Text`, `s`.`Culture_License_Tog_Text`, `s`.`Culture_Manufacturer_Name`, `s`.`Culture_Manufacturer_Rating`, `s`.`Culture_Manufacturer_Tag_Text`, `s`.`Culture_Manufacturer_Tog_Text`, `s`.`Milk_Rating`, `s`.`Milk_Species`, `s`.`Milk_Subspecies`, `s`.`Milk_Validation`, `s`.`Milk_License_Charge`, `s`.`Milk_License_Title`, `s`.`Milk_License_Tag_Text`, `s`.`Milk_License_Tog_Text`, `s`.`Milk_Manufacturer_Name`, `s`.`Milk_Manufacturer_Rating`, `s`.`Milk_Manufacturer_Tag_Text`, `s`.`Milk_Manufacturer_Tog_Text`
 FROM `Single` AS `s`
 WHERE `s`.`ParentId` = @p
 LIMIT 1
-""",
-                Sql,
-                ignoreLineEndingDifferences: true);
+""");
         }
 
         protected override void ClearLog()
@@ -40,6 +40,9 @@ LIMIT 1
 
         protected override void RecordLog() =>
             Sql = Fixture.TestSqlLoggerFactory.Sql;
+
+        private void AssertSql(params string[] expected)
+            => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
         private string Sql { get; set; }
 

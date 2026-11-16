@@ -41,57 +41,43 @@ namespace Microting.EntityFrameworkCore.MySql.Internal
         }
 
         /// <inheritdoc />
-        protected override void ValidateJsonEntities(
-            IModel model,
-            IDiagnosticsLogger<DbLoggerCategory.Model.Validation> logger)
-        {
-            // EF Core 10+ requires JSON column support for complex collections.
-            // MySQL 5.7.8+ and MariaDB 10.2.4+ support JSON columns.
-            // Let the base implementation handle standard JSON validation.
-            base.ValidateJsonEntities(model, logger);
-        }
-
-        /// <inheritdoc />
         protected override void ValidateStoredProcedures(
-            IModel model,
+            IEntityType entityType,
             IDiagnosticsLogger<DbLoggerCategory.Model.Validation> logger)
         {
-            base.ValidateStoredProcedures(model, logger);
+            base.ValidateStoredProcedures(entityType, logger);
 
-            foreach (var entityType in model.GetEntityTypes())
+            if (entityType.GetDeleteStoredProcedure() is { } deleteStoredProcedure)
             {
-                if (entityType.GetDeleteStoredProcedure() is { } deleteStoredProcedure)
-                {
-                    ValidateSproc(deleteStoredProcedure, logger);
-                }
+                ValidateSproc(deleteStoredProcedure, logger);
+            }
 
-                if (entityType.GetInsertStoredProcedure() is { } insertStoredProcedure)
-                {
-                    ValidateSproc(insertStoredProcedure, logger);
-                }
+            if (entityType.GetInsertStoredProcedure() is { } insertStoredProcedure)
+            {
+                ValidateSproc(insertStoredProcedure, logger);
+            }
 
-                if (entityType.GetUpdateStoredProcedure() is { } updateStoredProcedure)
-                {
-                    ValidateSproc(updateStoredProcedure, logger);
-                }
+            if (entityType.GetUpdateStoredProcedure() is { } updateStoredProcedure)
+            {
+                ValidateSproc(updateStoredProcedure, logger);
             }
 
             static void ValidateSproc(IStoredProcedure sproc, IDiagnosticsLogger<DbLoggerCategory.Model.Validation> logger)
             {
-                var entityType = sproc.EntityType;
+                var sprocEntityType = sproc.EntityType;
                 var storeObjectIdentifier = sproc.GetStoreIdentifier();
 
                 if (sproc.ResultColumns.Any())
                 {
                     throw new InvalidOperationException(MySqlStrings.StoredProcedureResultColumnsNotSupported(
-                        entityType.DisplayName(),
+                        sprocEntityType.DisplayName(),
                         storeObjectIdentifier.DisplayName()));
                 }
 
                 if (sproc.IsRowsAffectedReturned)
                 {
                     throw new InvalidOperationException(MySqlStrings.StoredProcedureReturnValueNotSupported(
-                        entityType.DisplayName(),
+                        sprocEntityType.DisplayName(),
                         storeObjectIdentifier.DisplayName()));
                 }
             }

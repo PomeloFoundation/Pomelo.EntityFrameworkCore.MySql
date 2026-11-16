@@ -181,6 +181,18 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
             typeof(ComplexPropertiesSetOperationsTestBase<>),
             typeof(ComplexPropertiesStructuralEqualityTestBase<>),
 
+            // TODO: 11.0 - New EF Core 11 test bases that have not been implemented for MySQL yet.
+            typeof(Microsoft.EntityFrameworkCore.RuntimeMigrationTestBase<>),
+            typeof(Microsoft.EntityFrameworkCore.Query.Inheritance.InheritanceComplexTypesQueryTestBase<>),
+            typeof(Microsoft.EntityFrameworkCore.Query.Inheritance.TPCInheritanceJsonQueryRelationalTestBase<>),
+            typeof(Microsoft.EntityFrameworkCore.Query.Inheritance.TPCInheritanceTableSplittingQueryRelationalTestBase<>),
+            typeof(Microsoft.EntityFrameworkCore.Query.Inheritance.TPHInheritanceJsonQueryRelationalTestBase<>),
+            typeof(Microsoft.EntityFrameworkCore.Query.Inheritance.TPHInheritanceTableSplittingQueryRelationalTestBase<>),
+            typeof(Microsoft.EntityFrameworkCore.Query.Inheritance.TPTInheritanceJsonQueryRelationalTestBase<>),
+            typeof(Microsoft.EntityFrameworkCore.Query.Inheritance.TPTInheritanceTableSplittingQueryRelationalTestBase<>),
+            typeof(Microsoft.EntityFrameworkCore.Query.Translations.JsonTranslationsRelationalTestBase<>),
+            typeof(Microsoft.EntityFrameworkCore.Query.Associations.Navigations.NavigationsBulkUpdateRelationalTestBase<>),
+
             // BadDataJsonDeserialization test is now enabled (public class)
 
             // Complex JSON tests are now supported for MySQL 5.7.8+ and MariaDB 10.2.4+

@@ -12,6 +12,6 @@ public class AdHocNavigationsQueryMySqlTest : AdHocNavigationsQueryRelationalTes
     {
     }
 
-    protected override ITestStoreFactory TestStoreFactory
+    protected override ITestStoreFactory NonSharedTestStoreFactory
         => MySqlTestStoreFactory.Instance;
 }

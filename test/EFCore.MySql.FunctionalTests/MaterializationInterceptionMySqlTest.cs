@@ -30,6 +30,6 @@ public class MaterializationInterceptionMySqlTest : MaterializationInterceptionT
         }
     }
 
-    protected override ITestStoreFactory TestStoreFactory
+    protected override ITestStoreFactory NonSharedTestStoreFactory
         => MySqlTestStoreFactory.Instance;
 }

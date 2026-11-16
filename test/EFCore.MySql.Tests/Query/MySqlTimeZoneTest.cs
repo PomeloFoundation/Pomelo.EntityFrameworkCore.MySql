@@ -12,7 +12,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query
         {
         }
 
-        [ConditionalFact]
+        [Fact]
         public void ConvertTimeZone()
         {
             using var context = Fixture.CreateContext();
@@ -52,7 +52,7 @@ LIMIT 2
                 Fixture.Sql);
         }
 
-        [ConditionalFact]
+        [Fact]
         public void DateTimeOffset_LocalDateTime()
         {
             using var context = Fixture.CreateContext();

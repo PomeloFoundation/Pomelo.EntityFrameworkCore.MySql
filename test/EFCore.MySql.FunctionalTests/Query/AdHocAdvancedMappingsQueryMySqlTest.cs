@@ -16,30 +16,27 @@ public class AdHocAdvancedMappingsQueryMySqlTest : AdHocAdvancedMappingsQueryRel
     {
     }
 
-    [SkippableTheory]
     public override async Task Query_generates_correct_datetime2_parameter_definition(int? fractionalSeconds, string postfix)
     {
-        Skip.If(fractionalSeconds > 6, "MySQL has a max. DateTime precision of 6.");
+        Assert.SkipWhen(fractionalSeconds > 6, "MySQL has a max. DateTime precision of 6.");
 
         await base.Query_generates_correct_datetime2_parameter_definition(fractionalSeconds, postfix);
     }
 
-    [SkippableTheory]
     public override async Task Query_generates_correct_datetimeoffset_parameter_definition(int? fractionalSeconds, string postfix)
     {
-        Skip.If(fractionalSeconds > 6, "MySQL has a max. DateTimeOffset precision of 6.");
+        Assert.SkipWhen(fractionalSeconds > 6, "MySQL has a max. DateTimeOffset precision of 6.");
 
         await base.Query_generates_correct_datetimeoffset_parameter_definition(fractionalSeconds, postfix);
     }
 
-    [SkippableTheory]
     public override async Task Query_generates_correct_timespan_parameter_definition(int? fractionalSeconds, string postfix)
     {
-        Skip.If(fractionalSeconds > 6, "MySQL has a max. TimeSpan precision of 6.");
+        Assert.SkipWhen(fractionalSeconds > 6, "MySQL has a max. TimeSpan precision of 6.");
 
         await base.Query_generates_correct_timespan_parameter_definition(fractionalSeconds, postfix);
     }
 
-    protected override ITestStoreFactory TestStoreFactory
+    protected override ITestStoreFactory NonSharedTestStoreFactory
         => MySqlTestStoreFactory.Instance;
 }

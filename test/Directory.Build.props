@@ -3,17 +3,15 @@
 
   <PropertyGroup>
       <NoWarn>$(NoWarn);EF1001;MSB3277;xUnit1000</NoWarn>
+      <!-- xUnit v3 test projects must be executables. -->
+      <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <!-- Using xunit.core and .assert instead of the main package because compilation fails due to warnings triggered by xunit.analyzers. -->
-    <!-- <PackageReference Include="xunit" /> -->
-    <PackageReference Include="xunit.core" />
-    <PackageReference Include="xunit.assert" />
+    <PackageReference Include="xunit.v3.core" />
+    <PackageReference Include="xunit.v3.assert" />
     <PackageReference Include="xunit.runner.visualstudio" />
-    <PackageReference Include="xunit.runner.console" />
     <PackageReference Include="GitHubActionsTestLogger" />
-    <PackageReference Include="Xunit.SkippableFact" />
   </ItemGroup>
 </Project>

@@ -334,7 +334,7 @@ DROP TABLE IF EXISTS DependentTable;
 DROP TABLE IF EXISTS PrincipalTable;");
         }
 
-        [ConditionalFact]
+        [Fact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.IdentifyJsonColumsByCheckConstraints))]
         public void Create_json_column()
         {
@@ -382,7 +382,7 @@ CREATE TABLE `PlaceDetails` (
 DROP TABLE IF EXISTS `PlaceDetails`;");
         }
 
-        [ConditionalFact]
+        [Fact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.DefaultExpression), nameof(ServerVersionSupport.AlternativeDefaultExpression))]
         public void Create_guid_columns()
         {
@@ -410,7 +410,7 @@ CREATE TABLE `GuidTable`  (
 DROP TABLE IF EXISTS `GuidTable`;");
         }
 
-        [ConditionalFact]
+        [Fact]
         public void Create_default_value_column()
         {
             Test(
@@ -437,7 +437,7 @@ CREATE TABLE `DefaultValueTable` (
 DROP TABLE IF EXISTS `DefaultValueTable`;");
         }
 
-        [ConditionalFact]
+        [Fact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.AlternativeDefaultExpression))]
         public void Create_default_value_column_simple_function_expression()
         {
@@ -459,7 +459,7 @@ CREATE TABLE `DefaultValueSimpleExpressionTable` (
 DROP TABLE IF EXISTS `DefaultValueSimpleExpressionTable`;");
         }
 
-        [ConditionalFact]
+        [Fact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.DefaultExpression), nameof(ServerVersionSupport.AlternativeDefaultExpression))]
         public void Create_default_value_expression_column()
         {
@@ -486,7 +486,7 @@ CREATE TABLE `DefaultValueExpressionTable` (
 DROP TABLE IF EXISTS `DefaultValueExpressionTable`;");
         }
 
-        [ConditionalFact]
+        [Fact]
         [SupportedServerVersionCondition("10.4.0-mariadb")]
         public void Create_view_with_column_type_containing_comment_after_cast()
         {
@@ -629,7 +629,7 @@ CREATE TABLE DefaultValue (
                 "DROP TABLE IF EXISTS DefaultValueClr");
         }
 
-        [ConditionalFact]
+        [Fact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.GeneratedColumns))]
         public void Computed_value_virtual()
             => Test(@"
@@ -652,7 +652,7 @@ CREATE TABLE `ComputedValues` (
                 },
                 @"DROP TABLE IF EXISTS `ComputedValues`");
 
-        [ConditionalFact]
+        [Fact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.GeneratedColumns))]
         public void Computed_value_stored()
             => Test(@"
@@ -675,7 +675,7 @@ CREATE TABLE `ComputedValues` (
                 },
                 @"DROP TABLE IF EXISTS `ComputedValues`");
 
-        [ConditionalFact]
+        [Fact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.GeneratedColumns))]
         public void Computed_value_virtual_using_constant_string()
             => Test(@"
@@ -698,7 +698,7 @@ CREATE TABLE `Users` (
                 },
                 @"DROP TABLE IF EXISTS `Users`");
 
-        [ConditionalFact]
+        [Fact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.AlternativeDefaultExpression))]
         public void Default_value_curdate_mariadb()
         {
@@ -1075,7 +1075,7 @@ CREATE FULLTEXT INDEX `IX_IceCreams_Name` ON `IceCreams` (`Name`);",
                 @"DROP TABLE IF EXISTS `IceCreams`;");
         }
 
-        [ConditionalFact]
+        [Fact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.FullTextParser))]
         public void Set_fulltextparser_for_fulltext_index_with_parser()
         {
@@ -1103,7 +1103,7 @@ CREATE FULLTEXT INDEX `IX_IceCreams_Name` ON `IceCreams` (`Name`) /*!50703 WITH 
                 @"DROP TABLE IF EXISTS `IceCreams`;");
         }
 
-        [ConditionalFact]
+        [Fact]
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.SpatialIndexes))]
         public void Set_spatial_for_spatial_index()
         {

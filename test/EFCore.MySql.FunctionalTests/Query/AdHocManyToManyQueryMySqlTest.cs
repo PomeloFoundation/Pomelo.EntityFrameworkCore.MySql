@@ -12,6 +12,6 @@ public class AdHocManyToManyQueryMySqlTest : AdHocManyToManyQueryRelationalTestB
     {
     }
 
-    protected override ITestStoreFactory TestStoreFactory
+    protected override ITestStoreFactory NonSharedTestStoreFactory
         => MySqlTestStoreFactory.Instance;
 }

@@ -13,7 +13,7 @@ namespace Microting.EntityFrameworkCore.MySql.Migrations;
 
 public class MySqlHistoryRepositoryTest
 {
-    [ConditionalFact]
+    [Fact]
     public void ExistsSql_respects_SchemaBehavior_explicit()
     {
         var sql = CreateHistoryRepository("IgnoreThisDefaultSchema")
@@ -24,7 +24,7 @@ public class MySqlHistoryRepositoryTest
             sql);
     }
 
-    [ConditionalFact]
+    [Fact]
     public void ExistsSql_respects_SchemaBehavior()
     {
         var sql = CreateHistoryRepository("IgnoreThisExplicitSchema")

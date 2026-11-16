@@ -44,6 +44,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 IntersectExpression intersectExpression => VisitIntersect(intersectExpression),
                 JsonScalarExpression jsonScalarExpression => VisitJsonScalar(jsonScalarExpression),
                 MySqlJsonTableExpression jsonTableExpression => VisitJsonTable(jsonTableExpression),
+                FullJoinExpression fullJoinExpression => VisitFullJoin(fullJoinExpression),
 
                 SelectExpression selectExpression => VisitSelect(selectExpression),
                 DeleteExpression deleteExpression => VisitDelete(deleteExpression),
@@ -84,6 +85,11 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 
         protected virtual Expression VisitExcept(ExceptExpression exceptExpression)
             => CheckSupport(exceptExpression, _options.ServerVersion.Supports.ExceptIntercept);
+
+        // Neither MySQL nor MariaDB support FULL JOIN (or FULL OUTER JOIN), so reject it during translation instead of
+        // generating SQL that the server will reject.
+        protected virtual Expression VisitFullJoin(FullJoinExpression fullJoinExpression)
+            => CheckSupport(fullJoinExpression, false);
 
         protected virtual Expression VisitIntersect(IntersectExpression intersectExpression)
             => CheckSupport(intersectExpression, _options.ServerVersion.Supports.ExceptIntercept);

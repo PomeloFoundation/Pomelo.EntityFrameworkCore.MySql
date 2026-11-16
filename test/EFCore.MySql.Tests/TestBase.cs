@@ -11,13 +11,13 @@ namespace Microting.EntityFrameworkCore.MySql
     public class TestBase<TContext> : IDisposable, IAsyncLifetime
         where TContext : ContextBase, new()
     {
-        public async Task InitializeAsync()
+        public async ValueTask InitializeAsync()
         {
             TestStore = await MySqlTestStore.CreateInitializedAsync(StoreName);
         }
 
-        public Task DisposeAsync()
-            => Task.CompletedTask;
+        public ValueTask DisposeAsync()
+            => ValueTask.CompletedTask;
 
         public virtual void Dispose() => TestStore.DisposeAsync().AsTask().Wait();
 

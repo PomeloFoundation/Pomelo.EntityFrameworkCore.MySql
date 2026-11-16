@@ -141,7 +141,7 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
         if (predicate is null
             && source.QueryExpression is SelectExpression
             {
-                Tables: [TableValuedFunctionExpression { Name: "JSON_TABLE", Schema: null, IsBuiltIn: true, Arguments: [var array] }],
+                Tables: [TableValuedFunctionExpression { Name: "JSON_TABLE", Schema: null, IsBuiltIn: true, Arguments: [SqlExpression array] }],
                 GroupBy: [],
                 Having: null,
                 IsDistinct: false,

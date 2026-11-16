@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -24,25 +23,25 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        [ConditionalTheory(Skip = "issue #573")]
+        [Theory(Skip = "issue #573")]
         public override Task Where_as_queryable_expression(bool async)
         {
             return base.Where_as_queryable_expression(async);
         }
 
-        [ConditionalTheory(Skip = "issue #552")]
+        [Theory(Skip = "issue #552")]
         public override Task Where_multiple_contains_in_subquery_with_and(bool async)
         {
             return base.Where_multiple_contains_in_subquery_with_and(async);
         }
 
-        [ConditionalTheory(Skip = "issue #552")]
+        [Theory(Skip = "issue #552")]
         public override Task Where_multiple_contains_in_subquery_with_or(bool async)
         {
             return base.Where_multiple_contains_in_subquery_with_or(async);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_string_remove(bool async)
         {
@@ -56,7 +55,7 @@ FROM `Customers` AS `c`
 WHERE SUBSTRING(`c`.`City`, 1, 3) = 'Sea'");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_string_remove_count(bool async)
         {
@@ -70,7 +69,7 @@ FROM `Customers` AS `c`
 WHERE CONCAT(SUBSTRING(`c`.`City`, 1, 3), SUBSTRING(`c`.`City`, (3 + 1) + 1, CHAR_LENGTH(`c`.`City`) - (3 + 1))) = 'Seatle'");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_guid(bool async)
         {
@@ -91,7 +90,7 @@ WHERE @guidParameter = UUID()
 """);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_string_concat_method_comparison_single_object(bool async)
         {
@@ -112,7 +111,7 @@ WHERE @Concat = `c`.`CompanyName`
 """);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_string_concat_method_comparison_object(bool async)
         {
@@ -133,7 +132,7 @@ WHERE CONCAT(@i, `c`.`CustomerID`) = `c`.`CompanyName`
 """);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_string_concat_method_comparison_object_2(bool async)
         {
@@ -156,7 +155,7 @@ WHERE CONCAT(@i, @j, `c`.`CustomerID`) = `c`.`CompanyName`
 """);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_string_concat_method_comparison_object_3(bool async)
         {
@@ -181,7 +180,7 @@ WHERE CONCAT(@i, @j, @k, `c`.`CustomerID`) = `c`.`CompanyName`
 """);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_string_concat_method_comparison_params_string_array(bool async)
         {
@@ -208,7 +207,7 @@ WHERE CONCAT(@i, @j, @k, @m, `c`.`CustomerID`) = `c`.`CompanyName`
 """);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_string_concat_method_comparison_explicit_string_array(bool async)
         {
@@ -229,7 +228,7 @@ WHERE @Concat = `c`.`CompanyName`
 """);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_string_concat_method_comparison_explicit_string_array_single_element(bool async)
         {
@@ -250,7 +249,7 @@ WHERE @Concat = `c`.`CompanyName`
 """);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_string_concat_method_comparison_params_object_array(bool async)
         {
@@ -277,7 +276,7 @@ WHERE CONCAT(@i, @j, @k, @m, `c`.`CustomerID`) = `c`.`CompanyName`
 """);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_string_concat_method_comparison_explicit_object_array(bool async)
         {
@@ -298,7 +297,7 @@ WHERE @Concat = `c`.`CompanyName`
 """);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_string_concat_method_comparison_explicit_object_array_single_element(bool async)
         {
@@ -319,7 +318,7 @@ WHERE @Concat = `c`.`CompanyName`
 """);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_string_concat_method_comparison_string_enumerable(bool async)
         {
@@ -340,7 +339,7 @@ WHERE @Concat = `c`.`CompanyName`
 """);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_string_concat_method_comparison_string_enumerable_single_element(bool async)
         {
@@ -361,7 +360,7 @@ WHERE @Concat = `c`.`CompanyName`
 """);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_string_concat_method_comparison_generic_enumerable(bool async)
         {
@@ -382,7 +381,7 @@ WHERE @Concat = `c`.`CompanyName`
 """);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_string_concat_method_comparison_generic_enumerable_single_element(bool async)
         {
@@ -1681,7 +1680,119 @@ WHERE `c`.`City` = @city
 
         // END GENERATED METHODS
 
-        [ConditionalFact]
+        public override async Task Where_Queryable_conditional_not_null_check_with_Contains(bool async, bool withNull)
+        {
+            await base.Where_Queryable_conditional_not_null_check_with_Contains(async, withNull);
+
+            // The generated SQL depends on the `withNull` parameter, so a single baseline cannot match both cases.
+            if (withNull)
+            {
+                AssertSql(
+                """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE FALSE
+""");
+            }
+            else
+            {
+                AssertSql(
+                """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` IN (
+    SELECT `c0`.`CustomerID`
+    FROM `Customers` AS `c0`
+    WHERE `c0`.`CustomerID` <> 'ALFKI'
+)
+""");
+            }
+        }
+
+        public override async Task Where_Queryable_conditional_null_check_with_Contains(bool async, bool withNull)
+        {
+            await base.Where_Queryable_conditional_null_check_with_Contains(async, withNull);
+
+            // The generated SQL depends on the `withNull` parameter, so a single baseline cannot match both cases.
+            if (withNull)
+            {
+                AssertSql(
+                """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+""");
+            }
+            else
+            {
+                AssertSql(
+                """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` NOT IN (
+    SELECT `c0`.`CustomerID`
+    FROM `Customers` AS `c0`
+    WHERE `c0`.`CustomerID` <> 'ALFKI'
+)
+""");
+            }
+        }
+
+        public override async Task Where_Enumerable_conditional_not_null_check_with_Contains(bool async, bool withNull)
+        {
+            await base.Where_Enumerable_conditional_not_null_check_with_Contains(async, withNull);
+
+            // The generated SQL depends on the `withNull` parameter, so a single baseline cannot match both cases.
+            if (withNull)
+            {
+                AssertSql(
+                """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE FALSE
+""");
+            }
+            else
+            {
+                AssertSql(
+                """
+@ids1='ALFKI' (Size = 5) (DbType = StringFixedLength)
+@ids2='ANATR' (Size = 5) (DbType = StringFixedLength)
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` IN (@ids1, @ids2)
+""");
+            }
+        }
+
+        public override async Task Where_Enumerable_conditional_null_check_with_Contains(bool async, bool withNull)
+        {
+            await base.Where_Enumerable_conditional_null_check_with_Contains(async, withNull);
+
+            // The generated SQL depends on the `withNull` parameter, so a single baseline cannot match both cases.
+            if (withNull)
+            {
+                AssertSql(
+                """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+""");
+            }
+            else
+            {
+                AssertSql(
+                """
+@ids1='ALFKI' (Size = 5) (DbType = StringFixedLength)
+@ids2='ANATR' (Size = 5) (DbType = StringFixedLength)
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` NOT IN (@ids1, @ids2)
+""");
+            }
+        }
+
+        [Fact]
         public virtual void Check_all_tests_overridden()
             => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 

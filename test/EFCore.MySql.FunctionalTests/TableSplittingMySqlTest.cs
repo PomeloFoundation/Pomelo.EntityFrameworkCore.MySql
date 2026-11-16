@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.TestModels.TransportationModel;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microting.EntityFrameworkCore.MySql.Infrastructure;
 using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
 {
@@ -16,7 +16,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
         {
         }
 
-        protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
+        protected override ITestStoreFactory NonSharedTestStoreFactory => MySqlTestStoreFactory.Instance;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -29,7 +29,7 @@ public class GraphUpdatesMySqlClientCascadeTest : GraphUpdatesMySqlTestBase<Grap
             foreach (var foreignKey in modelBuilder.Model
                          .GetEntityTypes()
                          .SelectMany(e => e.GetDeclaredForeignKeys())
-                         .Where(e => e.DeleteBehavior == DeleteBehavior.Cascade))
+                         .Where(e => e is { IsOwnership: false, DeleteBehavior: DeleteBehavior.Cascade }))
             {
                 foreignKey.DeleteBehavior = DeleteBehavior.ClientCascade;
             }

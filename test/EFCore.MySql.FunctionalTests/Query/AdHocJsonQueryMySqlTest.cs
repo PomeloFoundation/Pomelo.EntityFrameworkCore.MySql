@@ -25,104 +25,104 @@ public class AdHocJsonQueryMySqlTest : AdHocJsonQueryRelationalTestBase
     }
 
     // Skip tests that use malformed JSON which MySQL strictly validates and rejects
-    [ConditionalTheory(Skip = "MySQL rejects JSON with null as property name")]
+    [Theory(Skip = "MySQL rejects JSON with null as property name")]
     [MemberData(nameof(IsAsyncData))]
     public override Task Bad_json_properties_null_navigations(bool noTracking)
         => Task.CompletedTask;
 
-    [ConditionalTheory(Skip = "MySQL rejects JSON with null as property name")]
+    [Theory(Skip = "MySQL rejects JSON with null as property name")]
     [MemberData(nameof(IsAsyncData))]
     public override Task Bad_json_properties_null_scalars(bool noTracking)
         => Task.CompletedTask;
 
-    [ConditionalTheory(Skip = "MySQL rejects JSON with duplicated property names")]
+    [Theory(Skip = "MySQL rejects JSON with duplicated property names")]
     [MemberData(nameof(IsAsyncData))]
     public override Task Bad_json_properties_duplicated_navigations(bool noTracking)
         => Task.CompletedTask;
 
-    [ConditionalTheory(Skip = "MySQL rejects JSON with duplicated property names")]
+    [Theory(Skip = "MySQL rejects JSON with duplicated property names")]
     [MemberData(nameof(IsAsyncData))]
     public override Task Bad_json_properties_duplicated_scalars(bool noTracking)
         => Task.CompletedTask;
 
-    [ConditionalTheory(Skip = "MySQL rejects JSON with empty property names")]
+    [Theory(Skip = "MySQL rejects JSON with empty property names")]
     [MemberData(nameof(IsAsyncData))]
     public override Task Bad_json_properties_empty_navigations(bool noTracking)
         => Task.CompletedTask;
 
-    [ConditionalTheory(Skip = "MySQL rejects JSON with empty property names")]
+    [Theory(Skip = "MySQL rejects JSON with empty property names")]
     [MemberData(nameof(IsAsyncData))]
     public override Task Bad_json_properties_empty_scalars(bool noTracking)
         => Task.CompletedTask;
 
     // Skip tests with different behavior from base expectations
-    [ConditionalFact(Skip = "MySQL behavior differs - no exception thrown")]
+    [Fact(Skip = "MySQL behavior differs - no exception thrown")]
     public override Task Try_project_collection_but_JSON_is_entity()
         => base.Try_project_collection_but_JSON_is_entity();
 
-    [ConditionalFact(Skip = "MySQL behavior differs - no exception thrown")]
+    [Fact(Skip = "MySQL behavior differs - no exception thrown")]
     public override Task Try_project_reference_but_JSON_is_collection()
         => base.Try_project_reference_but_JSON_is_collection();
 
-    [ConditionalTheory(Skip = "MySQL behavior differs in missing scalar handling")]
+    [Theory(Skip = "MySQL behavior differs in missing scalar handling")]
     [MemberData(nameof(IsAsyncData))]
     public override Task Project_root_with_missing_scalars(bool async)
         => base.Project_root_with_missing_scalars(async);
 
-    [ConditionalTheory(Skip = "MySQL behavior differs in null required navigation handling")]
+    [Theory(Skip = "MySQL behavior differs in null required navigation handling")]
     [MemberData(nameof(IsAsyncData))]
     public override Task Project_null_required_navigation(bool async)
         => base.Project_null_required_navigation(async);
 
-    [ConditionalTheory(Skip = "MySQL behavior differs in null required scalar handling")]
+    [Theory(Skip = "MySQL behavior differs in null required scalar handling")]
     [MemberData(nameof(IsAsyncData))]
     public override Task Project_null_required_scalar(bool async)
         => base.Project_null_required_scalar(async);
 
-    [ConditionalTheory(Skip = "MySQL behavior differs in missing required scalar handling")]
+    [Theory(Skip = "MySQL behavior differs in missing required scalar handling")]
     [MemberData(nameof(IsAsyncData))]
     public override Task Project_missing_required_scalar(bool async)
         => base.Project_missing_required_scalar(async);
 
-    [ConditionalTheory(Skip = "MySQL behavior differs in missing required navigation handling")]
+    [Theory(Skip = "MySQL behavior differs in missing required navigation handling")]
     [MemberData(nameof(IsAsyncData))]
     public override Task Project_missing_required_navigation(bool async)
         => base.Project_missing_required_navigation(async);
 
-    [ConditionalTheory(Skip = "MySQL behavior differs with null required navigation in root entity")]
+    [Theory(Skip = "MySQL behavior differs with null required navigation in root entity")]
     [MemberData(nameof(IsAsyncData))]
     public override Task Project_root_entity_with_null_required_navigation(bool async)
         => base.Project_root_entity_with_null_required_navigation(async);
 
-    [ConditionalTheory(Skip = "MySQL behavior differs with missing required navigation in root entity")]
+    [Theory(Skip = "MySQL behavior differs with missing required navigation in root entity")]
     [MemberData(nameof(IsAsyncData))]
     public override Task Project_root_entity_with_missing_required_navigation(bool async)
         => base.Project_root_entity_with_missing_required_navigation(async);
 
-    [ConditionalTheory(Skip = "MySQL behavior differs with null required scalars in top level entity")]
+    [Theory(Skip = "MySQL behavior differs with null required scalars in top level entity")]
     [MemberData(nameof(IsAsyncData))]
     public override Task Project_top_level_entity_with_null_value_required_scalars(bool async)
         => base.Project_top_level_entity_with_null_value_required_scalars(async);
 
-    [ConditionalTheory(Skip = "MySQL behavior differs with missing scalars in top level JSON entity")]
+    [Theory(Skip = "MySQL behavior differs with missing scalars in top level JSON entity")]
     [MemberData(nameof(IsAsyncData))]
     public override Task Project_top_level_json_entity_with_missing_scalars(bool async)
         => base.Project_top_level_json_entity_with_missing_scalars(async);
 
-    [ConditionalTheory(Skip = "MariaDB 10.6+ behavior differs with missing navigation deduplication")]
+    [Theory(Skip = "MariaDB 10.6+ behavior differs with missing navigation deduplication")]
     [MemberData(nameof(IsAsyncData))]
     public override Task Missing_navigation_works_with_deduplication(bool async)
         => base.Missing_navigation_works_with_deduplication(async);
 
-    [ConditionalFact(Skip = "MariaDB 10.6+ throws exception for null required JSON entity")]
+    [Fact(Skip = "MariaDB 10.6+ throws exception for null required JSON entity")]
     public override Task Project_required_json_entity()
         => base.Project_required_json_entity();
 
-    [ConditionalFact(Skip = "MariaDB 10.6+ throws NullReferenceException for array of primitives on reference")]
+    [Fact(Skip = "MariaDB 10.6+ throws NullReferenceException for array of primitives on reference")]
     public override Task Project_json_array_of_primitives_on_reference()
         => base.Project_json_array_of_primitives_on_reference();
 
-    protected override ITestStoreFactory TestStoreFactory
+    protected override ITestStoreFactory NonSharedTestStoreFactory
         => MySqlTestStoreFactory.Instance;
 
     protected override async Task SeedBadJsonProperties(ContextBadJsonProperties ctx)
@@ -357,16 +357,16 @@ N'{"Collection":[{"Bar":21,"Foo":"c21"},{"Bar":22,"Foo":"c22"}]}',
 
     #region EnumLegacyValues
 
-    [ConditionalTheory(Skip = "String enum values in JSON generate warnings that are treated as errors in EF Core 10")]
+    [Theory(Skip = "String enum values in JSON generate warnings that are treated as errors in EF Core 10")]
     [MemberData(nameof(IsAsyncData))]
     public virtual async Task Read_enum_property_with_legacy_values(bool async)
     {
-        var contextFactory = await InitializeAsync<DbContext>(
+        var contextFactory = await InitializeNonSharedTest<DbContext>(
             onModelCreating: BuildModelEnumLegacyValues,
             onConfiguring: b => b.ConfigureWarnings(ConfigureWarnings),
             seed: SeedEnumLegacyValues);
 
-        using (var context = contextFactory.CreateContext())
+        using (var context = contextFactory.CreateDbContext())
         {
             var query = context.Set<MyEntityEnumLegacyValues>().Select(
                 x => new
@@ -379,24 +379,24 @@ N'{"Collection":[{"Bar":21,"Foo":"c21"},{"Bar":22,"Foo":"c22"}]}',
 
             var exception = async
                 ? await (Assert.ThrowsAsync<MySqlException>(() => query.ToListAsync()))
-                : Assert.Throws<MySqlException>(() => query.ToList());
+                : Assert.Throws<MySqlException>(() => { query.ToList(); });
 
             // Conversion failed when converting the nvarchar value '...' to data type int
             Assert.Equal(245, exception.Number);
         }
     }
 
-    [ConditionalTheory(Skip = "String enum values in JSON generate warnings that are treated as errors in EF Core 10")]
+    [Theory(Skip = "String enum values in JSON generate warnings that are treated as errors in EF Core 10")]
     [MemberData(nameof(IsAsyncData))]
     public virtual async Task Read_json_entity_with_enum_properties_with_legacy_values(bool async)
     {
-        var contextFactory = await InitializeAsync<DbContext>(
+        var contextFactory = await InitializeNonSharedTest<DbContext>(
             onModelCreating: BuildModelEnumLegacyValues,
             onConfiguring: b => b.ConfigureWarnings(ConfigureWarnings),
             seed: SeedEnumLegacyValues,
             shouldLogCategory: c => c == DbLoggerCategory.Query.Name);
 
-        using (var context = contextFactory.CreateContext())
+        using (var context = contextFactory.CreateDbContext())
         {
             var query = context.Set<MyEntityEnumLegacyValues>().Select(x => x.Reference).AsNoTracking();
 
@@ -427,17 +427,17 @@ N'{"Collection":[{"Bar":21,"Foo":"c21"},{"Bar":22,"Foo":"c22"}]}',
                 l => l.Message == CoreResources.LogStringEnumValueInJson(testLogger).GenerateMessage(nameof(ULongEnumLegacyValues))));
     }
 
-    [ConditionalTheory(Skip = "String enum values in JSON generate warnings that are treated as errors in EF Core 10")]
+    [Theory(Skip = "String enum values in JSON generate warnings that are treated as errors in EF Core 10")]
     [MemberData(nameof(IsAsyncData))]
     public virtual async Task Read_json_entity_collection_with_enum_properties_with_legacy_values(bool async)
     {
-        var contextFactory = await InitializeAsync<DbContext>(
+        var contextFactory = await InitializeNonSharedTest<DbContext>(
             onModelCreating: BuildModelEnumLegacyValues,
             onConfiguring: b => b.ConfigureWarnings(ConfigureWarnings),
             seed: SeedEnumLegacyValues,
             shouldLogCategory: c => c == DbLoggerCategory.Query.Name);
 
-        using (var context = contextFactory.CreateContext())
+        using (var context = contextFactory.CreateDbContext())
         {
             var query = context.Set<MyEntityEnumLegacyValues>().Select(x => x.Collection).AsNoTracking();
 

@@ -16,7 +16,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
         }
 
-        protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
+        protected override ITestStoreFactory NonSharedTestStoreFactory => MySqlTestStoreFactory.Instance;
 
         public override async Task Can_use_shared_type_entity_type_in_query_filter(bool async)
         {

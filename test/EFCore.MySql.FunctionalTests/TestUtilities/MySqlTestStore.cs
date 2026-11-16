@@ -181,7 +181,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                         await clean(context);
                     }
 
-                    await CleanAsync(context);
+                    await CleanAsync(context, createTables: true);
                 }
 
                 databaseSetupSql = GetAlterDatabaseStatement(Name, DatabaseCharSet, DatabaseCollation);
@@ -239,9 +239,9 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                     return 0;
                 }, string.Empty);
 
-        public override Task CleanAsync(DbContext context)
+        public override Task CleanAsync(DbContext context, bool createTables = true)
         {
-            context.Database.EnsureClean();
+            context.Database.EnsureClean(createTables);
             return Task.CompletedTask;
         }
 

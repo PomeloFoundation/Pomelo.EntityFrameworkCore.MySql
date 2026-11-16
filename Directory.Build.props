@@ -26,11 +26,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <MicrotingTargetFramework>net10.0</MicrotingTargetFramework>
-    <MicrotingTestTargetFramework>net10.0</MicrotingTestTargetFramework>
-    <EfCoreTargetFramework>net10.0</EfCoreTargetFramework>
-    <EfCoreTestTargetFramework>net10.0</EfCoreTestTargetFramework>
-    <MySqlConnectorTargetFramework>net10.0</MySqlConnectorTargetFramework>
+    <MicrotingTargetFramework>net11.0</MicrotingTargetFramework>
+    <MicrotingTestTargetFramework>net11.0</MicrotingTestTargetFramework>
+    <EfCoreTargetFramework>net11.0</EfCoreTargetFramework>
+    <EfCoreTestTargetFramework>net11.0</EfCoreTestTargetFramework>
+    <MySqlConnectorTargetFramework>net11.0</MySqlConnectorTargetFramework>
     <MySqlConnectorDependencyInjectionTargetFramework>net8.0</MySqlConnectorDependencyInjectionTargetFramework>
   </PropertyGroup>
 

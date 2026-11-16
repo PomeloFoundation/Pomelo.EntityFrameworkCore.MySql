@@ -7,7 +7,6 @@ using Microting.EntityFrameworkCore.MySql.Infrastructure;
 using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query.Associations.ComplexJson;
 
@@ -43,67 +42,67 @@ public class ComplexJsonStructuralEqualityMySqlTest : ComplexJsonStructuralEqual
     // combining table expressions with JSON_TABLE functions, resulting in invalid SQL syntax.
     // See MySqlQueryableMethodTranslatingExpressionVisitor.TransformJsonQueryToTable (line 248).
 
-    [ConditionalFact(Skip = "LINQ operations over JSON collections of structural types not yet supported")]
+    [Fact(Skip = "LINQ operations over JSON collections of structural types not yet supported")]
     public override Task Contains_with_inline()
     {
         return Task.CompletedTask;
     }
 
-    [ConditionalFact(Skip = "LINQ operations over JSON collections of structural types not yet supported")]
+    [Fact(Skip = "LINQ operations over JSON collections of structural types not yet supported")]
     public override Task Contains_with_parameter()
     {
         return Task.CompletedTask;
     }
 
-    [ConditionalFact(Skip = "LINQ operations over JSON collections of structural types not yet supported")]
+    [Fact(Skip = "LINQ operations over JSON collections of structural types not yet supported")]
     public override Task Contains_with_operators_composed_on_the_collection()
     {
         return Task.CompletedTask;
     }
 
-    [ConditionalFact(Skip = "LINQ operations over JSON collections of structural types not yet supported")]
+    [Fact(Skip = "LINQ operations over JSON collections of structural types not yet supported")]
     public override Task Contains_with_nested_and_composed_operators()
     {
         return Task.CompletedTask;
     }
 
-    [ConditionalFact(Skip = "LINQ operations over JSON collections of structural types not yet supported")]
+    [Fact(Skip = "LINQ operations over JSON collections of structural types not yet supported")]
     public override Task Nested_collection_with_parameter()
     {
         return Task.CompletedTask;
     }
 
-    [ConditionalFact(Skip = "LINQ operations over JSON collections of structural types not yet supported")]
+    [Fact(Skip = "LINQ operations over JSON collections of structural types not yet supported")]
     public override Task Nested_associate_with_inline()
     {
         return Task.CompletedTask;
     }
 
-    [ConditionalFact(Skip = "LINQ operations over JSON collections of structural types not yet supported")]
+    [Fact(Skip = "LINQ operations over JSON collections of structural types not yet supported")]
     public override Task Two_nested_associates()
     {
         return Task.CompletedTask;
     }
 
-    [ConditionalFact(Skip = "LINQ operations over JSON collections of structural types not yet supported")]
+    [Fact(Skip = "LINQ operations over JSON collections of structural types not yet supported")]
     public override Task Nested_associate_with_parameter()
     {
         return Task.CompletedTask;
     }
 
-    [ConditionalFact(Skip = "LINQ operations over JSON collections of structural types not yet supported")]
+    [Fact(Skip = "LINQ operations over JSON collections of structural types not yet supported")]
     public override Task Nested_associate_with_inline_null()
     {
         return Task.CompletedTask;
     }
 
-    [ConditionalFact(Skip = "LINQ operations over JSON collections of structural types not yet supported")]
+    [Fact(Skip = "LINQ operations over JSON collections of structural types not yet supported")]
     public override Task Nested_collection_with_inline()
     {
         return Task.CompletedTask;
     }
 
-    [ConditionalFact(Skip = "LINQ operations over JSON collections of structural types not yet supported")]
+    [Fact(Skip = "LINQ operations over JSON collections of structural types not yet supported")]
     public override Task Two_nested_collections()
     {
         return Task.CompletedTask;

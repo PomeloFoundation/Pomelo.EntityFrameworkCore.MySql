@@ -15,7 +15,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
 {
     public class ConnectionMySqlTest
     {
-        [ConditionalFact]
+        [Fact]
         public virtual void SetConnectionString()
         {
             var correctConnectionString = MySqlTestStore.CreateConnectionString("ConnectionTest");
@@ -37,7 +37,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
             Assert.Equal(csb.Port, correctPort);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void SetConnectionString_affects_master_connection()
         {
             var correctConnectionString = MySqlTestStore.CreateConnectionString("ConnectionTest");

@@ -66,20 +66,26 @@ namespace Microting.EntityFrameworkCore.MySql.Query.Internal
                         ? _typeMappingSource.FindMapping(returnType, storeType)
                         : _typeMappingSource.FindMapping(returnType);
 
-                    SqlExpression sqlExpression = _sqlExpressionFactory.NullableFunction(
-                        mapping.Name,
-                        new [] {instance},
-                        returnType,
-                        resultTypeMapping,
-                        mapping.OnlyNullByArgs);
-
                     // ST_IsRing and others returns TRUE for a NULL value in MariaDB, which is inconsistent with NTS' implementation.
                     // We return the following instead:
                     // CASE
                     //     WHEN instance IS NULL THEN NULL
                     //     ELSE expression
                     // END
-                    if (returnType == typeof(bool))
+                    var guardAgainstNullInstance = returnType == typeof(bool);
+
+                    // Because the function does not reliably propagate NULL across all supported server implementations
+                    // (which is the very reason for the guard above), it must not be declared as only being NULL when one
+                    // of its arguments is NULL. Otherwise, the query optimizer is free to collapse the CASE expression
+                    // back into a bare function call, reintroducing the MariaDB inconsistency.
+                    SqlExpression sqlExpression = _sqlExpressionFactory.NullableFunction(
+                        mapping.Name,
+                        new [] {instance},
+                        returnType,
+                        resultTypeMapping,
+                        mapping.OnlyNullByArgs && !guardAgainstNullInstance);
+
+                    if (guardAgainstNullInstance)
                     {
                         sqlExpression = _sqlExpressionFactory.Case(
                             new[]

@@ -15,7 +15,7 @@ namespace Microting.EntityFrameworkCore.MySql.Migrations
         {
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory(typeof(MySqlBooleanStoreTypeAliasTest))]
         [InlineData("boolean")]
         [InlineData("BOOLEAN")]
         [InlineData("bool")]
@@ -31,7 +31,7 @@ namespace Microting.EntityFrameworkCore.MySql.Migrations
             Assert.Equal(typeof(bool), mapping.ClrType);
         }
 
-        [ConditionalFact]
+        [ConditionalFact(typeof(MySqlBooleanStoreTypeAliasTest))]
         public void Default_and_explicit_tinyint_store_types_are_unchanged()
         {
             using var context = Fixture.CreateContext();
@@ -41,7 +41,7 @@ namespace Microting.EntityFrameworkCore.MySql.Migrations
             Assert.Equal("tinyint(1)", typeMappingSource.FindMapping(typeof(bool), "tinyint(1)").StoreType);
         }
 
-        [ConditionalFact]
+        [ConditionalFact(typeof(MySqlBooleanStoreTypeAliasTest))]
         public void Columns_configured_with_boolean_aliases_keep_the_configured_store_type()
         {
             using var context = Fixture.CreateContext();
@@ -56,7 +56,7 @@ namespace Microting.EntityFrameworkCore.MySql.Migrations
             Assert.Equal("tinyint(1)", columns[nameof(Model.Switch.Default)]);
         }
 
-        [ConditionalFact]
+        [ConditionalFact(typeof(MySqlBooleanStoreTypeAliasTest))]
         public void Table_with_boolean_alias_columns_can_be_created_and_round_trips_values()
         {
             using var context = Fixture.CreateContext();

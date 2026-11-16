@@ -4,7 +4,6 @@ using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Microting.EntityFrameworkCore.MySql.Tests;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -16,7 +15,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
             //fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        [ConditionalFact]
+        [Fact]
         public override async Task Input_query_escapes_parameter()
         {
             await base.Input_query_escapes_parameter();
@@ -52,7 +51,7 @@ WHERE `a`.`Name` LIKE '% Garden Party'");
             }
         }
 
-        [ConditionalTheory]
+        [Theory]
         public override async Task Where_query_escapes_literal(bool async)
         {
             await base.Where_query_escapes_literal(async);
@@ -63,7 +62,7 @@ FROM `Artists` AS `a`
 WHERE `a`.`Name` = 'Back\slasher''s'");
         }
 
-        [ConditionalTheory]
+        [Theory]
         public override async Task Where_query_escapes_parameter(bool async)
         {
             await base.Where_query_escapes_parameter(async);
@@ -78,7 +77,7 @@ WHERE `a`.`Name` = @artistName
 """);
         }
 
-        [ConditionalTheory]
+        [Theory]
         public override async Task Where_contains_query_escapes(bool async)
         {
             await base.Where_contains_query_escapes(async);

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <RootNamespace>Microting.EntityFrameworkCore.MySql.Benchmarks</RootNamespace>
     <AssemblyName>Microting.EntityFrameworkCore.MySql.Benchmarks</AssemblyName>
     <IsPackable>false</IsPackable>

@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -21,7 +20,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [InlineData(StringComparison.OrdinalIgnoreCase, 1, false)]
         [InlineData(StringComparison.OrdinalIgnoreCase, 1, true)]
         [InlineData(StringComparison.CurrentCultureIgnoreCase, 1, false)]
@@ -54,7 +53,7 @@ WHERE CASE
 END");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringEquals_ordinal(bool async)
         {
@@ -68,7 +67,7 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringEquals_invariant(bool async)
         {
@@ -82,7 +81,7 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringEquals_current(bool async)
         {
@@ -96,7 +95,7 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringEquals_ordinal_ignore_case(bool async)
         {
@@ -110,7 +109,7 @@ FROM `Customers` AS `c`
 WHERE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringEquals_current_ignore_case(bool async)
         {
@@ -124,7 +123,7 @@ FROM `Customers` AS `c`
 WHERE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringEquals_invariant_ignore_case(bool async)
         {
@@ -138,7 +137,7 @@ FROM `Customers` AS `c`
 WHERE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [InlineData(StringComparison.OrdinalIgnoreCase, 1, false)]
         [InlineData(StringComparison.OrdinalIgnoreCase, 1, true)]
         [InlineData(StringComparison.CurrentCultureIgnoreCase, 1, false)]
@@ -171,7 +170,7 @@ WHERE CASE
 END");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StaticStringEquals_ordinal(bool async)
         {
@@ -185,7 +184,7 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StaticStringEquals_invariant(bool async)
         {
@@ -199,7 +198,7 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StaticStringEquals_current(bool async)
         {
@@ -213,7 +212,7 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = CONVERT('anton' USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StaticStringEquals_ordinal_ignore_case(bool async)
         {
@@ -227,7 +226,7 @@ FROM `Customers` AS `c`
 WHERE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StaticStringEquals_current_ignore_case(bool async)
         {
@@ -241,7 +240,7 @@ FROM `Customers` AS `c`
 WHERE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StaticStringEquals_invariant_ignore_case(bool async)
         {
@@ -255,7 +254,7 @@ FROM `Customers` AS `c`
 WHERE LCASE(`c`.`CustomerID`) = CONVERT(LCASE('anton') USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [InlineData(StringComparison.OrdinalIgnoreCase, 1, false)]
         [InlineData(StringComparison.OrdinalIgnoreCase, 1, true)]
         [InlineData(StringComparison.CurrentCultureIgnoreCase, 1, false)]
@@ -288,7 +287,7 @@ WHERE CASE
 END");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringContains_ordinal(bool async)
         {
@@ -303,7 +302,7 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` LIKE CONVERT('%nto%' USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringContains_invariant(bool async)
         {
@@ -318,7 +317,7 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` LIKE CONVERT('%nto%' USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringContains_current(bool async)
         {
@@ -333,7 +332,7 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` LIKE CONVERT('%nto%' USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringContains_ordinal_ignore_case(bool async)
         {
@@ -347,7 +346,7 @@ FROM `Customers` AS `c`
 WHERE LCASE(`c`.`CustomerID`) LIKE CONVERT(LCASE('%nto%') USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringContains_current_ignore_case(bool async)
         {
@@ -361,7 +360,7 @@ FROM `Customers` AS `c`
 WHERE LCASE(`c`.`CustomerID`) LIKE CONVERT(LCASE('%nto%') USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringContains_invariant_ignore_case(bool async)
         {
@@ -375,7 +374,7 @@ FROM `Customers` AS `c`
 WHERE LCASE(`c`.`CustomerID`) LIKE CONVERT(LCASE('%nto%') USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringContains_parameter(bool async)
         {
@@ -393,7 +392,7 @@ WHERE LCASE(`c`.`CustomerID`) LIKE CONVERT(LCASE('%nto%') USING utf8mb4) COLLATE
             Assert.DoesNotContain("LOCATE", sql);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [InlineData(StringComparison.OrdinalIgnoreCase, 1, false)]
         [InlineData(StringComparison.OrdinalIgnoreCase, 1, true)]
         [InlineData(StringComparison.CurrentCultureIgnoreCase, 1, false)]
@@ -426,7 +425,7 @@ WHERE CASE
 END");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringStartsWith_ordinal(bool async)
         {
@@ -441,7 +440,7 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` LIKE CONVERT('anto%' USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringStartsWith_invariant(bool async)
         {
@@ -456,7 +455,7 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` LIKE CONVERT('anto%' USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringStartsWith_current(bool async)
         {
@@ -471,7 +470,7 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` LIKE CONVERT('anto%' USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringStartsWith_ordinal_ignore_case(bool async)
         {
@@ -485,7 +484,7 @@ FROM `Customers` AS `c`
 WHERE LCASE(LCASE(`c`.`CustomerID`)) LIKE CONVERT(LCASE('anto%') USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringStartsWith_current_ignore_case(bool async)
         {
@@ -499,7 +498,7 @@ FROM `Customers` AS `c`
 WHERE LCASE(LCASE(`c`.`CustomerID`)) LIKE CONVERT(LCASE('anto%') USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringStartsWith_invariant_ignore_case(bool async)
         {
@@ -513,7 +512,7 @@ FROM `Customers` AS `c`
 WHERE LCASE(LCASE(`c`.`CustomerID`)) LIKE CONVERT(LCASE('anto%') USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringStartsWith_parameter(bool async)
         {
@@ -531,7 +530,7 @@ WHERE LCASE(LCASE(`c`.`CustomerID`)) LIKE CONVERT(LCASE('anto%') USING utf8mb4) 
             Assert.DoesNotContain("LEFT", sql);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [InlineData(StringComparison.OrdinalIgnoreCase, 1, false)]
         [InlineData(StringComparison.OrdinalIgnoreCase, 1, true)]
         [InlineData(StringComparison.CurrentCultureIgnoreCase, 1, false)]
@@ -562,7 +561,7 @@ WHERE CASE
 END");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringEndsWith_ordinal(bool async)
         {
@@ -577,7 +576,7 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` LIKE CONVERT('%nton' USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringEndsWith_invariant(bool async)
         {
@@ -592,7 +591,7 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` LIKE CONVERT('%nton' USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringEndsWith_current(bool async)
         {
@@ -607,7 +606,7 @@ FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` LIKE CONVERT('%nton' USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringEndsWith_ordinal_ignore_case(bool async)
         {
@@ -621,7 +620,7 @@ FROM `Customers` AS `c`
 WHERE LCASE(`c`.`CustomerID`) LIKE CONVERT(LCASE('%nton') USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringEndsWith_current_ignore_case(bool async)
         {
@@ -635,7 +634,7 @@ FROM `Customers` AS `c`
 WHERE LCASE(`c`.`CustomerID`) LIKE CONVERT(LCASE('%nton') USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringEndsWith_invariant_ignore_case(bool async)
         {
@@ -649,7 +648,7 @@ FROM `Customers` AS `c`
 WHERE LCASE(`c`.`CustomerID`) LIKE CONVERT(LCASE('%nton') USING utf8mb4) COLLATE utf8mb4_bin");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringEndsWith_parameter(bool async)
         {
@@ -667,7 +666,7 @@ WHERE LCASE(`c`.`CustomerID`) LIKE CONVERT(LCASE('%nton') USING utf8mb4) COLLATE
             Assert.DoesNotContain("RIGHT", sql);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [InlineData(StringComparison.OrdinalIgnoreCase, 1, false)]
         [InlineData(StringComparison.OrdinalIgnoreCase, 1, true)]
         [InlineData(StringComparison.CurrentCultureIgnoreCase, 1, false)]
@@ -699,7 +698,7 @@ WHERE CASE
 END = 1");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringIndexOf_with_constant_start_index(bool async)
         {
@@ -713,7 +712,7 @@ FROM `Customers` AS `c`
 WHERE (LOCATE(CONVERT(LCASE('nt') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`), 1) - 1) = 1");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [InlineData(0, 1, false)]
         [InlineData(2, 0, false)]
         [InlineData(0, 1, true)]
@@ -733,7 +732,7 @@ FROM `Customers` AS `c`
 WHERE (LOCATE(CONVERT(LCASE('nt') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`), @startIndex + 1) - 1) = 1");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringIndexOf_ordinal(bool async)
         {
@@ -747,7 +746,7 @@ FROM `Customers` AS `c`
 WHERE (LOCATE(CONVERT('nt' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`CustomerID`) - 1) = 1");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringIndexOf_invariant(bool async)
         {
@@ -761,7 +760,7 @@ FROM `Customers` AS `c`
 WHERE (LOCATE(CONVERT('nt' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`CustomerID`) - 1) = 1");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringIndexOf_current(bool async)
         {
@@ -775,7 +774,7 @@ FROM `Customers` AS `c`
 WHERE (LOCATE(CONVERT('nt' USING utf8mb4) COLLATE utf8mb4_bin, `c`.`CustomerID`) - 1) = 1");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringIndexOf_ordinal_ignore_case(bool async)
         {
@@ -788,7 +787,7 @@ FROM `Customers` AS `c`
 WHERE (LOCATE(CONVERT(LCASE('nt') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`)) - 1) = 1");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringIndexOf_current_ignore_case(bool async)
         {
@@ -801,7 +800,7 @@ FROM `Customers` AS `c`
 WHERE (LOCATE(CONVERT(LCASE('nt') USING utf8mb4) COLLATE utf8mb4_bin, LCASE(`c`.`CustomerID`)) - 1) = 1");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task StringIndexOf_invariant_ignore_case(bool async)
         {

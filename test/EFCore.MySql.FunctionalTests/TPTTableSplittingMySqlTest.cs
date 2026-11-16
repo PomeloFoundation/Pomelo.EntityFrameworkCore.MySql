@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
 {
@@ -19,7 +19,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
             return Task.CompletedTask;
         }
 
-        protected override ITestStoreFactory TestStoreFactory
+        protected override ITestStoreFactory NonSharedTestStoreFactory
             => MySqlTestStoreFactory.Instance;
     }
 }

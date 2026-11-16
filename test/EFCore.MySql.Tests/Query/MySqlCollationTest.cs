@@ -16,7 +16,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query
         // MySQL 9.4+ and MariaDB 11.4+ handle incompatible collations without throwing exceptions.
         // This test verifies that older versions still throw as expected.
         [SupportedServerVersionLessThanCondition("11.4.0-mariadb", "9.4.0-mysql")]
-        [ConditionalFact]
+        [Fact]
         public void Where_with_incompatible_collations_fails()
         {
             using var context = Fixture.CreateContext();
@@ -48,7 +48,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query
                     .ToList());
         }
 
-        [ConditionalFact]
+        [Fact]
         public void Where_with_incompatible_collations_succeeds_with_explicit_collation_case_sensitive()
         {
             using var context = Fixture.CreateContext();
@@ -63,7 +63,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query
             Assert.Equal(3, metalContainers[0].Id);
         }
 
-        [ConditionalFact]
+        [Fact]
         public void Where_with_incompatible_collations_succeeds_with_explicit_collation_case_insensitive()
         {
             using var context = Fixture.CreateContext();

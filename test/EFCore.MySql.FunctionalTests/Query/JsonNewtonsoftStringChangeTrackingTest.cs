@@ -5,7 +5,7 @@ using Microting.EntityFrameworkCore.MySql.Infrastructure;
 using Microting.EntityFrameworkCore.MySql.Json.Newtonsoft.Extensions.Internal;
 using Microting.EntityFrameworkCore.MySql.Storage.Internal;
 using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {

@@ -90,7 +90,9 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                             {
                                 index.SetPrefixLength(
                                     index.Properties.Select(
-                                            p => indexedStringProperties.Contains(p) && p.GetMaxLength() > safePropertyLength
+                                            p => p is IMutableProperty property
+                                                 && indexedStringProperties.Contains(property)
+                                                 && property.GetMaxLength() > safePropertyLength
                                                 ? safePropertyLength
                                                 : 0)
                                         .ToArray());
@@ -135,8 +137,8 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                options.GetExtension<MySqlOptionsExtension>().PrimitiveCollectionsSupport;
 
         /// <summary>
-        /// Same implementation as EF Core base class, except that it can generate code for Task returning test without a `bool async`
-        /// parameter.
+        /// Same implementation as EF Core base class, except that it generates code that reproduces the full parameter list of the test
+        /// method being overridden (the EF Core implementation only handles a single `bool async` parameter).
         /// </summary>
         public static void AssertAllMethodsOverridden(Type testClass, bool withAssertSqlCall = true)
         {
@@ -144,23 +146,24 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 .GetRuntimeMethods()
                 .Where(
                     m => m.DeclaringType != testClass
-                         && (Attribute.IsDefined(m, typeof(ConditionalFactAttribute))
-                             || Attribute.IsDefined(m, typeof(ConditionalTheoryAttribute))))
+                         && (Attribute.IsDefined(m, typeof(FactAttribute))
+                             || Attribute.IsDefined(m, typeof(TheoryAttribute))))
                 .ToList();
 
             var methodCalls = new StringBuilder();
 
             foreach (var method in methods)
             {
+                var parameters = method.GetParameters();
+                var parameterDeclarations = string.Join(", ", parameters.Select(p => $"{GetTypeName(p.ParameterType)} {p.Name}"));
+                var parameterNames = string.Join(", ", parameters.Select(p => p.Name));
+
                 if (method.ReturnType == typeof(Task))
                 {
-                    var parameters = method.GetParameters();
-                    var generateAsyncParameter = parameters.Length == 1 &&
-                                                 parameters[0].ParameterType == typeof(bool);
                     methodCalls.Append(
-                        @$"public override async Task {method.Name}({(generateAsyncParameter ? "bool async" : null)})
+                        @$"public override async Task {method.Name}({parameterDeclarations})
 {{
-    await base.{method.Name}({(generateAsyncParameter ? "async" : null)});{(withAssertSqlCall ?
+    await base.{method.Name}({parameterNames});{(withAssertSqlCall ?
 """
 
 
@@ -173,9 +176,9 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 else
                 {
                     methodCalls.Append(
-                        @$"public override void {method.Name}()
+                        @$"public override void {method.Name}({parameterDeclarations})
 {{
-    base.{method.Name}();{(withAssertSqlCall ?
+    base.{method.Name}({parameterNames});{(withAssertSqlCall ?
 """
 
 
@@ -191,5 +194,19 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 methods.Count > 0,
                 "\r\n-- Missing test overrides --\r\n\r\n" + methodCalls);
         }
+
+        private static string GetTypeName(Type type)
+            => type switch
+            {
+                _ when type == typeof(bool) => "bool",
+                _ when type == typeof(int) => "int",
+                _ when type == typeof(string) => "string",
+                _ when type == typeof(object) => "object",
+                { IsGenericType: true } => type.Name[..type.Name.IndexOf('`')] +
+                                           "<" +
+                                           string.Join(", ", type.GetGenericArguments().Select(GetTypeName)) +
+                                           ">",
+                _ => type.Name
+            };
     }
 }

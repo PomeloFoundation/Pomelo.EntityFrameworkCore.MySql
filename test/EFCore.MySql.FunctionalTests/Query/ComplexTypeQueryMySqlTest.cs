@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
@@ -188,10 +187,10 @@ FROM `Customer` AS `c`
         await base.Complex_type_equals_complex_type(async);
 
         AssertSql(
-"""
+            """
 SELECT `c`.`Id`, `c`.`Name`, `c`.`BillingAddress_AddressLine1`, `c`.`BillingAddress_AddressLine2`, `c`.`BillingAddress_Tags`, `c`.`BillingAddress_ZipCode`, `c`.`BillingAddress_Country_Code`, `c`.`BillingAddress_Country_FullName`, `c`.`OptionalAddress_AddressLine1`, `c`.`OptionalAddress_AddressLine2`, `c`.`OptionalAddress_Tags`, `c`.`OptionalAddress_ZipCode`, `c`.`OptionalAddress_Country_Code`, `c`.`OptionalAddress_Country_FullName`, `c`.`ShippingAddress_AddressLine1`, `c`.`ShippingAddress_AddressLine2`, `c`.`ShippingAddress_Tags`, `c`.`ShippingAddress_ZipCode`, `c`.`ShippingAddress_Country_Code`, `c`.`ShippingAddress_Country_FullName`
 FROM `Customer` AS `c`
-WHERE (((`c`.`ShippingAddress_AddressLine1` = `c`.`BillingAddress_AddressLine1`) AND ((`c`.`ShippingAddress_AddressLine2` = `c`.`BillingAddress_AddressLine2`) OR (`c`.`ShippingAddress_AddressLine2` IS NULL AND (`c`.`BillingAddress_AddressLine2` IS NULL)))) AND (`c`.`ShippingAddress_Tags` = `c`.`BillingAddress_Tags`)) AND (`c`.`ShippingAddress_ZipCode` = `c`.`BillingAddress_ZipCode`)
+WHERE (((((`c`.`ShippingAddress_AddressLine1` = `c`.`BillingAddress_AddressLine1`) AND ((`c`.`ShippingAddress_AddressLine2` = `c`.`BillingAddress_AddressLine2`) OR (`c`.`ShippingAddress_AddressLine2` IS NULL AND (`c`.`BillingAddress_AddressLine2` IS NULL)))) AND (`c`.`ShippingAddress_Tags` = `c`.`BillingAddress_Tags`)) AND (`c`.`ShippingAddress_ZipCode` = `c`.`BillingAddress_ZipCode`)) AND (`c`.`ShippingAddress_Country_Code` = `c`.`BillingAddress_Country_Code`)) AND (`c`.`ShippingAddress_Country_FullName` = `c`.`BillingAddress_Country_FullName`)
 """);
     }
 
@@ -574,10 +573,10 @@ FROM `ValuedCustomer` AS `v`
         await base.Struct_complex_type_equals_struct_complex_type(async);
 
         AssertSql(
-"""
+            """
 SELECT `v`.`Id`, `v`.`Name`, `v`.`BillingAddress_AddressLine1`, `v`.`BillingAddress_AddressLine2`, `v`.`BillingAddress_ZipCode`, `v`.`BillingAddress_Country_Code`, `v`.`BillingAddress_Country_FullName`, `v`.`ShippingAddress_AddressLine1`, `v`.`ShippingAddress_AddressLine2`, `v`.`ShippingAddress_ZipCode`, `v`.`ShippingAddress_Country_Code`, `v`.`ShippingAddress_Country_FullName`
 FROM `ValuedCustomer` AS `v`
-WHERE ((`v`.`ShippingAddress_AddressLine1` = `v`.`BillingAddress_AddressLine1`) AND ((`v`.`ShippingAddress_AddressLine2` = `v`.`BillingAddress_AddressLine2`) OR (`v`.`ShippingAddress_AddressLine2` IS NULL AND (`v`.`BillingAddress_AddressLine2` IS NULL)))) AND (`v`.`ShippingAddress_ZipCode` = `v`.`BillingAddress_ZipCode`)
+WHERE ((((`v`.`ShippingAddress_AddressLine1` = `v`.`BillingAddress_AddressLine1`) AND ((`v`.`ShippingAddress_AddressLine2` = `v`.`BillingAddress_AddressLine2`) OR (`v`.`ShippingAddress_AddressLine2` IS NULL AND (`v`.`BillingAddress_AddressLine2` IS NULL)))) AND (`v`.`ShippingAddress_ZipCode` = `v`.`BillingAddress_ZipCode`)) AND (`v`.`ShippingAddress_Country_Code` = `v`.`BillingAddress_Country_Code`)) AND (`v`.`ShippingAddress_Country_FullName` = `v`.`BillingAddress_Country_FullName`)
 """);
     }
 
@@ -998,7 +997,18 @@ LEFT JOIN LATERAL (
     {
         await base.Same_complex_type_projected_twice_with_pushdown_as_part_of_another_projection(async);
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `c`.`Id`, `s`.`BillingAddress_AddressLine1`, `s`.`BillingAddress_AddressLine2`, `s`.`BillingAddress_Tags`, `s`.`BillingAddress_ZipCode`, `s`.`BillingAddress_Country_Code`, `s`.`BillingAddress_Country_FullName`, `s`.`BillingAddress_AddressLine10`, `s`.`BillingAddress_AddressLine20`, `s`.`BillingAddress_Tags0`, `s`.`BillingAddress_ZipCode0`, `s`.`BillingAddress_Country_Code0`, `s`.`BillingAddress_Country_FullName0`, `s`.`c`
+FROM `Customer` AS `c`
+LEFT JOIN LATERAL (
+    SELECT `c0`.`BillingAddress_AddressLine1`, `c0`.`BillingAddress_AddressLine2`, `c0`.`BillingAddress_Tags`, `c0`.`BillingAddress_ZipCode`, `c0`.`BillingAddress_Country_Code`, `c0`.`BillingAddress_Country_FullName`, `c1`.`BillingAddress_AddressLine1` AS `BillingAddress_AddressLine10`, `c1`.`BillingAddress_AddressLine2` AS `BillingAddress_AddressLine20`, `c1`.`BillingAddress_Tags` AS `BillingAddress_Tags0`, `c1`.`BillingAddress_ZipCode` AS `BillingAddress_ZipCode0`, `c1`.`BillingAddress_Country_Code` AS `BillingAddress_Country_Code0`, `c1`.`BillingAddress_Country_FullName` AS `BillingAddress_Country_FullName0`, 1 AS `c`
+    FROM `Customer` AS `c0`
+    CROSS JOIN `Customer` AS `c1`
+    ORDER BY `c0`.`Id`, `c1`.`Id` DESC
+    LIMIT 1
+) AS `s` ON TRUE
+""");
     }
 
     public override async Task GroupBy_over_property_in_nested_complex_type(bool async)
@@ -1141,7 +1151,7 @@ LEFT JOIN `ValuedCustomer` AS `v0` ON `v`.`OptionalCustomerId` = `v0`.`Id`
 """);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual void Check_all_tests_overridden()
         => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 

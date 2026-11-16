@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
@@ -21,7 +20,7 @@ public class DateOnlyQueryMySqlTest : DateOnlyQueryMySqlTestBase<DateOnlyQueryMy
         //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
     }
 
-    [ConditionalTheory]
+    [Theory]
     [MemberData(nameof(IsAsyncData))]
     public async Task DayNumber(bool isAsync)
     {
@@ -43,7 +42,7 @@ LIMIT 2
 """);
     }
 
-    [ConditionalTheory]
+    [Theory]
     [MemberData(nameof(IsAsyncData))]
     public async Task DayNumber_offset_same_as_CLR(bool isAsync)
     {
@@ -65,7 +64,7 @@ LIMIT 2
 """);
     }
 
-    [ConditionalTheory]
+    [Theory]
     [MemberData(nameof(IsAsyncData))]
     public async Task ToDateTime_with_nondefault_TimeOnly(bool isAsync)
     {
@@ -87,7 +86,7 @@ LIMIT 2
 """);
     }
 
-    [ConditionalTheory]
+    [Theory]
     [MemberData(nameof(IsAsyncData))]
     public async Task ToDateTime_with_default_TimeOnly(bool isAsync)
     {
@@ -109,7 +108,7 @@ LIMIT 2
 """);
     }
 
-    [ConditionalTheory]
+    [Theory]
     [MemberData(nameof(IsAsyncData))]
     public async Task DayNumber_FromDateTime(bool isAsync)
     {
@@ -125,7 +124,7 @@ WHERE ((TO_DAYS(`i`.`BestServedBefore`) - 366) - (TO_DAYS(DATE(CURDATE())) - 366
 LIMIT 2");
     }
 
-    [ConditionalTheory]
+    [Theory]
     [MemberData(nameof(IsAsyncData))]
     public async Task DateDiffDay(bool isAsync)
     {
@@ -148,7 +147,7 @@ WHERE TIMESTAMPDIFF(DAY, @todayDateOnly, `i`.`BestServedBefore`) < 30
 """);
     }
 
-    [ConditionalTheory]
+    [Theory]
     [MemberData(nameof(IsAsyncData))]
     public async Task DateDiffDay_ToDateTime(bool isAsync)
     {
@@ -192,7 +191,7 @@ public abstract class DateOnlyQueryMySqlTestBase<TFixture> : QueryTestBase<TFixt
 
     protected virtual DbContext CreateContext() => Fixture.CreateContext();
 
-    public abstract class DateOnlyQueryMySqlFixtureBase : SharedStoreFixtureBase<PoolableDbContext>, IQueryFixtureBase, ITestSqlLoggerFactory
+    public abstract class DateOnlyQueryMySqlFixtureBase : QueryFixtureBase<PoolableDbContext>, ITestSqlLoggerFactory
     {
         protected override string StoreName => "DateOnlyQueryTest";
         public TestSqlLoggerFactory TestSqlLoggerFactory => (TestSqlLoggerFactory)ListLoggerFactory;
@@ -213,17 +212,17 @@ public abstract class DateOnlyQueryMySqlTestBase<TFixture> : QueryTestBase<TFixt
             return context;
         }
 
-        public Func<DbContext> GetContextCreator()
+        public override Func<DbContext> GetContextCreator()
             => CreateContext;
 
-        public ISetSource GetExpectedData()
+        public override ISetSource GetExpectedData()
             => new DateOnlyQueryData();
 
-        public IReadOnlyDictionary<Type, object> EntitySorters
+        public override IReadOnlyDictionary<Type, object> EntitySorters
             => new Dictionary<Type, Func<object, object>> { { typeof(Model.IceCream), e => ((Model.IceCream)e)?.IceCreamId }, }.ToDictionary(
             e => e.Key, e => (object)e.Value);
 
-        public IReadOnlyDictionary<Type, object> EntityAsserters
+        public override IReadOnlyDictionary<Type, object> EntityAsserters
             => new Dictionary<Type, Action<object, object>>
             {
                 {

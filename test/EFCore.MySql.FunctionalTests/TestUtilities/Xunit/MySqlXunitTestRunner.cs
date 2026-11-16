@@ -1,127 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
+using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microting.EntityFrameworkCore.MySql.Tests;
-using Xunit.Abstractions;
-using Xunit.Sdk;
+using Xunit;
+using Xunit.v3;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities.Xunit
 {
+    /// <summary>
+    /// Replaces the default xUnit.net v3 test runner, to report tests as 'Skipped' instead of 'Failed', if they failed because they use an
+    /// expression that is not supported by the underlying database server version (or by an explicitly disabled provider feature).
+    /// </summary>
+    /// <remarks>
+    /// Under xUnit.net v2, this used to be implemented by replacing the whole test framework (discoverer, executor and all runners). In
+    /// xUnit.net v3, <see cref="XunitTestRunner.Instance"/> is the single extensibility point used by
+    /// <c>XunitTestCaseRunnerBaseContext.RunTest()</c>, so swapping that instance is all that is needed.
+    /// </remarks>
     public class MySqlXunitTestRunner : XunitTestRunner
     {
-        public MySqlXunitTestRunner(
-            ITest test,
-            IMessageBus messageBus,
-            Type testClass,
-            object[] constructorArguments,
-            MethodInfo testMethod,
-            object[] testMethodArguments,
-            string skipReason,
-            IReadOnlyList<BeforeAfterTestAttribute> beforeAfterAttributes,
-            ExceptionAggregator aggregator,
-            CancellationTokenSource cancellationTokenSource)
-            : base(
-                test,
-                messageBus,
-                testClass,
-                constructorArguments,
-                testMethod,
-                testMethodArguments,
-                skipReason,
-                beforeAfterAttributes,
-                aggregator,
-                cancellationTokenSource)
-        {
-        }
+#pragma warning disable CA2255 // The 'ModuleInitializer' attribute should not be used in libraries
+        [ModuleInitializer]
+        internal static void Install()
+            => Instance = new MySqlXunitTestRunner();
+#pragma warning restore CA2255
 
-        public new async Task<RunSummary> RunAsync()
-        {
-            var runSummary = new RunSummary { Total = 1 };
-            var output = string.Empty;
-
-            if (!MessageBus.QueueMessage(new TestStarting(Test)))
-            {
-                CancellationTokenSource.Cancel();
-            }
-            else
-            {
-                AfterTestStarting();
-
-                if (!string.IsNullOrEmpty(SkipReason))
-                {
-                    ++runSummary.Skipped;
-
-                    if (!MessageBus.QueueMessage(
-                        new TestSkipped(Test, SkipReason)))
-                    {
-                        CancellationTokenSource.Cancel();
-                    }
-                }
-                else
-                {
-                    var aggregator = new ExceptionAggregator(Aggregator);
-                    if (!aggregator.HasExceptions)
-                    {
-                        var tuple = await aggregator.RunAsync(() => InvokeTestAsync(aggregator));
-                        if (tuple != null)
-                        {
-                            runSummary.Time = tuple.Item1;
-                            output = tuple.Item2;
-                        }
-                    }
-
-                    TestResultMessage testResultMessage;
-
-                    var exception = aggregator.ToException();
-                    if (exception == null)
-                    {
-                        testResultMessage = new TestPassed(Test, runSummary.Time, output);
-                    }
-                    #region Customized
-                    /// This is what we are after. Mark failed tests as 'Skipped', if their failure is expected.
-                    else if (SkipFailedTest(exception))
-                    {
-                        testResultMessage = new TestSkipped(Test, exception.Message);
-                        ++runSummary.Skipped;
-                    }
-                    #endregion Customized
-                    else
-                    {
-                        testResultMessage = new TestFailed(Test, runSummary.Time, output, exception);
-                        ++runSummary.Failed;
-                    }
-
-                    if (!CancellationTokenSource.IsCancellationRequested &&
-                        !MessageBus.QueueMessage(testResultMessage))
-                    {
-                        CancellationTokenSource.Cancel();
-                    }
-                }
-
-                Aggregator.Clear();
-
-                BeforeTestFinished();
-
-                if (Aggregator.HasExceptions && !MessageBus.QueueMessage(
-                    new TestCleanupFailure(Test, Aggregator.ToException())))
-                {
-                    CancellationTokenSource.Cancel();
-                }
-
-                if (!MessageBus.QueueMessage(new TestFinished(Test, runSummary.Time, output)))
-                {
-                    CancellationTokenSource.Cancel();
-                }
-            }
-
-            return runSummary;
-        }
+        protected override ValueTask<(bool Continue, TestResultState ResultState)> OnTestFailed(
+            XunitTestRunnerContext ctxt,
+            Exception exception,
+            decimal executionTime,
+            string output,
+            string[] warnings)
+            => SkipFailedTest(exception)
+                ? OnTestSkipped(ctxt, exception.Message, executionTime, output, warnings)
+                : base.OnTestFailed(ctxt, exception, executionTime, output, warnings);
 
         /// <summary>
-        /// Mark failed tests as 'Skipped', it they failed because they use an expression, that is not supported by the underlying database
+        /// Mark failed tests as 'Skipped', if they failed because they use an expression, that is not supported by the underlying database
         /// server version.
         /// </summary>
         protected virtual bool SkipFailedTest(Exception exception)

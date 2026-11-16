@@ -17,7 +17,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
         protected override void UseTransaction(DatabaseFacade facade, IDbContextTransaction transaction)
             => facade.UseTransaction(transaction.GetDbTransaction());
 
-        [ConditionalFact]
+        [Fact]
         public override void Can_roundtrip_Z_and_M()
         {
             using var db = Fixture.CreateContext();
@@ -36,7 +36,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
             Assert.True(double.IsNaN(entity.PointZM.M));
         }
 
-        [ConditionalFact(Skip = "Point.Empty is currently not supported by MySQL and MariaDB.")]
+        [Fact(Skip = "Point.Empty is currently not supported by MySQL and MariaDB.")]
         public override void Translators_handle_static_members()
             => base.Translators_handle_static_members();
     }

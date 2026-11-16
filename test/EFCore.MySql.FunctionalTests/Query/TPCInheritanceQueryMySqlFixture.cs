@@ -1,9 +1,11 @@
-﻿using System.Linq;
+﻿using Microting.EntityFrameworkCore.MySql.Tests;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microsoft.EntityFrameworkCore.Query.Inheritance;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query;
 

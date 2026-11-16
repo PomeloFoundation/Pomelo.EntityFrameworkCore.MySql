@@ -12,6 +12,6 @@ public class OperatorsProceduralMySqlTest : OperatorsProceduralQueryTestBase
     {
     }
 
-    protected override ITestStoreFactory TestStoreFactory
+    protected override ITestStoreFactory NonSharedTestStoreFactory
         => MySqlTestStoreFactory.Instance;
 }

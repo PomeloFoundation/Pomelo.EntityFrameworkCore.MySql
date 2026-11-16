@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Query;
-using Xunit.Abstractions;
+using Xunit;
+using Microsoft.EntityFrameworkCore.Query.Inheritance;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {

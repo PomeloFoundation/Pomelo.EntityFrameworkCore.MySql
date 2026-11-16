@@ -14,7 +14,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests;
 
 public class ExistingConnectionMySqlTest
 {
-    [ConditionalTheory]
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     private static async Task Can_use_an_existing_closed_connection(bool openConnection)

@@ -11,7 +11,6 @@ using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
 {
@@ -34,8 +33,8 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
         //       Recheck/remove after `https://github.com/dotnet/efcore/issues/26068` has been fixed upstream.
         #region https://github.com/dotnet/efcore/issues/26068
 
-        [ConditionalFact]
-        public override async Task Can_insert_and_read_back_all_non_nullable_data_types()
+        [Fact]
+        public async Task Can_insert_and_read_back_all_non_nullable_data_types()
         {
             using (var context = CreateContext())
             {
@@ -108,154 +107,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
             }
         }
 
-        [ConditionalFact]
-        public override async Task Can_insert_and_read_back_non_nullable_backed_data_types()
-        {
-            using (var context = CreateContext())
-            {
-                context.Set<NonNullableBackedDataTypes>().Add(
-                    new NonNullableBackedDataTypes
-                    {
-                        Id = 101,
-                        PartitionId = 101,
-                        Int16 = -1234,
-                        Int32 = -123456789,
-                        Int64 = -1234567890123456789L,
-                        Double = -1.23456789,
-                        Decimal = -1234567890.01M,
-                        DateTime = DateTime.Parse("01/01/2000 12:34:56"),
-                        DateTimeOffset = new DateTimeOffset(DateTime.Parse("01/01/2000 12:34:56"), TimeSpan.FromHours(-8.0)),
-                        TimeSpan = new TimeSpan(0, 10, 9, 8, 7),
-                        Single = -1.234F,
-                        Boolean = true,
-                        Byte = 255,
-                        UnsignedInt16 = 1234,
-                        UnsignedInt32 = 1234565789U,
-                        UnsignedInt64 = 1234567890123456789UL,
-                        Character = 'a',
-                        SignedByte = -128,
-                        Enum64 = Enum64.SomeValue,
-                        Enum32 = Enum32.SomeValue,
-                        Enum16 = Enum16.SomeValue,
-                        Enum8 = Enum8.SomeValue,
-                        EnumU64 = EnumU64.SomeValue,
-                        EnumU32 = EnumU32.SomeValue,
-                        EnumU16 = EnumU16.SomeValue,
-                        EnumS8 = EnumS8.SomeValue
-                    });
-
-                Assert.Equal(1, await context.SaveChangesAsync());
-            }
-
-            using (var context = CreateContext())
-            {
-                var dt = (await context.Set<NonNullableBackedDataTypes>().Where(ndt => ndt.Id == 101).ToListAsync()).Single();
-
-                var entityType = context.Model.FindEntityType(typeof(NonNullableBackedDataTypes));
-                AssertEqualIfMapped(entityType, (short)-1234, () => dt.Int16);
-                AssertEqualIfMapped(entityType, -123456789, () => dt.Int32);
-                AssertEqualIfMapped(entityType, -1234567890123456789L, () => dt.Int64);
-                AssertEqualIfMapped(entityType, -1234567890123456789L, () => dt.Int64);
-                AssertEqualIfMapped(entityType, -1.23456789, () => dt.Double);
-                AssertEqualIfMapped(entityType, -1234567890.01M, () => dt.Decimal);
-                AssertEqualIfMapped(entityType, DateTime.Parse("01/01/2000 12:34:56"), () => dt.DateTime);
-                AssertEqualIfMapped(
-                    entityType, new DateTimeOffset(DateTime.Parse("01/01/2000 12:34:56"), TimeSpan.FromHours(-8.0)),
-                    () => dt.DateTimeOffset);
-                AssertEqualIfMapped(entityType, new TimeSpan(0, 10, 9, 8, 7), () => dt.TimeSpan);
-                AssertEqualIfMapped(entityType, -1.234F, () => dt.Single);
-                AssertEqualIfMapped(entityType, true, () => dt.Boolean);
-                AssertEqualIfMapped(entityType, (byte)255, () => dt.Byte);
-                AssertEqualIfMapped(entityType, Enum64.SomeValue, () => dt.Enum64);
-                AssertEqualIfMapped(entityType, Enum32.SomeValue, () => dt.Enum32);
-                AssertEqualIfMapped(entityType, Enum16.SomeValue, () => dt.Enum16);
-                AssertEqualIfMapped(entityType, Enum8.SomeValue, () => dt.Enum8);
-                AssertEqualIfMapped(entityType, (ushort)1234, () => dt.UnsignedInt16);
-                AssertEqualIfMapped(entityType, 1234565789U, () => dt.UnsignedInt32);
-                AssertEqualIfMapped(entityType, 1234567890123456789UL, () => dt.UnsignedInt64);
-                AssertEqualIfMapped(entityType, 'a', () => dt.Character);
-                AssertEqualIfMapped(entityType, (sbyte)-128, () => dt.SignedByte);
-                AssertEqualIfMapped(entityType, EnumU64.SomeValue, () => dt.EnumU64);
-                AssertEqualIfMapped(entityType, EnumU32.SomeValue, () => dt.EnumU32);
-                AssertEqualIfMapped(entityType, EnumU16.SomeValue, () => dt.EnumU16);
-                AssertEqualIfMapped(entityType, EnumS8.SomeValue, () => dt.EnumS8);
-            }
-        }
-
-        [ConditionalFact]
-        public override async Task Can_insert_and_read_back_nullable_backed_data_types()
-        {
-            using (var context = CreateContext())
-            {
-                context.Set<NullableBackedDataTypes>().Add(
-                    new NullableBackedDataTypes
-                    {
-                        Id = 101,
-                        PartitionId = 101,
-                        Int16 = -1234,
-                        Int32 = -123456789,
-                        Int64 = -1234567890123456789L,
-                        Double = -1.23456789,
-                        Decimal = -1234567890.01M,
-                        DateTime = DateTime.Parse("01/01/2000 12:34:56"),
-                        DateTimeOffset = new DateTimeOffset(DateTime.Parse("01/01/2000 12:34:56"), TimeSpan.FromHours(-8.0)),
-                        TimeSpan = new TimeSpan(0, 10, 9, 8, 7),
-                        Single = -1.234F,
-                        Boolean = false,
-                        Byte = 255,
-                        UnsignedInt16 = 1234,
-                        UnsignedInt32 = 1234565789U,
-                        UnsignedInt64 = 1234567890123456789UL,
-                        Character = 'a',
-                        SignedByte = -128,
-                        Enum64 = Enum64.SomeValue,
-                        Enum32 = Enum32.SomeValue,
-                        Enum16 = Enum16.SomeValue,
-                        Enum8 = Enum8.SomeValue,
-                        EnumU64 = EnumU64.SomeValue,
-                        EnumU32 = EnumU32.SomeValue,
-                        EnumU16 = EnumU16.SomeValue,
-                        EnumS8 = EnumS8.SomeValue
-                    });
-
-                Assert.Equal(1, await context.SaveChangesAsync());
-            }
-
-            using (var context = CreateContext())
-            {
-                var dt = (await context.Set<NullableBackedDataTypes>().Where(ndt => ndt.Id == 101).ToListAsync()).Single();
-
-                var entityType = context.Model.FindEntityType(typeof(NullableBackedDataTypes));
-                AssertEqualIfMapped(entityType, (short)-1234, () => dt.Int16);
-                AssertEqualIfMapped(entityType, -123456789, () => dt.Int32);
-                AssertEqualIfMapped(entityType, -1234567890123456789L, () => dt.Int64);
-                AssertEqualIfMapped(entityType, -1.23456789, () => dt.Double);
-                AssertEqualIfMapped(entityType, -1234567890.01M, () => dt.Decimal);
-                AssertEqualIfMapped(entityType, DateTime.Parse("01/01/2000 12:34:56"), () => dt.DateTime);
-                AssertEqualIfMapped(
-                    entityType, new DateTimeOffset(DateTime.Parse("01/01/2000 12:34:56"), TimeSpan.FromHours(-8.0)),
-                    () => dt.DateTimeOffset);
-                AssertEqualIfMapped(entityType, new TimeSpan(0, 10, 9, 8, 7), () => dt.TimeSpan);
-                AssertEqualIfMapped(entityType, -1.234F, () => dt.Single);
-                AssertEqualIfMapped(entityType, false, () => dt.Boolean);
-                AssertEqualIfMapped(entityType, (byte)255, () => dt.Byte);
-                AssertEqualIfMapped(entityType, Enum64.SomeValue, () => dt.Enum64);
-                AssertEqualIfMapped(entityType, Enum32.SomeValue, () => dt.Enum32);
-                AssertEqualIfMapped(entityType, Enum16.SomeValue, () => dt.Enum16);
-                AssertEqualIfMapped(entityType, Enum8.SomeValue, () => dt.Enum8);
-                AssertEqualIfMapped(entityType, (ushort)1234, () => dt.UnsignedInt16);
-                AssertEqualIfMapped(entityType, 1234565789U, () => dt.UnsignedInt32);
-                AssertEqualIfMapped(entityType, 1234567890123456789UL, () => dt.UnsignedInt64);
-                AssertEqualIfMapped(entityType, 'a', () => dt.Character);
-                AssertEqualIfMapped(entityType, (sbyte)-128, () => dt.SignedByte);
-                AssertEqualIfMapped(entityType, EnumU64.SomeValue, () => dt.EnumU64);
-                AssertEqualIfMapped(entityType, EnumU32.SomeValue, () => dt.EnumU32);
-                AssertEqualIfMapped(entityType, EnumU16.SomeValue, () => dt.EnumU16);
-                AssertEqualIfMapped(entityType, EnumS8.SomeValue, () => dt.EnumS8);
-            }
-        }
-
-        [ConditionalFact]
+        [Fact]
         public override async Task Can_insert_and_read_back_object_backed_data_types()
         {
             using (var context = CreateContext())

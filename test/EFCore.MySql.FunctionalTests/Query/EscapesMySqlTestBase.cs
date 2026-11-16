@@ -23,7 +23,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
             fixture.ListLoggerFactory.Clear();
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual async Task Input_query_escapes_parameter()
         {
             await ExecuteWithStrategyInTransactionAsync(
@@ -44,7 +44,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
                 });
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_query_escapes_literal(bool async)
         {
@@ -60,7 +60,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
             }
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_query_escapes_parameter(bool async)
         {
@@ -78,7 +78,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
             }
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_contains_query_escapes(bool async)
         {

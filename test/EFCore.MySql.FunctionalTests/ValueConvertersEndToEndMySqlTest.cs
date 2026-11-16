@@ -16,7 +16,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
         }
 
         // CHECK: Do the UNSIGNED types make sense?
-        [ConditionalTheory]
+        [Theory]
         [InlineData(nameof(ConvertingEntity.BoolAsChar), "varchar(1)", false)]
         [InlineData(nameof(ConvertingEntity.BoolAsNullableChar), "varchar(1)", false)]
         [InlineData(nameof(ConvertingEntity.BoolAsString), "varchar(3)", false)]

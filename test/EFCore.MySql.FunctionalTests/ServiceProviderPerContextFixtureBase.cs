@@ -14,7 +14,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
         public TestStore TestStore { get; private set; }
         public TestSqlLoggerFactory TestSqlLoggerFactory => (TestSqlLoggerFactory)ListLoggerFactory;
 
-        public async Task InitializeAsync()
+        public async ValueTask InitializeAsync()
         {
             TestStore = TestStoreFactory.GetOrCreate(StoreName);
 
@@ -23,8 +23,8 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
             await TestStore.InitializeAsync(serviceProvider, () => CreateContextFromServiceProvider(serviceProvider), c => SeedAsync((TContext)c), CleanAsync);
         }
 
-        public Task DisposeAsync()
-            => Task.CompletedTask;
+        public ValueTask DisposeAsync()
+            => ValueTask.CompletedTask;
 
         // We cannot use ServiceProviderFixtureBase.CreateOptions() here, because it does not accept an existing
         // DbContextOptionsBuilder or DbContextOptions object as a parameter, and we might already have one setup.

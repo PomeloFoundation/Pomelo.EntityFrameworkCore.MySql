@@ -31,7 +31,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             _relationalTypeMappingSource = relationalTypeMappingSource;
         }
 
-        public override void Clean(DatabaseFacade facade)
+        public override void Clean(DatabaseFacade facade, bool createTables)
         {
             var creator = facade.GetService<IRelationalDatabaseCreator>();
             var connection = facade.GetService<IRelationalConnection>();
@@ -79,7 +79,7 @@ WHERE `ROUTINE_SCHEMA` = SCHEMA();";
                 }
             }
 
-            base.Clean(facade);
+            base.Clean(facade, createTables);
         }
 
         protected override IDatabaseModelFactory CreateDatabaseModelFactory(ILoggerFactory loggerFactory)

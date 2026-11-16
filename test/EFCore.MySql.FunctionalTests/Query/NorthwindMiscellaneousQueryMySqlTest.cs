@@ -14,7 +14,6 @@ using Microting.EntityFrameworkCore.MySql.Internal;
 using Microting.EntityFrameworkCore.MySql.Tests;
 using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -30,7 +29,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        [ConditionalTheory]
+        [Theory]
         public override async Task Take_Skip(bool async)
         {
             await base.Take_Skip(async);
@@ -52,7 +51,7 @@ LIMIT 18446744073709551610 OFFSET @p1
 """);
         }
 
-        [ConditionalTheory]
+        [Theory]
         public override async Task Select_expression_references_are_updated_correctly_with_subquery(bool async)
         {
             await base.Select_expression_references_are_updated_correctly_with_subquery(async);
@@ -1118,6 +1117,7 @@ FROM `Orders` AS `o`
             """
 SELECT COALESCE(CAST(`e`.`ReportsTo` AS signed) + 1, CAST(`e`.`ReportsTo` AS signed) + 2, CAST(`e`.`ReportsTo` AS signed) + 3)
 FROM `Employees` AS `e`
+WHERE `e`.`ReportsTo` IS NOT NULL
 ORDER BY `e`.`EmployeeID`
 """);
     }
@@ -2924,28 +2924,54 @@ WHERE (`c`.`CustomerID` LIKE 'A%') AND EXISTS (
     {
         await base.Where_Join_Exists(async);
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE (`c`.`CustomerID` = 'ALFKI') AND EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE (`c`.`CustomerID` = `o`.`CustomerID`) AND (`o`.`OrderDate` = TIMESTAMP '2008-10-24 00:00:00'))
+""");
     }
 
     public override async Task Where_Join_Exists_Inequality(bool async)
     {
         await base.Where_Join_Exists_Inequality(async);
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE (`c`.`CustomerID` = 'ALFKI') AND EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE (`c`.`CustomerID` = `o`.`CustomerID`) AND ((`o`.`OrderDate` <> TIMESTAMP '2008-10-24 00:00:00') OR `o`.`OrderDate` IS NULL))
+""");
     }
 
     public override async Task Where_Join_Exists_Constant(bool async)
     {
         await base.Where_Join_Exists_Constant(async);
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE FALSE
+""");
     }
 
     public override async Task Where_Join_Not_Exists(bool async)
     {
         await base.Where_Join_Not_Exists(async);
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` = 'ALFKI'
+""");
     }
 
     public override async Task Multiple_joins_Where_Order_Any(bool async)
@@ -6588,7 +6614,9 @@ ORDER BY `c`.`CustomerID`
 
     public override async Task Non_nullable_property_through_optional_navigation(bool async)
     {
-        await base.Non_nullable_property_through_optional_navigation(async);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => AssertQuery(
+            async,
+            ss => ss.Set<Customer>().Select(e => new { e.Region!.Length })));
 
         AssertSql(
             """
@@ -6932,7 +6960,7 @@ LEFT JOIN LATERAL (
     LEFT JOIN `Customers` AS `c0` ON `o`.`CustomerID` = `c0`.`CustomerID`
     WHERE `c`.`CustomerID` = `o`.`CustomerID`
 ) AS `s` ON TRUE
-ORDER BY `c`.`CustomerID`, `s`.`First`, `s`.`Second`
+ORDER BY `c`.`CustomerID`
 """);
         }
         else
@@ -7341,21 +7369,21 @@ WHERE `c`.`CustomerID` LIKE 'A%'
 """);
     }
 
-    public override async Task Captured_variable_from_switch_case_pattern_matching(bool async)
-    {
-        await base.Captured_variable_from_switch_case_pattern_matching(async);
+        public override async Task Captured_variable_from_switch_case_pattern_matching(bool async)
+        {
+            await base.Captured_variable_from_switch_case_pattern_matching(async);
 
-        AssertSql(
-"""
+            AssertSql(
+                """
 @customerId='ALFKI' (Size = 5) (DbType = StringFixedLength)
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = @customerId
 """);
-    }
+        }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Check_all_tests_overridden()
             => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 

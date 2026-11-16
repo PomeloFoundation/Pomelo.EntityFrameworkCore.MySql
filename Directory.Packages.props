@@ -3,46 +3,55 @@
     <!-- In theory, the following should work, but it doesn't: [10.0.1,10.1.0-0)
          `-0` is the smallest possible prerelease version according to SemVer2.
     -->
-    <EFCoreVersion>[10.0.14,10.0.999]</EFCoreVersion>
+    <EFCoreVersion>[11.0.0-preview.7.26381.103,11.0.999]</EFCoreVersion>
   </PropertyGroup>
   <ItemGroup Label="Dependencies">
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="$(EFCoreVersion)" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" Version="$(EFCoreVersion)" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="$(EFCoreVersion)" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="$(EFCoreVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Identity.Stores" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Extensions.Identity.Stores" Version="11.0.0-preview.7.26381.103" />
     <PackageVersion Include="MySqlConnector" Version="2.6.2" />
     <PackageVersion Include="MySqlConnector.DependencyInjection" Version="2.6.2" />
     <PackageVersion Include="NetTopologySuite" Version="2.6.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="Castle.Core" Version="5.2.1" />
-    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.14" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="10.0.14" />
-    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="11.0.0-preview.7.26381.103" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="11.0.0-preview.7.26381.103" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="11.0.0-preview.7.26381.103" />
     <!--<PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.1" />-->
-    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.14" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.14" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.14" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.14" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.14" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="11.0.0-preview.7.26381.103" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="11.0.0-preview.7.26381.103" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="11.0.0-preview.7.26381.103" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="11.0.0-preview.7.26381.103" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="11.0.0-preview.7.26381.103" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="11.0.0-preview.7.26381.103" />
     <!-- CHECK: used? -->
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.14" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyModel" Version="10.0.14" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.14" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
-    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.403" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="11.0.0-preview.7.26381.103" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyModel" Version="11.0.0-preview.7.26381.103" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="11.0.0-preview.7.26381.103" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.401" />
     <PackageVersion Include="Moq" Version="4.21.0" />
-    <PackageVersion Include="System.Collections.Immutable" Version="10.0.14" />
+    <PackageVersion Include="System.Collections.Immutable" Version="11.0.0-preview.7.26381.103" />
     <PackageVersion Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
-    <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="10.0.14" />
+    <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="11.0.0-preview.7.26381.103" />
     <PackageVersion Include="GitHubActionsTestLogger" Version="3.0.5" />
-    <PackageVersion Include="Xunit.SkippableFact" Version="1.5.85" />
-    <!-- Keep at the same level that the EF Core projects use. -->
-    <PackageVersion Include="xunit.assert" Version="2.9.3" />
-    <PackageVersion Include="xunit.core" Version="2.9.3" />
-    <PackageVersion Include="xunit.runner.console" Version="2.9.3" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1" />
+    <!--
+      EF Core 11 moved its specification test assemblies to xUnit v3, so the provider tests have to follow.
+      `xunit.v3.core`/`xunit.v3.assert` supersede the `xunit.core`/`xunit.assert` (v2) packages, and also replace
+      `Xunit.SkippableFact`, because xUnit v3 has skipping support built in (`Assert.Skip*`, `[Fact(SkipUnless = ...)]`).
+      As before, the individual packages are referenced instead of the `xunit.v3` meta package, because the meta
+      package additionally pulls in `xunit.analyzers`, whose warnings break the build (`TreatWarningsAsErrors`).
+      xUnit v3 builds on Microsoft.Testing.Platform (MTP), and the .NET 10+ SDK no longer supports running such
+      projects through the legacy VSTest target. The root `global.json` therefore opts `dotnet test` into the
+      `Microsoft.Testing.Platform` runner, and the workflows use MTP argument syntax: the `filter-not-trait` option
+      instead of `filter`, and `report-github` (from `GitHubActionsTestLogger`) instead of the `logger` option,
+      which MTP rejects. `GitHubActionsTestLogger` 3.x and `xunit.runner.visualstudio` 4.x both support MTP v2.
+    -->
+    <PackageVersion Include="xunit.v3.core" Version="4.0.0" />
+    <PackageVersion Include="xunit.v3.assert" Version="4.0.0" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.0" />
     <PackageVersion Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
     <!-- Needed when using EFCore.Design assembly from local EF Core repository. -->
@@ -52,7 +61,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.9.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Features" Version="5.9.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="5.9.0" />
-    <PackageVersion Include="System.Text.Json" Version="10.0.14" />
+    <PackageVersion Include="System.Text.Json" Version="11.0.0-preview.7.26381.103" />
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
   </ItemGroup>
 </Project>

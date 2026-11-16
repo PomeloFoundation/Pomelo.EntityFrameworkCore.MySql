@@ -43,7 +43,7 @@ public class AdHocQuerySplittingQueryMySqlTest : AdHocQuerySplittingQueryTestBas
 
     protected override TestStore CreateTestStore25225()
     {
-        var testStore = MySqlTestStore.Create(StoreName);
+        var testStore = MySqlTestStore.Create(NonSharedStoreName);
         testStore.UseConnectionString = true;
         return testStore;
     }
@@ -51,6 +51,6 @@ public class AdHocQuerySplittingQueryMySqlTest : AdHocQuerySplittingQueryTestBas
     private static readonly FieldInfo _querySplittingBehaviorFieldInfo =
         typeof(RelationalOptionsExtension).GetField("_querySplittingBehavior", BindingFlags.NonPublic | BindingFlags.Instance);
 
-    protected override ITestStoreFactory TestStoreFactory
+    protected override ITestStoreFactory NonSharedTestStoreFactory
         => MySqlTestStoreFactory.Instance;
 }

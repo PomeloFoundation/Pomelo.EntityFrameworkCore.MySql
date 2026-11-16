@@ -16,7 +16,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
     /// "WHERE `boolColumn`" doesn't use available indices, while "WHERE `boolColumn` = TRUE" does.
     /// See https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/issues/1104
     /// </summary>
-    public class MySqlBoolOptimizingExpressionVisitor : SqlExpressionVisitor
+    public class MySqlBoolOptimizingExpressionVisitor : ExpressionVisitor
     {
         private bool _optimize;
         private readonly ISqlExpressionFactory _sqlExpressionFactory;
@@ -41,7 +41,52 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return sqlExpression;
         }
 
-        protected override Expression VisitAtTimeZone(AtTimeZoneExpression atTimeZoneExpression)
+        // EF Core 11 removed `SqlExpressionVisitor`, so the dispatching of the SQL expression types has to be done by the visitor itself.
+        protected override Expression VisitExtension(Expression extensionExpression)
+            => extensionExpression switch
+            {
+                ShapedQueryExpression shapedQueryExpression
+                    => shapedQueryExpression.UpdateQueryExpression(Visit(shapedQueryExpression.QueryExpression)),
+                AtTimeZoneExpression atTimeZoneExpression => VisitAtTimeZone(atTimeZoneExpression),
+                CaseExpression caseExpression => VisitCase(caseExpression),
+                CollateExpression collateExpression => VisitCollate(collateExpression),
+                ColumnExpression columnExpression => VisitColumn(columnExpression),
+                CrossApplyExpression crossApplyExpression => VisitCrossApply(crossApplyExpression),
+                CrossJoinExpression crossJoinExpression => VisitCrossJoin(crossJoinExpression),
+                DeleteExpression deleteExpression => VisitDelete(deleteExpression),
+                DistinctExpression distinctExpression => VisitDistinct(distinctExpression),
+                ExceptExpression exceptExpression => VisitExcept(exceptExpression),
+                ExistsExpression existsExpression => VisitExists(existsExpression),
+                FromSqlExpression fromSqlExpression => VisitFromSql(fromSqlExpression),
+                InExpression inExpression => VisitIn(inExpression),
+                IntersectExpression intersectExpression => VisitIntersect(intersectExpression),
+                InnerJoinExpression innerJoinExpression => VisitInnerJoin(innerJoinExpression),
+                LeftJoinExpression leftJoinExpression => VisitLeftJoin(leftJoinExpression),
+                LikeExpression likeExpression => VisitLike(likeExpression),
+                OrderingExpression orderingExpression => VisitOrdering(orderingExpression),
+                OuterApplyExpression outerApplyExpression => VisitOuterApply(outerApplyExpression),
+                ProjectionExpression projectionExpression => VisitProjection(projectionExpression),
+                TableValuedFunctionExpression tableValuedFunctionExpression => VisitTableValuedFunction(tableValuedFunctionExpression),
+                RightJoinExpression rightJoinExpression => VisitRightJoin(rightJoinExpression),
+                RowNumberExpression rowNumberExpression => VisitRowNumber(rowNumberExpression),
+                RowValueExpression rowValueExpression => VisitRowValue(rowValueExpression),
+                ScalarSubqueryExpression scalarSubqueryExpression => VisitScalarSubquery(scalarSubqueryExpression),
+                SelectExpression selectExpression => VisitSelect(selectExpression),
+                SqlBinaryExpression sqlBinaryExpression => VisitSqlBinary(sqlBinaryExpression),
+                SqlConstantExpression sqlConstantExpression => VisitSqlConstant(sqlConstantExpression),
+                SqlFragmentExpression sqlFragmentExpression => VisitSqlFragment(sqlFragmentExpression),
+                SqlFunctionExpression sqlFunctionExpression => VisitSqlFunction(sqlFunctionExpression),
+                SqlParameterExpression sqlParameterExpression => VisitSqlParameter(sqlParameterExpression),
+                SqlUnaryExpression sqlUnaryExpression => VisitSqlUnary(sqlUnaryExpression),
+                TableExpression tableExpression => VisitTable(tableExpression),
+                UnionExpression unionExpression => VisitUnion(unionExpression),
+                UpdateExpression updateExpression => VisitUpdate(updateExpression),
+                JsonScalarExpression jsonScalarExpression => VisitJsonScalar(jsonScalarExpression),
+                ValuesExpression valuesExpression => VisitValues(valuesExpression),
+                _ => base.VisitExtension(extensionExpression),
+            };
+
+        protected virtual Expression VisitAtTimeZone(AtTimeZoneExpression atTimeZoneExpression)
         {
             var parentOptimize = _optimize;
             _optimize = false;
@@ -52,7 +97,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return atTimeZoneExpression.Update(operand, timeZone);
         }
 
-        protected override Expression VisitCase(CaseExpression caseExpression)
+        protected virtual Expression VisitCase(CaseExpression caseExpression)
         {
             Check.NotNull(caseExpression, nameof(caseExpression));
 
@@ -79,7 +124,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return ApplyConversion(caseExpression.Update(operand, whenClauses, elseResult), condition: false);
         }
 
-        protected override Expression VisitCollate(CollateExpression collateExpression)
+        protected virtual Expression VisitCollate(CollateExpression collateExpression)
         {
             Check.NotNull(collateExpression, nameof(collateExpression));
 
@@ -91,17 +136,17 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return ApplyConversion(collateExpression.Update(operand), condition: false);
         }
 
-        protected override Expression VisitColumn(ColumnExpression columnExpression)
+        protected virtual Expression VisitColumn(ColumnExpression columnExpression)
         {
             Check.NotNull(columnExpression, nameof(columnExpression));
 
             return ApplyConversion(columnExpression, condition: false);
         }
 
-        protected override Expression VisitDelete(DeleteExpression deleteExpression)
+        protected virtual Expression VisitDelete(DeleteExpression deleteExpression)
             => deleteExpression.Update(deleteExpression.Table, (SelectExpression)Visit(deleteExpression.SelectExpression));
 
-        protected override Expression VisitDistinct(DistinctExpression distinctExpression)
+        protected virtual Expression VisitDistinct(DistinctExpression distinctExpression)
         {
             Check.NotNull(distinctExpression, nameof(distinctExpression));
 
@@ -113,7 +158,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return ApplyConversion(distinctExpression.Update(operand), condition: false);
         }
 
-        protected override Expression VisitExists(ExistsExpression existsExpression)
+        protected virtual Expression VisitExists(ExistsExpression existsExpression)
         {
             Check.NotNull(existsExpression, nameof(existsExpression));
 
@@ -125,14 +170,14 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return ApplyConversion(existsExpression.Update(subquery), condition: true);
         }
 
-        protected override Expression VisitFromSql(FromSqlExpression fromSqlExpression)
+        protected virtual Expression VisitFromSql(FromSqlExpression fromSqlExpression)
         {
             Check.NotNull(fromSqlExpression, nameof(fromSqlExpression));
 
             return fromSqlExpression;
         }
 
-        protected override Expression VisitIn(InExpression inExpression)
+        protected virtual Expression VisitIn(InExpression inExpression)
         {
             var parentOptimize = _optimize;
 
@@ -171,7 +216,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return ApplyConversion(inExpression.Update(item, subquery, newValues ?? values, valuesParameter), condition: true);
         }
 
-        protected override Expression VisitLike(LikeExpression likeExpression)
+        protected virtual Expression VisitLike(LikeExpression likeExpression)
         {
             Check.NotNull(likeExpression, nameof(likeExpression));
 
@@ -185,7 +230,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return ApplyConversion(likeExpression.Update(match, pattern, escapeChar), condition: true);
         }
 
-        protected override Expression VisitSelect(SelectExpression selectExpression)
+        protected virtual Expression VisitSelect(SelectExpression selectExpression)
         {
             Check.NotNull(selectExpression, nameof(selectExpression));
 
@@ -249,7 +294,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 : selectExpression;
         }
 
-        protected override Expression VisitSqlBinary(SqlBinaryExpression sqlBinaryExpression)
+        protected virtual Expression VisitSqlBinary(SqlBinaryExpression sqlBinaryExpression)
         {
             Check.NotNull(sqlBinaryExpression, nameof(sqlBinaryExpression));
 
@@ -319,7 +364,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return ApplyConversion(sqlBinaryExpression, condition);
         }
 
-        protected override Expression VisitSqlUnary(SqlUnaryExpression sqlUnaryExpression)
+        protected virtual Expression VisitSqlUnary(SqlUnaryExpression sqlUnaryExpression)
         {
             Check.NotNull(sqlUnaryExpression, nameof(sqlUnaryExpression));
 
@@ -388,21 +433,21 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return ApplyConversion(expression, condition: resultCondition);
         }
 
-        protected override Expression VisitSqlConstant(SqlConstantExpression sqlConstantExpression)
+        protected virtual Expression VisitSqlConstant(SqlConstantExpression sqlConstantExpression)
         {
             Check.NotNull(sqlConstantExpression, nameof(sqlConstantExpression));
 
             return ApplyConversion(sqlConstantExpression, condition: false);
         }
 
-        protected override Expression VisitSqlFragment(SqlFragmentExpression sqlFragmentExpression)
+        protected virtual Expression VisitSqlFragment(SqlFragmentExpression sqlFragmentExpression)
         {
             Check.NotNull(sqlFragmentExpression, nameof(sqlFragmentExpression));
 
             return sqlFragmentExpression;
         }
 
-        protected override Expression VisitSqlFunction(SqlFunctionExpression sqlFunctionExpression)
+        protected virtual Expression VisitSqlFunction(SqlFunctionExpression sqlFunctionExpression)
         {
             Check.NotNull(sqlFunctionExpression, nameof(sqlFunctionExpression));
 
@@ -428,7 +473,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return ApplyConversion(newFunction, condition);
         }
 
-        protected override Expression VisitTableValuedFunction(TableValuedFunctionExpression tableValuedFunctionExpression)
+        protected virtual Expression VisitTableValuedFunction(TableValuedFunctionExpression tableValuedFunctionExpression)
         {
             Check.NotNull(tableValuedFunctionExpression, nameof(tableValuedFunctionExpression));
 
@@ -445,21 +490,21 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return tableValuedFunctionExpression.Update(arguments);
         }
 
-        protected override Expression VisitSqlParameter(SqlParameterExpression sqlParameterExpression)
+        protected virtual Expression VisitSqlParameter(SqlParameterExpression sqlParameterExpression)
         {
             Check.NotNull(sqlParameterExpression, nameof(sqlParameterExpression));
 
             return ApplyConversion(sqlParameterExpression, condition: false);
         }
 
-        protected override Expression VisitTable(TableExpression tableExpression)
+        protected virtual Expression VisitTable(TableExpression tableExpression)
         {
             Check.NotNull(tableExpression, nameof(tableExpression));
 
             return tableExpression;
         }
 
-        protected override Expression VisitProjection(ProjectionExpression projectionExpression)
+        protected virtual Expression VisitProjection(ProjectionExpression projectionExpression)
         {
             Check.NotNull(projectionExpression, nameof(projectionExpression));
 
@@ -468,7 +513,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return projectionExpression.Update(expression);
         }
 
-        protected override Expression VisitOrdering(OrderingExpression orderingExpression)
+        protected virtual Expression VisitOrdering(OrderingExpression orderingExpression)
         {
             Check.NotNull(orderingExpression, nameof(orderingExpression));
 
@@ -477,7 +522,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return orderingExpression.Update(expression);
         }
 
-        protected override Expression VisitCrossJoin(CrossJoinExpression crossJoinExpression)
+        protected virtual Expression VisitCrossJoin(CrossJoinExpression crossJoinExpression)
         {
             Check.NotNull(crossJoinExpression, nameof(crossJoinExpression));
 
@@ -489,7 +534,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return crossJoinExpression.Update(table);
         }
 
-        protected override Expression VisitCrossApply(CrossApplyExpression crossApplyExpression)
+        protected virtual Expression VisitCrossApply(CrossApplyExpression crossApplyExpression)
         {
             Check.NotNull(crossApplyExpression, nameof(crossApplyExpression));
 
@@ -501,7 +546,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return crossApplyExpression.Update(table);
         }
 
-        protected override Expression VisitOuterApply(OuterApplyExpression outerApplyExpression)
+        protected virtual Expression VisitOuterApply(OuterApplyExpression outerApplyExpression)
         {
             Check.NotNull(outerApplyExpression, nameof(outerApplyExpression));
 
@@ -513,7 +558,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return outerApplyExpression.Update(table);
         }
 
-        protected override Expression VisitInnerJoin(InnerJoinExpression innerJoinExpression)
+        protected virtual Expression VisitInnerJoin(InnerJoinExpression innerJoinExpression)
         {
             Check.NotNull(innerJoinExpression, nameof(innerJoinExpression));
 
@@ -527,7 +572,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return innerJoinExpression.Update(table, joinPredicate);
         }
 
-        protected override Expression VisitLeftJoin(LeftJoinExpression leftJoinExpression)
+        protected virtual Expression VisitLeftJoin(LeftJoinExpression leftJoinExpression)
         {
             Check.NotNull(leftJoinExpression, nameof(leftJoinExpression));
 
@@ -541,7 +586,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return leftJoinExpression.Update(table, joinPredicate);
         }
 
-        protected override Expression VisitRightJoin(RightJoinExpression rightJoinExpression)
+        protected virtual Expression VisitRightJoin(RightJoinExpression rightJoinExpression)
         {
             Check.NotNull(rightJoinExpression, nameof(rightJoinExpression));
 
@@ -555,7 +600,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return rightJoinExpression.Update(table, joinPredicate);
         }
 
-        protected override Expression VisitRowValue(RowValueExpression rowValueExpression)
+        protected virtual Expression VisitRowValue(RowValueExpression rowValueExpression)
         {
             var parentOptimize = _optimize;
             _optimize = false;
@@ -570,7 +615,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return rowValueExpression.Update(values);
         }
 
-        protected override Expression VisitScalarSubquery(ScalarSubqueryExpression scalarSubqueryExpression)
+        protected virtual Expression VisitScalarSubquery(ScalarSubqueryExpression scalarSubqueryExpression)
         {
             Check.NotNull(scalarSubqueryExpression, nameof(scalarSubqueryExpression));
 
@@ -581,7 +626,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return ApplyConversion(scalarSubqueryExpression.Update(subquery), condition: false);
         }
 
-        protected override Expression VisitRowNumber(RowNumberExpression rowNumberExpression)
+        protected virtual Expression VisitRowNumber(RowNumberExpression rowNumberExpression)
         {
             Check.NotNull(rowNumberExpression, nameof(rowNumberExpression));
 
@@ -609,7 +654,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return ApplyConversion(rowNumberExpression.Update(partitions, orderings), condition: false);
         }
 
-        protected override Expression VisitExcept(ExceptExpression exceptExpression)
+        protected virtual Expression VisitExcept(ExceptExpression exceptExpression)
         {
             Check.NotNull(exceptExpression, nameof(exceptExpression));
 
@@ -622,7 +667,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return exceptExpression.Update(source1, source2);
         }
 
-        protected override Expression VisitIntersect(IntersectExpression intersectExpression)
+        protected virtual Expression VisitIntersect(IntersectExpression intersectExpression)
         {
             Check.NotNull(intersectExpression, nameof(intersectExpression));
 
@@ -635,7 +680,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return intersectExpression.Update(source1, source2);
         }
 
-        protected override Expression VisitUnion(UnionExpression unionExpression)
+        protected virtual Expression VisitUnion(UnionExpression unionExpression)
         {
             Check.NotNull(unionExpression, nameof(unionExpression));
 
@@ -648,7 +693,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return unionExpression.Update(source1, source2);
         }
 
-        protected override Expression VisitUpdate(UpdateExpression updateExpression)
+        protected virtual Expression VisitUpdate(UpdateExpression updateExpression)
         {
             var selectExpression = (SelectExpression)Visit(updateExpression.SelectExpression);
             var parentOptimize = _optimize;
@@ -678,10 +723,10 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             return updateExpression.Update(selectExpression, columnValueSetters ?? updateExpression.ColumnValueSetters);
         }
 
-        protected override Expression VisitJsonScalar(JsonScalarExpression jsonScalarExpression)
+        protected virtual Expression VisitJsonScalar(JsonScalarExpression jsonScalarExpression)
             => ApplyConversion(jsonScalarExpression, condition: false);
 
-        protected override Expression VisitValues(ValuesExpression valuesExpression)
+        protected virtual Expression VisitValues(ValuesExpression valuesExpression)
         {
             var parentOptimize = _optimize;
             _optimize = false;

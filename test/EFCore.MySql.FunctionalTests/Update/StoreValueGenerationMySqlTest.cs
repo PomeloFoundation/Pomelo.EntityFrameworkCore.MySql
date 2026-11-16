@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.EntityFrameworkCore.Update;
 using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microting.EntityFrameworkCore.MySql.Tests;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Update;
 

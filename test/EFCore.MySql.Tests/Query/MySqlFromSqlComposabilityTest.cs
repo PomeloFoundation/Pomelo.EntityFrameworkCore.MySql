@@ -15,7 +15,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query
         {
         }
 
-        [ConditionalFact]
+        [ConditionalFact(typeof(MySqlFromSqlComposabilityTest))]
         public void Stored_procedure_call_without_composition_works()
         {
             using var context = Fixture.CreateContext();
@@ -27,7 +27,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query
             Assert.Equal(3, containers.Count);
         }
 
-        [ConditionalFact]
+        [ConditionalFact(typeof(MySqlFromSqlComposabilityTest))]
         public void Composing_over_stored_procedure_call_throws_non_composable()
         {
             using var context = Fixture.CreateContext();
@@ -41,7 +41,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query
             Assert.Equal(RelationalStrings.FromSqlNonComposable, exception.Message);
         }
 
-        [ConditionalFact]
+        [ConditionalFact(typeof(MySqlFromSqlComposabilityTest))]
         public void Composing_over_non_query_statement_throws_non_composable()
         {
             using var context = Fixture.CreateContext();
@@ -55,7 +55,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query
             Assert.Equal(RelationalStrings.FromSqlNonComposable, exception.Message);
         }
 
-        [ConditionalFact]
+        [ConditionalFact(typeof(MySqlFromSqlComposabilityTest))]
         public void Composing_over_select_with_leading_comments_works()
         {
             using var context = Fixture.CreateContext();
@@ -70,7 +70,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.CommonTableExpressions))]
-        [ConditionalFact]
+        [ConditionalFact(typeof(MySqlFromSqlComposabilityTest))]
         public void Composing_over_common_table_expression_works()
         {
             using var context = Fixture.CreateContext();
@@ -84,7 +84,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query
             Assert.Equal(new[] { 2, 3 }, containers.Select(c => c.Id));
         }
 
-        [ConditionalFact]
+        [ConditionalFact(typeof(MySqlFromSqlComposabilityTest))]
         public void Composing_over_parenthesized_query_expression_works()
         {
             using var context = Fixture.CreateContext();
@@ -100,7 +100,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.ValuesWithRows))]
-        [ConditionalFact]
+        [ConditionalFact(typeof(MySqlFromSqlComposabilityTest))]
         public void Composing_over_table_statement_works()
         {
             using var context = Fixture.CreateContext();
@@ -115,7 +115,7 @@ namespace Microting.EntityFrameworkCore.MySql.Query
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.ValuesWithRows))]
-        [ConditionalFact]
+        [ConditionalFact(typeof(MySqlFromSqlComposabilityTest))]
         public void Composing_over_values_statement_works()
         {
             using var context = Fixture.CreateContext();

@@ -7,10 +7,10 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {
     public static class MySqlDatabaseFacadeTestExtensions
     {
-        public static void EnsureClean(this DatabaseFacade databaseFacade)
+        public static void EnsureClean(this DatabaseFacade databaseFacade, bool createTables)
             => new MySqlDatabaseCleaner(
                     databaseFacade.GetService<IMySqlOptions>(),
                     databaseFacade.GetService<IRelationalTypeMappingSource>())
-                .Clean(databaseFacade);
+                .Clean(databaseFacade, createTables);
     }
 }

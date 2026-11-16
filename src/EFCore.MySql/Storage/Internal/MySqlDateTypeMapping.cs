@@ -10,18 +10,22 @@ namespace Microting.EntityFrameworkCore.MySql.Storage.Internal
 {
     /// <summary>
     ///     <para>
-    ///         Represents the mapping between a .NET <see cref="DateTime" /> type and a database type.
+    ///         Represents the mapping between the MySQL "date" store type and a .NET type.
     ///     </para>
     ///     <para>
     ///         This type is typically used by database providers (and other extensions). It is generally
     ///         not used in application code.
     ///     </para>
     /// </summary>
-    public class MySqlDateTypeMapping : RelationalTypeMapping, IDefaultValueCompatibilityAware
+    /// <remarks>
+    ///     Starting with EF Core 11, RelationalTypeMapping.Clone() no longer accepts a CLR type and always preserves the CLR
+    ///     type of the instance being cloned. Compiled models are generated as "TypeMappingClass.Default.Clone(...)", so a
+    ///     single mapping class can only ever represent the CLR type of its own static Default instance. The "date" store type
+    ///     maps to both DateOnly and DateTime, so each CLR type needs its own mapping class with its own Default.
+    /// </remarks>
+    public abstract class MySqlDateTypeMapping<T> : RelationalTypeMapping<T>, IDefaultValueCompatibilityAware
     {
         private readonly bool _isDefaultValueCompatible;
-
-        public static MySqlDateTypeMapping Default { get; } = new("date", typeof(DateOnly));
 
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -29,16 +33,15 @@ namespace Microting.EntityFrameworkCore.MySql.Storage.Internal
         ///     any release. You should only use it directly in your code with extreme caution and knowing that
         ///     doing so can result in application failures when updating to a new Entity Framework Core release.
         /// </summary>
-        public MySqlDateTypeMapping([NotNull] string storeType, Type clrType, bool isDefaultValueCompatible = false)
+        protected MySqlDateTypeMapping(
+            [NotNull] string storeType,
+            [NotNull] JsonValueReaderWriter jsonValueReaderWriter,
+            bool isDefaultValueCompatible)
             : this(
                 new RelationalTypeMappingParameters(
                     new CoreTypeMappingParameters(
-                        clrType,
-                        jsonValueReaderWriter: clrType == typeof(DateOnly)
-                            ? JsonDateOnlyReaderWriter.Instance
-                            : clrType == typeof(DateTime)
-                                ? JsonDateTimeReaderWriter.Instance
-                                : throw new ArgumentException("clrType must be DateOnly or DateTime", nameof(clrType))),
+                        typeof(T),
+                        jsonValueReaderWriter: jsonValueReaderWriter),
                     storeType,
                     dbType: System.Data.DbType.Date),
                 isDefaultValueCompatible)
@@ -56,20 +59,16 @@ namespace Microting.EntityFrameworkCore.MySql.Storage.Internal
         }
 
         /// <summary>
-        ///     Creates a copy of this mapping.
+        ///     Whether this mapping generates literals using a default value compatible syntax.
         /// </summary>
-        /// <param name="parameters"> The parameters for this mapping. </param>
-        /// <returns> The newly created mapping. </returns>
-        protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
-            => new MySqlDateTypeMapping(parameters, _isDefaultValueCompatible);
+        protected virtual bool IsDefaultValueCompatible => _isDefaultValueCompatible;
 
         /// <summary>
         ///     Creates a copy of this mapping.
         /// </summary>
         /// <param name="isDefaultValueCompatible"> Use a default value compatible syntax, or not. </param>
         /// <returns> The newly created mapping. </returns>
-        public virtual RelationalTypeMapping Clone(bool isDefaultValueCompatible = false)
-            => new MySqlDateTypeMapping(Parameters, isDefaultValueCompatible);
+        public abstract RelationalTypeMapping Clone(bool isDefaultValueCompatible = false);
 
         /// <summary>
         ///     Gets the string format to be used to generate SQL literals of this type.

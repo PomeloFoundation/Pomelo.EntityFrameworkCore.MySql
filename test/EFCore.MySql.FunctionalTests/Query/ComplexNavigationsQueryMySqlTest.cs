@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore.TestModels.ComplexNavigationsModel;
 using Microting.EntityFrameworkCore.MySql.Infrastructure;
 using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
-using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query

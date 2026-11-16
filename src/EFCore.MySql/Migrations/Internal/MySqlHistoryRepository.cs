@@ -174,14 +174,14 @@ DROP PROCEDURE {MigrationsScript};
         public virtual void ConfigureModel(ModelBuilder modelBuilder)
             => modelBuilder.HasCharSet(null, DelegationModes.ApplyToDatabases);
 
-        #region Necessary implementation because we cannot directly override EnsureModel
+        #region Customized model creation
 
         private IModel _model;
         private string _migrationIdColumnName;
         private string _productVersionColumnName;
 
         // Customized implementation.
-        protected virtual IModel EnsureModel()
+        protected override IModel EnsureModel()
         {
             if (_model == null)
             {
@@ -237,7 +237,7 @@ DROP PROCEDURE {MigrationsScript};
                 .FindProperty(nameof(HistoryRow.ProductVersion))!
                 .GetColumnName();
 
-        #endregion Necessary implementation because we cannot directly override EnsureModel
+        #endregion Customized model creation
 
         private sealed class MySqlMigrationDatabaseLock(
             MySqlHistoryRepository historyRepository,

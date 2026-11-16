@@ -272,7 +272,7 @@ public class MySqlRelationalConnectionTest
 
     // INFO: We currently don't implement IMySqlRelationalConnection.CloneWith.
     //
-    // [ConditionalFact]
+    // [Fact]
     // public void CloneWith_with_connection_and_connection_string()
     // {
     //     var services = MySqlTestHelpers.Instance.CreateContextServices(

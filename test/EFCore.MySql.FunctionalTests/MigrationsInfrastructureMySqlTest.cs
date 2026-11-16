@@ -508,25 +508,25 @@ DROP PROCEDURE MigrationsScript;
             Assert.Equal("Microting.EntityFrameworkCore.MySql", ActiveProvider);
         }
 
-        [ConditionalFact(Skip = "TODO: Implement")]
+        [Fact(Skip = "TODO: Implement")]
         public override void Can_diff_against_2_2_model()
         {
             throw new NotImplementedException();
         }
 
-        [ConditionalFact(Skip = "TODO: Implement")]
+        [Fact(Skip = "TODO: Implement")]
         public override void Can_diff_against_3_0_ASP_NET_Identity_model()
         {
             throw new NotImplementedException();
         }
 
-        [ConditionalFact(Skip = "TODO: Implement")]
+        [Fact(Skip = "TODO: Implement")]
         public override void Can_diff_against_2_2_ASP_NET_Identity_model()
         {
             throw new NotImplementedException();
         }
 
-        [ConditionalFact(Skip = "TODO: Implement")]
+        [Fact(Skip = "TODO: Implement")]
         public override void Can_diff_against_2_1_ASP_NET_Identity_model()
         {
             throw new NotImplementedException();
@@ -563,7 +563,7 @@ DROP PROCEDURE MigrationsScript;
         protected override Task ExecuteSqlAsync(string value)
             => ((MySqlTestStore)Fixture.TestStore).ExecuteNonQueryAsync(value);
 
-        [ConditionalFact(Skip = "EF Core 10 issue: RelationalConnection maintains transaction state across migration operations when tests share fixture")]
+        [Fact(Skip = "EF Core 10 issue: RelationalConnection maintains transaction state across migration operations when tests share fixture")]
         public override Task Can_apply_two_migrations_in_transaction_async()
             => base.Can_apply_two_migrations_in_transaction_async();
 

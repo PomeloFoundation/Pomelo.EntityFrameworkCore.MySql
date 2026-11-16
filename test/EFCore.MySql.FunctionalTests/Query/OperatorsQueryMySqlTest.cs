@@ -17,7 +17,7 @@ public class OperatorsQueryMySqlTest : OperatorsQueryTestBase
     {
     }
 
-    protected override ITestStoreFactory TestStoreFactory
+    protected override ITestStoreFactory NonSharedTestStoreFactory
         => MySqlTestStoreFactory.Instance;
 
     protected void AssertSql(params string[] expected)

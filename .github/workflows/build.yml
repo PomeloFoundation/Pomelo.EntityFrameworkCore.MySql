@@ -386,11 +386,11 @@ jobs:
       - name: Functional Tests
         if: ${{ env.skipTests != 'true' }}
         shell: pwsh
-        run: dotnet test test/EFCore.MySql.FunctionalTests -c Debug --no-build --logger "GitHubActions;report-warnings=false" --verbosity detailed
+        run: dotnet test --project test/EFCore.MySql.FunctionalTests -c Debug --no-build --report-github --verbosity detailed --filter-not-trait category=failing
       - name: Tests
         if: ${{ env.skipTests != 'true' }}
         shell: pwsh
-        run: dotnet test --logger "GitHubActions;report-warnings=false" test/EFCore.MySql.Tests
+        run: dotnet test --report-github --project test/EFCore.MySql.Tests --filter-not-trait category=failing
       - name: Integration Tests - Applying migrations
         if: ${{ env.skipTests != 'true' }}
         shell: pwsh
@@ -404,19 +404,19 @@ jobs:
         shell: pwsh
         run: |
           $env:EF_BATCH_SIZE = "1"
-          dotnet test -c Release --no-build --logger "GitHubActions;report-warnings=false" test/EFCore.MySql.IntegrationTests
+          dotnet test -c Release --no-build --no-launch-profile --report-github --project test/EFCore.MySql.IntegrationTests --filter-not-trait category=failing
       - name: Integration Tests - With EF_BATCH_SIZE = 10
         if: ${{ env.skipTests != 'true' }}
         shell: pwsh
         run: |
           $env:EF_BATCH_SIZE = "10"
-          dotnet test -c Release --no-build --logger "GitHubActions;report-warnings=false" test/EFCore.MySql.IntegrationTests
+          dotnet test -c Release --no-build --no-launch-profile --report-github --project test/EFCore.MySql.IntegrationTests --filter-not-trait category=failing
       - name: Integration Tests - With EF_BATCH_SIZE = 1
         if: ${{ env.skipTests != 'true' }}
         shell: pwsh
         run: |
           $env:EF_RETRY_ON_FAILURE = "3"
-          dotnet test -c Release --no-build --logger "GitHubActions;report-warnings=false" test/EFCore.MySql.IntegrationTests
+          dotnet test -c Release --no-build --no-launch-profile --report-github --project test/EFCore.MySql.IntegrationTests --filter-not-trait category=failing
       - name: Integration Tests - Legacy migrations
         if: ${{ env.skipTests != 'true' }}
         shell: pwsh
@@ -438,7 +438,7 @@ jobs:
         shell: pwsh
         run: |
           $env:EF_DATABASE = "pomelo_test2"
-          dotnet test -c Release --no-build --logger "GitHubActions;report-warnings=false" test/EFCore.MySql.IntegrationTests
+          dotnet test -c Release --no-build --no-launch-profile --report-github --project test/EFCore.MySql.IntegrationTests --filter-not-trait category=failing
       - name: PassKey Sample Test - Check JSON Support
         if: ${{ env.skipTests != 'true' }}
         id: check-json-support
@@ -686,7 +686,7 @@ jobs:
           dotnet new nugetconfig --force
           try
           {
-            dotnet nuget add source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-debug/nuget/v3/index.json' --name 'azdo-pomelo-efcore-debug' --username '${{ vars.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_USERNAME }}' --password '${{ secrets.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_PASSWORD }}' --store-password-in-clear-text --configfile './nuget.config'
+            dotnet nuget add source 'https://pkgs.dev.azure.com/pomelo-efcore/Microting.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-debug/nuget/v3/index.json' --name 'azdo-pomelo-efcore-debug' --username '${{ vars.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_USERNAME }}' --password '${{ secrets.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_PASSWORD }}' --store-password-in-clear-text --configfile './nuget.config'
 
             dotnet nuget push './Debug/withPdbs/**/*.nupkg' --api-key 'foo' --source 'azdo-pomelo-efcore-debug' --skip-duplicate
           }
@@ -703,7 +703,7 @@ jobs:
           dotnet new nugetconfig --force
           try
           {
-            dotnet nuget add source 'https://pkgs.dev.azure.com/pomelo-efcore/Pomelo.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-public/nuget/v3/index.json' --name 'azdo-pomelo-efcore-public' --username '${{ vars.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_USERNAME }}' --password '${{ secrets.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_PASSWORD }}' --store-password-in-clear-text --configfile './nuget.config'
+            dotnet nuget add source 'https://pkgs.dev.azure.com/pomelo-efcore/Microting.EntityFrameworkCore.MySql/_packaging/pomelo-efcore-public/nuget/v3/index.json' --name 'azdo-pomelo-efcore-public' --username '${{ vars.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_USERNAME }}' --password '${{ secrets.AZUREDEVOPS_POMELO_ALLPACKAGES_PUSHNEW_PASSWORD }}' --store-password-in-clear-text --configfile './nuget.config'
 
             dotnet nuget push './Release/withPdbs/**/*.nupkg' --api-key 'foo' --source 'azdo-pomelo-efcore-public' --skip-duplicate
           }

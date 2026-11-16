@@ -25,6 +25,10 @@ namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             _sqlExpressionFactory = sqlExpressionFactory;
         }
 
+        protected override Expression ProcessTypeMappings(Expression expression)
+            => new MySqlTypeMappingPostprocessor(Dependencies, RelationalDependencies, RelationalQueryCompilationContext)
+                .Process(expression);
+
         public override Expression Process(Expression query)
         {
             var mySqlHavingExpressionVisitor = new MySqlHavingExpressionVisitor(_sqlExpressionFactory);

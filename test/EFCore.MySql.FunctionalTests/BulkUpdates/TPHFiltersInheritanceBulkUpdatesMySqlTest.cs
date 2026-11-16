@@ -8,6 +8,7 @@ using Microting.EntityFrameworkCore.MySql.Infrastructure;
 using Microting.EntityFrameworkCore.MySql.Tests;
 using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
+using Microsoft.EntityFrameworkCore.BulkUpdates.Inheritance;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
@@ -20,7 +21,7 @@ public class TPHFiltersInheritanceBulkUpdatesMySqlTest : FiltersInheritanceBulkU
         ClearLog();
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual void Check_all_tests_overridden()
         => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 

@@ -8,7 +8,6 @@ using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microting.EntityFrameworkCore.MySql.Infrastructure;
 using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -34,7 +33,7 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
                     m => start <= m.Timeline.Date && m.Timeline < end && dates.Contains(m.Timeline)));
         }
 
-        [ConditionalTheory(Skip = "TODO: Does not work as expected, probably due to some test definition issues.")]
+        [Theory(Skip = "TODO: Does not work as expected, probably due to some test definition issues.")]
         public override async Task DateTimeOffsetNow_minus_timespan(bool async)
         {
             var timeSpan = new TimeSpan(10000); // <-- changed from 1000 to 10000 ticks
@@ -54,7 +53,7 @@ WHERE `m`.`Timeline` > (UTC_TIMESTAMP() - @__timeSpan_0)
         }
 
         // TODO: Implement strategy as discussed with @roji (including emails) for EF Core 5.
-        [ConditionalTheory(Skip = "#996")]
+        [Theory(Skip = "#996")]
         public override Task Client_member_and_unsupported_string_Equals_in_the_same_query(bool async)
         {
             return base.Client_member_and_unsupported_string_Equals_in_the_same_query(async);
@@ -186,13 +185,13 @@ WHERE `m`.`Timeline` > (UTC_TIMESTAMP() - @__timeSpan_0)
             return base.Where_subquery_union_firstordefault_boolean(async);
         }
 
-        [ConditionalTheory(Skip = "MySQL does not support LIMIT with a parameterized argument, unless the statement was prepared. The argument needs to be a numeric constant.")]
+        [Theory(Skip = "MySQL does not support LIMIT with a parameterized argument, unless the statement was prepared. The argument needs to be a numeric constant.")]
         public override Task Take_without_orderby_followed_by_orderBy_is_pushed_down1(bool async)
         {
             return base.Take_without_orderby_followed_by_orderBy_is_pushed_down1(async);
         }
 
-        [ConditionalTheory(Skip = "MySQL does not support LIMIT with a parameterized argument, unless the statement was prepared. The argument needs to be a numeric constant.")]
+        [Theory(Skip = "MySQL does not support LIMIT with a parameterized argument, unless the statement was prepared. The argument needs to be a numeric constant.")]
         public override Task Take_without_orderby_followed_by_orderBy_is_pushed_down2(bool async)
         {
             return base.Take_without_orderby_followed_by_orderBy_is_pushed_down2(async);
@@ -210,7 +209,7 @@ WHERE `m`.`Timeline` > (UTC_TIMESTAMP() - @__timeSpan_0)
             return base.Subquery_projecting_non_nullable_scalar_contains_non_nullable_value_doesnt_need_null_expansion(async);
         }
 
-        [ConditionalTheory(Skip = "Another LATERAL JOIN bug in MySQL. Grouping leads to unexpected result set.")]
+        [Theory(Skip = "Another LATERAL JOIN bug in MySQL. Grouping leads to unexpected result set.")]
         [MemberData(nameof(IsAsyncData))]
         public override Task Correlated_collection_with_groupby_with_complex_grouping_key_not_projecting_identifier_column_with_group_aggregate_in_final_projection(bool async)
         {

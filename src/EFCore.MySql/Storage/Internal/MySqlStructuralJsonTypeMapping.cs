@@ -17,7 +17,7 @@ namespace Microting.EntityFrameworkCore.MySql.Storage.Internal
     /// This mapping handles the conversion from MySQL's string-based JSON to MemoryStream expected by EF Core.
     /// Similar to Npgsql's NpgsqlStructuralJsonTypeMapping.
     /// </summary>
-    public class MySqlStructuralJsonTypeMapping : JsonTypeMapping
+    public class MySqlStructuralJsonTypeMapping : StructuralJsonTypeMapping
     {
         private static readonly MethodInfo _getStringMethod
             = typeof(DbDataReader).GetRuntimeMethod(nameof(DbDataReader.GetString), new[] { typeof(int) });

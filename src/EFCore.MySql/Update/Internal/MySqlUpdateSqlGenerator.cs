@@ -264,7 +264,7 @@ namespace Microting.EntityFrameworkCore.MySql.Update.Internal
             string name,
             string schema)
         {
-            if (columnModification.JsonPath is not (null or "$"))
+            if (columnModification.JsonPath is { IsRoot: false })
             {
                 if (!_options.ServerVersion.Supports.JsonSet)
                 {

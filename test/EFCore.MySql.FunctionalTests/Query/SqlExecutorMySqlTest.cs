@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.ConcurrencyModel;
 using MySqlConnector;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -198,9 +197,9 @@ CALL `CustOrderHist`(@p0)
             using var context = CreateContext();
 
             var actual = async
-                ? await context.Database.ExecuteSqlInterpolatedAsync(
+                ? await context.Database.ExecuteSqlAsync(
                     $@"SELECT COUNT(*) FROM `Customers` WHERE `City` = {city} AND `ContactTitle` = {contactTitle}")
-                : context.Database.ExecuteSqlInterpolated(
+                : context.Database.ExecuteSql(
                     $@"SELECT COUNT(*) FROM `Customers` WHERE `City` = {city} AND `ContactTitle` = {contactTitle}");
 
             Assert.Equal(DefaultSqlResult, actual);
@@ -214,9 +213,9 @@ CALL `CustOrderHist`(@p0)
             using var context = CreateContext();
 
             var actual = async
-                ? await context.Database.ExecuteSqlInterpolatedAsync(
+                ? await context.Database.ExecuteSqlAsync(
                     $@"SELECT COUNT(*) FROM `Customers` WHERE `City` = {city} AND `ContactTitle` = {contactTitle}")
-                : context.Database.ExecuteSqlInterpolated(
+                : context.Database.ExecuteSql(
                     $@"SELECT COUNT(*) FROM `Customers` WHERE `City` = {city} AND `ContactTitle` = {contactTitle}");
 
             Assert.Equal(DefaultSqlResult, actual);

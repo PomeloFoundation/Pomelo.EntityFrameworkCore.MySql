@@ -113,10 +113,11 @@ LIMIT 2");
             var x = ctx.JsonEntities.Single(e => e.Customer.Age < 30);
 
             Assert.Equal("Joe", x.Customer.Name);
+            // EF Core 11 no longer wraps the extracted value in a redundant CAST.
             AssertSql(
                 @"SELECT `j`.`Id`, `j`.`Customer`, `j`.`ToplevelArray`
 FROM `JsonEntities` AS `j`
-WHERE CAST(JSON_EXTRACT(`j`.`Customer`, '$.Age') AS signed) < 30
+WHERE JSON_EXTRACT(`j`.`Customer`, '$.Age') < 30
 LIMIT 2");
         }
 
@@ -127,10 +128,12 @@ LIMIT 2");
             var x = ctx.JsonEntities.Single(e => e.Customer.ID == Guid.Empty);
 
             Assert.Equal("Joe", x.Customer.Name);
+            // EF Core 11 no longer wraps the extracted value in a redundant CAST; JSON_UNQUOTE
+            // already yields a string.
             AssertSql(
                 @"SELECT `j`.`Id`, `j`.`Customer`, `j`.`ToplevelArray`
 FROM `JsonEntities` AS `j`
-WHERE CAST(JSON_UNQUOTE(JSON_EXTRACT(`j`.`Customer`, '$.ID')) AS char) = '00000000-0000-0000-0000-000000000000'
+WHERE JSON_UNQUOTE(JSON_EXTRACT(`j`.`Customer`, '$.ID')) = '00000000-0000-0000-0000-000000000000'
 LIMIT 2");
         }
 

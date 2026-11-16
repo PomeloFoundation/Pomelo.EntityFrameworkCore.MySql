@@ -26,12 +26,9 @@ public class MySqlCSharpRuntimeAnnotationCodeGenerator : RelationalCSharpRuntime
 
     public override bool Create(
         CoreTypeMapping typeMapping,
-        CSharpRuntimeAnnotationCodeGeneratorParameters parameters,
-        ValueComparer valueComparer = null,
-        ValueComparer keyValueComparer = null,
-        ValueComparer providerValueComparer = null)
+        CSharpRuntimeAnnotationCodeGeneratorParameters parameters)
     {
-        var result = base.Create(typeMapping, parameters, valueComparer, keyValueComparer, providerValueComparer);
+        var result = base.Create(typeMapping, parameters);
 
         if (typeMapping is IMySqlCSharpRuntimeAnnotationTypeMappingCodeGenerator extension)
         {
