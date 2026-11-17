@@ -28,13 +28,10 @@ namespace Microting.EntityFrameworkCore.MySql.Query
 SELECT `u`.`Id`, COALESCE(`t0`.`Amount`, 0)
 FROM `Users` AS `u`
 LEFT JOIN (
-    SELECT `t1`.`Amount`, `t1`.`UserId`
-    FROM (
-        SELECT COALESCE(SUM(`t`.`Amount`), 0) AS `Amount`, `t`.`UserId`
-        FROM `Transactions` AS `t`
-        GROUP BY `t`.`UserId`
-    ) AS `t1`
-) AS `t0` ON `t0`.`UserId` = `u`.`Id`
+    SELECT COALESCE(SUM(`t`.`Amount`), 0) AS `Amount`, `t`.`UserId`
+    FROM `Transactions` AS `t`
+    GROUP BY `t`.`UserId`
+) AS `t0` ON `u`.`Id` = `t0`.`UserId`
 """,
                 sql);
         }
@@ -48,17 +45,20 @@ LEFT JOIN (
 
             Assert.Contains("LEFT JOIN (", sql);
             Assert.DoesNotContain("LATERAL", sql);
-            Assert.Contains("ON `t0`.`UserId` = `u`.`Id`", sql);
+            Assert.Contains("ON `u`.`Id` = `t0`.`UserId`", sql);
         }
 
         [Fact]
-        public void Grouped_subquery_with_correlated_key_and_DefaultIfEmpty_still_uses_lateral_on_MySql_8()
+        public void Grouped_subquery_with_correlated_key_and_DefaultIfEmpty_is_translated_to_left_join_on_MySql_8()
         {
             using var context = new TestContext(MySql8);
 
             var sql = GroupedSubqueryWithDefaultIfEmpty(context).ToQueryString();
 
-            Assert.Contains("LEFT JOIN LATERAL (", sql);
+            // Since EF Core 11 the grouped subquery is decorrelated upstream, so even servers with LATERAL support get a plain join.
+            Assert.Contains("LEFT JOIN (", sql);
+            Assert.DoesNotContain("LATERAL", sql);
+            Assert.Contains("ON `u`.`Id` = `t0`.`UserId`", sql);
         }
 
         [Fact]
@@ -82,7 +82,7 @@ LEFT JOIN (
     FROM `Transactions` AS `t`
     GROUP BY `t`.`UserId`
     HAVING COALESCE(SUM(`t`.`Amount`), 0) > 5
-) AS `t0` ON `t0`.`UserId` = `u`.`Id`
+) AS `t0` ON `u`.`Id` = `t0`.`UserId`
 """,
                 query.ToQueryString());
         }
