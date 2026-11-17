@@ -646,7 +646,7 @@ ORDER BY `p1`.`FirstName`, `s0`.`Id`
         await base.Whats_new_2021_sample_10(async);
 
         AssertSql(
-"""
+            """
 SELECT `s1`.`Id`, `s1`.`Age`, `s1`.`Style`, `s2`.`Id`, `s2`.`Style`, `s2`.`Age`, `s2`.`Id0`
 FROM (
     SELECT `p`.`Id`, `s`.`Age`, `s`.`Style`
@@ -659,7 +659,7 @@ LEFT JOIN (
     FROM `Person` AS `p0`
     INNER JOIN `Shoes` AS `s0` ON `p0`.`Age` = `s0`.`Age`
 ) AS `s2` ON ((`s1`.`Id` = `s2`.`Id0`) AND ((`s1`.`Style` = `s2`.`Style`) OR (`s1`.`Style` IS NULL AND (`s2`.`Style` IS NULL)))) AND (`s1`.`Age` = `s2`.`Age`)
-ORDER BY `s1`.`Id`, `s1`.`Style`, `s1`.`Age`, `s2`.`Id0`
+ORDER BY `s1`.`Id`, `s1`.`Style`, `s1`.`Age`, `s2`.`Id0`, `s2`.`Id`
 """);
     }
 

@@ -6315,7 +6315,7 @@ FROM (
     LIMIT 18446744073709551610 OFFSET @p
 ) AS `o1`
 LEFT JOIN `Order Details` AS `o0` ON `o1`.`OrderID` = `o0`.`OrderID`
-ORDER BY `o1`.`OrderID`, `o0`.`OrderID`
+ORDER BY `o1`.`OrderID`, `o0`.`OrderID`, `o0`.`ProductID`
 """);
     }
 
@@ -6336,7 +6336,7 @@ FROM (
     LIMIT @p
 ) AS `o1`
 LEFT JOIN `Order Details` AS `o0` ON `o1`.`OrderID` = `o0`.`OrderID`
-ORDER BY `o1`.`OrderID`, `o0`.`OrderID`
+ORDER BY `o1`.`OrderID`, `o0`.`OrderID`, `o0`.`ProductID`
 """);
     }
 
@@ -6358,7 +6358,7 @@ FROM (
     LIMIT @p1 OFFSET @p
 ) AS `o1`
 LEFT JOIN `Order Details` AS `o0` ON `o1`.`OrderID` = `o0`.`OrderID`
-ORDER BY `o1`.`OrderID`, `o0`.`OrderID`
+ORDER BY `o1`.`OrderID`, `o0`.`OrderID`, `o0`.`ProductID`
 """);
     }
 

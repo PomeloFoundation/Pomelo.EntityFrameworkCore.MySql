@@ -308,13 +308,13 @@ INNER JOIN `SplitEntityOnePart2` AS `s0` ON `e`.`Id` = `s0`.`Id`
         await base.Split_entity_owning_a_collection(async);
 
         AssertSql(
-"""
+            """
 SELECT `e`.`Id`, `e`.`EntityThreeId`, `e`.`IntValue1`, `e`.`IntValue2`, `s0`.`IntValue3`, `s`.`IntValue4`, `e`.`StringValue1`, `e`.`StringValue2`, `s0`.`StringValue3`, `s`.`StringValue4`, `o`.`EntityOneId`, `o`.`Id`, `o`.`OwnedIntValue1`, `o`.`OwnedIntValue2`, `o`.`OwnedIntValue3`, `o`.`OwnedIntValue4`, `o`.`OwnedStringValue1`, `o`.`OwnedStringValue2`, `o`.`OwnedStringValue3`, `o`.`OwnedStringValue4`
 FROM `EntityOne` AS `e`
 INNER JOIN `SplitEntityOnePart3` AS `s` ON `e`.`Id` = `s`.`Id`
 INNER JOIN `SplitEntityOnePart2` AS `s0` ON `e`.`Id` = `s0`.`Id`
 LEFT JOIN `OwnedCollection` AS `o` ON `e`.`Id` = `o`.`EntityOneId`
-ORDER BY `e`.`Id`, `o`.`EntityOneId`
+ORDER BY `e`.`Id`, `o`.`EntityOneId`, `o`.`Id`
 """);
     }
 
@@ -718,7 +718,7 @@ LEFT JOIN `OwnedReferencePart3` AS `o1` ON `o`.`MiddleEntityId` = `o1`.`MiddleEn
         await base.Tpc_entity_owning_a_split_collection_on_base(async);
 
         AssertSql(
-"""
+            """
 SELECT `u`.`Id`, `u`.`BaseValue`, `u`.`MiddleValue`, `u`.`SiblingValue`, `u`.`LeafValue`, `u`.`Discriminator`, `s0`.`BaseEntityId`, `s0`.`Id`, `s0`.`OwnedIntValue1`, `s0`.`OwnedIntValue2`, `s0`.`OwnedIntValue3`, `s0`.`OwnedIntValue4`, `s0`.`OwnedStringValue1`, `s0`.`OwnedStringValue2`, `s0`.`OwnedStringValue3`, `s0`.`OwnedStringValue4`
 FROM (
     SELECT `b`.`Id`, `b`.`BaseValue`, NULL AS `MiddleValue`, NULL AS `SiblingValue`, NULL AS `LeafValue`, 'BaseEntity' AS `Discriminator`
@@ -739,7 +739,7 @@ LEFT JOIN (
     INNER JOIN `OwnedReferencePart4` AS `o0` ON (`o`.`BaseEntityId` = `o0`.`BaseEntityId`) AND (`o`.`Id` = `o0`.`Id`)
     INNER JOIN `OwnedReferencePart3` AS `o1` ON (`o`.`BaseEntityId` = `o1`.`BaseEntityId`) AND (`o`.`Id` = `o1`.`Id`)
 ) AS `s0` ON `u`.`Id` = `s0`.`BaseEntityId`
-ORDER BY `u`.`Id`, `s0`.`BaseEntityId`
+ORDER BY `u`.`Id`, `s0`.`BaseEntityId`, `s0`.`Id`
 """);
     }
 
@@ -764,7 +764,7 @@ ORDER BY `u`.`Id`, `s0`.`BaseEntityId`
         await base.Tpc_entity_owning_a_split_collection_on_middle(async);
 
         AssertSql(
-"""
+            """
 SELECT `u`.`Id`, `u`.`BaseValue`, `u`.`MiddleValue`, `u`.`SiblingValue`, `u`.`LeafValue`, `u`.`Discriminator`, `s0`.`MiddleEntityId`, `s0`.`Id`, `s0`.`OwnedIntValue1`, `s0`.`OwnedIntValue2`, `s0`.`OwnedIntValue3`, `s0`.`OwnedIntValue4`, `s0`.`OwnedStringValue1`, `s0`.`OwnedStringValue2`, `s0`.`OwnedStringValue3`, `s0`.`OwnedStringValue4`
 FROM (
     SELECT `b`.`Id`, `b`.`BaseValue`, NULL AS `MiddleValue`, NULL AS `SiblingValue`, NULL AS `LeafValue`, 'BaseEntity' AS `Discriminator`
@@ -785,7 +785,7 @@ LEFT JOIN (
     INNER JOIN `OwnedReferencePart4` AS `o0` ON (`o`.`MiddleEntityId` = `o0`.`MiddleEntityId`) AND (`o`.`Id` = `o0`.`Id`)
     INNER JOIN `OwnedReferencePart3` AS `o1` ON (`o`.`MiddleEntityId` = `o1`.`MiddleEntityId`) AND (`o`.`Id` = `o1`.`Id`)
 ) AS `s0` ON `u`.`Id` = `s0`.`MiddleEntityId`
-ORDER BY `u`.`Id`, `s0`.`MiddleEntityId`
+ORDER BY `u`.`Id`, `s0`.`MiddleEntityId`, `s0`.`Id`
 """);
     }
 

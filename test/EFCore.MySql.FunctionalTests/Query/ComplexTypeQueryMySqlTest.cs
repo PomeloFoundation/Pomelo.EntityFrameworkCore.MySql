@@ -1156,56 +1156,140 @@ LEFT JOIN `ValuedCustomer` AS `v0` ON `v`.`OptionalCustomerId` = `v0`.`Id`
     {
         await base.Complex_json_collection_inside_left_join_subquery();
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `p`.`Id`, `p`.`ChildId`, `c0`.`Id`, `c0`.`IsPublic`, `c0`.`c`
+FROM `Parent` AS `p`
+LEFT JOIN (
+    SELECT `c`.`Id`, `c`.`IsPublic`, `c`.`CareNeeds` AS `c`
+    FROM `Child` AS `c`
+    WHERE `c`.`IsPublic`
+) AS `c0` ON `p`.`ChildId` = `c0`.`Id`
+""");
     }
 
     public override async Task Select_TPC_base_with_ComplexType()
     {
         await base.Select_TPC_base_with_ComplexType();
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `t`.`Id`, `t`.`ChildProperty`, NULL AS `ChildProperty1`, `t`.`BaseComplexProperty_PropertyInsideComplexThing`, `t`.`ChildComplexProperty_PropertyInsideComplexThing`, NULL AS `ChildComplexProperty_PropertyInsideComplexThing1`, 'TpcChild1' AS `Discriminator`
+FROM `TpcChild1` AS `t`
+UNION ALL
+SELECT `t0`.`Id`, NULL AS `ChildProperty`, `t0`.`ChildProperty` AS `ChildProperty1`, `t0`.`BaseComplexProperty_PropertyInsideComplexThing`, NULL AS `ChildComplexProperty_PropertyInsideComplexThing`, `t0`.`ChildComplexProperty_PropertyInsideComplexThing` AS `ChildComplexProperty_PropertyInsideComplexThing1`, 'TpcChild2' AS `Discriminator`
+FROM `TpcChild2` AS `t0`
+""");
     }
 
     public override async Task Complex_type_on_an_entity_mapped_to_view_and_table()
     {
         await base.Complex_type_on_an_entity_mapped_to_view_and_table();
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `b`.`Id`, `b`.`ComplexThing_Prop1`, `b`.`ComplexThing_Prop2`
+FROM `BlogsView` AS `b`
+LIMIT 2
+""");
     }
 
     public override async Task Complex_property_on_split_entity()
     {
         await base.Complex_property_on_split_entity();
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `h`.`Id`, `h`.`CreatedOn`, `h0`.`IsTestHook`, `h0`.`Weight`, `h`.`Number_Parsed`, `h`.`Number_Raw`
+FROM `Hook` AS `h`
+INNER JOIN `HookMetadata` AS `h0` ON `h`.`Id` = `h0`.`HookId`
+""");
     }
 
     public override async Task Project_json_complex_collection_together_with_collection_navigation()
     {
         await base.Project_json_complex_collection_together_with_collection_navigation();
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `p`.`Id`, `p`.`Items`
+FROM `Parent` AS `p`
+ORDER BY `p`.`Id`
+LIMIT 2
+""",
+            //
+            """
+SELECT `s`.`Id`, `p3`.`Id`
+FROM (
+    SELECT `p`.`Id`
+    FROM `Parent` AS `p`
+    ORDER BY `p`.`Id`
+    LIMIT 1
+) AS `p3`
+INNER JOIN (
+    SELECT `l1`.`Id`, `p2`.`ParentsId`
+    FROM `ParentLinks` AS `p2`
+    INNER JOIN `Link` AS `l1` ON `p2`.`LinksId` = `l1`.`Id`
+) AS `s` ON `p3`.`Id` = `s`.`ParentsId`
+ORDER BY `p3`.`Id`
+""");
     }
 
     public override async Task Complex_type_equals_parameter_with_nested_types_with_property_of_same_name()
     {
         await base.Complex_type_equals_parameter_with_nested_types_with_property_of_same_name();
 
-        AssertSql();
+        AssertSql(
+            """
+@entity_equality_container_Id='1' (Nullable = true)
+@entity_equality_container_Containee1_Id='2' (Nullable = true)
+@entity_equality_container_Containee2_Id='3' (Nullable = true)
+
+SELECT `e`.`Id`, `e`.`ComplexContainer_Id`, `e`.`ComplexContainer_Containee1_Id`, `e`.`ComplexContainer_Containee2_Id`
+FROM `EntityType` AS `e`
+WHERE ((`e`.`ComplexContainer_Id` = @entity_equality_container_Id) AND (`e`.`ComplexContainer_Containee1_Id` = @entity_equality_container_Containee1_Id)) AND (`e`.`ComplexContainer_Containee2_Id` = @entity_equality_container_Containee2_Id)
+LIMIT 2
+""");
     }
 
     public override async Task Projecting_complex_property_does_not_auto_include_owned_types()
     {
         await base.Projecting_complex_property_does_not_auto_include_owned_types();
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `e`.`Complex_Name`, `e`.`Complex_Number`
+FROM `EntityType` AS `e`
+""");
     }
 
     public override async Task Optional_complex_type_with_discriminator()
     {
         await base.Optional_complex_type_with_discriminator();
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `e`.`Id`, `e`.`AllOptionalsComplexType_Discriminator`, `e`.`AllOptionalsComplexType_OptionalProperty`
+FROM `EntityType` AS `e`
+WHERE `e`.`AllOptionalsComplexType_Discriminator` IS NULL
+LIMIT 2
+""",
+            //
+            """
+@p2='3'
+@p0='AllOptionalsComplexType' (Size = 4000)
+@p1='New thing' (Size = 4000)
+
+SET AUTOCOMMIT = 1;
+UPDATE `EntityType` SET `AllOptionalsComplexType_Discriminator` = @p0, `AllOptionalsComplexType_OptionalProperty` = @p1
+WHERE `Id` = @p2;
+SELECT ROW_COUNT();
+""",
+            //
+            """
+SELECT `e`.`Id`, `e`.`AllOptionalsComplexType_Discriminator`, `e`.`AllOptionalsComplexType_OptionalProperty`
+FROM `EntityType` AS `e`
+""");
     }
 
     [Fact]

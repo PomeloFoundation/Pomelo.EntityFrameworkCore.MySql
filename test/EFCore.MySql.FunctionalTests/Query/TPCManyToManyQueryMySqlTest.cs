@@ -761,7 +761,7 @@ LEFT JOIN (
         INNER JOIN `EntityOnes` AS `e0` ON `j0`.`EntityOneId` = `e0`.`Id`
     ) AS `s` ON `l`.`Id` = `s`.`EntityBranchId`
 ) AS `s0` ON ((`e`.`Key1` = `s0`.`CompositeId1`) AND (`e`.`Key2` = `s0`.`CompositeId2`)) AND (`e`.`Key3` = `s0`.`CompositeId3`)
-ORDER BY `e`.`Key1`, `e`.`Key2`, `e`.`Key3`, `s0`.`LeafId`, `s0`.`CompositeId1`, `s0`.`CompositeId2`, `s0`.`CompositeId3`, `s0`.`EntityBranchId`
+ORDER BY `e`.`Key1`, `e`.`Key2`, `e`.`Key3`, `s0`.`LeafId`, `s0`.`CompositeId1`, `s0`.`CompositeId2`, `s0`.`CompositeId3`, `s0`.`EntityBranchId`, `s0`.`EntityOneId`
 """);
     }
 
@@ -784,7 +784,7 @@ LEFT JOIN (
         INNER JOIN `EntityOnes` AS `e2` ON `j0`.`RightId` = `e2`.`Id`
     ) AS `s` ON `e0`.`Id` = `s`.`LeftId`
 ) AS `s0` ON `e`.`Id` = `s0`.`ThreeId`
-ORDER BY `e`.`Id`, `s0`.`OneId`, `s0`.`ThreeId`, `s0`.`LeftId`
+ORDER BY `e`.`Id`, `s0`.`OneId`, `s0`.`ThreeId`, `s0`.`LeftId`, `s0`.`RightId`
 """);
     }
 
@@ -829,7 +829,7 @@ ORDER BY `e`.`Id`, `s`.`OneId`
         await base.Filtered_include_skip_navigation_order_by(async);
 
         AssertSql(
-"""
+            """
 SELECT `e`.`Id`, `e`.`CollectionInverseId`, `e`.`Name`, `e`.`ReferenceInverseId`, `s`.`ThreeId`, `s`.`TwoId`, `s`.`Id`, `s`.`CollectionInverseId`, `s`.`ExtraId`, `s`.`Name`, `s`.`ReferenceInverseId`
 FROM `EntityThrees` AS `e`
 LEFT JOIN (
@@ -837,7 +837,7 @@ LEFT JOIN (
     FROM `JoinTwoToThree` AS `j`
     INNER JOIN `EntityTwos` AS `e0` ON `j`.`TwoId` = `e0`.`Id`
 ) AS `s` ON `e`.`Id` = `s`.`ThreeId`
-ORDER BY `e`.`Id`, `s`.`Id`, `s`.`ThreeId`
+ORDER BY `e`.`Id`, `s`.`Id`, `s`.`ThreeId`, `s`.`TwoId`
 """);
     }
 
@@ -846,7 +846,7 @@ ORDER BY `e`.`Id`, `s`.`Id`, `s`.`ThreeId`
         await base.Filtered_include_skip_navigation_order_by_skip(async);
 
         AssertSql(
-"""
+            """
 SELECT `e`.`Id`, `e`.`CollectionInverseId`, `e`.`ExtraId`, `e`.`Name`, `e`.`ReferenceInverseId`, `s0`.`SelfSkipSharedLeftId`, `s0`.`SelfSkipSharedRightId`, `s0`.`Id`, `s0`.`CollectionInverseId`, `s0`.`ExtraId`, `s0`.`Name`, `s0`.`ReferenceInverseId`
 FROM `EntityTwos` AS `e`
 LEFT JOIN (
@@ -858,7 +858,7 @@ LEFT JOIN (
     ) AS `s`
     WHERE 2 < `s`.`row`
 ) AS `s0` ON `e`.`Id` = `s0`.`SelfSkipSharedLeftId`
-ORDER BY `e`.`Id`, `s0`.`SelfSkipSharedLeftId`, `s0`.`Id`
+ORDER BY `e`.`Id`, `s0`.`SelfSkipSharedLeftId`, `s0`.`Id`, `s0`.`SelfSkipSharedRightId`
 """);
     }
 
@@ -867,7 +867,7 @@ ORDER BY `e`.`Id`, `s0`.`SelfSkipSharedLeftId`, `s0`.`Id`
         await base.Filtered_include_skip_navigation_order_by_take(async);
 
         AssertSql(
-"""
+            """
 SELECT `e`.`Key1`, `e`.`Key2`, `e`.`Key3`, `e`.`Name`, `s0`.`TwoSkipSharedId`, `s0`.`CompositeKeySkipSharedKey1`, `s0`.`CompositeKeySkipSharedKey2`, `s0`.`CompositeKeySkipSharedKey3`, `s0`.`Id`, `s0`.`CollectionInverseId`, `s0`.`ExtraId`, `s0`.`Name`, `s0`.`ReferenceInverseId`
 FROM `EntityCompositeKeys` AS `e`
 LEFT JOIN (
@@ -879,7 +879,7 @@ LEFT JOIN (
     ) AS `s`
     WHERE `s`.`row` <= 2
 ) AS `s0` ON ((`e`.`Key1` = `s0`.`CompositeKeySkipSharedKey1`) AND (`e`.`Key2` = `s0`.`CompositeKeySkipSharedKey2`)) AND (`e`.`Key3` = `s0`.`CompositeKeySkipSharedKey3`)
-ORDER BY `e`.`Key1`, `e`.`Key2`, `e`.`Key3`, `s0`.`CompositeKeySkipSharedKey1`, `s0`.`CompositeKeySkipSharedKey2`, `s0`.`CompositeKeySkipSharedKey3`, `s0`.`Id`
+ORDER BY `e`.`Key1`, `e`.`Key2`, `e`.`Key3`, `s0`.`CompositeKeySkipSharedKey1`, `s0`.`CompositeKeySkipSharedKey2`, `s0`.`CompositeKeySkipSharedKey3`, `s0`.`Id`, `s0`.`TwoSkipSharedId`
 """);
     }
 
@@ -1052,7 +1052,7 @@ LEFT JOIN (
     ) AS `s0` ON `e0`.`Id` = `s0`.`TwoId`
     WHERE `e0`.`Id` < 10
 ) AS `s1` ON `e`.`Id` = `s1`.`OneId`
-ORDER BY `e`.`Id`, `s1`.`OneId`, `s1`.`TwoId`, `s1`.`TwoId0`, `s1`.`Id0`
+ORDER BY `e`.`Id`, `s1`.`OneId`, `s1`.`TwoId`, `s1`.`TwoId0`, `s1`.`Id0`, `s1`.`ThreeId`
 """);
     }
 
@@ -1960,7 +1960,7 @@ LEFT JOIN (
         INNER JOIN `EntityThrees` AS `e1` ON `j0`.`ThreeId` = `e1`.`Id`
     ) AS `s` ON `e0`.`Id` = `s`.`OneId`
 ) AS `s0` ON `e`.`Id` = `s0`.`ThreeId`
-ORDER BY `e`.`Id`, `s0`.`OneId`, `s0`.`ThreeId`, `s0`.`OneId0`
+ORDER BY `e`.`Id`, `s0`.`OneId`, `s0`.`ThreeId`, `s0`.`OneId0`, `s0`.`ThreeId0`
 """);
     }
 
@@ -2075,7 +2075,7 @@ WHERE FALSE
         await base.Filtered_include_skip_navigation_order_by_take_EF_Property(async);
 
         AssertSql(
-"""
+            """
 SELECT `e`.`Key1`, `e`.`Key2`, `e`.`Key3`, `e`.`Name`, `s0`.`TwoSkipSharedId`, `s0`.`CompositeKeySkipSharedKey1`, `s0`.`CompositeKeySkipSharedKey2`, `s0`.`CompositeKeySkipSharedKey3`, `s0`.`Id`, `s0`.`CollectionInverseId`, `s0`.`ExtraId`, `s0`.`Name`, `s0`.`ReferenceInverseId`
 FROM `EntityCompositeKeys` AS `e`
 LEFT JOIN (
@@ -2087,7 +2087,7 @@ LEFT JOIN (
     ) AS `s`
     WHERE `s`.`row` <= 2
 ) AS `s0` ON ((`e`.`Key1` = `s0`.`CompositeKeySkipSharedKey1`) AND (`e`.`Key2` = `s0`.`CompositeKeySkipSharedKey2`)) AND (`e`.`Key3` = `s0`.`CompositeKeySkipSharedKey3`)
-ORDER BY `e`.`Key1`, `e`.`Key2`, `e`.`Key3`, `s0`.`CompositeKeySkipSharedKey1`, `s0`.`CompositeKeySkipSharedKey2`, `s0`.`CompositeKeySkipSharedKey3`, `s0`.`Id`
+ORDER BY `e`.`Key1`, `e`.`Key2`, `e`.`Key3`, `s0`.`CompositeKeySkipSharedKey1`, `s0`.`CompositeKeySkipSharedKey2`, `s0`.`CompositeKeySkipSharedKey3`, `s0`.`Id`, `s0`.`TwoSkipSharedId`
 """);
     }
 
@@ -2492,7 +2492,7 @@ LEFT JOIN (
         INNER JOIN `UnidirectionalEntityOnes` AS `u3` ON `u2`.`UnidirectionalEntityOneId` = `u3`.`Id`
     ) AS `s` ON `u1`.`Id` = `s`.`UnidirectionalEntityBranchId`
 ) AS `s0` ON ((`u`.`Key1` = `s0`.`CompositeId1`) AND (`u`.`Key2` = `s0`.`CompositeId2`)) AND (`u`.`Key3` = `s0`.`CompositeId3`)
-ORDER BY `u`.`Key1`, `u`.`Key2`, `u`.`Key3`, `s0`.`LeafId`, `s0`.`CompositeId1`, `s0`.`CompositeId2`, `s0`.`CompositeId3`, `s0`.`UnidirectionalEntityBranchId`
+ORDER BY `u`.`Key1`, `u`.`Key2`, `u`.`Key3`, `s0`.`LeafId`, `s0`.`CompositeId1`, `s0`.`CompositeId2`, `s0`.`CompositeId3`, `s0`.`UnidirectionalEntityBranchId`, `s0`.`UnidirectionalEntityOneId`
 """);
     }
 
@@ -2515,7 +2515,7 @@ LEFT JOIN (
         INNER JOIN `UnidirectionalEntityOnes` AS `u4` ON `u3`.`RightId` = `u4`.`Id`
     ) AS `s` ON `u1`.`Id` = `s`.`LeftId`
 ) AS `s0` ON `u`.`Id` = `s0`.`ThreeId`
-ORDER BY `u`.`Id`, `s0`.`OneId`, `s0`.`ThreeId`, `s0`.`LeftId`
+ORDER BY `u`.`Id`, `s0`.`OneId`, `s0`.`ThreeId`, `s0`.`LeftId`, `s0`.`RightId`
 """);
     }
 
@@ -2533,7 +2533,7 @@ LEFT JOIN (
     FROM `UnidirectionalEntityOneUnidirectionalEntityTwo` AS `u1`
     INNER JOIN `UnidirectionalEntityOnes` AS `u2` ON `u1`.`UnidirectionalEntityOneId` = `u2`.`Id`
 ) AS `s` ON `u`.`Id` = `s`.`TwoSkipSharedId`
-ORDER BY `u`.`Id`, `s`.`TwoSkipSharedId`
+ORDER BY `u`.`Id`, `s`.`TwoSkipSharedId`, `s`.`UnidirectionalEntityOneId`
 """);
     }
 
@@ -2555,7 +2555,7 @@ LEFT JOIN (
         INNER JOIN `UnidirectionalEntityThrees` AS `u3` ON `u2`.`ThreeId` = `u3`.`Id`
     ) AS `s` ON `u1`.`Id` = `s`.`OneId`
 ) AS `s0` ON `u`.`Id` = `s0`.`ThreeId`
-ORDER BY `u`.`Id`, `s0`.`OneId`, `s0`.`ThreeId`, `s0`.`OneId0`
+ORDER BY `u`.`Id`, `s0`.`OneId`, `s0`.`ThreeId`, `s0`.`OneId0`, `s0`.`ThreeId0`
 """);
     }
 
@@ -2582,7 +2582,7 @@ ORDER BY `e`.`Id`, `s`.`OneId`
         await base.Filtered_include_skip_navigation_order_by_unidirectional(async);
 
         AssertSql(
-"""
+            """
 SELECT `u`.`Id`, `u`.`CollectionInverseId`, `u`.`Name`, `u`.`ReferenceInverseId`, `s`.`ThreeId`, `s`.`TwoId`, `s`.`Id`, `s`.`CollectionInverseId`, `s`.`ExtraId`, `s`.`Name`, `s`.`ReferenceInverseId`
 FROM `UnidirectionalEntityThrees` AS `u`
 LEFT JOIN (
@@ -2590,7 +2590,7 @@ LEFT JOIN (
     FROM `UnidirectionalJoinTwoToThree` AS `u0`
     INNER JOIN `UnidirectionalEntityTwos` AS `u1` ON `u0`.`TwoId` = `u1`.`Id`
 ) AS `s` ON `u`.`Id` = `s`.`ThreeId`
-ORDER BY `u`.`Id`, `s`.`Id`, `s`.`ThreeId`
+ORDER BY `u`.`Id`, `s`.`Id`, `s`.`ThreeId`, `s`.`TwoId`
 """);
     }
 
@@ -2599,7 +2599,7 @@ ORDER BY `u`.`Id`, `s`.`Id`, `s`.`ThreeId`
         await base.Filtered_include_skip_navigation_order_by_skip_unidirectional(async);
 
         AssertSql(
-"""
+            """
 SELECT `u`.`Id`, `u`.`CollectionInverseId`, `u`.`ExtraId`, `u`.`Name`, `u`.`ReferenceInverseId`, `s0`.`SelfSkipSharedRightId`, `s0`.`UnidirectionalEntityTwoId`, `s0`.`Id`, `s0`.`CollectionInverseId`, `s0`.`ExtraId`, `s0`.`Name`, `s0`.`ReferenceInverseId`
 FROM `UnidirectionalEntityTwos` AS `u`
 LEFT JOIN (
@@ -2611,7 +2611,7 @@ LEFT JOIN (
     ) AS `s`
     WHERE 2 < `s`.`row`
 ) AS `s0` ON `u`.`Id` = `s0`.`UnidirectionalEntityTwoId`
-ORDER BY `u`.`Id`, `s0`.`UnidirectionalEntityTwoId`, `s0`.`Id`
+ORDER BY `u`.`Id`, `s0`.`UnidirectionalEntityTwoId`, `s0`.`Id`, `s0`.`SelfSkipSharedRightId`
 """);
     }
 
@@ -2620,7 +2620,7 @@ ORDER BY `u`.`Id`, `s0`.`UnidirectionalEntityTwoId`, `s0`.`Id`
         await base.Filtered_include_skip_navigation_order_by_take_unidirectional(async);
 
         AssertSql(
-"""
+            """
 SELECT `u`.`Key1`, `u`.`Key2`, `u`.`Key3`, `u`.`Name`, `s0`.`TwoSkipSharedId`, `s0`.`UnidirectionalEntityCompositeKeyKey1`, `s0`.`UnidirectionalEntityCompositeKeyKey2`, `s0`.`UnidirectionalEntityCompositeKeyKey3`, `s0`.`Id`, `s0`.`CollectionInverseId`, `s0`.`ExtraId`, `s0`.`Name`, `s0`.`ReferenceInverseId`
 FROM `UnidirectionalEntityCompositeKeys` AS `u`
 LEFT JOIN (
@@ -2632,7 +2632,7 @@ LEFT JOIN (
     ) AS `s`
     WHERE `s`.`row` <= 2
 ) AS `s0` ON ((`u`.`Key1` = `s0`.`UnidirectionalEntityCompositeKeyKey1`) AND (`u`.`Key2` = `s0`.`UnidirectionalEntityCompositeKeyKey2`)) AND (`u`.`Key3` = `s0`.`UnidirectionalEntityCompositeKeyKey3`)
-ORDER BY `u`.`Key1`, `u`.`Key2`, `u`.`Key3`, `s0`.`UnidirectionalEntityCompositeKeyKey1`, `s0`.`UnidirectionalEntityCompositeKeyKey2`, `s0`.`UnidirectionalEntityCompositeKeyKey3`, `s0`.`Id`
+ORDER BY `u`.`Key1`, `u`.`Key2`, `u`.`Key3`, `s0`.`UnidirectionalEntityCompositeKeyKey1`, `s0`.`UnidirectionalEntityCompositeKeyKey2`, `s0`.`UnidirectionalEntityCompositeKeyKey3`, `s0`.`Id`, `s0`.`TwoSkipSharedId`
 """);
     }
 

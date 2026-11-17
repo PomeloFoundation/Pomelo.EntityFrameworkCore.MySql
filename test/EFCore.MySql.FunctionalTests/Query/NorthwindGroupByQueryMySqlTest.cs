@@ -4308,14 +4308,33 @@ LEFT JOIN (
         {
             await base.SelectMany_DefaultIfEmpty_over_GroupBy(async);
 
-            AssertSql();
+            AssertSql(
+                """
+SELECT `p`.`ProductID`, `o0`.`Key`, COALESCE(`o0`.`Sum`, 0) AS `Sum`
+FROM `Products` AS `p`
+LEFT JOIN (
+    SELECT `o`.`ProductID` AS `Key`, COALESCE(SUM(CAST(`o`.`Quantity` AS signed)), 0) AS `Sum`, `o`.`ProductID`
+    FROM `Order Details` AS `o`
+    WHERE `o`.`ProductID` < 10
+    GROUP BY `o`.`ProductID`
+) AS `o0` ON `p`.`ProductID` = `o0`.`ProductID`
+""");
         }
 
         public override async Task SelectMany_DefaultIfEmpty_over_Distinct(bool async)
         {
             await base.SelectMany_DefaultIfEmpty_over_Distinct(async);
 
-            AssertSql();
+            AssertSql(
+                """
+SELECT `p`.`ProductID`, `o0`.`Key`, COALESCE(`o0`.`Quantity`, 0) AS `Quantity`
+FROM `Products` AS `p`
+LEFT JOIN (
+    SELECT DISTINCT `o`.`ProductID` AS `Key`, `o`.`Quantity`, 1 AS `marker`, `o`.`ProductID`
+    FROM `Order Details` AS `o`
+    WHERE `o`.`ProductID` < 10
+) AS `o0` ON `p`.`ProductID` = `o0`.`ProductID`
+""");
         }
 
         [Fact]
