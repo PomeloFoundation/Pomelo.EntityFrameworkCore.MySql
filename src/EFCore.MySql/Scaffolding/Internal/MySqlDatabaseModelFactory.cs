@@ -932,7 +932,10 @@ ORDER BY
                             }
                             if (referencedTable != null)
                             {
-                                var fkInfo = new DatabaseForeignKey {Name = reader.GetString(0), OnDelete = ConvertToReferentialAction(reader.GetString(4)), Table = table, PrincipalTable = referencedTable};
+                                // DELETE_RULE comes from a correlated subquery and can be NULL when REFERENTIAL_CONSTRAINTS has no
+                                // matching row (seen on MariaDB for Windows), so treat it as an unknown referential action.
+                                var deleteRule = reader.IsDBNull(4) ? null : reader.GetString(4);
+                                var fkInfo = new DatabaseForeignKey {Name = reader.GetString(0), OnDelete = deleteRule is null ? null : ConvertToReferentialAction(deleteRule), Table = table, PrincipalTable = referencedTable};
                                 foreach (var pair in reader.GetString(3).Split(','))
                                 {
                                     fkInfo.Columns.Add(table.Columns.Single(y =>

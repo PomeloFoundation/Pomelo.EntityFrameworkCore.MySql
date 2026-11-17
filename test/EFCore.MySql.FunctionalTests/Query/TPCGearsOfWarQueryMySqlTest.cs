@@ -3153,7 +3153,7 @@ ORDER BY `u`.`Nickname`, `u`.`SquadId`, `u1`.`Nickname`
         await base.Select_correlated_filtered_collection_works_with_caching(async);
 
         AssertSql(
-"""
+            """
 SELECT `t`.`Id`, `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
 FROM `Tags` AS `t`
 LEFT JOIN (
@@ -3163,7 +3163,7 @@ LEFT JOIN (
     SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
     FROM `Officers` AS `o`
 ) AS `u` ON `t`.`GearNickName` = `u`.`Nickname`
-ORDER BY `t`.`Note`, `t`.`Id`, `u`.`Nickname`
+ORDER BY `t`.`Note`, `t`.`Id`, `u`.`Nickname`, `u`.`SquadId`
 """);
     }
 
@@ -4687,7 +4687,7 @@ LEFT JOIN (
     INNER JOIN `Squads` AS `s` ON `u0`.`SquadId` = `s`.`Id`
     LEFT JOIN `SquadMissions` AS `s0` ON `s`.`Id` = `s0`.`SquadId`
 ) AS `s1` ON (`u`.`Nickname` = `s1`.`LeaderNickname`) AND (`u`.`SquadId` = `s1`.`LeaderSquadId`)
-ORDER BY `u`.`Nickname`, `u`.`SquadId`, `s1`.`Nickname`, `s1`.`SquadId`, `s1`.`SquadId0`
+ORDER BY `u`.`Nickname`, `u`.`SquadId`, `s1`.`Nickname`, `s1`.`SquadId`, `s1`.`SquadId0`, `s1`.`MissionId`
 """);
     }
 
@@ -5061,7 +5061,7 @@ LEFT JOIN (
     WHERE `s0`.`MissionId` <> 17
 ) AS `s1` ON `s`.`Id` = `s1`.`SquadId`
 WHERE `u`.`Nickname` <> 'Marcus'
-ORDER BY `u`.`FullName`, `u`.`Nickname`, `u`.`SquadId`, `s1`.`SquadId`
+ORDER BY `u`.`FullName`, `u`.`Nickname`, `u`.`SquadId`, `s1`.`SquadId`, `s1`.`MissionId`
 """);
     }
 
@@ -8519,7 +8519,7 @@ LEFT JOIN (
     SELECT `o`.`Nickname`, `o`.`SquadId`, `o`.`AssignedCityName`, `o`.`CityOfBirthName`, `o`.`FullName`, `o`.`HasSoulPatch`, `o`.`LeaderNickname`, `o`.`LeaderSquadId`, `o`.`Rank`, 'Officer' AS `Discriminator`
     FROM `Officers` AS `o`
 ) AS `u` ON ((((`t`.`GearNickName` = `u`.`Nickname`) AND `t`.`GearSquadId` IS NOT NULL) AND (`t`.`GearSquadId` = `u`.`SquadId`)) AND `t`.`GearNickName` IS NOT NULL) AND `t`.`Note` IS NOT NULL
-ORDER BY `t`.`Id`, `u`.`Nickname`
+ORDER BY `t`.`Id`, `u`.`Nickname`, `u`.`SquadId`
 """);
     }
 
@@ -9361,7 +9361,7 @@ WHERE (`c`.`Name` = (
         await base.Bitwise_operation_with_non_null_parameter_optimizes_null_checks(async);
 
         AssertSql(
-"""
+            """
 @ranks='134'
 
 SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
@@ -9374,8 +9374,8 @@ FROM (
 ) AS `u`
 WHERE CAST(`u`.`Rank` & @ranks AS signed) <> 0
 """,
-                //
-                """
+            //
+            """
 @ranks='134'
 
 SELECT CAST(`u`.`Rank` | @ranks AS signed) = @ranks
@@ -9387,11 +9387,11 @@ FROM (
     FROM `Officers` AS `o`
 ) AS `u`
 """,
-                //
-                """
+            //
+            """
 @ranks='134'
 
-SELECT CAST(`u`.`Rank` | CAST(`u`.`Rank` | CAST(@ranks | CAST(`u`.`Rank` | @ranks AS signed) AS signed) AS signed) AS signed) = @ranks
+SELECT CAST(CAST(CAST(CAST(`u`.`Rank` | `u`.`Rank` AS signed) | @ranks AS signed) | `u`.`Rank` AS signed) | @ranks AS signed) = @ranks
 FROM (
     SELECT `g`.`Rank`
     FROM `Gears` AS `g`
