@@ -48,20 +48,17 @@ namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
             typeof(NorthwindQueryTaggingQueryTestBase<>),
 
             // TODO: 9.0
-            typeof(AdHocComplexTypeQueryTestBase),
             typeof(AdHocPrecompiledQueryRelationalTestBase),
             typeof(PrecompiledQueryRelationalTestBase),
             typeof(PrecompiledSqlPregenerationQueryRelationalTestBase),
             
-            // TODO: 10.0.2 - AdHocComplexTypeQueryRelationalTestBase requires NonSharedFixture infrastructure
-            typeof(AdHocComplexTypeQueryRelationalTestBase),
 
             // TODO: Reenable LoggingMySqlTest once its issue has been fixed in EF Core upstream.
             typeof(LoggingTestBase),
             typeof(LoggingRelationalTestBase<,>),
 
             // We have our own JSON support for now
-            // AdHocJsonQueryTestBase and AdHocJsonQueryRelationalTestBase are now enabled (public class)
+            // AdHocJsonQuery*/AdHocComplexTypeQuery* test bases were removed in EF Core 11.0.0
             // JsonTypesRelationalTestBase is now enabled (public class JsonTypesRelationalMySqlTest)
             typeof(JsonQueryRelationalTestBase<>),
             typeof(JsonQueryTestBase<>),
