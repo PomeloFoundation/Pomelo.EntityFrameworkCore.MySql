@@ -35,7 +35,7 @@ sudo usermod -aG docker $USER
 
 ```bash
 # Clone the repository
-git clone https://github.com/microting/Microting.EntityFrameworkCore.MySql.git
+git clone https://github.com/microting/Pomelo.EntityFrameworkCore.MySql.git
 cd Microting.EntityFrameworkCore.MySql
 
 # Switch to the feature branch

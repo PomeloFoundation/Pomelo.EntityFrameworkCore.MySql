@@ -405,4 +405,4 @@ The .NET 10 migration introduced several performance concerns, with one critical
 
 *Analysis completed: 2026-01-03*  
 *Analyzer: GitHub Copilot*  
-*Repository: microting/Microting.EntityFrameworkCore.MySql*
+*Repository: microting/Pomelo.EntityFrameworkCore.MySql*
