@@ -1292,6 +1292,111 @@ FROM `EntityType` AS `e`
 """);
     }
 
+    public override async Task Non_optional_complex_type_with_all_nullable_properties()
+    {
+        await base.Non_optional_complex_type_with_all_nullable_properties();
+
+        AssertSql();
+    }
+
+    public override async Task Non_optional_complex_type_with_all_nullable_properties_via_left_join()
+    {
+        await base.Non_optional_complex_type_with_all_nullable_properties_via_left_join();
+
+        AssertSql();
+    }
+
+    public override async Task Nullable_complex_type_with_discriminator_and_shadow_property()
+    {
+        await base.Nullable_complex_type_with_discriminator_and_shadow_property();
+
+        AssertSql();
+    }
+
+    public override async Task Nullable_complex_type_with_discriminator_null_to_non_null_roundtrip()
+    {
+        await base.Nullable_complex_type_with_discriminator_null_to_non_null_roundtrip();
+
+        AssertSql();
+    }
+
+    public override async Task Nullable_complex_type_with_discriminator_non_null_to_null_roundtrip()
+    {
+        await base.Nullable_complex_type_with_discriminator_non_null_to_null_roundtrip();
+
+        AssertSql();
+    }
+
+    public override async Task Nullable_complex_type_with_discriminator_update_non_null_entity_roundtrip()
+    {
+        await base.Nullable_complex_type_with_discriminator_update_non_null_entity_roundtrip();
+
+        AssertSql();
+    }
+
+    public override async Task Nullable_complex_type_with_discriminator_set_to_different_value()
+    {
+        await base.Nullable_complex_type_with_discriminator_set_to_different_value();
+
+        AssertSql();
+    }
+
+    public override async Task Nullable_complex_type_with_discriminator_set_to_null()
+    {
+        await base.Nullable_complex_type_with_discriminator_set_to_null();
+
+        AssertSql();
+    }
+
+    public override async Task Nested_nullable_complex_type_with_discriminator_null_to_non_null_roundtrip()
+    {
+        await base.Nested_nullable_complex_type_with_discriminator_null_to_non_null_roundtrip();
+
+        AssertSql();
+    }
+
+    public override async Task Update_entity_with_nullable_complex_type_and_discriminator_does_not_throw()
+    {
+        await base.Update_entity_with_nullable_complex_type_and_discriminator_does_not_throw();
+
+        AssertSql();
+    }
+
+    public override async Task Can_query_by_complex_type_property_with_index()
+    {
+        await base.Can_query_by_complex_type_property_with_index();
+
+        AssertSql();
+    }
+
+    public override async Task Can_update_entity_with_index_on_complex_type_property()
+    {
+        await base.Can_update_entity_with_index_on_complex_type_property();
+
+        AssertSql();
+    }
+
+    public override async Task Can_delete_entity_with_index_on_complex_type_property()
+    {
+        await base.Can_delete_entity_with_index_on_complex_type_property();
+
+        AssertSql();
+    }
+
+    public override async Task Can_query_by_alternate_key_on_complex_type_property()
+    {
+        await base.Can_query_by_alternate_key_on_complex_type_property();
+
+        AssertSql();
+    }
+
+    public override async Task Can_save_batch_swapping_alternate_key_values_on_complex_type_property()
+    {
+        await base.Can_save_batch_swapping_alternate_key_values_on_complex_type_property();
+
+        AssertSql();
+    }
+
     [Fact]
     public virtual void Check_all_tests_overridden()
         => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
