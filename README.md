@@ -171,7 +171,7 @@ View our [Configuration Options Wiki Page](https://github.com/microting/Pomelo.E
 
 ### 3. Sample Application
 
-Check out our [Integration Tests](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/main/test/EFCore.MySql.IntegrationTests) for an example repository that includes an ASP.NET Core MVC Application.
+Check out our [Integration Tests](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/master/test/EFCore.MySql.IntegrationTests) for an example repository that includes an ASP.NET Core MVC Application.
 
 There are also many complete and concise console application samples posted in the issue section (some of them can be found by searching for `Program.cs`).
 
