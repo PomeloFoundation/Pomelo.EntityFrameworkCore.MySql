@@ -1296,105 +1296,347 @@ FROM `EntityType` AS `e`
     {
         await base.Non_optional_complex_type_with_all_nullable_properties();
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `e`.`Id`, `e`.`NonOptionalComplexType_NullableDateTime`, `e`.`NonOptionalComplexType_NullableString`
+FROM `EntityType` AS `e`
+LIMIT 2
+""");
     }
 
     public override async Task Non_optional_complex_type_with_all_nullable_properties_via_left_join()
     {
         await base.Non_optional_complex_type_with_all_nullable_properties_via_left_join();
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `p0`.`Id`, `c`.`Id`, `c`.`ParentId`, `c`.`ComplexType_NullableDateTime`, `c`.`ComplexType_NullableString`
+FROM (
+    SELECT `p`.`Id`
+    FROM `Parent` AS `p`
+    LIMIT 2
+) AS `p0`
+LEFT JOIN `Child` AS `c` ON `p0`.`Id` = `c`.`ParentId`
+ORDER BY `p0`.`Id`
+""");
     }
 
     public override async Task Nullable_complex_type_with_discriminator_and_shadow_property()
     {
         await base.Nullable_complex_type_with_discriminator_and_shadow_property();
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `e`.`Id`, `e`.`CreatedBy`, `e`.`Prop_Discriminator`, `e`.`Prop_OptionalValue`
+FROM `EntityType` AS `e`
+""");
     }
 
     public override async Task Nullable_complex_type_with_discriminator_null_to_non_null_roundtrip()
     {
         await base.Nullable_complex_type_with_discriminator_null_to_non_null_roundtrip();
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `e`.`Id`, `e`.`Prop_Discriminator`, `e`.`Prop_OptionalValue`
+FROM `EntityType` AS `e`
+LIMIT 2
+""",
+            //
+            """
+@p2='438222ba-5c42-4a8c-8647-16adb9d9d62a'
+@p0='OptionalComplexProperty' (Size = 4000)
+@p1='True' (Nullable = true)
+
+SET AUTOCOMMIT = 1;
+UPDATE `EntityType` SET `Prop_Discriminator` = @p0, `Prop_OptionalValue` = @p1
+WHERE `Id` = @p2;
+SELECT ROW_COUNT();
+""",
+            //
+            """
+SELECT `e`.`Id`, `e`.`Prop_Discriminator`, `e`.`Prop_OptionalValue`
+FROM `EntityType` AS `e`
+LIMIT 2
+""");
     }
 
     public override async Task Nullable_complex_type_with_discriminator_non_null_to_null_roundtrip()
     {
         await base.Nullable_complex_type_with_discriminator_non_null_to_null_roundtrip();
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `e`.`Id`, `e`.`Prop_Discriminator`, `e`.`Prop_OptionalValue`
+FROM `EntityType` AS `e`
+LIMIT 2
+""",
+            //
+            """
+@p2='81cc6e35-9696-41ff-a5de-9cf02ac46e11'
+@p0=NULL (Size = 4000)
+@p1=NULL (DbType = Boolean)
+
+SET AUTOCOMMIT = 1;
+UPDATE `EntityType` SET `Prop_Discriminator` = @p0, `Prop_OptionalValue` = @p1
+WHERE `Id` = @p2;
+SELECT ROW_COUNT();
+""",
+            //
+            """
+SELECT `e`.`Id`, `e`.`Prop_Discriminator`, `e`.`Prop_OptionalValue`
+FROM `EntityType` AS `e`
+LIMIT 2
+""");
     }
 
     public override async Task Nullable_complex_type_with_discriminator_update_non_null_entity_roundtrip()
     {
         await base.Nullable_complex_type_with_discriminator_update_non_null_entity_roundtrip();
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `e`.`Id`, `e`.`Prop_Discriminator`, `e`.`Prop_OptionalValue`
+FROM `EntityType` AS `e`
+LIMIT 2
+""",
+            //
+            """
+@p1='c9b0153a-bbde-4f38-911f-6867835cb086'
+@p0='True' (Nullable = true)
+
+SET AUTOCOMMIT = 1;
+UPDATE `EntityType` SET `Prop_OptionalValue` = @p0
+WHERE `Id` = @p1;
+SELECT ROW_COUNT();
+""",
+            //
+            """
+SELECT `e`.`Id`, `e`.`Prop_Discriminator`, `e`.`Prop_OptionalValue`
+FROM `EntityType` AS `e`
+LIMIT 2
+""");
     }
 
     public override async Task Nullable_complex_type_with_discriminator_set_to_different_value()
     {
         await base.Nullable_complex_type_with_discriminator_set_to_different_value();
 
-        AssertSql();
+        AssertSql(
+            """
+@p0='657b0248-dfd4-4089-b46f-735f165a7975'
+@p1='SomeOtherValue' (Size = 4000)
+@p2='True' (Nullable = true)
+
+SET AUTOCOMMIT = 1;
+INSERT INTO `EntityType` (`Id`, `Prop_Discriminator`, `Prop_OptionalValue`)
+VALUES (@p0, @p1, @p2);
+""",
+            //
+            """
+@entityId='657b0248-dfd4-4089-b46f-735f165a7975'
+
+SELECT `e`.`Id`, `e`.`Prop_Discriminator`, `e`.`Prop_OptionalValue`
+FROM `EntityType` AS `e`
+WHERE `e`.`Id` = @entityId
+LIMIT 2
+""");
     }
 
     public override async Task Nullable_complex_type_with_discriminator_set_to_null()
     {
         await base.Nullable_complex_type_with_discriminator_set_to_null();
 
-        AssertSql();
+        AssertSql(
+            """
+@p0='9e8bc883-8244-4ff5-b346-4f7d0d83bc34'
+@p1=NULL (Size = 4000)
+@p2='True' (Nullable = true)
+
+SET AUTOCOMMIT = 1;
+INSERT INTO `EntityType` (`Id`, `Prop_Discriminator`, `Prop_OptionalValue`)
+VALUES (@p0, @p1, @p2);
+""",
+            //
+            """
+@entityId='9e8bc883-8244-4ff5-b346-4f7d0d83bc34'
+
+SELECT `e`.`Id`, `e`.`Prop_Discriminator`, `e`.`Prop_OptionalValue`
+FROM `EntityType` AS `e`
+WHERE `e`.`Id` = @entityId
+LIMIT 2
+""");
     }
 
     public override async Task Nested_nullable_complex_type_with_discriminator_null_to_non_null_roundtrip()
     {
         await base.Nested_nullable_complex_type_with_discriminator_null_to_non_null_roundtrip();
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `e`.`Id`, `e`.`Outer_Name`, `e`.`Outer_Inner_Discriminator`, `e`.`Outer_Inner_Value`
+FROM `EntityType` AS `e`
+LIMIT 2
+""",
+            //
+            """
+@p2='586eb533-7c62-4826-8e1f-0edd5e8bba8e'
+@p0='InnerComplexProperty' (Size = 4000)
+@p1='42' (Nullable = true)
+
+SET AUTOCOMMIT = 1;
+UPDATE `EntityType` SET `Outer_Inner_Discriminator` = @p0, `Outer_Inner_Value` = @p1
+WHERE `Id` = @p2;
+SELECT ROW_COUNT();
+""",
+            //
+            """
+SELECT `e`.`Id`, `e`.`Outer_Name`, `e`.`Outer_Inner_Discriminator`, `e`.`Outer_Inner_Value`
+FROM `EntityType` AS `e`
+LIMIT 2
+""");
     }
 
     public override async Task Update_entity_with_nullable_complex_type_and_discriminator_does_not_throw()
     {
         await base.Update_entity_with_nullable_complex_type_and_discriminator_does_not_throw();
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `e`.`Id`, `e`.`CreatedBy`, `e`.`Prop_Discriminator`, `e`.`Prop_OptionalValue`
+FROM `EntityType` AS `e`
+LIMIT 2
+""",
+            //
+            """
+@p2='9fed19b3-1ff9-459d-9f19-bb3799e9d646'
+@p0='OptionalComplexProperty' (Size = 4000)
+@p1='False' (Nullable = true)
+
+SET AUTOCOMMIT = 1;
+UPDATE `EntityType` SET `Prop_Discriminator` = @p0, `Prop_OptionalValue` = @p1
+WHERE `Id` = @p2;
+SELECT ROW_COUNT();
+""",
+            //
+            """
+SELECT `e`.`Id`, `e`.`CreatedBy`, `e`.`Prop_Discriminator`, `e`.`Prop_OptionalValue`
+FROM `EntityType` AS `e`
+LIMIT 2
+""");
     }
 
     public override async Task Can_query_by_complex_type_property_with_index()
     {
         await base.Can_query_by_complex_type_property_with_index();
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `p`.`Id_Id`, `p`.`Address_City`, `p`.`Address_PostalCode`
+FROM `Person` AS `p`
+WHERE `p`.`Address_City` = 'Seattle'
+LIMIT 2
+""");
     }
 
     public override async Task Can_update_entity_with_index_on_complex_type_property()
     {
         await base.Can_update_entity_with_index_on_complex_type_property();
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `p`.`Id_Id`, `p`.`Address_City`, `p`.`Address_PostalCode`
+FROM `Person` AS `p`
+LIMIT 2
+""",
+            //
+            """
+@p1='1'
+@p0='98102' (Nullable = false) (Size = 255)
+
+SET AUTOCOMMIT = 1;
+UPDATE `Person` SET `Address_PostalCode` = @p0
+WHERE `Id_Id` = @p1;
+SELECT ROW_COUNT();
+""",
+            //
+            """
+SELECT `p`.`Id_Id`, `p`.`Address_City`, `p`.`Address_PostalCode`
+FROM `Person` AS `p`
+LIMIT 2
+""");
     }
 
     public override async Task Can_delete_entity_with_index_on_complex_type_property()
     {
         await base.Can_delete_entity_with_index_on_complex_type_property();
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `p`.`Id_Id`, `p`.`Address_City`, `p`.`Address_PostalCode`
+FROM `Person` AS `p`
+LIMIT 2
+""",
+            //
+            """
+@p0='1'
+
+SET AUTOCOMMIT = 1;
+DELETE FROM `Person`
+WHERE `Id_Id` = @p0;
+SELECT ROW_COUNT();
+""",
+            //
+            """
+SELECT COUNT(*)
+FROM `Person` AS `p`
+""");
     }
 
     public override async Task Can_query_by_alternate_key_on_complex_type_property()
     {
         await base.Can_query_by_alternate_key_on_complex_type_property();
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `p`.`Id_Id`, `p`.`Address_City`, `p`.`Address_PostalCode`
+FROM `Person` AS `p`
+WHERE `p`.`Address_City` = 'Redmond'
+LIMIT 2
+""");
     }
 
     public override async Task Can_save_batch_swapping_alternate_key_values_on_complex_type_property()
     {
         await base.Can_save_batch_swapping_alternate_key_values_on_complex_type_property();
 
-        AssertSql();
+        AssertSql(
+            """
+SELECT `p`.`Id_Id`, `p`.`Address_City`, `p`.`Address_PostalCode`
+FROM `Person` AS `p`
+ORDER BY `p`.`Id_Id`
+""",
+            //
+            """
+@p1='1'
+@p0='98103' (Nullable = false) (Size = 255)
+@p3='2'
+@p2='98054' (Nullable = false) (Size = 255)
+
+UPDATE `Person` SET `Address_PostalCode` = @p0
+WHERE `Id_Id` = @p1;
+SELECT ROW_COUNT();
+
+UPDATE `Person` SET `Address_PostalCode` = @p2
+WHERE `Id_Id` = @p3;
+SELECT ROW_COUNT();
+""",
+            //
+            """
+SELECT `p`.`Id_Id`, `p`.`Address_City`, `p`.`Address_PostalCode`
+FROM `Person` AS `p`
+ORDER BY `p`.`Id_Id`
+""");
     }
 
     [Fact]
