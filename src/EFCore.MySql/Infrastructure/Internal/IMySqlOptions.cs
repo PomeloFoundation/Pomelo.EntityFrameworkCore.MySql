@@ -12,9 +12,12 @@ namespace Microting.EntityFrameworkCore.MySql.Infrastructure.Internal
     {
         MySqlConnectionSettings ConnectionSettings { get; }
 
+        /// <summary>
+        /// The <see cref="DbDataSource"/> configured for the context, if any.
+        /// </summary>
         /// <remarks>
         /// If null, there might still be a `DbDataSource` in the ApplicationServiceProvider.
-        /// </remarks>>
+        /// </remarks>
         DbDataSource DataSource { get; }
 
         ServerVersion ServerVersion { get; }
