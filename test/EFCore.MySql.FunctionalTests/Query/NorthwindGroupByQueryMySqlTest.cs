@@ -4304,6 +4304,20 @@ LEFT JOIN (
 """);
         }
 
+        public override async Task SelectMany_DefaultIfEmpty_over_GroupBy(bool async)
+        {
+            await base.SelectMany_DefaultIfEmpty_over_GroupBy(async);
+
+            AssertSql();
+        }
+
+        public override async Task SelectMany_DefaultIfEmpty_over_Distinct(bool async)
+        {
+            await base.SelectMany_DefaultIfEmpty_over_Distinct(async);
+
+            AssertSql();
+        }
+
         [Fact]
         public virtual void Check_all_tests_overridden()
             => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());

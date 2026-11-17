@@ -49,8 +49,8 @@
       instead of `filter`, and `report-github` (from `GitHubActionsTestLogger`) instead of the `logger` option,
       which MTP rejects. `GitHubActionsTestLogger` 3.x and `xunit.runner.visualstudio` 4.x both support MTP v2.
     -->
-    <PackageVersion Include="xunit.v3.core" Version="4.0.3" />
-    <PackageVersion Include="xunit.v3.assert" Version="4.0.3" />
+    <PackageVersion Include="xunit.v3.core" Version="4.0.1" />
+    <PackageVersion Include="xunit.v3.assert" Version="4.0.1" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1" />
     <PackageVersion Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />

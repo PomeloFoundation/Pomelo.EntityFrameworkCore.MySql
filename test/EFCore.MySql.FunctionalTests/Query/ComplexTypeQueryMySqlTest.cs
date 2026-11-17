@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -1151,6 +1152,62 @@ LEFT JOIN `ValuedCustomer` AS `v0` ON `v`.`OptionalCustomerId` = `v0`.`Id`
 """);
     }
 
+    public override async Task Complex_json_collection_inside_left_join_subquery()
+    {
+        await base.Complex_json_collection_inside_left_join_subquery();
+
+        AssertSql();
+    }
+
+    public override async Task Select_TPC_base_with_ComplexType()
+    {
+        await base.Select_TPC_base_with_ComplexType();
+
+        AssertSql();
+    }
+
+    public override async Task Complex_type_on_an_entity_mapped_to_view_and_table()
+    {
+        await base.Complex_type_on_an_entity_mapped_to_view_and_table();
+
+        AssertSql();
+    }
+
+    public override async Task Complex_property_on_split_entity()
+    {
+        await base.Complex_property_on_split_entity();
+
+        AssertSql();
+    }
+
+    public override async Task Project_json_complex_collection_together_with_collection_navigation()
+    {
+        await base.Project_json_complex_collection_together_with_collection_navigation();
+
+        AssertSql();
+    }
+
+    public override async Task Complex_type_equals_parameter_with_nested_types_with_property_of_same_name()
+    {
+        await base.Complex_type_equals_parameter_with_nested_types_with_property_of_same_name();
+
+        AssertSql();
+    }
+
+    public override async Task Projecting_complex_property_does_not_auto_include_owned_types()
+    {
+        await base.Projecting_complex_property_does_not_auto_include_owned_types();
+
+        AssertSql();
+    }
+
+    public override async Task Optional_complex_type_with_discriminator()
+    {
+        await base.Optional_complex_type_with_discriminator();
+
+        AssertSql();
+    }
+
     [Fact]
     public virtual void Check_all_tests_overridden()
         => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
@@ -1162,5 +1219,11 @@ LEFT JOIN `ValuedCustomer` AS `v0` ON `v`.`OptionalCustomerId` = `v0`.`Id`
     {
         protected override ITestStoreFactory TestStoreFactory
             => MySqlTestStoreFactory.Instance;
+
+        // EF Core 11 adds a TPC hierarchy to this model. MySQL has no sequences, so its key is an
+        // identity column, which raises TpcStoreGeneratedIdentityWarning (an error in tests).
+        public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
+            => base.AddOptions(builder)
+                .ConfigureWarnings(w => w.Ignore(RelationalEventId.TpcStoreGeneratedIdentityWarning));
     }
 }
