@@ -445,7 +445,7 @@ jobs:
           dotnet run --project samples/PassKeyTest --no-build
   NuGet:
     needs: BuildAndTest
-    if: github.repository == 'Microting/Microting.EntityFrameworkCore.MySql'
+    if: github.repository == 'Microting/Pomelo.EntityFrameworkCore.MySql'
     runs-on: ubuntu-latest
     permissions:
       id-token: write
