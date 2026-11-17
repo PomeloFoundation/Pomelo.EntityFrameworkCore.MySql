@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
 namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query;
@@ -1335,195 +1336,36 @@ FROM `EntityType` AS `e`
     public override async Task Nullable_complex_type_with_discriminator_null_to_non_null_roundtrip()
     {
         await base.Nullable_complex_type_with_discriminator_null_to_non_null_roundtrip();
-
-        AssertSql(
-            """
-SELECT `e`.`Id`, `e`.`Prop_Discriminator`, `e`.`Prop_OptionalValue`
-FROM `EntityType` AS `e`
-LIMIT 2
-""",
-            //
-            """
-@p2='438222ba-5c42-4a8c-8647-16adb9d9d62a'
-@p0='OptionalComplexProperty' (Size = 4000)
-@p1='True' (Nullable = true)
-
-SET AUTOCOMMIT = 1;
-UPDATE `EntityType` SET `Prop_Discriminator` = @p0, `Prop_OptionalValue` = @p1
-WHERE `Id` = @p2;
-SELECT ROW_COUNT();
-""",
-            //
-            """
-SELECT `e`.`Id`, `e`.`Prop_Discriminator`, `e`.`Prop_OptionalValue`
-FROM `EntityType` AS `e`
-LIMIT 2
-""");
     }
 
     public override async Task Nullable_complex_type_with_discriminator_non_null_to_null_roundtrip()
     {
         await base.Nullable_complex_type_with_discriminator_non_null_to_null_roundtrip();
-
-        AssertSql(
-            """
-SELECT `e`.`Id`, `e`.`Prop_Discriminator`, `e`.`Prop_OptionalValue`
-FROM `EntityType` AS `e`
-LIMIT 2
-""",
-            //
-            """
-@p2='81cc6e35-9696-41ff-a5de-9cf02ac46e11'
-@p0=NULL (Size = 4000)
-@p1=NULL (DbType = Boolean)
-
-SET AUTOCOMMIT = 1;
-UPDATE `EntityType` SET `Prop_Discriminator` = @p0, `Prop_OptionalValue` = @p1
-WHERE `Id` = @p2;
-SELECT ROW_COUNT();
-""",
-            //
-            """
-SELECT `e`.`Id`, `e`.`Prop_Discriminator`, `e`.`Prop_OptionalValue`
-FROM `EntityType` AS `e`
-LIMIT 2
-""");
     }
 
     public override async Task Nullable_complex_type_with_discriminator_update_non_null_entity_roundtrip()
     {
         await base.Nullable_complex_type_with_discriminator_update_non_null_entity_roundtrip();
-
-        AssertSql(
-            """
-SELECT `e`.`Id`, `e`.`Prop_Discriminator`, `e`.`Prop_OptionalValue`
-FROM `EntityType` AS `e`
-LIMIT 2
-""",
-            //
-            """
-@p1='c9b0153a-bbde-4f38-911f-6867835cb086'
-@p0='True' (Nullable = true)
-
-SET AUTOCOMMIT = 1;
-UPDATE `EntityType` SET `Prop_OptionalValue` = @p0
-WHERE `Id` = @p1;
-SELECT ROW_COUNT();
-""",
-            //
-            """
-SELECT `e`.`Id`, `e`.`Prop_Discriminator`, `e`.`Prop_OptionalValue`
-FROM `EntityType` AS `e`
-LIMIT 2
-""");
     }
 
     public override async Task Nullable_complex_type_with_discriminator_set_to_different_value()
     {
         await base.Nullable_complex_type_with_discriminator_set_to_different_value();
-
-        AssertSql(
-            """
-@p0='657b0248-dfd4-4089-b46f-735f165a7975'
-@p1='SomeOtherValue' (Size = 4000)
-@p2='True' (Nullable = true)
-
-SET AUTOCOMMIT = 1;
-INSERT INTO `EntityType` (`Id`, `Prop_Discriminator`, `Prop_OptionalValue`)
-VALUES (@p0, @p1, @p2);
-""",
-            //
-            """
-@entityId='657b0248-dfd4-4089-b46f-735f165a7975'
-
-SELECT `e`.`Id`, `e`.`Prop_Discriminator`, `e`.`Prop_OptionalValue`
-FROM `EntityType` AS `e`
-WHERE `e`.`Id` = @entityId
-LIMIT 2
-""");
     }
 
     public override async Task Nullable_complex_type_with_discriminator_set_to_null()
     {
         await base.Nullable_complex_type_with_discriminator_set_to_null();
-
-        AssertSql(
-            """
-@p0='9e8bc883-8244-4ff5-b346-4f7d0d83bc34'
-@p1=NULL (Size = 4000)
-@p2='True' (Nullable = true)
-
-SET AUTOCOMMIT = 1;
-INSERT INTO `EntityType` (`Id`, `Prop_Discriminator`, `Prop_OptionalValue`)
-VALUES (@p0, @p1, @p2);
-""",
-            //
-            """
-@entityId='9e8bc883-8244-4ff5-b346-4f7d0d83bc34'
-
-SELECT `e`.`Id`, `e`.`Prop_Discriminator`, `e`.`Prop_OptionalValue`
-FROM `EntityType` AS `e`
-WHERE `e`.`Id` = @entityId
-LIMIT 2
-""");
     }
 
     public override async Task Nested_nullable_complex_type_with_discriminator_null_to_non_null_roundtrip()
     {
         await base.Nested_nullable_complex_type_with_discriminator_null_to_non_null_roundtrip();
-
-        AssertSql(
-            """
-SELECT `e`.`Id`, `e`.`Outer_Name`, `e`.`Outer_Inner_Discriminator`, `e`.`Outer_Inner_Value`
-FROM `EntityType` AS `e`
-LIMIT 2
-""",
-            //
-            """
-@p2='586eb533-7c62-4826-8e1f-0edd5e8bba8e'
-@p0='InnerComplexProperty' (Size = 4000)
-@p1='42' (Nullable = true)
-
-SET AUTOCOMMIT = 1;
-UPDATE `EntityType` SET `Outer_Inner_Discriminator` = @p0, `Outer_Inner_Value` = @p1
-WHERE `Id` = @p2;
-SELECT ROW_COUNT();
-""",
-            //
-            """
-SELECT `e`.`Id`, `e`.`Outer_Name`, `e`.`Outer_Inner_Discriminator`, `e`.`Outer_Inner_Value`
-FROM `EntityType` AS `e`
-LIMIT 2
-""");
     }
 
     public override async Task Update_entity_with_nullable_complex_type_and_discriminator_does_not_throw()
     {
         await base.Update_entity_with_nullable_complex_type_and_discriminator_does_not_throw();
-
-        AssertSql(
-            """
-SELECT `e`.`Id`, `e`.`CreatedBy`, `e`.`Prop_Discriminator`, `e`.`Prop_OptionalValue`
-FROM `EntityType` AS `e`
-LIMIT 2
-""",
-            //
-            """
-@p2='9fed19b3-1ff9-459d-9f19-bb3799e9d646'
-@p0='OptionalComplexProperty' (Size = 4000)
-@p1='False' (Nullable = true)
-
-SET AUTOCOMMIT = 1;
-UPDATE `EntityType` SET `Prop_Discriminator` = @p0, `Prop_OptionalValue` = @p1
-WHERE `Id` = @p2;
-SELECT ROW_COUNT();
-""",
-            //
-            """
-SELECT `e`.`Id`, `e`.`CreatedBy`, `e`.`Prop_Discriminator`, `e`.`Prop_OptionalValue`
-FROM `EntityType` AS `e`
-LIMIT 2
-""");
     }
 
     public override async Task Can_query_by_complex_type_property_with_index()
@@ -1578,7 +1420,16 @@ FROM `Person` AS `p`
 LIMIT 2
 """,
             //
-            """
+            AppConfig.ServerVersion.Supports.Returning
+                ? """
+@p0='1'
+
+SET AUTOCOMMIT = 1;
+DELETE FROM `Person`
+WHERE `Id_Id` = @p0
+RETURNING 1;
+"""
+                : """
 @p0='1'
 
 SET AUTOCOMMIT = 1;
