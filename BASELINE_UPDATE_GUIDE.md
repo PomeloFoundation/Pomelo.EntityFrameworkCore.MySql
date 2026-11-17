@@ -35,8 +35,8 @@ sudo usermod -aG docker $USER
 
 ```bash
 # Clone the repository
-git clone https://github.com/microting/Microting.EntityFrameworkCore.MySql.git
-cd Microting.EntityFrameworkCore.MySql
+git clone https://github.com/microting/Pomelo.EntityFrameworkCore.MySql.git
+cd Pomelo.EntityFrameworkCore.MySql
 
 # Switch to the feature branch
 git checkout copilot/update-baseline-files-ef-core-10
